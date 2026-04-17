@@ -68,7 +68,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 	@ApiResponse(responseCode = "404", description = "Incident not found")
 	@RequestMapping(value = "/count", method = RequestMethod.GET)
 	public Long countIncident(@RequestParam Map<String, Object> params, HttpServletRequest rq) {
-		CIBUser user = checkAuthentication(rq, true);
+		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return sevenProvider.countIncident(params, user);
 	}
@@ -77,7 +77,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 	@ApiResponse(responseCode = "404", description = "Incident not found")
 	@RequestMapping(value = "/history/count", method = RequestMethod.GET)
 	public Long countHistoricIncident(@RequestParam Map<String, Object> params, HttpServletRequest rq) {
-		CIBUser user = checkAuthentication(rq, true);
+		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return sevenProvider.countHistoricIncident(params, user);
 	}
@@ -86,7 +86,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 	@ApiResponse(responseCode = "404", description = "Incident not found")
 	@RequestMapping(method = RequestMethod.GET)
 	public Collection<Incident> findIncident(@RequestParam Map<String, Object> params, HttpServletRequest rq) {
-		CIBUser user = checkAuthentication(rq, true);
+		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return sevenProvider.findIncident(params, user);
 	}
@@ -97,7 +97,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 	public String findStacktrace(
 			@Parameter(description = "Job Id") @PathVariable String jobId,
 			Locale loc, HttpServletRequest rq) {
-		CIBUser user = checkAuthentication(rq, true);
+		CIBUser user = checkAuthorization(rq, true);
 
 		return sevenProvider.findStacktrace(jobId, user);
 	}
@@ -108,7 +108,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 	public String findExternalTaskErrorDetails(
 			@Parameter(description = "External Task Id") @PathVariable String externalTaskId,
 			Locale loc, HttpServletRequest rq) {
-		CIBUser user = checkAuthentication(rq, true);
+		CIBUser user = checkAuthorization(rq, true);
 		return sevenProvider.findExternalTaskErrorDetails(externalTaskId, user);
 	}
 
@@ -118,7 +118,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 	public String findHistoricExternalTaskErrorDetails(
 			@Parameter(description = "External Task Id") @PathVariable String externalTaskId,
 			Locale loc, HttpServletRequest rq) {
-		CIBUser user = checkAuthentication(rq, true);
+		CIBUser user = checkAuthorization(rq, true);
 		return sevenProvider.findHistoricExternalTaskErrorDetails(externalTaskId, user);
 	}
 
@@ -126,7 +126,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 	@ApiResponse(responseCode = "404", description = "Historic incidents not found")
 	@RequestMapping(value = "/history", method = RequestMethod.GET)
 	public Collection<Incident> findHistoricIncidents(@RequestParam Map<String, Object> params, HttpServletRequest rq) {
-		CIBUser user = checkAuthentication(rq, true);
+		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return sevenProvider.findHistoricIncidents(params, user);
 	}
@@ -137,7 +137,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 	public String findHistoricStacktraceByJobId(
 			@Parameter(description = "Job Id") @PathVariable String jobId,
 			Locale loc, HttpServletRequest rq) {
-		CIBUser user = checkAuthentication(rq, true);
+		CIBUser user = checkAuthorization(rq, true);
 		return sevenProvider.findHistoricStacktraceByJobId(jobId, user);
 	}
 
@@ -148,7 +148,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 			@Parameter(description = "Job Id") @PathVariable String jobId,
 			@RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
-		CIBUser user = checkAuthentication(rq, true);
+		CIBUser user = checkAuthorization(rq, true);
 		sevenProvider.retryJobById(jobId, data, user);
     // return 204 No Content, no body
     return ResponseEntity.noContent().build();
@@ -161,7 +161,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 			@Parameter(description = "External Task Id") @PathVariable String externalTaskId,
 			@RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
-		CIBUser user = checkAuthentication(rq, true);
+		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.UPDATE_ALL);
 		sevenProvider.retryExternalTask(externalTaskId, data, user);
     // return 204 No Content, no body
@@ -175,7 +175,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 			@Parameter(description = "Incident Id") @PathVariable String incidentId,
 			@RequestBody Map<String, Object> data,
 			Locale locale, HttpServletRequest request) {
-		CIBUser user = checkAuthentication(request, true);
+		CIBUser user = checkAuthorization(request, true);
 		bpmProvider.setIncidentAnnotation(incidentId, data, user);
     // return 204 No Content, no body
     return ResponseEntity.noContent().build();

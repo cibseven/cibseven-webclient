@@ -139,7 +139,7 @@ public class ElementTemplateService extends BaseService {
     public List<ElementTemplate> getAllElementTemplates(HttpServletRequest rq) {
     	log.debug("Retrieving all element templates");
 		if (authenticationEnabled) {
-			checkAuthentication(rq, true);
+			checkAuthorization(rq, true);
 		}
 		List<ElementTemplate> templates = templateProvider.getElementTemplates();
 		log.debug("Retrieved {} element templates", templates.size());
@@ -182,7 +182,7 @@ public class ElementTemplateService extends BaseService {
     ) throws NoObjectException {
     	log.info("Retrieving element template with ID: {}", id);
     	if (authenticationEnabled) {
-			checkAuthentication(rq, true);
+			checkAuthorization(rq, true);
 		}
     	
     	ElementTemplate template = ensureIdExists(id);
@@ -227,7 +227,7 @@ public class ElementTemplateService extends BaseService {
     	log.info("Creating new element template: {}", element.getName());
     	CIBUser user = null;
 		if (authenticationEnabled) {
-			user = checkAuthentication(rq, true);
+			user = checkAuthorization(rq, true);
 		}
     	
     	ElementTemplate entity = new ElementTemplate();
@@ -289,7 +289,7 @@ public class ElementTemplateService extends BaseService {
     	log.info("Performing partial update on template with ID: {}", id);
     	CIBUser user = null;
     	if (authenticationEnabled) {
-			user = checkAuthentication(rq, true);
+			user = checkAuthorization(rq, true);
 		}
     	
     	final ElementTemplate template = ensureIdExists(id);
@@ -354,7 +354,7 @@ public class ElementTemplateService extends BaseService {
     	log.info("Performing full update on template with ID: {}", id);
     	CIBUser user = null;
         if (authenticationEnabled) {
-			user = checkAuthentication(rq, true);
+			user = checkAuthorization(rq, true);
 		}
     	
     	ElementTemplate existingTemplate = ensureIdExists(id);
@@ -405,7 +405,7 @@ public class ElementTemplateService extends BaseService {
     ) {
     	log.info("Deleting template with ID: {}", id);
     	if (authenticationEnabled) {
-			checkAuthentication(rq, true);
+			checkAuthorization(rq, true);
 		}
     	templateProvider.deleteTemplateById(id);
     	log.info("Successfully deleted template with ID: {}", id);
@@ -449,7 +449,7 @@ public class ElementTemplateService extends BaseService {
         log.info("Duplicating template with ID: {}", id);
         CIBUser user = null;
         if (authenticationEnabled) {
-            user = checkAuthentication(rq, true);
+            user = checkAuthorization(rq, true);
         }
         
         ElementTemplate originalTemplate = ensureIdExists(id);
@@ -504,7 +504,7 @@ public class ElementTemplateService extends BaseService {
     ) {
         log.info("Performing bulk delete for {} templates", templateIds.size());
         if (authenticationEnabled) {
-            checkAuthentication(rq, true);
+            checkAuthorization(rq, true);
         }
         
         List<String> deletedIds = new ArrayList<>();
@@ -568,7 +568,7 @@ public class ElementTemplateService extends BaseService {
     ) {
         CIBUser user = null;
         if (authenticationEnabled) {
-            user = checkAuthentication(rq, true);
+            user = checkAuthorization(rq, true);
         }
         
         @SuppressWarnings("unchecked")
@@ -659,7 +659,7 @@ public class ElementTemplateService extends BaseService {
         log.info("Searching templates with criteria - name: {}, creator: {}, active: {}, templateId: {}, description: {}", 
                  name, creator, active, templateId, description);
         if (authenticationEnabled) {
-            checkAuthentication(rq, true);
+            checkAuthorization(rq, true);
         }
         
         List<ElementTemplate> allTemplates = templateProvider.getElementTemplates();
@@ -709,7 +709,7 @@ public class ElementTemplateService extends BaseService {
     ) {
         log.info("Filtering templates with activeOnly: {}, createdBy: {}", activeOnly, createdBy);
         if (authenticationEnabled) {
-            checkAuthentication(rq, true);
+            checkAuthorization(rq, true);
         }
         
         List<ElementTemplate> templates = templateProvider.getElementTemplates();
@@ -761,7 +761,7 @@ public class ElementTemplateService extends BaseService {
     ) {
         log.info("Validating template: {}", templateRequest.getName());
         if (authenticationEnabled) {
-            checkAuthentication(rq, true);
+            checkAuthorization(rq, true);
         }
         
         List<String> errors = new ArrayList<>();
@@ -839,7 +839,7 @@ public class ElementTemplateService extends BaseService {
         log.info("Importing {} templates", templateRequests.size());
         CIBUser user = null;
         if (authenticationEnabled) {
-            user = checkAuthentication(rq, true);
+            user = checkAuthorization(rq, true);
         }
         
         List<ElementTemplate> importedTemplates = new ArrayList<>();
@@ -912,7 +912,7 @@ public class ElementTemplateService extends BaseService {
         log.info("Exporting templates with filters - templateIds: {}, activeOnly: {}", 
                  templateIds != null ? templateIds.size() : "all", activeOnly);
         if (authenticationEnabled) {
-            checkAuthentication(rq, true);
+            checkAuthorization(rq, true);
         }
         
         List<ElementTemplate> templates = templateProvider.getElementTemplates();
@@ -965,7 +965,7 @@ public class ElementTemplateService extends BaseService {
     ) {
         log.info("Retrieving template statistics");
         if (authenticationEnabled) {
-            checkAuthentication(rq, true);
+            checkAuthorization(rq, true);
         }
         
         List<ElementTemplate> allTemplates = templateProvider.getElementTemplates();

@@ -56,7 +56,7 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 			description = "<strong>Return: Collection of job definition/s</strong>")
 	@PostMapping("")
 	public Collection<JobDefinition> findJobDefinitions(@RequestBody String params, HttpServletRequest rq) {
-		CIBUser user = checkAuthentication(rq, true);
+		CIBUser user = checkAuthorization(rq, true);
 		return bpmProvider.findJobDefinitions(params, user);
 	}
 	
@@ -66,7 +66,7 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	@ApiResponse(responseCode = "404", description = "Job definition not found")
 	@PutMapping("/{jobDefinitionId}/suspend")
 	public ResponseEntity<Void> suspendJobDefinition(@PathVariable String jobDefinitionId, @RequestBody String params, HttpServletRequest rq) {
-		CIBUser user = checkAuthentication(rq, true);
+		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.UPDATE_ALL);
 		// OR logic:
 		// https://docs.cibseven.org/javadoc/cibseven/2.0/org/cibseven/bpm/engine/management/UpdateJobDefinitionSuspensionStateBuilder.html#suspend()
@@ -86,7 +86,7 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	@ApiResponse(responseCode = "404", description = "Job definition not found")
 	@PutMapping("/{jobDefinitionId}/job-priority")
 	public ResponseEntity<Void> overrideJobDefinitionPriority(@PathVariable String jobDefinitionId, @RequestBody String params, HttpServletRequest rq) {
-		CIBUser user = checkAuthentication(rq, true);
+		CIBUser user = checkAuthorization(rq, true);
 		bpmProvider.overrideJobDefinitionPriority(jobDefinitionId, params, user);
 		// return 204 No Content, no body
 		return ResponseEntity.noContent().build();
@@ -98,7 +98,7 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	@ApiResponse(responseCode = "404", description = "Job definition not found")
 	@GetMapping("/{id}")
 	public JobDefinition findJobDefinition(@PathVariable String id, HttpServletRequest rq) {
-		CIBUser user = checkAuthentication(rq, true);
+		CIBUser user = checkAuthorization(rq, true);
 		return bpmProvider.findJobDefinition(id, user);
 	}
 	
@@ -108,7 +108,7 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	@ApiResponse(responseCode = "404", description = "Job not found")
 	@PutMapping("/{id}/retries")
 	public ResponseEntity<Void> retryJobDefinitionById(@PathVariable String id, @RequestBody Map<String, Object> data, HttpServletRequest rq) {
-		CIBUser user = checkAuthentication(rq, true);
+		CIBUser user = checkAuthorization(rq, true);
 		bpmProvider.retryJobDefinitionById(id, data, user);
 		// return 204 No Content, no body
 		return ResponseEntity.noContent().build();

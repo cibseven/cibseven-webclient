@@ -42,18 +42,7 @@ public class BaseService {
 	@Value("${cibseven.webclient.legacy.authorization.enabled:false}")
 	private boolean authorizationEnabled;
 
-	/**
-	 * @deprecated since 2.2.0, use {@link #checkAuthentication(HttpServletRequest, boolean)} instead
-	 * @param rq
-	 * @param basicAuthAllowed
-	 * @return
-	 */
-	@Deprecated(since = "2.2.0")
 	protected CIBUser checkAuthorization(HttpServletRequest rq, boolean basicAuthAllowed) {
-		return checkAuthentication(rq, basicAuthAllowed);
-	}
-
-	protected CIBUser checkAuthentication(HttpServletRequest rq, boolean basicAuthAllowed) {
 		return baseUserProvider.checkAuthorization(rq, basicAuthAllowed);
 	}
 
