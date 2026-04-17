@@ -16,7 +16,7 @@
  */
 package org.cibseven.modeler.model;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 public interface UnifiedDiagram {
 
@@ -36,9 +36,9 @@ public interface UnifiedDiagram {
 
 	String getDescription();
 
-	Timestamp getCreated();
+	LocalDateTime getCreated();
 
-	Timestamp getUpdated();
+	LocalDateTime getUpdated();
 
 	/** User id of last save, or null. */
 	String getUpdatedBy();

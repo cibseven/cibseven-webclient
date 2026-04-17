@@ -16,7 +16,6 @@
  */
 package org.cibseven.modeler.provider;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -69,8 +68,8 @@ public class DBProcessDiagramProvider implements IProcessDiagramProvider {
 
 	@Override
 	public ProcessDiagramEntity createDiagram(ProcessDiagramEntity entity) throws SystemException {
-		entity.setCreated(Timestamp.valueOf(LocalDateTime.now()));
-		entity.setUpdated(Timestamp.valueOf(LocalDateTime.now()));
+		entity.setCreated(LocalDateTime.now());
+		entity.setUpdated(LocalDateTime.now());
 		return processDiagramDao.save(entity);
 	}
 
@@ -82,7 +81,7 @@ public class DBProcessDiagramProvider implements IProcessDiagramProvider {
 		processDiagramEntity.setDescription(entity.getDescription());
 		processDiagramEntity.setType(entity.getType());
 		processDiagramEntity.setDiagram(entity.getDiagram());
-		processDiagramEntity.setUpdated(Timestamp.valueOf(LocalDateTime.now()));
+		processDiagramEntity.setUpdated(LocalDateTime.now());
 		processDiagramEntity.setUpdatedBy(entity.getUpdatedBy());
 
 		return processDiagramDao.save(processDiagramEntity);

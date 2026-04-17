@@ -16,7 +16,7 @@
  */
 package org.cibseven.modeler.model;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,7 +42,7 @@ import lombok.Setter;
 
 @Setter @Getter @RequiredArgsConstructor
 @Entity
-@Table(name = "processes_diagrams")
+@Table(name = "mod_processes_diagrams")
 @Audited
 public class ProcessDiagramEntity {
 
@@ -63,10 +63,10 @@ public class ProcessDiagramEntity {
 	private String description;
 
 	@Column(name = "created")
-	private Timestamp created;
+	private LocalDateTime created;
 
 	@Column(name = "updated")
-	private Timestamp updated;
+	private LocalDateTime updated;
 
 	@Column(name = "updated_by", length = 100)
 	private String updatedBy;
@@ -83,7 +83,7 @@ public class ProcessDiagramEntity {
 	@Column(name = "version", columnDefinition = "integer default 1")
 	private int version;
 
-	@JdbcTypeCode(SqlTypes.BLOB)
+	@JdbcTypeCode(SqlTypes.LONGVARBINARY)
 	@Column(name = "diagram")
 	@Audited(withModifiedFlag = true)
 	private byte[] diagram;

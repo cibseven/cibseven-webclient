@@ -16,7 +16,7 @@
  */
 package org.cibseven.modeler.model;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UuidGenerator;
@@ -36,7 +36,7 @@ import lombok.Setter;
 @Getter
 @RequiredArgsConstructor
 @Entity
-@Table(name = "forms")
+@Table(name = "mod_forms")
 public class FormEntity {
 
 	@Id
@@ -49,10 +49,10 @@ public class FormEntity {
 	private String description;
 
 	@Column(name = "created")
-	private Timestamp created;
+	private LocalDateTime created;
 
 	@Column(name = "updated")
-	private Timestamp updated;
+	private LocalDateTime updated;
 
 	@Column(name = "updated_by", length = 100)
 	private String updatedBy;
@@ -61,7 +61,7 @@ public class FormEntity {
 	@Column(name = "active", nullable = false, columnDefinition = "boolean default true")
 	private Boolean active = true;
 
-	@JdbcTypeCode(SqlTypes.BLOB)
+	@JdbcTypeCode(SqlTypes.LONGVARBINARY)
 	@Column(name = "form_schema", nullable = false)
 	private byte[] formSchema;
 

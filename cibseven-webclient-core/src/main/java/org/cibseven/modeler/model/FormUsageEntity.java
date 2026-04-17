@@ -16,7 +16,7 @@
  */
 package org.cibseven.modeler.model;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -42,7 +42,7 @@ import lombok.Setter;
 @Getter
 @RequiredArgsConstructor
 @Entity
-@Table(name = "form_usage")
+@Table(name = "mod_form_usage")
 public class FormUsageEntity {
 
 	@Id
@@ -67,10 +67,10 @@ public class FormUsageEntity {
 	private UserSessionEntity userSession;
 
 	@Column(name = "opened_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-	private Timestamp openedAt;
+	private LocalDateTime openedAt;
 
 	@Column(name = "closed_at")
-	private Timestamp closedAt;
+	private LocalDateTime closedAt;
 
 	@JsonProperty("sessionId")
 	public String getSessionId() {

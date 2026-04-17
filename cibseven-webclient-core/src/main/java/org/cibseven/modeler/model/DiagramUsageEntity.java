@@ -16,7 +16,7 @@
  */
 package org.cibseven.modeler.model;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -30,6 +30,7 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.UuidGenerator;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -42,7 +43,7 @@ import lombok.Setter;
 @Getter
 @RequiredArgsConstructor
 @Entity
-@Table(name = "diagram_usage")
+@Table(name = "mod_diagram_usage")
 public class DiagramUsageEntity {
 
 	@Id
@@ -67,10 +68,10 @@ public class DiagramUsageEntity {
 	private UserSessionEntity userSession;
 
 	@Column(name = "opened_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-	private Timestamp openedAt;
+	private LocalDateTime openedAt;
 
 	@Column(name = "closed_at")
-	private Timestamp closedAt;
+	private LocalDateTime closedAt;
 
 	@JsonProperty("sessionId")
 	public String getSessionId() {

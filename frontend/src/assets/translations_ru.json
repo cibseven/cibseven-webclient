@@ -127,7 +127,7 @@
 			"unfinishedInstances": "Запущенных экземпляров",
 			"finishedInstances": "Всего оконченных экземпляров без ошибок",
 			"definitionVersion": "Версия определения",
-			"versionTag": "День версии",
+			"versionTag": "Тэг версии",
 			"definitionId": "ID определения",
 			"definitionKey": "Ключ определения",
 			"definitionName": "Имя определения",
@@ -249,6 +249,7 @@
 			"unknown": "Неизвестно"
 		},
 		"details": {
+			"instancesChain": "Корневой процесс",
 			"startUser": "Начальный пользователь",
 			"start": "Начато",
 			"finish": "Закончено",
@@ -1001,11 +1002,7 @@
 		},
 		"modeler": {
 			"title": "Modeler",
-			"tooltip": "Открыть Modeler для проектирования и редактирования BPMN, DMN и форм",
-			"dbNotConfigured": {
-				"title": "База данных моделировщика не настроена",
-				"description": "Моделировщик включён, но подключение к базе данных не настроено. Пожалуйста, настройте свойство 'spring.datasource.url', чтобы активировать моделировщик."
-			}
+			"tooltip": "Открыть Modeler для проектирования и редактирования BPMN, DMN и форм"
 		},
 		"oldCockpit": {
 			"title": "Старый Cockpit",

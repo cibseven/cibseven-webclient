@@ -16,7 +16,7 @@
  */
 package org.cibseven.modeler.model;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 public interface ProcessDiagramReduce {
 
@@ -24,8 +24,9 @@ public interface ProcessDiagramReduce {
 	String getName();
 	String getProcesskey();
 	String getDescription();
-	Timestamp getCreated();
-	Timestamp getUpdated();
+	LocalDateTime getCreated();
+	LocalDateTime getUpdated();
+
 	Boolean getActive();
 	String getType();
 	Integer getVersion();

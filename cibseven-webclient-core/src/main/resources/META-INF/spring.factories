@@ -1,2 +1,0 @@
-org.springframework.boot.EnvironmentPostProcessor=\
-  org.cibseven.modeler.config.ModelerEnvironmentPostProcessor
