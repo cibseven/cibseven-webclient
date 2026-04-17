@@ -32,11 +32,11 @@ import org.cibseven.webapp.rest.model.Incident;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -58,15 +58,15 @@ public class IncidentService extends BaseService implements InitializingBean {
 	SevenProvider sevenProvider;
 
 	public void afterPropertiesSet() {
-		if (bpmProvider instanceof SevenProvider)
-			sevenProvider = (SevenProvider) bpmProvider;
+		if (bpmProvider instanceof SevenProvider provider)
+			sevenProvider = provider;
 		else
 			throw new SystemException("IncidentService expects a BpmProvider");
 	}
 
 	@Operation(summary = "Get number of incidents", description = "<strong>Return: Number of incidents")
 	@ApiResponse(responseCode = "404", description = "Incident not found")
-	@RequestMapping(value = "/count", method = RequestMethod.GET)
+	@GetMapping("/count")
 	public Long countIncident(@RequestParam Map<String, Object> params, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
@@ -75,7 +75,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 
 	@Operation(summary = "Get number of historic incidents", description = "<strong>Return: Number of incidents")
 	@ApiResponse(responseCode = "404", description = "Incident not found")
-	@RequestMapping(value = "/history/count", method = RequestMethod.GET)
+	@GetMapping("/history/count")
 	public Long countHistoricIncident(@RequestParam Map<String, Object> params, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.READ_ALL);
@@ -84,7 +84,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 
 	@Operation(summary = "Get incident/s", description = "<strong>Return: Collection of incident/s")
 	@ApiResponse(responseCode = "404", description = "Incident not found")
-	@RequestMapping(method = RequestMethod.GET)
+	@GetMapping
 	public Collection<Incident> findIncident(@RequestParam Map<String, Object> params, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
@@ -93,7 +93,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 
 	@Operation(summary = "Get stack trace", description = "<strong>Return: Stacktrace")
 	@ApiResponse(responseCode = "404", description = "Job not found")
-	@RequestMapping(value = "/{jobId}/stacktrace", method = RequestMethod.GET)
+	@GetMapping("/{jobId}/stacktrace")
 	public String findStacktrace(
 			@Parameter(description = "Job Id") @PathVariable String jobId,
 			Locale loc, HttpServletRequest rq) {
@@ -106,7 +106,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 
 	@Operation(summary = "Get external task error details", description = "<strong>Return: Error details")
 	@ApiResponse(responseCode = "404", description = "External task not found")
-	@RequestMapping(value = "/external-task/{externalTaskId}/errorDetails", method = RequestMethod.GET)
+	@GetMapping("/external-task/{externalTaskId}/errorDetails")
 	public String findExternalTaskErrorDetails(
 			@Parameter(description = "External Task Id") @PathVariable String externalTaskId,
 			Locale loc, HttpServletRequest rq) {
@@ -116,7 +116,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 
 	@Operation(summary = "Get historic external task error details", description = "<strong>Return: Historic error details")
 	@ApiResponse(responseCode = "404", description = "Historic external task not found")
-	@RequestMapping(value = "/history/external-task/{externalTaskId}/errorDetails", method = RequestMethod.GET)
+	@GetMapping("/history/external-task/{externalTaskId}/errorDetails")
 	public String findHistoricExternalTaskErrorDetails(
 			@Parameter(description = "External Task Id") @PathVariable String externalTaskId,
 			Locale loc, HttpServletRequest rq) {
@@ -126,7 +126,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 
 	@Operation(summary = "Get historic incidents", description = "<strong>Return: Collection of historic incidents")
 	@ApiResponse(responseCode = "404", description = "Historic incidents not found")
-	@RequestMapping(value = "/history", method = RequestMethod.GET)
+	@GetMapping("/history")
 	public Collection<Incident> findHistoricIncidents(@RequestParam Map<String, Object> params, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
@@ -135,7 +135,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 
 	@Operation(summary = "Get historic stack trace by job id", description = "<strong>Return: Historic stacktrace")
 	@ApiResponse(responseCode = "404", description = "Historic job not found")
-	@RequestMapping(value = "/history/{jobId}/stacktrace", method = RequestMethod.GET)
+	@GetMapping("/history/{jobId}/stacktrace")
 	public String findHistoricStacktraceByJobId(
 			@Parameter(description = "Job Id") @PathVariable String jobId,
 			Locale loc, HttpServletRequest rq) {
@@ -145,7 +145,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 
 	@Operation(summary = "Increment job retries by job id", description = "<strong>Return: void")
 	@ApiResponse(responseCode = "404", description = "Job not found")
-	@RequestMapping(value = "/job/{jobId}/retries", method = RequestMethod.PUT)
+	@PutMapping("/job/{jobId}/retries")
 	public ResponseEntity<Void> retryJobByID(
 			@Parameter(description = "Job Id") @PathVariable String jobId,
 			@RequestBody Map<String, Object> data,
@@ -160,7 +160,7 @@ public class IncidentService extends BaseService implements InitializingBean {
 
 	@Operation(summary = "Retry external task by setting retries", description = "<strong>Return: void")
 	@ApiResponse(responseCode = "404", description = "External task not found")
-	@RequestMapping(value = "/external-task/{externalTaskId}/retries", method = RequestMethod.PUT)
+	@PutMapping("/external-task/{externalTaskId}/retries")
 	public ResponseEntity<Void> retryExternalTask(
 			@Parameter(description = "External Task Id") @PathVariable String externalTaskId,
 			@RequestBody Map<String, Object> data,

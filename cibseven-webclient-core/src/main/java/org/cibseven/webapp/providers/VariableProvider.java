@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.io.IOUtils;
+import tools.jackson.core.JacksonException;
+
 import org.cibseven.webapp.NamedByteArrayDataSource;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.NoObjectFoundException;
@@ -49,8 +51,9 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import jakarta.activation.DataSource;
 import lombok.extern.slf4j.Slf4j;
@@ -76,7 +79,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
 		if (user != null) headers.add("Authorization", user.getAuthToken());
 		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 		try {
@@ -363,7 +366,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 					Class<?> clazz =  Class.forName(objectType);
 
 					if (DataSource.class.isAssignableFrom(clazz)) {
-						final ObjectMapper mapper = new ObjectMapper();
+						final ObjectMapper mapper = new JsonMapper();
 						@SuppressWarnings("unchecked")
 						DataSource ds = mapper.convertValue(variable.getValue(), (Class<? extends DataSource>) clazz);
 
@@ -384,7 +387,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		    return new NamedByteArrayDataSource(filename, mimeType, data);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
-		} catch (IOException e) {
+		} catch (JacksonException | IOException e) {
 			throw new SystemException(e);
 		}
 	}
@@ -406,7 +409,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
 		if (user != null) headers.add("Authorization", user.getAuthToken());
 		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 		try {
@@ -434,7 +437,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 					Class<?> clazz =  Class.forName(objectType);
 
 					if (DataSource.class.isAssignableFrom(clazz)) {
-						final ObjectMapper mapper = new ObjectMapper();
+						final ObjectMapper mapper = new JsonMapper();
 						@SuppressWarnings("unchecked")
 						DataSource ds = mapper.convertValue(variable.getValue(), (Class<? extends DataSource>) clazz);
 
@@ -451,7 +454,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 			return generateFileResponse(data); //ResponseEntity<>(data, HttpStatus.OK);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
-		} catch (IOException e) {
+		} catch (JacksonException | IOException e) {
 			throw new SystemException(e);
 		}
 	}
@@ -473,7 +476,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
 		if (user != null) headers.add("Authorization", user.getAuthToken());
 		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 		try {
@@ -492,7 +495,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	public ProcessStart submitStartFormVariables(String processDefinitionId, List<Variable> formResult, CIBUser user) throws SystemException {
 		//String url = camundaUrl + "/engine-rest/process-definition/key/" + processDefinitionKey + "/submit-form";
 		String url = getEngineRestUrl(user) + "/process-definition/" + processDefinitionId + "/submit-form";
-		ObjectMapper mapper = new ObjectMapper();
+		ObjectMapper mapper = new JsonMapper();
 		ObjectNode variables = mapper.getNodeFactory().objectNode();
 		ObjectNode modifications = mapper.getNodeFactory().objectNode();
 		try {		
@@ -526,7 +529,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 					variablePost.put("type", "Object");
 					try {
 						variablePost.put("value", mapper.writeValueAsString(variable.getValue()));
-					} catch (IOException e) {
+					} catch (JacksonException e) {
 						SystemException se = new SystemException(e);
 						log.info("Exception in submitVariables(...):", se);
 						throw se;
@@ -570,7 +573,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	public void saveVariableInProcessInstanceId(String processInstanceId, List<Variable> variables, CIBUser user) throws SystemException {
 		String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId + "/variables";
 
-		ObjectMapper mapper = new ObjectMapper();
+		ObjectMapper mapper = new JsonMapper();
 		ObjectNode variablesF = mapper.getNodeFactory().objectNode();
 		ObjectNode modifications = mapper.getNodeFactory().objectNode();
 
@@ -595,7 +598,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	public void submitVariables(String processInstanceId, List<Variable> formResult, CIBUser user, String processDefinitionId) throws SystemException {
 		String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId + "/variables";
 
-		ObjectMapper mapper = new ObjectMapper();
+		ObjectMapper mapper = new JsonMapper();
 		ObjectNode variables = mapper.getNodeFactory().objectNode();
 		ObjectNode modifications = mapper.getNodeFactory().objectNode();
 
@@ -629,7 +632,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 				variablePost.put("type", "json");
 				try {
 					variablePost.put("value", mapper.writeValueAsString(variable.getValue()));
-				} catch (IOException e) {
+				} catch (JacksonException e) {
 					SystemException se = new SystemException(e);
 					log.info("Exception in submitVariables(...):", se);
 					throw se;
@@ -641,7 +644,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 				variablePost.put("type", "Object");
 				try {
 					variablePost.put("value", mapper.writeValueAsString(variable.getValue()));
-				} catch (IOException e) {
+				} catch (JacksonException e) {
 					SystemException se = new SystemException(e);
 					log.info("Exception in submitVariables(...):", se);
 					throw se;

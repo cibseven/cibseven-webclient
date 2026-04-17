@@ -16,9 +16,11 @@
  */
 package org.cibseven.webapp.exception;
 
+import java.io.Serial;
+
 public class PasswordPolicyException extends RuntimeException {
 
-	private static final long serialVersionUID = -291916120097487810L;
+	@Serial private static final long serialVersionUID = -291916120097487810L;
 
 	public PasswordPolicyException(Throwable cause) {
 		super("Password does not match policy", cause);

@@ -22,7 +22,7 @@ import java.util.Map;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.Metric;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 public interface ISystemProvider {
 	

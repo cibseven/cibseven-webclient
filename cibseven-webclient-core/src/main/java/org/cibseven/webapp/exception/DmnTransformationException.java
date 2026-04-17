@@ -16,9 +16,11 @@
  */
 package org.cibseven.webapp.exception;
 
+import java.io.Serial;
+
 public class DmnTransformationException extends RuntimeException {
 
-	private static final long serialVersionUID = -8754321098765432109L;
+	@Serial private static final long serialVersionUID = -8754321098765432109L;
 
 	public DmnTransformationException(Throwable cause) {
 		super("Unable to transform DMN resource! The DMN file contains invalid content or structure.", cause);

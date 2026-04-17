@@ -12,12 +12,10 @@
       <subsystem name="logging"/>
     </exclude-subsystems>
     <exclusions>
-      <module name="com.fasterxml.jackson.core.jackson-core"/>
-      <module name="com.fasterxml.jackson.core.jackson-annotations"/>
-      <module name="com.fasterxml.jackson.core.jackson-databind"/>
-      <module name="com.fasterxml.jackson.datatype.jackson-datatype-jsr310"/>
-      <module name="com.fasterxml.jackson.datatype.jackson-datatype-jdk8"/>
-      <module name="org.jboss.resteasy.resteasy-jackson2-provider"/>
+      <module name="tools.jackson.core.jackson-core"/>
+      <module name="tools.jackson.core.jackson-annotations"/>
+      <module name="tools.jackson.core.jackson-databind"/>
+      <module name="org.jboss.resteasy.resteasy-jackson3-provider"/>
     </exclusions>
   </deployment>
 </jboss-deployment-structure>

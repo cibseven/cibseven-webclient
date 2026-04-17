@@ -26,16 +26,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.annotation.PostConstruct;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
+import tools.jackson.core.JacksonException;
 
 @ApiResponses({ @ApiResponse(responseCode= "500", description = "An unexpected system error occured") })
 @RestController @RequestMapping("/info") @Slf4j
@@ -114,10 +115,10 @@ public class InfoService extends BaseService {
 		configJson.put("modelerEnabled", modelerEnabled);
 		
         try {
-            ObjectMapper mapper = new ObjectMapper();
+            ObjectMapper mapper = new JsonMapper();
         	JsonNode supportDialogJson = mapper.readTree(supportDialog);
 			configJson.set("supportDialog", supportDialogJson);
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			log.warn("Property support dialog is not set or incorrect");
 		}
        
