@@ -39,7 +39,7 @@ import org.springframework.core.env.MapPropertySource;
  * <p>If {@code spring.datasource.url} is present, nothing is excluded - the client
  * application owns the datasource and must not be interfered with.</p>
  *
- * <p>Registered via {@code META-INF/spring.factories}. Runs at
+ * <p>Registered via {@code META-INF/spring/org.springframework.boot.EnvironmentPostProcessor}. Runs at
  * {@link Ordered#LOWEST_PRECEDENCE} so that all application config files
  * ({@code application.yaml}, {@code cibseven-webclient.yaml}) are already loaded
  * before this processor reads their values.</p>

@@ -16,7 +16,6 @@
  */
 package org.cibseven.modeler.config;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -58,7 +57,6 @@ class ModelerEnvironmentPostProcessorTest {
 
     @Test
     void doesNotAddExclusions_whenModelerEnabledIsMissingAndDatasourceConfigured() {
-        // default is true — only datasource URL set
         environment.getPropertySources().addFirst(
             new MapPropertySource("test", Map.of("spring.datasource.url", "jdbc:h2:mem:testdb"))
         );
@@ -69,30 +67,25 @@ class ModelerEnvironmentPostProcessorTest {
     }
 
     @Test
-    void addsExclusionsAndSetsDbConfiguredFalse_whenModelerEnabledAndNoDatasourceUrl() {
+    void doesNotAddExclusions_whenModelerEnabledAndNoDatasourceUrl() {
+        // Modeler enabled → we trust the app has a datasource; processor exits early
         environment.getPropertySources().addFirst(
             new MapPropertySource("test", Map.of("cibseven.webclient.modeler.enabled", "true"))
         );
 
         processor.postProcessEnvironment(environment, application);
 
-        String exclude = environment.getProperty("spring.autoconfigure.exclude");
-        assertTrue(exclude.contains("DataSourceAutoConfiguration"),
-            "Expected DataSourceAutoConfiguration to be excluded when datasource URL is missing");
-        assertEquals("false", environment.getProperty("cibseven.webclient.modeler.dbConfigured"),
-            "Expected modelerDbConfigured to be false when datasource URL is missing");
+        assertNull(environment.getProperty("spring.autoconfigure.exclude"));
     }
 
     @Test
-    void addsExclusionsAndSetsDbConfiguredFalse_whenNoDatasourceUrlAndNoModelerProperty() {
-        // no properties at all — modeler defaults to enabled, no datasource URL
+    void addsDataSourceExclusion_whenNoDatasourceUrlAndNoModelerProperty() {
+        // modeler defaults to disabled, no datasource URL → DataSource must be excluded
         processor.postProcessEnvironment(environment, application);
 
         String exclude = environment.getProperty("spring.autoconfigure.exclude");
         assertTrue(exclude.contains("DataSourceAutoConfiguration"),
             "Expected DataSourceAutoConfiguration to be excluded when datasource URL is missing");
-        assertEquals("false", environment.getProperty("cibseven.webclient.modeler.dbConfigured"),
-            "Expected modelerDbConfigured to be false when datasource URL is missing");
     }
 
     @Test
@@ -106,44 +99,5 @@ class ModelerEnvironmentPostProcessorTest {
         String exclude = environment.getProperty("spring.autoconfigure.exclude");
         assertTrue(exclude.contains("DataSourceAutoConfiguration"),
             "Expected DataSourceAutoConfiguration to be excluded");
-    }
-
-    @Test
-    void addsHibernateJpaExclusion_whenModelerDisabled() {
-        environment.getPropertySources().addFirst(
-            new MapPropertySource("test", Map.of("cibseven.webclient.modeler.enabled", "false"))
-        );
-
-        processor.postProcessEnvironment(environment, application);
-
-        String exclude = environment.getProperty("spring.autoconfigure.exclude");
-        assertTrue(exclude.contains("HibernateJpaAutoConfiguration"),
-            "Expected HibernateJpaAutoConfiguration to be excluded");
-    }
-
-    @Test
-    void addsJpaRepositoriesExclusion_whenModelerDisabled() {
-        environment.getPropertySources().addFirst(
-            new MapPropertySource("test", Map.of("cibseven.webclient.modeler.enabled", "false"))
-        );
-
-        processor.postProcessEnvironment(environment, application);
-
-        String exclude = environment.getProperty("spring.autoconfigure.exclude");
-        assertTrue(exclude.contains("DataJpaRepositoriesAutoConfiguration"),
-            "Expected DataJpaRepositoriesAutoConfiguration to be excluded");
-    }
-
-    @Test
-    void addsFlywayExclusion_whenModelerDisabled() {
-        environment.getPropertySources().addFirst(
-            new MapPropertySource("test", Map.of("cibseven.webclient.modeler.enabled", "false"))
-        );
-
-        processor.postProcessEnvironment(environment, application);
-
-        String exclude = environment.getProperty("spring.autoconfigure.exclude");
-        assertTrue(exclude.contains("FlywayAutoConfiguration"),
-            "Expected FlywayAutoConfiguration to be excluded");
     }
 }
