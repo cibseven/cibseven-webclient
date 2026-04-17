@@ -18,8 +18,8 @@ package org.cibseven.modeler.config;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.springframework.boot.EnvironmentPostProcessor;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
@@ -63,7 +63,7 @@ public class ModelerEnvironmentPostProcessor implements EnvironmentPostProcessor
 
         Map<String, Object> properties = new HashMap<>();
         properties.put(EXCLUDE_PROPERTY,
-            "org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration");
+            "org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration");
         environment.getPropertySources().addLast(
             new MapPropertySource("modelerDisabledExclusions", properties)
         );

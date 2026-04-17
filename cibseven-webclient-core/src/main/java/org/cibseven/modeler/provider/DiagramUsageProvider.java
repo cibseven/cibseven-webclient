@@ -16,7 +16,6 @@
  */
 package org.cibseven.modeler.provider;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -61,13 +60,13 @@ public class DiagramUsageProvider implements IDiagramUsageProvider {
 
 	@Override
 	public DiagramUsageEntity createDiagramUsage(DiagramUsageEntity entity) throws SystemException {
-		entity.setOpenedAt(Timestamp.valueOf(LocalDateTime.now()));
+		entity.setOpenedAt(LocalDateTime.now());
 		return processDiagramDao.save(entity);
 	}
 
 	@Override
 	public DiagramUsageEntity closeSession(DiagramUsageEntity entity) throws SystemException {
-		entity.setClosedAt(Timestamp.valueOf(LocalDateTime.now()));
+		entity.setClosedAt(LocalDateTime.now());
 		return processDiagramDao.save(entity);
 	}
 	
@@ -85,13 +84,10 @@ public class DiagramUsageProvider implements IDiagramUsageProvider {
 	    }
 
 	    for (DiagramUsageEntity diagramUsage : diagramUsages) {
-	        long openedAt = diagramUsage.getOpenedAt().getTime();
-	        long expirationTime = sessionExpiresAfter * 60 * 1000;
-	        long now = System.currentTimeMillis();
-	        long result = now - openedAt;
+	        LocalDateTime expirationTime = diagramUsage.getOpenedAt().plusMinutes(sessionExpiresAfter);
 
-	        if (result > expirationTime) {
-	            diagramUsage.setClosedAt(Timestamp.valueOf(LocalDateTime.now()));
+	        if (LocalDateTime.now().isAfter(expirationTime)) {
+	            diagramUsage.setClosedAt(LocalDateTime.now());
 	            processDiagramDao.save(diagramUsage);
 	        }
 	    }

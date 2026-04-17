@@ -19,7 +19,6 @@ package org.cibseven.webapp.rest.model;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
 import lombok.AllArgsConstructor;

@@ -16,7 +16,6 @@
  */
 package org.cibseven.modeler.provider;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +33,7 @@ public class UserSessionProvider implements IUserSessionProvider {
 	
 	@Override
 	public UserSessionEntity createSession(UserSessionEntity entity) throws SystemException {
-		entity.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
+		entity.setCreatedAt(LocalDateTime.now());
 		return userSessionRepository.save(entity);
 	}
 	

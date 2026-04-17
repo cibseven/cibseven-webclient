@@ -35,7 +35,7 @@ import org.springframework.core.MethodParameter;
 import org.springframework.http.CacheControl;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.FormHttpMessageConverter;
-import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverters;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
@@ -44,15 +44,14 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
-import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.mvc.WebContentInterceptor;
 
 import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.json.JsonFactory;
+import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
 @Configuration
@@ -86,32 +85,24 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
                 .streamReadConstraints(streamReadConstraints)
                 .build();
         return JsonMapper.builder(jsonFactory)
+                .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
                 .build();
     }
 
 	@Override
-	public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-		converters.add(new ResourceHttpMessageConverter()); // needed for DocumentService.download
-		converters.add(new StringHttpMessageConverter(StandardCharsets.UTF_8)); // needed for UiService
-		converters.add(new ByteArrayHttpMessageConverter()); // needed for fetching data variables
-		converters.add(new FormHttpMessageConverter());
-		converters.add(new JacksonJsonHttpMessageConverter(objectMapper()));
+	public void configureMessageConverters(HttpMessageConverters.ServerBuilder builder) {
+		builder.registerDefaults()
+			.withStringConverter(new StringHttpMessageConverter(StandardCharsets.UTF_8))
+			.withJsonConverter(new JacksonJsonHttpMessageConverter(objectMapper()))
+			.addCustomConverter(new FormHttpMessageConverter())
+			.addCustomConverter(new ResourceHttpMessageConverter())
+			.addCustomConverter(new ByteArrayHttpMessageConverter());
 	}
 
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
 		registry.addMapping("/**").allowedMethods("GET", "POST", "DELETE", "PUT");
 	}
-
-	@Override // https://stackoverflow.com/questions/16332092/spring-mvc-pathvariable-with-dot-is-getting-truncated
-	public void configurePathMatch(PathMatchConfigurer configurer) {
-		configurer.setUseSuffixPatternMatch(false);
-	}
-
-	@Override
-    public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
-        configurer.favorPathExtension(false);
-    }
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {

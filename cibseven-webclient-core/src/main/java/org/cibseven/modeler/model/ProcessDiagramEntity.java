@@ -16,7 +16,7 @@
  */
 package org.cibseven.modeler.model;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,10 +63,10 @@ public class ProcessDiagramEntity {
 	private String description;
 
 	@Column(name = "created")
-	private Timestamp created;
+	private LocalDateTime created;
 
 	@Column(name = "updated")
-	private Timestamp updated;
+	private LocalDateTime updated;
 
 	@Column(name = "updated_by", length = 100)
 	private String updatedBy;
