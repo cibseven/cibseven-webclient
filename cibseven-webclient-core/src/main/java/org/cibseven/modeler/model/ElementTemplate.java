@@ -39,7 +39,7 @@ import java.time.LocalDateTime;
  * </p>
  */
 @Entity
-@Table(name = "element_templates")
+@Table(name = "mod_element_templates")
 @Data
 @NoArgsConstructor
 public class ElementTemplate {
@@ -67,7 +67,7 @@ public class ElementTemplate {
 	@Column(name = "name", nullable = false, length = 200)
 	private String name;
 
-	@JdbcTypeCode(SqlTypes.CLOB)
+	@JdbcTypeCode(SqlTypes.LONGVARCHAR)
 	@Column(name = "description")
 	private String description;
 
@@ -76,7 +76,7 @@ public class ElementTemplate {
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	private ElementTemplateOrigin origin;
 
-	@JdbcTypeCode(SqlTypes.CLOB)
+	@JdbcTypeCode(SqlTypes.LONGVARCHAR)
 	@Column(name = "content")
 	private String content;
 

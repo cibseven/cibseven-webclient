@@ -42,7 +42,7 @@ import lombok.Setter;
 
 @Setter @Getter @RequiredArgsConstructor
 @Entity
-@Table(name = "processes_diagrams")
+@Table(name = "mod_processes_diagrams")
 @Audited
 public class ProcessDiagramEntity {
 
@@ -83,7 +83,7 @@ public class ProcessDiagramEntity {
 	@Column(name = "version", columnDefinition = "integer default 1")
 	private int version;
 
-	@JdbcTypeCode(SqlTypes.BLOB)
+	@JdbcTypeCode(SqlTypes.LONGVARBINARY)
 	@Column(name = "diagram")
 	@Audited(withModifiedFlag = true)
 	private byte[] diagram;

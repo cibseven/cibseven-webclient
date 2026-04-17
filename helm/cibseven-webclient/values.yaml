@@ -38,10 +38,27 @@ application:
     servlet:
       context-path: /seven
 
+  spring:
+    datasource:
+      url: ""
+      username: ""
+      password: ""
+    jpa:
+      hibernate:
+        ddl-auto: validate
+      properties:
+        hibernate:
+          integration:
+            envers:
+              enabled: false
+        org:
+          hibernate:
+            envers:
+              revision_table_name: mod_revinfo
   cibseven:
     webclient:
       modeler:
-        enabled: true
+        enabled: false
       # LDAP
       ldap:
         url: ""
