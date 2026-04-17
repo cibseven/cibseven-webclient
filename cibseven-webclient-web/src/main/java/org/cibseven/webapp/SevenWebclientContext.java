@@ -33,8 +33,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.CacheControl;
+import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverters;
+import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -49,6 +51,7 @@ import org.springframework.web.servlet.mvc.WebContentInterceptor;
 
 import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.json.JsonFactory;
+import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
 @Configuration
@@ -83,15 +86,18 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
                 .streamReadConstraints(streamReadConstraints)
                 .build();
         return JsonMapper.builder(jsonFactory)
+                .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
                 .build();
     }
 
 	@Override
 	public void configureMessageConverters(HttpMessageConverters.ServerBuilder builder) {
 		builder.registerDefaults()
-				.withStringConverter(new StringHttpMessageConverter(StandardCharsets.UTF_8)) // needed for UiService
+				.withStringConverter(new StringHttpMessageConverter(StandardCharsets.UTF_8))
 				.withJsonConverter(new JacksonJsonHttpMessageConverter(objectMapper()))
-				.addCustomConverter(new FormHttpMessageConverter());
+				.addCustomConverter(new FormHttpMessageConverter())
+				.addCustomConverter(new ResourceHttpMessageConverter())
+				.addCustomConverter(new ByteArrayHttpMessageConverter());
 	}
 
 	@Override

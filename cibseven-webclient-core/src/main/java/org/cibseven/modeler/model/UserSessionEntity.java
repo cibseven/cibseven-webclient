@@ -16,7 +16,7 @@
  */
 package org.cibseven.modeler.model;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.hibernate.annotations.UuidGenerator;
@@ -49,10 +49,10 @@ public class UserSessionEntity {
 	private String userId;
 
 	@Column(name = "created_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-	private Timestamp createdAt;
+	private LocalDateTime createdAt;
 
 	@Column(name = "expires_at")
-	private Timestamp expiresAt;
+	private LocalDateTime expiresAt;
 
 	@OneToMany(mappedBy = "userSession", fetch = FetchType.LAZY)
 	private List<FormUsageEntity> formUsages;

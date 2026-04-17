@@ -16,7 +16,6 @@
  */
 package org.cibseven.modeler.provider;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -58,8 +57,8 @@ public class FormProvider implements IFormProvider {
 	
 	@Override
 	public FormEntity createForm(FormEntity entity) throws SystemException {
-		entity.setCreated(Timestamp.valueOf(LocalDateTime.now()));
-		entity.setUpdated(Timestamp.valueOf(LocalDateTime.now()));
+		entity.setCreated(LocalDateTime.now());
+		entity.setUpdated(LocalDateTime.now());
 		return formRepositoryDao.save(entity);
 	}
 
@@ -68,7 +67,7 @@ public class FormProvider implements IFormProvider {
 		FormEntity existing = formRepositoryDao.findById(entity.getId())
 			.orElseThrow(() -> new EntityNotFoundException("FormEntity not found"));
 		existing.setFormSchema(entity.getFormSchema());
-		existing.setUpdated(Timestamp.valueOf(LocalDateTime.now()));
+		existing.setUpdated(LocalDateTime.now());
 		existing.setUpdatedBy(entity.getUpdatedBy());
 		return formRepositoryDao.save(existing);
 	}

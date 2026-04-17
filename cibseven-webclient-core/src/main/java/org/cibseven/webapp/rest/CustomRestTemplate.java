@@ -44,7 +44,10 @@ import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
+
+import tools.jackson.databind.json.JsonMapper;
 
 
 /**
@@ -64,6 +67,9 @@ public class CustomRestTemplate extends RestTemplate {
 
     @Autowired(required = false)
     private RestTemplateConfiguration config;
+
+    @Autowired(required = false)
+    private JsonMapper objectMapper;
 
     private Object meterRegistry;
 
@@ -189,6 +195,14 @@ public class CustomRestTemplate extends RestTemplate {
         // Apply custom converters if any
         if (!customConverters.isEmpty()) {
             customConverters.forEach(this::addCustomConverter);
+        }
+
+        // Replace the default Jackson converter with one using the application's ObjectMapper
+        if (objectMapper != null) {
+            List<HttpMessageConverter<?>> converters = getMessageConverters();
+            converters.removeIf(c -> c instanceof JacksonJsonHttpMessageConverter);
+            converters.add(0, new JacksonJsonHttpMessageConverter(objectMapper));
+            setMessageConverters(converters);
         }
 
         // Register with Micrometer if enabled and available
