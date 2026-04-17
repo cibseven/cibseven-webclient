@@ -30,7 +30,7 @@ import lombok.Getter;
 /**
  * @deprecated since 2.2.0, permission checks in webclient backend will be completely removed
  */
-@Deprecated(since = "2.2.0", forRemoval = true)
+@Deprecated(since = "2.2.0")
 public class SevenAuthorizationUtils{ 
 
 	@Getter @AllArgsConstructor
