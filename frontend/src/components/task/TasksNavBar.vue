@@ -141,6 +141,23 @@
                   </div>
                 </div>
               </div>
+              <div v-if="visibleFilterVariables(task).length > 0" class="mt-2">
+                <div class="row g-0" :class="expandedTasks[task.id] ? '' : 'task-variables-collapsed'">
+                  <div v-for="filterVar in visibleFilterVariables(task)" :key="filterVar.name" class="col-6 h6 fw-normal m-0">
+                    <div class="text-truncate fw-semibold">{{ filterVar.label }}:</div>
+                    <div v-if="task.variables && task.variables[filterVar.name] !== undefined && task.variables[filterVar.name] !== null" class="text-truncate">
+                      {{ task.variables[filterVar.name] }}
+                    </div>
+                    <div v-else class="text-muted fst-italic">&lt;undefined&gt;</div>
+                  </div>
+                </div>
+                <div class="d-flex justify-content-center w-100" role="button" tabindex="0"
+                  @click.stop="toggleTaskVariables(task.id)"
+                  @keydown.enter.stop.prevent="toggleTaskVariables(task.id)"
+                  @keydown.space.stop.prevent="toggleTaskVariables(task.id)">
+                  <span class="mdi mdi-18px text-secondary" :class="expandedTasks[task.id] ? 'mdi-chevron-up' : 'mdi-chevron-down'"></span>
+                </div>
+              </div>
             </b-list-group-item>
           </b-list-group>
 
@@ -220,6 +237,7 @@ export default {
       pauseRefreshButton: false,
       advancedFilter: [],
       advancedFilterAux: null,
+      expandedTasks: {},
 	    justSelectedFromList: false,
       pendingScrollToTaskId: null
     }
@@ -273,6 +291,12 @@ export default {
     },
     filteredFields() {
       return this.$root.config.taskSorting.fields.filter(item => this.showFields(item))
+    },
+    filterVariables: function() {
+      return this.$store.state.filter.selected.properties?.variables || []
+    },
+    showUndefinedVariable: function() {
+      return this.$store.state.filter.selected.properties?.showUndefinedVariable || false
     }
   },
   created: function () {
@@ -285,6 +309,15 @@ export default {
   methods: {
     ...mapActions('task', ['setSelectedAssignee']),
     formatDateForTooltips,
+    toggleTaskVariables: function(taskId) {
+      this.expandedTasks[taskId] = !this.expandedTasks[taskId]
+    },
+    visibleFilterVariables: function(task) {
+      return this.filterVariables.filter(filterVar =>
+        (task.variables && task.variables[filterVar.name] !== undefined && task.variables[filterVar.name] !== null) ||
+        this.showUndefinedVariable
+      )
+    },
     loadAdvancedFilters: function() {
       this.advancedFilter = []
       this.$root.config.taskFilter.advancedSearch.processVariables.forEach(pv => {
@@ -536,6 +569,13 @@ export default {
 </script>
 
 <style scoped>
+.task-variables-collapsed {
+  max-height: 2rem;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+}
+
 .action-button-hidden {
   opacity: 0;
   transition: opacity 0.2s;

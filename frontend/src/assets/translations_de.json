@@ -924,6 +924,16 @@
 			"legendExpression": "Mit \"*\" endende Schlüssel akzeptieren Ausdrücke als Wert. Z.B.: '&#36;&#123; currentUser&#40;&#41; &#125;' oder '&#36;&#123; currentUserGroups&#40;&#41; &#125;'",
 			"legendMultiple": "Mit \"in\" endende Schlüssel akzeptieren mehrere durch Komma getrennte Werte. Z.B.: `SchlüsselC, SchlüsselA, SchlüsselB`",
 			"create": "Filter erstellen",
+			"variablesTitle": "Variablen",
+			"variablesLegend": "Sie können Variablen definieren, die in der Aufgabenliste angezeigt werden.",
+			"showUndefinedVariable": "Undefinierte Variablen anzeigen",
+			"addVariable": "Variable hinzufügen",
+			"variable": {
+				"name": "Name",
+				"label": "Bezeichnung",
+				"namePlaceholder": "Variablenname",
+				"labelPlaceholder": "Lesbarer Name"
+			},
 			"operators": {
 				"eq": "=",
 				"neq": "≠",

@@ -924,6 +924,16 @@
 			"legendExpression": "Властивості з закінченням \"*\" як значення можуть мати вирази, наприклад '${ currentUser() }' або '${ currentUserGroups() }'",
 			"legendMultiple": "Властивості з закінченням \"in\" можуть мати кілька значень, наприклад список значень, розділений комами: `keyC, keyA, keyB`",
 			"create": "Створити фільтр",
+			"variablesTitle": "Змінні",
+			"variablesLegend": "Ви можете задати змінні, які відображаються у списку завдань.",
+			"showUndefinedVariable": "Показувати невизначені змінні",
+			"addVariable": "Додати змінну",
+			"variable": {
+				"name": "Ім'я",
+				"label": "Мітка",
+				"namePlaceholder": "Ім'я змінної",
+				"labelPlaceholder": "Читабельна назва"
+			},
 			"operators": {
 				"eq": "=",
 				"neq": "≠",

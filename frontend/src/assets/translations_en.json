@@ -924,6 +924,16 @@
 			"legendExpression": "Keys ending with \"*\" accept expressions as value. E.g.: '&#36;&#123; currentUser&#40;&#41; &#125;' or '&#36;&#123; currentUserGroups&#40;&#41; &#125;'",
 			"legendMultiple": "Keys ending with \"in\" accept multiple values separated by comma. E.g.: `keyC, keyA, keyB`",
 			"create": "Create filter",
+			"variablesTitle": "Variables",
+			"variablesLegend": "You can define variables shown in the tasks list.",
+			"showUndefinedVariable": "Show undefined variables",
+			"addVariable": "Add variable",
+			"variable": {
+				"name": "Name",
+				"label": "Label",
+				"namePlaceholder": "Variable name",
+				"labelPlaceholder": "Readable label"
+			},
 			"operators": {
 				"eq": "=",
 				"neq": "≠",
