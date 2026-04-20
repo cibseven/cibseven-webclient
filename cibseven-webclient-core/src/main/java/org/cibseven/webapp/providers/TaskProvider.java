@@ -218,17 +218,27 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 			if (instances == null) return;
 
 			Map<String, Map<String, Object>> varsByInstance = new HashMap<>();
+			Map<String, Map<String, String>> typesByInstance = new HashMap<>();
 			for (VariableInstance vi : instances) {
 				if (variableNames.contains(vi.getName()) && vi.getProcessInstanceId() != null) {
+					Object displayValue = vi.getValue();
+					if ("Object".equals(vi.getType()) && vi.getValueInfo() != null) {
+						Object typeName = vi.getValueInfo().get("objectTypeName");
+						if (typeName != null) displayValue = typeName;
+					}
 					varsByInstance
 						.computeIfAbsent(vi.getProcessInstanceId(), k -> new HashMap<>())
-						.put(vi.getName(), vi.getValue());
+						.put(vi.getName(), displayValue);
+					typesByInstance
+						.computeIfAbsent(vi.getProcessInstanceId(), k -> new HashMap<>())
+						.put(vi.getName(), vi.getType());
 				}
 			}
 
 			for (Task task : tasks) {
 				if (task.getProcessInstanceId() != null) {
 					task.setVariables(varsByInstance.getOrDefault(task.getProcessInstanceId(), new HashMap<>()));
+					task.setVariableTypes(typesByInstance.getOrDefault(task.getProcessInstanceId(), new HashMap<>()));
 				}
 			}
 		} catch (Exception e) {

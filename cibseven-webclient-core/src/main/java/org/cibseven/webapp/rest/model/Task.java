@@ -57,6 +57,7 @@ public class Task {
 	@JsonProperty("processDefinitionId") @JsonAlias({"processDefinitionKey"}) String processDefinitionId;
 	@JsonProperty("processInstanceId") @JsonAlias({"processInstanceKey"}) String processInstanceId;
 	Map<String, Object> variables;
+	Map<String, String> variableTypes;
 
 	public String json() throws JsonProcessingException {
 		return new ObjectMapper().writeValueAsString(this);

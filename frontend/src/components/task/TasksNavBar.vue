@@ -141,12 +141,12 @@
                   </div>
                 </div>
               </div>
-              <div v-if="visibleFilterVariables(task).length > 0" class="mt-2">
+              <div v-if="visibleFilterVariables(task).length > 0">
                 <div class="row g-0" :class="expandedTasks[task.id] ? '' : 'task-variables-collapsed'">
-                  <div v-for="filterVar in visibleFilterVariables(task)" :key="filterVar.name" class="col-6 h6 fw-normal m-0">
+                  <div v-for="filterVar in visibleFilterVariables(task)" :key="filterVar.name" class="col-6 h6 fw-normal m-0 mt-2">
                     <div class="text-truncate fw-semibold">{{ filterVar.label }}:</div>
-                    <div v-if="task.variables && task.variables[filterVar.name] !== undefined && task.variables[filterVar.name] !== null" class="text-truncate">
-                      {{ task.variables[filterVar.name] }}
+                    <div v-if="task.variables && task.variables[filterVar.name] !== undefined && task.variables[filterVar.name] !== null" class="text-truncate" :title="displayTooltip(task, filterVar)">
+                      {{ displayValue(task, filterVar) }}
                     </div>
                     <div v-else class="text-muted fst-italic">&lt;undefined&gt;</div>
                   </div>
@@ -211,7 +211,7 @@
 import { moment } from '@/globals.js'
 import { TaskService, AdminService } from '@/services.js'
 import { debounce } from '@/utils/debounce.js'
-import { formatDateForTooltips } from '@/utils/dates.js'
+import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import StartProcess from '@/components/start-process/StartProcess.vue'
 import AdvancedSearchModal from '@/components/task/AdvancedSearchModal.vue'
 import SmartSearch from '@/components/task/SmartSearch.vue'
@@ -309,6 +309,25 @@ export default {
   methods: {
     ...mapActions('task', ['setSelectedAssignee']),
     formatDateForTooltips,
+    shortValue: function(value) {
+      const str = String(value)
+      const dot = str.lastIndexOf('.')
+      return dot >= 0 && dot < str.length - 1 && /^[a-z]/.test(str) ? str.substring(dot + 1) : str
+    },
+    displayValue: function(task, filterVar) {
+      const value = task.variables[filterVar.name]
+      if (task.variableTypes && task.variableTypes[filterVar.name] === 'Date') {
+        return formatDate(value)
+      }
+      return this.shortValue(value)
+    },
+    displayTooltip: function(task, filterVar) {
+      const value = task.variables[filterVar.name]
+      if (task.variableTypes && task.variableTypes[filterVar.name] === 'Date') {
+        return formatDateForTooltips(value)
+      }
+      return String(value)
+    },
     toggleTaskVariables: function(taskId) {
       this.expandedTasks[taskId] = !this.expandedTasks[taskId]
     },
