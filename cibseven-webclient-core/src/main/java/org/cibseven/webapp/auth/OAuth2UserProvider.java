@@ -61,7 +61,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class KeycloakUserProvider extends BaseUserProvider<SSOLogin> {
+public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> {
 	
 	@Value("${cibseven.webclient.sso.endpoints.token}") String tokenEndpoint;
 	@Value("${cibseven.webclient.sso.endpoints.jwks}") String certEndpoint;
