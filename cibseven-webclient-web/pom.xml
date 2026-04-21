@@ -19,6 +19,24 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.cibseven.templates</groupId>
+			<artifactId>cibseven-ui-locator-api</artifactId>
+			<version>0.0.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.cibseven.templates</groupId>
+			<artifactId>cibseven-ui-locator-core</artifactId>
+			<version>0.0.1</version>
+			<exclusions>
+				<exclusion>
+					<groupId>javax.xml.bind</groupId>
+					<artifactId>jaxb-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>${version.openapi-starter-webmvc-ui}</version>
