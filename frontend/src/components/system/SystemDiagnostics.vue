@@ -51,17 +51,18 @@ export default {
   mixins: [copyToClipboardMixin],
   data() {
     return {
-      diagnostics: ''
+      diagnostics: null,
+      diagnosticsFormatted: ''
     }
   },
-  computed: {
-    diagnosticsFormatted() {
-      if (this.diagnostics) return JSON.stringify(this.diagnostics, null, 2)
-      return ''
-    }
-  },
-  async mounted() {
-    this.diagnostics = await SystemService.getTelemetryData()
+  mounted() {
+    SystemService.getTelemetryData().then(diagnostics => {
+      this.diagnostics = diagnostics
+      if (this.diagnostics?.product?.internals?.database) {
+        this.diagnostics.product.internals.database.historyLevel = this.$root.config.camundaHistoryLevel
+      }
+      this.diagnosticsFormatted = JSON.stringify(this.diagnostics, null, 2)
+    })
   }
 }
 </script>
