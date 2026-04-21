@@ -49,15 +49,15 @@ public class Task {
 	String suspended;
 	String tenantId;
 	CamundaForm camundaFormRef;
-	
+	Map<String, Object> variables;
+	Map<String, String> variableTypes;
+
 	@JsonProperty("created") @JsonAlias({"creationDate"}) String created;
 	@JsonProperty("due") @JsonAlias({"dueDate"}) String due;
 	@JsonProperty("followUp") @JsonAlias({"followUpDate"}) String followUp;
 	@JsonProperty("taskDefinitionKey") @JsonAlias({"taskDefinitionId"}) String taskDefinitionKey;
 	@JsonProperty("processDefinitionId") @JsonAlias({"processDefinitionKey"}) String processDefinitionId;
 	@JsonProperty("processInstanceId") @JsonAlias({"processInstanceKey"}) String processInstanceId;
-	Map<String, Object> variables;
-	Map<String, String> variableTypes;
 
 	public String json() throws JsonProcessingException {
 		return new ObjectMapper().writeValueAsString(this);
