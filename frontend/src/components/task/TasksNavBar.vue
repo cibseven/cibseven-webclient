@@ -141,21 +141,32 @@
                   </div>
                 </div>
               </div>
-              <div v-if="visibleFilterVariables(task).length > 0">
+              <div v-if="visibleFilterVariables(task).length > 0" class="position-relative">
                 <div class="row g-0" :class="expandedTasks[task.id] ? '' : 'task-variables-collapsed'">
-                  <div v-for="filterVar in visibleFilterVariables(task)" :key="filterVar.name" class="col-6 h6 fw-normal m-0 mt-2">
-                    <div class="text-truncate fw-semibold">{{ filterVar.label }}:</div>
-                    <div v-if="task.variables && task.variables[filterVar.name] !== undefined && task.variables[filterVar.name] !== null" class="text-truncate" :title="displayTooltip(task, filterVar)">
-                      {{ displayValue(task, filterVar) }}
+                  <div v-for="filterVar in visibleFilterVariables(task)" :key="filterVar.name" class="col-12 col-md-6 h6 fw-normal m-0 mt-2">
+                    <div class="d-flex d-md-block">
+                      <div class="text-truncate fw-semibold me-1" :title="displayTooltip(task, filterVar)">{{ filterVar.label }}:</div>
+                      <div v-if="task.variables && task.variables[filterVar.name] !== undefined && task.variables[filterVar.name] !== null" class="text-truncate" :title="displayTooltip(task, filterVar)">
+                        {{ displayValue(task, filterVar) }}
+                      </div>
+                      <div v-else class="text-muted fst-italic" :title="displayTooltip(task, filterVar)">&lt;undefined&gt;</div>
                     </div>
-                    <div v-else class="text-muted fst-italic">&lt;undefined&gt;</div>
                   </div>
                 </div>
-                <div class="d-flex justify-content-center w-100" role="button" tabindex="0"
+                <div v-if="!expandedTasks[task.id]"
+                  class="task-variables-overlay position-absolute d-flex justify-content-center align-items-end w-100"
+                  style="bottom: 0; left: 0; right: 0" role="button" tabindex="0"
                   @click.stop="toggleTaskVariables(task.id)"
                   @keydown.enter.stop.prevent="toggleTaskVariables(task.id)"
                   @keydown.space.stop.prevent="toggleTaskVariables(task.id)">
-                  <span class="mdi mdi-18px text-secondary" :class="expandedTasks[task.id] ? 'mdi-chevron-up' : 'mdi-chevron-down'"></span>
+                  <span class="mdi mdi-18px text-secondary mdi-chevron-down"></span>
+                </div>
+                <div v-else
+                  class="d-flex justify-content-center w-100" role="button" tabindex="0"
+                  @click.stop="toggleTaskVariables(task.id)"
+                  @keydown.enter.stop.prevent="toggleTaskVariables(task.id)"
+                  @keydown.space.stop.prevent="toggleTaskVariables(task.id)">
+                  <span class="mdi mdi-18px text-secondary mdi-chevron-up"></span>
                 </div>
               </div>
             </b-list-group-item>
@@ -322,11 +333,13 @@ export default {
       return this.shortValue(value)
     },
     displayTooltip: function(task, filterVar) {
-      const value = task.variables[filterVar.name]
-      if (task.variableTypes && task.variableTypes[filterVar.name] === 'Date') {
-        return formatDateForTooltips(value)
-      }
-      return String(value)
+      const header = filterVar.label + ' (' + filterVar.name + '):'
+      const value = task.variables && task.variables[filterVar.name] != null
+        ? (task.variableTypes && task.variableTypes[filterVar.name] === 'Date'
+          ? formatDateForTooltips(task.variables[filterVar.name])
+          : String(task.variables[filterVar.name]))
+        : ''
+      return header + '\n' + value
     },
     toggleTaskVariables: function(taskId) {
       this.expandedTasks[taskId] = !this.expandedTasks[taskId]
@@ -589,10 +602,13 @@ export default {
 
 <style scoped>
 .task-variables-collapsed {
-  max-height: 2rem;
+  max-height: 3rem;
   overflow: hidden;
-  -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
-  mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+}
+
+.task-variables-overlay {
+  height: 3rem;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.92) 60%);
 }
 
 .action-button-hidden {
