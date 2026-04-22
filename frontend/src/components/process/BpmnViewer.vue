@@ -108,9 +108,15 @@ export default {
   },
   watch: {
     historicActivityStatistics: {
-      handler() {
-        this.drawDiagramState()
-      },
+      handler() { this.drawDiagramState() },
+      deep: true
+    },
+    statistics: {
+      handler() { if (this.viewer) this.drawDiagramState() },
+      deep: true
+    },
+    activityInstance: {
+      handler() { if (this.viewer) this.drawDiagramState() },
       deep: true
     },
     jobDefinitions: {

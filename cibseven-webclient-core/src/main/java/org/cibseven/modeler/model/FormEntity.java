@@ -18,8 +18,8 @@ package org.cibseven.modeler.model;
 
 import java.sql.Timestamp;
 
-import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.type.SqlTypes;
 
 import jakarta.persistence.Column;
@@ -32,17 +32,16 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-@SuppressWarnings("deprecation")
 @Setter
 @Getter
 @RequiredArgsConstructor
 @Entity
-@Table(name = "forms")
+@Table(name = "mod_forms")
 public class FormEntity {
 
 	@Id
-	@GeneratedValue(generator = "uuid")
-	@GenericGenerator(name = "uuid", strategy = "uuid2")
+	@GeneratedValue
+	@UuidGenerator
 	@Column(length = 36)
 	private String id;
 
@@ -62,7 +61,7 @@ public class FormEntity {
 	@Column(name = "active", nullable = false, columnDefinition = "boolean default true")
 	private Boolean active = true;
 
-	@JdbcTypeCode(SqlTypes.BLOB)
+	@JdbcTypeCode(SqlTypes.LONGVARBINARY)
 	@Column(name = "form_schema", nullable = false)
 	private byte[] formSchema;
 

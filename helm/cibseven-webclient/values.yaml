@@ -40,10 +40,27 @@ application:
     servlet:
       context-path: /seven
 
+  spring:
+    datasource:
+      url: ""
+      username: ""
+      password: ""
+    jpa:
+      hibernate:
+        ddl-auto: validate
+      properties:
+        hibernate:
+          integration:
+            envers:
+              enabled: false
+        org:
+          hibernate:
+            envers:
+              revision_table_name: mod_revinfo
   cibseven:
     webclient:
       modeler:
-        enabled: true
+        enabled: false
       # LDAP
       ldap:
         url: ""
@@ -77,7 +94,7 @@ application:
       user:
         provider: org.cibseven.webapp.auth.SevenUserProvider
         #provider: org.cibseven.webapp.auth.LdapUserProvider
-        #provider: org.cibseven.webapp.auth.KeycloakUserProvider
+        #provider: org.cibseven.webapp.auth.OAuth2UserProvider
         #provider: org.cibseven.webapp.auth.AdfsUserProvider
 
       # Set the wild card is gonna be used for the users search.

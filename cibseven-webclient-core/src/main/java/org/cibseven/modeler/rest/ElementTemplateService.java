@@ -73,7 +73,6 @@ import java.util.stream.Collectors;
  * @version 1.0
  * @since 1.0
  */
-@SuppressWarnings("unused")
 @Service
 @Slf4j
 @Tag(name = "Element Template Service", description = "Comprehensive REST API for managing Element Templates with CRUD operations, search, filtering, bulk operations, and import/export functionality")
