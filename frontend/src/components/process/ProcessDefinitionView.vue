@@ -28,7 +28,7 @@
           <WarningBox :message="$t('process.definitionVersionNotFound', [errorVersionNotFound])"/>
           <WarningBox v-if="processDefinitions.length === 0" :message="$t('process.definitionNotFound', { processKey: processKey, tenantId: tenantId })"/>
         </template>
-        <ProcessDetailsSidebar ref="navbar" v-if="process"
+        <ProcessDetailsSidebar ref="navbar" v-if="process && (!selectedInstance && !instanceId)"
           :process-key="processKey"
           :process-definitions="processDefinitions"
           :version-index="computedVersionIndex"
@@ -37,6 +37,10 @@
           :instances="instances"
           :selected-instance="selectedInstance"
         ></ProcessDetailsSidebar>
+        <ProcessInstanceDetailsSidebar v-else-if="(selectedInstance || instanceId)"
+          :instance="selectedInstance"
+          :process-definition="process"
+        ></ProcessInstanceDetailsSidebar>
       </template>
       <transition name="slide-in" mode="out-in">
         <ProcessInstancesView ref="process" v-if="process && !selectedInstance && !instanceId"
@@ -80,6 +84,7 @@ import { TaskService, ProcessService, HistoryService } from '@/services.js'
 import ProcessInstancesView from '@/components/process/ProcessInstancesView.vue'
 import ProcessDetailsSidebar from '@/components/process/ProcessDetailsSidebar.vue'
 import ProcessInstanceView from '@/components/process/ProcessInstanceView.vue'
+import ProcessInstanceDetailsSidebar from '@/components/process/ProcessInstanceDetailsSidebar.vue'
 import WarningBox from '@/components/common-components/WarningBox.vue'
 import { SidebarsFlow, TaskPopper } from '@cib/common-frontend'
 import { mapGetters, mapActions } from 'vuex'
@@ -95,7 +100,7 @@ function getStringObjByKeys(keys, obj) { // TODO rewrite to use join()
 
 export default {
   name: 'ProcessDefinitionView',
-  components: { ProcessInstancesView, ProcessDetailsSidebar, ProcessInstanceView, SidebarsFlow, TaskPopper, WarningBox },
+  components: { ProcessInstancesView, ProcessDetailsSidebar, ProcessInstanceView, ProcessInstanceDetailsSidebar, SidebarsFlow, TaskPopper, WarningBox },
   props: {
     processKey: { type: String, required: true },
     versionIndex: { type: String, required: true },
@@ -124,7 +129,7 @@ export default {
       }
     },
     async instanceId() {
-      if (this.process && this.process.key === this.processKey) {
+      if (this.process && this.process.key === this.processKey && this.instanceId) {
         await this.loadInstanceById(this.instanceId)
       }
     }
@@ -148,6 +153,9 @@ export default {
   computed: {
     ...mapGetters('instances', ['instances']),
     shortendLeftCaption() {
+      if (this.selectedInstance || this.instanceId) {
+        return this.$t('process-instance.info')
+      }
       return this.$t('process.details.historyVersions')
     },
     processName() {
@@ -209,7 +217,24 @@ export default {
       }
     },
     async loadProcessDefinitionFromRoute() {
-      await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, this.$root.config.lazyLoadHistory).then(async versions => {
+
+      let tenantId = this.tenantId
+      
+      if (this.instanceId) {
+        await this.loadInstanceById(this.instanceId)
+        if (this.selectedInstance) {
+          // instance found, load its process definition
+          await ProcessService.findProcessById(this.selectedInstance.processDefinitionId, true).then(process => {
+            this.process = process
+          })
+          if (this.process) {
+            await this.loadStatistics()
+            tenantId = this.process.tenantId
+          }
+        }
+      }
+
+      await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, tenantId, this.$root.config.lazyLoadHistory).then(async versions => {
         this.processDefinitions = versions
         const needCalcStats = this.process == null
         if (needCalcStats) {

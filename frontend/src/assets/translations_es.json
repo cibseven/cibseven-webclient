@@ -249,6 +249,7 @@
 			"unknown": "Desconocido"
 		},
 		"details": {
+			"instancesChain": "Proceso principal",
 			"startUser": "Usuario inicial",
 			"start": "Iniciado el",
 			"finish": "Terminado el",
@@ -281,6 +282,7 @@
 			"valueSerialized": "Valor serializado",
 			"actions": "Acciones",
 			"scope": "Ámbito",
+			"activityInstanceId": "ID de instancia de actividad",
 			"objectTypeName": "Nombre del tipo de objeto",
 			"serializationDataFormat": "Formato de datos de serialización",
 			"confirmDelete": "¿Desea eliminar la variable?",
@@ -997,6 +999,10 @@
 		"admin": {
 			"title": "Admin",
 			"tooltip": "Abrir Admin"
+		},
+		"modeler": {
+			"title": "Modeler",
+			"tooltip": "Abrir Modeler para diseñar y editar BPMN, DMN y formularios"
 		},
 		"oldCockpit": {
 			"title":"Cockpit antiguo",

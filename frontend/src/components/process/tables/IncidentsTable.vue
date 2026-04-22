@@ -420,11 +420,12 @@ export default {
       this.loadIncidentsData(id, this.isInstanceView)
     },
     showIncidentMessage: function(incident) {
-      const configuration = incident.historyConfiguration || incident.rootCauseIncidentConfiguration
-      if (!configuration) return
+      const runtimeConfiguration = incident.configuration
+      const historyConfiguration = incident.historyConfiguration || incident.rootCauseIncidentConfiguration
 
-      const isHistoric = !!incident.historyConfiguration
+      const isHistoric = !runtimeConfiguration
       const isExternalTask = incident.incidentType === 'failedExternalTask'
+      const configuration = isHistoric ? historyConfiguration : runtimeConfiguration
 
       // Select appropriate service method based on incident type and whether it's historic
       const stackTracePromise = this.getStackTracePromise(isHistoric, isExternalTask, configuration)
@@ -447,12 +448,13 @@ export default {
     incrementNumberRetry: function({ item, params }) {
       // Choose the appropriate retry method based on incident type
       let retryPromise
+      const configuration = item.configuration ?? item.rootCauseIncidentConfiguration
       if (item.incidentType === 'failedExternalTask') {
         // For external task incidents, use the external task retry endpoint
-        retryPromise = IncidentService.retryExternalTaskById(item.configuration, params)
+        retryPromise = IncidentService.retryExternalTaskById(configuration, params)
       } else {
         // For other incident types, use job retry
-        retryPromise = IncidentService.retryJobById(item.configuration, params)
+        retryPromise = IncidentService.retryJobById(configuration, params)
       }
       retryPromise.then(() => {
         this.removeIncident(item.id)

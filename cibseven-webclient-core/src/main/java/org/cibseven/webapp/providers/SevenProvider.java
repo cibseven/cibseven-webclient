@@ -367,7 +367,12 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public Long countProcessesInstancesHistory(Map<String, Object> filters, CIBUser user) {
 		return processProvider.countProcessesInstancesHistory(filters, user);
 	}
-	
+
+	@Override
+	public Long countProcessesInstancesRuntime(Map<String, Object> filters, CIBUser user) {
+		return processProvider.countProcessesInstancesRuntime(filters, user);
+	}
+
 	@Override
 	public ProcessInstance findProcessInstance(String processInstanceId, CIBUser user) {
 		return processProvider.findProcessInstance(processInstanceId, user);
@@ -417,6 +422,11 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 	public Collection<ProcessInstance> findCurrentProcessesInstances(Map<String, Object> data, CIBUser user)
 			throws SystemException {
 		return processProvider.findCurrentProcessesInstances(data, user);
+	}
+
+	@Override
+	public Collection<HistoryProcessInstance> findProcessesInstancesRuntime(Map<String, Object> data, Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) throws SystemException {
+		return processProvider.findProcessesInstancesRuntime(data, firstResult, maxResults, user);
 	}
 
 	@Override

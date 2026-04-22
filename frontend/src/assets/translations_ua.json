@@ -249,6 +249,7 @@
 			"unknown": "Невідомо"
 		},
 		"details": {
+			"instancesChain": "Кореневий процес",
 			"startUser": "Користувач, що запустив",
 			"start": "Почато",
 			"finish": "Завершено",
@@ -281,6 +282,7 @@
 			"valueSerialized": "Серіалізоване значення",
 			"actions": "Дії",
 			"scope": "Область",
+			"activityInstanceId": "ID екземпляра активності",
 			"objectTypeName": "Назва типу об’єкта",
 			"serializationDataFormat": "Формат серіалізації даних",
 			"confirmDelete": "Бажаєте видалити змінну?",
@@ -997,6 +999,10 @@
 		"admin": {
 			"title": "Адмін",
 			"tooltip": "Відкрити Адмін панель"
+		},
+		"modeler": {
+			"title": "Modeler",
+			"tooltip": "Відкрити Modeler для проектування та редагування BPMN, DMN та форм"
 		},
 		"oldCockpit": {
 			"title": "Старий Cockpit",
