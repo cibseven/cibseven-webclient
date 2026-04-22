@@ -1263,6 +1263,6 @@ public interface BpmProvider {
 	 */
 	void createSetupUser(NewUser user, String engine) throws InvalidUserIdException;
 
-	PasswordPolicyResponse validatePasswordPolicy(PasswordPolicyRequest request, CIBUser user) throws SystemException;
+	PasswordPolicyResponse validatePasswordPolicy(PasswordPolicyRequest request) throws SystemException;
 
 }

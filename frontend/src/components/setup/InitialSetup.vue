@@ -94,10 +94,9 @@
                           :type="showPassword ? 'text' : 'password'"
                           class="form-control"
                           v-model="credentials.password"
-                          :class="{
-                            'is-invalid': submitted && !notEmpty(credentials.password),
-                            'is-valid': notEmpty(credentials.password) && !passwordPolicyError,
-                          }"
+                          @blur="validatePassword"
+                          @input="resetPasswordValidation"
+                          :class="{'is-valid': passwordValid === true,'is-invalid': passwordValid === false}"
                           required
                         />
                         <button
@@ -108,6 +107,15 @@
                         >
                           <span :class="showPassword ? 'mdi mdi-eye-off' : 'mdi mdi-eye'"></span>
                         </button>
+                        <div v-if="passwordValid === false" class="invalid-feedback d-block">
+                          <h6>{{ $t('password.policy.title') }}</h6>
+                          <div>{{ $t('password.policy.header') }}</div>
+                          <ul>
+                            <li v-for="(item, idx) in $tm('password.policy.items')" :key="idx">
+                              {{ item }}
+                            </li>
+                          </ul>
+                        </div>
                       </div>
                       <div v-if="passwordPolicyError" class="text-danger small mt-1">
                         {{ $t('errors.PasswordPolicyException') }}
@@ -219,10 +227,11 @@ import { SetupService } from '@/services.js'
 import { notEmpty, same, isValidEmail } from '@/components/admin/utils.js'
 import { SuccessAlert } from '@cib/common-frontend'
 import { ENGINE_STORAGE_KEY } from '@/constants.js'
+import SecureInput from '@/components/login/SecureInput.vue'
 
 export default {
   name: 'InitialSetup',
-  components: { SuccessAlert },
+  components: { SuccessAlert, SecureInput },
   data() {
     return {
       profile: { id: null, email: null, firstName: null, lastName: null },
@@ -234,6 +243,7 @@ export default {
       userIdError: false,
       submitted: false,
       submitting: false,
+      passwordValid: null,
     }
   },
   computed: {
@@ -245,6 +255,21 @@ export default {
     },
   },
   methods: {
+    resetPasswordValidation: function () {
+      this.passwordValid = null
+    },
+    validatePassword: function () {
+      if (notEmpty(this.credentials.password)) {
+        SetupService.validatePasswordPolicy(this.credentials.password, this.profile).then((response) => {
+          this.passwordValid = response.data.valid
+        }, error => {
+          const data = error.response.data
+          if (data && data.type === 'PasswordPolicyException') {
+            this.passwordPolicyError = true
+          }
+        })
+      }
+    },
     notEmpty(value) {
       return notEmpty(value)
     },

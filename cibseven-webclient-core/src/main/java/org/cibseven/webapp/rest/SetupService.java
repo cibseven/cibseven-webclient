@@ -127,9 +127,9 @@ public class SetupService extends BaseService implements InitializingBean {
 	}
 
 	@PostMapping("/validate-password")
-	public ResponseEntity<Object> validatePasswordPolicy(@RequestBody PasswordPolicyRequest request, CIBUser user) {
+	public ResponseEntity<Object> validatePasswordPolicy(@RequestBody PasswordPolicyRequest request) {
 
-		Object response = bpmProvider.validatePasswordPolicy(request, user);
+		Object response = bpmProvider.validatePasswordPolicy(request);
 
 		return ResponseEntity
 				.status(HttpStatus.OK)

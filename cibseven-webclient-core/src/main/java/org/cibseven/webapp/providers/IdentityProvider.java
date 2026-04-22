@@ -33,15 +33,15 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class IdentityProvider extends SevenProviderBase implements IIdentityProvider {
 
-    public PasswordPolicyResponse validatePasswordPolicy(PasswordPolicyRequest request, CIBUser user)
+    public PasswordPolicyResponse validatePasswordPolicy(PasswordPolicyRequest request)
             throws SystemException {
-        String url = getEngineRestUrl(user) + "/identity/password-policy";
+        String url = getEngineRestUrl() + "/identity/password-policy";
         Map<String, Object> body = Map.of(
                 "password", request.getPassword(),
                 "profile", request.getProfile());
         try {
             ResponseEntity<PasswordPolicyResponse> response = (ResponseEntity<PasswordPolicyResponse>) doPost(url, body,
-                    PasswordPolicyResponse.class, user);
+                    PasswordPolicyResponse.class, null);
             PasswordPolicyResponse result = response.getBody();
             return result;
             // when enable-password-policy is switched of the endpoint will return 404, so

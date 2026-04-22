@@ -94,14 +94,12 @@
                 <b-form-group :label="$t('password.recover.newPassword') + '*'" label-cols-sm="4" label-align-sm="left"
                   label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
                   <SecureInput v-model="credentials.password" @blur="validatePassword" @input="resetPasswordValidation"
-                    ref="newPasswordInput" :state="passwordValid"></SecureInput>
+                    ref="newPasswordInput":class="{'is-valid': passwordValid === true,'is-invalid': passwordValid === false}"></SecureInput>
                   <div v-if="passwordValid === false" class="invalid-feedback d-block">
                     <h6>{{ $t('password.policy.title') }}</h6>
                     <div>{{ $t('password.policy.header') }}</div>
                     <ul>
-                      <li
-                        v-for="(item, idx) in passwordRulesBroken.length ? passwordRulesBroken : $tm('password.policy.items')"
-                        :key="idx">
+                      <li v-for="(item, idx) in $tm('password.policy.items')" :key="idx">
                         {{ item }}
                       </li>
                     </ul>
@@ -321,8 +319,7 @@ export default {
       passwordVisibility: { current: false, new: false, repeat: false },
       sendingEmail: false,
       userTenants: [],
-      passwordValid: null,
-      passwordRulesBroken: []
+      passwordValid: null
     }
   },
   watch: {

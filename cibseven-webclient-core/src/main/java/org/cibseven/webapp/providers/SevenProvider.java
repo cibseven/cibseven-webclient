@@ -1323,7 +1323,7 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
 		engineProvider.createSetupUser(user, engine);
 	}
 	@Override
-	public PasswordPolicyResponse validatePasswordPolicy(PasswordPolicyRequest request, CIBUser user) throws SystemException {
-		return identityProvider.validatePasswordPolicy(request, user);
+	public PasswordPolicyResponse validatePasswordPolicy(PasswordPolicyRequest request) throws SystemException {
+		return identityProvider.validatePasswordPolicy(request);
 	}
 }
