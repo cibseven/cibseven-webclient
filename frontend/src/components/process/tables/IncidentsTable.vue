@@ -419,11 +419,27 @@ export default {
       const id = this.isInstanceView ? this.instance.id : this.process.id
       this.loadIncidentsData(id, this.isInstanceView)
     },
+    isHistoricIncident(incident) {
+      if (incident.rootCauseIncidentConfiguration) {
+        switch (this.$root.config.camundaHistoryLevel) {
+          case 'none':
+          case 'activity':
+          case 'audit':
+            return false // always runtime view
+          case 'full':
+          default:
+            return true // always history view
+        }
+      }
+      else {
+        return !!incident.historyConfiguration
+      }
+    },
     showIncidentMessage: function(incident) {
-      const runtimeConfiguration = incident.configuration
+      const runtimeConfiguration = incident.configuration || incident.rootCauseIncidentConfiguration
       const historyConfiguration = incident.historyConfiguration || incident.rootCauseIncidentConfiguration
 
-      const isHistoric = !runtimeConfiguration
+      const isHistoric = this.isHistoricIncident(incident)
       const isExternalTask = incident.incidentType === 'failedExternalTask'
       const configuration = isHistoric ? historyConfiguration : runtimeConfiguration
 
