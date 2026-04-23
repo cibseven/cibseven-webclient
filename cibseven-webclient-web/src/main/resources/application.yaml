@@ -155,6 +155,10 @@ cibseven:
           email: "info@cibseven.org"
         # webclient server url for the swagger-ui. Only needs to be set if the automatic detection is wrong.
         url:
+        
+    deprecated:
+      authorization:
+        enabled: false
 
 #    custom:
 #      spring:
