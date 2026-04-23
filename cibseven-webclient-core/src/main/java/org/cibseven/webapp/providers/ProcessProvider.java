@@ -265,6 +265,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		// fetch history for those ids to get full info
 		Map<String, Object> dataHistory = new HashMap<>();
 		dataHistory.put("processInstanceIds", processInstanceIds);
+		dataHistory.put("fetchIncidents", Boolean.TRUE);
 
 		Integer firstResult0 = 0;
 		Collection<HistoryProcessInstance> historicInstances = findProcessesInstancesHistory(dataHistory, Optional.of(firstResult0), maxResults, user);
