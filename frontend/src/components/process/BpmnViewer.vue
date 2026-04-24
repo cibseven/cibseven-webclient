@@ -329,44 +329,64 @@ export default {
       }
     },
     getInstanceMergedStatistics: function(historyStatistics, historyLevel) {
-      // Always merge with childTransitionInstances to get running instances
-      if (!this.activityInstance?.childTransitionInstances) {
+      if (!this.activityInstance) {
         return historyStatistics
       }
 
-      const transitionMap = new Map()
-      this.activityInstance.childTransitionInstances.forEach(trans => {
-        transitionMap.set(trans.activityId, {
+      const runtimeMap = new Map()
+
+      // Transition instances (activities between sequence flows/gateways)
+      ;(this.activityInstance.childTransitionInstances || []).forEach(trans => {
+        runtimeMap.set(trans.activityId, {
           instances: 1,
-          // Only use incidents from transitions when historyLevel is not "full"
           openIncidents: historyLevel !== 'full' ? (trans.incidents?.length || 0) : undefined
         })
       })
-      
+
+      // Active activity instances (e.g. CallActivities waiting for subprocess).
+      // On non-full history levels the history API has no incident data, so we read
+      // incidents directly from the runtime tree (incidents propagated from sub-process
+      // are included in the parent activity's incidents array).
+      if (historyLevel !== 'full') {
+        ;(this.activityInstance.childActivityInstances || []).forEach(act => {
+          const existing = runtimeMap.get(act.activityId)
+          const incidents = act.incidents?.length || 0
+          if (existing) {
+            runtimeMap.set(act.activityId, {
+              ...existing,
+              instances: (existing.instances || 0) + 1,
+              openIncidents: (existing.openIncidents || 0) + incidents
+            })
+          } else {
+            runtimeMap.set(act.activityId, { instances: 1, openIncidents: incidents })
+          }
+        })
+      }
+
       const merged = historyStatistics.map(hs => {
-        const transData = transitionMap.get(hs.id)
-        if (!transData) return hs        
+        const runtimeData = runtimeMap.get(hs.id)
+        if (!runtimeData) return hs
         // Merge, but only override openIncidents if historyLevel is not "full"
-        return historyLevel === 'full' 
-          ? { ...hs, instances: transData.instances }
-          : { ...hs, ...transData }
+        return historyLevel === 'full'
+          ? { ...hs, instances: runtimeData.instances }
+          : { ...hs, ...runtimeData }
       })
-      
-      // Add transitions not in historyStatistics
-      this.activityInstance.childTransitionInstances.forEach(trans => {
-        if (!historyStatistics.some(hs => hs.id === trans.activityId)) {
+
+      // Add runtime activities not present in historyStatistics
+      runtimeMap.forEach((data, activityId) => {
+        if (!historyStatistics.some(hs => hs.id === activityId)) {
           merged.push({
-            id: trans.activityId,
-            instances: 1,
+            id: activityId,
+            instances: data.instances || 1,
             finished: 0,
             canceled: 0,
-            openIncidents: historyLevel !== 'full' ? (trans.incidents?.length || 0) : 0,
+            openIncidents: historyLevel !== 'full' ? (data.openIncidents || 0) : 0,
             resolvedIncidents: 0,
             deletedIncidents: 0
           })
         }
       })
-      
+
       return merged
     },
     getProcessMergedStatistics: function(historyStatistics) {
