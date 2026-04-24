@@ -423,7 +423,7 @@ export default {
       const runtimeConfiguration = incident.configuration || incident.rootCauseIncidentConfiguration
       const historyConfiguration = incident.historyConfiguration || incident.rootCauseIncidentHistoryConfiguration
 
-      const isHistoric = !!incident.historyConfiguration
+      const isHistoric = !!historyConfiguration
       const isExternalTask = incident.incidentType === 'failedExternalTask'
       const configuration = isHistoric ? historyConfiguration : runtimeConfiguration
 
