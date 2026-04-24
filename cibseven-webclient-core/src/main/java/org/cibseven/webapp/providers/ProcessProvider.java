@@ -371,7 +371,12 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		Boolean fetchIncidents = (Boolean) data.get("fetchIncidents");
 		if (fetchIncidents != null && fetchIncidents) {
 			String processDefinitionId = (String) data.get("processDefinitionId");
-			if (processDefinitionId != null) {
+			if (processDefinitionId == null && processes != null) {
+				// No processDefinitionId — fetch incidents per instance (e.g. called from findProcessesInstancesRuntime)
+				processes.forEach(p -> {
+					p.setIncidents(incidentProvider.findIncidentByInstanceId(p.getId(), user));
+				});
+			} else if (processDefinitionId != null) {
 				@SuppressWarnings("unchecked")
 				List<String> activityIdIn = (List<String>) data.get("activeActivityIdIn");
 
