@@ -95,6 +95,7 @@ public class BaseTenantsTestHelper {
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
+                Optional.empty(),
                 user
         );               
         return usersOfTenant1.stream()

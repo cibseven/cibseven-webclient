@@ -164,61 +164,16 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 	@Override
 	public Collection<User> findUsers(Optional<String> id, Optional<String> firstName, Optional<String> firstNameLike, Optional<String> lastName,
 			Optional<String> lastNameLike, Optional<String> email, Optional<String> emailLike, Optional<String> memberOfGroup, Optional<String> memberOfTenant,
-			Optional<String> idIn, Optional<String> firstResult, Optional<String> maxResults, Optional<String> sortBy, Optional<String> sortOrder, CIBUser user) {
-		
-		if (!userProvider.equals("org.cibseven.webapp.auth.SevenUserProvider")) {
-			String url = createFindUserCaseInsensitiveUrl(id, firstName, firstNameLike, lastName, lastNameLike, email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, user); 
-			return Arrays.asList(((ResponseEntity<User[]>) doGet(url, User[].class, user, true)).getBody());
-		}
-
-		// WORKAROUND for case insensitive search in case of SevenUserProvider (TODO should be moved to CIB seven)
-		if (firstNameLike.isPresent()) { // javier, JAVIER, Javier
-			String lowerCaseUrl = createFindUserCaseInsensitiveUrl(id, firstName, Optional.of(firstNameLike.get().toLowerCase()), lastName, lastNameLike, email, emailLike, memberOfGroup, 
-					memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, user);
-			String upperCaseUrl = createFindUserCaseInsensitiveUrl(id, firstName, Optional.of(firstNameLike.get().toUpperCase()), lastName, lastNameLike, email, emailLike, memberOfGroup, 
-					memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, user);
-			String normalCaseUrl = createFindUserCaseInsensitiveUrl(id, firstName, Optional.of(firstNameLike.get().substring(0, 2).toUpperCase() + firstNameLike.get().substring(2).toLowerCase()), 
-					lastName, lastNameLike, email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, user);
-			
-	        Collection<User> lowerCaseResult = Arrays.asList(((ResponseEntity<User[]>) doGet(lowerCaseUrl, User[].class, user, true)).getBody());
-	        Collection<User> upperCaseResult = Arrays.asList(((ResponseEntity<User[]>) doGet(upperCaseUrl, User[].class, user, true)).getBody());
-	        Collection<User> normalCaseResult = Arrays.asList(((ResponseEntity<User[]>) doGet(normalCaseUrl, User[].class, user, true)).getBody());
-	        
-	        Collection<User> res = new ArrayList<User>();
-	        res.addAll(lowerCaseResult);
-	        res.addAll(upperCaseResult);
-	        res.addAll(normalCaseResult);
-	        
-	        return res;
-		}
-		
-		if (lastNameLike.isPresent()) { // medina, MEDINA, Medina
-			String lowerCaseUrl = createFindUserCaseInsensitiveUrl(id, firstName, firstNameLike, lastName, Optional.of(lastNameLike.get().toLowerCase()), email, emailLike, memberOfGroup, 
-					memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, user);
-			String upperCaseUrl = createFindUserCaseInsensitiveUrl(id, firstName, firstNameLike, lastName, Optional.of(lastNameLike.get().toUpperCase()), email, emailLike, memberOfGroup, 
-					memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, user);
-			String normalCaseUrl = createFindUserCaseInsensitiveUrl(id, firstName, firstNameLike, lastName, Optional.of(lastNameLike.get().substring(0, 2).toUpperCase() + lastNameLike.get().substring(2).toLowerCase()), 
-					email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, user);
-			
-	        Collection<User> lowerCaseResult = Arrays.asList(((ResponseEntity<User[]>) doGet(lowerCaseUrl, User[].class, user, true)).getBody());
-	        Collection<User> upperCaseResult = Arrays.asList(((ResponseEntity<User[]>) doGet(upperCaseUrl, User[].class, user, true)).getBody());
-	        Collection<User> normalCaseResult = Arrays.asList(((ResponseEntity<User[]>) doGet(normalCaseUrl, User[].class, user, true)).getBody());
-	        
-	        Collection<User> res = new ArrayList<User>();
-	        res.addAll(lowerCaseResult);
-	        res.addAll(upperCaseResult);
-	        res.addAll(normalCaseResult);
-	        
-	        return res;
-		}
-		
-		String url = createFindUserCaseInsensitiveUrl(id, firstName, firstNameLike, lastName, lastNameLike, email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, user); 
+			Optional<String> idIn, Optional<String> firstResult, Optional<String> maxResults, Optional<String> sortBy, Optional<String> sortOrder,
+			Optional<Boolean> likePatternIgnoreCase, CIBUser user) {
+		String url = buildFindUsersUrl(id, firstName, firstNameLike, lastName, lastNameLike, email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, likePatternIgnoreCase, user);
 		return Arrays.asList(((ResponseEntity<User[]>) doGet(url, User[].class, user, true)).getBody());
 	}
 	
-	private String createFindUserCaseInsensitiveUrl(Optional<String> id, Optional<String> firstName, Optional<String> firstNameLike, Optional<String> lastName, 
+	private String buildFindUsersUrl(Optional<String> id, Optional<String> firstName, Optional<String> firstNameLike, Optional<String> lastName, 
 			Optional<String> lastNameLike, Optional<String> email, Optional<String> emailLike, Optional<String> memberOfGroup, Optional<String> memberOfTenant,
-			Optional<String> idIn, Optional<String> firstResult, Optional<String> maxResults, Optional<String> sortBy, Optional<String> sortOrder, CIBUser user) {
+			Optional<String> idIn, Optional<String> firstResult, Optional<String> maxResults, Optional<String> sortBy, Optional<String> sortOrder,
+			Optional<Boolean> likePatternIgnoreCase, CIBUser user) {
 		
 		String url = getEngineRestUrl(user) + "/user";
 		
@@ -269,6 +224,9 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		param += addQueryParameter(param, "maxResults", maxResults, true);
 		param += addQueryParameter(param, "sortBy", sortBy, true);
 		param += addQueryParameter(param, "sortOrder", sortOrder, true);
+		if (likePatternIgnoreCase.isPresent()) {
+			param += addQueryParameter(param, "likePatternIgnoreCase", Optional.of(likePatternIgnoreCase.get().toString()), true);
+		}
 
 		url += param;
 
