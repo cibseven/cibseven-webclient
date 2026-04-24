@@ -314,7 +314,7 @@ export default {
       const historyStatistics = this.historicActivityStatistics
       const historyLevel = this.$root.config.camundaHistoryLevel
       const mergedStatistics = this.getMergedStatistics(historyStatistics, historyLevel)
-      
+
       mergedStatistics.forEach(stat => {
         this.drawActivityBadges(stat, elementRegistry)
       })
@@ -328,63 +328,55 @@ export default {
         return this.getProcessMergedStatisticsFullHistory(historyStatistics)
       }
     },
-    getInstanceMergedStatistics: function(historyStatistics, historyLevel) {
-      if (!this.activityInstance) {
-        return historyStatistics
-      }
+    getInstanceMergedStatistics(historyStatistics, historyLevel) {
 
-      const runtimeMap = new Map()
+      if (!this.activityInstance) return historyStatistics
 
-      // Transition instances (activities between sequence flows/gateways)
-      ;(this.activityInstance.childTransitionInstances || []).forEach(trans => {
-        runtimeMap.set(trans.activityId, {
-          instances: 1,
-          openIncidents: historyLevel !== 'full' ? (trans.incidents?.length || 0) : undefined
-        })
-      })
+      const isFull = historyLevel === 'full'
+      const activitiesMap = new Map()
 
-      // Active activity instances (e.g. CallActivities waiting for subprocess).
-      // On non-full history levels the history API has no incident data, so we read
-      // incidents directly from the runtime tree (incidents propagated from sub-process
-      // are included in the parent activity's incidents array).
-      if (historyLevel !== 'full') {
-        ;(this.activityInstance.childActivityInstances || []).forEach(act => {
-          const existing = runtimeMap.get(act.activityId)
-          const incidents = act.incidents?.length || 0
-          if (existing) {
-            runtimeMap.set(act.activityId, {
-              ...existing,
-              instances: (existing.instances || 0) + 1,
-              openIncidents: (existing.openIncidents || 0) + incidents
-            })
-          } else {
-            runtimeMap.set(act.activityId, { instances: 1, openIncidents: incidents })
-          }
+      const addInstance = (activityId, incidentCount = 0) => {
+        const existing = activitiesMap.get(activityId) || { instances: 0, openIncidents: 0 }
+        activitiesMap.set(activityId, {
+          instances: existing.instances + 1,
+          openIncidents: isFull ? undefined : existing.openIncidents + incidentCount
         })
       }
 
-      const merged = historyStatistics.map(hs => {
-        const runtimeData = runtimeMap.get(hs.id)
-        if (!runtimeData) return hs
-        // Merge, but only override openIncidents if historyLevel is not "full"
-        return historyLevel === 'full'
-          ? { ...hs, instances: runtimeData.instances }
-          : { ...hs, ...runtimeData }
+      // Transition instances: activities currently between sequence flows/gateways
+      this.activityInstance.childTransitionInstances?.forEach(trans =>
+        addInstance(trans.activityId, trans.incidents?.length || 0)
+      )
+
+      // On non-full history levels the history API has no incident data, so we
+      // read incidents directly from the runtime activity tree instead.
+      if (!isFull) {
+        this.activityInstance.childActivityInstances?.forEach(act =>
+          addInstance(act.activityId, act.incidents?.length || 0)
+        )
+      }
+
+      // Merge runtime data into history entries.
+      // Full history: only override instance count. Otherwise merge all runtime fields.
+      const merged = historyStatistics.map(stat => {
+        const runtime = activitiesMap.get(stat.id)
+        if (!runtime) return stat
+        return isFull ? { ...stat, instances: runtime.instances } : { ...stat, ...runtime }
       })
 
-      // Add runtime activities not present in historyStatistics
-      runtimeMap.forEach((data, activityId) => {
-        if (!historyStatistics.some(hs => hs.id === activityId)) {
-          merged.push({
-            id: activityId,
-            instances: data.instances || 1,
-            finished: 0,
-            canceled: 0,
-            openIncidents: historyLevel !== 'full' ? (data.openIncidents || 0) : 0,
-            resolvedIncidents: 0,
-            deletedIncidents: 0
-          })
-        }
+      // Append runtime-only activities not present in history
+      const knownIds = new Set(historyStatistics.map(stat => stat.id))
+      activitiesMap.forEach((data, activityId) => {
+        if (knownIds.has(activityId)) return
+        merged.push({
+          id: activityId,
+          instances: data.instances,
+          finished: 0,
+          canceled: 0,
+          openIncidents: isFull ? 0 : (data.openIncidents || 0),
+          resolvedIncidents: 0,
+          deletedIncidents: 0
+        })
       })
 
       return merged
@@ -395,7 +387,7 @@ export default {
       }
 
       const historyMap = new Map((historyStatistics || []).map(hs => [hs.id, hs]))
-      
+
       const merged = this.statistics.map(stat => {
         const historyStat = historyMap.get(stat.id)
         return {
@@ -408,14 +400,14 @@ export default {
           deletedIncidents: historyStat?.deletedIncidents || 0
         }
       })
-      
+
       // Add historyStatistics not in this.statistics
       historyStatistics?.forEach(hs => {
         if (!this.statistics.some(s => s.id === hs.id)) {
           merged.push(hs)
         }
       })
-      
+
       return merged
     },
     getProcessMergedStatisticsFullHistory: function(historyStatistics) {
@@ -429,7 +421,7 @@ export default {
       if (!element) return
 
       const options = this.badgeOptions || {}
-      
+
       this.drawCanceledBadge(stat, options)
       this.drawFinishedBadge(stat, options)
       this.drawClosedIncidentsBadge(stat, options)
@@ -454,10 +446,10 @@ export default {
       if (!options.showClosedIncidents || !this.selectedInstance) return
       if (stat.resolvedIncidents === 0 && stat.deletedIncidents === 0) return
 
-      const mainOccupied = 
+      const mainOccupied =
         (options.showCanceled && stat.canceled > 0) ||
         ((!stat.canceled || stat.canceled === 0) && (options.showHistory && (stat.finished - (stat.canceled || 0)) > 0))
-      
+
       const position = mainOccupied ? { bottom: 15, right: 36 } : { bottom: 15, right: 13 }
       const html = this.getBadgeOverlayHtml('!', 'bg-danger', 'closedIncidents', stat.id)
       this.setHtmlOnDiagram(stat.id, html, position)
