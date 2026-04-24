@@ -74,6 +74,7 @@ public class IncidentProvider extends SevenProviderBase implements IIncidentProv
 						incident.setRootCauseIncidentActivityId(rootCauseIncident.getActivityId());
 						incident.setRootCauseIncidentFailedActivityId(rootCauseIncident.getFailedActivityId());
 						incident.setRootCauseIncidentConfiguration(rootCauseIncident.getConfiguration());
+						incident.setRootCauseIncidentHistoryConfiguration(rootCauseIncident.getHistoryConfiguration());
 						incident.setRootCauseIncidentMessage(rootCauseIncident.getIncidentMessage());
 					}
 				} catch (Exception e) {
@@ -156,6 +157,7 @@ public class IncidentProvider extends SevenProviderBase implements IIncidentProv
 						incident.setRootCauseIncidentActivityId(rootCauseIncident.getActivityId());
 						incident.setRootCauseIncidentFailedActivityId(rootCauseIncident.getFailedActivityId());
 						incident.setRootCauseIncidentConfiguration(rootCauseIncident.getConfiguration());
+						incident.setRootCauseIncidentHistoryConfiguration(rootCauseIncident.getHistoryConfiguration());
 						incident.setRootCauseIncidentMessage(rootCauseIncident.getIncidentMessage());
 					}
 				} catch (Exception e) {
