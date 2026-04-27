@@ -32,7 +32,7 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-restclient</artifactId>
-			<version>4.0.4</version>
+			<version>${version.spring.boot}</version>
 		</dependency>
 		
 		<!-- Override common transitive dependencies to ensure consistent versions -->
