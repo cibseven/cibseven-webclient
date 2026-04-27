@@ -87,5 +87,23 @@ describe('package', () => {
         })
       })
     })
+
+    it('ensure npm install was run', () => {
+      const packageJson = getPackageJson()
+      const dependencies = packageJson.dependencies || {}
+      expect(Object.keys(dependencies).length).toBeGreaterThan(0, 'No dependencies found in package.json')
+
+      const lockPackageJson = getPackageJson('../package-lock.json')
+      expect(lockPackageJson.packages).toBeDefined('No packages field in package-lock.json')
+      expect(Object.keys(lockPackageJson.packages).length).toBeGreaterThan(0, 'No packages listed in package-lock.json')
+
+      for (const [dep, version] of Object.entries(dependencies)) {
+        const lockName = `node_modules/${dep}`
+        const depInfo = lockPackageJson.packages[lockName]
+        expect(depInfo).toBeDefined(`${dep} is not listed in package-lock.json`)
+        expect(depInfo.version).toBe(version, `${dep} version in package-lock.json does not match package.json`)
+      }
+    })
+
   })
 })
