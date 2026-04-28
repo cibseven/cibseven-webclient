@@ -298,15 +298,7 @@ You may obtain a copy of the License at
 
 	<dependencyManagement>
 		<dependencies>
-			<!-- temporary override fasterxml version 2.19.4, referenced from springboot 3.5.11/12, to version 2.21.1 to fix CWE-770 -->
-			<dependency>
-				<groupId>com.fasterxml.jackson</groupId>
-				<artifactId>jackson-bom</artifactId>
-				<version>2.21.1</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			
+		
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-dependencies</artifactId>
