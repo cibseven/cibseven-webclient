@@ -100,7 +100,6 @@
 		"start": "Start",
 		"showProcess": "View process",
 		"showInstance": "View instance",
-		"showCockpit": "Open in the old Cockpit",
 		"downloadBpmn": "Download BPMN file",
 		"openModeler": "Open BPMN file in Modeler",
 		"showManagement": "Management",
@@ -1003,10 +1002,6 @@
 		"modeler": {
 			"title": "Modeler",
 			"tooltip": "Open Modeler to design and edit BPMN, DMN, and Forms"
-		},
-		"oldCockpit": {
-			"title": "Old Cockpit",
-			"tooltip": "Open old Cockpit"
 		},
 		"account": {
 			"tooltip": "View and edit your account information or log out",
