@@ -281,7 +281,7 @@
 			"value": "Wert",
 			"valueSerialized": "Serialisierter Wert",
 			"actions": "Aktionen",
-			"scope": "Gültigkeitsbereich",
+			"scope": "Bereich",
 			"activityInstanceId": "Aktivitätsinstanz-ID",
 			"objectTypeName": "Objekttypname",
 			"serializationDataFormat": "Serialisierungsdatenformat",
