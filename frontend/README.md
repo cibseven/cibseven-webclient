@@ -34,7 +34,7 @@ npm run build
 npm run test:unit
 ```
 
-### Run End-to-End Tests with [Cypress](https://www.cypress.io/)
+### Run End-to-End Tests
 
 ```sh
 npm run test:e2e:dev
