@@ -334,58 +334,44 @@ export default {
       }
       this.loadDeployments(this.deployments.length)
     },
-    deleteDeployments: function () {
-      const vm = this
+    deleteDeployments: async function () {
       this.deleteLoader = true
       this.deploymentsDelData.total = this.deploymentsSelected.length
       this.deploymentsDelData.deleted = 0
-      let pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
-      pool.forEach(deployment => {
-        const found = this.groups.findIndex(group => {
-          const index = group.data.findIndex(d => {
-            return deployment.id === d.id
-          })
-          if (index !== -1) {
-            group.data.splice(index, 1)
-            return group
-          }
-        })
-        if (found !== -1) {
-          if (this.groups[found].data.length < 1) {
-            this.groups.splice(found, 1)
-          }
-        }
-      })
-      pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
-      startTask()
-      function startTask() {
+      const pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
+      while (pool.length > 0) {
         const deployment = pool.shift()
-        if (deployment) {
-          deleteDeployment(deployment)
-        } else {
-          vm.loadProcesses(false)
-          vm.deleteLoader = false
-          vm.$refs.deploymentsDeleted.show()
+        try {
+          await ProcessService.deleteDeployment(deployment.id, true)
+          const found = this.groups.findIndex(group => {
+            const index = group.data.findIndex(d => {
+              return deployment.id === d.id
+              })
+              if (index !== -1) {
+                group.data.splice(index, 1)
+              return group
+            }
+          })
+          if (found !== -1) {
+            if (this.groups[found].data.length < 1) {
+              this.groups.splice(found, 1)
+            }
+          }
+          this.deploymentsDelData.deleted++
+          this.deployments = this.deployments.filter(df => deployment.id !== df.id)
+          if (this.deployment && deployment.id === this.deployment.id) {
+            this.deployment = null
+            this.resources = null
+            this.$router.push({ name: 'deployments' })
+          }
+        } catch (error) {
+          console.error(`Failed to delete deployment with id ${deployment.id}:`, error)
         }
       }
-      function deleteDeployment(deployment) {
-        ProcessService.deleteDeployment(deployment.id, true).then(() => {
-          vm.deploymentsDelData.deleted++
-          vm.deployments = vm.deployments.filter(df => {
-            return deployment.id !== df.id
-          })
-          if (vm.deployment && deployment.id === vm.deployment.id) {
-            vm.deployment = null
-            vm.resources = null
-            vm.$router.push({
-              name: 'deployments'
-            })
-          }
-          setTimeout(() => {
-            startTask()
-          }, 1000)
-        })
-      }
+      this.loadProcesses(false)
+      this.deleteLoader = false
+      this.$refs.deploymentsDeleted.show()
+      this.refreshTotalCount()
     },
     deleteDeployment: function () {
       ProcessService.deleteDeployment(this.deploymentId, true).then(() => {
