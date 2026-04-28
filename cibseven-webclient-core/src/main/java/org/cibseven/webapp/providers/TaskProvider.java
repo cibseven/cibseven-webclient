@@ -19,11 +19,14 @@ package org.cibseven.webapp.providers;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.SystemException;
@@ -35,6 +38,7 @@ import org.cibseven.webapp.rest.model.TaskFiltering;
 import org.cibseven.webapp.rest.model.TaskForm;
 import org.cibseven.webapp.rest.model.TaskHistory;
 import org.cibseven.webapp.rest.model.Variable;
+import org.cibseven.webapp.rest.model.VariableInstance;
 import org.cibseven.webapp.providers.utils.URLUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -184,11 +188,61 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	public Collection<Task> findTasksByFilter(TaskFiltering filters, String filterId, CIBUser user, Integer firstResult, Integer maxResults) {
 		String url = getEngineRestUrl(user) + "/filter/" + filterId + "/list?firstResult=" + firstResult + "&maxResults=" + maxResults;
 		try {
-			return Arrays.asList(((ResponseEntity<Task[]>) doPost(url, filters.json(), Task[].class, user)).getBody());
+			List<Task> tasks = new ArrayList<>(Arrays.asList(((ResponseEntity<Task[]>) doPost(url, filters.json(), Task[].class, user)).getBody()));
+			List<String> variableNames = filters.getVariableNames();
+			if (variableNames != null && !variableNames.isEmpty()) {
+				enrichTasksWithVariables(tasks, variableNames, user);
+			}
+			return tasks;
 		} catch (JsonProcessingException e) {
 			SystemException se = new SystemException(e);
 			log.info("Exception in getTasksFiltered(...):", se);
 			throw se;
+		}
+	}
+
+	private void enrichTasksWithVariables(List<Task> tasks, List<String> variableNames, CIBUser user) {
+		String processInstanceIds = tasks.stream()
+			.map(Task::getProcessInstanceId)
+			.filter(id -> id != null && !id.isEmpty())
+			.distinct()
+			.collect(Collectors.joining(","));
+
+		if (processInstanceIds.isEmpty()) return;
+
+		String url = getEngineRestUrl(user) + "/variable-instance?processInstanceIdIn="
+			+ processInstanceIds + "&deserializeValues=false";
+		try {
+			VariableInstance[] instances = ((ResponseEntity<VariableInstance[]>)
+				doGet(url, VariableInstance[].class, user, false)).getBody();
+			if (instances == null) return;
+
+			Map<String, Map<String, Object>> varsByInstance = new HashMap<>();
+			Map<String, Map<String, String>> typesByInstance = new HashMap<>();
+			for (VariableInstance vi : instances) {
+				if (variableNames.contains(vi.getName()) && vi.getProcessInstanceId() != null) {
+					Object displayValue = vi.getValue();
+					if ("Object".equals(vi.getType()) && vi.getValueInfo() != null) {
+						Object typeName = vi.getValueInfo().get("objectTypeName");
+						if (typeName != null) displayValue = typeName;
+					}
+					varsByInstance
+						.computeIfAbsent(vi.getProcessInstanceId(), k -> new HashMap<>())
+						.put(vi.getName(), displayValue);
+					typesByInstance
+						.computeIfAbsent(vi.getProcessInstanceId(), k -> new HashMap<>())
+						.put(vi.getName(), vi.getType());
+				}
+			}
+
+			for (Task task : tasks) {
+				if (task.getProcessInstanceId() != null) {
+					task.setVariables(varsByInstance.getOrDefault(task.getProcessInstanceId(), new HashMap<>()));
+					task.setVariableTypes(typesByInstance.getOrDefault(task.getProcessInstanceId(), new HashMap<>()));
+				}
+			}
+		} catch (Exception e) {
+			log.warn("Could not enrich tasks with variables: {}", e.getMessage());
 		}
 	}
 
