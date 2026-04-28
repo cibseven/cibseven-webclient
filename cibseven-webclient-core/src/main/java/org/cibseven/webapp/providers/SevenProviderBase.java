@@ -291,7 +291,7 @@ public abstract class SevenProviderBase {
 	protected <T> ResponseEntity<T> doPostMultipart(String url, MultiValueMap<String, Object> formData, Class<T> neededClass, CIBUser user) {
 		HttpHeaders headers = createAuthHeader(user);
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 
 		HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(formData, headers);
 		try {
