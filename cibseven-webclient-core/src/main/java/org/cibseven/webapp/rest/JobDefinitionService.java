@@ -57,7 +57,6 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	@PostMapping("")
 	public Collection<JobDefinition> findJobDefinitions(@RequestBody String params, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		//checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.READ_ALL);
 		return bpmProvider.findJobDefinitions(params, user);
 	}
 	
@@ -88,7 +87,6 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	@PutMapping("/{jobDefinitionId}/job-priority")
 	public ResponseEntity<Void> overrideJobDefinitionPriority(@PathVariable String jobDefinitionId, @RequestBody String params, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		//checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.UPDATE_ALL);
 		bpmProvider.overrideJobDefinitionPriority(jobDefinitionId, params, user);
 		// return 204 No Content, no body
 		return ResponseEntity.noContent().build();
@@ -101,7 +99,6 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	@GetMapping("/{id}")
 	public JobDefinition findJobDefinition(@PathVariable String id, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		//checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.READ_ALL);
 		return bpmProvider.findJobDefinition(id, user);
 	}
 	
@@ -112,7 +109,6 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	@PutMapping("/{id}/retries")
 	public ResponseEntity<Void> retryJobDefinitionById(@PathVariable String id, @RequestBody Map<String, Object> data, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		//checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.UPDATE_ALL);
 		bpmProvider.retryJobDefinitionById(id, data, user);
 		// return 204 No Content, no body
 		return ResponseEntity.noContent().build();
