@@ -280,15 +280,7 @@ public abstract class SevenProviderBase {
 		}
 	}
 
-	/**
-	 * Performs a POST request with multipart form data
-	 * @param url the URL to post to
-	 * @param formData the multipart form data containing files and parameters
-	 * @param neededClass the expected response class
-	 * @param user the user context for authentication
-	 * @return the response entity
-	 */
-	protected <T> ResponseEntity<T> doPostMultipart(String url, MultiValueMap<String, Object> formData, Class<T> neededClass, CIBUser user) {
+	protected <T> ResponseEntity<T> doPost(String url, MultiValueMap<String, Object> formData, Class<T> neededClass, CIBUser user) {
 		HttpHeaders headers = createAuthHeader(user);
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);

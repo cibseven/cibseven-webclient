@@ -88,7 +88,7 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 			formData.add(key, file.getResource());
 		}
 		// Use the base class method for multipart POST
-		ResponseEntity<Deployment> response = doPostMultipart(url, formData, Deployment.class, user);
+		ResponseEntity<Deployment> response = doPost(url, formData, Deployment.class, user);
 		return response.getBody();
 	}
 
