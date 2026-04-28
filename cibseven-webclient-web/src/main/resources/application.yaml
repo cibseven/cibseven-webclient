@@ -157,6 +157,7 @@ cibseven:
         url:
         
     deprecated:
+    # Check permission for some usecases in the webclient backend (behaviour until 2.2.0)
       authorization:
         enabled: false
 
