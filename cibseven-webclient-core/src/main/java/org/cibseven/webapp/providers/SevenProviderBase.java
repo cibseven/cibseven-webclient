@@ -150,7 +150,7 @@ public abstract class SevenProviderBase {
 	 * @param user user with authorization to add if null No authorization is added
 	 * @return
 	 */
-	private HttpHeaders createAuthHeader(CIBUser user) {
+	protected HttpHeaders createAuthHeader(CIBUser user) {
 		HttpHeaders headers =  new HttpHeaders();
 		if (user != null) {
 		  headers.add(HttpHeaders.AUTHORIZATION, baseUserProvider.getEngineRestToken(user));
@@ -280,18 +280,10 @@ public abstract class SevenProviderBase {
 		}
 	}
 
-	/**
-	 * Performs a POST request with multipart form data
-	 * @param url the URL to post to
-	 * @param formData the multipart form data containing files and parameters
-	 * @param neededClass the expected response class
-	 * @param user the user context for authentication
-	 * @return the response entity
-	 */
 	protected <T> ResponseEntity<T> doPostMultipart(String url, MultiValueMap<String, Object> formData, Class<T> neededClass, CIBUser user) {
 		HttpHeaders headers = createAuthHeader(user);
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 
 		HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(formData, headers);
 		try {
