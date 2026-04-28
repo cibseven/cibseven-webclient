@@ -75,26 +75,26 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 		try {
       
-      if (valueType.equalsIgnoreCase("File") || valueType.equalsIgnoreCase("Bytes")) {
-        // Handle binary/file data
-        body.add("data", data.getResource());
-        body.add("valueType", valueType);
-      } else {
-        // Handle JSON/serialized data
-        String jsonContent = new String(data.getBytes());
-        HttpHeaders jsonHeaders = new HttpHeaders();
-        jsonHeaders.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<String> jsonEntity = new HttpEntity<>(jsonContent, jsonHeaders);
-        
-        body.add("data", jsonEntity);
-        body.add("type", valueType);
-        body.add("valueType", SERIALIZATION_DATA_FORMAT_JSON);
-      }
-      
+			if (valueType.equalsIgnoreCase("File") || valueType.equalsIgnoreCase("Bytes")) {
+				// Handle binary/file data
+				body.add("data", data.getResource());
+				body.add("valueType", valueType);
+			} else {
+				// Handle JSON/serialized data
+				String jsonContent = new String(data.getBytes());
+				HttpHeaders jsonHeaders = new HttpHeaders();
+				jsonHeaders.setContentType(MediaType.APPLICATION_JSON);
+				HttpEntity<String> jsonEntity = new HttpEntity<>(jsonContent, jsonHeaders);
+				
+				body.add("data", jsonEntity);
+				body.add("type", valueType);
+				body.add("valueType", SERIALIZATION_DATA_FORMAT_JSON);
+			}
+
 			doPostMultipart(url, body, String.class, user);
 		} catch (IOException e) { // from data.getBytes()
-      throw new UnsupportedTypeException(e);
-    }
+			throw new UnsupportedTypeException(e);
+		}
 	}
 
 	private void mergeVariablesValues(
