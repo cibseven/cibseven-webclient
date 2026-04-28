@@ -52,12 +52,8 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 	public Deployment deployBpmn(MultiValueMap<String, Object> data, MultiValueMap<String, MultipartFile> file, CIBUser user) throws SystemException {
 		String url = getEngineRestUrl(user) + "/deployment/create";
 
-		HttpHeaders headers = new HttpHeaders();
+		HttpHeaders headers = createAuthHeader(user);
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-		if (user != null) {
-			headers.add(HttpHeaders.AUTHORIZATION, user.getAuthToken());
-			headers.add(USER_ID_HEADER, user.getId());
-		}
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 
 		file.forEach((key, value) -> { 

@@ -74,10 +74,9 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	public void modifyVariableDataByExecutionId(String executionId, String variableName, MultipartFile data, String valueType, CIBUser user) throws SystemException {
 		String url = getEngineRestUrl(user) + "/execution/" + executionId + "/localVariables/" + variableName + "/data";
 
-		HttpHeaders headers = new HttpHeaders();
+		HttpHeaders headers = createAuthHeader(user);
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-		if (user != null) headers.add("Authorization", user.getAuthToken());
 		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 		try {
       
@@ -98,9 +97,8 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
       }
       
 			HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
-			RestTemplate rest = new RestTemplate();
 
-			rest.exchange(builder.build().toUri(), HttpMethod.POST, request, String.class);
+			customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, String.class);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		} catch (IOException e) { // from data.getBytes()
@@ -404,10 +402,9 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	public void uploadVariableFileData(String taskId, String variableName, MultipartFile data, String valueType, CIBUser user) throws NoObjectFoundException, SystemException {
 		String url = getEngineRestUrl(user) + "/task/" + taskId + "/variables/" + variableName + "/data";
 
-		HttpHeaders headers = new HttpHeaders();
+		HttpHeaders headers = createAuthHeader(user);
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-		if (user != null) headers.add("Authorization", user.getAuthToken());
 		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 		try {
 			body.add("data", data.getResource());
@@ -471,10 +468,9 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
     public void uploadProcessInstanceVariableFileData(String processInstanceId, String variableName, MultipartFile data, String valueType, CIBUser user) throws NoObjectFoundException, SystemException {
         String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId + "/variables/" + variableName + "/data";
 
-		HttpHeaders headers = new HttpHeaders();
+		HttpHeaders headers = createAuthHeader(user);
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-		if (user != null) headers.add("Authorization", user.getAuthToken());
 		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 		try {
 			body.add("data", data.getResource());
