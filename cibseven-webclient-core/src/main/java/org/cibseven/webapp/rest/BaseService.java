@@ -39,7 +39,7 @@ public class BaseService {
 	@Autowired
 	protected BaseUserProvider baseUserProvider;
 	
-	@Value("${cibseven.webclient.legacy.authorization.enabled:false}")
+	@Value("${cibseven.webclient.deprecated.authorization.enabled:false}")
 	private boolean authorizationEnabled;
 
 	protected CIBUser checkAuthorization(HttpServletRequest rq, boolean basicAuthAllowed) {
