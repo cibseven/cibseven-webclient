@@ -104,7 +104,15 @@ export default defineConfig({
           fileName: (format) => `cibseven-components.${format}.js`,
         },
         rollupOptions: {
-          external: ['vue', /^\/assets\/images\//, 'bootstrap', 'vue-i18n', 'vue-router', 'axios', /^cibseven-modeler/],
+          external: [
+            /^\/assets\/images\//,
+            'axios',
+            'bootstrap',
+            /^cibseven-modeler/,
+            'vue',
+            'vue-i18n',
+            'vue-router',
+          ],
           output: {
             globals: {
               vue: 'Vue',
