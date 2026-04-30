@@ -59,7 +59,17 @@
         <b-form-select v-model="formatLong" :options="dateFormatOptions"
           class="col-lg-6 col-md-8 col-sm-12 mb-0"
         />
-      </b-form-group>
+      </b-form-group>      
+    </ContentBlock>
+
+    <ContentBlock :title="$t('admin.preferences.bpmn.title')">
+      <b-form-group>
+        <b-form-checkbox v-model="shortenBadgeNumbers">
+          <span class="fw-semibold">{{ $t('admin.preferences.bpmn.shortenBadgeNumbers') }}</span>
+          <br/>
+        <span class="small text-secondary">{{ $t('admin.preferences.bpmn.shortenBadgeNumbersDescription') }}</span>
+        </b-form-checkbox>
+      </b-form-group> 
     </ContentBlock>
 
     <ContentBlock :title="$t('admin.preferences.notifications.title')"
@@ -290,6 +300,15 @@ export default {
       return this.$options.components && this.$options.components.ProfilePreferencesPlugin
         ? this.$options.components.ProfilePreferencesPlugin
         : null
+    },
+    shortenBadgeNumbers: {
+      get() {
+        if (!localStorage) return true
+        return localStorage.getItem('cibseven:preferences:shortenBadgeNumbers') !== 'false'
+      },
+      set(val) {
+        localStorage?.setItem('cibseven:preferences:shortenBadgeNumbers', val)
+      }
     },
   },
   methods: {

@@ -614,6 +614,11 @@
 				"groupUS": "Formatos de EE.UU.",
 				"groupISO": "Formatos ISO/Técnicos"
 			},
+			"bpmn": {
+				"title": "Diagrama BPMN",
+				"shortenBadgeNumbers": "Formato de número corto",
+				"shortenBadgeNumbersDescription": "Cuando está activado, los números para instancias e incidencias se mostrarán en un formato abreviado, como 1K en lugar de 1.005."
+			},
 			"notifications": {
 				"title": "Notificaciones",
 				"showPopoverHowToAssign": {

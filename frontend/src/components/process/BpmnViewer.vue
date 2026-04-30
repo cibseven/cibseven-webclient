@@ -49,6 +49,7 @@ import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer'
 import { BWaitingBox } from '@cib/common-frontend'
 import { mapActions, mapGetters } from 'vuex'
 import { HistoryService } from '@/services.js'
+import { abbreviateNumber } from 'js-abbreviation-number'
 
 const interactionTypes = [
   // Tasks
@@ -539,9 +540,11 @@ export default {
       if (activityId) {
         styleStr += " cursor: pointer;"
       }
+      const shortenBadgeNumbers = localStorage?.getItem('cibseven:preferences:shortenBadgeNumbers') !== 'false'
+      const formattedNumber = shortenBadgeNumbers ? abbreviateNumber(number, 0, {symbols: ['', 'K', 'M']}) : number
       const overlayHtml = `
         <span data-activity-id="${activityId || ''}" data-type="${type || ''}" class="bubble position-absolute" style="${styleStr}" title="${title}">
-          <span class="badge rounded-pill border border-dark px-2 py-1 me-1 ${classes}">${number}</span>
+          <span class="badge rounded-pill border border-dark px-2 py-1 me-1 ${classes}">${formattedNumber}</span>
         </span>
       `
       return overlayHtml

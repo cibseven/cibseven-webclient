@@ -614,6 +614,11 @@
 				"groupUS": "US-Formate",
 				"groupISO": "ISO/Technische Formate"
 			},
+			"bpmn": {
+				"title": "BPMN-Diagramm",
+				"shortenBadgeNumbers": "Kurzes Zahlenformat",
+				"shortenBadgeNumbersDescription": "Wenn aktiviert, werden die Zahlen für Instanzen und Vorkommnisse in einem verkürzten Format angezeigt, wie z.B. 1K statt 1.005."
+			},
 			"notifications": {
 				"title": "Benachrichtigungen",
 				"showPopoverHowToAssign": {
