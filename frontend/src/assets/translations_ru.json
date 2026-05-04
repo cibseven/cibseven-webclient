@@ -614,6 +614,11 @@
 				"groupUS": "Форматы США",
 				"groupISO": "ISO/Технические форматы"
 			},
+			"bpmn": {
+				"title": "BPMN-диаграмма",
+				"shortenBadgeNumbers": "Сокращённый формат чисел",
+				"shortenBadgeNumbersDescription": "При активации числа для экземпляров и инцидентов будут отображаться в сокращённом формате, например 1K вместо 1005."
+			},
 			"notifications": {
 				"title": "Уведомления",
 				"showPopoverHowToAssign": {

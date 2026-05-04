@@ -613,6 +613,11 @@
 				"groupEuropean": "European Formats",
 				"groupUS": "US Formats",
 				"groupISO": "ISO/Technical Formats"
+				},
+			"bpmn": {
+				"title": "BPMN Diagram",
+				"shortenBadgeNumbers": "Short number format",
+				"shortenBadgeNumbersDescription": "When activated, numbers for instances and incidents will be displayed in a shortened format, like 1k instead of 1005."
 			},
 			"notifications": {
 				"title": "Notifications",
