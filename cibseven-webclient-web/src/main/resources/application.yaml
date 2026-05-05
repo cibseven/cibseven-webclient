@@ -6,6 +6,7 @@ spring:
       - optional:classpath:cibseven-webclient.properties
       - optional:classpath:cibseven-webclient.yaml
   datasource:
+    jndi-name: java:comp/env/jdbc/ProcessEngine
     url:
     username:
     password:
