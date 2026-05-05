@@ -199,8 +199,8 @@ export default {
           if (identityLink.type === 'candidate') {
             if (identityLink.groupId !== null) {
               const promise = AdminService.findUsers({ memberOfGroup: identityLink.groupId }).then(users => {
-                this.$store.commit('setCandidateUsers', users)
-                this.$store.commit('setSearchUsers', users)
+                this.$store.commit('concatCandidateUsers', users)
+                this.$store.commit('concatSearchUsers', users)
               })
               promises.push(promise)
             }
