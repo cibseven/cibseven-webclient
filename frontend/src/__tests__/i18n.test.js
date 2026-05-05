@@ -316,11 +316,9 @@ describe('i18n', () => {
       }
 
       // Report unused keys
-      if (stringLongKeys.length > 0) {
-        stringLongKeys = stringLongKeys.sort((a, b) => a.localeCompare(b))
-        const message = `Unused ${stringLongKeys.length} translation keys in en (checked ${vueFiles.length} .vue files):\n` + stringLongKeys.map(k => `- ${k}`).join('\n')
-        expect(message).toBe('')
-      }
+      stringLongKeys = stringLongKeys.sort((a, b) => a.localeCompare(b))
+      const message = (stringLongKeys.length > 0) ? `Unused ${stringLongKeys.length} translation keys in en (checked ${vueFiles.length} .vue files):\n` + stringLongKeys.map(k => `- ${k}`).join('\n') : ''
+      expect(message).toBe('')
       expect(stringLongKeys.length).toBe(0)
     })
 
@@ -379,11 +377,9 @@ describe('i18n', () => {
       }
 
       // Report unused keys
-      if (notDeclaredKeys.length > 0) {
-        notDeclaredKeys = notDeclaredKeys.sort((a, b) => a.localeCompare(b))
-        const message = `Next translation keys are missing in en, but used in checked ${vueFiles.length} .vue files:\n` + notDeclaredKeys.map(k => `- ${k}`).join('\n')
-        expect(message).toBe('')
-      }
+      notDeclaredKeys = notDeclaredKeys.sort((a, b) => a.localeCompare(b))
+      const message = (notDeclaredKeys.length > 0) ? `Next translation keys are missing in en, but used in checked ${vueFiles.length} .vue files:\n` + notDeclaredKeys.map(k => `- ${k}`).join('\n') : ''
+      expect(message).toBe('')
       expect(notDeclaredKeys.length).toBe(0)
     })
   })
@@ -406,10 +402,8 @@ describe('i18n', () => {
     // Check that none of own keys is in common-frontend keys
     expect(ownLongKeys.length).not.toBe(parentLongKeys.length)
     const redeclaredKeys = ownLongKeys.filter(k => parentLongKeys.includes(k))
-    if (redeclaredKeys.length > 0) {
-      const message = 'Next translation keys are redeclaring keys from @cib/common-frontend:\n' + redeclaredKeys.map(k => `- ${k}`).join('\n')
-      expect(message).toBe('')
-    }
+    const message = (redeclaredKeys.length > 0) ? 'Next translation keys are redeclaring keys from @cib/common-frontend:\n' + redeclaredKeys.map(k => `- ${k}`).join('\n') : ''
+    expect(message).toBe('')
     expect(redeclaredKeys.length).toBe(0)
   })
 })
