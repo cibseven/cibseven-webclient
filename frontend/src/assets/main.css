@@ -71,3 +71,8 @@ thead.resizable tr, thead.resizable + tbody tr {
 .bjs-breadcrumbs li:last-of-type a {
   text-decoration: none !important;
 }
+
+/* BPMN Viewer - Improve styling for SubProcessLinks contrast */
+.djs-overlays .btn.btn-info.mdi-link-variant {
+  color: var(--bs-white) !important;
+}
