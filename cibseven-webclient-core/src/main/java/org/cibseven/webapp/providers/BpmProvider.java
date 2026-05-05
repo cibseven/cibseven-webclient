@@ -54,6 +54,8 @@ import org.cibseven.webapp.rest.model.Job;
 import org.cibseven.webapp.rest.model.Message;
 import org.cibseven.webapp.rest.model.Metric;
 import org.cibseven.webapp.rest.model.NewUser;
+import org.cibseven.webapp.rest.model.PasswordPolicyRequest;
+import org.cibseven.webapp.rest.model.PasswordPolicyResponse;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.cibseven.webapp.rest.model.ProcessInstance;
@@ -77,6 +79,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import io.jsonwebtoken.security.Password;
 import jakarta.servlet.http.HttpServletRequest;
 
 public interface BpmProvider {
@@ -1262,5 +1265,7 @@ public interface BpmProvider {
 	 * @throws InvalidUserIdException when the user ID is invalid.
 	 */
 	void createSetupUser(NewUser user, String engine) throws InvalidUserIdException;
+
+	PasswordPolicyResponse validatePasswordPolicy(PasswordPolicyRequest request) throws SystemException;
 
 }

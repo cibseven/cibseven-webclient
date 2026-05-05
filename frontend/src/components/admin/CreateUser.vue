@@ -34,13 +34,22 @@
                       {{ $t('admin.users.password') + '*' }}
                       <span v-if="$root.config.admin.passwordPolicyEnabled" ref="passwordHelper" style="cursor: pointer" class="mdi mdi-help-circle" :class="passwordPolicyError ? 'text-danger' : 'text-secondary'"></span>
                     </template>
-                    <b-form-input :type="fieldType(showPassword)" ref="pass" v-model="credentials.password" :state="notEmpty(credentials.password) && !passwordPolicyError" required>
+                    <b-form-input :type="fieldType(showPassword)" ref="pass" v-model="credentials.password" :state="notEmpty(credentials.password) && passwordValid" @blur="validatePassword" @input="resetPasswordValidation" required>
                       <template v-slot:append>
                         <button class="btn btn-outline-secondary rounded-start-0" type="button" @click="showPassword = !showPassword">
                           <span :class="showPassword ? 'mdi mdi-eye-off' : 'mdi mdi-eye'"></span>
                         </button>
                       </template>
                     </b-form-input>
+                    <div v-if="passwordValid === false" class="invalid-feedback d-block">
+                    <h6>{{ $t('password.policy.title') }}</h6>
+                    <div>{{ $t('password.policy.header') }}</div>
+                    <ul>
+                      <li v-for="(item, idx) in $tm('password.policy.items')" :key="idx">
+                        {{ item }}
+                      </li>
+                    </ul>
+                  </div>
                     <div v-if="passwordPolicyError" class="text-danger">{{ $t('errors.PasswordPolicyException') }}</div>
                   </b-form-group>
                   <b-form-group :label="$t('admin.users.passwordRepeat') + '*'" label-cols-sm="2" label-align-sm="left">
@@ -90,7 +99,7 @@
 </template>
 
 <script>
-import { AdminService } from '@/services.js'
+import { AdminService, SetupService } from '@/services.js'
 import { notEmpty, same, isValidEmail } from '@/components/admin/utils.js'
 import { SuccessAlert } from '@cib/common-frontend'
 
@@ -105,10 +114,26 @@ export default {
       showPassword: false,
       showPassRepeat: false,
       passwordPolicyError: false,
-      userIdError: false
+      userIdError: false,
+      passwordValid: null
     }
   },
   methods: {
+    resetPasswordValidation: function () {
+      this.passwordValid = null
+    },
+    validatePassword: function () {
+      if (notEmpty(this.credentials.password)) {
+        SetupService.validatePasswordPolicy(this.credentials.password, this.profile).then((response) => {
+          this.passwordValid = response.data.valid
+        }, error => {
+          const data = error.response.data
+          if (data && data.type === 'PasswordPolicyException') {
+            this.passwordPolicyError = true
+          }
+        })
+      }
+    },
     fieldType: function(showPass) {
       if (showPass)
         return 'text'
