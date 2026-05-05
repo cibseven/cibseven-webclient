@@ -141,6 +141,34 @@
                   </div>
                 </div>
               </div>
+              <div v-if="visibleFilterVariables(task).length > 0" class="position-relative">
+                <div class="row g-0" :class="expandedTasks[task.id] ? '' : 'task-variables-collapsed'">
+                  <div v-for="filterVar in visibleFilterVariables(task)" :key="filterVar.name" class="col-12 col-md-6 h6 fw-normal m-0 mt-2">
+                    <div class="d-flex d-md-block">
+                      <div class="text-truncate fw-semibold me-1" :title="displayTooltip(task, filterVar)">{{ filterVar.label }}:</div>
+                      <div v-if="task.variables && task.variables[filterVar.name] !== undefined && task.variables[filterVar.name] !== null" class="text-truncate" :title="displayTooltip(task, filterVar)">
+                        {{ displayValue(task, filterVar) }}
+                      </div>
+                      <div v-else class="text-muted fst-italic" :title="displayTooltip(task, filterVar)">&lt;undefined&gt;</div>
+                    </div>
+                  </div>
+                </div>
+                <div v-if="!expandedTasks[task.id]"
+                  class="task-variables-overlay position-absolute d-flex justify-content-center align-items-end w-100"
+                  style="bottom: 0; left: 0; right: 0" role="button" tabindex="0"
+                  @click.stop="toggleTaskVariables(task.id)"
+                  @keydown.enter.stop.prevent="toggleTaskVariables(task.id)"
+                  @keydown.space.stop.prevent="toggleTaskVariables(task.id)">
+                  <span class="mdi mdi-18px text-secondary mdi-chevron-down"></span>
+                </div>
+                <div v-else
+                  class="d-flex justify-content-center w-100" role="button" tabindex="0"
+                  @click.stop="toggleTaskVariables(task.id)"
+                  @keydown.enter.stop.prevent="toggleTaskVariables(task.id)"
+                  @keydown.space.stop.prevent="toggleTaskVariables(task.id)">
+                  <span class="mdi mdi-18px text-secondary mdi-chevron-up"></span>
+                </div>
+              </div>
             </b-list-group-item>
           </b-list-group>
 
@@ -194,7 +222,7 @@
 import { moment } from '@/globals.js'
 import { TaskService, AdminService } from '@/services.js'
 import { debounce } from '@/utils/debounce.js'
-import { formatDateForTooltips } from '@/utils/dates.js'
+import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import StartProcess from '@/components/start-process/StartProcess.vue'
 import AdvancedSearchModal from '@/components/task/AdvancedSearchModal.vue'
 import SmartSearch from '@/components/task/SmartSearch.vue'
@@ -220,6 +248,7 @@ export default {
       pauseRefreshButton: false,
       advancedFilter: [],
       advancedFilterAux: null,
+      expandedTasks: {},
 	    justSelectedFromList: false,
       pendingScrollToTaskId: null
     }
@@ -273,6 +302,12 @@ export default {
     },
     filteredFields() {
       return this.$root.config.taskSorting.fields.filter(item => this.showFields(item))
+    },
+    filterVariables: function() {
+      return this.$store.state.filter.selected.properties?.variables || []
+    },
+    showUndefinedVariable: function() {
+      return this.$store.state.filter.selected.properties?.showUndefinedVariable || false
     }
   },
   created: function () {
@@ -285,6 +320,36 @@ export default {
   methods: {
     ...mapActions('task', ['setSelectedAssignee']),
     formatDateForTooltips,
+    shortValue: function(value) {
+      const str = String(value)
+      const dot = str.lastIndexOf('.')
+      return dot >= 0 && dot < str.length - 1 && /^[a-z]/.test(str) ? str.substring(dot + 1) : str
+    },
+    displayValue: function(task, filterVar) {
+      const value = task.variables[filterVar.name]
+      if (task.variableTypes && task.variableTypes[filterVar.name] === 'Date') {
+        return formatDate(value)
+      }
+      return this.shortValue(value)
+    },
+    displayTooltip: function(task, filterVar) {
+      const header = filterVar.label + ' (' + filterVar.name + '):'
+      const value = task.variables && task.variables[filterVar.name] != null
+        ? (task.variableTypes && task.variableTypes[filterVar.name] === 'Date'
+          ? formatDateForTooltips(task.variables[filterVar.name])
+          : String(task.variables[filterVar.name]))
+        : ''
+      return header + '\n' + value
+    },
+    toggleTaskVariables: function(taskId) {
+      this.expandedTasks[taskId] = !this.expandedTasks[taskId]
+    },
+    visibleFilterVariables: function(task) {
+      return this.filterVariables.filter(filterVar =>
+        (task.variables && task.variables[filterVar.name] !== undefined && task.variables[filterVar.name] !== null) ||
+        this.showUndefinedVariable
+      )
+    },
     loadAdvancedFilters: function() {
       this.advancedFilter = []
       this.$root.config.taskFilter.advancedSearch.processVariables.forEach(pv => {
@@ -536,6 +601,16 @@ export default {
 </script>
 
 <style scoped>
+.task-variables-collapsed {
+  max-height: 3rem;
+  overflow: hidden;
+}
+
+.task-variables-overlay {
+  height: 3rem;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.92) 60%);
+}
+
 .action-button-hidden {
   opacity: 0;
   transition: opacity 0.2s;

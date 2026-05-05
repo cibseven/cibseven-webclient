@@ -115,6 +115,35 @@
       </b-form-checkbox>
     </div>
 
+    <hr class="my-0 mt-3">
+    <div>
+      <div class="d-flex align-items-center py-2 px-1" role="button" tabindex="0" style="cursor: pointer"
+        @click="variablesExpanded = !variablesExpanded"
+        @keydown.enter.prevent="variablesExpanded = !variablesExpanded"
+        @keydown.space.prevent="variablesExpanded = !variablesExpanded">
+        <span class="col-form-label col-form-label-sm fw-bold me-2">{{ $t('nav-bar.filters.variablesTitle') }}</span>
+        <b-badge v-if="filterVariables.length > 0" class="text-bg-light rounded-pill me-2">{{ filterVariables.length }}</b-badge>
+        <span class="mdi mdi-18px text-secondary" :class="variablesExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down'"></span>
+      </div>
+      <div v-if="variablesExpanded" class="container pb-2">
+        <div class="row"><small class="col-12 mb-1" style="color: var(--gray)">{{ $t('nav-bar.filters.variablesLegend') }}</small></div>
+        <b-form-checkbox class="mb-2" v-model="showUndefinedVariable" switch>
+          <span>{{ $t('nav-bar.filters.showUndefinedVariable') }}</span>
+        </b-form-checkbox>
+        <div v-if="filterVariables.length > 0" class="col-12 px-0 pb-1 d-flex align-items-center">
+          <small class="me-2 text-secondary" style="flex: 1; min-width: 0">{{ $t('nav-bar.filters.variable.name') }}</small>
+          <small class="me-2 text-secondary" style="flex: 1; min-width: 0">{{ $t('nav-bar.filters.variable.label') }}</small>
+          <span style="width: 2rem; flex-shrink: 0"></span>
+        </div>
+        <div v-for="(variable, index) of filterVariables" class="col-12 input-group px-0 pb-2 d-flex align-items-center" :key="index">
+          <b-form-input :id="'var-name-' + index" class="rounded me-2" size="sm" :placeholder="$t('nav-bar.filters.variable.namePlaceholder')" v-model="variable.name" :aria-label="$t('nav-bar.filters.variable.name')"></b-form-input>
+          <b-form-input :id="'var-label-' + index" class="rounded me-2" size="sm" :placeholder="$t('nav-bar.filters.variable.labelPlaceholder')" v-model="variable.label" :aria-label="$t('nav-bar.filters.variable.label')"></b-form-input>
+          <CellActionButton @click="removeFilterVariable(index)" icon="mdi-delete-outline" :title="$t('confirm.delete')"></CellActionButton>
+        </div>
+        <b-button size="sm" variant="outline-secondary" class="mb-2" @click="addFilterVariable()"><span class="mdi mdi-plus"></span> {{ $t('nav-bar.filters.addVariable') }}</b-button>
+      </div>
+    </div>
+
     <template v-slot:modal-footer>
       <b-button @click="$refs.filterHandler.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
       <b-button @click="createFilter" :disabled="isFormInvalid" variant="primary">{{ mode === 'create' ? $t('nav-bar.filters.addFilter') : $t('nav-bar.filters.updateFilter') }}</b-button>
@@ -161,6 +190,9 @@ export default {
       isEditing: false,
       criteriaEdited: { key: null, rowIndex: null},
       likeExp: /Like$/, // Matches any string ending with the word "Like"
+      showUndefinedVariable: false,
+      filterVariables: [],
+      variablesExpanded: false,
     }
   },
   watch: {
@@ -168,6 +200,8 @@ export default {
       this.selectedFilterId = this.$store.state.filter.selected.id
       this.selectedFilterName = this.$store.state.filter.selected.name
       this.selectedFilterPriority = this.$store.state.filter.selected.properties.priority
+      this.showUndefinedVariable = this.$store.state.filter.selected.properties.showUndefinedVariable || false
+      this.filterVariables = JSON.parse(JSON.stringify(this.$store.state.filter.selected.properties.variables || []))
     },
     selectedCriteriaKey: function(newValue) {
       this.selectCriteria(newValue)
@@ -237,6 +271,8 @@ export default {
       if (this.mode === 'edit') {
         this.$store.state.filter.selected.name = this.selectedFilterName
         this.$store.state.filter.selected.properties.priority = this.selectedFilterPriority || 0
+        this.$store.state.filter.selected.properties.showUndefinedVariable = this.showUndefinedVariable
+        this.$store.state.filter.selected.properties.variables = this.filterVariables.filter(v => v.name)
         this.$store.state.filter.selected.query = query
         this.$store.dispatch('updateFilter', { filter: this.$store.state.filter.selected }).then(() => {
           this.$emit('filter-alert', { message: 'nav-bar.filters.msgFilterUpdated', filter: this.selectedFilterName })
@@ -256,10 +292,11 @@ export default {
           query: query,
           properties: {
             color: '#555555',
-            showUndefinedVariable: false,
+            showUndefinedVariable: this.showUndefinedVariable,
             description: '',
             refresh: true,
-            priority: this.selectedFilterPriority || 0
+            priority: this.selectedFilterPriority || 0,
+            variables: this.filterVariables.filter(v => v.name)
           }
         }
         this.$store.dispatch('createFilter', { filter: filterCreate }).then(filter => {
@@ -356,6 +393,12 @@ export default {
       this.selectedCriteriaType = null
       this.criteriaEdited = { key: null, rowIndex: null }
     },
+    addFilterVariable: function() {
+      this.filterVariables.push({ name: '', label: '' })
+    },
+    removeFilterVariable: function(index) {
+      this.filterVariables.splice(index, 1)
+    },
     selectCriteria: function(evt) {
       const criteria = this.criterias.find(option => {
         return option.value === evt
@@ -376,6 +419,9 @@ export default {
       this.selectedCriteriaVariable = [{ name: '', operator: 'eq', value: '' }]
       this.isEditing = false
       this.criteriaEdited = { key: null, rowIndex: null}
+      this.showUndefinedVariable = false
+      this.filterVariables = []
+      this.variablesExpanded = false
 
       // Prepared criterias
       const auxCriterias = {}
@@ -402,6 +448,9 @@ export default {
         this.selectedFilterId = this.$store.state.filter.selected.id
         this.selectedFilterName = this.$store.state.filter.selected.name
         this.selectedFilterPriority = this.$store.state.filter.selected.properties.priority
+        this.showUndefinedVariable = this.$store.state.filter.selected.properties.showUndefinedVariable || false
+        this.filterVariables = JSON.parse(JSON.stringify(this.$store.state.filter.selected.properties.variables || []))
+        this.variablesExpanded = false
 
         // Not matched all criterias.
         if (!this.$store.state.filter.selected.query) return

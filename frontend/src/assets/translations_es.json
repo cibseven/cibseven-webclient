@@ -925,6 +925,16 @@
 			"legendExpression": "Las claves que terminan en \"*\" aceptan expresiones como valor. Por ejemplo: '&#36;&#123; currentUser&#40;&#41; &#125;' o '&#36;&#123; currentUserGroups&#40;&#41; &#125;'",
 			"legendMultiple": "Las claves que terminan en \"in\" aceptan múltiples valores separados por coma. Por ejemplo: `claveC, claveA, claveB`",
 			"create": "Crear filtro",
+			"variablesTitle": "Variables",
+			"variablesLegend": "Puede definir variables que se muestran en la lista de tareas.",
+			"showUndefinedVariable": "Mostrar variables no definidas",
+			"addVariable": "Añadir variable",
+			"variable": {
+				"name": "Nombre",
+				"label": "Etiqueta",
+				"namePlaceholder": "Nombre de variable",
+				"labelPlaceholder": "Etiqueta legible"
+			},
 			"operators": {
 				"eq": "=",
 				"neq": "≠",
