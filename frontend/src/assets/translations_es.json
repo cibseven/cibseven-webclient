@@ -100,7 +100,6 @@
 		"start": "Iniciar",
 		"showProcess": "Mostrar proceso",
 		"showInstance": "Mostrar instancia",
-		"showCockpit": "Abrir en el Cockpit antiguo",
 		"downloadBpmn": "Descargar fichero BPMN",
 		"openModeler": "Abrir fichero BPMN en el Modeler",
 		"showManagement": "Gestión del proceso",
@@ -1003,10 +1002,6 @@
 		"modeler": {
 			"title": "Modeler",
 			"tooltip": "Abrir Modeler para diseñar y editar BPMN, DMN y formularios"
-		},
-		"oldCockpit": {
-			"title":"Cockpit antiguo",
-			"tooltip": "Abrir Cockpit antiguo"
 		},
 		"account": {
 			"tooltip": "Ver y editar la información de su cuenta o cerrar sesión",

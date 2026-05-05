@@ -100,7 +100,6 @@
 		"start": "Starten",
 		"showProcess": "Prozess anzeigen",
 		"showInstance": "Instanz anzeigen",
-		"showCockpit": "Im alten Cockpit öffnen",
 		"downloadBpmn": "BPMN file herunterladen",
 		"openModeler": "BPMN-Datei im Modeler öffnen",
 		"showManagement": "Verwaltung",
@@ -1003,10 +1002,6 @@
 		"modeler": {
 			"title": "Modeler",
 			"tooltip": "Modeler öffnen, um BPMN, DMN und Formulare zu entwerfen und zu bearbeiten"
-		},
-		"oldCockpit": {
-			"title": "Altes Cockpit",
-			"tooltip": "Altes Cockpit öffnen"
 		},
 		"account": {
 			"tooltip": "Kontoinformationen ansehen und bearbeiten oder abmelden",

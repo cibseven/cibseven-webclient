@@ -126,10 +126,6 @@ application:
           external:
             ip: "true"
 
-      # Old Cockpit URL
-      cockpit:
-        url: /camunda/app/cockpit/default/
-
       # Used to set a theme (Bootstrap)
       theme: cib
 

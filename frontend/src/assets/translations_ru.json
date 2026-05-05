@@ -100,7 +100,6 @@
 		"start": "Начать",
 		"showProcess": "Показать процесс",
 		"showInstance": "Показать экземпляр",
-		"showCockpit": "Открыть в старом Cockpit",
 		"downloadBpmn": "Скачать файл BPMN",
 		"openModeler": "Открыть BPMN файл в Modeler",
 		"showManagement": "Управление процессами",
@@ -1003,10 +1002,6 @@
 		"modeler": {
 			"title": "Modeler",
 			"tooltip": "Открыть Modeler для проектирования и редактирования BPMN, DMN и форм"
-		},
-		"oldCockpit": {
-			"title": "Старый Cockpit",
-			"tooltip": "Открыть старый Cockpit"
 		},
 		"account": {
 			"tooltip": "Просмотреть и изменить информацию о вашей учетной записи или выйти из системы",
