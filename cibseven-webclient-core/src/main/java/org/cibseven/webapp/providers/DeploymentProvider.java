@@ -29,6 +29,9 @@ import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.InputStreamSource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -45,10 +48,17 @@ import jakarta.servlet.http.HttpServletRequest;
 @Component
 public class DeploymentProvider extends SevenProviderBase implements IDeploymentProvider {
 
-	//TODO Check if we can reuse the createDeployment method for deployBpmn, as they are very similar and both call the same REST endpoint.
 	@Override
 	public Deployment deployBpmn(MultiValueMap<String, Object> data, MultiValueMap<String, MultipartFile> file, CIBUser user) throws SystemException {
 		String url = getEngineRestUrl(user) + "/deployment/create";
+
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+		if (user != null) {
+			headers.add(HttpHeaders.AUTHORIZATION, user.getAuthToken());
+			headers.add(USER_ID_HEADER, user.getId());
+		}
+		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
 
 		file.forEach((key, value) -> { 
 			try {
@@ -58,7 +68,14 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 			}
 		});
 
-		return doPostMultipart(url, data, Deployment.class, user).getBody();
+		HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(data, headers);
+
+		try {
+			return customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, Deployment.class).getBody();
+		} catch (HttpStatusCodeException e) {
+			throw wrapException(e, user);
+		}
+
 	}
 
 	@Override

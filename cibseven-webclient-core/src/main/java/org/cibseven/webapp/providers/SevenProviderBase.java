@@ -150,7 +150,7 @@ public abstract class SevenProviderBase {
 	 * @param user user with authorization to add if null No authorization is added
 	 * @return
 	 */
-	protected HttpHeaders createAuthHeader(CIBUser user) {
+	private HttpHeaders createAuthHeader(CIBUser user) {
 		HttpHeaders headers =  new HttpHeaders();
 		if (user != null) {
 		  headers.add(HttpHeaders.AUTHORIZATION, baseUserProvider.getEngineRestToken(user));
