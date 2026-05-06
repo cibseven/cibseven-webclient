@@ -35,7 +35,7 @@ cibseven:
       # Enable or disable the modeler (JPA entities, repositories, REST endpoints).
       # Requires the parent project to provide a configured DataSource and pre-created schema.
       # Set to false for deployments where the modeler is not needed.
-      enabled: true
+      enabled: false
     # Engine rest
     engineRest:
       url: http://localhost:8080
