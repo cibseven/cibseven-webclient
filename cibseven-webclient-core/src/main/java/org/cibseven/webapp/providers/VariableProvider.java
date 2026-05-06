@@ -37,7 +37,6 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -45,7 +44,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpStatusCodeException;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -74,38 +72,29 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	public void modifyVariableDataByExecutionId(String executionId, String variableName, MultipartFile data, String valueType, CIBUser user) throws SystemException {
 		String url = getEngineRestUrl(user) + "/execution/" + executionId + "/localVariables/" + variableName + "/data";
 
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-		if (user != null) headers.add("Authorization", user.getAuthToken());
 		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 		try {
       
-      if (valueType.equalsIgnoreCase("File") || valueType.equalsIgnoreCase("Bytes")) {
-        // Handle binary/file data
-        body.add("data", data.getResource());
-        body.add("valueType", valueType);
-      } else {
-        // Handle JSON/serialized data
-        String jsonContent = new String(data.getBytes());
-        HttpHeaders jsonHeaders = new HttpHeaders();
-        jsonHeaders.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<String> jsonEntity = new HttpEntity<>(jsonContent, jsonHeaders);
-        
-        body.add("data", jsonEntity);
-        body.add("type", valueType);
-        body.add("valueType", SERIALIZATION_DATA_FORMAT_JSON);
-      }
-      
-			HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
-			RestTemplate rest = new RestTemplate();
+			if (valueType.equalsIgnoreCase("File") || valueType.equalsIgnoreCase("Bytes")) {
+				// Handle binary/file data
+				body.add("data", data.getResource());
+				body.add("valueType", valueType);
+			} else {
+				// Handle JSON/serialized data
+				String jsonContent = new String(data.getBytes());
+				HttpHeaders jsonHeaders = new HttpHeaders();
+				jsonHeaders.setContentType(MediaType.APPLICATION_JSON);
+				HttpEntity<String> jsonEntity = new HttpEntity<>(jsonContent, jsonHeaders);
+				
+				body.add("data", jsonEntity);
+				body.add("type", valueType);
+				body.add("valueType", SERIALIZATION_DATA_FORMAT_JSON);
+			}
 
-			rest.exchange(builder.build().toUri(), HttpMethod.POST, request, String.class);
-		} catch (HttpStatusCodeException e) {
-			throw wrapException(e, user);
+			doPostMultipart(url, body, String.class, user);
 		} catch (IOException e) { // from data.getBytes()
-      throw new UnsupportedTypeException(e);
-    }
+			throw new UnsupportedTypeException(e);
+		}
 	}
 
 	private void mergeVariablesValues(
@@ -404,20 +393,10 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	public void uploadVariableFileData(String taskId, String variableName, MultipartFile data, String valueType, CIBUser user) throws NoObjectFoundException, SystemException {
 		String url = getEngineRestUrl(user) + "/task/" + taskId + "/variables/" + variableName + "/data";
 
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-		if (user != null) headers.add("Authorization", user.getAuthToken());
 		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-		try {
-			body.add("data", data.getResource());
-			body.add("valueType", valueType);
-			HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
-
-			customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, String.class);
-		} catch (HttpStatusCodeException e) {
-			throw wrapException(e, user);
-		}
+		body.add("data", data.getResource());
+		body.add("valueType", valueType);
+		doPostMultipart(url, body, String.class, user);
 	}
 
 	@Override
@@ -471,20 +450,10 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
     public void uploadProcessInstanceVariableFileData(String processInstanceId, String variableName, MultipartFile data, String valueType, CIBUser user) throws NoObjectFoundException, SystemException {
         String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId + "/variables/" + variableName + "/data";
 
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
-		if (user != null) headers.add("Authorization", user.getAuthToken());
 		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-		try {
-			body.add("data", data.getResource());
-			body.add("valueType", valueType);
-			HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(body, headers);
-
-			customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, String.class);
-		} catch (HttpStatusCodeException e) {
-			throw wrapException(e, user);
-		}
+		body.add("data", data.getResource());
+		body.add("valueType", valueType);
+		doPostMultipart(url, body, String.class, user);
 	}
 
 	// TODO: Split it
