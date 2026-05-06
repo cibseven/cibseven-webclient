@@ -6,7 +6,6 @@ spring:
       - optional:classpath:cibseven-webclient.properties
       - optional:classpath:cibseven-webclient.yaml
   datasource:
-    jndi-name:
     url:
     username:
     password:
