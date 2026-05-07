@@ -39,7 +39,7 @@ public class FormUsageProvider implements IFormUsageProvider {
 		formDao.deleteById(id);
 	}
 	
-	@Value("${cibsevenmodeler.session.expiresAfterMin:10}")
+	@Value("${cibseven.webclient.modeler.session.expiresAfterMin:10}")
 	private int sessionExpiresAfter;
 	
 	@Override

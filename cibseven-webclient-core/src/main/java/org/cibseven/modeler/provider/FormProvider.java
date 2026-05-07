@@ -38,7 +38,7 @@ import org.cibseven.modeler.repository.FormRepository;
 @Component
 public class FormProvider implements IFormProvider {
 	
-	@Value("${cibsevenmodeler.deleteProcesses.versionLimit:50}") private Integer versionLimit;
+	@Value("${cibseven.webclient.modeler.deleteProcesses.versionLimit:50}") private Integer versionLimit;
 	
 	@Autowired
 	private FormRepository formRepositoryDao;

@@ -90,7 +90,7 @@ public class ModelerService extends BaseService {
 	@Autowired FormProvider formProvider;
 	@Autowired UnifiedDiagramProvider unifiedDiagramProvider;
 
-    @Value("${cibsevenmodeler.authentication.enabled:true}")
+    @Value("${cibseven.webclient.modeler.authentication.enabled:true}")
     private boolean authenticationEnabled;
 	
 	@RequestMapping(value = "/processes", method = RequestMethod.GET)
