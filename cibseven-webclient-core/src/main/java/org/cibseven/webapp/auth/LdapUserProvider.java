@@ -60,6 +60,7 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 	@Value("${cibseven.webclient.ldap.folder:}") String ldapFolder;
 	@Value("${cibseven.webclient.ldap.userNameAttribute:}") String ldapNameAttribute;
 	@Value("${cibseven.webclient.ldap.userDisplayNameAttribute:}") String ldapDisplayNameAttribute;
+	@Value("${cibseven.webclient.ldap.userClass:}") String ldapUserClass;
 	@Value("#{'${cibseven.webclient.ldap.attributes.filters:samAccountName;name}'.split(';\\s*')}") List<String> ldapAttributesFilters;
 	@Value("${cibseven.webclient.ldap.modifiedDateFormat:}") String ldapModifiedDateFormat;
 	@Value("${cibseven.webclient.ldap.countLimit:400}") int ldapCountLimit;
@@ -85,9 +86,9 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 			SearchControls searchControls = new SearchControls();
 			searchControls.setCountLimit(ldapCountLimit);
 			searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-			NamingEnumeration<SearchResult> results = initialDirContext.search(ldapFolder, "(&(" + ldapNameAttribute + "=" + login.getUsername() + ")(objectClass=person))", searchControls);
+			NamingEnumeration<SearchResult> results = initialDirContext.search(ldapFolder, "(&(" + ldapNameAttribute + "=" + login.getUsername() + ")(objectClass=" + ldapUserClass + "))", searchControls);
 			if(!results.hasMore()) {
-				throw new LoginException("[ERROR][LdapUserProvider] login not user found with the following username: " + login.getUsername());
+				throw new LoginException("[ERROR][LdapUserProvider] login not user found with the following username: " + login.getUsername() + " and object class: " + ldapUserClass);
 			}
 			SearchResult result = results.next();
 			CIBUser user =  new CIBUser(result.getAttributes().get(ldapNameAttribute).get().toString());

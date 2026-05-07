@@ -66,6 +66,7 @@ cibseven:
     ldap:
       url: ldap://ldap.cibseven.org
       folder: DC=cibseven,DC=org
+      userClass: person
       userNameAttribute: samAccountName
       userDisplayNameAttribute: name
       modifiedDateFormat: yyyyMMddHHmmss.SX
