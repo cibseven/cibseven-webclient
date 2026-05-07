@@ -518,7 +518,7 @@ export default {
 
         const button = document.createElement('button')
         button.type = 'button'
-        button.className = 'btn btn-info btn-sm mdi mdi-link-variant px-1 py-0'
+        button.className = 'btn btn-info btn-sm mdi mdi-link-variant px-1 py-0 text-white'
 
         if (disabled) {
           button.disabled = true
