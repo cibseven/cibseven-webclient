@@ -76,17 +76,19 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 	@Override
 	public CIBUser login(StandardLogin login, HttpServletRequest rq) {	
         try {
+			String fullUserDN = getFullUserDN(login.getUsername());
 			Hashtable<String, String> environment = new Hashtable<String, String>();
 	        environment.put(javax.naming.Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
 	        environment.put(javax.naming.Context.PROVIDER_URL, serverURL);
-	        environment.put(javax.naming.Context.SECURITY_PRINCIPAL, getFullUserDN(login.getUsername()));
+	        environment.put(javax.naming.Context.SECURITY_PRINCIPAL, fullUserDN);
 	        environment.put(javax.naming.Context.SECURITY_CREDENTIALS, login.getPassword());
 	        environment.put(javax.naming.Context.REFERRAL, ldapFollowReferrals);
 			InitialDirContext initialDirContext = new InitialDirContext(environment);
+			// do not use configured LDAP base, but full DN of logging in user, because normal users generally are not allowed to do LDAP searches
 			SearchControls searchControls = new SearchControls();
 			searchControls.setCountLimit(ldapCountLimit);
-			searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-			NamingEnumeration<SearchResult> results = initialDirContext.search(ldapFolder, "(&(" + ldapNameAttribute + "=" + login.getUsername() + ")(objectClass=" + ldapUserClass + "))", searchControls);
+			searchControls.setSearchScope(SearchControls.OBJECT_SCOPE);
+			NamingEnumeration<SearchResult> results = initialDirContext.search(fullUserDN, "(&(" + ldapNameAttribute + "=" + login.getUsername() + ")(objectClass=" + ldapUserClass + "))", searchControls);
 			if(!results.hasMore()) {
 				throw new LoginException("[ERROR][LdapUserProvider] login not user found with the following username: " + login.getUsername() + " and object class: " + ldapUserClass);
 			}
