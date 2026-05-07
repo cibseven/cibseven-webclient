@@ -94,7 +94,11 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 			}
 			SearchResult result = results.next();
 			CIBUser user =  new CIBUser(result.getAttributes().get(ldapNameAttribute).get().toString());
-			user.setDisplayName(result.getAttributes().get(ldapDisplayNameAttribute).get().toString());
+			if (result.getAttributes().get(ldapDisplayNameAttribute) != null) {
+				user.setDisplayName(result.getAttributes().get(ldapDisplayNameAttribute).get().toString());
+			} else {
+				log.debug("User " + login.getUsername() + " does not have attribute " + ldapDisplayNameAttribute + " defined.");
+			}
 			
 			// Set engine from request header
 			EngineTokenUtils.setEngineFromRequest(user, rq);
