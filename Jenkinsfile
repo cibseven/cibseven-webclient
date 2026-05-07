@@ -613,4 +613,5 @@ def isNpmVersionPublished() {
     echo "Checking if npm package ${packageName} with version ${packageVersion} is published. Result: ${result}"
 
     return result == packageVersion
+
 }
