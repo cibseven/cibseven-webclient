@@ -48,6 +48,7 @@
     "bpmn-js": "18.14.0",
     "cibseven-modeler": "1.0.0-dev.11",
     "dmn-js": "17.7.0",
+    "js-abbreviation-number": "1.4.0",
     "js-sha256": "0.11.1",
     "moment": "2.30.1",
     "platform": "1.3.6",
