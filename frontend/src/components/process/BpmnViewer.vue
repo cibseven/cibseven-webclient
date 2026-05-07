@@ -438,7 +438,7 @@ export default {
       const actualFinished = stat.finished - (stat.canceled || 0)
       if (options.showHistory && actualFinished > 0) {
         const position = stat.canceled > 0 ? { bottom: 35, right: 13 } : { bottom: 15, right: 13 }
-        const html = this.getBadgeOverlayHtml(actualFinished, 'bg-gray', 'activitiesHistory', stat.id)
+        const html = this.getBadgeOverlayHtml(actualFinished, 'bg-gray text-dark', 'activitiesHistory', stat.id)
         this.setHtmlOnDiagram(stat.id, html, position)
       }
     },
