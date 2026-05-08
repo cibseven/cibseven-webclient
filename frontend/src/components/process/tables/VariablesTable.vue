@@ -46,7 +46,12 @@
         ]">
 
         <template v-slot:cell(name)="table">
-          <div :title="table.item.name" class="text-truncate">{{ table.item.name }}</div>
+          <CopyableActionButton
+            :displayValue="table.item.name"
+            :clickable="false"
+            :title="$t('process-instance.variables.name') + ':\n' + table.item.name"
+            @copy="copyValueToClipboard"
+          />          
         </template>
 
         <template v-slot:cell(type)="table">
