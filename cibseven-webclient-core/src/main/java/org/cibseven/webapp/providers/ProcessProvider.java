@@ -522,7 +522,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	public Variable fetchProcessInstanceVariableImpl(String processInstanceId, String variableName, boolean deserializeValue, CIBUser user) throws SystemException  {
 		String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId + "/variables/" + variableName;
 		url += "?deserializeValue=" + deserializeValue;
-		return ((ResponseEntity<Variable>) doGet(url, Variable.class, null, false)).getBody();
+		return ((ResponseEntity<Variable>) doGet(url, Variable.class, user, false)).getBody();
 	}
 
 	@Override
