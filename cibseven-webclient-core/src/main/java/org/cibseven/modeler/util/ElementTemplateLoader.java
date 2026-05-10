@@ -65,15 +65,11 @@ public class ElementTemplateLoader implements InitializingBean {
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		System.out.println("ElementTemplateLoader.afterPropertiesSet()");
 		transactionTemplate.executeWithoutResult(status -> populateElementTemplatesDatabase());
 	}
 
 	private void populateElementTemplatesDatabase() {
-		System.out.println("ElementTemplateLoader.populateElementTemplatesDatabase()");
-
 		if (properties.getPaths() == null) {
-			System.out.println("ElementTemplateLoader.populateElementTemplatesDatabase(), properties.getPaths() == null");
 			return;
 		}
 		for (String path : properties.getPaths()) {
@@ -82,7 +78,7 @@ public class ElementTemplateLoader implements InitializingBean {
 	}
 
 	private void loadElementTemplatesFromPath(String path) {
-		System.out.println("ElementTemplateLoader.loadElementTemplatesFromPath(), path: " + path);
+		log.debug("Loading element templates from path: {}", path);
 		assert (path != null && !path.isBlank());
 
 		Resource[] resources;
