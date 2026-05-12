@@ -35,7 +35,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @ComponentScan({
     "org.cibseven.modeler.rest",
     "org.cibseven.modeler.provider",
-    "org.cibseven.modeler.repository"
+    "org.cibseven.modeler.repository",
+    "org.cibseven.modeler.util"
 })
 class ModelerJpaConfiguration {
 }

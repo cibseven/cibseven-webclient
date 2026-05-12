@@ -65,7 +65,7 @@ import java.util.stream.Collectors;
  * </p>
  * <p>
  * All endpoints require authentication when enabled via the configuration property
- * {@code cibsevenmodeler.authentication.enabled}. The service integrates with the
+ * {@code cibseven.webclient.modeler.authentication.enabled}. The service integrates with the
  * ElementTemplateProvider for data persistence operations.
  * </p>
  * 
@@ -88,7 +88,7 @@ public class ElementTemplateService extends BaseService {
     @Autowired
     private ElementTemplateProvider templateProvider;
 
-    @Value("${cibsevenmodeler.authentication.enabled:true}")
+    @Value("${cibseven.webclient.modeler.authentication.enabled:true}")
     private boolean authenticationEnabled;
 
     /**

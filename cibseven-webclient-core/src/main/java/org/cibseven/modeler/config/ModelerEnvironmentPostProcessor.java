@@ -18,9 +18,8 @@ package org.cibseven.modeler.config;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import org.springframework.boot.EnvironmentPostProcessor;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
@@ -39,11 +38,13 @@ import org.springframework.core.env.MapPropertySource;
  * <p>If {@code spring.datasource.url} is present, nothing is excluded - the client
  * application owns the datasource and must not be interfered with.</p>
  *
- * <p>Registered via {@code META-INF/spring/org.springframework.boot.EnvironmentPostProcessor}. Runs at
+ * <p>Registered via {@code META-INF/spring.factories}. Runs at
  * {@link Ordered#LOWEST_PRECEDENCE} so that all application config files
  * ({@code application.yaml}, {@code cibseven-webclient.yaml}) are already loaded
  * before this processor reads their values.</p>
  */
+ 
+@SuppressWarnings("removal")
 public class ModelerEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
 
     private static final String MODELER_ENABLED_PROPERTY = "cibseven.webclient.modeler.enabled";

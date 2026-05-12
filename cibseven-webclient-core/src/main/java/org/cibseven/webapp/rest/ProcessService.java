@@ -511,7 +511,6 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Variables to start process") @RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		//checkPermission(user, SevenResourceType.MESSAGE, PermissionConstants.CREATE_ALL);
 		return bpmProvider.correlateMessage(data, user);
 	}
 	
@@ -747,8 +746,6 @@ public class ProcessService extends BaseService implements InitializingBean {
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
 		
-		// TODO: Check the permission, but not considered the groups, needs to be checked.
-		// checkSpecificProcessRights(user, processDefinitionKey);
 		try {
 			boolean deserializeValue = (deserialize == null) || (deserialize != null && deserialize == "true");
 			return sevenProvider.fetchProcessInstanceVariable(processInstanceId, "chatComments", deserializeValue, user);	
@@ -770,8 +767,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
-		// TODO: Check the permission, but not considered the groups, needs to be checked.
-		// checkSpecificProcessRights(user, processDefinitionKey);
+		
 		try {
 			boolean deserializeValue = (deserialize == null) || (deserialize != null && deserialize == "true");
 			return sevenProvider.fetchProcessInstanceVariable(processInstanceId, "_statusDataset", deserializeValue, user);	
@@ -813,7 +809,6 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Event name") @RequestParam Optional<String> eventName,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		//checkPermission(user, SevenResourceType.EVENT_SUBSCRIPTION, PermissionConstants.READ_ALL);
 		return sevenProvider.getEventSubscriptions(processInstanceId, eventType, eventName, user);
 	}
 

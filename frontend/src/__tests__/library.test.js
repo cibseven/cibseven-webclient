@@ -62,10 +62,11 @@ describe('library.js', () => {
         // File should contain name in format: "'name: <componentName>'"
         const content = fs.readFileSync(file, 'utf-8')
         const isSetupScript = content.includes('<script setup>')
-        if (!isSetupScript) {
-          const namePattern = new RegExp(String.raw`name:\s*['"]${fileName}['"],`)
-          expect(content).toMatch(namePattern, `File ${file} does not contain name: '${fileName}'`)
+        if (isSetupScript) {
+          return
         }
+        const namePattern = new RegExp(String.raw`name:\s*['"]${fileName}['"],`)
+        expect(content).toMatch(namePattern, `File ${file} does not contain name: '${fileName}'`)
       })
     })
   })

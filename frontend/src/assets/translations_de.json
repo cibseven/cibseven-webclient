@@ -281,7 +281,7 @@
 			"value": "Wert",
 			"valueSerialized": "Serialisierter Wert",
 			"actions": "Aktionen",
-			"scope": "Umfang",
+			"scope": "Bereich",
 			"activityInstanceId": "Aktivitätsinstanz-ID",
 			"objectTypeName": "Objekttypname",
 			"serializationDataFormat": "Serialisierungsdatenformat",
@@ -613,6 +613,11 @@
 				"groupEuropean": "Europäische Formate",
 				"groupUS": "US-Formate",
 				"groupISO": "ISO/Technische Formate"
+			},
+			"bpmn": {
+				"title": "BPMN Diagramm",
+				"shortenBadgeNumbers": "Kurzes Zahlenformat",
+				"shortenBadgeNumbersDescription": "Wenn aktiviert, werden die Zahlen im BPMN Diagramm für Instanzen und Vorkommnisse verkürzt angezeigt, z.B. 1K statt 1.005."
 			},
 			"notifications": {
 				"title": "Benachrichtigungen",

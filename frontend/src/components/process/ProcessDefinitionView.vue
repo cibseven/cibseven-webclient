@@ -370,11 +370,11 @@ export default {
         this.selectedInstance = null
       }
       this.task = null
-      this.activityInstance = null
-      this.activityInstanceHistory = selectedInstance ? this.activityInstanceHistory : null
       if (selectedInstance) {
         // do not load the same data once again
         if (this.selectedInstance && this.selectedInstance.id === selectedInstance.id) return
+        this.activityInstance = null
+        this.activityInstanceHistory = selectedInstance ? this.activityInstanceHistory : null
         this.selectedInstance = selectedInstance
         if (this.selectedInstance.state === 'ACTIVE') {
           //Management
@@ -392,6 +392,10 @@ export default {
             })
           }
         }
+      }
+      else {
+        this.activityInstance = null
+        this.activityInstanceHistory = null
       }
     },
     async setSelectedTask(selectedTask) {
