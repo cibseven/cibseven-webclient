@@ -50,26 +50,26 @@
 
           <!-- Profile Tab -->
           <div v-if="selectedTab === 'profile'" class="row pt-3 ps-4 pe-4">
-            <ContentBlock 
+            <ContentBlock
               :title="$t('admin.users.editMessage', [user.firstName + ' ' + user.lastName])"
               class="col-lg-6 col-md-8 col-sm-12">
               <CIBForm @submitted="update()">
-                <b-form-group :label="$t('admin.users.firstName') + '*'" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4" 
+                <b-form-group :label="$t('admin.users.firstName') + '*'" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
                   :invalid-feedback="$t('errors.invalid')">
-                  <b-form-input v-model="user.firstName" @update:modelValue="dirty = true"
+                  <b-form-input v-model="user.firstName"  @update:modelValue="dirty=true"
                     :state="notEmpty(user.firstName)" :readonly="!$root.config.userEditable || !editMode" required></b-form-input>
                 </b-form-group>
                 <b-form-group :label="$t('admin.users.lastName') + '*'" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
                   :invalid-feedback="$t('errors.invalid')">
-                  <b-form-input v-model="user.lastName" @update:modelValue="dirty = true" 
+                  <b-form-input v-model="user.lastName"  @update:modelValue="dirty=true" 
                   :state="notEmpty(user.lastName)" :readonly="!$root.config.userEditable || !editMode" required></b-form-input>
                 </b-form-group>
                 <b-form-group :label="$t('admin.users.email')" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
                   :invalid-feedback="$t('errors.invalid')">
-                  <b-form-input v-model="user.email" type="email" autocomplete="email" @update:modelValue="dirty = true" :readonly="!$root.config.userEditable || !editMode"></b-form-input>
+                  <b-form-input v-model="user.email" type="email" autocomplete="email"  @update:modelValue="dirty = true" :readonly="!$root.config.userEditable || !editMode"></b-form-input>
                 </b-form-group>
                 <div class="float-end" v-if="$root.config.userEditable">
-                  <b-button type="submit" variant="secondary" :disabled="!dirty">{{ $t('admin.users.update') }}</b-button>
+                  <b-button type="submit" variant="secondary" :disabled="!dirty" >{{ $t('admin.users.update') }}</b-button>
                 </div>
               </CIBForm>
             </ContentBlock>
@@ -107,12 +107,12 @@
                   }"></SecureInput>
                 </b-form-group>
                 <div class="float-end d-flex align-items-center">
-                  <b-button type="submit" variant="secondary" @click="changePassword($event)">{{ $t('password.recover.changePassword') }}</b-button>
+                  <b-button type="submit" variant="secondary" @click="changePassword($event)">{{$t('password.recover.changePassword') }}</b-button>
                 </div>
               </b-form-group>
               <b-form-group v-else labels-cols-lg="4" label-size="lg" label-class="fw-bold pt-0 pb-4" class="m-0">
                 <b-form-group :label="$t('password.recover.id') + '*'" label-cols-sm="4"
-                label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
+                  label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
                   <b-form-input v-model="user.id" :state="notEmpty(user.id)" required readonly></b-form-input>
                 </b-form-group>
                 <div class="float-end d-flex align-items-center">
@@ -466,7 +466,7 @@ export default {
       AdminService.findGroups().then(allGroups => {
         allGroups.forEach(group => {
           const isAssigned = userGroups.some(userGroup => userGroup.id === group.id)
-          if (!isAssigned) {
+          if (!isAssigned){
             group.selected = false
             this.unAssignedGroups.push(group)
           }
@@ -512,7 +512,7 @@ export default {
       this.unassignedTenants = []
       this.tenants.forEach(tenant => {
         const isAssigned = userTenants.some(userTenant => userTenant.id === tenant.id)
-        if (!isAssigned) {
+        if (!isAssigned){
           tenant.selected = false
           this.unassignedTenants.push(tenant)
         }
