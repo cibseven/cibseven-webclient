@@ -97,7 +97,9 @@ public class SetupService extends BaseService implements InitializingBean {
 	 * @param engine The process engine to use (from X-Process-Engine header)
 	 * @return Success response or error if users already exist or external provider is used
 	 */
-	@Operation(summary = "Create initial admin user", description = "Creates the first admin user. Only works when no users exist in the system. The backend handles group and authorization setup.")
+	@Operation(
+		summary = "Create initial admin user",
+		description = "Creates the first admin user. Only works when no users exist in the system. The backend handles group and authorization setup.")
 	@ApiResponses({
 		@ApiResponse(responseCode = "201", description = "User created successfully"),
 		@ApiResponse(responseCode = "403", description = "Setup not allowed - users already exist or external identity provider is used")

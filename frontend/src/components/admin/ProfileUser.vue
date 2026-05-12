@@ -62,7 +62,7 @@
                 <b-form-group :label="$t('admin.users.lastName') + '*'" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
                   :invalid-feedback="$t('errors.invalid')">
                   <b-form-input v-model="user.lastName"  @update:modelValue="dirty=true" 
-                  :state="notEmpty(user.lastName)" :readonly="!$root.config.userEditable || !editMode" required></b-form-input>
+                    :state="notEmpty(user.lastName)" :readonly="!$root.config.userEditable || !editMode" required></b-form-input>
                 </b-form-group>
                 <b-form-group :label="$t('admin.users.email')" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
                   :invalid-feedback="$t('errors.invalid')">
@@ -107,7 +107,7 @@
                   }"></SecureInput>
                 </b-form-group>
                 <div class="float-end d-flex align-items-center">
-                  <b-button type="submit" variant="secondary" @click="changePassword($event)">{{$t('password.recover.changePassword') }}</b-button>
+                  <b-button type="submit" variant="secondary" @click="changePassword($event)">{{$t('password.recover.changePassword')}}</b-button>
                 </div>
               </b-form-group>
               <b-form-group v-else labels-cols-lg="4" label-size="lg" label-class="fw-bold pt-0 pb-4" class="m-0">
@@ -282,7 +282,7 @@ export default {
     editMode: {
       type: Boolean,
       default: false
-
+      
     },
   },
   data: function () {
