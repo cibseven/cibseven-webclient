@@ -338,9 +338,8 @@ export default {
       this.deleteLoader = true
       this.deploymentsDelData.total = this.deploymentsSelected.length
       this.deploymentsDelData.deleted = 0
-      const pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
-      while (pool.length > 0) {
-        const deployment = pool.shift()
+      const pool = this.deploymentsSelected.slice()
+       for (const deployment of pool) {
         try {
           await ProcessService.deleteDeployment(deployment.id, true)
           const found = this.groups.findIndex(group => {
