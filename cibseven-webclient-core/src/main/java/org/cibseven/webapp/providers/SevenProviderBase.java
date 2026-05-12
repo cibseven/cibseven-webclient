@@ -272,7 +272,7 @@ public abstract class SevenProviderBase {
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
 
-		HttpEntity<Object> request = new HttpEntity<>(body, headers);
+		HttpEntity<String> request = new HttpEntity<>(body, headers);
 		try {
 			ResponseEntity<T> response = customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, neededClass);
 			return response;
@@ -306,7 +306,7 @@ public abstract class SevenProviderBase {
 		HttpHeaders headers = createAuthHeader(user);
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
-		HttpEntity<Object> request = new HttpEntity<>(body, headers);
+		HttpEntity<String> request = new HttpEntity<>(body, headers);
 		try {
 			customRestTemplate.put(builder.build().toUri(), request);
 		} catch (HttpStatusCodeException e) {

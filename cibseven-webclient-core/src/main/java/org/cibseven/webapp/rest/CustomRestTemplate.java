@@ -201,7 +201,7 @@ public class CustomRestTemplate extends RestTemplate {
         if (objectMapper != null) {
             List<HttpMessageConverter<?>> converters = getMessageConverters();
             converters.removeIf(c -> c instanceof JacksonJsonHttpMessageConverter);
-            converters.add(0, new JacksonJsonHttpMessageConverter(objectMapper));
+            converters.add(new JacksonJsonHttpMessageConverter(objectMapper));
             setMessageConverters(converters);
         }
 
