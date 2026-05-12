@@ -164,6 +164,7 @@
 <script>
 import platform from 'platform'
 import { permissionsMixin } from '@/permissions.js'
+import navigationPermissionsMixin from '@/mixins/navigationPermissionsMixin.js'
 import { getGlobalNavigationShortcuts, checkKeyMatch } from '@/utils/shortcuts.js'
 import ShortcutsModal from '@/components/modals/ShortcutsModal.vue'
 import AboutModal from '@/components/modals/AboutModal.vue'
@@ -175,7 +176,7 @@ import { updateAppTitle } from '@/utils/init'
 export default {
   name: 'CibSeven',
   components: { ShortcutsModal, AboutModal, SupportModal, CIBHeaderFlow, FeedbackModal },
-  mixins: [permissionsMixin],
+  mixins: [permissionsMixin, navigationPermissionsMixin],
   inject: ['isMobile'],
   data: function() {
     return {
@@ -250,7 +251,20 @@ export default {
             }
           ]
         }, {
-          show: this.permissionsUsers && (this.permissionsTaskList || this.permissionsCockpit),
+          show: this.permissionsModeler && (this.permissionsTaskList || this.permissionsCockpit),
+          divider: true,
+        }, {
+          show: this.permissionsModeler,
+          groupTitle: 'start.modeler.title',
+          items: [{
+              to: '/seven/auth/modeler',
+              active: ['seven/auth/modeler'],
+              tooltip: 'start.modeler.tooltip',
+              title: 'start.modeler.title'
+            }
+          ]
+        }, {
+          show: this.permissionsUsers && (this.permissionsTaskList || this.permissionsCockpit || this.permissionsModeler),
           divider: true,
         }, {
           show: this.permissionsUsers,
@@ -263,26 +277,31 @@ export default {
               tooltip: 'start.admin.tooltip',
               title: 'start.admin.title'
             }, {
+              show: this.permissionsUsersManagement,
               to: '/seven/auth/admin/users',
               active: ['seven/auth/admin/user', 'seven/auth/admin/create-user'],
               tooltip: 'admin.users.tooltip',
               title: 'admin.users.title'
             }, {
+              show: this.permissionsGroupsManagement,
               to: '/seven/auth/admin/groups',
               active: ['seven/auth/admin/group', 'seven/auth/admin/create-group'],
               tooltip: 'admin.groups.tooltip',
               title: 'admin.groups.title'
             }, {
+              show: this.permissionsTenantsManagement,
               to: '/seven/auth/admin/tenants',
               active: ['seven/auth/admin/tenant', 'seven/auth/admin/create-tenant'],
               tooltip: 'admin.tenants.tooltip',
               title: 'admin.tenants.title'
             }, {
+              show: this.permissionsAuthorizationsManagement,
               to: '/seven/auth/admin/authorizations',
               active: ['seven/auth/admin/authorizations'],
               tooltip: 'admin.authorizations.tooltip',
               title: 'admin.authorizations.title'
             }, {
+              show: this.permissionsSystemManagement,
               to: '/seven/auth/admin/system',
               active: ['seven/auth/admin/system'],
               tooltip: 'admin.system.tooltip',
@@ -393,15 +412,6 @@ export default {
         return true
       })
     },
-    permissionsTaskList: function() {
-      return this.$root.user && this.applicationPermissions(this.$root.config.permissions.tasklist, 'tasklist')
-    },
-    permissionsCockpit: function() {
-      return this.$root.user && this.applicationPermissions(this.$root.config.permissions.cockpit, 'cockpit')
-    },
-    permissionsUsers: function() {
-      return this.$root.user && this.hasAdminManagementPermissions(this.$root.config.permissions)
-    },
     isUsersManagementActive: function() {
       return this.$route.path.includes('seven/auth/admin/user') ||
         this.$route.path.includes('seven/auth/admin/group') ||
@@ -427,7 +437,12 @@ export default {
   methods: {
     // override this method to add/remove menu items
     getVisibleMenuItems: function(items) {
-      return items.filter(group => group.show)
+      return items
+        .filter(group => group.show)
+        .map(group => ({
+          ...group,
+          items: group.items ? group.items.filter(item => item.show !== false) : group.items
+        }))
     },
     isMenuItemActive: function(item) {
       if (!item.active) {

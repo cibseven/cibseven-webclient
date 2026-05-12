@@ -35,8 +35,9 @@
             path: `/seven/auth/process/${version.key}/${version.version}`,
             query: {
               ...Object.fromEntries(
-                Object.entries($route.query).filter(([key]) => key !== 'tab')
+                Object.entries($route.query).filter(([key]) => !['tab', 'tenantId'].includes(key))
               ),
+              tenantId: version.tenantId ? version.tenantId : undefined,
               tab: 'instances'
             }
           }" class="btn border-0">

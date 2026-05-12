@@ -65,6 +65,7 @@ const createWrapper = (props = {}) => {
         'b-collapse': { template: '<div><slot></slot></div>', props: ['modelValue'] },
         'b-navbar-nav': { template: '<div class="navbar-nav"><slot></slot></div>' },
         'b-nav-item-dropdown': { template: '<div class="nav-item-dropdown"><slot name="button-content"></slot><slot></slot></div>' },
+        'b-dropdown-item-button': { template: '<div class="dropdown-item-button"><slot></slot></div>' },
         'b-dropdown-item': { template: '<div class="dropdown-item"><slot></slot></div>' }
       }
     }

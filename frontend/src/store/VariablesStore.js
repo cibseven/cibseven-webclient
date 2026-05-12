@@ -43,10 +43,12 @@ export default {
         service = 'ProcessService'
         method = 'fetchProcessInstanceVariables'
       } else {
-        if (camundaHistoryLevel === 'full') {
+        if (camundaHistoryLevel === 'full' || camundaHistoryLevel === 'audit') {
           service = 'HistoryService'
           method = 'fetchProcessInstanceVariablesHistory'
         } else {
+          // no variables available for finished process instances if history level is 'activity' or 'none'
+          commit('setVariables', [])
           return []
         }
       }
@@ -72,7 +74,7 @@ export default {
       }
       if (activityInstancesGrouped) {
         variables.forEach(v => {
-          v.scope = activityInstancesGrouped[v.activityInstanceId]
+          v.scope = activityInstancesGrouped[v.activityInstanceId] || v.activityInstanceId
         })
       }
       commit('setVariables', variables)

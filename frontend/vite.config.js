@@ -44,6 +44,7 @@ export default defineConfig({
     vueDevTools()
   ],
   resolve: {
+    dedupe: ['bootstrap'],
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
       vue: 'vue/dist/vue.esm-bundler.js',
@@ -103,7 +104,15 @@ export default defineConfig({
           fileName: (format) => `cibseven-components.${format}.js`,
         },
         rollupOptions: {
-          external: ['vue', /^\/assets\/images\//, 'bootstrap', 'vue-i18n', 'vue-router', 'axios'],
+          external: [
+            /^\/assets\/images\//,
+            'axios',
+            'bootstrap',
+            /^cibseven-modeler/,
+            'vue',
+            'vue-i18n',
+            'vue-router',
+          ],
           output: {
             globals: {
               vue: 'Vue',
@@ -111,6 +120,7 @@ export default defineConfig({
               'vue-i18n': 'VueI18n',
               'vue-router': 'VueRouter',
               axios: 'axios',
+              'cibseven-modeler': 'CibsevenModeler',
             },
             // Ensure CSS is extracted and placed in the dist folder
             assetFileNames: 'cibseven-components.[ext]',

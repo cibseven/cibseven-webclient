@@ -47,7 +47,7 @@
       </template>
       <template v-slot:cell(actions)="table">
         <CellActionButton @click="setSuspendedJob(table.item, !table.item.suspended)" :title="suspendedStatusText(table.item)"  :icon="table.item.suspended ? 'mdi-play' : 'mdi-pause'"></CellActionButton>
-        <CellActionButton @click="changeJobDueDate(table.item)" :title="$t('process-instance.jobs.changeDueDate')" :icon="'mdi-clock-outline'"></CellActionButton>
+        <CellActionButton v-if="table.item.dueDate" @click="changeJobDueDate(table.item)" :title="$t('process-instance.jobs.changeDueDate')" :icon="'mdi-clock-outline'"></CellActionButton>
       </template>
     </FlowTable>
     <div v-else-if="!loading">

@@ -155,6 +155,9 @@
 		},
 		"emptyProcessList": "Actualmente su lista de procesos está vacía.",
 		"emptyProcessListFiltered": "No existe ningún proceso para el filtro aplicado.",
+		"definitionVersionNotFound": "Versión de la definición del proceso \"{0}\" no encontrada. Se utilizará la versión más reciente.",
+		"definitionNotFound": "Definición de proceso con la clave \"{processKey}\" y el ID de tenant \"{tenantId}\" no encontrada.",
+		"instanceNotFound": "Instancia de proceso con ID \"{instanceId}\" no encontrada.\nRespuesta del servidor:\n{error}",
 		"back": "Atrás",
 		"incidentsCounter": "Incidentes: {0}",
 		"incidents": "Incidencias",
@@ -246,6 +249,7 @@
 			"unknown": "Desconocido"
 		},
 		"details": {
+			"instancesChain": "Proceso principal",
 			"startUser": "Usuario inicial",
 			"start": "Iniciado el",
 			"finish": "Terminado el",
@@ -278,6 +282,7 @@
 			"valueSerialized": "Valor serializado",
 			"actions": "Acciones",
 			"scope": "Ámbito",
+			"activityInstanceId": "ID de instancia de actividad",
 			"objectTypeName": "Nombre del tipo de objeto",
 			"serializationDataFormat": "Formato de datos de serialización",
 			"confirmDelete": "¿Desea eliminar la variable?",
@@ -608,6 +613,11 @@
 				"groupEuropean": "Formatos europeos",
 				"groupUS": "Formatos de EE.UU.",
 				"groupISO": "Formatos ISO/Técnicos"
+			},
+			"bpmn": {
+				"title": "Diagrama BPMN",
+				"shortenBadgeNumbers": "Formato de número corto",
+				"shortenBadgeNumbersDescription": "Si está activado, los números en el diagrama BPMN para instancias y ocurrencias se mostrarán abreviados, por ejemplo, 1K en lugar de 1.005."
 			},
 			"notifications": {
 				"title": "Notificaciones",
@@ -994,6 +1004,10 @@
 		"admin": {
 			"title": "Admin",
 			"tooltip": "Abrir Admin"
+		},
+		"modeler": {
+			"title": "Modeler",
+			"tooltip": "Abrir Modeler para diseñar y editar BPMN, DMN y formularios"
 		},
 		"oldCockpit": {
 			"title":"Cockpit antiguo",

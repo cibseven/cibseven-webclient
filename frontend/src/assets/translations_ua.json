@@ -155,6 +155,9 @@
 		},
 		"emptyProcessList": "Ваш список процесів порожній.",
 		"emptyProcessListFiltered": "Немає процесів для вибраного фільтра.",
+		"definitionVersionNotFound": "Версія визначення процесу \"{0}\" не знайдена. Використовується остання версія.",
+		"definitionNotFound": "Визначення процесу з ключем \"{processKey}\" та ID клієнта \"{tenantId}\" не знайдено.",
+		"instanceNotFound": "Екземпляр процесу з ID \"{instanceId}\" не знайдено.\nВідповідь сервера:\n{error}",
 		"back": "Назад",
 		"incidentsCounter": "Інциденти: {0}",
 		"incidents": "Інциденти",
@@ -246,6 +249,7 @@
 			"unknown": "Невідомо"
 		},
 		"details": {
+			"instancesChain": "Кореневий процес",
 			"startUser": "Користувач, що запустив",
 			"start": "Почато",
 			"finish": "Завершено",
@@ -278,6 +282,7 @@
 			"valueSerialized": "Серіалізоване значення",
 			"actions": "Дії",
 			"scope": "Область",
+			"activityInstanceId": "ID екземпляра активності",
 			"objectTypeName": "Назва типу об’єкта",
 			"serializationDataFormat": "Формат серіалізації даних",
 			"confirmDelete": "Бажаєте видалити змінну?",
@@ -608,6 +613,11 @@
 					"groupEuropean": "Європейські формати",
 					"groupUS": "Формати США",
 					"groupISO": "ISO/Технічні формати"
+				},
+				"bpmn": {
+					"title": "BPMN-діаграма",
+					"shortenBadgeNumbers": "Скорочений формат чисел",
+					"shortenBadgeNumbersDescription": "Якщо увімкнено, числа на діаграмі BPMN для екземплярів та подій відображатимуться у скороченому форматі, наприклад, 1K замість 1.005."
 				},
 				"notifications": {
 					"title": "Сповіщення",
@@ -994,6 +1004,10 @@
 		"admin": {
 			"title": "Адмін",
 			"tooltip": "Відкрити Адмін панель"
+		},
+		"modeler": {
+			"title": "Modeler",
+			"tooltip": "Відкрити Modeler для проектування та редагування BPMN, DMN та форм"
 		},
 		"oldCockpit": {
 			"title": "Старий Cockpit",

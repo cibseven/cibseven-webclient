@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    jndi-name: java:jboss/datasources/ProcessEngine
+
+cibseven:
+  webclient:
+    modeler:
+      enabled: true

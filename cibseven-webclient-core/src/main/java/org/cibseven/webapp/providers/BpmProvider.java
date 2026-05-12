@@ -357,6 +357,8 @@ public interface BpmProvider {
      * @throws SystemException in case of an error.
      */
 	Collection<ProcessInstance> findCurrentProcessesInstances(Map<String, Object> data, CIBUser user) throws SystemException;
+
+	Collection<HistoryProcessInstance> findProcessesInstancesRuntime(Map<String, Object> data, Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) throws SystemException;
 	
 	/**
      * Search process instance with a specific process instance id.
@@ -756,7 +758,7 @@ public interface BpmProvider {
 	Collection<User> findUsers(Optional<String> id, Optional<String> firstName, Optional<String> firstNameLike, Optional<String> lastName,
 			Optional<String> lastNameLike, Optional<String> email, Optional<String> emailLike, Optional<String> memberOfGroup, Optional<String> memberOfTenant, 
 			Optional<String> idIn, Optional<String> firstResult, Optional<String> maxResult, 
-			Optional<String> sortBy, Optional<String> sortOrder, CIBUser user);
+			Optional<String> sortBy, Optional<String> sortOrder, Optional<Boolean> likePatternIgnoreCase, CIBUser user);
 
 	/**
 	 * Get the count of users in the system with optional filters.
@@ -932,6 +934,7 @@ public interface BpmProvider {
 	Collection<HistoryProcessInstance> findProcessesInstancesHistoryById(String id, Optional<String> activityId, Optional<Boolean> active, Integer firstResult, Integer maxResults, String text, CIBUser user) throws SystemException;
 	
 	Long countProcessesInstancesHistory(Map<String, Object> filters, CIBUser user);	
+	Long countProcessesInstancesRuntime(Map<String, Object> filters, CIBUser user);
 	
 	/**
 	 * Get user by id.

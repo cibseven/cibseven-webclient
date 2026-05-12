@@ -155,6 +155,9 @@
 		},
 		"emptyProcessList": "Your process list is currently empty.",
 		"emptyProcessListFiltered": "There is no process for the applied filter.",
+		"definitionVersionNotFound": "Process definition version \"{0}\" not found. Falling back to the latest version.",
+		"definitionNotFound": "Process definition key \"{processKey}\" with \"{tenantId}\" tenant ID not found.",
+		"instanceNotFound": "Process instance with ID \"{instanceId}\" not found.\nServer response:\n{error}",
 		"back": "Back",
 		"incidentsCounter": "Incidents: {0}",
 		"incidents": "Incidents",		
@@ -246,6 +249,7 @@
 			"unknown": "Unknown"
 		},
 		"details": {
+			"instancesChain": "Root process",
 			"startUser": "Start user",
 			"start": "Started on",
 			"finish": "Completed on",
@@ -278,6 +282,7 @@
 			"valueSerialized": "Serialized value",
 			"actions": "Actions",
 			"scope": "Scope",
+			"activityInstanceId": "Activity instance ID",
 			"objectTypeName": "Object type name",
 			"serializationDataFormat": "Serialization data format",
 			"confirmDelete": "Do you want to delete the variable?",
@@ -608,6 +613,11 @@
 				"groupEuropean": "European Formats",
 				"groupUS": "US Formats",
 				"groupISO": "ISO/Technical Formats"
+				},
+			"bpmn": {
+				"title": "BPMN Diagram",
+				"shortenBadgeNumbers": "Short number format",
+				"shortenBadgeNumbersDescription": " If enabled, the numbers in the BPMN diagram for instances and occurrences will be displayed in a shortened format, e.g., 1K instead of 1,005."
 			},
 			"notifications": {
 				"title": "Notifications",
@@ -994,6 +1004,10 @@
 		"admin": {
 			"title": "Admin",
 			"tooltip": "Open Admin"
+		},
+		"modeler": {
+			"title": "Modeler",
+			"tooltip": "Open Modeler to design and edit BPMN, DMN, and Forms"
 		},
 		"oldCockpit": {
 			"title": "Old Cockpit",

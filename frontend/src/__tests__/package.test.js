@@ -37,6 +37,44 @@ function checkLicenseHeader(files) {
   }
 }
 
+/**
+ * Check that all dependencies from project1 are present in project2 with the same version. If a dependency is missing in project2, it is ignored (we only care about version mismatches for dependencies that are present in both projects)
+ * @param {*} project1 the main project, we want to ensure that all its dependencies are present in the sub project with the same version
+ * @param {*} project2 the sub project, we want to check that all dependencies from the main project are present in this sub project with the same version
+ * @param {*} project2Name name of the sub project, used for error messages
+ * @returns empty string if all dependencies from project1 are present in project2 with the same version, otherwise a message describing the first mismatch found
+ */
+function checkDepVersions(project1, project2, project2Name) {
+  const extractDeps = (deps) => deps ? Object.entries(deps) : []
+
+  const deps1 = [
+    ...extractDeps(project1.dependencies),
+    ...extractDeps(project1.peerDependencies),
+    ...extractDeps(project1.devDependencies),
+  ]
+
+  const deps2 = [
+    ...extractDeps(project2.dependencies),
+    ...extractDeps(project2.peerDependencies),
+    ...extractDeps(project2.devDependencies),
+  ]
+
+  for (const [dep, version] of deps1) {
+    const dep2 = deps2.find(([d]) => d === dep)
+    if (!dep2) {
+      continue // ignore missing dependencies in project2, we only care about version mismatches for dependencies that are present in both projects
+    }
+    const version2 = dep2[1]
+    if (version !== version2) {
+      if (version2.startsWith('^') && version2.substring(1) === version) {
+        continue
+      }
+      return `Dependency ${dep} has version ${version} in ${project1.name} but ${version2} in ${project2Name}`
+    }
+  }
+  return ''
+}
+
 describe('package', () => {
 
   describe('license header', () => {
@@ -86,6 +124,50 @@ describe('package', () => {
           expect(dep.license).toBe('MIT', `${packageName} license in package-lock.json is incorrect`)
         })
       })
+    })
+
+    it('ensure npm install was run', () => {
+      const packageJson = getPackageJson()
+      const dependencies = packageJson.dependencies || {}
+      expect(Object.keys(dependencies).length).toBeGreaterThan(0, 'No dependencies found in package.json')
+
+      const lockPackageJson = getPackageJson('../package-lock.json')
+      expect(lockPackageJson.packages).toBeDefined('No packages field in package-lock.json')
+      expect(Object.keys(lockPackageJson.packages).length).toBeGreaterThan(0, 'No packages listed in package-lock.json')
+
+      for (const [dep, version] of Object.entries(dependencies)) {
+        const lockName = `node_modules/${dep}`
+        const depInfo = lockPackageJson.packages[lockName]
+        expect(depInfo).toBeDefined(`${dep} is not listed in package-lock.json`)
+        expect(depInfo.version).toBe(version, `${dep} version in package-lock.json does not match package.json`)
+      }
+    })
+
+    /**
+     * Ensure all sub projects from the list have the same dependency as main project
+     */
+    it('ensure all sub projects have the same dependencies as main project', () => {
+      const packageJson = getPackageJson()
+      const dependencies = packageJson.dependencies || {}
+      expect(Object.keys(dependencies).length).toBeGreaterThan(0, 'No dependencies found in package.json')
+
+      const lockPackageJson = getPackageJson('../package-lock.json')
+      expect(lockPackageJson.packages).toBeDefined('No packages field in package-lock.json')
+      expect(Object.keys(lockPackageJson.packages).length).toBeGreaterThan(0, 'No packages listed in package-lock.json')
+
+      const subProjects = [
+        'cibseven-modeler',
+        '@cib/common-frontend',
+        '@cib/bootstrap-components',
+      ]
+
+      for (const subProject of subProjects) {
+        const lockName = `node_modules/${subProject}`
+        const subProjectInfo = lockPackageJson.packages[lockName]
+
+        const mismatchVersion = checkDepVersions(packageJson, subProjectInfo, subProject)
+        expect(mismatchVersion).toBe('', `Version mismatch found in sub project ${subProject}: ${mismatchVersion}`)
+      }
     })
   })
 })

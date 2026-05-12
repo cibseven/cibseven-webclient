@@ -127,7 +127,7 @@
 			"unfinishedInstances": "Запущенных экземпляров",
 			"finishedInstances": "Всего оконченных экземпляров без ошибок",
 			"definitionVersion": "Версия определения",
-			"versionTag": "День версии",
+			"versionTag": "Тэг версии",
 			"definitionId": "ID определения",
 			"definitionKey": "Ключ определения",
 			"definitionName": "Имя определения",
@@ -155,12 +155,15 @@
 		},
 		"emptyProcessList": "Ваш список процессов пуст.",
 		"emptyProcessListFiltered": "Нет процессов для применённого фильтра.",
+		"definitionVersionNotFound": "Версия определения процесса \"{0}\" не найдена. Будет использована последняя версия.",
+		"definitionNotFound": "Определение процесса с ключом \"{processKey}\" и ID тенанта \"{tenantId}\" не найдено.",
+		"instanceNotFound": "Экземпляр процесса с ID \"{instanceId}\" не найден.\nОтвет сервера:\n{error}",
 		"back": "Назад",
 		"incidentsCounter": "Инциденты: {0}",
 		"incidents": "Инциденты",
 		"variables": "Переменные",
 		"usertasks": "Пользовательские задачи",
-		"calledProcessInstances": "Называемые экземпляры процессов",
+		"calledProcessInstances": "Вызванные экземпляры процессов",
 		"onlyIncidents": {
 			"title": "Только с инцидентами",
 			"tooltip": "Показать только процессы с инцидентами"
@@ -246,6 +249,7 @@
 			"unknown": "Неизвестно"
 		},
 		"details": {
+			"instancesChain": "Корневой процесс",
 			"startUser": "Начальный пользователь",
 			"start": "Начато",
 			"finish": "Закончено",
@@ -278,6 +282,7 @@
 			"valueSerialized": "Сериализованное значение",
 			"actions": "Действия",
 			"scope": "Область",
+			"activityInstanceId": "ID экземпляра активности",
 			"objectTypeName": "Имя типа объекта",
 			"serializationDataFormat": "Формат данных сериализации",
 			"confirmDelete": "Вы хотите удалить переменную?",
@@ -608,6 +613,11 @@
 				"groupEuropean": "Европейские форматы",
 				"groupUS": "Форматы США",
 				"groupISO": "ISO/Технические форматы"
+			},
+			"bpmn": {
+				"title": "BPMN-диаграмма",
+				"shortenBadgeNumbers": "Сокращённый формат чисел",
+				"shortenBadgeNumbersDescription": "Если включено, числа в диаграмме BPMN для экземпляров и событий будут отображаться в сокращённом формате, например, 1K вместо 1.005."
 			},
 			"notifications": {
 				"title": "Уведомления",
@@ -994,6 +1004,10 @@
 		"admin": {
 			"title": "Admin",
 			"tooltip": "Открыть Admin"
+		},
+		"modeler": {
+			"title": "Modeler",
+			"tooltip": "Открыть Modeler для проектирования и редактирования BPMN, DMN и форм"
 		},
 		"oldCockpit": {
 			"title": "Старый Cockpit",
