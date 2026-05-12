@@ -227,11 +227,10 @@ import { SetupService } from '@/services.js'
 import { notEmpty, same, isValidEmail } from '@/components/admin/utils.js'
 import { SuccessAlert } from '@cib/common-frontend'
 import { ENGINE_STORAGE_KEY } from '@/constants.js'
-import SecureInput from '@/components/login/SecureInput.vue'
 
 export default {
   name: 'InitialSetup',
-  components: { SuccessAlert, SecureInput },
+  components: { SuccessAlert },
   data() {
     return {
       profile: { id: null, email: null, firstName: null, lastName: null },

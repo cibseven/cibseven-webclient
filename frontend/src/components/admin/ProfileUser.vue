@@ -88,7 +88,7 @@
                 <b-form-group :label="$t('password.recover.newPassword') + '*'" label-cols-sm="4"
                 label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
                   <SecureInput v-model="credentials.password" @blur="validatePassword" @input="resetPasswordValidation"
-                    ref="newPasswordInput":class="{'is-valid': passwordValid === true,'is-invalid': passwordValid === false}"></SecureInput>
+                    ref="newPasswordInput" :class="{'is-valid': passwordValid === true,'is-invalid': passwordValid === false}"></SecureInput>
                   <div v-if="passwordValid === false" class="invalid-feedback d-block">
                     <h6>{{ $t('password.policy.title') }}</h6>
                     <div>{{ $t('password.policy.header') }}</div>
