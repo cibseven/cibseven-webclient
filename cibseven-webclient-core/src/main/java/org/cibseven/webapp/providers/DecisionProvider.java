@@ -191,6 +191,6 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	@Override
 	public Object setHistoricDecisionInstanceRemovalTime(Map<String, Object> body, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/history/decision-instance/set-removal-time";
-		return ((ResponseEntity<Object>) doPost(url, body, null, null)).getBody();
+		return ((ResponseEntity<Object>) doPost(url, body, null, user)).getBody();
 	}
 }

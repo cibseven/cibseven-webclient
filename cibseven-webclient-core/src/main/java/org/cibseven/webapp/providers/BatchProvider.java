@@ -93,7 +93,7 @@ public class BatchProvider extends SevenProviderBase implements IBatchProvider {
 	@Override
 	public HistoryBatch getHistoricBatchById(String id, CIBUser user) {
 		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/history/batch/" + id, new HashMap<>());
-        return doGet(url, HistoryBatch.class, null, true).getBody();
+        return doGet(url, HistoryBatch.class, user, true).getBody();
     }
 	
 	@Override
