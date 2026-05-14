@@ -523,6 +523,7 @@
 		"activate": "Activate batch",
 		"remove": "Remove batch",
 		"confirmRemove": "Do you really want to delete this batch and all related jobs and job definitions?",
+		"historyLevelTooLow": "Your engine instance is configured with \"{historyLevel}\" history level.\nTo have information about finished batches, the history level must be set to \"full\".",
 		"exception": "Exception",
 		"actions": "Actions",
 		"retryJob": "Retry job",

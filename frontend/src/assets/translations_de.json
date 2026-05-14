@@ -523,6 +523,7 @@
 		"activate": "Stapel aktivieren",
 		"remove": "Stapel entfernen",
 		"confirmRemove": "Möchten Sie diesen Stapel und alle zugehörigen Jobs und Jobdefinitionen wirklich löschen?",
+		"historyLevelTooLow": "Ihre Engine-Instanz ist mit dem \"{historyLevel}\"-Historienlevel konfiguriert. Um Informationen über abgeschlossene Stapel zu erhalten, muss der Historienlevel auf \"voll\" gesetzt sein.",
 		"exception": "Ausnahme",
 		"actions": "Aktionen",
 		"retryJob": "Job erneut ausführen",
