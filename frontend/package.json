@@ -1,6 +1,6 @@
 {
   "name": "cibseven-components",
-  "version": "2.2.0-dev.8",
+  "version": "2.2.0-dev.9",
   "type": "module",
   "license": "",
   "main": "./src/main.js",
@@ -46,7 +46,7 @@
     "bootstrap": "5.3.8",
     "bpm-sdk": "2.1.1",
     "bpmn-js": "18.14.0",
-    "cibseven-modeler": "1.0.0-dev.15",
+    "cibseven-modeler": "1.0.0-dev.16",
     "dmn-js": "17.7.0",
     "js-abbreviation-number": "1.4.0",
     "js-sha256": "0.11.1",
