@@ -523,6 +523,7 @@
 		"activate": "Activar lote",
 		"remove": "Eliminar lote",
 		"confirmRemove": "¿Realmente desea eliminar este lote y todos los trabajos y definiciones de trabajos relacionados?",
+		"historyLevelTooLow": "Su instancia de motor está configurada con el nivel de historial \"{historyLevel}\". Para obtener información sobre los lotes finalizados, el nivel de historial debe estar configurado en \"completo\".",
 		"exception": "Excepción",
 		"actions": "Acciones",
 		"retryJob": "Reintentar trabajo",
