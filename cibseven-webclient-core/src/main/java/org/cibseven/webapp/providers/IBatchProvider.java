@@ -30,6 +30,7 @@ public interface IBatchProvider {
 	public void deleteBatch(String id, Map<String, Object> queryParams, CIBUser user);
 	public void setBatchSuspensionState(String id, Map<String, Object> queryParams, CIBUser user);
 	public Collection<HistoryBatch> getHistoricBatches(Map<String, Object> queryParams, CIBUser user);
+    public Long getRuntimeBatchCount(Map<String, Object> queryParams, CIBUser user);
     public Long getHistoricBatchCount(Map<String, Object> queryParams, CIBUser user);
     public HistoryBatch getHistoricBatchById(String id, CIBUser user);
     public void deleteHistoricBatch(String id, CIBUser user);

@@ -82,6 +82,13 @@ public class BatchProvider extends SevenProviderBase implements IBatchProvider {
         String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/history/batch", params);
         return Arrays.asList(((ResponseEntity<HistoryBatch[]>) doGet(url, HistoryBatch[].class, user, true)).getBody());
     }
+
+	@Override
+	public Long getRuntimeBatchCount(Map<String, Object> queryParams, CIBUser user) {
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/batch/count", queryParams);
+		JsonNode response = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, true)).getBody();
+		return response != null ? response.get("count").asLong() : 0L;
+	}
 	
 	@Override
 	public Long getHistoricBatchCount(Map<String, Object> queryParams, CIBUser user) {

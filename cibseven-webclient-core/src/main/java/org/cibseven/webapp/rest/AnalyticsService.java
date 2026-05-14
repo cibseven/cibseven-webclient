@@ -141,8 +141,8 @@ public class AnalyticsService extends BaseService implements InitializingBean {
 			analytics.setDeploymentsCount(deploymentsCount);
 		}
 
-//    ToDo:
-//    analytics.setBatchesCount(0);
+		final Long runtimeBatchCount = sevenProvider.getRuntimeBatchCount(new HashMap<>(), user);
+		analytics.setBatchesCount(runtimeBatchCount != null ? runtimeBatchCount : 0L);
 
 		return analytics;
 	}

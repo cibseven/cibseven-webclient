@@ -1175,6 +1175,7 @@ public interface BpmProvider {
 	void deleteBatch(String id, Map<String, Object> params, CIBUser user);
 	void setBatchSuspensionState(String id, Map<String, Object> params, CIBUser user);
 	Collection<HistoryBatch> getHistoricBatches(Map<String, Object> params, CIBUser user);
+	Long getRuntimeBatchCount(Map<String, Object> queryParams, CIBUser user);
 	Long getHistoricBatchCount(Map<String, Object> queryParams, CIBUser user);
 	HistoryBatch getHistoricBatchById(String id, CIBUser user);
 	void deleteHistoricBatch(String id, CIBUser user);

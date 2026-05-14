@@ -54,6 +54,19 @@ public class BatchService extends BaseService implements InitializingBean {
 		return bpmProvider.getBatches(params, user);
 	}
     
+	/**
+	 * Returns the count of runtime batches matching the given parameters.
+	 * GET /batch/count
+	 */
+	@GetMapping("/count")
+	public Long getRuntimeBatchesCount(
+			@RequestParam Map<String, Object> params,
+			Locale loc, HttpServletRequest rq) {
+		CIBUser user = checkAuthorization(rq, true);
+		checkPermission(user, SevenResourceType.BATCH, PermissionConstants.READ_ALL);
+		return bpmProvider.getRuntimeBatchCount(params, user);
+	}
+
     @GetMapping("/statistics")
 	public Collection<Batch> getBatchStatistics(
 			@RequestParam Map<String, Object> params,
