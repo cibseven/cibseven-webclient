@@ -168,14 +168,24 @@ pipeline {
 
                         // Show coverage in Jenkins UI
                         recordCoverage(
-                            tools: [[parser: 'COBERTURA', pattern: 'frontend/target/coverage/cobertura-coverage.xml']],
+                            tools: [
+                                [parser: 'COBERTURA', pattern: 'frontend/target/coverage/cobertura-coverage.xml'],
+                                [parser: 'JACOCO', pattern: '**/target/site/jacoco/jacoco.xml']
+                            ],
                             sourceCodeRetention: 'LAST_BUILD',
-                            sourceDirectories: [[path: 'frontend/src']]
+                            sourceDirectories: [
+                                [path: 'frontend/src'],
+                                [path: 'cibseven-webclient-core/src/main/java'],
+                                [path: 'cibseven-webclient-web/src/main/java']
+                            ]
                         )
 
                         // This archives the whole HTML coverage report so you can download or view it from Jenkins
                         // This archives the Vitest test reports so you can download or view them from Jenkins
                         archiveArtifacts artifacts: 'frontend/target/coverage/lcov-report/**, frontend/target/vitest-reports/**, cibseven-webclient-core/target/failsafe-reports/**', allowEmptyArchive: false, fingerprint: true
+
+                        // This archives the JaCoCo HTML coverage reports for Java subprojects
+                        archiveArtifacts artifacts: '**/target/site/jacoco/**', allowEmptyArchive: true
                     }
                 }
             }
