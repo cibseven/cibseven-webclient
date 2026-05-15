@@ -309,38 +309,40 @@ pipeline {
                 }
             }
             steps {
-                stage('OWASP Dependency-Track') {
-                    steps {
-                        withMaven() {
-                            // ossindexAnalyzer disabled, because auth is required https://ossindex.sonatype.org/doc/auth-required (probably with future rate limits)
-                            sh "mvn -f ${pipelineParams.pom} dependency-check:aggregate -DossindexAnalyzerEnabled=false"
-                        }
-                        dependencyCheckPublisher pattern: 'target/dependency-check-report.xml'
-                    }
-                }
-
-                stage('Run SonarQube Checks') {
-                    steps {
-                        withSonarQubeEnv(credentialsId: Constants.SONARQUBE_CREDENTIALS_ID, installationName: 'SonarQube') {
+                script {
+                    stage('OWASP Dependency-Track') {
+                        steps {
                             withMaven() {
-                                sh """
-                                    mvn -f ${pipelineParams.pom} \
-                                        compile \
-                                        sonar:sonar \
-                                        -Dmaven.test.skip \
-                                        -DskipTests \
-                                        -Dlicense.skipDownloadLicenses=true \
-                                        -Dsonar.dependencyCheck.jsonReportPath=target/dependency-check-report.json \
-                                        -Dsonar.dependencyCheck.htmlReportPath=target/dependency-check-report.html
-                                """
+                                // ossindexAnalyzer disabled, because auth is required https://ossindex.sonatype.org/doc/auth-required (probably with future rate limits)
+                                sh "mvn -f ${pipelineParams.pom} dependency-check:aggregate -DossindexAnalyzerEnabled=false"
                             }
+                            dependencyCheckPublisher pattern: 'target/dependency-check-report.xml'
                         }
-                        timeout(time: 5, unit: 'MINUTES') {
-                            script {
-                                def qg = waitForQualityGate()
-                                if (qg.status != 'OK') {
-                                    echo "WARNING: Pipeline unstable due to quality gate failure: ${qg.status}"
-                                    currentBuild.result = 'UNSTABLE'
+                    }
+
+                    stage('Run SonarQube Checks') {
+                        steps {
+                            withSonarQubeEnv(credentialsId: Constants.SONARQUBE_CREDENTIALS_ID, installationName: 'SonarQube') {
+                                withMaven() {
+                                    sh """
+                                        mvn -f ${pipelineParams.pom} \
+                                            compile \
+                                            sonar:sonar \
+                                            -Dmaven.test.skip \
+                                            -DskipTests \
+                                            -Dlicense.skipDownloadLicenses=true \
+                                            -Dsonar.dependencyCheck.jsonReportPath=target/dependency-check-report.json \
+                                            -Dsonar.dependencyCheck.htmlReportPath=target/dependency-check-report.html
+                                    """
+                                }
+                            }
+                            timeout(time: 5, unit: 'MINUTES') {
+                                script {
+                                    def qg = waitForQualityGate()
+                                    if (qg.status != 'OK') {
+                                        echo "WARNING: Pipeline unstable due to quality gate failure: ${qg.status}"
+                                        currentBuild.result = 'UNSTABLE'
+                                    }
                                 }
                             }
                         }
