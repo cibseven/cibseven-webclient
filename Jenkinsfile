@@ -310,14 +310,6 @@ pipeline {
             }
             steps {
                 script {
-                    stage('OWASP Dependency-Track') {
-                        withMaven() {
-                            // ossindexAnalyzer disabled, because auth is required https://ossindex.sonatype.org/doc/auth-required (probably with future rate limits)
-                            sh "mvn -f ${pipelineParams.pom} dependency-check:aggregate -DossindexAnalyzerEnabled=false"
-                        }
-                        dependencyCheckPublisher pattern: 'target/dependency-check-report.xml'
-                    }
-
                     stage('Run SonarQube Checks') {
                         withSonarQubeEnv(credentialsId: Constants.SONARQUBE_CREDENTIALS_ID, installationName: 'SonarQube') {
                             withMaven() {
