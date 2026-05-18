@@ -51,22 +51,35 @@ export default {
 		activityInstancesGrouped: 'loadSelectedInstanceVariables'
 	},
 	computed: {
-		activityInstancesGrouped: function () {
-				const res = []
-				if (this.activityInstance) {
-					res[this.activityInstance.id] = this.activityInstance.name
-					this.activityInstance.childActivityInstances.forEach(ai => {
-						res[ai.id] = ai.name || ai.activityId
+		activityInstanceData: function () {
+				const names = {}
+				const activityIds = {}
+				const flatten = instances => {
+					instances.forEach(ai => {
+						names[ai.id] = ai.name || ai.activityId
+						activityIds[ai.id] = ai.activityId
+						if (ai.childActivityInstances?.length > 0) flatten(ai.childActivityInstances)
 					})
+				}
+				if (this.activityInstance) {
+					names[this.activityInstance.id] = this.activityInstance.name
+					flatten(this.activityInstance.childActivityInstances)
 				} else {
-					res[this.selectedInstance.id] = this.selectedInstance.processDefinitionName
+					names[this.selectedInstance.id] = this.selectedInstance.processDefinitionName
 					if (this.activityInstanceHistory) {
 						this.activityInstanceHistory.forEach(ai => {
-							res[ai.id] = ai.activityName || ai.activityId
+							names[ai.id] = ai.activityName || ai.activityId
+							activityIds[ai.id] = ai.activityId
 						})
 					}
 				}
-				return res
+				return { names, activityIds }
+		},
+		activityInstancesGrouped: function () {
+			return this.activityInstanceData.names
+		},
+		activityInstanceIdToActivityId: function () {
+			return this.activityInstanceData.activityIds
 		},
 		restFilter: function () {
 			const result = {
@@ -110,6 +123,7 @@ export default {
 			const variables = await serviceMap[service][method](this.selectedInstance.id, this.restFilter)
 			variables.forEach(v => {
 				v.scope = this.activityInstancesGrouped[v.activityInstanceId] || v.activityInstanceId
+				v.scopeActivityId = this.activityInstanceIdToActivityId[v.activityInstanceId] || null
 			})
 			variables.sort((a, b) => a.name.localeCompare(b.name))
 

@@ -71,8 +71,9 @@
         <template v-slot:cell(scope)="table">
           <CopyableActionButton
             :displayValue="table.item.scope"
-            :clickable="false"
-            :title="$t('process-instance.variables.scope') + ':\n' + table.item.scope"
+            :clickable="!!table.item.scopeActivityId"
+            :title="$t('process-instance.variables.scope') + ':\n' + table.item.scope + '\n\n' + $t('process-instance.variables.activityInstanceId') + ':\n' + table.item.activityInstanceId"
+            @click="highlightScope(table.item)"
             @copy="copyValueToClipboard"
           />          
         </template>
@@ -143,7 +144,7 @@ import processesVariablesMixin from '@/components/process/mixins/processesVariab
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { permissionsMixin } from '@/permissions.js'
-import { mapGetters } from 'vuex'
+import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'VariablesTable',
@@ -190,6 +191,13 @@ export default {
     },
   },
   methods: {
+    ...mapActions(['setHighlightedElement', 'selectActivity']),
+    highlightScope(variable) {
+      if (variable.scopeActivityId) {
+        this.selectActivity({ activityId: variable.scopeActivityId })
+        this.setHighlightedElement(variable.scopeActivityId)
+      }
+    },
     async addNewVariable() {
       this.$refs.addVariableModal.show()
     },

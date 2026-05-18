@@ -208,7 +208,7 @@ export default {
       this.$emit('task-selected', event);
     },
     filterByChildActivity: function(event) {
-      const activityId = event?.id || ''
+      const activityId = event?.activityId || event?.id || ''
       if (activityId) {
         this.selectActivity({ activityId: activityId })
         this.setHighlightedElement(activityId)
