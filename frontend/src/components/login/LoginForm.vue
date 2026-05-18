@@ -21,9 +21,8 @@
   <div>
     <CIBForm @submitted="onLogin">
       <b-form-group label-cols="4" content-cols="8" label-for="username-input" :label="$t('login.username')">
-        <input id="username-input" ref="username" v-model="credentials.username" class="form-control" :class="{ 'is-invalid': usernameError || generalError }" autocomplete="username" :aria-describedby="(usernameError || generalError) ? 'username-error' : null" :aria-invalid="(usernameError || generalError) ? 'true' : 'false'" :aria-required="true">
-        <div v-if="usernameError" id="username-error" class="invalid-feedback d-block" role="alert">{{ usernameError }}</div>
-        <div v-if="generalError" id="username-error" class="invalid-feedback d-block" role="alert">{{ generalError }}</div>
+        <input id="username-input" ref="username" v-model="credentials.username" class="form-control" :class="{ 'is-invalid': computedUsernameError }" autocomplete="username" :aria-describedby="computedUsernameError ? 'username-error' : null" :aria-invalid="computedUsernameError ? 'true' : 'false'" :aria-required="true">
+        <div v-if="computedUsernameError" id="username-error" class="invalid-feedback d-block" role="alert">{{ computedUsernameError }}</div>
       </b-form-group>
       <b-form-group label-cols="4" content-cols="8" label-for="password-input" :label="$t('login.password')">
         <SecureInput ref="password" v-model="credentials.password" :aria-describedby="passwordError ? 'password-error' : null" :has-error="!!passwordError" :required="true"></SecureInput>
@@ -101,6 +100,11 @@ export default {
       usernameError: null,
       passwordError: null,
       generalError: null
+    }
+  },
+  computed: {
+    computedUsernameError() {
+      return this.usernameError || this.generalError
     }
   },
   mounted: function() {
