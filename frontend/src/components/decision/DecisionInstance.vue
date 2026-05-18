@@ -228,10 +228,12 @@ export default {
     },
     // Strips surrounding DMN double-quotes and trims whitespace for exact comparison
     normalizeCell(text) {
-      return text.trim().replace(/^"|"$/g, '').trim()
+      if (!text) return ''
+      return text.trim().replace(/(^")|("$)/g, '').trim()
     },
     // Returns true if the cell text is a DMN string literal (wrapped in double quotes)
     isDmnStringLiteral(text) {
+      if (!text) return false
       return /^".*"$/.test(text.trim())
     }
   }
