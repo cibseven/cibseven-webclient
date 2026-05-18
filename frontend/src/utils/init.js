@@ -90,7 +90,7 @@ export function handleAxiosError(router, root, error) {
         return axios.request(error.config)
       } else {
         console && console.warn('Not authenticated, redirecting ...')
-        sessionStorage.getItem('token') ? sessionStorage.removeItem('token') : sessionStorage.removeItem('token')
+        sessionStorage.getItem('token') ? sessionStorage.removeItem('token') : localStorage.removeItem('token')
         axios.defaults.headers.common.authorization = ''
         root.user = null
         if (router.currentRoute.path !== '/seven/login') {
