@@ -1302,7 +1302,7 @@
 	"task-variables": {
 		"title": "Task Variablen für \"{name}\"",
 		"introduction": "Hier können Sie die Variablen der Prozessinstanz anzeigen und bearbeiten, die mit dieser Aufgabe verbunden sind. Bitte beachten Sie, dass das Ändern von Variablenwerten unbeabsichtigte Auswirkungen auf die Prozessausführung haben kann.",
-		"businessKey": "Business Key: {businessKey}",
+		"businessKey": "Fachlicher Schlüssel: {businessKey}",
 		"noVariables": "Für diese Aufgabe wurden noch keine Variablen angegeben.",
 		"noVariablesLoaded": "Es wurden noch keine zusätzlichen Variablen hinzugefügt.",
 		"editVariable": {
