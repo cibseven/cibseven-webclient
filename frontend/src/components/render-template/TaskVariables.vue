@@ -103,7 +103,7 @@
 
 <script>
 import { permissionsMixin } from '@/permissions.js'
-import { FormsService } from '@/services.js'
+import { FormsService, ProcessService } from '@/services.js'
 import { FlowTable, CopyableActionButton } from '@cib/common-frontend'
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import AddVariableModalUI from '@/components/process/modals/AddVariableModalUI.vue'
@@ -168,6 +168,11 @@ export default {
         return obj
       }, {})
     }
+  },
+  mounted() {
+    ProcessService.findProcessInstance(this.task.processInstanceId).then(processInstance => {
+      this.businessKey = processInstance.businessKey
+    })
   },
   methods: {
     async showExistingVariables() {
