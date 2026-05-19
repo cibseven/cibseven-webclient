@@ -203,12 +203,12 @@ export default {
 					if (result && result.length > 0) {
 						const value = result[0].value
 						const fileData = typeof value === 'string' ? JSON.parse(value) : value
-						const blob = new Blob([Uint8Array.from(atob(fileData.data), c => c.charCodeAt(0))], { type: fileData.contentType })
+						const blob = new Blob([Uint8Array.from(atob(fileData.data), c => c.codePointAt(0))], { type: fileData.contentType })
 						this.$refs.importPopper.triggerDownload(blob, fileData.name)
 					}
 				})
 			} else if (variable.type === 'Object') {
-				const blob = new Blob([Uint8Array.from(atob(variable.value.data), c => c.charCodeAt(0))], { type: variable.value.contentType })
+				const blob = new Blob([Uint8Array.from(atob(variable.value.data), c => c.codePointAt(0))], { type: variable.value.contentType })
 				this.$refs.importPopper.triggerDownload(blob, this.getFileVariableName(variable))
 			} else {
 				const download = this.selectedInstance.state === 'ACTIVE' ?

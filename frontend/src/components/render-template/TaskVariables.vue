@@ -42,12 +42,20 @@
           />       
         </template>
         <template v-slot:cell(value)="row">
-          <span class="text-truncate" :title="displayVariableValue(row.item)">
-            {{ displayVariableValue(row.item) }}
-          </span>
+          <CopyableActionButton
+            :displayValue="displayVariableValue(row.item)"
+            :clickable="isFile(row.item)"
+            :title="displayVariableValue(row.item)"
+            @click="downloadFile(row.item)"
+            @copy="copyValueToClipboard"
+          />          
         </template>
         <template v-slot:cell(actions)="row">
-          <CellActionButton @click="showEditVariable(row.item, row.index)" icon="mdi-square-edit-outline" :title="$t('task-variables.editVariable.tooltip', { name: row.item.name })"></CellActionButton>
+          <CellActionButton v-if="isFile(row.item)" :title="displayVariableValue(row.item)"
+            icon="mdi-download-outline"
+            @click="downloadFile(row.item)">
+          </CellActionButton>
+          <CellActionButton v-if="!isFile(row.item)" @click="showEditVariable(row.item, row.index)" icon="mdi-square-edit-outline" :title="$t('task-variables.editVariable.tooltip', { name: row.item.name })"></CellActionButton>
           <CellActionButton v-if="!row.item.existing || row.item.changed" @click="removeVariable(row.index)" icon="mdi-delete-outline" :title="$t('task-variables.removeVariable.tooltip', { name: row.item.name })"></CellActionButton>
         </template>
       </FlowTable>
@@ -98,13 +106,14 @@
       @add-variable="changeVariable"></AddVariableModalUI>    
 
     <SuccessAlert ref="messageCopy" style="z-index: 9999"> {{ $t('process.copySuccess') }} </SuccessAlert>
+    <TaskPopper ref="importPopper"></TaskPopper>
 </div>
 </template>
 
 <script>
 import { permissionsMixin } from '@/permissions.js'
 import { FormsService, ProcessService } from '@/services.js'
-import { FlowTable, CopyableActionButton } from '@cib/common-frontend'
+import { FlowTable, CopyableActionButton, TaskPopper } from '@cib/common-frontend'
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import AddVariableModalUI from '@/components/process/modals/AddVariableModalUI.vue'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
@@ -118,7 +127,7 @@ export default {
     }
   },
   mixins: [permissionsMixin, copyToClipboardMixin],
-  components: { FlowTable, CopyableActionButton, CellActionButton, AddVariableModalUI },
+  components: { FlowTable, CopyableActionButton, TaskPopper, CellActionButton, AddVariableModalUI },
   emits: ['variables-updated'],
   data() {
     return {
@@ -182,6 +191,7 @@ export default {
             name,
             type: variable.type,
             value: variable.value,
+            valueInfo: variable.valueInfo,
             existing: true,
             changed: false,
           }))
@@ -230,6 +240,12 @@ export default {
       this.saving = false
     },
     displayVariableValue(variable) {
+      if (this.isFileValueDataSource(variable)) {
+        return this.getFileVariableName(variable)
+      }
+      if (variable.type === 'File') {
+        return variable.valueInfo.filename
+      }
       if (variable.value === null || variable.value === undefined) {
         return 'null'
       }
@@ -253,6 +269,42 @@ export default {
         variables.push(variable)
       }
     },
+    isFile(item) {
+      return (item.type === 'File') || this.isFileValueDataSource(item)
+    },
+    isFileValueDataSource(item) {
+      if (item.type === 'Object') {
+        const objectTypeName =
+          (item.value && item.value.objectTypeName) ||
+          (item.valueInfo && item.valueInfo.objectTypeName)
+        if (objectTypeName && this.fileObjects.includes(objectTypeName)) return true
+      }
+      return false
+    },
+    getFileVariableName(item) {
+      // Prioritize valueDeserialized over value
+      const targetValue = item.valueDeserialized || item.value
+      if (targetValue && typeof targetValue === 'object' && targetValue.name) {
+        return targetValue.name
+      }
+      if (targetValue && typeof targetValue === 'string') {
+        try {
+          const parsed = JSON.parse(targetValue)
+          if (parsed && parsed.name) return parsed.name
+        } catch { return '' }
+      }
+      return ''
+    },
+		downloadFile(variable) {
+			if (variable.type === 'Object') {
+				const blob = new Blob([Uint8Array.from(atob(variable.value.data), c => c.codePointAt(0))], { type: variable.value.contentType })
+				this.$refs.importPopper.triggerDownload(blob, this.getFileVariableName(variable))
+			} else {
+				ProcessService.fetchVariableDataByExecutionId(this.task.executionId, variable.name).then(data => {
+					this.$refs.importPopper.triggerDownload(data, variable.valueInfo.filename)
+				})
+			}
+		},
   }
 }
 </script>
