@@ -157,11 +157,16 @@ export default {
   },
   computed: {
     variablesToSubmit() {
-      return this.variables.filter(variable => !variable.existing || variable.changed).map(variable => ({
+      const ar = this.variables.filter(variable => !variable.existing || variable.changed).map(variable => ({
         name: variable.name,
         type: variable.type,
         value: variable.value
       }))
+
+      return ar.reduce((obj, variable) => {
+        obj[variable.name] = { type: variable.type, value: variable.value }
+        return obj
+      }, {})
     }
   },
   methods: {

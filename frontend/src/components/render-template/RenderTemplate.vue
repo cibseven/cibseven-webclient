@@ -93,7 +93,7 @@ export default {
       submitForm: false,
       formFrame: true,
       loader: false,
-      emptyTaskVariables: [],
+      emptyTaskVariables: {},
       datePickerValue: null,
       datePickerRequest: null
     }
@@ -138,7 +138,7 @@ export default {
   methods: {
     loadIframe: async function() {
       this.taskVariablesVisible = false
-      this.emptyTaskVariables = []
+      this.emptyTaskVariables = {}
       this.loader = true
       this.submitForm = false
       this.formFrame = true
@@ -215,7 +215,7 @@ export default {
       }
     },
     completeEmptyTask() {
-      const hasVariables = this.emptyTaskVariables && this.emptyTaskVariables.length > 0
+      const hasVariables = Object.keys(this.emptyTaskVariables).length > 0
       const method = hasVariables ? TaskService.submitWithVariables : TaskService.submit
       const params = hasVariables ? { variables: this.emptyTaskVariables } : null
       method(this.task.id, params).then(() => {
