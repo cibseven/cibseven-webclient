@@ -1305,6 +1305,12 @@
 		"businessKey": "Business Key: {businessKey}",
 		"noVariables": "No variables specified for this task yet.",
 		"noVariablesLoaded": "No additional variables added yet.",
+		"editVariable": {
+			"tooltip": "Edit variable \"{name}\""
+		},
+		"removeVariable": {
+			"tooltip": "Remove variable \"{name}\" from the list"
+		},
 		"addVariable": {
 			"title": "@:process-instance.addVariable",
 			"tooltip": "Add a new variable to the process instance"

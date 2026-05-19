@@ -1304,6 +1304,12 @@
 		"businessKey": "Clave de negocio: {businessKey}",
 		"noVariables": "No se han especificado variables para esta tarea.",
 		"noVariablesLoaded": "No se han agregado variables adicionales.",
+		"editVariable": {
+			"tooltip": "Editar variable \"{name}\""
+		},
+		"removeVariable": {
+			"tooltip": "Eliminar variable \"{name}\" de la lista"
+		},
 		"addVariable": {
 			"title": "@:process-instance.addVariable",
 			"tooltip": "Agregar una nueva variable a la instancia del proceso"

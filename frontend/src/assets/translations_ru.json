@@ -1304,6 +1304,12 @@
 		"businessKey": "Бизнес-ключ: {businessKey}",
 		"noVariables": "Для этой задачи еще не указаны переменные.",
 		"noVariablesLoaded": "Дополнительные переменные еще не добавлены.",
+		"editVariable": {
+			"tooltip": "Редактировать переменную \"{name}\""
+		},
+		"removeVariable": {
+			"tooltip": "Удалить переменную \"{name}\" из списка"
+		},
 		"addVariable": {
 			"title": "@:process-instance.addVariable",
 			"tooltip": "Добавить новую переменную в экземпляр процесса"

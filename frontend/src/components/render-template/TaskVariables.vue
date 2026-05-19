@@ -47,8 +47,8 @@
           </span>
         </template>
         <template v-slot:cell(actions)="row">
-          <CellActionButton @click="showEditVariable(row.item, row.index)" icon="mdi-square-edit-outline" :title="$t('process-instance.editVariable')"></CellActionButton>
-          <CellActionButton v-if="!row.item.existing || row.item.changed" @click="removeVariable(row.index)" icon="mdi-delete-outline" :title="$t('process-instance.removeVariable')"></CellActionButton>
+          <CellActionButton @click="showEditVariable(row.item, row.index)" icon="mdi-square-edit-outline" :title="$t('task-variables.editVariable.tooltip', { name: row.item.name })"></CellActionButton>
+          <CellActionButton v-if="!row.item.existing || row.item.changed" @click="removeVariable(row.index)" icon="mdi-delete-outline" :title="$t('task-variables.removeVariable.tooltip', { name: row.item.name })"></CellActionButton>
         </template>
       </FlowTable>
 
