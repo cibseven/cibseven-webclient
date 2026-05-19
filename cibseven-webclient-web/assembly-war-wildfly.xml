@@ -33,6 +33,14 @@
             </includes>
           <outputDirectory>WEB-INF</outputDirectory>
         </fileSet>
+        <fileSet>
+          <directory>src/main/runtime/wildfly/webapp/WEB-INF/classes</directory>
+            <includes>
+                <include>application.properties</include>
+                <include>application-wildfly.yaml</include>
+            </includes>
+          <outputDirectory>WEB-INF/classes</outputDirectory>
+        </fileSet>
     </fileSets>
     <dependencySets>
         <dependencySet>

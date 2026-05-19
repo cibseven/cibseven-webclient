@@ -55,5 +55,6 @@ public class Incident {
 	private String rootCauseIncidentActivityId;
 	private String rootCauseIncidentFailedActivityId;
 	private String rootCauseIncidentConfiguration;
+	private String rootCauseIncidentHistoryConfiguration;
 	private String rootCauseIncidentMessage;
 }

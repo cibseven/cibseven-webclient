@@ -31,7 +31,6 @@ export default mergeConfig(
       setupFiles: ['src/__tests__/vitest.setup.js'],
       exclude: [
         ...configDefaults.exclude,
-        'cypress/**',
         'playwright/**',
       ],
       root: fileURLToPath(new URL('./', import.meta.url)),
@@ -49,8 +48,6 @@ export default mergeConfig(
           'src/__tests__/**',
 
           // Test and config files
-          'cypress/**', // Exclude Cypress tests
-          'cypress.config.js', // Exclude Cypress config
           'playwright/**', // Exclude Playwright tests
           'playwright.config.js', // Exclude Playwright config
           'vite.config.js', // Exclude Vite config

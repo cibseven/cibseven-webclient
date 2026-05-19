@@ -47,7 +47,6 @@ public class JobService extends BaseService implements InitializingBean {
 			@RequestBody Map<String, Object> params,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		//checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.READ_ALL);
 		return bpmProvider.getJobs(params, user);
 	}
 
@@ -57,7 +56,6 @@ public class JobService extends BaseService implements InitializingBean {
 			@RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		//checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.UPDATE_ALL);
 		bpmProvider.setSuspended(id, data, user);
 	}
     
@@ -65,7 +63,6 @@ public class JobService extends BaseService implements InitializingBean {
 	public void deleteJob(
 			@PathVariable String id, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		//checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteJob(id, user);
 	}
     
@@ -73,7 +70,6 @@ public class JobService extends BaseService implements InitializingBean {
 	public Collection<Object> getHistoryJobLog(
 			@RequestParam Map<String, Object> params, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		//checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.READ_ALL);
 		return bpmProvider.getHistoryJobLog(params, user);
 	}
     
@@ -81,7 +77,6 @@ public class JobService extends BaseService implements InitializingBean {
 	public String getHistoryJobLogStacktrace(
 			@PathVariable String id, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		//checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.READ_ALL);
 		return bpmProvider.getHistoryJobLogStacktrace(id, user);
 	}
 
@@ -91,7 +86,6 @@ public class JobService extends BaseService implements InitializingBean {
 			@RequestBody Map<String, Object> data,
 			HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		//checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.UPDATE_ALL);
 		bpmProvider.changeDueDate(id, data, user);
 	}
 
@@ -101,7 +95,6 @@ public class JobService extends BaseService implements InitializingBean {
 			@RequestParam Map<String, Object> params,
 			HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		//checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.UPDATE_ALL);
 		bpmProvider.recalculateDueDate(id, params, user);
 	}
 

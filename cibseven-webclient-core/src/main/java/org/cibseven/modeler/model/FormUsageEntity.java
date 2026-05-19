@@ -42,7 +42,7 @@ import lombok.Setter;
 @Getter
 @RequiredArgsConstructor
 @Entity
-@Table(name = "form_usage")
+@Table(name = "mod_form_usage")
 public class FormUsageEntity {
 
 	@Id

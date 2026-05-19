@@ -94,7 +94,7 @@ createStoreTestSuite('ActivityStore', ActivityStore, {
       it('should handle empty payload', () => {
         const state = getState()
         mutation(state, {})
-        expect(state.selectedActivityId).toBeUndefined()
+        expect(state.selectedActivityId).toBe('')
         expect(state.selectedActivityInstancesListMode).toBe('all')
       })
     },
@@ -224,7 +224,7 @@ createStoreTestSuite('ActivityStore', ActivityStore, {
       it('should use default payload when none provided', () => {
         const context = getContext()
         action(context)
-        expect(context.commit).toHaveBeenCalledWith('setSelectedActivityId', { activityId: 0, listMode: 'all' })
+        expect(context.commit).toHaveBeenCalledWith('setSelectedActivityId', { activityId: '', listMode: 'all' })
       })
     },
 

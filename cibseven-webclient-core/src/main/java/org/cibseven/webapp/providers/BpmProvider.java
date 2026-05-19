@@ -755,7 +755,7 @@ public interface BpmProvider {
 	Collection<User> findUsers(Optional<String> id, Optional<String> firstName, Optional<String> firstNameLike, Optional<String> lastName,
 			Optional<String> lastNameLike, Optional<String> email, Optional<String> emailLike, Optional<String> memberOfGroup, Optional<String> memberOfTenant, 
 			Optional<String> idIn, Optional<String> firstResult, Optional<String> maxResult, 
-			Optional<String> sortBy, Optional<String> sortOrder, CIBUser user);
+			Optional<String> sortBy, Optional<String> sortOrder, Optional<Boolean> likePatternIgnoreCase, CIBUser user);
 
 	/**
 	 * Get the count of users in the system with optional filters.
@@ -1175,6 +1175,7 @@ public interface BpmProvider {
 	void deleteBatch(String id, Map<String, Object> params, CIBUser user);
 	void setBatchSuspensionState(String id, Map<String, Object> params, CIBUser user);
 	Collection<HistoryBatch> getHistoricBatches(Map<String, Object> params, CIBUser user);
+	Long getRuntimeBatchCount(Map<String, Object> queryParams, CIBUser user);
 	Long getHistoricBatchCount(Map<String, Object> queryParams, CIBUser user);
 	HistoryBatch getHistoricBatchById(String id, CIBUser user);
 	void deleteHistoricBatch(String id, CIBUser user);

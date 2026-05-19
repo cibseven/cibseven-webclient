@@ -26,13 +26,13 @@ import org.cibseven.modeler.model.FormUsageEntity;
 @Repository
 public interface FormUsageRepository extends JpaRepository<FormUsageEntity, String> {
 
-	@Query(value = "select * from form_usage where form_id = :form_id and closed_at is null", nativeQuery = true)
+	@Query(value = "select * from mod_form_usage where form_id = :form_id and closed_at is null", nativeQuery = true)
 	FormUsageEntity checkSessionUser(@Param("form_id") String diagram_id);
 
-	@Query(value = "update form_usage set close_at = CURRENT_TIMESTAMP where session_id = :session_id and closed_at is null", nativeQuery = true)
+	@Query(value = "update mod_form_usage set close_at = CURRENT_TIMESTAMP where session_id = :session_id and closed_at is null", nativeQuery = true)
 	void closeSessionById(@Param("session_id") String session_id);
 
-	@Query(value = "select * from form_usage where session_id = :session_id and closed_at is null", nativeQuery = true)
+	@Query(value = "select * from mod_form_usage where session_id = :session_id and closed_at is null", nativeQuery = true)
 	FormUsageEntity getBySessionId(@Param("session_id") String session_id);
 
 }

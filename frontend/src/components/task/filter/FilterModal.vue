@@ -339,8 +339,8 @@ export default {
       this.criteriaEdited = { key: criteriaToEdit.key, rowIndex: index }
       this.selectedCriteriaKey = criteriaToEdit.key
       this.selectCriteria(this.selectedCriteriaKey)
-      if(this.selectedCriteriaType === 'array' && criteriaToEdit.value.length >0) {
-        this.selectedCriteriaValue = criteriaToEdit.value[0]
+      if(this.selectedCriteriaType === 'array' && criteriaToEdit.value.length > 0) {
+        this.selectedCriteriaValue = criteriaToEdit.value.join(', ')
       }
       else if ( this.selectedCriteriaType === 'variable' || Array.isArray(criteriaToEdit.value) && criteriaToEdit.value.length > 0) {
         this.selectedCriteriaVariable = criteriaToEdit.value

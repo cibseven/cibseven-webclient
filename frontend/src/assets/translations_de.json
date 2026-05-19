@@ -249,6 +249,7 @@
 			"unknown": "Unbekannt"
 		},
 		"details": {
+			"instancesChain": "Hauptprozess",
 			"startUser": "Startnutzer",
 			"start": "Gestartet am",
 			"finish": "Abgeschlossen am",
@@ -280,7 +281,7 @@
 			"value": "Wert",
 			"valueSerialized": "Serialisierter Wert",
 			"actions": "Aktionen",
-			"scope": "Umfang",
+			"scope": "Bereich",
 			"activityInstanceId": "Aktivitätsinstanz-ID",
 			"objectTypeName": "Objekttypname",
 			"serializationDataFormat": "Serialisierungsdatenformat",
@@ -522,6 +523,7 @@
 		"activate": "Stapel aktivieren",
 		"remove": "Stapel entfernen",
 		"confirmRemove": "Möchten Sie diesen Stapel und alle zugehörigen Jobs und Jobdefinitionen wirklich löschen?",
+		"historyLevelTooLow": "Ihre Engine-Instanz ist mit dem \"{historyLevel}\"-Historienlevel konfiguriert. Um Informationen über abgeschlossene Stapel zu erhalten, muss der Historienlevel auf \"voll\" gesetzt sein.",
 		"exception": "Ausnahme",
 		"actions": "Aktionen",
 		"retryJob": "Job erneut ausführen",
@@ -612,6 +614,11 @@
 				"groupEuropean": "Europäische Formate",
 				"groupUS": "US-Formate",
 				"groupISO": "ISO/Technische Formate"
+			},
+			"bpmn": {
+				"title": "BPMN Diagramm",
+				"shortenBadgeNumbers": "Kurzes Zahlenformat",
+				"shortenBadgeNumbersDescription": "Wenn aktiviert, werden die Zahlen im BPMN Diagramm für Instanzen und Vorkommnisse verkürzt angezeigt, z.B. 1K statt 1.005."
 			},
 			"notifications": {
 				"title": "Benachrichtigungen",
@@ -1001,11 +1008,7 @@
 		},
 		"modeler": {
 			"title": "Modeler",
-			"tooltip": "Modeler öffnen, um BPMN, DMN und Formulare zu entwerfen und zu bearbeiten",
-			"dbNotConfigured": {
-				"title": "Modeler-Datenbank nicht konfiguriert",
-				"description": "Der Modeler ist aktiviert, aber es wurde keine Datenbankverbindung eingerichtet. Bitte konfigurieren Sie die Eigenschaft 'spring.datasource.url', um den Modeler zu aktivieren."
-			}
+			"tooltip": "Modeler öffnen, um BPMN, DMN und Formulare zu entwerfen und zu bearbeiten"
 		},
 		"oldCockpit": {
 			"title": "Altes Cockpit",

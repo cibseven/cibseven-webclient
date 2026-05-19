@@ -112,6 +112,7 @@ export { default as ProcessList } from '@/components/processes/list/ProcessList.
 export { default as ProcessListView } from '@/components/processes/list/ProcessListView.vue'
 export { default as ProcessTable } from '@/components/start-process/ProcessTable.vue'
 export { default as ProcessInstanceView } from '@/components/process/ProcessInstanceView.vue'
+export { default as ProcessInstanceDetailsSidebar } from '@/components/process/ProcessInstanceDetailsSidebar.vue'
 export { default as ProcessDefinitionView } from '@/components/process/ProcessDefinitionView.vue'
 export { default as ProcessesDashboardView } from '@/components/processes/dashboard/ProcessesDashboardView.vue'
 export { default as PieChart } from '@/components/processes/dashboard/PieChart.vue'

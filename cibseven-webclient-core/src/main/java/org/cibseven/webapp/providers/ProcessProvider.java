@@ -265,6 +265,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		// fetch history for those ids to get full info
 		Map<String, Object> dataHistory = new HashMap<>();
 		dataHistory.put("processInstanceIds", processInstanceIds);
+		dataHistory.put("fetchIncidents", Boolean.TRUE);
 
 		Integer firstResult0 = 0;
 		Collection<HistoryProcessInstance> historicInstances = findProcessesInstancesHistory(dataHistory, Optional.of(firstResult0), maxResults, user);
@@ -370,7 +371,12 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		Boolean fetchIncidents = (Boolean) data.get("fetchIncidents");
 		if (fetchIncidents != null && fetchIncidents) {
 			String processDefinitionId = (String) data.get("processDefinitionId");
-			if (processDefinitionId != null) {
+			if (processDefinitionId == null && processes != null) {
+				// No processDefinitionId — fetch incidents per instance (e.g. called from findProcessesInstancesRuntime)
+				processes.forEach(p -> {
+					p.setIncidents(incidentProvider.findIncidentByInstanceId(p.getId(), user));
+				});
+			} else if (processDefinitionId != null) {
 				@SuppressWarnings("unchecked")
 				List<String> activityIdIn = (List<String>) data.get("activeActivityIdIn");
 
@@ -513,10 +519,10 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		return ((ResponseEntity<ProcessInstance>) doGet(url, ProcessInstance.class, user, false)).getBody();
 	}
 
-	public Variable fetchProcessInstanceVariableImpl(String processInstanceId, String variableName, boolean deserializeValue, CIBUser user) throws SystemException  {
+	private Variable fetchProcessInstanceVariableImpl(String processInstanceId, String variableName, boolean deserializeValue, CIBUser user) throws SystemException  {
 		String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId + "/variables/" + variableName;
 		url += "?deserializeValue=" + deserializeValue;
-		return ((ResponseEntity<Variable>) doGet(url, Variable.class, null, false)).getBody();
+		return ((ResponseEntity<Variable>) doGet(url, Variable.class, user, false)).getBody();
 	}
 
 	@Override

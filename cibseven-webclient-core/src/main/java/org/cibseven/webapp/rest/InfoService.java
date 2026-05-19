@@ -66,8 +66,8 @@ public class InfoService extends BaseService {
 	@Value("${cibseven.webclient.engineRest.url:./}") private String engineRestUrl;
 
 	@Value("${camunda.bpm.authorization.enabled:true}") private boolean authorizationEnabled;
-	@Value("${cibseven.webclient.modeler.enabled:true}") private boolean modelerEnabled;
-	@Value("${cibseven.webclient.modeler.dbConfigured:true}") private boolean modelerDbConfigured;
+	@Value("${cibseven.webclient.legacy.authorization.enabled:false}") private boolean legacyAuthorizationEnabled;
+	@Value("${cibseven.webclient.modeler.enabled:false}") private boolean modelerEnabled;
 	
 	@Autowired
 	InfoVersion infoVersion;
@@ -111,9 +111,8 @@ public class InfoService extends BaseService {
 		
 		configJson.put("engineRestPath", engineRestPath);
 		configJson.put("engineRestUrl", engineRestUrl);
-		configJson.put("authorizationEnabled", authorizationEnabled);
+		configJson.put("authorizationEnabled", authorizationEnabled || legacyAuthorizationEnabled);
 		configJson.put("modelerEnabled", modelerEnabled);
-		configJson.put("modelerDbConfigured", modelerDbConfigured);
 		
         try {
             ObjectMapper mapper = new ObjectMapper();

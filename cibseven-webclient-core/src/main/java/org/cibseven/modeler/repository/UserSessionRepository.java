@@ -30,6 +30,6 @@ public interface UserSessionRepository extends JpaRepository<UserSessionEntity, 
 
 	@Transactional
 	@Modifying
-	@Query(value = "DELETE FROM user_sessions us WHERE us.created_at < (SELECT created_at FROM (SELECT created_at,ROW_NUMBER() OVER (ORDER BY created_at DESC) AS rn FROM user_sessions) AS ranked WHERE ranked.rn = :keepLimit);", nativeQuery = true)
+	@Query(value = "DELETE FROM mod_user_sessions us WHERE us.created_at < (SELECT created_at FROM (SELECT created_at,ROW_NUMBER() OVER (ORDER BY created_at DESC) AS rn FROM mod_user_sessions) AS ranked WHERE ranked.rn = :keepLimit);", nativeQuery = true)
 	void removeOldSessions(@Param("keepLimit") int keepLimit);
 }

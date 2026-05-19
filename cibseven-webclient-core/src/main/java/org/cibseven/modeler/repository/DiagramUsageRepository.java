@@ -28,13 +28,13 @@ import org.cibseven.modeler.model.DiagramUsageEntity;
 @Repository
 public interface DiagramUsageRepository extends JpaRepository<DiagramUsageEntity, String> {
 
-	@Query(value = "select * from diagram_usage where diagram_id = :diagram_id and closed_at is null", nativeQuery = true)
+	@Query(value = "select * from mod_diagram_usage where diagram_id = :diagram_id and closed_at is null", nativeQuery = true)
 	List<DiagramUsageEntity> checkSessionUser(@Param("diagram_id") String diagram_id);
 
-	@Query(value = "update diagram_usage set close_at = CURRENT_TIMESTAMP where session_id = :session_id and closed_at is null", nativeQuery = true)
+	@Query(value = "update mod_diagram_usage set close_at = CURRENT_TIMESTAMP where session_id = :session_id and closed_at is null", nativeQuery = true)
 	void closeSessionById(@Param("session_id") String session_id);
 
-	@Query(value = "select * from diagram_usage where session_id = :session_id and closed_at is null", nativeQuery = true)
+	@Query(value = "select * from mod_diagram_usage where session_id = :session_id and closed_at is null", nativeQuery = true)
 	DiagramUsageEntity getBySessionId(@Param("session_id") String session_id);
 
 }

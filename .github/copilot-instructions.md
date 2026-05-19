@@ -7,7 +7,7 @@ This is the main CIBseven BPM web application, built as a multi-module Maven pro
 - **Frontend:** Vue 3 with **Options API** (`export default {}`), Vite, vue-router 4 (hash history), Vuex 4 (namespaced modules), axios, vue-i18n
 - **Backend:** Java 17, Spring Boot 3.5.x (Jakarta EE), Spring MVC REST controllers, SpringDoc OpenAPI
 - **UI:** Bootstrap 5, SCSS, Material Design Icons (`@mdi/font`), `@cib/bootstrap-components`, `@cib/common-frontend`
-- **Testing:** Vitest + @vue/test-utils (unit), Cypress + Playwright (E2E), Spring Boot Test + JUnit (backend)
+- **Testing:** Vitest + @vue/test-utils (unit), Playwright (E2E), Spring Boot Test + JUnit (backend)
 - **Linting:** ESLint 9 flat config + eslint-plugin-vue (essential) + eslint-plugin-vuejs-accessibility, no Prettier
 
 ## Coding Conventions
@@ -47,7 +47,7 @@ This is the main CIBseven BPM web application, built as a multi-module Maven pro
 
 ### Testing
 - Unit tests in `src/__tests__/` with Vitest (jsdom) and `@vue/test-utils`
-- E2E: Cypress in `cypress/`, Playwright in `playwright/`
+- E2E: Playwright in `playwright/`
 
 ### Build & Distribution
 - Frontend code in `frontend/` subdirectory, built by Maven `frontend-maven-plugin`
