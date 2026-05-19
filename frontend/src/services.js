@@ -80,6 +80,7 @@ const TaskService = {
     return axios.post(getServicesBasePath() + "/task/by-filter/" + filterId + queryPagination, filters)
   },
   submit: function(taskId) { return axios.post(getServicesBasePath() + "/task/submit/" + taskId) },
+  submitWithVariables: function(taskId, params) { return axios.post(getServicesBasePath() + `/task/${taskId}/submit-form`, params) },
   formReference: function(taskId) { return axios.get(getServicesBasePath() + "/task/" + taskId + "/form-reference") },
   getDeployedForm: function(taskId) { return axios.get(getServicesBasePath() + "/task/" + taskId + "/deployed-form") },
   form: function(taskId) { return axios.get(getServicesBasePath() + "/task/" + taskId + "/form") },
@@ -575,6 +576,9 @@ const FormsService = {
   },
   fetchVariables: function(taskId, deserialize) {
     return axios.post(getServicesBasePath() + '/task/' + taskId, null, { params: { deserialize: deserialize } } )
+  },
+  addVariable(taskId, variable) {
+    return axios.post(getServicesBasePath() + '/task/' + taskId + '/variable', variable)
   },
   deleteVariable: function(taskId, variableName) {
     return axios.delete(getServicesBasePath() + '/task/' + taskId + '/variable/' + variableName)
