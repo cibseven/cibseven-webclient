@@ -1298,6 +1298,25 @@
 		"fullscreen": "Pantalla completa",
 		"showProcess": "Ver proceso"
 	},
+	"task-variables": {
+		"title": "Variables de tarea para \"{name}\"",
+		"introduction": "Aquí puede ver y editar las variables de la instancia del proceso relacionadas con esta tarea. Tenga en cuenta que cambiar los valores de las variables puede tener consecuencias no deseadas en la ejecución del proceso.",
+		"businessKey": "Clave de negocio: {businessKey}",
+		"noVariables": "No se han especificado variables para esta tarea.",
+		"noVariablesLoaded": "No se han agregado variables adicionales.",
+		"addVariable": {
+			"title": "@:process-instance.addVariable",
+			"tooltip": "Agregar una nueva variable a la instancia del proceso"
+		},
+		"showTaskVariables": {
+			"title": "Mostrar variables de tarea",
+			"tooltip": "Mostrar las variables que están definidas para la tarea. Puede editar los valores de estas variables o agregar nuevas variables a la instancia del proceso."
+		},
+		"showExistingVariables": {
+			"title": "Mostrar variables existentes",
+			"tooltip": "Mostrar las variables que ya están definidas para esta instancia del proceso. Puede editar los valores de estas variables o agregar nuevas variables a la instancia del proceso."
+		}
+	},
 	"setup": {
 		"title": "Configuración Inicial",
 		"description": "¡Bienvenido a CIB seven! Cree una cuenta de administrador para comenzar.",

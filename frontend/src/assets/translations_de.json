@@ -1299,6 +1299,25 @@
 		"fullscreen": "Vollbild",
 		"showProcess": "Prozess anzeigen"
 	},
+	"task-variables": {
+		"title": "Task Variablen für \"{name}\"",
+		"introduction": "Hier können Sie die Variablen der Prozessinstanz anzeigen und bearbeiten, die mit dieser Aufgabe verbunden sind. Bitte beachten Sie, dass das Ändern von Variablenwerten unbeabsichtigte Auswirkungen auf die Prozessausführung haben kann.",
+		"businessKey": "Business Key: {businessKey}",
+		"noVariables": "Für diese Aufgabe wurden noch keine Variablen angegeben.",
+		"noVariablesLoaded": "Es wurden noch keine zusätzlichen Variablen hinzugefügt.",
+		"addVariable": {
+			"title": "@:process-instance.addVariable",
+			"tooltip": "Fügen Sie eine neue Variable zur Prozessinstanz hinzu"
+		},
+		"showTaskVariables": {
+			"title": "Task-Variablen anzeigen",
+			"tooltip": "Zeigen Sie die für die Aufgabe definierten Variablen an. Sie können die Werte dieser Variablen bearbeiten oder neue Variablen zur Prozessinstanz hinzufügen."
+		},
+		"showExistingVariables": {
+			"title": "Vorhandene Variablen anzeigen",
+			"tooltip": "Zeigen Sie die bereits für diese Prozessinstanz definierten Variablen an. Sie können die Werte dieser Variablen bearbeiten oder neue Variablen zur Prozessinstanz hinzufügen."
+		}
+	},
 	"setup": {
 		"title": "Ersteinrichtung",
 		"description": "Willkommen bei CIB seven! Erstellen Sie ein Administratorkonto, um zu beginnen.",
