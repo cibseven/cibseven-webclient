@@ -39,16 +39,18 @@
             :clickable="false"
             :title="$t('process-instance.variables.name') + ':\n' + table.item.name"
             @copy="copyValueToClipboard"
-          />       
+          />
         </template>
         <template v-slot:cell(value)="row">
-          <CopyableActionButton
-            :displayValue="displayVariableValue(row.item)"
-            :clickable="isFile(row.item)"
-            :title="displayVariableValue(row.item)"
-            @click="downloadFile(row.item)"
-            @copy="copyValueToClipboard"
-          />          
+          <div class="w-100" :class="!row.item.existing || row.item.changed ? 'fw-semibold' : ''">
+            <CopyableActionButton
+              :displayValue="displayVariableValue(row.item)"
+              :clickable="isFile(row.item)"
+              :title="displayVariableValue(row.item)"
+              @click="downloadFile(row.item)"
+              @copy="copyValueToClipboard"
+            />
+          </div>
         </template>
         <template v-slot:cell(actions)="row">
           <CellActionButton v-if="isFile(row.item)" :title="displayVariableValue(row.item)"
@@ -295,16 +297,16 @@ export default {
       }
       return ''
     },
-		downloadFile(variable) {
-			if (variable.type === 'Object') {
-				const blob = new Blob([Uint8Array.from(atob(variable.value.data), c => c.codePointAt(0))], { type: variable.value.contentType })
-				this.$refs.importPopper.triggerDownload(blob, this.getFileVariableName(variable))
-			} else {
-				ProcessService.fetchVariableDataByExecutionId(this.task.executionId, variable.name).then(data => {
-					this.$refs.importPopper.triggerDownload(data, variable.valueInfo.filename)
-				})
-			}
-		},
+    downloadFile(variable) {
+      if (variable.type === 'Object') {
+        const blob = new Blob([Uint8Array.from(atob(variable.value.data), c => c.codePointAt(0))], { type: variable.value.contentType })
+        this.$refs.importPopper.triggerDownload(blob, this.getFileVariableName(variable))
+      } else {
+        ProcessService.fetchVariableDataByExecutionId(this.task.executionId, variable.name).then(data => {
+          this.$refs.importPopper.triggerDownload(data, variable.valueInfo.filename)
+        })
+      }
+    },
   }
 }
 </script>
