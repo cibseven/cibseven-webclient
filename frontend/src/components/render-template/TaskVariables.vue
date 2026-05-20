@@ -168,18 +168,18 @@ export default {
       editingVariable: null,
       editingVariableIndex: -1,
       existingVariablesShown: false,
+      fileObjects: ['de.cib.cibflow.api.files.FileValueDataFlowSource', 'de.cib.cibflow.api.files.FileValueDataSource'],
     }
   },
   computed: {
     variablesToSubmit() {
-      const ar = this.variables.filter(variable => !variable.existing || variable.changed).map(variable => ({
-        name: variable.name,
-        type: variable.type,
-        value: variable.value
-      }))
-
+      const ar = this.variables.filter(variable => !variable.existing || variable.changed)
       return ar.reduce((obj, variable) => {
-        obj[variable.name] = { type: variable.type, value: variable.value }
+        obj[variable.name] = {
+          type: variable.type,
+          value: variable.value,
+          valueInfo: variable.valueInfo
+        }
         return obj
       }, {})
     }
