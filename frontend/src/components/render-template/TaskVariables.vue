@@ -45,7 +45,7 @@
           <div class="w-100" :class="!row.item.existing || row.item.changed ? 'fw-semibold' : ''">
             <CopyableActionButton
               :displayValue="displayVariableValue(row.item)"
-              :clickable="isFile(row.item)"
+              :clickable="isFile(row.item) && row.item.existing"
               :title="displayVariableValue(row.item)"
               @click="downloadFile(row.item)"
               @copy="copyValueToClipboard"
@@ -53,7 +53,7 @@
           </div>
         </template>
         <template v-slot:cell(actions)="row">
-          <CellActionButton v-if="isFile(row.item)" :title="displayVariableValue(row.item)"
+          <CellActionButton v-if="isFile(row.item) && row.item.existing" :title="displayVariableValue(row.item)"
             icon="mdi-download-outline"
             @click="downloadFile(row.item)">
           </CellActionButton>
@@ -105,7 +105,7 @@
       ref="addVariableModalUI"
       :edit-mode="editMode"
       :allow-edit-name="allowEditName"
-      :allow-file-upload="false"
+      :allow-file-upload="true"
       :saving="saving"
       @add-variable="changeVariable"></AddVariableModalUI>    
 
@@ -121,6 +121,7 @@ import { FlowTable, CopyableActionButton, TaskPopper, BWaitingBox } from '@cib/c
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import AddVariableModalUI from '@/components/process/modals/AddVariableModalUI.vue'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
+import { getFileContentBase64 } from '@/utils/fileUtils.js'
 
 export default {
   name: 'TaskVariables',
@@ -178,7 +179,9 @@ export default {
         obj[variable.name] = {
           type: variable.type,
           value: variable.value,
-          valueInfo: variable.valueInfo
+        }
+        if (variable.valueInfo !== undefined) {
+          obj[variable.name].valueInfo = variable.valueInfo
         }
         return obj
       }, {})
@@ -193,7 +196,7 @@ export default {
     async showExistingVariables() {
       try {
         this.loadingVariables = true
-        await FormsService.fetchVariables(this.task.id).then(variablesObject => {
+        await FormsService.fetchVariables(this.task.id).then(async variablesObject => {
           const variablesArray = Object.entries(variablesObject).map(([name, variable]) => ({
             name,
             type: variable.type,
@@ -203,9 +206,9 @@ export default {
             changed: false,
           }))
 
-          variablesArray.forEach(variable => {
-            this.appendVariable(this.variables, variable, true)
-          })
+          for (const variable of variablesArray) {
+            await this.appendVariable(this.variables, variable, true)
+          }
 
           this.existingVariablesShown = true
         })
@@ -235,7 +238,7 @@ export default {
     async removeVariable(index) {
       this.variables.splice(index, 1)
     },
-    changeVariable(variable) {
+    async changeVariable(variable) {
       this.saving = true
       if (this.editMode) {
         variable.existing = this.editingVariable.existing
@@ -245,7 +248,7 @@ export default {
         variable.existing = false
         variable.changed = true
       }
-      this.appendVariable(this.variables, variable, false)
+      await this.appendVariable(this.variables, variable, false)
       this.$emit('variables-updated', this.variablesToSubmit)
       this.$refs.addVariableModalUI.hide()
       this.saving = false
@@ -268,7 +271,18 @@ export default {
       }
       return String(variable.value)
     },
-    appendVariable(variables, variable, fromRemote) {
+    async appendVariable(variables, variable, fromRemote) {
+
+      // load file content
+      if (!fromRemote && this.isFile(variable)) {
+        variable.valueInfo = {
+          filename: variable.file.name,
+          mimeType: variable.file.type,
+        }
+        variable.value = await getFileContentBase64(variable.file)
+      }
+
+      // add or update variable in list
       const existingIndex = variables.findIndex(v => v.name === variable.name)
       if (existingIndex >= 0) {
         const existingVariable = variables[existingIndex]
