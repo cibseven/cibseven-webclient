@@ -295,21 +295,21 @@ export default {
         variables.push(variable)
       }
     },
-    isFile(item) {
-      return (item.type === 'File') || this.isFileValueDataSource(item)
+    isFile(variable) {
+      return (variable.type === 'File') || this.isFileValueDataSource(variable)
     },
-    isFileValueDataSource(item) {
-      if (item.type === 'Object') {
+    isFileValueDataSource(variable) {
+      if (variable.type === 'Object') {
         const objectTypeName =
-          (item.value && item.value.objectTypeName) ||
-          (item.valueInfo && item.valueInfo.objectTypeName)
+          (variable.value && variable.value.objectTypeName) ||
+          (variable.valueInfo && variable.valueInfo.objectTypeName)
         if (objectTypeName && this.fileObjects.includes(objectTypeName)) return true
       }
       return false
     },
-    getFileVariableName(item) {
+    getFileVariableName(variable) {
       // Prioritize valueDeserialized over value
-      const targetValue = item.valueDeserialized || item.value
+      const targetValue = variable.valueDeserialized || variable.value
       if (targetValue && typeof targetValue === 'object' && targetValue.name) {
         return targetValue.name
       }
