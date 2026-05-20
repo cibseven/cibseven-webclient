@@ -46,7 +46,7 @@
             <CopyableActionButton
               :displayValue="displayVariableValue(row.item)"
               :clickable="isFile(row.item) && row.item.existing"
-              :title="displayVariableValue(row.item)"
+              :title="displayValueTooltip(row.item)"
               @click="downloadFile(row.item)"
               @copy="copyValueToClipboard"
             />
@@ -122,6 +122,7 @@ import CellActionButton from '@/components/common-components/CellActionButton.vu
 import AddVariableModalUI from '@/components/process/modals/AddVariableModalUI.vue'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { getFileContentBase64 } from '@/utils/fileUtils.js'
+import variableUtils from '@/components/process/mixins/variableUtils.js'
 
 export default {
   name: 'TaskVariables',
@@ -253,24 +254,6 @@ export default {
       this.$refs.addVariableModalUI.hide()
       this.saving = false
     },
-    displayVariableValue(variable) {
-      if (this.isFileValueDataSource(variable)) {
-        return this.getFileVariableName(variable)
-      }
-      if (variable.type === 'File') {
-        return variable.valueInfo.filename
-      }
-      if (variable.value === null || variable.value === undefined) {
-        return 'null'
-      }
-      if (variable.type === 'Boolean') {
-        return variable.value ? 'true' : 'false'
-      }
-      if (typeof variable.value === 'object') {
-        return JSON.stringify(variable.value)
-      }
-      return String(variable.value)
-    },
     async appendVariable(variables, variable, fromRemote) {
 
       // load file content
@@ -295,32 +278,28 @@ export default {
         variables.push(variable)
       }
     },
+
+    displayVariableValue(variable) {
+      return variableUtils.displayValue(variable)
+    },
+    displayValueTooltip(variable) {
+      if (this.isFile(variable) && variable.existing) {
+        return this.$t('process-instance.download') + ': ' + this.displayVariableValue(variable)
+      }
+      else {
+        return this.displayVariableValue(variable)
+      }
+    },
     isFile(variable) {
-      return (variable.type === 'File') || this.isFileValueDataSource(variable)
+      return variableUtils.isFile(variable)
     },
     isFileValueDataSource(variable) {
-      if (variable.type === 'Object') {
-        const objectTypeName =
-          (variable.value && variable.value.objectTypeName) ||
-          (variable.valueInfo && variable.valueInfo.objectTypeName)
-        if (objectTypeName && this.fileObjects.includes(objectTypeName)) return true
-      }
-      return false
+      return variableUtils.isFileValueDataSource(variable)
     },
     getFileVariableName(variable) {
-      // Prioritize valueDeserialized over value
-      const targetValue = variable.valueDeserialized || variable.value
-      if (targetValue && typeof targetValue === 'object' && targetValue.name) {
-        return targetValue.name
-      }
-      if (targetValue && typeof targetValue === 'string') {
-        try {
-          const parsed = JSON.parse(targetValue)
-          if (parsed && parsed.name) return parsed.name
-        } catch { return '' }
-      }
-      return ''
+      return variableUtils.getFileVariableName(variable)
     },
+
     downloadFile(variable) {
       if (variable.type === 'Object') {
         const blob = new Blob([Uint8Array.from(atob(variable.value.data), c => c.codePointAt(0))], { type: variable.value.contentType })
