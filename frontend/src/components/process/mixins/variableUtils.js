@@ -79,7 +79,12 @@ export default {
     if (variable.valueDeserialized &&
       typeof variable.valueDeserialized === 'object'
     ) {
-      return JSON.stringify(variable.valueDeserialized, null, 2)
+      try {
+        return JSON.stringify(variable.valueDeserialized, null, 2)
+      }
+      catch {
+        return '- Object -'
+      }
     }
 
     if (typeof variable.value === 'object') {

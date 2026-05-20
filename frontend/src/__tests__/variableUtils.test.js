@@ -101,6 +101,9 @@ describe('displayValue', () => {
       [makeVar('Json', null, {}, { valueSerialized: '{"a":1}' }), '{"a":1}'],
       // value object falls back to JSON.stringify
       [makeVar('Json', { key: 'val' }), JSON.stringify({ key: 'val' }, null, 2)],
+      // value object that cannot be stringified, for example with BigInt
+      [makeVar('Json', { y: BigInt(2) }), '- Json Object -'],
+      [makeVar('Json', true), '- Json Object -'],
       // null value: typeof null === 'object', so JSON.stringify returns 'null'
       [makeVar('Json', null), 'null'],
       // non-object, non-string → placeholder
@@ -119,8 +122,13 @@ describe('displayValue', () => {
       ],
       // value object (no valueDeserialized)
       [makeVar('Object', { y: 2 }), JSON.stringify({ y: 2 }, null, 2)],
+      // value object that cannot be stringified, for example with BigInt
+      [makeVar('Object', { y: BigInt(2) }), '- Object -'],
+      [makeVar('Object', null, {}, { valueDeserialized: { "x" : BigInt(2) } }), '- Object -'],
+      [makeVar('Object', true), '- Object -'],
       // value string
       [makeVar('Object', 'raw-string'), 'raw-string'],
+      [makeVar('Object', '{"var": malformed JSON'), '{"var": malformed JSON'],
       // null value: typeof null === 'object', so JSON.stringify returns 'null'
       [makeVar('Object', null), 'null'],
     ])('variable %# → expected string', (variable, expected) => {
