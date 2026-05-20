@@ -17,6 +17,22 @@
 
 /**
  * Utility functions for handling process variables DTOs
+ * 
+ * `variable` objects are expected to have the following structure:
+ * {
+ *   name: string,
+ *   value: any,
+ *   type: string, // e.g. 'String', 'Object', 'File', 'Json', 'Null', etc.
+ *   valueInfo: {
+ *     objectTypeName?: string, // for Object variables only
+ *     serializationDataFormat?: string, // for Object variables only
+ * 
+ *     filename?: string, // for File variables only
+ *     mimeType?: string, // for File variables only
+ *   },
+ *   valueDeserialized?: any,
+ *   valueSerialized?: string
+ * }
  */
 export default {
   displayValue(variable) {
@@ -72,7 +88,7 @@ export default {
       const objectTypeName =
         variable.value?.objectTypeName ||
         variable.valueInfo?.objectTypeName
-      if (objectTypeName && this.fileObjects.includes(objectTypeName)) return true
+      if (objectTypeName && this.getFileObjects().includes(objectTypeName)) return true
     }
     return false
   },
@@ -90,5 +106,12 @@ export default {
       } catch { return '' }
     }
     return ''
+  },
+
+  getFileObjects() {
+    return [
+      'de.cib.cibflow.api.files.FileValueDataFlowSource',
+      'de.cib.cibflow.api.files.FileValueDataSource',
+    ]
   },
 }

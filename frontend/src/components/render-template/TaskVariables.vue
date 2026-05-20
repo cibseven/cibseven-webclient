@@ -170,7 +170,6 @@ export default {
       editingVariable: null,
       editingVariableIndex: -1,
       existingVariablesShown: false,
-      fileObjects: ['de.cib.cibflow.api.files.FileValueDataFlowSource', 'de.cib.cibflow.api.files.FileValueDataSource'],
     }
   },
   computed: {
