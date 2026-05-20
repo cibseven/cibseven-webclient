@@ -577,9 +577,6 @@ const FormsService = {
   fetchVariables: function(taskId, deserialize) {
     return axios.post(getServicesBasePath() + '/task/' + taskId, null, { params: { deserialize: deserialize } } )
   },
-  addVariable(taskId, variable) {
-    return axios.post(getServicesBasePath() + '/task/' + taskId + '/variable', variable)
-  },
   deleteVariable: function(taskId, variableName) {
     return axios.delete(getServicesBasePath() + '/task/' + taskId + '/variable/' + variableName)
   },
