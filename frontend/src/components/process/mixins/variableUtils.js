@@ -39,44 +39,63 @@ export default {
     if (this.isFileValueDataSource(variable)) {
       return this.getFileVariableName(variable)
     }
-    else if (variable.type === 'File') {
-      return variable.valueInfo.filename
+
+    switch (variable.type) {
+      case 'File':
+        return variable.valueInfo.filename
+
+      case 'Json':
+        return this.displayValueJson(variable)
+
+      case 'Object':
+        return this.displayValueObject(variable)
+
+      case 'Null':
+        return ''
+
+      default:
+        return '' + variable.value
     }
-    else if (variable.type === 'Json') {
-      if (typeof variable.valueSerialized === 'string') {
-        return variable.valueSerialized
-      }
-      else if (typeof variable.value === 'object') {
-        try {
-          return JSON.stringify(variable.value, null, 2)
-        } catch {
-          return '- Json Object -'
-        }
-      }
-      return '- Json Object -'
+  },
+
+  displayValueJson(variable) {
+    if (typeof variable.valueSerialized === 'string') {
+      return variable.valueSerialized
     }
-    else if (variable.type === 'Object') {
-      if (variable.valueDeserialized && typeof variable.valueDeserialized === 'object') {
-        return JSON.stringify(variable.valueDeserialized, null, 2)
+
+    if (typeof variable.value === 'object') {
+      try {
+        return JSON.stringify(variable.value, null, 2)
       }
-      else if (typeof variable.value === 'object') {
-        try {
-          return JSON.stringify(variable.value, null, 2)
-        } catch {
-          return '- Object -'
-        }
+      catch {
+        return '- Json Object -'
       }
-      else if (typeof variable.value === 'string') {
-        return variable.value
+    }
+
+    return '- Json Object -'
+  },
+
+  displayValueObject(variable) {
+    if (variable.valueDeserialized &&
+      typeof variable.valueDeserialized === 'object'
+    ) {
+      return JSON.stringify(variable.valueDeserialized, null, 2)
+    }
+
+    if (typeof variable.value === 'object') {
+      try {
+        return JSON.stringify(variable.value, null, 2)
       }
-      return '- Object -'
+      catch {
+        return '- Object -'
+      }
     }
-    else if (variable.type === 'Null') {
-      return ''
+
+    if (typeof variable.value === 'string') {
+      return variable.value
     }
-    else {
-      return '' + variable.value
-    }
+
+    return '- Object -'
   },
 
   isFile(variable) {
