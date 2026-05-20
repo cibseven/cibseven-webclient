@@ -89,9 +89,11 @@
           @click="showExistingVariables"
           class="btn btn-sm btn-outline-secondary"
           type="button"
+          :disabled="loadingVariables"
           :title="$t('task-variables.showExistingVariables.tooltip', { name: task.name })"
         >
-          <span class="mdi mdi-eye me-1"></span>
+          <BWaitingBox v-if="loadingVariables" class="d-inline me-2" styling="width: 16px"></BWaitingBox>
+          <span v-else class="mdi mdi-eye me-1"></span>
           {{ $t('task-variables.showExistingVariables.title') }}
         </button>
       </div>
@@ -115,7 +117,7 @@
 <script>
 import { permissionsMixin } from '@/permissions.js'
 import { FormsService, ProcessService } from '@/services.js'
-import { FlowTable, CopyableActionButton, TaskPopper } from '@cib/common-frontend'
+import { FlowTable, CopyableActionButton, TaskPopper, BWaitingBox } from '@cib/common-frontend'
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import AddVariableModalUI from '@/components/process/modals/AddVariableModalUI.vue'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
@@ -129,11 +131,12 @@ export default {
     }
   },
   mixins: [permissionsMixin, copyToClipboardMixin],
-  components: { FlowTable, CopyableActionButton, TaskPopper, CellActionButton, AddVariableModalUI },
+  components: { FlowTable, CopyableActionButton, TaskPopper, BWaitingBox, CellActionButton, AddVariableModalUI },
   emits: ['variables-updated'],
   data() {
     return {
       businessKey: null,
+      loadingVariables: false,
       variables: [],
       variableFields: [
         {
@@ -189,6 +192,7 @@ export default {
   methods: {
     async showExistingVariables() {
       try {
+        this.loadingVariables = true
         await FormsService.fetchVariables(this.task.id).then(variablesObject => {
           const variablesArray = Object.entries(variablesObject).map(([name, variable]) => ({
             name,
@@ -208,6 +212,8 @@ export default {
       } catch (error) {
         console.error('Error loading task variables:', error)
         this.existingVariablesShown = false
+      } finally {
+        this.loadingVariables = false
       }
     },
     showAddVariableModal() {
