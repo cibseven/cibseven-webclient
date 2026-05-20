@@ -102,7 +102,7 @@
     <AddVariableModalUI
       ref="addVariableModalUI"
       :edit-mode="editMode"
-      :allow-edit-name="true"
+      :allow-edit-name="allowEditName"
       :allow-file-upload="false"
       :saving="saving"
       @add-variable="changeVariable"></AddVariableModalUI>    
@@ -160,6 +160,7 @@ export default {
         }
       ],
       editMode: false,
+      allowEditName: false,
       saving: false,
       editingVariable: null,
       editingVariableIndex: -1,
@@ -199,7 +200,7 @@ export default {
           }))
 
           variablesArray.forEach(variable => {
-            this.appendVariable(this.variables, variable, false)
+            this.appendVariable(this.variables, variable, true)
           })
 
           this.existingVariablesShown = true
@@ -211,6 +212,7 @@ export default {
     },
     showAddVariableModal() {
       this.editMode = false
+      this.allowEditName = true
       this.saving = false
       this.editingVariable = null
       this.editingVariableIndex = -1
@@ -218,6 +220,7 @@ export default {
     },
     showEditVariable(variable, index) {
       this.editMode = true
+      this.allowEditName = !variable.existing
       this.saving = false
       this.editingVariable = JSON.parse(JSON.stringify(variable))
       this.editingVariableIndex = index
@@ -236,7 +239,7 @@ export default {
         variable.existing = false
         variable.changed = true
       }
-      this.appendVariable(this.variables, variable, true)
+      this.appendVariable(this.variables, variable, false)
       this.$emit('variables-updated', this.variablesToSubmit)
       this.$refs.addVariableModalUI.hide()
       this.saving = false
@@ -259,15 +262,16 @@ export default {
       }
       return String(variable.value)
     },
-    appendVariable(variables, variable, changed = false) {
+    appendVariable(variables, variable, fromRemote) {
       const existingIndex = variables.findIndex(v => v.name === variable.name)
       if (existingIndex >= 0) {
         const existingVariable = variables[existingIndex]
-        variable.existing = existingVariable.existing
-        variable.changed = changed
+        variable.existing = fromRemote ? true : existingVariable.existing
+        variable.changed = fromRemote ? false : variable.changed
         variables.splice(existingIndex, 1, variable)
       } else {
-        variable.changed = changed
+        variable.existing = fromRemote
+        variable.changed = fromRemote ? false : variable.changed
         variables.push(variable)
       }
     },
