@@ -41,7 +41,6 @@ import lombok.extern.slf4j.Slf4j;
 @RestController @RequestMapping("/info") @Slf4j
 public class InfoService extends BaseService {	
 	
-	@Value("${cibseven.webclient.cockpit.url:./camunda/app/cockpit/default/}") private String cockpitUrl;
 	@Value("${cibseven.webclient.theme:cib}") private String theme;
 	@Value("${cibseven.webclient.sso.active:false}") private boolean ssoActive;
 	@Value("${cibseven.webclient.sso.endpoints.authorization:}") private String authorizationEndpoint;
@@ -94,7 +93,6 @@ public class InfoService extends BaseService {
 	@GetMapping("/properties")
 	public ObjectNode getConfig() {
 		ObjectNode configJson = JsonNodeFactory.instance.objectNode();
-		configJson.put("cockpitUrl", cockpitUrl);
 		configJson.put("theme", theme);
 		configJson.put("ssoActive", ssoActive);
 		configJson.put("camundaHistoryLevel", camundaHistoryLevel);
