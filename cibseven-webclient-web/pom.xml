@@ -235,17 +235,6 @@
 			</plugin>
 
 			<plugin>
-				<groupId>com.google.cloud.tools</groupId>
-				<artifactId>jib-maven-plugin</artifactId>
-				<configuration>
-					<skip>false</skip>
-					<!-- https://github.com/GoogleContainerTools/jib/blob/master/jib-maven-plugin/README.md#extended-usage -->
-					<container>
-						<appRoot>/usr/local/tomcat/webapps/seven</appRoot>
-					</container>
-				</configuration>
-			</plugin>
-			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>
