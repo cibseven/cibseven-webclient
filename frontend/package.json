@@ -1,6 +1,6 @@
 {
   "name": "cibseven-components",
-  "version": "2.2.0-dev.9",
+  "version": "2.2.0-dev.10",
   "type": "module",
   "license": "",
   "main": "./src/main.js",
@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "@bpmn-io/form-js": "1.21.3",
+    "@cib/bootstrap-theme": "1.0.0-dev.0",
     "@cib/common-frontend": "1.0.3-dev.16",
     "@mdi/font": "7.4.47",
     "apexcharts": "4.7.0",
@@ -46,7 +47,7 @@
     "bootstrap": "5.3.8",
     "bpm-sdk": "2.1.1",
     "bpmn-js": "18.14.0",
-    "cibseven-modeler": "1.0.0-dev.16",
+    "cibseven-modeler": "1.0.0-dev.17",
     "dmn-js": "17.7.0",
     "js-abbreviation-number": "1.4.0",
     "js-sha256": "0.11.1",
@@ -62,7 +63,7 @@
   "peerDependencies": {
     "axios": "^1.15.2",
     "bootstrap": "^5.3.8",
-    "cibseven-modeler": "^1.0.0-dev.15",
+    "cibseven-modeler": "^1.0.0-dev.17",
     "vue": "^3.5.33",
     "vue-i18n": "^11.4.0",
     "vue-router": "^5.0.6"

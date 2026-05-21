@@ -15,4 +15,18 @@
  *  limitations under the License.
  */
 
-@import "@cib/bootstrap-theme/src/index";
+export async function getFileContentBase64(file) {
+  const base64Content = await new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      // Remove the data:*/*;base64, prefix to get only the base64 content
+      const base64 = reader.result.split(',')[1]
+      resolve(base64)
+    }
+    reader.onerror = () => {
+      reject(new Error(`Failed to read file: ${file.name}`))
+    }
+    reader.readAsDataURL(file)
+  })
+  return base64Content
+}

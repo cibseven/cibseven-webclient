@@ -43,7 +43,7 @@
       <template v-slot:cell(actions)="table">
         <transition name="fade">
           <div v-show="(focused && focused.id === table.item.id)">
-            <b-button v-if="table.item.suspended !== 'true'" variant="primary" @click="$emit('start-process', table.item)">{{ $t('process.start') }}</b-button>
+            <b-button v-if="table.item.suspended !== 'true'" variant="primary" @mousedown.prevent @click="$emit('start-process', table.item)">{{ $t('process.start') }}</b-button>
           </div>
         </transition>
       </template>

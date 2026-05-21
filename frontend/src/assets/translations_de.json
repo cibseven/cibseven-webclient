@@ -100,7 +100,6 @@
 		"start": "Starten",
 		"showProcess": "Prozess anzeigen",
 		"showInstance": "Instanz anzeigen",
-		"showCockpit": "Im alten Cockpit öffnen",
 		"downloadBpmn": "BPMN file herunterladen",
 		"openModeler": "BPMN-Datei im Modeler öffnen",
 		"showManagement": "Verwaltung",
@@ -1010,10 +1009,6 @@
 			"title": "Modeler",
 			"tooltip": "Modeler öffnen, um BPMN, DMN und Formulare zu entwerfen und zu bearbeiten"
 		},
-		"oldCockpit": {
-			"title": "Altes Cockpit",
-			"tooltip": "Altes Cockpit öffnen"
-		},
 		"account": {
 			"tooltip": "Kontoinformationen ansehen und bearbeiten oder abmelden",
 			"profile": {
@@ -1298,6 +1293,31 @@
 		"accept": "Akzeptieren",
 		"fullscreen": "Vollbild",
 		"showProcess": "Prozess anzeigen"
+	},
+	"task-variables": {
+		"title": "Task Variablen für \"{name}\"",
+		"introduction": "Hier können Sie die Variablen der Prozessinstanz anzeigen und bearbeiten, die mit dieser Aufgabe verbunden sind. Bitte beachten Sie, dass das Ändern von Variablenwerten unbeabsichtigte Auswirkungen auf die Prozessausführung haben kann.",
+		"businessKey": "Fachlicher Schlüssel: {businessKey}",
+		"noVariables": "Für diese Aufgabe wurden noch keine Variablen angegeben.",
+		"noVariablesLoaded": "Es wurden noch keine zusätzlichen Variablen hinzugefügt.",
+		"editVariable": {
+			"tooltip": "Variable \"{name}\" bearbeiten"
+		},
+		"removeVariable": {
+			"tooltip": "Variable \"{name}\" aus der Liste entfernen"
+		},
+		"addVariable": {
+			"title": "@:process-instance.addVariable",
+			"tooltip": "Fügen Sie eine neue Variable zur Prozessinstanz hinzu"
+		},
+		"showTaskVariables": {
+			"title": "Task-Variablen anzeigen",
+			"tooltip": "Zeigen Sie die für die Aufgabe definierten Variablen an. Sie können die Werte dieser Variablen bearbeiten oder neue Variablen zur Prozessinstanz hinzufügen."
+		},
+		"showExistingVariables": {
+			"title": "Vorhandene Variablen anzeigen",
+			"tooltip": "Zeigen Sie die bereits für diese Prozessinstanz definierten Variablen an. Sie können die Werte dieser Variablen bearbeiten oder neue Variablen zur Prozessinstanz hinzufügen."
+		}
 	},
 	"setup": {
 		"title": "Ersteinrichtung",

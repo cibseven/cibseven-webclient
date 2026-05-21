@@ -308,19 +308,6 @@ export default {
               title: 'admin.system.title'
             }
           ]
-        }, {
-          show: this.permissionsCockpit && this.$root.config.cockpitUrl,
-          divider: true,
-        }, {
-          show: this.permissionsCockpit && this.$root.config.cockpitUrl,
-          groupTitle: 'start.oldCockpit.title',
-          items: [{
-              href: this.$root.config.cockpitUrl,
-              tooltip: 'start.oldCockpit.tooltip',
-              title: 'start.oldCockpit.title',
-              external: true
-            }
-          ]
         }
       ]
     },

@@ -20,13 +20,29 @@
   <div>
     <BWaitingBox v-if="loader" class="h-100 d-flex justify-content-center" ref="loader" styling="width:20%"></BWaitingBox>
     <div v-show="!loader" class="h-100">
-      <iframe v-show="!submitForm && formFrame" class="h-100" ref="template-frame" frameBorder="0"
+      <iframe v-show="!submitForm && formFrame" :tabindex="iframeTabIndex" class="h-100" ref="template-frame" frameBorder="0"
         src="" width="100%" height="100%" :style="fullModeStyles" :title="task?.name"></iframe>
       <div class="pt-2" v-if="!formFrame">
         <span class="small-text d-none d-sm-inline" style="vertical-align: middle">
           <strong>{{ $t('task.emptyTask') }}</strong> |
         </span>
         <IconButton icon="check" @click="completeEmptyTask()" variant="secondary" :text="$t('task.actions.submit')"></IconButton>
+        <div>
+          <button v-if="!taskVariablesVisible"
+            @click="taskVariablesVisible = true"
+            class="btn btn-sm btn-link m-0 p-0 align-baseline"
+            type="button"
+            :title="$t('task-variables.showTaskVariables.tooltip')"
+          >
+            {{ $t('task-variables.showTaskVariables.title') }}
+          </button>
+          <template v-else>
+             <TaskVariables :task="task" @variables-updated="emptyTaskVariables = $event" />
+             <div class="d-flex justify-content-end mt-2">
+               <IconButton icon="check" @click="completeEmptyTask()" variant="secondary" :text="$t('task.actions.submit')"></IconButton>
+             </div>
+          </template>
+        </div>
       </div>
       <SuccessAlert top="0" style="z-index: 1031" ref="messageSaved"> {{ $t('alert.successSaveTask') }}</SuccessAlert>
       <SuccessAlert top="0" style="z-index: 1031" ref="messageSuccess"> {{ $t('alert.successOperation') }}</SuccessAlert>
@@ -58,22 +74,26 @@ import { TaskService } from '@/services.js'
 import IconButton from '@/components/forms/IconButton.vue'
 import { SuccessAlert, BWaitingBox } from '@cib/common-frontend'
 import { ENGINE_STORAGE_KEY } from '@/constants.js'
+import TaskVariables from '@/components/render-template/TaskVariables.vue'
+import { getIframeContext, findAndScroll } from '@/utils/iframe.js'
 
 export default {
   name: 'RenderTemplate',
-  components: { IconButton, SuccessAlert, BWaitingBox },
+  components: { IconButton, SuccessAlert, BWaitingBox, TaskVariables },
   props: ['task'],
   mixins: [permissionsMixin],
   inject: ['currentLanguage', 'AuthService'],
   emits: ['complete-task'],
   data: function() {
     return {
+      taskVariablesVisible: false,
       userInstruction: null,
       formReference: null,
       height: 0,
       submitForm: false,
       formFrame: true,
       loader: false,
+      emptyTaskVariables: {},
       datePickerValue: null,
       datePickerRequest: null
     }
@@ -89,6 +109,14 @@ export default {
     }
   },
   computed: {
+    iframeTabIndex: function() {
+      const assigneeId = typeof this.task.assignee === 'string'
+        ? this.task.assignee
+        : this.task.assignee?.id || ''
+      const currentUserId = this.$root.user?.id || ''
+      const isAssignedToCurrentUser = assigneeId.toLowerCase() === currentUserId.toLowerCase()
+      return (!this.task.assignee || !isAssignedToCurrentUser) ? -1 : undefined
+    },
     fullModeStyles: function() {
       if (this.$route.query.fullMode === 'true') {
         return 'position: fixed; top: 0; left: 0; z-index: 1030'
@@ -117,6 +145,8 @@ export default {
   },
   methods: {
     loadIframe: async function() {
+      this.taskVariablesVisible = false
+      this.emptyTaskVariables = {}
       this.loader = true
       this.submitForm = false
       this.formFrame = true
@@ -192,8 +222,11 @@ export default {
         }
       }
     },
-    completeEmptyTask: function() {
-      TaskService.submit(this.task.id).then(() => {
+    completeEmptyTask() {
+      const hasVariables = Object.keys(this.emptyTaskVariables).length > 0
+      const method = hasVariables ? TaskService.submitWithVariables : TaskService.submit
+      const params = hasVariables ? { variables: this.emptyTaskVariables } : null
+      method(this.task.id, params).then(() => {
         this.completeTask()
       })
     },
@@ -363,9 +396,16 @@ export default {
     onBeforeUnload: function() {
       const formFrame = this.$refs['template-frame']
       if (formFrame) {
-        formFrame.contentWindow.postMessage({ type: 'contextChanged' }, '*');
+        formFrame.contentWindow.postMessage({ type: 'contextChanged' }, '*')
         this.loadIframe()
       }
+    },
+    handleScrollIframe(deltaY, x, y) {
+      const frame = this.$refs['template-frame']
+      const ctx = getIframeContext(frame, x, y)
+      if (!ctx) return
+      const el = ctx.doc.elementFromPoint(ctx.x, ctx.y)
+      findAndScroll(el, deltaY, ctx.x, ctx.y, ctx.doc)
     }
   },
   beforeUnmount: function() {
