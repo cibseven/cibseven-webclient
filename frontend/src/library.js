@@ -128,6 +128,7 @@ export { default as ExternalTasksTable } from '@/components/process/tables/Exter
 export { default as RenderTemplate } from '@/components/render-template/RenderTemplate.vue'
 export { default as AdvancedSearchModal } from '@/components/task/AdvancedSearchModal.vue'
 export { default as TaskContent } from '@/components/task/TaskContent.vue'
+export { default as TaskVariables } from '@/components/render-template/TaskVariables.vue'
 export { default as TaskView } from '@/components/task/TaskView.vue'
 export { default as TasksContent } from '@/components/task/TasksContent.vue'
 export { default as TasksNavBar } from '@/components/task/TasksNavBar.vue'

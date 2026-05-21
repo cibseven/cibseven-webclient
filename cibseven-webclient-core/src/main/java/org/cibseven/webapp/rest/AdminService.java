@@ -86,10 +86,11 @@ public class AdminService extends BaseService implements InitializingBean {
 			+ "<br>Will return less results if there are no more results left") @RequestParam Optional<String> maxResults,
 	@Parameter(description = "Specifies the field to sort by") @RequestParam Optional<String> sortBy,
 	@Parameter(description = "Specifies the order of the sorting") @RequestParam Optional<String> sortOrder,
+	@Parameter(description = "Whether to perform case-insensitive like pattern matching") @RequestParam Optional<Boolean> likePatternIgnoreCase,
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.USER, PermissionConstants.READ_ALL);
 		return bpmProvider.findUsers(id, firstName, firstNameLike, lastName, lastNameLike, 
-				email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, user);
+				email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, likePatternIgnoreCase, user);
 	}
 	
 	/**

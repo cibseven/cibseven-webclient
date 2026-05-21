@@ -100,7 +100,6 @@
 		"start": "Start",
 		"showProcess": "View process",
 		"showInstance": "View instance",
-		"showCockpit": "Open in the old Cockpit",
 		"downloadBpmn": "Download BPMN file",
 		"openModeler": "Open BPMN file in Modeler",
 		"showManagement": "Management",
@@ -523,6 +522,7 @@
 		"activate": "Activate batch",
 		"remove": "Remove batch",
 		"confirmRemove": "Do you really want to delete this batch and all related jobs and job definitions?",
+		"historyLevelTooLow": "Your engine instance is configured with \"{historyLevel}\" history level.\nTo have information about finished batches, the history level must be set to \"full\".",
 		"exception": "Exception",
 		"actions": "Actions",
 		"retryJob": "Retry job",
@@ -613,6 +613,11 @@
 				"groupEuropean": "European Formats",
 				"groupUS": "US Formats",
 				"groupISO": "ISO/Technical Formats"
+				},
+			"bpmn": {
+				"title": "BPMN Diagram",
+				"shortenBadgeNumbers": "Short number format",
+				"shortenBadgeNumbersDescription": " If enabled, the numbers in the BPMN diagram for instances and occurrences will be displayed in a shortened format, e.g., 1K instead of 1,005."
 			},
 			"notifications": {
 				"title": "Notifications",
@@ -1014,10 +1019,6 @@
 			"title": "Modeler",
 			"tooltip": "Open Modeler to design and edit BPMN, DMN, and Forms"
 		},
-		"oldCockpit": {
-			"title": "Old Cockpit",
-			"tooltip": "Open old Cockpit"
-		},
 		"account": {
 			"tooltip": "View and edit your account information or log out",
 			"profile": {
@@ -1302,6 +1303,31 @@
 		"accept": "Accept",
 		"fullscreen": "Fullscreen",
 		"showProcess": "View process"
+	},
+	"task-variables": {
+		"title": "Task Variables for \"{name}\"",
+		"introduction": "Here you can view and edit the variables of the process instance related to this task. Please note that changing variable values may have unintended consequences on the process execution.",
+		"businessKey": "Business Key: {businessKey}",
+		"noVariables": "No variables specified for this task yet.",
+		"noVariablesLoaded": "No additional variables added yet.",
+		"editVariable": {
+			"tooltip": "Edit variable \"{name}\""
+		},
+		"removeVariable": {
+			"tooltip": "Remove variable \"{name}\" from the list"
+		},
+		"addVariable": {
+			"title": "@:process-instance.addVariable",
+			"tooltip": "Add a new variable to the process instance"
+		},
+		"showTaskVariables": {
+			"title": "Add task variables",
+			"tooltip": "Show the variables that are defined for the task. You can edit the values of these variables or add new variables to the process instance."
+		},
+		"showExistingVariables": {
+			"title": "Show existing variables",
+			"tooltip": "Show the variables that are already defined for this process instance. You can edit the values of these variables or add new variables to the process instance."
+		}
 	},
 	"setup": {
 		"title": "Initial Setup",

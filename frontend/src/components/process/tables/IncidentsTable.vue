@@ -420,10 +420,10 @@ export default {
       this.loadIncidentsData(id, this.isInstanceView)
     },
     showIncidentMessage: function(incident) {
-      const runtimeConfiguration = incident.configuration
-      const historyConfiguration = incident.historyConfiguration || incident.rootCauseIncidentConfiguration
+      const runtimeConfiguration = incident.configuration || incident.rootCauseIncidentConfiguration
+      const historyConfiguration = incident.historyConfiguration || incident.rootCauseIncidentHistoryConfiguration
 
-      const isHistoric = !runtimeConfiguration
+      const isHistoric = !!historyConfiguration
       const isExternalTask = incident.incidentType === 'failedExternalTask'
       const configuration = isHistoric ? historyConfiguration : runtimeConfiguration
 

@@ -12,16 +12,12 @@ spring:
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     properties:
       hibernate:
         integration:
           envers:
             enabled: false
-      org:
-        hibernate:
-          envers:
-            revision_table_name: mod_revinfo
   servlet:
     register-default-servlet: true
     multipart:
@@ -103,9 +99,6 @@ cibseven:
         external:
           ip: true
 
-    cockpit:
-      url: /camunda/app/cockpit/default/
-
     theme: cib
 
     # RestTemplate configuration
@@ -155,6 +148,11 @@ cibseven:
           email: "info@cibseven.org"
         # webclient server url for the swagger-ui. Only needs to be set if the automatic detection is wrong.
         url:
+        
+    deprecated:
+    # Check permission for some usecases in the webclient backend (behaviour until 2.2.0)
+      authorization:
+        enabled: false
 
 #    custom:
 #      spring:

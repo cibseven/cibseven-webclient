@@ -26,22 +26,8 @@ import org.springframework.core.env.MapPropertySource;
 
 /**
  * Excludes {@code DataSourceAutoConfiguration} when the modeler is disabled
- * ({@code cibseven.webclient.modeler.enabled=false}) and no
- * {@code spring.datasource.url} is configured.
- *
- * <p>This prevents Spring Boot from auto-creating an embedded H2 database when
- * {@code spring-boot-starter-data-jpa} is on the classpath but no datasource is
- * provided. The Hibernate and JPA repository auto-configurations are left alone -
- * Spring Boot's own {@code @ConditionalOnSingleCandidate(DataSource.class)} guards
- * on those will suppress them naturally when no DataSource bean exists.</p>
- *
- * <p>If {@code spring.datasource.url} is present, nothing is excluded - the client
- * application owns the datasource and must not be interfered with.</p>
- *
- * <p>Registered via {@code META-INF/spring.factories}. Runs at
- * {@link Ordered#LOWEST_PRECEDENCE} so that all application config files
- * ({@code application.yaml}, {@code cibseven-webclient.yaml}) are already loaded
- * before this processor reads their values.</p>
+ * and no {@code spring.datasource.url} is configured, so Spring Boot does not
+ * auto-create an embedded H2 database.
  */
 public class ModelerEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
 

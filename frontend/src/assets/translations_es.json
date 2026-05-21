@@ -100,7 +100,6 @@
 		"start": "Iniciar",
 		"showProcess": "Mostrar proceso",
 		"showInstance": "Mostrar instancia",
-		"showCockpit": "Abrir en el Cockpit antiguo",
 		"downloadBpmn": "Descargar fichero BPMN",
 		"openModeler": "Abrir fichero BPMN en el Modeler",
 		"showManagement": "Gestión del proceso",
@@ -523,6 +522,7 @@
 		"activate": "Activar lote",
 		"remove": "Eliminar lote",
 		"confirmRemove": "¿Realmente desea eliminar este lote y todos los trabajos y definiciones de trabajos relacionados?",
+		"historyLevelTooLow": "Su instancia de motor está configurada con el nivel de historial \"{historyLevel}\". Para obtener información sobre los lotes finalizados, el nivel de historial debe estar configurado en \"completo\".",
 		"exception": "Excepción",
 		"actions": "Acciones",
 		"retryJob": "Reintentar trabajo",
@@ -613,6 +613,11 @@
 				"groupEuropean": "Formatos europeos",
 				"groupUS": "Formatos de EE.UU.",
 				"groupISO": "Formatos ISO/Técnicos"
+			},
+			"bpmn": {
+				"title": "Diagrama BPMN",
+				"shortenBadgeNumbers": "Formato de número corto",
+				"shortenBadgeNumbersDescription": "Si está activado, los números en el diagrama BPMN para instancias y ocurrencias se mostrarán abreviados, por ejemplo, 1K en lugar de 1.005."
 			},
 			"notifications": {
 				"title": "Notificaciones",
@@ -1014,10 +1019,6 @@
 			"title": "Modeler",
 			"tooltip": "Abrir Modeler para diseñar y editar BPMN, DMN y formularios"
 		},
-		"oldCockpit": {
-			"title":"Cockpit antiguo",
-			"tooltip": "Abrir Cockpit antiguo"
-		},
 		"account": {
 			"tooltip": "Ver y editar la información de su cuenta o cerrar sesión",
 			"profile": {
@@ -1301,6 +1302,31 @@
 		"accept": "Aceptar",
 		"fullscreen": "Pantalla completa",
 		"showProcess": "Ver proceso"
+	},
+	"task-variables": {
+		"title": "Variables de tarea para \"{name}\"",
+		"introduction": "Aquí puede ver y editar las variables de la instancia del proceso relacionadas con esta tarea. Tenga en cuenta que cambiar los valores de las variables puede tener consecuencias no deseadas en la ejecución del proceso.",
+		"businessKey": "Clave de negocio: {businessKey}",
+		"noVariables": "No se han especificado variables para esta tarea.",
+		"noVariablesLoaded": "No se han agregado variables adicionales.",
+		"editVariable": {
+			"tooltip": "Editar variable \"{name}\""
+		},
+		"removeVariable": {
+			"tooltip": "Eliminar variable \"{name}\" de la lista"
+		},
+		"addVariable": {
+			"title": "@:process-instance.addVariable",
+			"tooltip": "Agregar una nueva variable a la instancia del proceso"
+		},
+		"showTaskVariables": {
+			"title": "Mostrar variables de tarea",
+			"tooltip": "Mostrar las variables que están definidas para la tarea. Puede editar los valores de estas variables o agregar nuevas variables a la instancia del proceso."
+		},
+		"showExistingVariables": {
+			"title": "Mostrar variables existentes",
+			"tooltip": "Mostrar las variables que ya están definidas para esta instancia del proceso. Puede editar los valores de estas variables o agregar nuevas variables a la instancia del proceso."
+		}
 	},
 	"setup": {
 		"title": "Configuración Inicial",

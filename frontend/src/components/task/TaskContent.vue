@@ -28,7 +28,7 @@
                   @click="assignee = $root.user.id"><span class="mdi mdi-18px mdi-account-question mdi-dark"></span> {{
                   $t('task.assignToMe') }}</b-button></span>
             </b-input-group-prepend>
-            <FilterableSelect v-model:loading="loadingUsers" @enter="findUsers($event)"
+            <FilterableSelect v-model:loading="loadingUsers" @enter="findUsers($event, true)"
               @clean-elements="resetUsers($event)" v-model="assignee" :elements="$store.state.user.searchUsers"
               :placeholder="$t('task.assign')" noInvalidValues />
           </b-input-group>
@@ -61,7 +61,7 @@
                   {{ $t('task.assignToMe') }}
                 </b-button>
               </span>
-              <FilterableSelect v-if="task.assignee == null" v-model:loading="loadingUsers" @enter="findUsers($event)"
+              <FilterableSelect v-if="task.assignee == null" v-model:loading="loadingUsers" @enter="findUsers($event, true)"
                 @clean-elements="resetUsers($event)" class="w-auto" v-model="assignee"
                 :elements="$store.state.user.searchUsers" :placeholder="$t('task.assign')" noInvalidValues />
               <b-button v-if="applicationPermissions($root.config.permissions.cockpit, 'cockpit')" @click="openTaskAssignationModal" class="ms-2" variant="light" size="sm" >
@@ -79,10 +79,14 @@
           <div class="h-100 position-relative" v-if="task">
             <div
               v-if="(task.assignee && task.assignee.toLowerCase() !== $root.user.id.toLowerCase()) || this.task.assignee == null"
+              ref="scrollOverlay"
+              @wheel="onWheel"
+              @touchmove="onTouchMove"
+              @touchend="onTouchEnd"
               class="col-12 shadow-0"
               style="top: 0px; left: 0px; bottom: 0px; right: 0px; cursor: not-allowed; position: absolute; z-index: 1; background-color: rgba(238,238,238,0.33)">
             </div>
-            <RenderTemplate v-if="task" :task="task" @click.prevent class="h-100"
+            <RenderTemplate v-if="task" :task="task" ref="scrollContainer" @click.prevent class="h-100"
               @complete-task="$emit('complete-task', $event)" :style="renderTemplateStyles"></RenderTemplate>
           </div>
         </div>
@@ -132,7 +136,8 @@ export default {
       displayPopover: false,
       timer: null,
       loadingUsers: false,
-      candidateUsers: []
+      candidateUsers: [],
+      lastTouchY: undefined
     }
   },
   watch: {
@@ -178,7 +183,8 @@ export default {
     this.$store.commit('setCandidateUsers', [])
     this.$store.commit('setSearchUsers', [])
     this.loadIdentityLinks(this.task.id)
-    this.showPopoverWithDelay(this.task.assignee) // when first task is opened
+    // when first task is opened
+    this.showPopoverWithDelay(this.task.assignee)
   },
   beforeUnmount: function() {
     this.resetTimer() // stop timeout for showPopoverWithDelay()
@@ -191,6 +197,20 @@ export default {
         this.assignee = this.$root.user.id
       }
     },
+    onWheel: function(event) {
+      this.$refs.scrollContainer.handleScrollIframe(event.deltaY, event.clientX, event.clientY)
+    },
+    onTouchMove: function(event) {
+      if (this.lastTouchY !== undefined) {
+        const deltaY = this.lastTouchY - event.touches[0].clientY;
+        this.$refs.scrollContainer.handleScrollIframe(deltaY, event.touches[0].clientX, event.touches[0].clientY)
+      }
+      this.lastTouchY = event.touches[0].clientY;
+      event.preventDefault();
+    },
+    onTouchEnd: function() {
+      this.lastTouchY = undefined;
+    },
     loadIdentityLinks: function(taskId) {
       this.candidateUsers = []
       const promises = []
@@ -199,8 +219,8 @@ export default {
           if (identityLink.type === 'candidate') {
             if (identityLink.groupId !== null) {
               const promise = AdminService.findUsers({ memberOfGroup: identityLink.groupId }).then(users => {
-                this.$store.commit('setCandidateUsers', users)
-                this.$store.commit('setSearchUsers', users)
+                this.$store.commit('concatCandidateUsers', users)
+                this.$store.commit('concatSearchUsers', users)
               })
               promises.push(promise)
             }

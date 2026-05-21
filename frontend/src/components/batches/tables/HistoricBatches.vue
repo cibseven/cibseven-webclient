@@ -47,7 +47,7 @@
         <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('batches.loading') }}
       </div>
       <div class="mb-3 text-center w-100" v-if="!loading && historicBatches.length === 0">
-        {{ $t('admin.noResults') }}
+        {{ historyNotPossible ? $t('batches.historyLevelTooLow', { historyLevel }) : $t('admin.noResults') }}
       </div>
     </div>
   </ContentBlock>
@@ -72,6 +72,10 @@ export default {
     }
   },
   mounted: function() {
+    if (this.historyNotPossible) {
+      this.loading = false
+      return
+    }
     this.fetchHistoricBatches()
   },
   watch: {
@@ -86,6 +90,12 @@ export default {
     ...mapGetters(['historicBatches', 'runtimeBatches']),
     runtimeBatchesCount() {
       return this.runtimeBatches.length
+    },
+    historyLevel() {
+      return this.$root.config.camundaHistoryLevel
+    },
+    historyNotPossible() {
+      return this.historyLevel !== 'full'
     }
   },
   methods: {
@@ -104,6 +114,11 @@ export default {
         firstResult: this.firstResult,
         maxResults: this.maxResults
       }
+      if (this.historyNotPossible) {
+        this.loading = false
+        this.hasMore = false
+        return
+      }
       this.loadHistoricBatches({ query: params, append: showMore }).then(res => {
         this.firstResult += res.length
         this.hasMore = res.length === this.maxResults
@@ -111,6 +126,10 @@ export default {
       })
     }),
     refreshForNewBatches: function() {
+      if (this.historyNotPossible) {
+        return
+      }
+
       const params = {
         completed: true,
         sortBy: 'endTime',

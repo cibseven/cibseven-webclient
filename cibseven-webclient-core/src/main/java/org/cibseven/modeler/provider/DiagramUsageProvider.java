@@ -33,7 +33,7 @@ import org.cibseven.modeler.repository.UserSessionRepository;
 @Component
 public class DiagramUsageProvider implements IDiagramUsageProvider {
 
-	@Value("${cibsevenmodeler.deleteUsages.usageLimit:50}") private Integer usageLimit;
+	@Value("${cibseven.webclient.modeler.deleteUsages.usageLimit:50}") private Integer usageLimit;
 	
 	@Autowired
 	private DiagramUsageRepository processDiagramDao;
@@ -46,12 +46,12 @@ public class DiagramUsageProvider implements IDiagramUsageProvider {
 		processDiagramDao.deleteById(id);
 	}
 	
-	@Scheduled(cron = "${cibsevenmodeler.deleteUsages.cron: 0 0 0 * * ?}")
+	@Scheduled(cron = "${cibseven.webclient.modeler.deleteUsages.cron: 0 0 0 * * ?}")
 	void removeOldVersions() {		
 		userSessionRepository.removeOldSessions(usageLimit);
 	}
 	
-	@Value("${cibsevenmodeler.session.expiresAfterMin:10}")
+	@Value("${cibseven.webclient.modeler.session.expiresAfterMin:10}")
 	private int sessionExpiresAfter;
 	
 	@Override

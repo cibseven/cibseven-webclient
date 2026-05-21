@@ -168,20 +168,30 @@ pipeline {
 
                         // Show coverage in Jenkins UI
                         recordCoverage(
-                            tools: [[parser: 'COBERTURA', pattern: 'frontend/target/coverage/cobertura-coverage.xml']],
+                            tools: [
+                                [parser: 'COBERTURA', pattern: 'frontend/target/coverage/cobertura-coverage.xml'],
+                                [parser: 'JACOCO', pattern: '**/target/site/jacoco/jacoco.xml']
+                            ],
                             sourceCodeRetention: 'LAST_BUILD',
-                            sourceDirectories: [[path: 'frontend/src']]
+                            sourceDirectories: [
+                                [path: 'frontend/src'],
+                                [path: 'cibseven-webclient-core/src/main/java'],
+                                [path: 'cibseven-webclient-web/src/main/java']
+                            ]
                         )
 
                         // This archives the whole HTML coverage report so you can download or view it from Jenkins
                         // This archives the Vitest test reports so you can download or view them from Jenkins
                         archiveArtifacts artifacts: 'frontend/target/coverage/lcov-report/**, frontend/target/vitest-reports/**, cibseven-webclient-core/target/failsafe-reports/**', allowEmptyArchive: false, fingerprint: true
+
+                        // This archives the JaCoCo HTML coverage reports for Java subprojects
+                        archiveArtifacts artifacts: '**/target/site/jacoco/**', allowEmptyArchive: true, fingerprint: true
                     }
                 }
             }
         }
 
-        stage('SAST') {
+        stage('SAST, frontend') {
             when {
                 allOf {
                     branch pipelineParams.primaryBranch
@@ -279,10 +289,48 @@ pipeline {
                                     timeout(time: 5, unit: 'MINUTES') {
                                         def qg = waitForQualityGate()
                                         if (qg.status != 'OK') {
-                                            echo "Pipeline unstable due to quality gate failure: ${qg.status}"
+                                            echo "WARNING: Pipeline unstable due to quality gate failure: ${qg.status}"
                                             // currentBuild.result = 'UNSTABLE'
                                         }
                                     }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('SAST, middleware') {
+            when {
+                allOf {
+                    branch pipelineParams.primaryBranch
+                    expression { params.VERIFY }
+                }
+            }
+            steps {
+                script {
+                    stage('Run SonarQube Checks') {
+                        withSonarQubeEnv(credentialsId: Constants.SONARQUBE_CREDENTIALS_ID, installationName: 'SonarQube') {
+                            withMaven() {
+                                sh """
+                                    mvn -f ${pipelineParams.pom} \
+                                        compile \
+                                        sonar:sonar \
+                                        -Dmaven.test.skip \
+                                        -DskipTests \
+                                        -Dlicense.skipDownloadLicenses=true \
+                                        -Dsonar.dependencyCheck.jsonReportPath=target/dependency-check-report.json \
+                                        -Dsonar.dependencyCheck.htmlReportPath=target/dependency-check-report.html
+                                """
+                            }
+                        }
+                        timeout(time: 5, unit: 'MINUTES') {
+                            script {
+                                def qg = waitForQualityGate()
+                                if (qg.status != 'OK') {
+                                    echo "WARNING: Pipeline unstable due to quality gate failure: ${qg.status}"
+                                    currentBuild.result = 'UNSTABLE'
                                 }
                             }
                         }

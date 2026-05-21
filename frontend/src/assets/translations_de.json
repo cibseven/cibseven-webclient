@@ -100,7 +100,6 @@
 		"start": "Starten",
 		"showProcess": "Prozess anzeigen",
 		"showInstance": "Instanz anzeigen",
-		"showCockpit": "Im alten Cockpit öffnen",
 		"downloadBpmn": "BPMN file herunterladen",
 		"openModeler": "BPMN-Datei im Modeler öffnen",
 		"showManagement": "Verwaltung",
@@ -281,7 +280,7 @@
 			"value": "Wert",
 			"valueSerialized": "Serialisierter Wert",
 			"actions": "Aktionen",
-			"scope": "Umfang",
+			"scope": "Sichtbarkeitsbereich",
 			"activityInstanceId": "Aktivitätsinstanz-ID",
 			"objectTypeName": "Objekttypname",
 			"serializationDataFormat": "Serialisierungsdatenformat",
@@ -523,6 +522,7 @@
 		"activate": "Stapel aktivieren",
 		"remove": "Stapel entfernen",
 		"confirmRemove": "Möchten Sie diesen Stapel und alle zugehörigen Jobs und Jobdefinitionen wirklich löschen?",
+		"historyLevelTooLow": "Ihre Engine-Instanz ist mit dem \"{historyLevel}\"-Historienlevel konfiguriert. Um Informationen über abgeschlossene Stapel zu erhalten, muss der Historienlevel auf \"voll\" gesetzt sein.",
 		"exception": "Ausnahme",
 		"actions": "Aktionen",
 		"retryJob": "Job erneut ausführen",
@@ -613,6 +613,11 @@
 				"groupEuropean": "Europäische Formate",
 				"groupUS": "US-Formate",
 				"groupISO": "ISO/Technische Formate"
+			},
+			"bpmn": {
+				"title": "BPMN Diagramm",
+				"shortenBadgeNumbers": "Kurzes Zahlenformat",
+				"shortenBadgeNumbersDescription": "Wenn aktiviert, werden die Zahlen im BPMN Diagramm für Instanzen und Vorkommnisse verkürzt angezeigt, z.B. 1K statt 1.005."
 			},
 			"notifications": {
 				"title": "Benachrichtigungen",
@@ -1014,10 +1019,6 @@
 			"title": "Modeler",
 			"tooltip": "Modeler öffnen, um BPMN, DMN und Formulare zu entwerfen und zu bearbeiten"
 		},
-		"oldCockpit": {
-			"title": "Altes Cockpit",
-			"tooltip": "Altes Cockpit öffnen"
-		},
 		"account": {
 			"tooltip": "Kontoinformationen ansehen und bearbeiten oder abmelden",
 			"profile": {
@@ -1302,6 +1303,31 @@
 		"accept": "Akzeptieren",
 		"fullscreen": "Vollbild",
 		"showProcess": "Prozess anzeigen"
+	},
+	"task-variables": {
+		"title": "Task Variablen für \"{name}\"",
+		"introduction": "Hier können Sie die Variablen der Prozessinstanz anzeigen und bearbeiten, die mit dieser Aufgabe verbunden sind. Bitte beachten Sie, dass das Ändern von Variablenwerten unbeabsichtigte Auswirkungen auf die Prozessausführung haben kann.",
+		"businessKey": "Fachlicher Schlüssel: {businessKey}",
+		"noVariables": "Für diese Aufgabe wurden noch keine Variablen angegeben.",
+		"noVariablesLoaded": "Es wurden noch keine zusätzlichen Variablen hinzugefügt.",
+		"editVariable": {
+			"tooltip": "Variable \"{name}\" bearbeiten"
+		},
+		"removeVariable": {
+			"tooltip": "Variable \"{name}\" aus der Liste entfernen"
+		},
+		"addVariable": {
+			"title": "@:process-instance.addVariable",
+			"tooltip": "Fügen Sie eine neue Variable zur Prozessinstanz hinzu"
+		},
+		"showTaskVariables": {
+			"title": "Task-Variablen anzeigen",
+			"tooltip": "Zeigen Sie die für die Aufgabe definierten Variablen an. Sie können die Werte dieser Variablen bearbeiten oder neue Variablen zur Prozessinstanz hinzufügen."
+		},
+		"showExistingVariables": {
+			"title": "Vorhandene Variablen anzeigen",
+			"tooltip": "Zeigen Sie die bereits für diese Prozessinstanz definierten Variablen an. Sie können die Werte dieser Variablen bearbeiten oder neue Variablen zur Prozessinstanz hinzufügen."
+		}
 	},
 	"setup": {
 		"title": "Ersteinrichtung",
