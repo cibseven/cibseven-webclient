@@ -144,6 +144,7 @@ import CellActionButton from '@/components/common-components/CellActionButton.vu
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { permissionsMixin } from '@/permissions.js'
 import { mapGetters } from 'vuex'
+import variableUtils from '@/components/process/mixins/variableUtils'
 
 export default {
   name: 'VariablesTable',
@@ -152,7 +153,7 @@ export default {
   data: function() {
     return {
       filteredVariables: [],
-      fileObjects: ['de.cib.cibflow.api.files.FileValueDataFlowSource', 'de.cib.cibflow.api.files.FileValueDataSource']
+      fileObjects: variableUtils.getFileObjects(),
     }
   },
   computed: {

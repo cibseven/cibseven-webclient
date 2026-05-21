@@ -1294,6 +1294,31 @@
 		"fullscreen": "Fullscreen",
 		"showProcess": "View process"
 	},
+	"task-variables": {
+		"title": "Task Variables for \"{name}\"",
+		"introduction": "Here you can view and edit the variables of the process instance related to this task. Please note that changing variable values may have unintended consequences on the process execution.",
+		"businessKey": "Business Key: {businessKey}",
+		"noVariables": "No variables specified for this task yet.",
+		"noVariablesLoaded": "No additional variables added yet.",
+		"editVariable": {
+			"tooltip": "Edit variable \"{name}\""
+		},
+		"removeVariable": {
+			"tooltip": "Remove variable \"{name}\" from the list"
+		},
+		"addVariable": {
+			"title": "@:process-instance.addVariable",
+			"tooltip": "Add a new variable to the process instance"
+		},
+		"showTaskVariables": {
+			"title": "Add task variables",
+			"tooltip": "Show the variables that are defined for the task. You can edit the values of these variables or add new variables to the process instance."
+		},
+		"showExistingVariables": {
+			"title": "Show existing variables",
+			"tooltip": "Show the variables that are already defined for this process instance. You can edit the values of these variables or add new variables to the process instance."
+		}
+	},
 	"setup": {
 		"title": "Initial Setup",
 		"description": "Welcome to CIB seven! Create an administrator account to get started.",
