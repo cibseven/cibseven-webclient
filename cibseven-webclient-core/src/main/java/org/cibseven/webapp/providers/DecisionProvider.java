@@ -83,15 +83,15 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	}
 
 	@Override
-	public Object evaluateDecisionDefinitionByKeyAndTenant(String key, String tenant, CIBUser user) {
-		// TODO Auto-generated method stub
-		return null;
+	public Object evaluateDecisionDefinitionByKeyAndTenant(Map<String, Object> data, String key, String tenant, CIBUser user) {
+		String url = getEngineRestUrl(user) + "/decision-definition/key/" + key + "/tenant" + tenant + "/evaluate";
+		return ((ResponseEntity<Object>) doPost(url, data, null, user)).getBody();
 	}
 
 	@Override
-	public Object updateHistoryTTLByKeyAndTenant(String key, String tenant, CIBUser user) {
-		// TODO Auto-generated method stub
-		return null;
+	public void updateHistoryTTLByKeyAndTenant(Map<String, Object> data, String key, String tenant, CIBUser user) {
+		String url = getEngineRestUrl(user) + "/decision-definition/key/" + key + "/tenant-id/" + tenant + "/history-time-to-live";
+		doPut(url, data, user);
 	}
 
 	@Override
@@ -127,7 +127,7 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	}
 
 	@Override
-	public Object evaluateDecisionDefinitionById(String id, CIBUser user) {
+	public Object evaluateDecisionDefinitionById(String id, Map<String, Object> data, CIBUser user) {
 		// TODO Auto-generated method stub
 		return null;
 	}
