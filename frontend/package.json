@@ -1,6 +1,6 @@
 {
   "name": "cibseven-components",
-  "version": "2.2.0-dev.9",
+  "version": "2.2.0-dev.10",
   "type": "module",
   "license": "",
   "main": "./src/main.js",
@@ -65,7 +65,7 @@
   "peerDependencies": {
     "axios": "^1.15.2",
     "bootstrap": "^5.3.8",
-    "cibseven-modeler": "^1.0.0-dev.15",
+    "cibseven-modeler": "^1.0.0-dev.17",
     "vue": "^3.5.33",
     "vue-i18n": "^11.4.0",
     "vue-router": "^5.0.6"
