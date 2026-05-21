@@ -20,7 +20,7 @@
   <div>
     <BWaitingBox v-if="loader" class="h-100 d-flex justify-content-center" ref="loader" styling="width:20%"></BWaitingBox>
     <div v-show="!loader" class="h-100">
-      <iframe v-show="!submitForm && formFrame" :tabindex="!task.assignee || task.assignee.toLowerCase() !== $root.user.id.toLowerCase() ? -1 : undefined" class="h-100" ref="template-frame" frameBorder="0"
+      <iframe v-show="!submitForm && formFrame" :tabindex="iframeTabIndex" class="h-100" ref="template-frame" frameBorder="0"
         src="" width="100%" height="100%" :style="fullModeStyles" :title="task?.name"></iframe>
       <div class="pt-2" v-if="!formFrame">
         <span class="small-text d-none d-sm-inline" style="vertical-align: middle">
@@ -109,6 +109,13 @@ export default {
     }
   },
   computed: {
+    iframeTabIndex: function() {
+      const assigneeId = typeof this.task.assignee === 'string'
+        ? this.task.assignee
+        : this.task.assignee?.id || ''
+      const isAssignedToCurrentUser = assigneeId.toLowerCase() === this.$root.user.id.toLowerCase()
+      return !this.task.assignee || !isAssignedToCurrentUser ? -1 : undefined
+    },
     fullModeStyles: function() {
       if (this.$route.query.fullMode === 'true') {
         return 'position: fixed; top: 0; left: 0; z-index: 1030'
