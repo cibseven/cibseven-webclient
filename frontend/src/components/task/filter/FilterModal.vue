@@ -125,15 +125,15 @@
         <b-badge v-if="filterVariables.length > 0" class="text-bg-light rounded-pill me-2">{{ filterVariables.length }}</b-badge>
         <span class="mdi mdi-18px text-secondary" :class="variablesExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down'"></span>
       </div>
-      <div v-if="variablesExpanded" class="container pb-2">
-        <div class="row"><small class="col-12 mb-1" style="color: var(--gray)">{{ $t('nav-bar.filters.variablesLegend') }}</small></div>
-        <b-form-checkbox class="mb-2" v-model="showUndefinedVariable" switch>
+      <div v-if="variablesExpanded" class="container pb-2 px-0">
+        <div class="row"><small class="col-12 mb-1" style="color: var(--gray)"><span class="mdi mdi-information-outline me-1"></span>{{ $t('nav-bar.filters.variablesLegend') }}</small></div>
+        <b-form-checkbox class="mb-3" v-model="showUndefinedVariable" switch>
           <span>{{ $t('nav-bar.filters.showUndefinedVariable') }}</span>
         </b-form-checkbox>
         <div v-if="filterVariables.length > 0" class="col-12 px-0 pb-1 d-flex align-items-center">
           <span style="width: 1.5rem; flex-shrink: 0"></span>
-          <small class="me-2 text-secondary" style="flex: 1; min-width: 0">{{ $t('nav-bar.filters.variable.name') }}</small>
-          <small class="me-2 text-secondary" style="flex: 1; min-width: 0">{{ $t('nav-bar.filters.variable.label') }}</small>
+          <small class="me-2 text-secondary fw-semibold" style="flex: 1; min-width: 0">{{ $t('nav-bar.filters.variable.namePlaceholder') }}</small>
+          <small class="me-2 text-secondary fw-semibold" style="flex: 1; min-width: 0">{{ $t('nav-bar.filters.variable.labelPlaceholder') }}</small>
           <span style="width: 2rem; flex-shrink: 0"></span>
         </div>
         <div v-for="(variable, index) of filterVariables" class="col-12 input-group px-0 pb-2 d-flex align-items-center" :key="index"
@@ -149,7 +149,7 @@
           <b-form-input :id="'var-label-' + index" class="rounded me-2" size="sm" :placeholder="$t('nav-bar.filters.variable.labelPlaceholder')" v-model="variable.label" :aria-label="$t('nav-bar.filters.variable.label')"></b-form-input>
           <CellActionButton @click="removeFilterVariable(index)" icon="mdi-delete-outline" :title="$t('confirm.delete')"></CellActionButton>
         </div>
-        <b-button size="sm" variant="outline-secondary" class="mb-2" @click="addFilterVariable()"><span class="mdi mdi-plus"></span> {{ $t('nav-bar.filters.addVariable') }}</b-button>
+        <b-button size="sm" variant="outline-secondary" class="mt-2" @click="addFilterVariable()"><span class="mdi mdi-plus"></span> {{ $t('nav-bar.filters.addVariable') }}</b-button>
       </div>
     </div>
 

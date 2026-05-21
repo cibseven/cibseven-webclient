@@ -62,7 +62,8 @@
             </b-input-group>
           </b-form-group>
           <div v-if="$root.config.layout.showFilterReminderDate || $root.config.layout.showFilterDueDate ||
-            ($root.config.taskFilter.advancedSearch.processVariables.length > 0 && $root.config.taskFilter.advancedSearch.filterEnabled)" class="ms-auto col-auto">
+            ($root.config.taskFilter.advancedSearch.processVariables.length > 0 && $root.config.taskFilter.advancedSearch.filterEnabled) ||
+            filterVariables.length > 0" class="ms-auto col-auto">
             <b-button ref="filters" variant="link" :title="$t('nav-bar.filtersAdditionalsTitle')">
               <span class="mdi mdi-18px"
                 :class="$store.state.filter.settings.reminder || $store.state.filter.settings.dueDate || $store.state.advancedSearch.criterias.length > 0 ? 'mdi-filter-menu text-primary' : 'mdi-filter-menu-outline'"></span>
@@ -84,11 +85,20 @@
           </b-form-checkbox>
         </div>
         <div v-if="$root.config.taskFilter.advancedSearch.filterEnabled">
-          <div v-for="(criteria, index) in advancedFilter" :key="index">
+          <div v-for="(criteria, index) in advancedFilter.filter(c => c.source !== 'filter')" :key="index">
             <b-form-checkbox v-model="criteria.check">
               <h5 class="d-flex fw-normal">{{ criteria.displayName }}</h5>
             </b-form-checkbox>
             <b-form-input v-if="criteria.check && criteria.defaultValue === ''" v-model="criteria.value" size="sm" class="mb-2"></b-form-input>
+          </div>
+        </div>
+        <div v-if="filterVariables.length > 0">
+          <hr class="my-2">
+          <div v-for="(criteria, index) in advancedFilter.filter(c => c.source === 'filter')" :key="'fv-' + index">
+            <b-form-checkbox v-model="criteria.check">
+              <h5 class="d-flex fw-normal">{{ criteria.displayName }}</h5>
+            </b-form-checkbox>
+            <b-form-input v-if="criteria.check" v-model="criteria.value" size="sm" class="mb-2"></b-form-input>
           </div>
         </div>
       </b-popover>
@@ -284,6 +294,16 @@ export default {
           this.updateAdvancedFilters()
         }
       }
+    },
+    'filterVariables': function() {
+      const cleaned = this.$store.state.advancedSearch.criterias.filter(c => !c.id?.startsWith('fv_'))
+      if (cleaned.length !== this.$store.state.advancedSearch.criterias.length) {
+        this.$store.dispatch('updateAdvancedSearch', {
+          matchAllCriteria: this.$store.state.advancedSearch.matchAllCriteria,
+          criterias: cleaned
+        })
+      }
+      this.loadAdvancedFilters()
     }
   },
   computed: {
@@ -373,8 +393,24 @@ export default {
           advancedFilterObj.value = pv.type === 'Boolean' ? '' : pv.value
         }
         this.advancedFilter.push(advancedFilterObj)
-        this.advancedFilterAux = JSON.stringify(this.advancedFilter)
       })
+      this.filterVariables.forEach(fv => {
+        const key = 'fv_' + fv.name
+        const criteria = this.$store.state.advancedSearch.criterias
+          .find(obj => obj.id === key && obj.operator === 'like')
+        this.advancedFilter.push({
+          key: key,
+          variableName: fv.name,
+          displayName: fv.label || fv.name,
+          type: 'String',
+          defaultValue: '',
+          operator: 'like',
+          source: 'filter',
+          check: !!criteria,
+          value: criteria ? criteria.value.slice(1, -1) : ''
+        })
+      })
+      this.advancedFilterAux = JSON.stringify(this.advancedFilter)
     },
     updateAdvancedFilters: debounce(800, function() {
       const criterias = this.advancedFilter
