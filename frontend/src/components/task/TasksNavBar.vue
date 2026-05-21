@@ -238,6 +238,7 @@ import AdvancedSearchModal from '@/components/task/AdvancedSearchModal.vue'
 import SmartSearch from '@/components/task/SmartSearch.vue'
 import { ConfirmDialog, BWaitingBox, HighlightedText } from '@cib/common-frontend'
 import { mapActions } from 'vuex'
+import variableUtils from '@/components/process/mixins/variableUtils.js'
 
 export default {
   name: 'TasksNavBar',
@@ -340,25 +341,26 @@ export default {
   methods: {
     ...mapActions('task', ['setSelectedAssignee']),
     formatDateForTooltips,
-    shortValue: function(value) {
-      const str = String(value)
-      const dot = str.lastIndexOf('.')
-      return dot >= 0 && dot < str.length - 1 && /^[a-z]/.test(str) ? str.substring(dot + 1) : str
-    },
     displayValue: function(task, filterVar) {
-      const value = task.variables[filterVar.name]
-      if (task.variableTypes && task.variableTypes[filterVar.name] === 'Date') {
-        return formatDate(value)
+      const variable = { 
+        name: filterVar.name, 
+        value: task.variables?.[filterVar.name], 
+        type: task.variableTypes?.[filterVar.name] 
       }
-      return this.shortValue(value)
+      if (variable.type === 'Date') return formatDate(variable.value)
+      return variableUtils.shortValue(variableUtils.displayValue(variable))
     },
     displayTooltip: function(task, filterVar) {
       const header = filterVar.label + ' (' + filterVar.name + '):'
-      const value = task.variables && task.variables[filterVar.name] != null
-        ? (task.variableTypes && task.variableTypes[filterVar.name] === 'Date'
-          ? formatDateForTooltips(task.variables[filterVar.name])
-          : String(task.variables[filterVar.name]))
-        : ''
+      const variable = { 
+        name: filterVar.name, 
+        value: task.variables?.[filterVar.name], 
+        type: task.variableTypes?.[filterVar.name] 
+      }
+      if (variable.value == null) return header + '\n'
+      const value = variable.type === 'Date'
+        ? formatDateForTooltips(variable.value)
+        : variableUtils.displayValue(variable)
       return header + '\n' + value
     },
     toggleTaskVariables: function(taskId) {
