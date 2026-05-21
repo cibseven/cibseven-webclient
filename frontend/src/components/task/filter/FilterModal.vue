@@ -130,24 +130,24 @@
         <b-form-checkbox class="mb-3" v-model="showUndefinedVariable" switch>
           <span>{{ $t('nav-bar.filters.showUndefinedVariable') }}</span>
         </b-form-checkbox>
-        <div v-if="filterVariables.length > 0" class="col-12 px-0 pb-1 d-flex align-items-center">
-          <span style="width: 1.5rem; flex-shrink: 0"></span>
-          <small class="me-2 text-secondary fw-semibold" style="flex: 1; min-width: 0">{{ $t('nav-bar.filters.variable.namePlaceholder') }}</small>
-          <small class="me-2 text-secondary fw-semibold" style="flex: 1; min-width: 0">{{ $t('nav-bar.filters.variable.labelPlaceholder') }}</small>
-          <span style="width: 2rem; flex-shrink: 0"></span>
-        </div>
-        <div v-for="(variable, index) of filterVariables" class="col-12 input-group px-0 pb-2 d-flex align-items-center" :key="index"
-          draggable="true"
-          @dragstart="dragStart(index)"
-          @dragover.prevent="dragOver(index)"
-          @drop="drop(index)"
-          :class="{ 'opacity-50': dragIndex === index }">
-          <div style="width: 1.5rem; flex-shrink: 0; cursor: grab" class="text-center">
-            <span class="mdi mdi-18px mdi-drag text-secondary"></span>
+        <div v-if="filterVariables.length > 0" role="listbox" aria-label="filter variables">
+          <div class="col-12 px-0 pb-1 d-flex align-items-center">
+            <span style="width: 1.5rem; flex-shrink: 0"></span>
+            <small class="me-2 text-secondary fw-semibold" style="flex: 1; min-width: 0">{{ $t('nav-bar.filters.variable.namePlaceholder') }}</small>
+            <small class="me-2 text-secondary fw-semibold" style="flex: 1; min-width: 0">{{ $t('nav-bar.filters.variable.labelPlaceholder') }}</small>
+            <span style="width: 2rem; flex-shrink: 0"></span>
           </div>
-          <b-form-input :id="'var-name-' + index" class="rounded me-2" size="sm" :placeholder="$t('nav-bar.filters.variable.namePlaceholder')" v-model="variable.name" :aria-label="$t('nav-bar.filters.variable.name')"></b-form-input>
-          <b-form-input :id="'var-label-' + index" class="rounded me-2" size="sm" :placeholder="$t('nav-bar.filters.variable.labelPlaceholder')" v-model="variable.label" :aria-label="$t('nav-bar.filters.variable.label')"></b-form-input>
-          <CellActionButton @click="removeFilterVariable(index)" icon="mdi-delete-outline" :title="$t('confirm.delete')"></CellActionButton>
+          <div v-for="(variable, index) of filterVariables" class="col-12 input-group px-0 pb-2 d-flex align-items-center" :key="index"
+            role="option" tabindex="-1" :aria-selected="false" draggable="true"
+            @dragstart="dragStart(index)" @dragover.prevent="dragOver(index)" @drop="drop(index)"
+            :class="{ 'opacity-50': dragIndex === index }">
+            <div style="width: 1.5rem; flex-shrink: 0; cursor: grab" class="text-center">
+              <span class="mdi mdi-18px mdi-drag text-secondary"></span>
+            </div>
+            <b-form-input :id="'var-name-' + index" class="rounded me-2" size="sm" :placeholder="$t('nav-bar.filters.variable.namePlaceholder')" v-model="variable.name" :aria-label="$t('nav-bar.filters.variable.name')"></b-form-input>
+            <b-form-input :id="'var-label-' + index" class="rounded me-2" size="sm" :placeholder="$t('nav-bar.filters.variable.labelPlaceholder')" v-model="variable.label" :aria-label="$t('nav-bar.filters.variable.label')"></b-form-input>
+            <CellActionButton @click="removeFilterVariable(index)" icon="mdi-delete-outline" :title="$t('confirm.delete')"></CellActionButton>
+          </div>
         </div>
         <b-button size="sm" variant="outline-secondary" class="mt-2" @click="addFilterVariable()"><span class="mdi mdi-plus"></span> {{ $t('nav-bar.filters.addVariable') }}</b-button>
       </div>

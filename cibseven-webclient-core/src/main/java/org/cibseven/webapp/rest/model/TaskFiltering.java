@@ -35,6 +35,7 @@ public class TaskFiltering {
 	List<ProcessVariablesCriteria> processVariables;
 	List<TaskFilterQuery> orQueries;
 	Boolean likePatternIgnoreCase;
+	Boolean variableValuesIgnoreCase;
 	List<String> variableNames;
 	
 	public String json() throws JsonProcessingException {
