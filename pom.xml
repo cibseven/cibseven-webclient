@@ -90,6 +90,7 @@ You may obtain a copy of the License at
 			<modules>
 				<module>cibseven-webclient-web</module>
 				<module>cibseven-webclient-core</module>
+				<module>cibseven-webclient-web-sb4</module>
 			</modules>
 			<build>
 				<plugins>
@@ -379,6 +380,7 @@ You may obtain a copy of the License at
 				<configuration>
 					<source>${maven.compiler.source}</source>
 					<target>${maven.compiler.target}</target>
+					<release>${maven.compiler.target}</release>
 					<compilerArgs>
 						<arg>-parameters</arg>
 						<arg>-Werror</arg>

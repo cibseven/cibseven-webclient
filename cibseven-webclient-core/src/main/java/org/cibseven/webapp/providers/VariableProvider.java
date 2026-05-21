@@ -84,7 +84,9 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 				String jsonContent = new String(data.getBytes());
 				HttpHeaders jsonHeaders = new HttpHeaders();
 				jsonHeaders.setContentType(MediaType.APPLICATION_JSON);
-				HttpEntity<String> jsonEntity = new HttpEntity<>(jsonContent, jsonHeaders);
+				LinkedMultiValueMap<String, String> jsonHeaderMap = new LinkedMultiValueMap<>();
+				jsonHeaders.forEach(jsonHeaderMap::put);
+				HttpEntity<String> jsonEntity = new HttpEntity<>(jsonContent, jsonHeaderMap);
 				
 				body.add("data", jsonEntity);
 				body.add("type", valueType);
@@ -645,8 +647,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		HttpHeaders headers = new HttpHeaders();
 		headers.setCacheControl(CacheControl.noCache().getHeaderValue());
 		headers.add("Content-Type", "application/octet-stream");
-		ResponseEntity<byte[]> responseEntity = new ResponseEntity<>(content, headers, HttpStatus.OK);
-		return responseEntity;
+		return ResponseEntity.ok().headers(headers).body(content);
 	}
 
 

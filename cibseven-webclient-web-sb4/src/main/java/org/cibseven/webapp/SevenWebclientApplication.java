@@ -14,35 +14,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.cibseven.modeler.model;
+package org.cibseven.webapp;
 
-import java.time.LocalDateTime;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
-public interface UnifiedDiagram {
-
-	String getId();
-
-	/** Process name, or formId for forms. */
-	String getName();
-
-	/** 'bpmn-c7', 'dmn', or 'form'. */
-	String getType();
-
-	/** processkey for processes, formId for forms. */
-	String getProcesskey();
-
-	/** null for processes, formId for forms. */
-	String getFormId();
-
-	String getDescription();
-
-	LocalDateTime getCreated();
-
-	LocalDateTime getUpdated();
-
-	/** User id of last save, or null. */
-	String getUpdatedBy();
-
-	Integer getVersion();
-
+@SpringBootApplication
+public class SevenWebclientApplication extends SpringBootServletInitializer {
+	
+	public static void main(String[] args) {
+		SpringApplication.run(SevenWebclientApplication.class, args);
+	}
 }

@@ -448,7 +448,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	      }
 	      
 	      logger.info("[INFO] Submited variables in task with name=" + taskName + " and ID=" + taskId + " (" + getClass().getSimpleName() + ")");
-	      return new ResponseEntity<>("ok", new HttpHeaders(), HttpStatus.OK);
+	      return ResponseEntity.ok("ok");
 	    } catch (Exception e) {
 	      logger.info("[INFO] Exception when submiting variables in task with name=" + taskName + " and ID=" + taskId + " (" + getClass().getSimpleName() + ")", e);
 	      if (e instanceof NoObjectFoundException) return generateErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
