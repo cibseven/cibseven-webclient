@@ -115,7 +115,7 @@ export default {
         : this.task.assignee?.id || ''
       const currentUserId = this.$root.user?.id || ''
       const isAssignedToCurrentUser = assigneeId.toLowerCase() === currentUserId.toLowerCase()
-      return !this.task.assignee || !isAssignedToCurrentUser ? -1 : undefined
+      return (!this.task.assignee || !isAssignedToCurrentUser) ? -1 : undefined
     },
     fullModeStyles: function() {
       if (this.$route.query.fullMode === 'true') {
