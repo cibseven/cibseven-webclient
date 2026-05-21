@@ -113,7 +113,8 @@ export default {
       const assigneeId = typeof this.task.assignee === 'string'
         ? this.task.assignee
         : this.task.assignee?.id || ''
-      const isAssignedToCurrentUser = assigneeId.toLowerCase() === this.$root.user.id.toLowerCase()
+      const currentUserId = this.$root.user?.id || ''
+      const isAssignedToCurrentUser = assigneeId.toLowerCase() === currentUserId.toLowerCase()
       return !this.task.assignee || !isAssignedToCurrentUser ? -1 : undefined
     },
     fullModeStyles: function() {
