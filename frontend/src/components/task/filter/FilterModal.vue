@@ -131,11 +131,20 @@
           <span>{{ $t('nav-bar.filters.showUndefinedVariable') }}</span>
         </b-form-checkbox>
         <div v-if="filterVariables.length > 0" class="col-12 px-0 pb-1 d-flex align-items-center">
+          <span style="width: 1.5rem; flex-shrink: 0"></span>
           <small class="me-2 text-secondary" style="flex: 1; min-width: 0">{{ $t('nav-bar.filters.variable.name') }}</small>
           <small class="me-2 text-secondary" style="flex: 1; min-width: 0">{{ $t('nav-bar.filters.variable.label') }}</small>
           <span style="width: 2rem; flex-shrink: 0"></span>
         </div>
-        <div v-for="(variable, index) of filterVariables" class="col-12 input-group px-0 pb-2 d-flex align-items-center" :key="index">
+        <div v-for="(variable, index) of filterVariables" class="col-12 input-group px-0 pb-2 d-flex align-items-center" :key="index"
+          draggable="true"
+          @dragstart="dragStart(index)"
+          @dragover.prevent="dragOver(index)"
+          @drop="drop(index)"
+          :class="{ 'opacity-50': dragIndex === index }">
+          <div style="width: 1.5rem; flex-shrink: 0; cursor: grab" class="text-center">
+            <span class="mdi mdi-18px mdi-drag text-secondary"></span>
+          </div>
           <b-form-input :id="'var-name-' + index" class="rounded me-2" size="sm" :placeholder="$t('nav-bar.filters.variable.namePlaceholder')" v-model="variable.name" :aria-label="$t('nav-bar.filters.variable.name')"></b-form-input>
           <b-form-input :id="'var-label-' + index" class="rounded me-2" size="sm" :placeholder="$t('nav-bar.filters.variable.labelPlaceholder')" v-model="variable.label" :aria-label="$t('nav-bar.filters.variable.label')"></b-form-input>
           <CellActionButton @click="removeFilterVariable(index)" icon="mdi-delete-outline" :title="$t('confirm.delete')"></CellActionButton>
@@ -193,6 +202,7 @@ export default {
       showUndefinedVariable: false,
       filterVariables: [],
       variablesExpanded: false,
+      dragIndex: null,
     }
   },
   watch: {
@@ -272,7 +282,7 @@ export default {
         this.$store.state.filter.selected.name = this.selectedFilterName
         this.$store.state.filter.selected.properties.priority = this.selectedFilterPriority || 0
         this.$store.state.filter.selected.properties.showUndefinedVariable = this.showUndefinedVariable
-        this.$store.state.filter.selected.properties.variables = this.filterVariables.filter(v => v.name)
+        this.$store.state.filter.selected.properties.variables = this.getCleanFilterVariables()
         this.$store.state.filter.selected.query = query
         this.$store.dispatch('updateFilter', { filter: this.$store.state.filter.selected }).then(() => {
           this.$emit('filter-alert', { message: 'nav-bar.filters.msgFilterUpdated', filter: this.selectedFilterName })
@@ -296,7 +306,7 @@ export default {
             description: '',
             refresh: true,
             priority: this.selectedFilterPriority || 0,
-            variables: this.filterVariables.filter(v => v.name)
+            variables: this.getCleanFilterVariables()
           }
         }
         this.$store.dispatch('createFilter', { filter: filterCreate }).then(filter => {
@@ -393,11 +403,27 @@ export default {
       this.selectedCriteriaType = null
       this.criteriaEdited = { key: null, rowIndex: null }
     },
+    dragStart: function(index) {
+      this.dragIndex = index
+    },
+    dragOver: function(index) {
+      if (this.dragIndex === null || this.dragIndex === index) return
+      const items = [...this.filterVariables]
+      items.splice(index, 0, items.splice(this.dragIndex, 1)[0])
+      this.filterVariables = items
+      this.dragIndex = index
+    },
+    drop: function() {
+      this.dragIndex = null
+    },
     addFilterVariable: function() {
       this.filterVariables.push({ name: '', label: '' })
     },
     removeFilterVariable: function(index) {
       this.filterVariables.splice(index, 1)
+    },
+    getCleanFilterVariables: function() {
+      return this.filterVariables.filter(v => v.name?.trim())
     },
     selectCriteria: function(evt) {
       const criteria = this.criterias.find(option => {

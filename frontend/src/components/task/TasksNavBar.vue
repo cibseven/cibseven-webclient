@@ -134,17 +134,17 @@
                     <HighlightedText :text="getCompleteName(task)" :keyword="search" class="mdi mdi-18px mdi-account text-secondary p-1"></HighlightedText>
                   </div>
                   <div class="h6 text-end p-0 fw-normal n-0" v-if="task.assignee == null">
-                    <b-button variant="link" class="p-0 text-dark" @click.stop="checkAssignee(task)" @keydown.enter.stop="checkAssignee(task)" @keyup.enter.stop.prevent @keydown.space.prevent.stop="checkAssignee(task)">
+                    <b-button variant="link" class="p-0 lh-1 text-dark" @click.stop="checkAssignee(task)" @keydown.enter.stop="checkAssignee(task)" @keyup.enter.stop.prevent @keydown.space.prevent.stop="checkAssignee(task)">
                       <span class="mdi mdi-18px mdi-account-question text-secondary"></span>
                       {{ $t('task.assignToMe') }}
                     </b-button>
                   </div>
                 </div>
               </div>
-              <div v-if="visibleFilterVariables(task).length > 0" class="position-relative">
+              <div v-if="visibleFilterVariables(task).length > 0" class="position-relative mt-1 pt-1 border-top">
                 <div class="row g-0" :class="expandedTasks[task.id] ? '' : 'task-variables-collapsed'">
-                  <div v-for="filterVar in visibleFilterVariables(task)" :key="filterVar.name" class="col-12 col-md-6 h6 fw-normal m-0 mt-2">
-                    <div class="d-flex d-md-block">
+                  <div v-for="filterVar in visibleFilterVariables(task)" :key="filterVar.name" class="col-12 h6 fw-normal m-0 mt-2">
+                    <div class="d-flex">
                       <div class="text-truncate fw-semibold me-1" :title="displayTooltip(task, filterVar)">{{ filterVar.label }}:</div>
                       <div v-if="task.variables && task.variables[filterVar.name] !== undefined && task.variables[filterVar.name] !== null" class="text-truncate" :title="displayTooltip(task, filterVar)">
                         {{ displayValue(task, filterVar) }}
