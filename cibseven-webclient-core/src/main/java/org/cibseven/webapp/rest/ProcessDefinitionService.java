@@ -114,6 +114,6 @@ public class ProcessDefinitionService extends BaseService implements Initializin
 			HttpServletRequest rq, CIBUser user) {
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.CREATE_ALL);
 		ProcessStart processStart = bpmProvider.submitForm(processDefinitionKey, formResult, user);
-		return new ResponseEntity<>(processStart, new HttpHeaders(), HttpStatus.OK);
+		return ResponseEntity.ok(processStart);
 	}
 }

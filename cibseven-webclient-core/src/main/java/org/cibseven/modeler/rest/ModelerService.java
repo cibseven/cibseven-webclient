@@ -482,7 +482,7 @@ public class ModelerService extends BaseService {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM);
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM));
-		return new ResponseEntity<>(file, headers, HttpStatus.OK);
+		return ResponseEntity.ok().headers(headers).body(file);
 	}
 	
 	@RequestMapping(value = "/process/find-by-key/data", method = RequestMethod.POST)
@@ -496,7 +496,7 @@ public class ModelerService extends BaseService {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM);
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM));
-		return new ResponseEntity<>(file, headers, HttpStatus.OK);
+		return ResponseEntity.ok().headers(headers).body(file);
 	}
 	
 	@RequestMapping(value = "/process/{id}/data", method = RequestMethod.GET)
@@ -512,7 +512,7 @@ public class ModelerService extends BaseService {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM);
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM));
-		ResponseEntity<byte[]> response = new ResponseEntity<>(file, headers, HttpStatus.OK);
+		ResponseEntity<byte[]> response = ResponseEntity.ok().headers(headers).body(file);
 		return response;
 	}
 
@@ -614,7 +614,7 @@ public class ModelerService extends BaseService {
 		byte[] file = form.getFormSchema();
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
-		return new ResponseEntity<>(file, headers, HttpStatus.OK);
+		return ResponseEntity.ok().headers(headers).body(file);
 	}
 
 	private static String userIdFrom(CIBUser user) {
