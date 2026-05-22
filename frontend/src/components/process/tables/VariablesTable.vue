@@ -46,7 +46,12 @@
         ]">
 
         <template v-slot:cell(name)="table">
-          <div :title="table.item.name" class="text-truncate">{{ table.item.name }}</div>
+          <CopyableActionButton
+            :displayValue="table.item.name"
+            :clickable="false"
+            :title="$t('process-instance.variables.name') + ':\n' + table.item.name"
+            @copy="copyValueToClipboard"
+          />          
         </template>
 
         <template v-slot:cell(type)="table">
@@ -66,8 +71,9 @@
         <template v-slot:cell(scope)="table">
           <CopyableActionButton
             :displayValue="table.item.scope"
-            :clickable="false"
-            :title="$t('process-instance.variables.scope') + ':\n' + table.item.scope"
+            :clickable="!!table.item.scopeActivityId"
+            :title="$t('process-instance.variables.scope') + ':\n' + table.item.scope + '\n\n' + $t('process-instance.variables.activityInstanceId') + ':\n' + table.item.activityInstanceId"
+            @click="highlightScope(table.item)"
             @copy="copyValueToClipboard"
           />          
         </template>
@@ -138,7 +144,8 @@ import processesVariablesMixin from '@/components/process/mixins/processesVariab
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { permissionsMixin } from '@/permissions.js'
-import { mapGetters } from 'vuex'
+import { mapGetters, mapActions } from 'vuex'
+import variableUtils from '@/components/process/mixins/variableUtils'
 
 export default {
   name: 'VariablesTable',
@@ -147,7 +154,7 @@ export default {
   data: function() {
     return {
       filteredVariables: [],
-      fileObjects: ['de.cib.cibflow.api.files.FileValueDataFlowSource', 'de.cib.cibflow.api.files.FileValueDataSource']
+      fileObjects: variableUtils.getFileObjects(),
     }
   },
   computed: {
@@ -185,6 +192,13 @@ export default {
     },
   },
   methods: {
+    ...mapActions(['setHighlightedElement', 'selectActivity']),
+    highlightScope(variable) {
+      if (variable.scopeActivityId) {
+        this.selectActivity({ activityId: variable.scopeActivityId })
+        this.setHighlightedElement(variable.scopeActivityId)
+      }
+    },
     async addNewVariable() {
       this.$refs.addVariableModal.show()
     },

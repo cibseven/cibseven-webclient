@@ -100,7 +100,6 @@
 		"start": "Starten",
 		"showProcess": "Prozess anzeigen",
 		"showInstance": "Instanz anzeigen",
-		"showCockpit": "Im alten Cockpit öffnen",
 		"downloadBpmn": "BPMN file herunterladen",
 		"openModeler": "BPMN-Datei im Modeler öffnen",
 		"showManagement": "Verwaltung",
@@ -249,6 +248,7 @@
 			"unknown": "Unbekannt"
 		},
 		"details": {
+			"instancesChain": "Hauptprozess",
 			"startUser": "Startnutzer",
 			"start": "Gestartet am",
 			"finish": "Abgeschlossen am",
@@ -280,7 +280,7 @@
 			"value": "Wert",
 			"valueSerialized": "Serialisierter Wert",
 			"actions": "Aktionen",
-			"scope": "Umfang",
+			"scope": "Sichtbarkeitsbereich",
 			"activityInstanceId": "Aktivitätsinstanz-ID",
 			"objectTypeName": "Objekttypname",
 			"serializationDataFormat": "Serialisierungsdatenformat",
@@ -522,6 +522,7 @@
 		"activate": "Stapel aktivieren",
 		"remove": "Stapel entfernen",
 		"confirmRemove": "Möchten Sie diesen Stapel und alle zugehörigen Jobs und Jobdefinitionen wirklich löschen?",
+		"historyLevelTooLow": "Ihre Engine-Instanz ist mit dem \"{historyLevel}\"-Historienlevel konfiguriert. Um Informationen über abgeschlossene Stapel zu erhalten, muss der Historienlevel auf \"voll\" gesetzt sein.",
 		"exception": "Ausnahme",
 		"actions": "Aktionen",
 		"retryJob": "Job erneut ausführen",
@@ -612,6 +613,11 @@
 				"groupEuropean": "Europäische Formate",
 				"groupUS": "US-Formate",
 				"groupISO": "ISO/Technische Formate"
+			},
+			"bpmn": {
+				"title": "BPMN Diagramm",
+				"shortenBadgeNumbers": "Kurzes Zahlenformat",
+				"shortenBadgeNumbersDescription": "Wenn aktiviert, werden die Zahlen im BPMN Diagramm für Instanzen und Vorkommnisse verkürzt angezeigt, z.B. 1K statt 1.005."
 			},
 			"notifications": {
 				"title": "Benachrichtigungen",
@@ -924,6 +930,16 @@
 			"legendExpression": "Mit \"*\" endende Schlüssel akzeptieren Ausdrücke als Wert. Z.B.: '&#36;&#123; currentUser&#40;&#41; &#125;' oder '&#36;&#123; currentUserGroups&#40;&#41; &#125;'",
 			"legendMultiple": "Mit \"in\" endende Schlüssel akzeptieren mehrere durch Komma getrennte Werte. Z.B.: `SchlüsselC, SchlüsselA, SchlüsselB`",
 			"create": "Filter erstellen",
+			"variablesTitle": "Variablen",
+			"variablesLegend": "Sie können Variablen definieren, die in der Aufgabenliste angezeigt werden.",
+			"showUndefinedVariable": "Undefinierte Variablen anzeigen",
+			"addVariable": "Variable hinzufügen",
+			"variable": {
+				"name": "Name",
+				"label": "Bezeichnung",
+				"namePlaceholder": "Variablenname",
+				"labelPlaceholder": "Lesbarer Name"
+			},
 			"operators": {
 				"eq": "=",
 				"neq": "≠",
@@ -1002,10 +1018,6 @@
 		"modeler": {
 			"title": "Modeler",
 			"tooltip": "Modeler öffnen, um BPMN, DMN und Formulare zu entwerfen und zu bearbeiten"
-		},
-		"oldCockpit": {
-			"title": "Altes Cockpit",
-			"tooltip": "Altes Cockpit öffnen"
 		},
 		"account": {
 			"tooltip": "Kontoinformationen ansehen und bearbeiten oder abmelden",
@@ -1170,14 +1182,14 @@
 		"policy": {
 			"title": "Passwortrichtlinien",
 			"header": "Ihr Passwort muss die folgenden Kriterien erfüllen: ",
-			"items": [
-				"darf keine Benutzerdaten enthalten (z.B. Benutzer-ID, Vorname, Nachname, E-Mail)",
-				"Mindestlänge von 10 Zeichen",
-				"mindestens ein Großbuchstabe",
-				"mindestens ein Kleinbuchstabe",
-				"mindestens eine Ziffer",
-				"mindestens ein Sonderzeichen"
-			]
+			"items": {
+				"PASSWORD_POLICY_USER_DATA": "darf keine Benutzerdaten enthalten (z.B. Benutzer-ID, Vorname, Nachname, E-Mail)",
+				"PASSWORD_POLICY_LENGTH": "Mindestlänge von {minLength} Zeichen",
+				"PASSWORD_POLICY_LOWERCASE": "mindestens {minLowerCase} Kleinbuchstabe(n)",
+				"PASSWORD_POLICY_UPPERCASE": "mindestens {minUpperCase} Großbuchstabe(n)",
+				"PASSWORD_POLICY_DIGIT": "mindestens {minDigit} Ziffer(n)",
+				"PASSWORD_POLICY_SPECIAL": "mindestens {minSpecial} Sonderzeichen"
+			}
 		},
 		"recover": {
 			"sendEmail": "Wiederherstellungs-E-Mail senden",
@@ -1291,6 +1303,31 @@
 		"accept": "Akzeptieren",
 		"fullscreen": "Vollbild",
 		"showProcess": "Prozess anzeigen"
+	},
+	"task-variables": {
+		"title": "Task Variablen für \"{name}\"",
+		"introduction": "Hier können Sie die Variablen der Prozessinstanz anzeigen und bearbeiten, die mit dieser Aufgabe verbunden sind. Bitte beachten Sie, dass das Ändern von Variablenwerten unbeabsichtigte Auswirkungen auf die Prozessausführung haben kann.",
+		"businessKey": "Fachlicher Schlüssel: {businessKey}",
+		"noVariables": "Für diese Aufgabe wurden noch keine Variablen angegeben.",
+		"noVariablesLoaded": "Es wurden noch keine zusätzlichen Variablen hinzugefügt.",
+		"editVariable": {
+			"tooltip": "Variable \"{name}\" bearbeiten"
+		},
+		"removeVariable": {
+			"tooltip": "Variable \"{name}\" aus der Liste entfernen"
+		},
+		"addVariable": {
+			"title": "@:process-instance.addVariable",
+			"tooltip": "Fügen Sie eine neue Variable zur Prozessinstanz hinzu"
+		},
+		"showTaskVariables": {
+			"title": "Task-Variablen anzeigen",
+			"tooltip": "Zeigen Sie die für die Aufgabe definierten Variablen an. Sie können die Werte dieser Variablen bearbeiten oder neue Variablen zur Prozessinstanz hinzufügen."
+		},
+		"showExistingVariables": {
+			"title": "Vorhandene Variablen anzeigen",
+			"tooltip": "Zeigen Sie die bereits für diese Prozessinstanz definierten Variablen an. Sie können die Werte dieser Variablen bearbeiten oder neue Variablen zur Prozessinstanz hinzufügen."
+		}
 	},
 	"setup": {
 		"title": "Ersteinrichtung",

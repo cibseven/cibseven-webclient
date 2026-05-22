@@ -420,11 +420,12 @@ export default {
       this.loadIncidentsData(id, this.isInstanceView)
     },
     showIncidentMessage: function(incident) {
-      const configuration = incident.historyConfiguration || incident.rootCauseIncidentConfiguration
-      if (!configuration) return
+      const runtimeConfiguration = incident.configuration || incident.rootCauseIncidentConfiguration
+      const historyConfiguration = incident.historyConfiguration || incident.rootCauseIncidentHistoryConfiguration
 
-      const isHistoric = !!incident.historyConfiguration
+      const isHistoric = !!historyConfiguration
       const isExternalTask = incident.incidentType === 'failedExternalTask'
+      const configuration = isHistoric ? historyConfiguration : runtimeConfiguration
 
       // Select appropriate service method based on incident type and whether it's historic
       const stackTracePromise = this.getStackTracePromise(isHistoric, isExternalTask, configuration)

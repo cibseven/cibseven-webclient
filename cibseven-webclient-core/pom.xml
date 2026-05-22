@@ -7,7 +7,13 @@
 	</parent>
 	<artifactId>cibseven-webclient-core</artifactId>
 	<name>CIB seven webclient core</name>
-	<description>Core backend services and APIs for the CIB seven webclient platform</description>
+	<description>Core backend services and APIs for the CIB seven webclient platform.
+		Framework-version-neutral: compiled against Spring Boot 3.5 (the default BOM
+		imported by the parent) but also works at runtime on Spring Boot 4.x. The
+		per-flavour cibseven-webclient-web and cibseven-webclient-web-sb4 modules
+		each supply their own Spring Boot starters and any SB-version-specific
+		auto-configuration classes; cibseven-webclient-web-sb4 also overrides the
+		BOM to Spring Boot 4.x.</description>
 
 	<dependencies>
 
@@ -17,9 +23,16 @@
     		<scope>provided</scope>
 		</dependency>
 
+		<!--
+			spring-boot-starter-web (SB3) was renamed to spring-boot-starter-webmvc (SB4).
+			Each web module supplies its own flavour-specific starter at runtime; here
+			we depend on the SB3 name at <provided> scope just to compile against
+			Spring MVC types (RestController, GetMapping, ResponseEntity, ...).
+		-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
+			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
 					<groupId>org.springframework.boot</groupId>

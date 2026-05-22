@@ -100,7 +100,6 @@
 		"start": "Iniciar",
 		"showProcess": "Mostrar proceso",
 		"showInstance": "Mostrar instancia",
-		"showCockpit": "Abrir en el Cockpit antiguo",
 		"downloadBpmn": "Descargar fichero BPMN",
 		"openModeler": "Abrir fichero BPMN en el Modeler",
 		"showManagement": "Gestión del proceso",
@@ -249,6 +248,7 @@
 			"unknown": "Desconocido"
 		},
 		"details": {
+			"instancesChain": "Proceso principal",
 			"startUser": "Usuario inicial",
 			"start": "Iniciado el",
 			"finish": "Terminado el",
@@ -522,6 +522,7 @@
 		"activate": "Activar lote",
 		"remove": "Eliminar lote",
 		"confirmRemove": "¿Realmente desea eliminar este lote y todos los trabajos y definiciones de trabajos relacionados?",
+		"historyLevelTooLow": "Su instancia de motor está configurada con el nivel de historial \"{historyLevel}\". Para obtener información sobre los lotes finalizados, el nivel de historial debe estar configurado en \"completo\".",
 		"exception": "Excepción",
 		"actions": "Acciones",
 		"retryJob": "Reintentar trabajo",
@@ -612,6 +613,11 @@
 				"groupEuropean": "Formatos europeos",
 				"groupUS": "Formatos de EE.UU.",
 				"groupISO": "Formatos ISO/Técnicos"
+			},
+			"bpmn": {
+				"title": "Diagrama BPMN",
+				"shortenBadgeNumbers": "Formato de número corto",
+				"shortenBadgeNumbersDescription": "Si está activado, los números en el diagrama BPMN para instancias y ocurrencias se mostrarán abreviados, por ejemplo, 1K en lugar de 1.005."
 			},
 			"notifications": {
 				"title": "Notificaciones",
@@ -924,6 +930,16 @@
 			"legendExpression": "Las claves que terminan en \"*\" aceptan expresiones como valor. Por ejemplo: '&#36;&#123; currentUser&#40;&#41; &#125;' o '&#36;&#123; currentUserGroups&#40;&#41; &#125;'",
 			"legendMultiple": "Las claves que terminan en \"in\" aceptan múltiples valores separados por coma. Por ejemplo: `claveC, claveA, claveB`",
 			"create": "Crear filtro",
+			"variablesTitle": "Variables",
+			"variablesLegend": "Puede definir variables que se muestran en la lista de tareas.",
+			"showUndefinedVariable": "Mostrar variables no definidas",
+			"addVariable": "Añadir variable",
+			"variable": {
+				"name": "Nombre",
+				"label": "Etiqueta",
+				"namePlaceholder": "Nombre de variable",
+				"labelPlaceholder": "Etiqueta legible"
+			},
 			"operators": {
 				"eq": "=",
 				"neq": "≠",
@@ -1002,10 +1018,6 @@
 		"modeler": {
 			"title": "Modeler",
 			"tooltip": "Abrir Modeler para diseñar y editar BPMN, DMN y formularios"
-		},
-		"oldCockpit": {
-			"title":"Cockpit antiguo",
-			"tooltip": "Abrir Cockpit antiguo"
 		},
 		"account": {
 			"tooltip": "Ver y editar la información de su cuenta o cerrar sesión",
@@ -1179,14 +1191,14 @@
 		"policy": {
 			"title": "Política de contraseñas",
 			"header": "Su contraseña debe cumplir los siguientes criterios: ",
-			"items": [
-				"no debe contener datos de usuario (p.ej., ID de usuario, nombre, apellidos, correo electrónico)",
-				"10 caracteres como mínimo",
-				"al menos un carácter mayúsculo",
-				"al menos un carácter minúsculo",
-				"al menos una cifra",
-				"al menos un carácter especial"
-			]
+			"items": {
+				"PASSWORD_POLICY_USER_DATA": "no debe contener datos de usuario (p.ej., ID de usuario, nombre, apellidos, correo electrónico)",
+				"PASSWORD_POLICY_LENGTH": "mínimo {minLength} caracteres",
+				"PASSWORD_POLICY_LOWERCASE": "al menos {minLowerCase} carácter minúsculo",
+				"PASSWORD_POLICY_UPPERCASE": "al menos {minUpperCase} carácter mayúsculo",
+				"PASSWORD_POLICY_DIGIT": "al menos {minDigit} cifra",
+				"PASSWORD_POLICY_SPECIAL": "al menos {minSpecial} carácter especial"
+			}	
 		}
 	},
 	"advanced-search": {
@@ -1290,6 +1302,31 @@
 		"accept": "Aceptar",
 		"fullscreen": "Pantalla completa",
 		"showProcess": "Ver proceso"
+	},
+	"task-variables": {
+		"title": "Variables de tarea para \"{name}\"",
+		"introduction": "Aquí puede ver y editar las variables de la instancia del proceso relacionadas con esta tarea. Tenga en cuenta que cambiar los valores de las variables puede tener consecuencias no deseadas en la ejecución del proceso.",
+		"businessKey": "Clave de negocio: {businessKey}",
+		"noVariables": "No se han especificado variables para esta tarea.",
+		"noVariablesLoaded": "No se han agregado variables adicionales.",
+		"editVariable": {
+			"tooltip": "Editar variable \"{name}\""
+		},
+		"removeVariable": {
+			"tooltip": "Eliminar variable \"{name}\" de la lista"
+		},
+		"addVariable": {
+			"title": "@:process-instance.addVariable",
+			"tooltip": "Agregar una nueva variable a la instancia del proceso"
+		},
+		"showTaskVariables": {
+			"title": "Mostrar variables de tarea",
+			"tooltip": "Mostrar las variables que están definidas para la tarea. Puede editar los valores de estas variables o agregar nuevas variables a la instancia del proceso."
+		},
+		"showExistingVariables": {
+			"title": "Mostrar variables existentes",
+			"tooltip": "Mostrar las variables que ya están definidas para esta instancia del proceso. Puede editar los valores de estas variables o agregar nuevas variables a la instancia del proceso."
+		}
 	},
 	"setup": {
 		"title": "Configuración Inicial",

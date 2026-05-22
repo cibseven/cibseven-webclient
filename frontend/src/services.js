@@ -44,7 +44,7 @@ function createDocumentEndpointUrl(processInstanceId, variableName, authToken, c
   // Use base path from current location (removes hash). This reliably includes any deployment context path, both locally and in production.
   const basePath = window.location.href.replace(window.location.hash, '');
   const encodedContentType = encodeURIComponent(contentType);
-  
+
   return `${basePath}${getServicesBasePath()}/process/process-instance/${processInstanceId}/variables/${variableName}/data?token=${authToken}&contentType=${encodedContentType}&cacheBust=${cacheBust}`;
 }
 
@@ -80,13 +80,14 @@ const TaskService = {
     return axios.post(getServicesBasePath() + "/task/by-filter/" + filterId + queryPagination, filters)
   },
   submit: function(taskId) { return axios.post(getServicesBasePath() + "/task/submit/" + taskId) },
+  submitWithVariables: function(taskId, params) { return axios.post(getServicesBasePath() + `/task/${taskId}/submit-form`, params) },
   formReference: function(taskId) { return axios.get(getServicesBasePath() + "/task/" + taskId + "/form-reference") },
   getDeployedForm: function(taskId) { return axios.get(getServicesBasePath() + "/task/" + taskId + "/deployed-form") },
   form: function(taskId) { return axios.get(getServicesBasePath() + "/task/" + taskId + "/form") },
   setAssignee: function(taskId, userId) { return axios.post(getServicesBasePath() + "/task/" + taskId + "/assignee/" + userId) },
   update: function(task) { return axios.put(getServicesBasePath() + "/task/update", task) },
   fetchActivityVariables: function(activityInstanceId) {
-	return axios.get(getServicesBasePath() + "/task/" + activityInstanceId + "/variables")
+    return axios.get(getServicesBasePath() + "/task/" + activityInstanceId + "/variables")
   },
   findTasksCountByFilter: function(filterId, filters) { return axios.post(getServicesBasePath() + "/task/by-filter/" + filterId + '/count', filters) },
   checkActiveTask: function(id, auth) {
@@ -125,13 +126,13 @@ const ProcessService = {
     return axios.get(url)
   },
   findProcessById: function(id, extraInfo = false) {
-	  return axios.get(getServicesBasePath() + "/process/process-definition-id/" + id + '?extraInfo=' + extraInfo)
+    return axios.get(getServicesBasePath() + "/process/process-definition-id/" + id + '?extraInfo=' + extraInfo)
   },
   findProcessesInstances: function(key) {
-	  return axios.get(getServicesBasePath() + "/process/instances/by-process-key/" + key)
+    return axios.get(getServicesBasePath() + "/process/instances/by-process-key/" + key)
   },
   findProcessInstance: function(processInstanceId) {
-	  return axios.get(getServicesBasePath() + "/process/process-instance/" + processInstanceId)
+    return axios.get(getServicesBasePath() + "/process/process-instance/" + processInstanceId)
   },
   findCurrentProcessesInstances: function(filter) {
     return axios.post(getServicesBasePath() + "/process/instances", filter)
@@ -140,12 +141,12 @@ const ProcessService = {
     return axios.get(getServicesBasePath() + "/process/activity/by-process-instance/" + processInstanceId)
   },
   findCalledProcessDefinitions: function(processDefinitionId) {
-	  return axios.get(getServicesBasePath() + "/process/called-process-definitions/" + processDefinitionId)
+    return axios.get(getServicesBasePath() + "/process/called-process-definitions/" + processDefinitionId)
   },
   fetchDiagram: function(processId) { return axios.get(getServicesBasePath() + "/process/" + processId + "/diagram") },
   startProcess: function(key, tenantId, locale) {
     let url = `${getServicesBasePath()}/process/${key}/start`
-    if (tenantId)  url += `?tenantId=${tenantId}`
+    if (tenantId) url += `?tenantId=${tenantId}`
     return axios.post(url, {
       variables: {
         _locale: { value: locale, type: String }
@@ -189,7 +190,7 @@ const ProcessService = {
     })
   },
   findDeployment: function(deploymentId) {
-	return axios.get(getServicesBasePath() + "/process/deployments/" + deploymentId)
+    return axios.get(getServicesBasePath() + "/process/deployments/" + deploymentId)
   },
   findDeploymentResources: function(deploymentId) {
     return axios.get(getServicesBasePath() + "/process/deployments/" + deploymentId + "/resources")
@@ -216,10 +217,10 @@ const ProcessService = {
   fetchChatComments: function(processInstanceId, processDefinitionKey, deserialize) {
     return axios.get(getServicesBasePath() + '/process/process-instance/' + processInstanceId + '/chat-comments',
       { params: {
-        deserialize: deserialize,
-        processDefinitionKey: processDefinitionKey
-      }
-    })
+          deserialize: deserialize,
+          processDefinitionKey: processDefinitionKey
+        }
+      })
   },
   fetchStatusDataset: function(processInstanceId, processDefinitionKey, deserialize) {
     return axios.get(getServicesBasePath() + '/process/process-instance/' + processInstanceId + '/status-dataset', {
@@ -303,8 +304,8 @@ const AdminService = {
   updateUserProfile: function (userId, user) { return axios.put(getServicesBasePath() + "/admin/user/" + userId + "/profile", user) },
   updateUserCredentials: function (userId, password, authenticatedUserPassword) {
     return axios.put(getServicesBasePath() + "/admin/user/" + userId + "/credentials", {
-        password: password,
-        authenticatedUserPassword: authenticatedUserPassword
+      password: password,
+      authenticatedUserPassword: authenticatedUserPassword
     })
   },
   deleteUser: function (userId) { return axios.delete(getServicesBasePath() + "/admin/user/" + userId) },
@@ -326,9 +327,9 @@ const AdminService = {
     })
   },
   createAuthorization: function (authorization) { return axios.post(getServicesBasePath() + "/admin/authorization/create", authorization) },
-  updateAuthorization: function (authorizationId, authorization)
-    { return axios.put(getServicesBasePath() + "/admin/authorization/" + authorizationId, authorization) },
-  deleteAuthorization: function (authorizationId) { return axios.delete(getServicesBasePath() + "/admin/authorization/" + authorizationId) }
+  updateAuthorization: function (authorizationId, authorization) { return axios.put(getServicesBasePath() + "/admin/authorization/" + authorizationId, authorization) },
+  deleteAuthorization: function (authorizationId)
+    { return axios.delete(getServicesBasePath() + "/admin/authorization/" + authorizationId) }
 
 }
 
@@ -422,8 +423,8 @@ const HistoryService = {
   findActivitiesProcessDefinitionHistory: function(processDefinitionId, params) {
     return axios.get(getServicesBasePath() + "/process-history/activity/by-process-definition/" + processDefinitionId, { params })
   },
-  findActivitiesInstancesHistoryWithFilter(filter){
-	  return axios.get(getServicesBasePath() + "/process-history/activity", { params: filter })
+  findActivitiesInstancesHistoryWithFilter(filter) {
+    return axios.get(getServicesBasePath() + "/process-history/activity", { params: filter })
   },
   fetchProcessInstanceVariablesHistory: function(processInstanceId, filter) {
     return axios.get(getServicesBasePath() + "/process-history/instance/by-process-instance/" + processInstanceId + "/variables",
@@ -504,16 +505,16 @@ const IncidentService = {
 }
 
 const AuthService = {
-  fetchAuths: function() {return axios.get(getServicesBasePath() + "/auth/authorizations") },
+  fetchAuths: function() { return axios.get(getServicesBasePath() + "/auth/authorizations") },
   passwordRecover: function(data) { return axios.post(getServicesBasePath() + "/auth/password-recover", data) },
   passwordRecoverCheck: function(recoverToken) { return axios.get(getServicesBasePath() + "/auth/password-recover-check",
-    { headers: { authorization: recoverToken } }
-  ) },
+      { headers: { authorization: recoverToken } }
+    ) },
   passwordRecoverUpdatePassword: function(userId, password, authenticatedUserPassword, recoverToken) {
     return axios.put(getServicesBasePath() + "/auth/password-recovery-update-password/" + userId,
-    { password: password, authenticatedUserPassword: authenticatedUserPassword },
-    { headers: { authorization: recoverToken } }
-  ) },
+      { password: password, authenticatedUserPassword: authenticatedUserPassword },
+      { headers: { authorization: recoverToken } }
+    ) },
   login: function(params, remember) {
     const engineName = localStorage.getItem(ENGINE_STORAGE_KEY)
     const headers = engineName ? { 'X-Process-Engine': engineName } : {}
@@ -551,7 +552,7 @@ const FormsService = {
     return axios.post(getServicesBasePath() + '/process/' + processDefinitionId + '/submit-startform-variables', formResult)
   },
   downloadFiles: function(processInstanceId, documentsList) {
-    return axios.post(getServicesBasePath() + '/task/' + processInstanceId + '/download', documentsList, { responseType: 'blob' } )
+    return axios.post(getServicesBasePath() + '/task/' + processInstanceId + '/download', documentsList, { responseType: 'blob' })
   },
   downloadFile: function(processInstanceId, fileVariable) {
     return axios.get(getServicesBasePath() + '/task/' + processInstanceId + '/variable/download/' + fileVariable, { responseType: 'blob' })
@@ -586,11 +587,11 @@ const FormsService = {
 
 const TemplateService = {
   getTemplate: function(element, taskId, locale, token) {
-	return axios.get(getServicesBasePath() + '/template/' + element + '/' + taskId + '?locale=' + locale, {
-	    headers: {
+    return axios.get(getServicesBasePath() + '/template/' + element + '/' + taskId + '?locale=' + locale, {
+      headers: {
         Authorization: `${token}`
-	    }
-	  })
+      }
+    })
   }
 }
 
@@ -825,9 +826,19 @@ const SetupService = {
     const engineName = localStorage.getItem(ENGINE_STORAGE_KEY)
     const headers = engineName ? { 'X-Process-Engine': engineName } : {}
     return axios.create().post(getServicesBasePath() + '/setup/user', user, { headers })
+  },
+  validatePasswordPolicy(password, profile) {
+    const engineName = localStorage.getItem(ENGINE_STORAGE_KEY)
+    const headers = engineName ? { 'X-Process-Engine': engineName } : {}
+    const body = {
+      password: password,
+      profile: profile
+    }
+    return axios.create().post(getServicesBasePath() + '/setup/validate-password', body, { headers })
   }
 }
-
-export { TaskService, FilterService, ProcessService, VariableInstanceService, HistoricVariableInstanceService, AdminService, JobService, JobDefinitionService, SystemService,
+export {
+  TaskService, FilterService, ProcessService, VariableInstanceService, HistoricVariableInstanceService, AdminService, JobService, JobDefinitionService, SystemService,
   HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService,
-  AnalyticsService, BatchService, TenantService, ExternalTaskService, DeploymentService, EngineService, SetupService, getServicesBasePath, setServicesBasePath, createDocumentEndpointUrl }
+  AnalyticsService, BatchService, TenantService, ExternalTaskService, DeploymentService, EngineService, SetupService, getServicesBasePath, setServicesBasePath, createDocumentEndpointUrl
+}

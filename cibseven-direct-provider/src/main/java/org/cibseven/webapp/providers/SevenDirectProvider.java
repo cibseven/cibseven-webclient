@@ -46,6 +46,7 @@ public class SevenDirectProvider implements BpmProvider {
 	private DirectBatchProvider batchProvider = null;
 	private DirectTenantProvider tenantProvider = null;
 	private DirectSystemProvider systemProvider = null;
+	private DirectIdentityProvider identityProvider = null;
 
 	DirectProviderUtil directProviderUtil = null;
 

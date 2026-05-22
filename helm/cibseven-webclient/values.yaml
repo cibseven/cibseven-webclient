@@ -94,7 +94,7 @@ application:
       user:
         provider: org.cibseven.webapp.auth.SevenUserProvider
         #provider: org.cibseven.webapp.auth.LdapUserProvider
-        #provider: org.cibseven.webapp.auth.KeycloakUserProvider
+        #provider: org.cibseven.webapp.auth.OAuth2UserProvider
         #provider: org.cibseven.webapp.auth.AdfsUserProvider
 
       # Set the wild card is gonna be used for the users search.
@@ -125,10 +125,6 @@ application:
         deny:
           external:
             ip: "true"
-
-      # Old Cockpit URL
-      cockpit:
-        url: /camunda/app/cockpit/default/
 
       # Used to set a theme (Bootstrap)
       theme: cib
@@ -168,6 +164,10 @@ application:
         requestLoggingEnabled: false
         # Whether to automatically follow HTTP redirects (status codes 3xx).
         followRedirects: true
+      deprecated:
+      # Check permission for some usecases in the webclient backend (behaviour until 2.2.0)
+        authorization:
+          enabled: false
 
 ui:
   supportedLanguages: ["de", "en", "es", "ua", "ru"]
@@ -584,21 +584,21 @@ configmaps:
                 "description": "infoAndHelp.shortcuts.shortcuts.focusTask",
                 "event": "focusTask"
               }
-            },
-            "modeler": {
-              "excludeTemplates": [],
-              "filterBpmn": [
-                { "name": "User Task", "type": "bpmn:UserTask", "color": "#E10030" },
-                { "name": "Service Task", "type": "bpmn:ServiceTask", "color": "#003DE1" },
-                { "name": "Send Task", "type": "bpmn:SendTask", "color": "#2AD300" },
-                { "name": "Receive Task", "type": "bpmn:ReceiveTask", "color": "#BEB005" },
-                { "name": "Business Rule Task", "type": "bpmn:BusinessRuleTask", "color": "#A300CF" },
-                { "name": "Manual Task", "type": "bpmn:ManualTask", "color": "#9D3F05" },
-                { "name": "Script Task", "type": "bpmn:ScriptTask", "color": "#F9B100" },
-                { "name": "Call Activity", "type": "bpmn:CallActivity", "color": "#059DBB" }
-              ],
-              "filterBpmnOpacity": "0.4"
             }
+          },
+          "modeler": {
+            "excludeTemplates": [],
+            "filterBpmn": [
+              { "name": "User Task", "type": "bpmn:UserTask", "color": "#E10030" },
+              { "name": "Service Task", "type": "bpmn:ServiceTask", "color": "#003DE1" },
+              { "name": "Send Task", "type": "bpmn:SendTask", "color": "#2AD300" },
+              { "name": "Receive Task", "type": "bpmn:ReceiveTask", "color": "#BEB005" },
+              { "name": "Business Rule Task", "type": "bpmn:BusinessRuleTask", "color": "#A300CF" },
+              { "name": "Manual Task", "type": "bpmn:ManualTask", "color": "#9D3F05" },
+              { "name": "Script Task", "type": "bpmn:ScriptTask", "color": "#F9B100" },
+              { "name": "Call Activity", "type": "bpmn:CallActivity", "color": "#059DBB" }
+            ],
+            "filterBpmnOpacity": "0.4"
           }
         }
 

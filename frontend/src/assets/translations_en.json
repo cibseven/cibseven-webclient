@@ -100,7 +100,6 @@
 		"start": "Start",
 		"showProcess": "View process",
 		"showInstance": "View instance",
-		"showCockpit": "Open in the old Cockpit",
 		"downloadBpmn": "Download BPMN file",
 		"openModeler": "Open BPMN file in Modeler",
 		"showManagement": "Management",
@@ -249,6 +248,7 @@
 			"unknown": "Unknown"
 		},
 		"details": {
+			"instancesChain": "Root process",
 			"startUser": "Start user",
 			"start": "Started on",
 			"finish": "Completed on",
@@ -522,6 +522,7 @@
 		"activate": "Activate batch",
 		"remove": "Remove batch",
 		"confirmRemove": "Do you really want to delete this batch and all related jobs and job definitions?",
+		"historyLevelTooLow": "Your engine instance is configured with \"{historyLevel}\" history level.\nTo have information about finished batches, the history level must be set to \"full\".",
 		"exception": "Exception",
 		"actions": "Actions",
 		"retryJob": "Retry job",
@@ -612,6 +613,11 @@
 				"groupEuropean": "European Formats",
 				"groupUS": "US Formats",
 				"groupISO": "ISO/Technical Formats"
+				},
+			"bpmn": {
+				"title": "BPMN Diagram",
+				"shortenBadgeNumbers": "Short number format",
+				"shortenBadgeNumbersDescription": " If enabled, the numbers in the BPMN diagram for instances and occurrences will be displayed in a shortened format, e.g., 1K instead of 1,005."
 			},
 			"notifications": {
 				"title": "Notifications",
@@ -924,6 +930,16 @@
 			"legendExpression": "Keys ending with \"*\" accept expressions as value. E.g.: '&#36;&#123; currentUser&#40;&#41; &#125;' or '&#36;&#123; currentUserGroups&#40;&#41; &#125;'",
 			"legendMultiple": "Keys ending with \"in\" accept multiple values separated by comma. E.g.: `keyC, keyA, keyB`",
 			"create": "Create filter",
+			"variablesTitle": "Variables",
+			"variablesLegend": "You can define variables shown in the tasks list.",
+			"showUndefinedVariable": "Show undefined variables",
+			"addVariable": "Add variable",
+			"variable": {
+				"name": "Name",
+				"label": "Label",
+				"namePlaceholder": "Variable name",
+				"labelPlaceholder": "Readable label"
+			},
 			"operators": {
 				"eq": "=",
 				"neq": "≠",
@@ -1002,10 +1018,6 @@
 		"modeler": {
 			"title": "Modeler",
 			"tooltip": "Open Modeler to design and edit BPMN, DMN, and Forms"
-		},
-		"oldCockpit": {
-			"title": "Old Cockpit",
-			"tooltip": "Open old Cockpit"
 		},
 		"account": {
 			"tooltip": "View and edit your account information or log out",
@@ -1180,14 +1192,14 @@
 		"policy": {
 			"title": "Password Policy",
 			"header": "Your password must fulfil the following criteria: ",
-			"items": [
-				"must not contain user data (i.e., user ID, first name, last name, email)",
-				"minimum length of 10 characters",
-				"at least one upper case character",
-				"at least one lower case character",
-				"at least one digit",
-				"at least one special character"
-			]
+			"items": {
+				"PASSWORD_POLICY_USER_DATA": "must not contain user data (i.e., user ID, first name, last name, email)",
+				"PASSWORD_POLICY_LENGTH": "minimum length of {minLength} characters",
+				"PASSWORD_POLICY_LOWERCASE": "at least {minLowerCase} lower case character",
+				"PASSWORD_POLICY_UPPERCASE": "at least {minUpperCase} upper case character",
+				"PASSWORD_POLICY_DIGIT": "at least {minDigit} digit",
+				"PASSWORD_POLICY_SPECIAL": "at least {minSpecial} special character"
+			}
 		}
 	},
 	"advanced-search": {
@@ -1291,6 +1303,31 @@
 		"accept": "Accept",
 		"fullscreen": "Fullscreen",
 		"showProcess": "View process"
+	},
+	"task-variables": {
+		"title": "Task Variables for \"{name}\"",
+		"introduction": "Here you can view and edit the variables of the process instance related to this task. Please note that changing variable values may have unintended consequences on the process execution.",
+		"businessKey": "Business Key: {businessKey}",
+		"noVariables": "No variables specified for this task yet.",
+		"noVariablesLoaded": "No additional variables added yet.",
+		"editVariable": {
+			"tooltip": "Edit variable \"{name}\""
+		},
+		"removeVariable": {
+			"tooltip": "Remove variable \"{name}\" from the list"
+		},
+		"addVariable": {
+			"title": "@:process-instance.addVariable",
+			"tooltip": "Add a new variable to the process instance"
+		},
+		"showTaskVariables": {
+			"title": "Add task variables",
+			"tooltip": "Show the variables that are defined for the task. You can edit the values of these variables or add new variables to the process instance."
+		},
+		"showExistingVariables": {
+			"title": "Show existing variables",
+			"tooltip": "Show the variables that are already defined for this process instance. You can edit the values of these variables or add new variables to the process instance."
+		}
 	},
 	"setup": {
 		"title": "Initial Setup",

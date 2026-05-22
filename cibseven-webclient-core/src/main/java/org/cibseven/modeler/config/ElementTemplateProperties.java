@@ -21,7 +21,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "cibsevenmodeler.templates")
+@ConfigurationProperties(prefix = "cibseven.webclient.modeler.templates")
 @Getter
 @Setter
 public class ElementTemplateProperties {

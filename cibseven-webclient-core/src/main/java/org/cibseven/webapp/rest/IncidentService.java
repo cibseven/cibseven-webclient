@@ -90,8 +90,6 @@ public class IncidentService extends BaseService implements InitializingBean {
 			@Parameter(description = "Job Id") @PathVariable String jobId,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		// checkPermission(user, SevenResourceType.JOB_DEFINITION,
-		// PermissionConstants.READ_ALL);
 
 		return bpmProvider.findStacktrace(jobId, user);
 	}
@@ -143,8 +141,6 @@ public class IncidentService extends BaseService implements InitializingBean {
 			@RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		// checkPermission(user, SevenResourceType.JOB_DEFINITION,
-		// PermissionConstants.UPDATE_ALL);
 		bpmProvider.retryJobById(jobId, data, user);
     // return 204 No Content, no body
     return ResponseEntity.noContent().build();

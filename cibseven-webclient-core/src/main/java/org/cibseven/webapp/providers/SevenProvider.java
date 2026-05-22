@@ -41,4 +41,5 @@ public class SevenProvider extends SevenProviderBase implements BpmProvider {
     @Autowired private ITenantProvider tenantProvider;
     @Autowired private IExternalTaskProvider externalTaskProvider;
     @Autowired private IEngineProvider engineProvider;
+	@Autowired private IIdentityProvider identityProvider;
 }

@@ -55,6 +55,8 @@ import org.cibseven.webapp.rest.model.Job;
 import org.cibseven.webapp.rest.model.Message;
 import org.cibseven.webapp.rest.model.Metric;
 import org.cibseven.webapp.rest.model.NewUser;
+import org.cibseven.webapp.rest.model.PasswordPolicyRequest;
+import org.cibseven.webapp.rest.model.PasswordPolicyResponse;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.cibseven.webapp.rest.model.ProcessInstance;
@@ -102,6 +104,7 @@ public interface BpmProvider {
   ITenantProvider getTenantProvider();
   IExternalTaskProvider getExternalTaskProvider();
   IEngineProvider getEngineProvider();
+  IIdentityProvider getIdentityProvider();
 
   /*
 
@@ -682,8 +685,8 @@ public interface BpmProvider {
 	 */
 	default Collection<User> findUsers(Optional<String> id, Optional<String> firstName, Optional<String> firstNameLike, Optional<String> lastName, Optional<String> lastNameLike,
 			Optional<String> email, Optional<String> emailLike, Optional<String> memberOfGroup, Optional<String> memberOfTenant, Optional<String> idIn, 
-			Optional<String> firstResult, Optional<String> maxResults, Optional<String> sortBy, Optional<String> sortOrder, CIBUser user) {
-		return getUserProvider().findUsers(id, firstName, firstNameLike, lastName, lastNameLike, email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, user);
+			Optional<String> firstResult, Optional<String> maxResults, Optional<String> sortBy, Optional<String> sortOrder, Optional<Boolean> likePatternIgnoreCase, CIBUser user) {
+		return getUserProvider().findUsers(id, firstName, firstNameLike, lastName, lastNameLike, email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, likePatternIgnoreCase, user);
 	}
 
 	/**
@@ -1053,16 +1056,16 @@ public interface BpmProvider {
 		return getDecisionProvider().getDiagramByKeyAndTenant(key, tenant, user);
 	}
 
-	default Object evaluateDecisionDefinitionByKeyAndTenant(String key, String tenant, CIBUser user) {
+	default Object evaluateDecisionDefinitionByKeyAndTenant(Map<String, Object> data, String key, String tenant, CIBUser user) {
 		//TODO: not implemented in DecisionProvider
 		//interface should contain parameters like evaluateDecisionDefinitionByKey 
-		return getDecisionProvider().evaluateDecisionDefinitionByKeyAndTenant(key, tenant, user);
+		return getDecisionProvider().evaluateDecisionDefinitionByKeyAndTenant(data, key, tenant, user);
 	}
 
-	default Object updateHistoryTTLByKeyAndTenant(String key, String tenant, CIBUser user) {
+	default void updateHistoryTTLByKeyAndTenant(Map<String, Object> data, String key, String tenant, CIBUser user) {
 		//TODO: not implemented in DecisionProvider
 		//interface should contain parameters like HistoryTTLByKey 
-		return getDecisionProvider().updateHistoryTTLByKeyAndTenant(key, tenant, user);
+		getDecisionProvider().updateHistoryTTLByKeyAndTenant(data, key, tenant, user);
 	}
 
 	default Object getXmlByKey(String key, CIBUser user) {
@@ -1085,9 +1088,9 @@ public interface BpmProvider {
 		return getDecisionProvider().getDiagramById(id, user);
 	}
 
-	default Object evaluateDecisionDefinitionById(String id, CIBUser user) {
+	default Object evaluateDecisionDefinitionById(String id, Map<String, Object> data, CIBUser user) {
 		//TODO: not implemented in DecisionProvider
-		return getDecisionProvider().evaluateDecisionDefinitionById(id, user);
+		return getDecisionProvider().evaluateDecisionDefinitionById(id, data, user);
 	}
 
 	default void updateHistoryTTLById(String id, Map<String, Object> data, CIBUser user) {
@@ -1208,6 +1211,10 @@ public interface BpmProvider {
 
 	default Collection<HistoryBatch> getHistoricBatches(Map<String, Object> params, CIBUser user) {
 		return getBatchProvider().getHistoricBatches(params, user);
+	}
+
+	default Long getRuntimeBatchCount(Map<String, Object> queryParams, CIBUser user) {
+		return getBatchProvider().getRuntimeBatchCount(queryParams, user);
 	}
 
 	default Long getHistoricBatchCount(Map<String, Object> queryParams, CIBUser user) {
@@ -1934,6 +1941,20 @@ public interface BpmProvider {
 	 */
 	default void createSetupUser(NewUser user, String engine) throws InvalidUserIdException {
 		getEngineProvider().createSetupUser(user, engine);
+	}
+
+	/*
+
+	██ ██████  ███████ ███    ██ ████████ ██ ████████ ██    ██     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
+	██ ██   ██ ██      ████   ██    ██    ██    ██     ██  ██      ██   ██ ██   ██ ██    ██ ██    ██ ██ ██   ██ ██      ██   ██ 
+	██ ██   ██ █████   ██ ██  ██    ██    ██    ██      ████       ██████  ██████  ██    ██ ██    ██ ██ ██   ██ █████   ██████  
+	██ ██   ██ ██      ██  ██ ██    ██    ██    ██       ██        ██      ██   ██ ██    ██  ██  ██  ██ ██   ██ ██      ██   ██ 
+	██ ██████  ███████ ██   ████    ██    ██    ██       ██        ██      ██   ██  ██████    ████   ██ ██████  ███████ ██   ██ 
+
+	*/
+
+	default PasswordPolicyResponse validatePasswordPolicy(PasswordPolicyRequest request) throws SystemException {
+		return getIdentityProvider().validatePasswordPolicy(request);
 	}
 
 }

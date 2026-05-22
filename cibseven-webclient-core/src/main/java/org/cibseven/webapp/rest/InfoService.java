@@ -41,7 +41,6 @@ import lombok.extern.slf4j.Slf4j;
 @RestController @RequestMapping("/info") @Slf4j
 public class InfoService extends BaseService {	
 	
-	@Value("${cibseven.webclient.cockpit.url:./camunda/app/cockpit/default/}") private String cockpitUrl;
 	@Value("${cibseven.webclient.theme:cib}") private String theme;
 	@Value("${cibseven.webclient.sso.active:false}") private boolean ssoActive;
 	@Value("${cibseven.webclient.sso.endpoints.authorization:}") private String authorizationEndpoint;
@@ -66,6 +65,7 @@ public class InfoService extends BaseService {
 	@Value("${cibseven.webclient.engineRest.url:./}") private String engineRestUrl;
 
 	@Value("${camunda.bpm.authorization.enabled:true}") private boolean authorizationEnabled;
+	@Value("${cibseven.webclient.legacy.authorization.enabled:false}") private boolean legacyAuthorizationEnabled;
 	@Value("${cibseven.webclient.modeler.enabled:false}") private boolean modelerEnabled;
 	
 	@Autowired
@@ -93,7 +93,6 @@ public class InfoService extends BaseService {
 	@GetMapping("/properties")
 	public ObjectNode getConfig() {
 		ObjectNode configJson = JsonNodeFactory.instance.objectNode();
-		configJson.put("cockpitUrl", cockpitUrl);
 		configJson.put("theme", theme);
 		configJson.put("ssoActive", ssoActive);
 		configJson.put("camundaHistoryLevel", camundaHistoryLevel);
@@ -110,7 +109,7 @@ public class InfoService extends BaseService {
 		
 		configJson.put("engineRestPath", engineRestPath);
 		configJson.put("engineRestUrl", engineRestUrl);
-		configJson.put("authorizationEnabled", authorizationEnabled);
+		configJson.put("authorizationEnabled", authorizationEnabled || legacyAuthorizationEnabled);
 		configJson.put("modelerEnabled", modelerEnabled);
 		
         try {

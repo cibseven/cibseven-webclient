@@ -27,26 +27,27 @@
 		<maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
 		<maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
 		<maven-enforcer-plugin.version>3.6.2</maven-enforcer-plugin.version>
+		<jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
 
 		<git-commit-id-maven-plugin.version>9.0.2</git-commit-id-maven-plugin.version>
 
 		<jjwt.version>0.12.6</jjwt.version>
 		<commons-io.version>2.18.0</commons-io.version>
 		<common-auth.version>1.3.0</common-auth.version>
-		<version.spring.boot>3.5.12</version.spring.boot>
+		<version.spring.boot>3.5.14</version.spring.boot>
 		<version.openapi-starter-webmvc-ui>2.8.13</version.openapi-starter-webmvc-ui>
 		<version.commons-lang3>3.18.0</version.commons-lang3>
 		
-		<image.tomcat-10-base>harbor.cib.de/dev/tomcat-10-base:3.0.0</image.tomcat-10-base>
+		<image.tomcat-11-base>harbor.cib.de/dev/tomcat-11-base:0.1.0@sha256:49e9bd250b4bc4e33465195106831b1afa69d38c0147f9960075cb1b45a8f7f5</image.tomcat-11-base>
 		<jib-maven-plugin.version>3.5.1</jib-maven-plugin.version>
-		<jib.from.image>${image.tomcat-10-base}</jib.from.image>
+		<jib.from.image>${image.tomcat-11-base}</jib.from.image>
 		<jib.to.image>harbor.cib.de/dev/cibseven-webclient:${project.version}</jib.to.image>
 
 		<version.eirslett.frontend.maven.plugin>1.15.4</version.eirslett.frontend.maven.plugin>
 		<version.nodejs>24.13.1</version.nodejs>
 		<version.npm>11.8.0</version.npm>
 
-		<version.log4j2>2.25.3</version.log4j2>
+		<version.log4j2>2.25.4</version.log4j2>
 
 		<!-- Database driver versions (used by modeler JPA integration) -->
 		<version.postgresql>42.7.9</version.postgresql>
@@ -91,6 +92,7 @@ You may obtain a copy of the License at
 				<module>cibseven-webclient-web</module>
 				<module>cibseven-webclient-core</module>
 				<module>cibseven-direct-provider</module>
+				<module>cibseven-webclient-web-sb4</module>
 			</modules>
 			<build>
 				<plugins>
@@ -300,15 +302,7 @@ You may obtain a copy of the License at
 
 	<dependencyManagement>
 		<dependencies>
-			<!-- temporary override fasterxml version 2.19.4, referenced from springboot 3.5.11/12, to version 2.21.1 to fix CWE-770 -->
-			<dependency>
-				<groupId>com.fasterxml.jackson</groupId>
-				<artifactId>jackson-bom</artifactId>
-				<version>2.21.1</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			
+		
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-dependencies</artifactId>
@@ -388,6 +382,7 @@ You may obtain a copy of the License at
 				<configuration>
 					<source>${maven.compiler.source}</source>
 					<target>${maven.compiler.target}</target>
+					<release>${maven.compiler.target}</release>
 					<compilerArgs>
 						<arg>-parameters</arg>
 						<arg>-Werror</arg>
@@ -401,6 +396,26 @@ You may obtain a copy of the License at
 					<failOnError>false</failOnError>
 					<doclint>none</doclint>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>${jacoco-maven-plugin.version}</version>
+				<executions>
+					<execution>
+						<id>jacoco-prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>jacoco-report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 		<pluginManagement>

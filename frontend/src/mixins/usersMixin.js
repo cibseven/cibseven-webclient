@@ -30,11 +30,11 @@ export default {
 		}
 	},
 	methods: {
-		findUsers: function(filter) {
+		findUsers: function(filter, likePatternIgnoreCase) {
 			const maxResults = this.$root.config.maxUsersResults || 10
 			this.$refs.ariaLiveText.textContent = ''
 			this.$store.dispatch('findUsers', { maxResults: maxResults, filter: filter, 
-				userProvider: this.$root.config.userProvider }).then(() => {
+				userProvider: this.$root.config.userProvider, likePatternIgnoreCase: likePatternIgnoreCase }).then(() => {
 				if (this.$store.state.user.searchUsers.length > 0) {
 					this.$refs.ariaLiveText.textContent = this.$t('task.usersFound')
 				}
