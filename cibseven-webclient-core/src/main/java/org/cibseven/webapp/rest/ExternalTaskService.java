@@ -21,24 +21,18 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.exception.SystemException;
-import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.ExternalTask;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.bind.annotation.*;
+
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestController("WebclientExternalTaskService")
 @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/external-tasks")
 public class ExternalTaskService extends BaseService implements InitializingBean {
 
-  SevenProvider sevenProvider;
 
   public void afterPropertiesSet() {
-    if (bpmProvider instanceof SevenProvider)
-      sevenProvider = (SevenProvider) bpmProvider;
-    else
-      throw new SystemException("ExternalTaskService expects a BpmProvider");
   }
   
   @GetMapping
