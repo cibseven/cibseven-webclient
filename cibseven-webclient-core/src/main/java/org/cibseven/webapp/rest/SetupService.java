@@ -16,7 +16,6 @@
  */
 package org.cibseven.webapp.rest;
 
-import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.cibseven.webapp.rest.model.PasswordPolicyRequest;
@@ -123,13 +122,10 @@ public class SetupService extends BaseService implements InitializingBean {
 	}
 
 	@PostMapping("/validate-password")
-	public ResponseEntity<Object> validatePasswordPolicy(@RequestBody PasswordPolicyRequest request) {
+	public PasswordPolicyResponse validatePasswordPolicy(@RequestBody PasswordPolicyRequest request) {
 
-		Object response = bpmProvider.validatePasswordPolicy(request);
+		PasswordPolicyResponse response = bpmProvider.validatePasswordPolicy(request);
 
-		return ResponseEntity
-				.status(HttpStatus.OK)
-				.contentType(org.springframework.http.MediaType.APPLICATION_JSON)
-				.body(response);
+		return response;
 	}
 }

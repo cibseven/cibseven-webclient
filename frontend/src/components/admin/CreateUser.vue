@@ -45,8 +45,8 @@
                     <h6>{{ $t('password.policy.title') }}</h6>
                     <div>{{ $t('password.policy.header') }}</div>
                     <ul>
-                      <li v-for="(item, idx) in $tm('password.policy.items')" :key="idx">
-                        {{ item }}
+                      <li v-for="(item, idx) in invalidPasswordRules" :key="idx">
+                        {{ $t('password.policy.' + item.placeholder, item.parameter) }}
                       </li>
                     </ul>
                   </div>
@@ -115,17 +115,27 @@ export default {
       showPassRepeat: false,
       passwordPolicyError: false,
       userIdError: false,
-      passwordValid: null
+      passwordValid: null,
+      passwordRules: []
+    }
+  },
+  computed: {
+    invalidPasswordRules() {
+      return (this.passwordRules ).filter(item => {
+        return item && typeof item === 'object' && item.valid === false
+      })
     }
   },
   methods: {
     resetPasswordValidation: function () {
       this.passwordValid = null
+      this.passwordRules = []
     },
     validatePassword: function () {
       if (notEmpty(this.credentials.password)) {
         SetupService.validatePasswordPolicy(this.credentials.password, this.profile).then((response) => {
           this.passwordValid = response.data.valid
+          this.passwordRules = response.data.rules
         }, error => {
           const data = error.response.data
           if (data && data.type === 'PasswordPolicyException') {

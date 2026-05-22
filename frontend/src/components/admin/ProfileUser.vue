@@ -93,8 +93,9 @@
                     <h6>{{ $t('password.policy.title') }}</h6>
                     <div>{{ $t('password.policy.header') }}</div>
                     <ul>
-                      <li v-for="(item, idx) in $tm('password.policy.items')" :key="idx">
-                        {{ item }}
+
+                      <li v-for="(item, idx) in invalidPasswordRules" :key="idx">
+                        {{ $t('password.policy.' + item.placeholder, item.parameter) }}
                       </li>
                     </ul>
                   </div>
@@ -300,7 +301,8 @@ export default {
       passwordVisibility: { current: false, new: false, repeat: false },
       sendingEmail: false,
       userTenants: [],
-      passwordValid: null
+      passwordValid: null,
+      passwordRules: []
     }
   },
   watch: {
@@ -319,6 +321,11 @@ export default {
   },
   computed: {
     ...mapGetters(['tenants']),
+    invalidPasswordRules() {
+      return (this.passwordRules ).filter(item => {
+        return item && typeof item === 'object' && item.valid === false
+      })
+    },
     selectedTab() {
       const defaultTab = this.user.noInfo ? 'preferences' : 'profile'
       return this.$route.query.tab || defaultTab
@@ -399,12 +406,14 @@ export default {
       })
     },
     resetPasswordValidation: function () {
-      this.passwordValid = null
+      this.passwordValid = null,
+      this.passwordRules = []
     },
     validatePassword: function () {
       if (notEmpty(this.credentials.password)) {
         SetupService.validatePasswordPolicy(this.credentials.password, this.user).then((response) => {
           this.passwordValid = response.data.valid
+          this.passwordRules = response.data.rules
         }, error => {
           const data = error.response.data
           if (data && data.type === 'PasswordPolicyException') {

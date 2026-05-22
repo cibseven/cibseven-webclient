@@ -16,11 +16,11 @@
  */
 package org.cibseven.webapp.providers;
 
-import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.PasswordPolicyRequest;
+import org.cibseven.webapp.rest.model.PasswordPolicyResponse;
 
 public interface IIdentityProvider {
-    public Object validatePasswordPolicy(PasswordPolicyRequest request) throws SystemException;
+    public PasswordPolicyResponse validatePasswordPolicy(PasswordPolicyRequest request) throws SystemException;
 
 }

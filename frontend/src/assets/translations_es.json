@@ -1192,7 +1192,13 @@
 				"al menos un carácter minúsculo",
 				"al menos una cifra",
 				"al menos un carácter especial"
-			]
+			],
+			"PASSWORD_POLICY_USER_DATA": "no debe contener datos de usuario (p.ej., ID de usuario, nombre, apellidos, correo electrónico)",
+			"PASSWORD_POLICY_LENGTH": "mínimo {minLength} caracteres",
+			"PASSWORD_POLICY_LOWERCASE": "al menos {minLowerCase} carácter minúsculo",
+			"PASSWORD_POLICY_UPPERCASE": "al menos {minUpperCase} carácter mayúsculo",
+			"PASSWORD_POLICY_DIGIT": "al menos {minDigit} cifra",
+			"PASSWORD_POLICY_SPECIAL": "al menos {minSpecial} carácter especial"
 		}
 	},
 	"advanced-search": {

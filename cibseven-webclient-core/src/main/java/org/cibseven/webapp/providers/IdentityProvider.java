@@ -22,10 +22,8 @@ import java.util.Map;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.PasswordPolicyRequest;
 import org.cibseven.webapp.rest.model.PasswordPolicyResponse;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
-import org.cibseven.webapp.auth.CIBUser;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -40,11 +38,8 @@ public class IdentityProvider extends SevenProviderBase implements IIdentityProv
                 "password", request.getPassword(),
                 "profile", request.getProfile());
         try {
-            ResponseEntity<PasswordPolicyResponse> response = (ResponseEntity<PasswordPolicyResponse>) doPost(url, body,
-                    PasswordPolicyResponse.class, null);
-            PasswordPolicyResponse result = response.getBody();
-            return result;
-            // when enable-password-policy is switched of the endpoint will return 404, so
+            return doPost(url, body, PasswordPolicyResponse.class, null).getBody();
+            // when enable-password-policy is switched off the endpoint will return 404, so
             // we catch this and return a default response
         } catch (SystemException e) {
             Throwable cause = e.getCause();
