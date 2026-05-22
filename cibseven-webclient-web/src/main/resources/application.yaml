@@ -1,9 +1,6 @@
 spring:
   banner:
     location: classpath:banner.txt
-  jackson:
-    deserialization:
-      fail-on-unknown-properties: false
   config:
     import:
       - optional:classpath:cibseven-webclient.properties
