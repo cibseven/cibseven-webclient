@@ -25,8 +25,10 @@ import org.cibseven.webapp.auth.User;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.rest.CustomRestTemplate;
 import org.cibseven.webapp.rest.model.InfoVersion;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -53,7 +55,6 @@ import org.springframework.web.servlet.mvc.WebContentInterceptor;
 
 import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @Configuration
 @ConditionalOnProperty(
@@ -76,17 +77,15 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 	@Value("${cibseven.webclient.custom.spring.jackson.parser.max-size:20000000}")
 	int jacksonParserMaxSize;
 
-    @Bean
-    public ObjectMapper objectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        StreamReadConstraints streamReadConstraints = StreamReadConstraints
-                .builder()
-                .maxStringLength(jacksonParserMaxSize)
-                .build();
-        objectMapper.getFactory().setStreamReadConstraints(streamReadConstraints);
-        objectMapper.registerModule(new JavaTimeModule());
-        return objectMapper;
-    }
+	@Autowired
+	ObjectMapper objectMapper;
+
+	@Bean
+	Jackson2ObjectMapperBuilderCustomizer jacksonCustomizer() {
+		return builder -> builder.postConfigurer(om ->
+			om.getFactory().setStreamReadConstraints(
+				StreamReadConstraints.builder().maxStringLength(jacksonParserMaxSize).build()));
+	}
 
 	@Override
 	public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
@@ -94,9 +93,7 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 		converters.add(new StringHttpMessageConverter(StandardCharsets.UTF_8)); // needed for UiService
 		converters.add(new ByteArrayHttpMessageConverter()); // needed for fetching data variables
 		converters.add(new FormHttpMessageConverter());
-        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
-		converter.setObjectMapper(objectMapper());
-		converters.add(converter);
+		converters.add(new MappingJackson2HttpMessageConverter(objectMapper));
 	}
 
 	@Override
