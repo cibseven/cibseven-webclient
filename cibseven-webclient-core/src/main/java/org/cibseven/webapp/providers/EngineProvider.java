@@ -26,6 +26,7 @@ import org.cibseven.webapp.config.EngineRestSource;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Engine;
+import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -145,6 +146,18 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 		}
 	}
 	
+	@Override
+	public EngineConfiguration getDefaultEngineConfiguration() {
+		String url = getEngineRestUrl() + "/configuration";
+		return ((ResponseEntity<EngineConfiguration>) doGet(url, EngineConfiguration.class, null, false)).getBody();
+	}
+
+	@Override
+	public EngineConfiguration getEngineConfiguration(String engineName) {
+		String url = getEngineRestUrl() + "/configuration/" + engineName;
+		return ((ResponseEntity<EngineConfiguration>) doGet(url, EngineConfiguration.class, null, false)).getBody();
+	}
+
 	/**
 	 * Builds a URL from base URL and path.
 	 */

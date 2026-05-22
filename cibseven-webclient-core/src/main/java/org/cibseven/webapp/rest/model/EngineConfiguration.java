@@ -14,20 +14,22 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.cibseven.webapp.providers;
+package org.cibseven.webapp.rest.model;
 
-import java.util.Collection;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import org.cibseven.webapp.exception.InvalidUserIdException;
-import org.cibseven.webapp.rest.model.Engine;
-import org.cibseven.webapp.rest.model.EngineConfiguration;
-import org.cibseven.webapp.rest.model.NewUser;
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class EngineConfiguration {
 
-public interface IEngineProvider {
-	
-	public Collection<Engine> getProcessEngineNames();
-	public EngineConfiguration getDefaultEngineConfiguration();
-	public EngineConfiguration getEngineConfiguration(String engineName);
-	public Boolean requiresSetup(String engine);
-	public void createSetupUser(NewUser user, String engine) throws InvalidUserIdException;
+	private String engineName;
+	private String historyLevel = "full";
+	private boolean authorizationEnabled = true;
+	private boolean enablePasswordPolicy;
+
 }

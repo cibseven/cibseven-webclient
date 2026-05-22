@@ -107,8 +107,6 @@ application:
       engineRest:
         url: ./
 
-      historyLevel: "full"
-      
       link:
         terms: ""
         privacy: ""

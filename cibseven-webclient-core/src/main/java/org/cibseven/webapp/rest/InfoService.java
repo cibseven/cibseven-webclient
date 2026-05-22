@@ -17,12 +17,16 @@
 package org.cibseven.webapp.rest;
 
 import org.cibseven.webapp.auth.SevenUserProvider;
+import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.webapp.providers.IEngineProvider;
+import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.cibseven.webapp.rest.model.InfoVersion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 
 import jakarta.annotation.PostConstruct;
 
@@ -46,7 +50,6 @@ public class InfoService extends BaseService {
 	@Value("${cibseven.webclient.sso.endpoints.authorization:}") private String authorizationEndpoint;
 	@Value("${cibseven.webclient.sso.clientId:}") private String clientId;
 	@Value("${cibseven.webclient.sso.scopes:}") private String scopes;
-	@Value("${cibseven.webclient.historyLevel:full}") private String camundaHistoryLevel;
 	@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") private String userProvider;
 	@Value("${cibseven.webclient.user.editable:#{null}}") private Boolean userEditable;
 	@Value("${cibseven.webclient.user.userPasswordChangeEnabled:}") private Boolean userPasswordChangeEnabled;
@@ -64,12 +67,14 @@ public class InfoService extends BaseService {
 	@Value("${cibseven.webclient.engineRest.path:/engine-rest}") private String engineRestPath;
 	@Value("${cibseven.webclient.engineRest.url:./}") private String engineRestUrl;
 
-	@Value("${camunda.bpm.authorization.enabled:true}") private boolean authorizationEnabled;
 	@Value("${cibseven.webclient.legacy.authorization.enabled:false}") private boolean legacyAuthorizationEnabled;
 	@Value("${cibseven.webclient.modeler.enabled:false}") private boolean modelerEnabled;
 	
 	@Autowired
 	InfoVersion infoVersion;
+
+	@Autowired
+	IEngineProvider engineProvider;
 	
 	@PostConstruct
 	public void init() {
@@ -92,13 +97,25 @@ public class InfoService extends BaseService {
 			description = "<strong>Return: Config JSON object")
 	@GetMapping("/properties")
 	public ObjectNode getConfig() {
+
+		EngineConfiguration engineConfig = engineProvider.getDefaultEngineConfiguration();
+		if (engineConfig == null) {
+			log.warn("Could not retrieve engine configuration, using defaults");
+			throw new SystemException("Could not retrieve engine configuration");
+		}
+
+		final String historyLevel = engineConfig.getHistoryLevel();
+		final boolean authorizationEnabled = engineConfig.isAuthorizationEnabled();
+		final boolean enablePasswordPolicy = engineConfig.isEnablePasswordPolicy();
+
 		ObjectNode configJson = JsonNodeFactory.instance.objectNode();
 		configJson.put("theme", theme);
 		configJson.put("ssoActive", ssoActive);
-		configJson.put("camundaHistoryLevel", camundaHistoryLevel);
+		configJson.put("camundaHistoryLevel", historyLevel);
 		configJson.put("userProvider", userProvider);
 		configJson.put("userEditable", userEditable);
 		configJson.put("userPasswordChangeEnabled", userPasswordChangeEnabled);
+		configJson.put("enablePasswordPolicy", enablePasswordPolicy);
 		configJson.put("flowLinkTerms", flowLinkTerms);
 		configJson.put("flowLinkPrivacy", flowLinkPrivacy);
 		configJson.put("flowLinkImprint", flowLinkImprint);

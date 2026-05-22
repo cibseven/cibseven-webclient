@@ -18,8 +18,12 @@ package org.cibseven.webapp.rest;
 
 import java.util.Collection;
 
+import org.cibseven.webapp.providers.IEngineProvider;
 import org.cibseven.webapp.rest.model.Engine;
+import org.cibseven.webapp.rest.model.EngineConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,10 +38,27 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/engine")
 public class EngineService extends BaseService {
 
+	@Autowired
+	private IEngineProvider engineProvider;
+
 	@Operation(summary = "Get process engine names", description = "Retrieves the names of all process engines available on the engine")
 	@ApiResponse(responseCode = "200", description = "List of engine names successfully retrieved")
 	@GetMapping
 	public Collection<Engine> getProcessEngineNames() {
 		return bpmProvider.getProcessEngineNames();
+	}
+
+	@Operation(summary = "Get default engine configuration", description = "Retrieves the configuration of the default process engine")
+	@ApiResponse(responseCode = "200", description = "Default engine configuration successfully retrieved")
+	@GetMapping("/configuration")
+	public EngineConfiguration getDefaultEngineConfiguration() {
+		return engineProvider.getDefaultEngineConfiguration();
+	}
+
+	@Operation(summary = "Get engine configuration by name", description = "Retrieves the configuration of the specified process engine")
+	@ApiResponse(responseCode = "200", description = "Engine configuration successfully retrieved")
+	@GetMapping("/engine/{engineName}/configuration")
+	public EngineConfiguration getEngineConfiguration(@PathVariable String engineName) {
+		return engineProvider.getEngineConfiguration(engineName);
 	}
 }
