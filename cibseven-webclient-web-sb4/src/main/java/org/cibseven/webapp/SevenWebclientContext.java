@@ -53,6 +53,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.mvc.WebContentInterceptor;
 
 import com.fasterxml.jackson.core.StreamReadConstraints;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
@@ -87,6 +88,7 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
                 .build();
         objectMapper.getFactory().setStreamReadConstraints(streamReadConstraints);
         objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         return objectMapper;
     }
 
