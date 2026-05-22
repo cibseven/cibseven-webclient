@@ -46,7 +46,7 @@
                     <div>{{ $t('password.policy.header') }}</div>
                     <ul>
                       <li v-for="(item, idx) in invalidPasswordRules" :key="idx">
-                        {{ $t('password.policy.' + item.placeholder, item.parameter) }}
+                        {{ $t('password.policy.items.' + item.placeholder, item.parameter) }}
                       </li>
                     </ul>
                   </div>
@@ -91,7 +91,7 @@
       <h6>{{ $t('password.policy.title') }}</h6>
       <div>{{ $t('password.policy.header') }}</div>
       <ul>
-        <li v-for="(item, index) in $tm('password.policy.items')" :key="index">{{ item }}</li>
+        <li v-for="(item, index) in $tm('password.policy.items.')" :key="index">{{ item }}</li>
       </ul>
     </b-popover>
     <SuccessAlert v-if="profile.id" top="0" style="z-index: 1031" ref="userCreated">{{ $t('admin.users.userCreatedMessage', [profile.id]) }}</SuccessAlert>
