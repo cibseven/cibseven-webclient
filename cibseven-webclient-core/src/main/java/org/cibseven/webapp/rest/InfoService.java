@@ -115,7 +115,7 @@ public class InfoService extends BaseService {
 		configJson.put("userProvider", userProvider);
 		configJson.put("userEditable", userEditable);
 		configJson.put("userPasswordChangeEnabled", userPasswordChangeEnabled);
-		configJson.put("enablePasswordPolicy", enablePasswordPolicy);
+		configJson.put("passwordPolicyEnabled", enablePasswordPolicy);
 		configJson.put("flowLinkTerms", flowLinkTerms);
 		configJson.put("flowLinkPrivacy", flowLinkPrivacy);
 		configJson.put("flowLinkImprint", flowLinkImprint);

@@ -32,7 +32,7 @@
                   <b-form-group label-cols-sm="2" label-align-sm="left">
                     <template v-slot:label>
                       {{ $t('admin.users.password') + '*' }}
-                      <span v-if="$root.config.admin.passwordPolicyEnabled" ref="passwordHelper" style="cursor: pointer" class="mdi mdi-help-circle" :class="passwordPolicyError ? 'text-danger' : 'text-secondary'"></span>
+                      <span v-if="$root.config.passwordPolicyEnabled" ref="passwordHelper" style="cursor: pointer" class="mdi mdi-help-circle" :class="passwordPolicyError ? 'text-danger' : 'text-secondary'"></span>
                     </template>
                     <b-form-input :type="fieldType(showPassword)" ref="pass" v-model="credentials.password" :state="notEmpty(credentials.password) && !passwordPolicyError" required>
                       <template v-slot:append>

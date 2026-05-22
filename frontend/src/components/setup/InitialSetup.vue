@@ -238,7 +238,7 @@ export default {
   },
   computed: {
     passwordPolicyEnabled() {
-      return this.$root?.config?.admin?.passwordPolicyEnabled || false
+      return this.$root?.config?.passwordPolicyEnabled || false
     },
     engineName() {
       return localStorage.getItem(ENGINE_STORAGE_KEY) || 'default'

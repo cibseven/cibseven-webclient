@@ -241,8 +241,7 @@
 			"0": { "id": "0", "key": "global" },
 			"1": { "id": "1", "key": "allow" },
 			"2": { "id": "2", "key": "deny" }
-		},
-		"passwordPolicyEnabled": false
+		}
 	},
 	"maxTaskResults": 20,
 	"maxProcessesResults": 50,

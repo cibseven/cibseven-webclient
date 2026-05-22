@@ -198,8 +198,6 @@ ui:
     showChat: false
     showUserSettings: true
     showStatusBar: false
-  admin:
-    passwordPolicyEnabled: false
   notifications:
     tasks:
       enabled: false
@@ -518,8 +516,7 @@ configmaps:
               "0": { "id": "0", "key": "global" },
               "1": { "id": "1", "key": "allow" },
               "2": { "id": "2", "key": "deny" }
-            },
-            "passwordPolicyEnabled": {{ .Values.ui.admin.passwordPolicyEnabled }}
+            }
           },
           "notifications": {{ .Values.ui.notifications | toJson }},
           "maxTaskResults": {{ .Values.ui.maxTaskResults }},
