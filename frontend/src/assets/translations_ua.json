@@ -1185,20 +1185,14 @@
 		"policy": {
 			"title": "Політика паролів",
 			"header": "Ваш пароль має відповідати таким критеріям:",
-			"items": [
-				"не повинен містити дані користувача (ідентифікатор, ім’я, прізвище, email)",
-				"мінімальна довжина 10 символів",
-				"щонайменше один символ верхнього регістру",
-				"щонайменше один символ нижнього регістру",
-				"щонайменше одна цифра",
-				"щонайменше один спеціальний символ"
-			],
-			"PASSWORD_POLICY_USER_DATA": "не повинен містити дані користувача (ідентифікатор, ім’я, прізвище, email)",
-			"PASSWORD_POLICY_LENGTH": "мінімальна довжина {minLength} символів",
-			"PASSWORD_POLICY_LOWERCASE": "щонайменше {minLowerCase} символ нижнього регістру",
-			"PASSWORD_POLICY_UPPERCASE": "щонайменше {minUpperCase} символ верхнього регістру",
-			"PASSWORD_POLICY_DIGIT": "щонайменше {minDigit} цифра",
-			"PASSWORD_POLICY_SPECIAL": "щонайменше {minSpecial} спеціальний символ"
+			"items": {
+				"PASSWORD_POLICY_USER_DATA": "не повинен містити дані користувача (ідентифікатор, ім’я, прізвище, email)",
+				"PASSWORD_POLICY_LENGTH": "мінімальна довжина {minLength} символів",
+				"PASSWORD_POLICY_LOWERCASE": "щонайменше {minLowerCase} символ нижнього регістру",
+				"PASSWORD_POLICY_UPPERCASE": "щонайменше {minUpperCase} символ верхнього регістру",
+				"PASSWORD_POLICY_DIGIT": "щонайменше {minDigit} цифра",
+				"PASSWORD_POLICY_SPECIAL": "щонайменше {minSpecial} спеціальний символ"
+			}
 		}
 	},
 	"advanced-search": {

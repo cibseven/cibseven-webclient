@@ -71,22 +71,6 @@
                     <div class="mb-3">
                       <label class="form-label" for="password">
                         {{ $t('admin.users.password') }} <span class="text-danger">*</span>
-                        <span
-                          v-if="passwordPolicyEnabled"
-                          ref="passwordHelper"
-                          class="mdi mdi-help-circle"
-                          :class="passwordPolicyError ? 'text-danger' : 'text-secondary'"
-                          style="cursor: pointer"
-                        ></span>
-                        <b-popover v-if="passwordPolicyEnabled" :target="() => $refs.passwordHelper" triggers="hover" placement="right">
-                          <h6>{{ $t('password.policy.title') }}</h6>
-                          <div>{{ $t('password.policy.header') }}</div>
-                          <ul class="mb-0 ps-3">
-                            <li v-for="(item, index) in $tm('password.policy.items')" :key="index">
-                              {{ item }}
-                            </li>
-                          </ul>
-                        </b-popover>
                       </label>
                       <div class="input-group">
                         <input
@@ -112,7 +96,7 @@
                           <div>{{ $t('password.policy.header') }}</div>
                           <ul>
                             <li v-for="(item, idx) in invalidPasswordRules" :key="idx">
-                              {{ $t('password.policy.' + item.placeholder, item.parameter) }}
+                              {{ $t('password.policy.items.' + item.placeholder, item.parameter) }}
                             </li>
                           </ul>
                         </div>

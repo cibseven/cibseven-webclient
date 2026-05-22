@@ -1186,20 +1186,14 @@
 		"policy": {
 			"title": "Password Policy",
 			"header": "Your password must fulfil the following criteria: ",
-			"items": [
-				"must not contain user data (i.e., user ID, first name, last name, email)",
-				"minimum length of 10 characters",
-				"at least one upper case character",
-				"at least one lower case character",
-				"at least one digit",
-				"at least one special character"
-			],
-			"PASSWORD_POLICY_USER_DATA": "must not contain user data (i.e., user ID, first name, last name, email)",
-			"PASSWORD_POLICY_LENGTH": "minimum length of {minLength} characters",
-			"PASSWORD_POLICY_LOWERCASE": "at least {minLowerCase} lower case character",
-			"PASSWORD_POLICY_UPPERCASE": "at least {minUpperCase} upper case character",
-			"PASSWORD_POLICY_DIGIT": "at least {minDigit} digit",
-			"PASSWORD_POLICY_SPECIAL": "at least {minSpecial} special character"
+			"items": {
+				"PASSWORD_POLICY_USER_DATA": "must not contain user data (i.e., user ID, first name, last name, email)",
+				"PASSWORD_POLICY_LENGTH": "minimum length of {minLength} characters",
+				"PASSWORD_POLICY_LOWERCASE": "at least {minLowerCase} lower case character",
+				"PASSWORD_POLICY_UPPERCASE": "at least {minUpperCase} upper case character",
+				"PASSWORD_POLICY_DIGIT": "at least {minDigit} digit",
+				"PASSWORD_POLICY_SPECIAL": "at least {minSpecial} special character"
+			}
 		}
 	},
 	"advanced-search": {

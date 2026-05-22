@@ -95,7 +95,7 @@
                     <ul>
 
                       <li v-for="(item, idx) in invalidPasswordRules" :key="idx">
-                        {{ $t('password.policy.' + item.placeholder, item.parameter) }}
+                        {{ $t('password.policy.items.' + item.placeholder, item.parameter) }}
                       </li>
                     </ul>
                   </div>
@@ -250,13 +250,6 @@
 
       </div>
     </transition>
-    <b-popover :target="() => $refs.passwordHelper" triggers="hover">
-      <h6>{{ $t('password.policy.title') }}</h6>
-      <div>{{ $t('password.policy.header') }}</div>
-      <ul>
-        <li v-for="(item, index) in $tm('password.policy.items')" :key="index">{{ item }}</li>
-      </ul>
-    </b-popover>
     <SuccessAlert ref="emailSent"> {{ $t('password.recover.emailSent') }} </SuccessAlert>
     <SuccessAlert ref="updateProfile" top="0" style="z-index: 1031">{{ $t('admin.users.updateProfileMessage', [user.id]) }}</SuccessAlert>
     <SuccessAlert ref="updatePassword" top="0" style="z-index: 1031">{{ $t('admin.users.updatePasswordMessage', [user.id]) }}</SuccessAlert>
