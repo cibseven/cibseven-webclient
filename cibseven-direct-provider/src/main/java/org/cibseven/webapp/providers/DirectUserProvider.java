@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.cibseven.bpm.engine.ProcessEngineException;
 import org.cibseven.bpm.engine.authorization.AuthorizationQuery;
@@ -95,23 +96,7 @@ public class DirectUserProvider implements IUserProvider {
 				null);
 		GroupQuery groupQuery = directProviderUtil.getProcessEngine(user).getIdentityService().createGroupQuery();
 		List<Group> userGroups = groupQuery.groupMember(userId).orderByGroupName().asc().unlimitedList();
-
-		Set<UserDto> allGroupUsers = new HashSet<>();
-		List<GroupDto> allGroups = new ArrayList<>();
-
-		List<String> listGroups = new ArrayList<>();
-		for (Group group : userGroups) {
-			List<org.cibseven.bpm.engine.identity.User> groupUsers = directProviderUtil.getProcessEngine(user).getIdentityService().createUserQuery()
-					.memberOfGroup(group.getId()).unlimitedList();
-
-			for (org.cibseven.bpm.engine.identity.User groupUser : groupUsers) {
-				if (!user.getId().equals(userId)) {
-					allGroupUsers.add(new UserDto(groupUser.getId(), groupUser.getFirstName(), groupUser.getLastName()));
-				}
-			}
-			allGroups.add(new GroupDto(group.getId(), group.getName()));
-			listGroups.add(group.getId());
-		}
+		List<String> listGroups = userGroups.stream().map(Group::getId).collect(Collectors.toList());
 
 		AuthorizationQueryDto groupIdQueryDto = new AuthorizationQueryDto();
 		groupIdQueryDto.setGroupIdIn(listGroups.toArray(new String[0]));
