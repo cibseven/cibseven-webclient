@@ -20,11 +20,9 @@ import static org.cibseven.webapp.auth.SevenAuthorizationUtils.resourceType;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.cibseven.bpm.engine.ProcessEngineException;
@@ -39,8 +37,6 @@ import org.cibseven.bpm.engine.rest.dto.authorization.AuthorizationDto;
 import org.cibseven.bpm.engine.rest.dto.authorization.AuthorizationQueryDto;
 import org.cibseven.bpm.engine.rest.dto.identity.GroupQueryDto;
 import org.cibseven.bpm.engine.rest.dto.identity.UserQueryDto;
-import org.cibseven.bpm.engine.rest.dto.task.GroupDto;
-import org.cibseven.bpm.engine.rest.dto.task.UserDto;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
@@ -164,62 +160,16 @@ public class DirectUserProvider implements IUserProvider {
 		verifyUser.setAuthenticatedUser(login.getUsername());
 		return verifyUser;
 	}
-
 	@Override
 	public Collection<User> findUsers(Optional<String> id, Optional<String> firstName, Optional<String> firstNameLike,
 			Optional<String> lastName, Optional<String> lastNameLike, Optional<String> email, Optional<String> emailLike,
 			Optional<String> memberOfGroup, Optional<String> memberOfTenant, Optional<String> idIn,
 			Optional<String> firstResult, Optional<String> maxResults, Optional<String> sortBy, Optional<String> sortOrder,
-			CIBUser user) {
+			Optional<Boolean> likePatternIgnoreCase, CIBUser user) {
 		String wcard = getWildcard();
-		if (!userProvider.equals("org.cibseven.webapp.auth.SevenUserProvider")) {
-			Collection<User> result = getUsers(id, firstName, Optional.of(firstNameLike.get()), lastName, lastNameLike, 
-					email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy,
-					sortOrder, wcard, user);
-			return result;
-		}
-
-		if (firstNameLike.isPresent()) { // javier, JAVIER, Javier
-			Collection<User> lowerCaseResult = getUsers(id, firstName, Optional.of(firstNameLike.get().toLowerCase()), lastName,
-					lastNameLike, email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy,
-					sortOrder, wcard, user);
-			Collection<User> upperCaseResult = getUsers(id, firstName, Optional.of(firstNameLike.get().toUpperCase()), lastName,
-					lastNameLike, email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy,
-					sortOrder, wcard, user);
-			Collection<User> normalCaseResult = getUsers(id, firstName,
-					Optional.of(firstNameLike.get().substring(0, 2).toUpperCase() + firstNameLike.get().substring(2).toLowerCase()),
-					lastName, lastNameLike, email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy,
-					sortOrder, wcard, user);
-
-			Collection<User> res = new ArrayList<User>();
-			res.addAll(lowerCaseResult);
-			res.addAll(upperCaseResult);
-			res.addAll(normalCaseResult);
-
-			return res;
-		}
-
-		if (lastNameLike.isPresent()) { // javier, JAVIER, Javier
-			Collection<User> lowerCaseResult = getUsers(id, firstName, firstNameLike, lastName,
-					Optional.of(lastNameLike.get().toLowerCase()), email, emailLike, memberOfGroup, memberOfTenant, idIn,
-					firstResult, maxResults, sortBy, sortOrder, wcard, user);
-			Collection<User> upperCaseResult = getUsers(id, firstName, firstNameLike, lastName,
-					Optional.of(lastNameLike.get().toLowerCase()), email, emailLike, memberOfGroup, memberOfTenant, idIn,
-					firstResult, maxResults, sortBy, sortOrder, wcard, user);
-			Collection<User> normalCaseResult = getUsers(id, firstName, firstNameLike, lastName,
-					Optional.of(lastNameLike.get().substring(0, 2).toUpperCase() + lastNameLike.get().substring(2).toLowerCase()),
-					email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, wcard, user);
-
-			Collection<User> res = new ArrayList<User>();
-			res.addAll(lowerCaseResult);
-			res.addAll(upperCaseResult);
-			res.addAll(normalCaseResult);
-
-			return res;
-		}
 
 		return getUsers(id, firstName, firstNameLike, lastName, lastNameLike, email, emailLike, memberOfGroup, memberOfTenant,
-				idIn, firstResult, maxResults, sortBy, sortOrder, wcard, user);
+				idIn, firstResult, maxResults, sortBy, sortOrder, wcard, likePatternIgnoreCase, user);
 	}
 
 	private String getWildcard () {
@@ -534,9 +484,10 @@ public class DirectUserProvider implements IUserProvider {
 			Optional<String> lastName, Optional<String> lastNameLike, Optional<String> email, Optional<String> emailLike,
 			Optional<String> memberOfGroup, Optional<String> memberOfTenant, Optional<String> idIn,
 			Optional<String> firstResult, Optional<String> maxResults, Optional<String> sortBy, Optional<String> sortOrder,
-			String wcard, CIBUser user) {
+			String wcard, Optional<Boolean> likePatternIgnoreCase, CIBUser user) {
 		UserQueryDto queryDto = new UserQueryDto();
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
+		queryDto.setLikePatternIgnoreCase(likePatternIgnoreCase.orElse(null));
 		UserQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 		if (memberOfGroup.isPresent())
 			query.memberOfGroup(memberOfGroup.get());

@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.cibseven.bpm.engine.BadUserRequestException;
+import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.batch.BatchQuery;
 import org.cibseven.bpm.engine.batch.BatchStatistics;
 import org.cibseven.bpm.engine.batch.BatchStatisticsQuery;
@@ -259,6 +260,15 @@ public class DirectBatchProvider implements IBatchProvider {
 		CleanableHistoricBatchReportDto queryDto = new CleanableHistoricBatchReportDto(directProviderUtil.getObjectMapper(user), multiValueMap);
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
 		CleanableHistoricBatchReport query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
+		return query.count();
+	}
+
+	@Override
+	public Long getRuntimeBatchCount(Map<String, Object> queryParams, CIBUser user) {
+		ProcessEngine processEngine = directProviderUtil.getProcessEngine(user);
+		BatchQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(queryParams, BatchQueryDto.class);
+		BatchQuery query = queryDto.toQuery(processEngine);
+
 		return query.count();
 	}
 }

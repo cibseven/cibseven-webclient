@@ -103,37 +103,9 @@ public class DirectDecisionProvider implements IDecisionProvider {
 
 	@Override
 	public Object evaluateDecisionDefinitionByKey(Map<String, Object> data, String key, CIBUser user) {
-		EvaluateDecisionDto parameters = directProviderUtil.getObjectMapper(user).convertValue(data, EvaluateDecisionDto.class);
-		Map<String, Object> variables = VariableValueDto.toMap(parameters.getVariables(), directProviderUtil.getProcessEngine(user), directProviderUtil.getObjectMapper(user));
 		DecisionDefinition decisionDefinition = getDecisionDefinitionByKeyAndTenantImpl(key, null, user);
 
-		try {
-			DmnDecisionResult decisionResult = directProviderUtil.getProcessEngine(user).getDecisionService().evaluateDecisionById(decisionDefinition.getId())
-					.variables(variables).evaluate();
-
-			List<Map<String, VariableValueDto>> dto = new ArrayList<>();
-
-			for (DmnDecisionResultEntries entries : decisionResult) {
-				Map<String, VariableValueDto> resultEntriesDto = createResultEntriesDto(entries);
-				dto.add(resultEntriesDto);
-			}
-			return dto;
-
-		} catch (AuthorizationException e) {
-			throw e;
-		} catch (NotFoundException e) {
-			String errorMessage = String.format("Cannot evaluate decision %s: %s", decisionDefinition.getId(), e.getMessage());
-			throw new SystemException(errorMessage, e);
-		} catch (NotValidException e) {
-			String errorMessage = String.format("Cannot evaluate decision %s: %s", decisionDefinition.getId(), e.getMessage());
-			throw new SystemException(errorMessage, e);
-		} catch (ProcessEngineException e) {
-			String errorMessage = String.format("Cannot evaluate decision %s: %s", decisionDefinition.getId(), e.getMessage());
-			throw new SystemException(errorMessage, e);
-		} catch (DmnEngineException e) {
-			String errorMessage = String.format("Cannot evaluate decision %s: %s", decisionDefinition.getId(), e.getMessage());
-			throw new SystemException(errorMessage, e);
-		}
+		return evaluateDecisionDefinitionById(decisionDefinition.getId(), data, user);
 	}
 
 	@Override
@@ -159,13 +131,16 @@ public class DirectDecisionProvider implements IDecisionProvider {
 	}
 
 	@Override
-	public Object evaluateDecisionDefinitionByKeyAndTenant(String key, String tenant, CIBUser user) {
-		return null;
+	public Object evaluateDecisionDefinitionByKeyAndTenant(Map<String, Object> data, String key, String tenant, CIBUser user) {
+		DecisionDefinition decisionDefinition = getDecisionDefinitionByKeyAndTenantImpl(key, tenant, user);
+
+		return evaluateDecisionDefinitionById(decisionDefinition.getId(), data, user);
 	}
 
 	@Override
-	public Object updateHistoryTTLByKeyAndTenant(String key, String tenant, CIBUser user) {
-		return null;
+	public void updateHistoryTTLByKeyAndTenant(Map<String, Object> data, String key, String tenant, CIBUser user) {
+		DecisionDefinition decisionDefinition = getDecisionDefinitionByKeyAndTenantImpl(key, tenant, user);
+		updateHistoryTTLById(decisionDefinition.getId(), data, user);
 	}
 
 	@Override
@@ -199,9 +174,36 @@ public class DirectDecisionProvider implements IDecisionProvider {
 	}
 
 	@Override
-	public Object evaluateDecisionDefinitionById(String id, CIBUser user) {
-		DecisionDefinition definition = getDecisionDefinitionById(id, user);
-		return null;
+	public Object evaluateDecisionDefinitionById(String id, Map<String, Object> data, CIBUser user) {
+		try {
+			EvaluateDecisionDto parameters = directProviderUtil.getObjectMapper(user).convertValue(data, EvaluateDecisionDto.class);
+			Map<String, Object> variables = VariableValueDto.toMap(parameters.getVariables(), directProviderUtil.getProcessEngine(user), directProviderUtil.getObjectMapper(user));
+			DmnDecisionResult decisionResult = directProviderUtil.getProcessEngine(user).getDecisionService().evaluateDecisionById(id)
+					.variables(variables).evaluate();
+
+			List<Map<String, VariableValueDto>> dto = new ArrayList<>();
+
+			for (DmnDecisionResultEntries entries : decisionResult) {
+				Map<String, VariableValueDto> resultEntriesDto = createResultEntriesDto(entries);
+				dto.add(resultEntriesDto);
+			}
+			return dto;
+
+		} catch (AuthorizationException e) {
+			throw e;
+		} catch (NotFoundException e) {
+			String errorMessage = String.format("Cannot evaluate decision %s: %s", id, e.getMessage());
+			throw new SystemException(errorMessage, e);
+		} catch (NotValidException e) {
+			String errorMessage = String.format("Cannot evaluate decision %s: %s", id, e.getMessage());
+			throw new SystemException(errorMessage, e);
+		} catch (ProcessEngineException e) {
+			String errorMessage = String.format("Cannot evaluate decision %s: %s", id, e.getMessage());
+			throw new SystemException(errorMessage, e);
+		} catch (DmnEngineException e) {
+			String errorMessage = String.format("Cannot evaluate decision %s: %s", id, e.getMessage());
+			throw new SystemException(errorMessage, e);
+		}
 	}
 
 	@Override

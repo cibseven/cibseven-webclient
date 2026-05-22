@@ -128,8 +128,8 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 
 	@Override
 	public Object evaluateDecisionDefinitionById(String id, Map<String, Object> data, CIBUser user) {
-		// TODO Auto-generated method stub
-		return null;
+		String url = getEngineRestUrl(user) + "/decision-definition/" + id + "/evaluate";
+		return ((ResponseEntity<Object>) doPost(url, data, null, user)).getBody();
 	}
 
 	@Override
