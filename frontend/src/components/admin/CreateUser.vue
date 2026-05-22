@@ -32,7 +32,6 @@
                   <b-form-group label-cols-sm="2" label-align-sm="left">
                     <template v-slot:label>
                       {{ $t('admin.users.password') + '*' }}
-                      <span v-if="$root.config.admin.passwordPolicyEnabled" ref="passwordHelper" style="cursor: pointer" class="mdi mdi-help-circle" :class="passwordPolicyError ? 'text-danger' : 'text-secondary'"></span>
                     </template>
                     <b-form-input :type="fieldType(showPassword)" ref="pass" v-model="credentials.password" :state="notEmpty(credentials.password) && passwordValid" @blur="validatePassword" @input="resetPasswordValidation" required>
                       <template v-slot:append>
@@ -87,13 +86,6 @@
         </div>
       </div>
     </div>
-    <b-popover :target="() => $refs.passwordHelper" triggers="hover">
-      <h6>{{ $t('password.policy.title') }}</h6>
-      <div>{{ $t('password.policy.header') }}</div>
-      <ul>
-        <li v-for="(item, index) in $tm('password.policy.items.')" :key="index">{{ item }}</li>
-      </ul>
-    </b-popover>
     <SuccessAlert v-if="profile.id" top="0" style="z-index: 1031" ref="userCreated">{{ $t('admin.users.userCreatedMessage', [profile.id]) }}</SuccessAlert>
   </div>
 </template>
