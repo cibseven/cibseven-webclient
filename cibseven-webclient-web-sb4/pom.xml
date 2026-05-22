@@ -58,6 +58,15 @@
 			-->
 		</dependency>
 
+		<!-- SLF4J 2.x binding for log4j2: SB4 ships slf4j-api 2.x, which ignores
+		     the slf4j 1.x binding (log4j-slf4j-impl) inherited from -core. Added
+		     alongside, not as a replacement, so consumers of -core still get the
+		     1.x binding. -->
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j2-impl</artifactId>
+		</dependency>
+
 		<!--
 			Spring Boot 4 renamed spring-boot-starter-web to spring-boot-starter-webmvc.
 			Also pulls in tools.jackson (Jackson 3) for the wire layer.
