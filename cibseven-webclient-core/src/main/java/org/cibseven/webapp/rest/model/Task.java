@@ -16,6 +16,8 @@
  */
 package org.cibseven.webapp.rest.model;
 
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -47,14 +49,16 @@ public class Task {
 	String suspended;
 	String tenantId;
 	CamundaForm camundaFormRef;
-	
+	Map<String, Object> variables;
+	Map<String, String> variableTypes;
+
 	@JsonProperty("created") @JsonAlias({"creationDate"}) String created;
 	@JsonProperty("due") @JsonAlias({"dueDate"}) String due;
 	@JsonProperty("followUp") @JsonAlias({"followUpDate"}) String followUp;
 	@JsonProperty("taskDefinitionKey") @JsonAlias({"taskDefinitionId"}) String taskDefinitionKey;
 	@JsonProperty("processDefinitionId") @JsonAlias({"processDefinitionKey"}) String processDefinitionId;
 	@JsonProperty("processInstanceId") @JsonAlias({"processInstanceKey"}) String processInstanceId;
-	
+
 	public String json() throws JsonProcessingException {
 		return new ObjectMapper().writeValueAsString(this);
 	}

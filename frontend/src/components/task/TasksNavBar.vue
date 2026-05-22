@@ -62,7 +62,8 @@
             </b-input-group>
           </b-form-group>
           <div v-if="$root.config.layout.showFilterReminderDate || $root.config.layout.showFilterDueDate ||
-            ($root.config.taskFilter.advancedSearch.processVariables.length > 0 && $root.config.taskFilter.advancedSearch.filterEnabled)" class="ms-auto col-auto">
+            ($root.config.taskFilter.advancedSearch.processVariables.length > 0 && $root.config.taskFilter.advancedSearch.filterEnabled) ||
+            filterVariables.length > 0" class="ms-auto col-auto">
             <b-button ref="filters" variant="link" :title="$t('nav-bar.filtersAdditionalsTitle')">
               <span class="mdi mdi-18px"
                 :class="$store.state.filter.settings.reminder || $store.state.filter.settings.dueDate || $store.state.advancedSearch.criterias.length > 0 ? 'mdi-filter-menu text-primary' : 'mdi-filter-menu-outline'"></span>
@@ -84,11 +85,20 @@
           </b-form-checkbox>
         </div>
         <div v-if="$root.config.taskFilter.advancedSearch.filterEnabled">
-          <div v-for="(criteria, index) in advancedFilter" :key="index">
+          <div v-for="(criteria, index) in advancedFilter.filter(c => c.source !== 'filter')" :key="index">
             <b-form-checkbox v-model="criteria.check">
               <h5 class="d-flex fw-normal">{{ criteria.displayName }}</h5>
             </b-form-checkbox>
             <b-form-input v-if="criteria.check && criteria.defaultValue === ''" v-model="criteria.value" size="sm" class="mb-2"></b-form-input>
+          </div>
+        </div>
+        <div v-if="filterVariables.length > 0">
+          <hr class="my-2">
+          <div v-for="(criteria, index) in advancedFilter.filter(c => c.source === 'filter')" :key="'fv-' + index">
+            <b-form-checkbox v-model="criteria.check">
+              <h5 class="d-flex fw-normal">{{ criteria.displayName }}</h5>
+            </b-form-checkbox>
+            <b-form-input v-if="criteria.check" v-model="criteria.value" size="sm" class="mb-2"></b-form-input>
           </div>
         </div>
       </b-popover>
@@ -134,11 +144,39 @@
                     <HighlightedText :text="getCompleteName(task)" :keyword="search" class="mdi mdi-18px mdi-account text-secondary p-1"></HighlightedText>
                   </div>
                   <div class="h6 text-end p-0 fw-normal n-0" v-if="task.assignee == null">
-                    <b-button variant="link" class="p-0 text-dark" @click.stop="checkAssignee(task)" @keydown.enter.stop="checkAssignee(task)" @keyup.enter.stop.prevent @keydown.space.prevent.stop="checkAssignee(task)">
+                    <b-button variant="link" class="p-0 lh-1 text-dark" @click.stop="checkAssignee(task)" @keydown.enter.stop="checkAssignee(task)" @keyup.enter.stop.prevent @keydown.space.prevent.stop="checkAssignee(task)">
                       <span class="mdi mdi-18px mdi-account-question text-secondary"></span>
                       {{ $t('task.assignToMe') }}
                     </b-button>
                   </div>
+                </div>
+              </div>
+              <div v-if="visibleFilterVariables(task).length > 0" class="position-relative mt-1 pt-1 border-top">
+                <div class="row g-0" :class="expandedTasks[task.id] ? '' : 'task-variables-collapsed'">
+                  <div v-for="filterVar in visibleFilterVariables(task)" :key="filterVar.name" class="col-12 h6 fw-normal m-0 mt-2">
+                    <div class="d-flex">
+                      <div class="text-truncate fw-semibold me-1" :title="displayTooltip(task, filterVar)">{{ filterVar.label }}:</div>
+                      <div v-if="task.variables && task.variables[filterVar.name] !== undefined && task.variables[filterVar.name] !== null" class="text-truncate" :title="displayTooltip(task, filterVar)">
+                        {{ displayValue(task, filterVar) }}
+                      </div>
+                      <div v-else class="text-muted fst-italic" :title="displayTooltip(task, filterVar)">&lt;undefined&gt;</div>
+                    </div>
+                  </div>
+                </div>
+                <div v-if="!expandedTasks[task.id]"
+                  class="task-variables-overlay position-absolute d-flex justify-content-center align-items-end w-100"
+                  style="bottom: 0; left: 0; right: 0" role="button" tabindex="0"
+                  @click.stop="toggleTaskVariables(task.id)"
+                  @keydown.enter.stop.prevent="toggleTaskVariables(task.id)"
+                  @keydown.space.stop.prevent="toggleTaskVariables(task.id)">
+                  <span class="mdi mdi-18px text-secondary mdi-chevron-down"></span>
+                </div>
+                <div v-else
+                  class="d-flex justify-content-center w-100" role="button" tabindex="0"
+                  @click.stop="toggleTaskVariables(task.id)"
+                  @keydown.enter.stop.prevent="toggleTaskVariables(task.id)"
+                  @keydown.space.stop.prevent="toggleTaskVariables(task.id)">
+                  <span class="mdi mdi-18px text-secondary mdi-chevron-up"></span>
                 </div>
               </div>
             </b-list-group-item>
@@ -194,12 +232,13 @@
 import { moment } from '@/globals.js'
 import { TaskService, AdminService } from '@/services.js'
 import { debounce } from '@/utils/debounce.js'
-import { formatDateForTooltips } from '@/utils/dates.js'
+import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import StartProcess from '@/components/start-process/StartProcess.vue'
 import AdvancedSearchModal from '@/components/task/AdvancedSearchModal.vue'
 import SmartSearch from '@/components/task/SmartSearch.vue'
 import { ConfirmDialog, BWaitingBox, HighlightedText } from '@cib/common-frontend'
 import { mapActions } from 'vuex'
+import variableUtils from '@/components/process/mixins/variableUtils.js'
 
 export default {
   name: 'TasksNavBar',
@@ -220,6 +259,7 @@ export default {
       pauseRefreshButton: false,
       advancedFilter: [],
       advancedFilterAux: null,
+      expandedTasks: {},
 	    justSelectedFromList: false,
       pendingScrollToTaskId: null
     }
@@ -255,6 +295,16 @@ export default {
           this.updateAdvancedFilters()
         }
       }
+    },
+    'filterVariables': function() {
+      const cleaned = this.$store.state.advancedSearch.criterias.filter(c => !c.id?.startsWith('fv_'))
+      if (cleaned.length !== this.$store.state.advancedSearch.criterias.length) {
+        this.$store.dispatch('updateAdvancedSearch', {
+          matchAllCriteria: this.$store.state.advancedSearch.matchAllCriteria,
+          criterias: cleaned
+        })
+      }
+      this.loadAdvancedFilters()
     }
   },
   computed: {
@@ -273,6 +323,12 @@ export default {
     },
     filteredFields() {
       return this.$root.config.taskSorting.fields.filter(item => this.showFields(item))
+    },
+    filterVariables: function() {
+      return this.$store.state.filter.selected.properties?.variables || []
+    },
+    showUndefinedVariable: function() {
+      return this.$store.state.filter.selected.properties?.showUndefinedVariable || false
     }
   },
   created: function () {
@@ -285,6 +341,37 @@ export default {
   methods: {
     ...mapActions('task', ['setSelectedAssignee']),
     formatDateForTooltips,
+    displayValue: function(task, filterVar) {
+      const variable = { 
+        name: filterVar.name, 
+        value: task.variables?.[filterVar.name], 
+        type: task.variableTypes?.[filterVar.name] 
+      }
+      if (variable.type === 'Date') return formatDate(variable.value)
+      return variableUtils.shortValue(variableUtils.displayValue(variable))
+    },
+    displayTooltip: function(task, filterVar) {
+      const header = filterVar.label + ' (' + filterVar.name + '):'
+      const variable = { 
+        name: filterVar.name, 
+        value: task.variables?.[filterVar.name], 
+        type: task.variableTypes?.[filterVar.name] 
+      }
+      if (variable.value == null) return header + '\n'
+      const value = variable.type === 'Date'
+        ? formatDateForTooltips(variable.value)
+        : variableUtils.displayValue(variable)
+      return header + '\n' + value
+    },
+    toggleTaskVariables: function(taskId) {
+      this.expandedTasks[taskId] = !this.expandedTasks[taskId]
+    },
+    visibleFilterVariables: function(task) {
+      return this.filterVariables.filter(filterVar =>
+        (task.variables && task.variables[filterVar.name] !== undefined && task.variables[filterVar.name] !== null) ||
+        this.showUndefinedVariable
+      )
+    },
     loadAdvancedFilters: function() {
       this.advancedFilter = []
       this.$root.config.taskFilter.advancedSearch.processVariables.forEach(pv => {
@@ -308,8 +395,24 @@ export default {
           advancedFilterObj.value = pv.type === 'Boolean' ? '' : pv.value
         }
         this.advancedFilter.push(advancedFilterObj)
-        this.advancedFilterAux = JSON.stringify(this.advancedFilter)
       })
+      this.filterVariables.forEach(fv => {
+        const key = 'fv_' + fv.name
+        const criteria = this.$store.state.advancedSearch.criterias
+          .find(obj => obj.id === key && obj.operator === 'like')
+        this.advancedFilter.push({
+          key: key,
+          variableName: fv.name,
+          displayName: fv.label || fv.name,
+          type: 'String',
+          defaultValue: '',
+          operator: 'like',
+          source: 'filter',
+          check: !!criteria,
+          value: criteria ? criteria.value.slice(1, -1) : ''
+        })
+      })
+      this.advancedFilterAux = JSON.stringify(this.advancedFilter)
     },
     updateAdvancedFilters: debounce(800, function() {
       const criterias = this.advancedFilter
@@ -536,6 +639,16 @@ export default {
 </script>
 
 <style scoped>
+.task-variables-collapsed {
+  max-height: 3rem;
+  overflow: hidden;
+}
+
+.task-variables-overlay {
+  height: 3rem;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.92) 60%);
+}
+
 .action-button-hidden {
   opacity: 0;
   transition: opacity 0.2s;

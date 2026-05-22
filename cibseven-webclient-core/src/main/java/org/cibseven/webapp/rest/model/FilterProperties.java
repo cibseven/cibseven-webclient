@@ -16,6 +16,8 @@
  */
 package org.cibseven.webapp.rest.model;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.AllArgsConstructor;
@@ -29,4 +31,5 @@ public class FilterProperties {
 	private String description;
 	private boolean refresh;
 	private int priority;
+	private List<FilterVariable> variables;
 }
