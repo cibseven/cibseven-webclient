@@ -95,6 +95,10 @@
 						<phase>package</phase>
 						<configuration>
 							<classifier>classes</classifier>
+							<excludes>
+							    <!-- Do not pack the public/ folder into the classes jar, as that causes trouble when embedding the engine. -->
+								<exclude>public/**</exclude>
+							</excludes>
 						</configuration>
 					</execution>
 				</executions>
