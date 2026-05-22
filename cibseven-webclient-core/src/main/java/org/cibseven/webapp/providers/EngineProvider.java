@@ -40,8 +40,19 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class EngineProvider extends SevenProviderBase implements IEngineProvider {
 
+	private static final String ENGINE_SUB_PATH = "/engine";
+	private static final String DEFAULT_ENGINE_NAME = "default";
+
 	@Autowired(required = false)
 	private EngineRestProperties engineRestProperties;
+
+	private String getNamedEngineRestUrl(String engineName) {
+		String url = getEngineRestUrl();
+		if (engineName != null && !engineName.isEmpty() && !DEFAULT_ENGINE_NAME.equals(engineName)) {
+			url += ENGINE_SUB_PATH + "/" + engineName;
+		}
+		return url;
+	}
 
 	@Override
 	public Collection<Engine> getProcessEngineNames() {
@@ -58,7 +69,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 		String defaultTooltip = engineRestProperties != null ? engineRestProperties.getTooltip() : null;
 		
 		try {
-			String fullUrl = buildUrl(defaultUrl, defaultPath) + "/engine";
+			String fullUrl = buildUrl(defaultUrl, defaultPath) + ENGINE_SUB_PATH;
 			Engine[] defaultEngines = ((ResponseEntity<Engine[]>) doGet(fullUrl, Engine[].class, null, false)).getBody();
 			
 			if (defaultEngines != null) {
@@ -81,7 +92,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 					String additionalPath = additional.getPath() != null && !additional.getPath().isEmpty() 
 						? additional.getPath() 
 						: "/engine-rest";
-					String additionalUrl = buildUrl(additional.getUrl(), additionalPath) + "/engine";
+					String additionalUrl = buildUrl(additional.getUrl(), additionalPath) + ENGINE_SUB_PATH;
 					Engine[] additionalEngines = ((ResponseEntity<Engine[]>) doGet(additionalUrl, Engine[].class, null, false)).getBody();
 					
 					if (additionalEngines != null) {
@@ -127,7 +138,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 		
 		// Set displayName: append engine name in parentheses if not "default"
 		if (baseDisplayName != null && !baseDisplayName.isEmpty()) {
-			if ("default".equals(engine.getName())) {
+			if (DEFAULT_ENGINE_NAME.equals(engine.getName())) {
 				engine.setDisplayName(baseDisplayName);
 			} else {
 				engine.setDisplayName(baseDisplayName + " (" + engine.getName() + ")");
@@ -138,7 +149,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 		
 		// Set tooltip: append engine name in parentheses if not "default"
 		if (baseTooltip != null && !baseTooltip.isEmpty()) {
-			if ("default".equals(engine.getName())) {
+			if (DEFAULT_ENGINE_NAME.equals(engine.getName())) {
 				engine.setTooltip(baseTooltip);
 			} else {
 				engine.setTooltip(baseTooltip + " (" + engine.getName() + ")");
@@ -149,13 +160,13 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 	@Override
 	public EngineConfiguration getDefaultEngineConfiguration() {
 		String url = getEngineRestUrl() + "/configuration";
-		return ((ResponseEntity<EngineConfiguration>) doGet(url, EngineConfiguration.class, null, false)).getBody();
+		return doGet(url, EngineConfiguration.class, null, false).getBody();
 	}
 
 	@Override
 	public EngineConfiguration getEngineConfiguration(String engineName) {
-		String url = getEngineRestUrl() + "/configuration/" + engineName;
-		return ((ResponseEntity<EngineConfiguration>) doGet(url, EngineConfiguration.class, null, false)).getBody();
+		String url = getNamedEngineRestUrl(engineName) + "/configuration";
+		return doGet(url, EngineConfiguration.class, null, false).getBody();
 	}
 
 	/**
@@ -174,22 +185,14 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 	}
 
 	@Override
-	public Boolean requiresSetup(String engine) {
-		String url = getEngineRestUrl();
-		if (engine != null && !engine.isEmpty() && !"default".equals(engine)) {
-		url+= "/engine/" + engine;
-	  }
-		url+=  "/setup/status";
-		return ((ResponseEntity<Boolean>) doGet(url, Boolean.class, null, false)).getBody();
+	public Boolean requiresSetup(String engineName) {
+		String url = getNamedEngineRestUrl(engineName) + "/setup/status";
+		return doGet(url, Boolean.class, null, false).getBody();
 	}
 
 	@Override
-	public void createSetupUser(NewUser user, String engine) throws InvalidUserIdException {
-		String url = getEngineRestUrl();
-		if (engine != null && !engine.isEmpty() && !"default".equals(engine)) {
-		url+= "/engine/" + engine;
-		}
-		url+=  "/setup/user/create";
+	public void createSetupUser(NewUser user, String engineName) throws InvalidUserIdException {
+		String url = getNamedEngineRestUrl(engineName) + "/setup/user/create";
 		try {
 			//	A JSON object with the following properties:
 			//	Name 	Type 	Description

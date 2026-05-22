@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 
@@ -37,6 +38,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
@@ -93,12 +95,15 @@ public class InfoService extends BaseService {
 	}
 	
 	@Operation(
-			summary = "Get config JSON",
-			description = "<strong>Return: Config JSON object")
+			summary = "Get properties for webclient configuration and engine configuration",
+			description = "<strong>Return: JSON object")
 	@GetMapping("/properties")
-	public ObjectNode getConfig() {
+	public ObjectNode getConfig(
+		@Parameter(description = "Optional name of the engine to get configuration for. If not provided, default engine configuration will be returned")
+		@RequestParam(value = "engineName", required = false) String engineName
+	) {
 
-		EngineConfiguration engineConfig = engineProvider.getDefaultEngineConfiguration();
+		EngineConfiguration engineConfig = (engineName != null && !engineName.isEmpty()) ? engineProvider.getEngineConfiguration(engineName) : engineProvider.getDefaultEngineConfiguration();
 		if (engineConfig == null) {
 			log.warn("Could not retrieve engine configuration, using defaults");
 			throw new SystemException("Could not retrieve engine configuration");

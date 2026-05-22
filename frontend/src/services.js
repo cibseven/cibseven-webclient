@@ -528,7 +528,9 @@ const AuthService = {
 
 const InfoService = {
   getProperties: function() {
-    return axios.get('info/properties')
+    const engineName = localStorage.getItem(ENGINE_STORAGE_KEY)
+    const params = engineName ? { engineName } : {}    
+    return axios.get('info/properties', { params })
   },
   getVersion: function() {
     return axios.get('info')
