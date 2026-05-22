@@ -61,7 +61,7 @@
                 </b-form-group>
                 <b-form-group :label="$t('admin.users.lastName') + '*'" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
                   :invalid-feedback="$t('errors.invalid')">
-                  <b-form-input v-model="user.lastName"  @update:modelValue="dirty=true"
+                  <b-form-input v-model="user.lastName"  @update:modelValue="dirty=true" 
                     :state="notEmpty(user.lastName)" :readonly="!$root.config.userEditable || !editMode" required></b-form-input>
                 </b-form-group>
                 <b-form-group :label="$t('admin.users.email')" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
@@ -76,22 +76,36 @@
           </div>
 
           <!-- Account Tab -->
-          <div v-else-if="selectedTab === 'account' && $root.config.userEditable" class="row pt-3 ps-4 pe-4">
+          <div v-else-if="selectedTab === 'account' && $root.config.userEditable && $root.config.userPasswordChangeEnabled" class="row pt-3 ps-4 pe-4">
             <ContentBlock
               :title="$t('password.recover.changePassword')"
               class="col-lg-6 col-md-8 col-sm-12">
               <b-form-group v-if="$root.config.userPasswordChangeEnabled" labels-cols-lg="4" label-size="lg" label-class="fw-bold pt-0 pb-4" class="m-0">
                 <b-form-group :label="$t('password.recover.currentUserPassword') + '*'" label-cols-sm="4"
                   label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
-                    <b-form-input type="password" v-model="credentials.authenticatedUserPassword"></b-form-input>
+                  <SecureInput v-model="credentials.authenticatedUserPassword"></SecureInput>
                 </b-form-group>
                 <b-form-group :label="$t('password.recover.newPassword') + '*'" label-cols-sm="4"
-                  label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
-                  <b-form-input type="password" v-model="credentials.password"></b-form-input>
+                label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
+                  <SecureInput v-model="credentials.password" @blur="validatePassword" @input="resetPasswordValidation"
+                    ref="newPasswordInput" :class="{'is-valid': passwordValid === true,'is-invalid': passwordValid === false}"></SecureInput>
+                  <div v-if="passwordValid === false" class="invalid-feedback d-block">
+                    <h6>{{ $t('password.policy.title') }}</h6>
+                    <div>{{ $t('password.policy.header') }}</div>
+                    <ul>
+
+                      <li v-for="(item, idx) in invalidPasswordRules" :key="idx">
+                        {{ $t('password.policy.items.' + item.placeholder, item.parameter) }}
+                      </li>
+                    </ul>
+                  </div>
                 </b-form-group>
                 <b-form-group :label="$t('password.recover.newPasswordRepeat') + '*'" label-cols-sm="4"
                   label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
-                  <b-form-input type="password" v-model="passwordRepeat"></b-form-input>
+                  <SecureInput v-model="passwordRepeat" :class="{
+                    'is-invalid': passwordRepeat && !same(credentials.password, passwordRepeat),
+                    'is-valid': passwordValid && same(credentials.password, passwordRepeat),
+                  }"></SecureInput>
                 </b-form-group>
                 <div class="float-end d-flex align-items-center">
                   <b-button type="submit" variant="secondary" @click="changePassword($event)">{{$t('password.recover.changePassword')}}</b-button>
@@ -236,13 +250,6 @@
 
       </div>
     </transition>
-    <b-popover :target="() => $refs.passwordHelper" triggers="hover">
-      <h6>{{ $t('password.policy.title') }}</h6>
-      <div>{{ $t('password.policy.header') }}</div>
-      <ul>
-        <li v-for="(item, index) in $tm('password.policy.items')" :key="index">{{ item }}</li>
-      </ul>
-    </b-popover>
     <SuccessAlert ref="emailSent"> {{ $t('password.recover.emailSent') }} </SuccessAlert>
     <SuccessAlert ref="updateProfile" top="0" style="z-index: 1031">{{ $t('admin.users.updateProfileMessage', [user.id]) }}</SuccessAlert>
     <SuccessAlert ref="updatePassword" top="0" style="z-index: 1031">{{ $t('admin.users.updatePasswordMessage', [user.id]) }}</SuccessAlert>
@@ -253,16 +260,17 @@
 </template>
 
 <script>
-import { AdminService } from '@/services.js'
+import { AdminService, SetupService } from '@/services.js'
 import { notEmpty, same } from '@/components/admin/utils.js'
-import { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ContentBlock }  from '@cib/common-frontend'
+import { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ContentBlock } from '@cib/common-frontend'
 import ProfilePreferencesTab from '@/components/admin/ProfilePreferencesTab.vue'
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import { mapActions, mapGetters } from 'vuex'
+import SecureInput from '@/components/login/SecureInput.vue'
 
 export default {
   name: 'ProfileUser',
-  components: { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ProfilePreferencesTab, ContentBlock, CellActionButton },
+  components: { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ProfilePreferencesTab, ContentBlock, CellActionButton, SecureInput },
   inject: ['AuthService'],
   props: {
     editMode: {
@@ -274,7 +282,7 @@ export default {
   data: function () {
     return {
       leftOpen: true,
-      user: { id: null, firstName: null,  lastName: null, email: null, noInfo: true },
+      user: { id: null, firstName: null, lastName: null, email: null, noInfo: true },
       dirty: false,
       credentials: { authenticatedUserPassword: null, password: null },
       passwordRepeat: null,
@@ -285,7 +293,9 @@ export default {
       passwordPolicyError: false,
       passwordVisibility: { current: false, new: false, repeat: false },
       sendingEmail: false,
-      userTenants: []
+      userTenants: [],
+      passwordValid: null,
+      passwordRules: []
     }
   },
   watch: {
@@ -304,6 +314,11 @@ export default {
   },
   computed: {
     ...mapGetters(['tenants']),
+    invalidPasswordRules() {
+      return (this.passwordRules ).filter(item => {
+        return item && typeof item === 'object' && item.valid === false
+      })
+    },
     selectedTab() {
       const defaultTab = this.user.noInfo ? 'preferences' : 'profile'
       return this.$route.query.tab || defaultTab
@@ -380,8 +395,25 @@ export default {
     ...mapActions(['fetchTenants', 'getTenantsByUser', 'removeUserFromTenant', 'addUserToTenant']),
     loadUser: async function(userId) {
       return AdminService.findUsers({ id: userId }).then(response => {
-        this.user = response[0] || { id: userId, firstName: null,  lastName: null, email: null, noInfo: true }
+        this.user = response[0] || { id: userId, firstName: null, lastName: null, email: null, noInfo: true }
       })
+    },
+    resetPasswordValidation: function () {
+      this.passwordValid = null,
+      this.passwordRules = []
+    },
+    validatePassword: function () {
+      if (notEmpty(this.credentials.password)) {
+        SetupService.validatePasswordPolicy(this.credentials.password, this.user).then((response) => {
+          this.passwordValid = response.data.valid
+          this.passwordRules = response.data.rules
+        }, error => {
+          const data = error.response.data
+          if (data && data.type === 'PasswordPolicyException') {
+            this.passwordPolicyError = true
+          }
+        })
+      }
     },
     loadGroups: function(userId) {
       AdminService.findGroups({ member: userId }).then(response => {
@@ -407,14 +439,14 @@ export default {
       if (same(this.credentials.password, this.passwordRepeat) && notEmpty(this.credentials.authenticatedUserPassword)) {
         AdminService.updateUserCredentials(this.user.id, this.credentials.password,
           this.credentials.authenticatedUserPassword).then(() => {
-          this.passwordPolicyError = false
-          this.$refs.updatePassword.show(2)
-        }, error => {
-          const data = error.response.data
-          if (data && data.type === 'PasswordPolicyException') {
-            this.passwordPolicyError = true
-          }
-        })
+            this.passwordPolicyError = false
+            this.$refs.updatePassword.show(2)
+          }, error => {
+            const data = error.response.data
+            if (data && data.type === 'PasswordPolicyException') {
+              this.passwordPolicyError = true
+            }
+          })
       }
     },
     deleteUser: function() {
