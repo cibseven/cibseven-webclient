@@ -68,6 +68,12 @@ pipeline {
         }
     }
 
+    environment {
+        // Give Maven enough heap for the WAR assembly under -T4 parallelism.
+        // Default heap (~256m) OOMs while packaging the frontend bundle.
+        MAVEN_OPTS = '-Xmx4g -Xms1g'
+    }
+
     // Parameter that can be changed in the Jenkins UI
     parameters {
         booleanParam(
