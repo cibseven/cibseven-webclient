@@ -454,7 +454,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	  
 	  @SuppressWarnings("unchecked")
 	  protected <T> ResponseEntity<T> generateErrorResponse(String message, HttpStatus status) {
-	    ResponseEntity<?> response = new ResponseEntity<>(message, status);
+	    ResponseEntity<?> response = ResponseEntity.status(status).body(message);
 	    return (ResponseEntity<T>) response;
 	  }
 

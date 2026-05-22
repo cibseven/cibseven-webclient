@@ -90,7 +90,6 @@ import org.cibseven.webapp.exception.ExpressionEvaluationException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnsupportedTypeException;
-import org.cibseven.webapp.providers.utils.URLUtils;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.Process;
@@ -743,7 +742,7 @@ public class DirectProcessProvider implements IProcessProvider {
 		try {
 			InputStream deployedStartForm = directProviderUtil.getProcessEngine(user).getFormService().getDeployedStartForm(processDefinitionId);
 			byte[] bytes = IOUtils.toByteArray(deployedStartForm);
-			return new ResponseEntity<byte[]>(bytes, HttpStatusCode.valueOf(200));
+			return ResponseEntity.ok(bytes);
 		} catch (NotFoundException e) {
 			throw new SystemException(e.getMessage());
 		} catch (NullValueException e) {
@@ -901,7 +900,7 @@ public class DirectProcessProvider implements IProcessProvider {
 			String content = startForm.toString();
 			InputStream stream = new ByteArrayInputStream(content.getBytes(EncodingUtil.DEFAULT_ENCODING));
 			try {
-				return new ResponseEntity<String>(IOUtils.toString(stream, Charset.defaultCharset()), HttpStatusCode.valueOf(200));
+				return ResponseEntity.ok(IOUtils.toString(stream, Charset.defaultCharset()));
 			} catch (IOException e) {
 				throw new SystemException(e.getMessage(), e);
 			}

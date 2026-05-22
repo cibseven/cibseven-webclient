@@ -412,7 +412,7 @@ public class DirectVariableProvider implements IVariableProvider {
 					@SuppressWarnings("unchecked")
 					DataSource ds = mapper.convertValue(variable.getValue(), (Class<? extends DataSource>) clazz);
 
-					new ResponseEntity<>(IOUtils.toByteArray(ds.getInputStream()), HttpStatusCode.valueOf(200));
+					return ResponseEntity.ok(IOUtils.toByteArray(ds.getInputStream()));
 				}
 			} catch (ClassNotFoundException e) {
 				log.info("Class " + objectType + " could not be loaded!");
@@ -440,7 +440,8 @@ public class DirectVariableProvider implements IVariableProvider {
 			if (valueBytes == null) {
 				valueBytes = new byte[0];
 			}
-			ResponseEntity<byte[]> responseEntity = new ResponseEntity<>(valueBytes, HttpStatusCode.valueOf(200));
+			
+			ResponseEntity<byte[]> responseEntity = ResponseEntity.ok(valueBytes);
 			return responseEntity;
 		} else if (ValueType.FILE.equals(value.getType())) {
 			FileValue typedFileValue = (FileValue) value;
@@ -449,7 +450,7 @@ public class DirectVariableProvider implements IVariableProvider {
 				HttpHeaders headers = new HttpHeaders();
 				headers.setContentType(typedFileValue.getMimeType() != null ? MediaType.valueOf(typedFileValue.getMimeType())
 						: MediaType.APPLICATION_OCTET_STREAM);
-				ResponseEntity<byte[]> responseEntity = new ResponseEntity<>(bytes, headers, HttpStatusCode.valueOf(200));
+				ResponseEntity<byte[]> responseEntity = ResponseEntity.ok().headers(headers).body(bytes);
 				return responseEntity;
 			} catch (IOException e) {
 				throw new SystemException(e.getMessage(), e);
@@ -722,7 +723,7 @@ public class DirectVariableProvider implements IVariableProvider {
 			if (valueBytes == null) {
 				valueBytes = new byte[0];
 			}
-			ResponseEntity<byte[]> responseEntity = new ResponseEntity<>(valueBytes, HttpStatusCode.valueOf(200));
+			ResponseEntity<byte[]> responseEntity = ResponseEntity.ok(valueBytes);
 			return responseEntity;
 		} else if (ValueType.FILE.equals(typedVariableValue.getType())) {
 			FileValue typedFileValue = (FileValue) typedVariableValue;
@@ -732,7 +733,7 @@ public class DirectVariableProvider implements IVariableProvider {
 				HttpHeaders headers = new HttpHeaders();
 				headers.setContentType(typedFileValue.getMimeType() != null ? MediaType.valueOf(typedFileValue.getMimeType())
 						: MediaType.APPLICATION_OCTET_STREAM);
-				ResponseEntity<byte[]> responseEntity = new ResponseEntity<>(bytes, headers, HttpStatusCode.valueOf(200));
+				ResponseEntity<byte[]> responseEntity = ResponseEntity.ok().headers(headers).body(bytes);
 				return responseEntity;
 			} catch (IOException e) {
 				throw new SystemException(e.getMessage(), e);

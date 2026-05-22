@@ -429,7 +429,7 @@ public class DirectTaskProvider implements ITaskProvider {
 		if (form != null) {
 			try {
 				byte[] bytes = IOUtils.toByteArray(form);
-				ResponseEntity<byte[]> responseEntity = new ResponseEntity<>(bytes, HttpStatusCode.valueOf(200));
+				ResponseEntity<byte[]> responseEntity = ResponseEntity.ok(bytes);
 				return responseEntity;
 			} catch (IOException e) {
 				throw new SystemException(e.getMessage());
@@ -437,7 +437,7 @@ public class DirectTaskProvider implements ITaskProvider {
 				IoUtil.closeSilently(form);
 			}
 		}
-		return new ResponseEntity<byte[]>(HttpStatusCode.valueOf(422));
+		return ResponseEntity.status(422).build();
 	}
 
 	@Override
@@ -614,7 +614,7 @@ public class DirectTaskProvider implements ITaskProvider {
 			String content = renderedTaskForm.toString();
 			InputStream stream = new ByteArrayInputStream(content.getBytes(EncodingUtil.DEFAULT_ENCODING));
 			try {
-				return new ResponseEntity<String>(IOUtils.toString(stream, Charset.defaultCharset()), HttpStatusCode.valueOf(200));
+				return ResponseEntity.ok(IOUtils.toString(stream, Charset.defaultCharset()));
 			} catch (IOException e) {
 				throw new SystemException(e.getMessage(), e);
 			}

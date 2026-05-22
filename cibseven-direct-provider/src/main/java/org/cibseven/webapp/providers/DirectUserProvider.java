@@ -415,7 +415,7 @@ public class DirectUserProvider implements IUserProvider {
 		resultAuthorization.setResourceType(newAuthorization.getResourceType());
 		resultAuthorization.setType(newAuthorization.getAuthorizationType());
 		resultAuthorization.setUserId(newAuthorization.getUserId());
-		return new ResponseEntity<Authorization>(resultAuthorization, HttpStatusCode.valueOf(200));
+		return ResponseEntity.ok(resultAuthorization);
 	}
 
 	@Override
