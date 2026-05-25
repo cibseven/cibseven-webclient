@@ -16,6 +16,7 @@
  */
 package org.cibseven.webapp.rest;
 
+import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -158,7 +159,7 @@ public class InfoServiceTest {
 
 		ObjectNode result = infoService.getConfig(null);
 
-		assertTrue(result.get("passwordPolicyEnabled").asBoolean());
+		assertNull(result.get("passwordPolicyEnabled"));
 	}
 
 	@Test
@@ -168,7 +169,7 @@ public class InfoServiceTest {
 
 		ObjectNode result = infoService.getConfig(null);
 
-		assertFalse(result.get("passwordPolicyEnabled").asBoolean());
+		assertNull(result.get("passwordPolicyEnabled"));
 	}
 
 	@Test
