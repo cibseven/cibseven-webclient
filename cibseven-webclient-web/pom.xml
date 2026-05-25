@@ -74,7 +74,7 @@
 					<include>application*.yaml</include>
 					<include>*.jpg</include>
 					<include>*.txt</include>
-					<!-- <include>*.xml</include> -->
+					<include>*.xml</include>
 					<include>*.txt</include>
 					<include>**/*.scss</include>
 					<include>META-INF/**</include>
