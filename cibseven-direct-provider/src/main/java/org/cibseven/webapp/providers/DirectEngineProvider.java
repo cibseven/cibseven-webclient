@@ -62,7 +62,13 @@ public class DirectEngineProvider implements IEngineProvider {
 	@Nullable
 	public EngineConfiguration getEngineConfiguration(String engine) {
 		org.cibseven.bpm.engine.ProcessEngine processEngine = directProviderUtil.getProcessEngine(engine);
+		if (processEngine == null) {
+			return null;
+		}
 		org.cibseven.bpm.engine.ProcessEngineConfiguration config = processEngine.getProcessEngineConfiguration();
+		if (config == null) {
+			return null;
+		}
 		EngineConfiguration result = new EngineConfiguration();
 		result.setEngineName(processEngine.getName());
 		result.setHistoryLevel(config.getHistory());
