@@ -29,7 +29,7 @@
           <span class="mdi mdi-plus"></span> {{ $t('process-instance.addVariable') }}
         </b-button>
       </div>
-      <div v-if="selectedActivityId || selectedScopeInstanceId" class="p-3">
+      <div v-if="!ProcessVariablesSearchBoxPlugin && (selectedActivityId || selectedScopeInstanceId)" class="p-3">
         <RemovableBadge
           @on-remove="clearActivityFilter"
           :tooltip-remove="$t('process-instance.variables.activityIdBadge.remove')"
@@ -169,7 +169,26 @@ export default {
   },
   watch: {
     variables() { this.applyActivityFilter() },
-    selectedActivityId() { this.selectedScopeInstanceId = null; this.applyActivityFilter() },
+    'filter.activityInstanceIdIn'(newVal) {
+      if (this.ProcessVariablesSearchBoxPlugin && !newVal) {
+        this.clearActivitySelection()
+        this.setHighlightedElement('')
+      }
+    },
+    selectedActivityId() {
+      this.selectedScopeInstanceId = null
+      if (this.ProcessVariablesSearchBoxPlugin) {
+        const newFilter = { ...this.filter }
+        delete newFilter.activityInstanceIdIn
+        if (this.selectedActivityId) {
+          const instanceIds = Object.keys(this.activityInstanceIdToActivityId)
+            .filter(id => this.activityInstanceIdToActivityId[id] === this.selectedActivityId)
+          if (instanceIds.length > 0) newFilter.activityInstanceIdIn = instanceIds
+        }
+        this.filter = { ...newFilter, deserializeValues: false }
+      }
+      this.applyActivityFilter()
+    },
   },
   computed: {
     ...mapGetters('variableInstance', ['currentVariableInstance']),
@@ -222,6 +241,9 @@ export default {
     applyActivityFilter() {
       if (this.selectedScopeInstanceId) {
         this.filteredVariables = this.variables.filter(v => v.activityInstanceId === this.selectedScopeInstanceId)
+      } else if (this.filter.activityInstanceIdIn?.length) {
+        const ids = this.filter.activityInstanceIdIn
+        this.filteredVariables = this.variables.filter(v => ids.includes(v.activityInstanceId))
       } else if (this.selectedActivityId) {
         this.filteredVariables = this.variables.filter(v => v.scopeActivityId === this.selectedActivityId)
       } else {
@@ -235,12 +257,17 @@ export default {
       this.applyActivityFilter()
     },
     highlightScope(variable) {
-      this.selectedScopeInstanceId = variable.activityInstanceId
-      if (variable.scopeActivityId) {
-        this.selectActivity({ activityId: variable.scopeActivityId })
-        this.setHighlightedElement(variable.scopeActivityId)
+      if (this.ProcessVariablesSearchBoxPlugin) {
+        if (variable.scopeActivityId) this.setHighlightedElement(variable.scopeActivityId)
+        this.changeFilter({ ...this.filter, activityInstanceIdIn: [variable.activityInstanceId] })
+      } else {
+        this.selectedScopeInstanceId = variable.activityInstanceId
+        if (variable.scopeActivityId) {
+          this.selectActivity({ activityId: variable.scopeActivityId })
+          this.setHighlightedElement(variable.scopeActivityId)
+        }
+        this.applyActivityFilter()
       }
-      this.applyActivityFilter()
     },
     async addNewVariable() {
       this.$refs.addVariableModal.show()
