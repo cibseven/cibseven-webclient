@@ -23,6 +23,8 @@ import org.cibseven.webapp.rest.model.Engine;
 import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.cibseven.webapp.rest.model.NewUser;
 
+import org.springframework.lang.Nullable;
+
 public interface IEngineProvider {
 	public static final String DEFAULT_ENGINE_NAME = "default";
 
@@ -35,8 +37,8 @@ public interface IEngineProvider {
 	}
 
 	public Collection<Engine> getProcessEngineNames();
-	public EngineConfiguration getDefaultEngineConfiguration();
-	public EngineConfiguration getEngineConfiguration(String engineName);
+	@Nullable public EngineConfiguration getDefaultEngineConfiguration();
+	@Nullable public EngineConfiguration getEngineConfiguration(String engineName);
 	public Boolean requiresSetup(String engine);
 	public void createSetupUser(NewUser user, String engine) throws InvalidUserIdException;
 }

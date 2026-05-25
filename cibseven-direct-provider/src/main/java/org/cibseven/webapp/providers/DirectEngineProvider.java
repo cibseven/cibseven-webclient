@@ -31,6 +31,7 @@ import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Engine;
 import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.cibseven.webapp.rest.model.NewUser;
+import org.springframework.lang.Nullable;
 
 public class DirectEngineProvider implements IEngineProvider {
 
@@ -52,11 +53,13 @@ public class DirectEngineProvider implements IEngineProvider {
 	}
 
 	@Override
+	@Nullable
 	public EngineConfiguration getDefaultEngineConfiguration() {
 		return getEngineConfiguration(IEngineProvider.DEFAULT_ENGINE_NAME);
 	}
 
 	@Override
+	@Nullable
 	public EngineConfiguration getEngineConfiguration(String engine) {
 		org.cibseven.bpm.engine.ProcessEngine processEngine = directProviderUtil.getProcessEngine(engine);
 		org.cibseven.bpm.engine.ProcessEngineConfiguration config = processEngine.getProcessEngineConfiguration();

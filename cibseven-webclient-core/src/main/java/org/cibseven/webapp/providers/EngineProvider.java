@@ -30,6 +30,7 @@ import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -170,11 +171,13 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 	}
 
 	@Override
+	@Nullable
 	public EngineConfiguration getDefaultEngineConfiguration() {
 		return getEngineConfiguration(IEngineProvider.DEFAULT_ENGINE_NAME);
 	}
 
 	@Override
+	@Nullable
 	public EngineConfiguration getEngineConfiguration(String engine) {
 		String url = getNamedEngineRestUrl(engine) + "/configuration";
 		try {
