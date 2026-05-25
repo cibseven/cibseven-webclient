@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
@@ -49,9 +50,9 @@ public class EngineServiceTest {
 		EngineConfiguration expected = new EngineConfiguration("default", "full", true, false);
 		when(engineProvider.getDefaultEngineConfiguration()).thenReturn(expected);
 
-		EngineConfiguration result = engineService.getDefaultEngineConfiguration();
+		ResponseEntity<EngineConfiguration> result = engineService.getDefaultEngineConfiguration();
 
-		assertEquals(expected, result);
+		assertEquals(expected, result.getBody());
 		verify(engineProvider).getDefaultEngineConfiguration();
 	}
 
@@ -59,9 +60,9 @@ public class EngineServiceTest {
 	public void testGetDefaultEngineConfiguration_returnsNullWhenProviderReturnsNull() {
 		when(engineProvider.getDefaultEngineConfiguration()).thenReturn(null);
 
-		EngineConfiguration result = engineService.getDefaultEngineConfiguration();
+		ResponseEntity<EngineConfiguration> result = engineService.getDefaultEngineConfiguration();
 
-		assertNull(result);
+		assertNull(result.getBody());
 		verify(engineProvider).getDefaultEngineConfiguration();
 	}
 
@@ -70,9 +71,9 @@ public class EngineServiceTest {
 		EngineConfiguration expected = new EngineConfiguration("myEngine", "audit", false, true);
 		when(engineProvider.getEngineConfiguration("myEngine")).thenReturn(expected);
 
-		EngineConfiguration result = engineService.getEngineConfiguration("myEngine");
+		ResponseEntity<EngineConfiguration> result = engineService.getEngineConfiguration("myEngine");
 
-		assertEquals(expected, result);
+		assertEquals(expected, result.getBody());
 		verify(engineProvider).getEngineConfiguration("myEngine");
 	}
 }

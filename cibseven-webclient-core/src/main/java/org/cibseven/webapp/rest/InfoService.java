@@ -17,7 +17,6 @@
 package org.cibseven.webapp.rest;
 
 import org.cibseven.webapp.auth.SevenUserProvider;
-import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.IEngineProvider;
 import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.cibseven.webapp.rest.model.InfoVersion;
@@ -27,8 +26,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestClientException;
 
 import jakarta.annotation.PostConstruct;
 
@@ -111,22 +108,15 @@ public class InfoService extends BaseService {
 		@RequestHeader(value = "X-Process-Engine", required = false) String engine
 	) {
 
-		EngineConfiguration engineConfig;
-
 		// when newer middleware is connected to old engine-rest,
 		// the engine configuration endpoint might not be available (404).
 		// In this case we will get properties from old configuration properties (history level, authorization enabled) and use them to create a default engine configuration object
-		try {
-			final boolean isDefaultOrExternalEngine = IEngineProvider.isDefaultEngine(engine) || IEngineProvider.isExternalEngine(engine);
-			engineConfig =
-				isDefaultOrExternalEngine
-					? engineProvider.getDefaultEngineConfiguration()
-					: engineProvider.getEngineConfiguration(engine);
-			if (engineConfig == null) {
-				throw new SystemException("Engine configuration response was empty");
-			}
-		}
-		catch (HttpClientErrorException.NotFound e) {
+		final boolean isDefaultOrExternalEngine = IEngineProvider.isDefaultEngine(engine) || IEngineProvider.isExternalEngine(engine);
+		EngineConfiguration engineConfig =
+			isDefaultOrExternalEngine
+				? engineProvider.getDefaultEngineConfiguration()
+				: engineProvider.getEngineConfiguration(engine);
+		if (engineConfig == null) {
 			// when newer middleware is connected to old engine-rest,
 			// the engine configuration endpoint may not exist yet (404).
 			// In that case we fallback to legacy configuration properties.
@@ -144,9 +134,6 @@ public class InfoService extends BaseService {
 			//
 			// disabled (no need right now):
 			// `engineConfig.setEnablePasswordPolicy(false);`
-		}
-		catch (RestClientException e) {
-			throw new SystemException("Unexpected error retrieving engine configuration", e);
 		}
 
 		ObjectNode configJson = JsonNodeFactory.instance.objectNode();

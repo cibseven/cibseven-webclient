@@ -22,6 +22,7 @@ import org.cibseven.webapp.providers.IEngineProvider;
 import org.cibseven.webapp.rest.model.Engine;
 import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,15 +53,23 @@ public class EngineService extends BaseService {
 	@ApiResponse(responseCode = "200", description = "Default engine configuration successfully retrieved")
 	@ApiResponse(responseCode = "404", description = "Specified engine not found or does not provide configuration")
 	@GetMapping("/configuration")
-	public EngineConfiguration getDefaultEngineConfiguration() {
-		return engineProvider.getDefaultEngineConfiguration();
+	public ResponseEntity<EngineConfiguration> getDefaultEngineConfiguration() {
+		EngineConfiguration engineConfiguration = engineProvider.getDefaultEngineConfiguration();
+		if (engineConfiguration == null) {
+			return ResponseEntity.notFound().build();
+		}
+		return ResponseEntity.ok(engineConfiguration);
 	}
 
 	@Operation(summary = "Get engine configuration by name", description = "Retrieves the configuration of the specified process engine")
 	@ApiResponse(responseCode = "200", description = "Engine configuration successfully retrieved")
 	@ApiResponse(responseCode = "404", description = "Specified engine not found or does not provide configuration")
 	@GetMapping("/engine/{engineName}/configuration")
-	public EngineConfiguration getEngineConfiguration(@PathVariable String engineName) {
-		return engineProvider.getEngineConfiguration(engineName);
+	public ResponseEntity<EngineConfiguration> getEngineConfiguration(@PathVariable String engineName) {
+		EngineConfiguration engineConfiguration = engineProvider.getEngineConfiguration(engineName);
+		if (engineConfiguration == null) {
+			return ResponseEntity.notFound().build();
+		}
+		return ResponseEntity.ok(engineConfiguration);
 	}
 }

@@ -31,6 +31,7 @@ import org.cibseven.webapp.rest.model.NewUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -176,7 +177,15 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 	@Override
 	public EngineConfiguration getEngineConfiguration(String engine) {
 		String url = getNamedEngineRestUrl(engine) + "/configuration";
-		return doGet(url, EngineConfiguration.class, null, false).getBody();
+		try {
+			return doGet(url, EngineConfiguration.class, null, false).getBody();
+		} catch (SystemException e) {
+			if (e.getCause() instanceof HttpClientErrorException.NotFound) {
+				log.warn("Engine configuration endpoint not found at {}, falling back to legacy configuration", url);
+				return null;
+			}
+			throw e;
+		}
 	}
 
 	/**

@@ -19,6 +19,7 @@ package org.cibseven.webapp.providers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -127,6 +128,15 @@ public class EngineProviderTest {
 		assertEquals("audit", result.getHistoryLevel());
 		assertFalse(result.isAuthorizationEnabled());
 		assertTrue(result.isEnablePasswordPolicy());
+	}
+
+	@Test
+	void testGetEngineConfiguration_notFound_returnsNull() {
+		mockWebServer.enqueue(new MockResponse().setResponseCode(404));
+
+		EngineConfiguration result = provider.getEngineConfiguration("default");
+
+		assertNull(result);
 	}
 
 	@Test
