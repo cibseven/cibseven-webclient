@@ -18,14 +18,15 @@ package org.cibseven.webapp.rest;
 
 import org.cibseven.webapp.auth.SevenUserProvider;
 import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.webapp.providers.EngineProvider;
 import org.cibseven.webapp.providers.IEngineProvider;
 import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.cibseven.webapp.rest.model.InfoVersion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 
@@ -99,11 +100,11 @@ public class InfoService extends BaseService {
 			description = "<strong>Return: JSON object")
 	@GetMapping("/properties")
 	public ObjectNode getConfig(
-		@Parameter(description = "Optional name of the engine to get configuration for. If not provided, default engine configuration will be returned")
-		@RequestParam(value = "engineName", required = false) String engineName
+		@Parameter(description = "Optional engine definition to get configuration for. If not provided, default engine configuration will be returned")
+		@RequestHeader(value = "X-Process-Engine", required = false) String engine
 	) {
 
-		EngineConfiguration engineConfig = (engineName != null && !engineName.isEmpty()) ? engineProvider.getEngineConfiguration(engineName) : engineProvider.getDefaultEngineConfiguration();
+		EngineConfiguration engineConfig = EngineProvider.isDefaultEngine(engine) ? engineProvider.getDefaultEngineConfiguration() : engineProvider.getEngineConfiguration(engine);
 		if (engineConfig == null) {
 			log.warn("Could not retrieve engine configuration, using defaults");
 			throw new SystemException("Could not retrieve engine configuration");
