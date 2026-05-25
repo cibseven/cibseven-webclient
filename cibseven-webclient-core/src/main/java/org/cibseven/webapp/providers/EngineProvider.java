@@ -50,11 +50,15 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 		return engine == null || engine.isEmpty() || DEFAULT_ENGINE_NAME.equalsIgnoreCase(engine);
 	}
 
+	public static boolean isExternalEngine(String engine) {
+		return engine != null && engine.contains("|");
+	}
+
 	private String getNamedEngineRestUrl(String engine) {
 		String url = getEngineRestUrl();
 		if (engine != null && !engine.isEmpty()) {
 			// Parse engine ID format: "url|path|engineName"
-			if (engine.contains("|")) {
+			if (isExternalEngine(engine)) {
 				String[] parts = engine.split("\\|", 3);
 				if (parts.length == 3) {
 					url = buildUrl(parts[0], parts[1]);

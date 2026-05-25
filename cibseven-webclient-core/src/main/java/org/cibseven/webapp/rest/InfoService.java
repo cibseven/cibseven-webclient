@@ -104,7 +104,7 @@ public class InfoService extends BaseService {
 		@RequestHeader(value = "X-Process-Engine", required = false) String engine
 	) {
 
-		EngineConfiguration engineConfig = EngineProvider.isDefaultEngine(engine) ? engineProvider.getDefaultEngineConfiguration() : engineProvider.getEngineConfiguration(engine);
+		EngineConfiguration engineConfig = (EngineProvider.isDefaultEngine(engine) || EngineProvider.isExternalEngine(engine)) ? engineProvider.getDefaultEngineConfiguration() : engineProvider.getEngineConfiguration(engine);
 		if (engineConfig == null) {
 			log.warn("Could not retrieve engine configuration, using defaults");
 			throw new SystemException("Could not retrieve engine configuration");
