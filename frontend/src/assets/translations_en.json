@@ -930,6 +930,16 @@
 			"legendExpression": "Keys ending with \"*\" accept expressions as value. E.g.: '&#36;&#123; currentUser&#40;&#41; &#125;' or '&#36;&#123; currentUserGroups&#40;&#41; &#125;'",
 			"legendMultiple": "Keys ending with \"in\" accept multiple values separated by comma. E.g.: `keyC, keyA, keyB`",
 			"create": "Create filter",
+			"variablesTitle": "Variables",
+			"variablesLegend": "You can define variables shown in the tasks list.",
+			"showUndefinedVariable": "Show undefined variables",
+			"addVariable": "Add variable",
+			"variable": {
+				"name": "Name",
+				"label": "Label",
+				"namePlaceholder": "Variable name",
+				"labelPlaceholder": "Readable label"
+			},
 			"operators": {
 				"eq": "=",
 				"neq": "≠",
@@ -1182,14 +1192,14 @@
 		"policy": {
 			"title": "Password Policy",
 			"header": "Your password must fulfil the following criteria: ",
-			"items": [
-				"must not contain user data (i.e., user ID, first name, last name, email)",
-				"minimum length of 10 characters",
-				"at least one upper case character",
-				"at least one lower case character",
-				"at least one digit",
-				"at least one special character"
-			]
+			"items": {
+				"PASSWORD_POLICY_USER_DATA": "must not contain user data (i.e., user ID, first name, last name, email)",
+				"PASSWORD_POLICY_LENGTH": "minimum length of {minLength} characters",
+				"PASSWORD_POLICY_LOWERCASE": "at least {minLowerCase} lower case character",
+				"PASSWORD_POLICY_UPPERCASE": "at least {minUpperCase} upper case character",
+				"PASSWORD_POLICY_DIGIT": "at least {minDigit} digit",
+				"PASSWORD_POLICY_SPECIAL": "at least {minSpecial} special character"
+			}
 		}
 	},
 	"advanced-search": {

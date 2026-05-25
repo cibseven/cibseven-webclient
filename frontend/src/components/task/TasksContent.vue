@@ -275,6 +275,13 @@ export default {
             filters.orQueries.push(this.$store.getters.formatedCriteriaData)
           }
         }
+        if (filters.processVariables || (filters.orQueries && filters.orQueries.some(q => q.processVariables))) {
+          filters.variableValuesIgnoreCase = true
+        }
+        const filterVariables = this.$store.state.filter.selected.properties?.variables
+        if (filterVariables && filterVariables.length > 0) {
+          filters.variableNames = filterVariables.map(v => v.name)
+        }
         TaskService.findTasksByFilter(this.$store.state.filter.selected.id, filters,
           { firstResult: firstResult, maxResults: maxResults }).then(result => {
           const tasks = this.tasksByPermissions(this.$root.config.permissions.displayTasks, result)

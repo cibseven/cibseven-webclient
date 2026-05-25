@@ -930,6 +930,16 @@
 			"legendExpression": "Mit \"*\" endende Schlüssel akzeptieren Ausdrücke als Wert. Z.B.: '&#36;&#123; currentUser&#40;&#41; &#125;' oder '&#36;&#123; currentUserGroups&#40;&#41; &#125;'",
 			"legendMultiple": "Mit \"in\" endende Schlüssel akzeptieren mehrere durch Komma getrennte Werte. Z.B.: `SchlüsselC, SchlüsselA, SchlüsselB`",
 			"create": "Filter erstellen",
+			"variablesTitle": "Variablen",
+			"variablesLegend": "Sie können Variablen definieren, die in der Aufgabenliste angezeigt werden.",
+			"showUndefinedVariable": "Undefinierte Variablen anzeigen",
+			"addVariable": "Variable hinzufügen",
+			"variable": {
+				"name": "Name",
+				"label": "Bezeichnung",
+				"namePlaceholder": "Variablenname",
+				"labelPlaceholder": "Lesbarer Name"
+			},
 			"operators": {
 				"eq": "=",
 				"neq": "≠",
@@ -1172,14 +1182,14 @@
 		"policy": {
 			"title": "Passwortrichtlinien",
 			"header": "Ihr Passwort muss die folgenden Kriterien erfüllen: ",
-			"items": [
-				"darf keine Benutzerdaten enthalten (z.B. Benutzer-ID, Vorname, Nachname, E-Mail)",
-				"Mindestlänge von 10 Zeichen",
-				"mindestens ein Großbuchstabe",
-				"mindestens ein Kleinbuchstabe",
-				"mindestens eine Ziffer",
-				"mindestens ein Sonderzeichen"
-			]
+			"items": {
+				"PASSWORD_POLICY_USER_DATA": "darf keine Benutzerdaten enthalten (z.B. Benutzer-ID, Vorname, Nachname, E-Mail)",
+				"PASSWORD_POLICY_LENGTH": "Mindestlänge von {minLength} Zeichen",
+				"PASSWORD_POLICY_LOWERCASE": "mindestens {minLowerCase} Kleinbuchstabe(n)",
+				"PASSWORD_POLICY_UPPERCASE": "mindestens {minUpperCase} Großbuchstabe(n)",
+				"PASSWORD_POLICY_DIGIT": "mindestens {minDigit} Ziffer(n)",
+				"PASSWORD_POLICY_SPECIAL": "mindestens {minSpecial} Sonderzeichen"
+			}
 		},
 		"recover": {
 			"sendEmail": "Wiederherstellungs-E-Mail senden",

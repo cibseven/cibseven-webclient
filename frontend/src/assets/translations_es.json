@@ -930,6 +930,16 @@
 			"legendExpression": "Las claves que terminan en \"*\" aceptan expresiones como valor. Por ejemplo: '&#36;&#123; currentUser&#40;&#41; &#125;' o '&#36;&#123; currentUserGroups&#40;&#41; &#125;'",
 			"legendMultiple": "Las claves que terminan en \"in\" aceptan múltiples valores separados por coma. Por ejemplo: `claveC, claveA, claveB`",
 			"create": "Crear filtro",
+			"variablesTitle": "Variables",
+			"variablesLegend": "Puede definir variables que se muestran en la lista de tareas.",
+			"showUndefinedVariable": "Mostrar variables no definidas",
+			"addVariable": "Añadir variable",
+			"variable": {
+				"name": "Nombre",
+				"label": "Etiqueta",
+				"namePlaceholder": "Nombre de variable",
+				"labelPlaceholder": "Etiqueta legible"
+			},
 			"operators": {
 				"eq": "=",
 				"neq": "≠",
@@ -1181,14 +1191,14 @@
 		"policy": {
 			"title": "Política de contraseñas",
 			"header": "Su contraseña debe cumplir los siguientes criterios: ",
-			"items": [
-				"no debe contener datos de usuario (p.ej., ID de usuario, nombre, apellidos, correo electrónico)",
-				"10 caracteres como mínimo",
-				"al menos un carácter mayúsculo",
-				"al menos un carácter minúsculo",
-				"al menos una cifra",
-				"al menos un carácter especial"
-			]
+			"items": {
+				"PASSWORD_POLICY_USER_DATA": "no debe contener datos de usuario (p.ej., ID de usuario, nombre, apellidos, correo electrónico)",
+				"PASSWORD_POLICY_LENGTH": "mínimo {minLength} caracteres",
+				"PASSWORD_POLICY_LOWERCASE": "al menos {minLowerCase} carácter minúsculo",
+				"PASSWORD_POLICY_UPPERCASE": "al menos {minUpperCase} carácter mayúsculo",
+				"PASSWORD_POLICY_DIGIT": "al menos {minDigit} cifra",
+				"PASSWORD_POLICY_SPECIAL": "al menos {minSpecial} carácter especial"
+			}	
 		}
 	},
 	"advanced-search": {

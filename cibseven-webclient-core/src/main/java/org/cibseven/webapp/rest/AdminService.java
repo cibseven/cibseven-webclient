@@ -29,7 +29,6 @@ import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.providers.PermissionConstants;
-import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.Authorization;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.cibseven.webapp.rest.model.User;
@@ -57,12 +56,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 public class AdminService extends BaseService implements InitializingBean {
 
 	@Autowired BpmProvider bpmProvider;
-	SevenProvider sevenProvider;
 	
 	public void afterPropertiesSet() {
-		if (bpmProvider instanceof SevenProvider)
-			sevenProvider = (SevenProvider) bpmProvider;
-		else throw new SystemException("AdminService expects a BpmProvider");
 	}	
 	
 	@Operation(

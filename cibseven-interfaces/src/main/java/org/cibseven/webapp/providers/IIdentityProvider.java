@@ -14,29 +14,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.cibseven.webapp.rest.model;
+package org.cibseven.webapp.providers;
 
-import java.util.List;
+import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.webapp.rest.model.PasswordPolicyRequest;
+import org.cibseven.webapp.rest.model.PasswordPolicyResponse;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+public interface IIdentityProvider {
+    public PasswordPolicyResponse validatePasswordPolicy(PasswordPolicyRequest request) throws SystemException;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-
-@Getter @Setter @ToString @AllArgsConstructor @NoArgsConstructor
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class TaskFiltering {
-	List<TaskSorting> sorting;
-	List<ProcessVariablesCriteria> processVariables;
-	List<TaskFilterQuery> orQueries;
-	Boolean likePatternIgnoreCase;
-	
-	public String json() throws JsonProcessingException {
-		return new ObjectMapper().writeValueAsString(this);
-	}
 }

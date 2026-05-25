@@ -16,17 +16,18 @@
  */
 package org.cibseven.webapp.rest.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.util.List;
+import java.util.Map;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-@Data @AllArgsConstructor @NoArgsConstructor @JsonIgnoreProperties(ignoreUnknown = true)
-public class FilterProperties {
-	private String color;
-	private boolean showUndefinedVariable;
-	private String description;
-	private boolean refresh;
-	private int priority;
+@Getter @Setter @ToString @AllArgsConstructor @NoArgsConstructor 
+public class PasswordPolicyResponse {
+    private boolean valid;
+    private List<Map<String, Object>> rules;
+
 }

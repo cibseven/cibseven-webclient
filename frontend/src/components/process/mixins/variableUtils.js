@@ -132,6 +132,12 @@ export default {
     return ''
   },
 
+  shortValue(value) {
+    const str = '' + value
+    const dot = str.lastIndexOf('.')
+    return dot >= 0 && dot < str.length - 1 && /^[a-z]/.test(str) ? str.substring(dot + 1) : str
+  },
+
   getFileObjects() {
     return [
       'de.cib.cibflow.api.files.FileValueDataFlowSource',
