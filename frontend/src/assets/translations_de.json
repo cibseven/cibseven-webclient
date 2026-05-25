@@ -295,7 +295,12 @@
 				"historic": "Die historische Variable wurde erfolgreich gelöscht.",
 				"historicError": "Beim Löschen der historischen Variable \"{name}\" ist ein Fehler aufgetreten."
 			},
-			"enterValue": "Wert eingeben"
+			"enterValue": "Wert eingeben",
+			"activityIdBadge": {
+				"remove": "Kriterium entfernen – um alle Variablen aufzulisten",
+				"title": "{activityId}",
+				"tooltip": "Nur Variablen im Sichtbarkeitsbereich \"{activityId}\" anzeigen."
+			}
 		},
 		"incidents": {
 			"activityIdBadge": {

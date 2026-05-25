@@ -295,7 +295,12 @@
 				"historic": "La variable histórica se eliminó correctamente.",
 				"historicError": "Se produjo un error al intentar eliminar la variable histórica \"{name}\"."
 			},
-			"enterValue": "Introducir valor"
+			"enterValue": "Introducir valor",
+			"activityIdBadge": {
+				"remove": "Eliminar criterio - para listar todas las variables",
+				"title": "{activityId}",
+				"tooltip": "Mostrar solo variables del ámbito \"{activityId}\"."
+			}
 		},
 		"incidents": {
 			"activityIdBadge": {

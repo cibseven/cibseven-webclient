@@ -16,7 +16,7 @@
 -->
 <template>
   <div class="d-flex flex-column h-100">
-    <div v-if="isActiveInstance || ProcessVariablesSearchBoxPlugin" class="bg-white d-flex w-100">
+    <div v-if="isActiveInstance || ProcessVariablesSearchBoxPlugin || selectedActivityId || selectedScopeInstanceId" class="bg-white d-flex w-100 flex-wrap">
       <div v-if="ProcessVariablesSearchBoxPlugin" :class="isActiveInstance ? 'col-10 p-2' : 'col-12 p-2'">
         <component :is="ProcessVariablesSearchBoxPlugin"
           :query="filter"
@@ -28,6 +28,14 @@
         <b-button class="border" size="sm" variant="light" @click="addNewVariable" :title="$t('process-instance.addVariable')">
           <span class="mdi mdi-plus"></span> {{ $t('process-instance.addVariable') }}
         </b-button>
+      </div>
+      <div v-if="selectedActivityId || selectedScopeInstanceId" class="p-3">
+        <RemovableBadge
+          @on-remove="clearActivityFilter"
+          :tooltip-remove="$t('process-instance.variables.activityIdBadge.remove')"
+          :label="$t('process-instance.variables.activityIdBadge.title', { activityId: selectedScopeName })"
+          :tooltip="$t('process-instance.variables.activityIdBadge.tooltip', { activityId: selectedScopeName })"
+        />
       </div>
     </div>
     <div class="overflow-y-scroll bg-white container-fluid g-0 flex-grow-1">
@@ -71,7 +79,7 @@
         <template v-slot:cell(scope)="table">
           <CopyableActionButton
             :displayValue="table.item.scope"
-            :clickable="!!table.item.scopeActivityId"
+            :clickable="true"
             :title="$t('process-instance.variables.scope') + ':\n' + table.item.scope + '\n\n' + $t('process-instance.variables.activityInstanceId') + ':\n' + table.item.activityInstanceId"
             @click="highlightScope(table.item)"
             @copy="copyValueToClipboard"
@@ -137,6 +145,7 @@
 
 <script>
 import { BWaitingBox, FlowTable, TaskPopper, SuccessAlert, CopyableActionButton } from '@cib/common-frontend'
+import RemovableBadge from '@/components/common-components/RemovableBadge.vue'
 import DeleteVariableModal from '@/components/process/modals/DeleteVariableModal.vue'
 import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
 import EditVariableModal from '@/components/process/modals/EditVariableModal.vue'
@@ -149,17 +158,34 @@ import variableUtils from '@/components/process/mixins/variableUtils'
 
 export default {
   name: 'VariablesTable',
-  components: { FlowTable, TaskPopper, AddVariableModal, DeleteVariableModal, EditVariableModal, SuccessAlert, BWaitingBox, CopyableActionButton, CellActionButton },
+  components: { FlowTable, TaskPopper, AddVariableModal, DeleteVariableModal, EditVariableModal, SuccessAlert, BWaitingBox, CopyableActionButton, CellActionButton, RemovableBadge },
   mixins: [ processesVariablesMixin, copyToClipboardMixin, permissionsMixin ],
   data: function() {
     return {
       filteredVariables: [],
       fileObjects: variableUtils.getFileObjects(),
+      selectedScopeInstanceId: null,
     }
+  },
+  watch: {
+    variables() { this.applyActivityFilter() },
+    selectedActivityId() { this.selectedScopeInstanceId = null; this.applyActivityFilter() },
   },
   computed: {
     ...mapGetters('variableInstance', ['currentVariableInstance']),
     ...mapGetters('historicVariableInstance', ['currentHistoricVariableInstance']),
+    ...mapGetters(['selectedActivityId']),
+    selectedScopeName() {
+      if (this.selectedScopeInstanceId) {
+        return this.activityInstancesGrouped[this.selectedScopeInstanceId] || this.selectedScopeInstanceId
+      }
+      if (this.selectedActivityId) {
+        const instanceId = Object.keys(this.activityInstanceIdToActivityId)
+          .find(id => this.activityInstanceIdToActivityId[id] === this.selectedActivityId)
+        return instanceId ? this.activityInstancesGrouped[instanceId] : this.selectedActivityId
+      }
+      return ''
+    },
     ProcessVariablesSearchBoxPlugin: function() {
       return this.$options.components && this.$options.components.ProcessVariablesSearchBoxPlugin
         ? this.$options.components.ProcessVariablesSearchBoxPlugin
@@ -192,12 +218,29 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['setHighlightedElement', 'selectActivity']),
+    ...mapActions(['setHighlightedElement', 'selectActivity', 'clearActivitySelection']),
+    applyActivityFilter() {
+      if (this.selectedScopeInstanceId) {
+        this.filteredVariables = this.variables.filter(v => v.activityInstanceId === this.selectedScopeInstanceId)
+      } else if (this.selectedActivityId) {
+        this.filteredVariables = this.variables.filter(v => v.scopeActivityId === this.selectedActivityId)
+      } else {
+        this.filteredVariables = [...this.variables]
+      }
+    },
+    clearActivityFilter() {
+      this.selectedScopeInstanceId = null
+      this.clearActivitySelection()
+      this.setHighlightedElement('')
+      this.applyActivityFilter()
+    },
     highlightScope(variable) {
+      this.selectedScopeInstanceId = variable.activityInstanceId
       if (variable.scopeActivityId) {
         this.selectActivity({ activityId: variable.scopeActivityId })
         this.setHighlightedElement(variable.scopeActivityId)
       }
+      this.applyActivityFilter()
     },
     async addNewVariable() {
       this.$refs.addVariableModal.show()
