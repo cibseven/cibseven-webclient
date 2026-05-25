@@ -27,7 +27,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 
 import jakarta.annotation.PostConstruct;
 
@@ -52,6 +53,10 @@ public class InfoService extends BaseService {
 	@Value("${cibseven.webclient.sso.endpoints.authorization:}") private String authorizationEndpoint;
 	@Value("${cibseven.webclient.sso.clientId:}") private String clientId;
 	@Value("${cibseven.webclient.sso.scopes:}") private String scopes;
+	/**
+	 * Available only before 2.2.0
+	 */
+	@Value("${cibseven.webclient.historyLevel:full}") private String camundaHistoryLevel;
 	@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") private String userProvider;
 	@Value("${cibseven.webclient.user.editable:#{null}}") private Boolean userEditable;
 	@Value("${cibseven.webclient.user.userPasswordChangeEnabled:}") private Boolean userPasswordChangeEnabled;
@@ -68,7 +73,10 @@ public class InfoService extends BaseService {
 	@Value("${cibseven.webclient.support-dialog:}") private String supportDialog;
 	@Value("${cibseven.webclient.engineRest.path:/engine-rest}") private String engineRestPath;
 	@Value("${cibseven.webclient.engineRest.url:./}") private String engineRestUrl;
-
+	/**
+	 * Available only before 2.2.0
+	 */
+	@Value("${camunda.bpm.authorization.enabled:true}") private boolean authorizationEnabled;
 	@Value("${cibseven.webclient.legacy.authorization.enabled:false}") private boolean legacyAuthorizationEnabled;
 	@Value("${cibseven.webclient.modeler.enabled:false}") private boolean modelerEnabled;
 	
@@ -103,24 +111,53 @@ public class InfoService extends BaseService {
 		@RequestHeader(value = "X-Process-Engine", required = false) String engine
 	) {
 
-		EngineConfiguration engineConfig = (IEngineProvider.isDefaultEngine(engine) || IEngineProvider.isExternalEngine(engine)) ? engineProvider.getDefaultEngineConfiguration() : engineProvider.getEngineConfiguration(engine);
-		if (engineConfig == null) {
-			log.warn("Could not retrieve engine configuration, using defaults");
-			throw new SystemException("Could not retrieve engine configuration");
-		}
+		EngineConfiguration engineConfig;
 
-		final String historyLevel = engineConfig.getHistoryLevel();
-		final boolean authorizationEnabled = engineConfig.isAuthorizationEnabled();
-		final boolean enablePasswordPolicy = engineConfig.isEnablePasswordPolicy();
+		// when newer middleware is connected to old engine-rest,
+		// the engine configuration endpoint might not be available (404).
+		// In this case we will get properties from old configuration properties (history level, authorization enabled) and use them to create a default engine configuration object
+		try {
+			final boolean isDefaultOrExternalEngine = IEngineProvider.isDefaultEngine(engine) || IEngineProvider.isExternalEngine(engine);
+			engineConfig =
+				isDefaultOrExternalEngine
+					? engineProvider.getDefaultEngineConfiguration()
+					: engineProvider.getEngineConfiguration(engine);
+			if (engineConfig == null) {
+				throw new SystemException("Engine configuration response was empty");
+			}
+		}
+		catch (HttpClientErrorException.NotFound e) {
+			// when newer middleware is connected to old engine-rest,
+			// the engine configuration endpoint may not exist yet (404).
+			// In that case we fallback to legacy configuration properties.
+			log.warn(
+				"engine-rest does not support the configuration endpoint, falling back to legacy configuration"
+			);
+
+			engineConfig = new EngineConfiguration();
+			engineConfig.setHistoryLevel(camundaHistoryLevel);
+			engineConfig.setAuthorizationEnabled(authorizationEnabled);
+			// Before 2.2.0 passwordPolicyEnabled was specified inside the config.json.
+			// Since 2.2.0, it is available only in the engine configuration endpoint.
+			// But since 2.2.0 it is not used anymore on webclient, so we can skip it here,
+			// making the whole this endpoint compatible with both old and new versions of engine-rest without the need to maintain the password policy property in the configuration file.
+			//
+			// disabled (no need right now):
+			// `engineConfig.setEnablePasswordPolicy(false);`
+		}
+		catch (RestClientException e) {
+			throw new SystemException("Unexpected error retrieving engine configuration", e);
+		}
 
 		ObjectNode configJson = JsonNodeFactory.instance.objectNode();
 		configJson.put("theme", theme);
 		configJson.put("ssoActive", ssoActive);
-		configJson.put("camundaHistoryLevel", historyLevel);
+		configJson.put("camundaHistoryLevel", engineConfig.getHistoryLevel());
 		configJson.put("userProvider", userProvider);
 		configJson.put("userEditable", userEditable);
 		configJson.put("userPasswordChangeEnabled", userPasswordChangeEnabled);
-		configJson.put("passwordPolicyEnabled", enablePasswordPolicy);
+		// disabled (no need right now):
+		// `configJson.put("passwordPolicyEnabled", engineConfig.isEnablePasswordPolicy());`
 		configJson.put("flowLinkTerms", flowLinkTerms);
 		configJson.put("flowLinkPrivacy", flowLinkPrivacy);
 		configJson.put("flowLinkImprint", flowLinkImprint);
@@ -131,7 +168,7 @@ public class InfoService extends BaseService {
 		
 		configJson.put("engineRestPath", engineRestPath);
 		configJson.put("engineRestUrl", engineRestUrl);
-		configJson.put("authorizationEnabled", authorizationEnabled || legacyAuthorizationEnabled);
+		configJson.put("authorizationEnabled", engineConfig.isAuthorizationEnabled() || legacyAuthorizationEnabled);
 		configJson.put("modelerEnabled", modelerEnabled);
 		
         try {

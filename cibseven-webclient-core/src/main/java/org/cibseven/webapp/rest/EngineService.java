@@ -50,6 +50,7 @@ public class EngineService extends BaseService {
 
 	@Operation(summary = "Get default engine configuration", description = "Retrieves the configuration of the default process engine")
 	@ApiResponse(responseCode = "200", description = "Default engine configuration successfully retrieved")
+	@ApiResponse(responseCode = "404", description = "Specified engine not found or does not provide configuration")
 	@GetMapping("/configuration")
 	public EngineConfiguration getDefaultEngineConfiguration() {
 		return engineProvider.getDefaultEngineConfiguration();
@@ -57,6 +58,7 @@ public class EngineService extends BaseService {
 
 	@Operation(summary = "Get engine configuration by name", description = "Retrieves the configuration of the specified process engine")
 	@ApiResponse(responseCode = "200", description = "Engine configuration successfully retrieved")
+	@ApiResponse(responseCode = "404", description = "Specified engine not found or does not provide configuration")
 	@GetMapping("/engine/{engineName}/configuration")
 	public EngineConfiguration getEngineConfiguration(@PathVariable String engineName) {
 		return engineProvider.getEngineConfiguration(engineName);

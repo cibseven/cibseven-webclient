@@ -33,7 +33,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -71,6 +75,8 @@ public class InfoServiceTest {
 		ReflectionTestUtils.setField(infoService, "engineRestUrl", "./");
 		ReflectionTestUtils.setField(infoService, "legacyAuthorizationEnabled", false);
 		ReflectionTestUtils.setField(infoService, "modelerEnabled", false);
+		ReflectionTestUtils.setField(infoService, "camundaHistoryLevel", "full");
+		ReflectionTestUtils.setField(infoService, "authorizationEnabled", true);
 	}
 
 	@Test
@@ -163,5 +169,46 @@ public class InfoServiceTest {
 		ObjectNode result = infoService.getConfig(null);
 
 		assertFalse(result.get("passwordPolicyEnabled").asBoolean());
+	}
+
+	@Test
+	public void testGetConfig_notFoundException_fallsBackToLegacyHistoryLevel() {
+		ReflectionTestUtils.setField(infoService, "camundaHistoryLevel", "audit");
+		when(engineProvider.getDefaultEngineConfiguration())
+			.thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found", HttpHeaders.EMPTY, new byte[0], null));
+
+		ObjectNode result = infoService.getConfig(null);
+
+		assertEquals("audit", result.get("camundaHistoryLevel").asText());
+	}
+
+	@Test
+	public void testGetConfig_notFoundException_fallsBackToLegacyAuthorizationEnabled() {
+		ReflectionTestUtils.setField(infoService, "authorizationEnabled", false);
+		when(engineProvider.getDefaultEngineConfiguration())
+			.thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found", HttpHeaders.EMPTY, new byte[0], null));
+
+		ObjectNode result = infoService.getConfig(null);
+
+		assertFalse(result.get("authorizationEnabled").asBoolean());
+	}
+
+	@Test
+	public void testGetConfig_notFoundExceptionForNamedEngine_fallsBackToLegacyConfiguration() {
+		ReflectionTestUtils.setField(infoService, "camundaHistoryLevel", "none");
+		when(engineProvider.getEngineConfiguration("myEngine"))
+			.thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "Not Found", HttpHeaders.EMPTY, new byte[0], null));
+
+		ObjectNode result = infoService.getConfig("myEngine");
+
+		assertEquals("none", result.get("camundaHistoryLevel").asText());
+	}
+
+	@Test
+	public void testGetConfig_restClientException_throwsSystemException() {
+		when(engineProvider.getDefaultEngineConfiguration())
+			.thenThrow(new RestClientException("Unexpected error"));
+
+		assertThrows(SystemException.class, () -> infoService.getConfig(null));
 	}
 }
