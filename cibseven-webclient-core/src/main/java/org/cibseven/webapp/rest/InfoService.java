@@ -18,7 +18,6 @@ package org.cibseven.webapp.rest;
 
 import org.cibseven.webapp.auth.SevenUserProvider;
 import org.cibseven.webapp.exception.SystemException;
-import org.cibseven.webapp.providers.EngineProvider;
 import org.cibseven.webapp.providers.IEngineProvider;
 import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.cibseven.webapp.rest.model.InfoVersion;
@@ -104,7 +103,7 @@ public class InfoService extends BaseService {
 		@RequestHeader(value = "X-Process-Engine", required = false) String engine
 	) {
 
-		EngineConfiguration engineConfig = (EngineProvider.isDefaultEngine(engine) || EngineProvider.isExternalEngine(engine)) ? engineProvider.getDefaultEngineConfiguration() : engineProvider.getEngineConfiguration(engine);
+		EngineConfiguration engineConfig = (IEngineProvider.isDefaultEngine(engine) || IEngineProvider.isExternalEngine(engine)) ? engineProvider.getDefaultEngineConfiguration() : engineProvider.getEngineConfiguration(engine);
 		if (engineConfig == null) {
 			log.warn("Could not retrieve engine configuration, using defaults");
 			throw new SystemException("Could not retrieve engine configuration");

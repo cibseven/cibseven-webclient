@@ -29,6 +29,7 @@ import org.cibseven.bpm.engine.rest.impl.SetupRestServiceImpl;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Engine;
+import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.cibseven.webapp.rest.model.NewUser;
 
 public class DirectEngineProvider implements IEngineProvider {
@@ -50,10 +51,29 @@ public class DirectEngineProvider implements IEngineProvider {
 		return results;
 	}
 
+	@Override
+	public EngineConfiguration getDefaultEngineConfiguration() {
+		return getEngineConfiguration(IEngineProvider.DEFAULT_ENGINE_NAME);
+	}
+
+	@Override
+	public EngineConfiguration getEngineConfiguration(String engine) {
+		org.cibseven.bpm.engine.ProcessEngine processEngine = directProviderUtil.getProcessEngine(engine);
+		org.cibseven.bpm.engine.ProcessEngineConfiguration config = processEngine.getProcessEngineConfiguration();
+		EngineConfiguration result = new EngineConfiguration();
+		result.setEngineName(processEngine.getName());
+		result.setHistoryLevel(config.getHistory());
+		result.setAuthorizationEnabled(config.isAuthorizationEnabled());
+		result.setEnablePasswordPolicy(config.isEnablePasswordPolicy());
+		return result;
+	}
+
+	@Override
 	public Boolean requiresSetup(String engine) {
 		return new SetupRestServiceImpl(engine, directProviderUtil.getObjectMapper(engine)).requiresSetup();
 	}
 	
+	@Override
 	public void createSetupUser(NewUser user, String engine) throws InvalidUserIdException {
 		UserDto userDto = new UserDto();
 		UserProfileDto profileDto = new UserProfileDto();

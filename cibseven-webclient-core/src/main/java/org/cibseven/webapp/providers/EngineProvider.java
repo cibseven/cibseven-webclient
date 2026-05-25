@@ -41,24 +41,15 @@ import lombok.extern.slf4j.Slf4j;
 public class EngineProvider extends SevenProviderBase implements IEngineProvider {
 
 	private static final String ENGINE_SUB_PATH = "/engine";
-	private static final String DEFAULT_ENGINE_NAME = "default";
 
 	@Autowired(required = false)
 	private EngineRestProperties engineRestProperties;
-
-	public static boolean isDefaultEngine(String engine) {
-		return engine == null || engine.isEmpty() || DEFAULT_ENGINE_NAME.equalsIgnoreCase(engine);
-	}
-
-	public static boolean isExternalEngine(String engine) {
-		return engine != null && engine.contains("|");
-	}
 
 	private String getNamedEngineRestUrl(String engine) {
 		String url = getEngineRestUrl();
 		if (engine != null && !engine.isEmpty()) {
 			// Parse engine ID format: "url|path|engineName"
-			if (isExternalEngine(engine)) {
+			if (IEngineProvider.isExternalEngine(engine)) {
 				String[] parts = engine.split("\\|", 3);
 				if (parts.length == 3) {
 					url = buildUrl(parts[0], parts[1]);
@@ -66,7 +57,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 					log.warn("Invalid engine ID format: {}, expected 'url|path|engineName'", engine);
 				}
 			}
-			else if (!isDefaultEngine(engine)) {
+			else if (!IEngineProvider.isDefaultEngine(engine)) {
 				// Default engine or legacy format
 				url += ENGINE_SUB_PATH + "/" + engine;
 			}
@@ -158,7 +149,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 		
 		// Set displayName: append engine name in parentheses if not "default"
 		if (baseDisplayName != null && !baseDisplayName.isEmpty()) {
-			if (DEFAULT_ENGINE_NAME.equals(engine.getName())) {
+			if (IEngineProvider.DEFAULT_ENGINE_NAME.equals(engine.getName())) {
 				engine.setDisplayName(baseDisplayName);
 			} else {
 				engine.setDisplayName(baseDisplayName + " (" + engine.getName() + ")");
@@ -169,7 +160,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 		
 		// Set tooltip: append engine name in parentheses if not "default"
 		if (baseTooltip != null && !baseTooltip.isEmpty()) {
-			if (DEFAULT_ENGINE_NAME.equals(engine.getName())) {
+			if (IEngineProvider.DEFAULT_ENGINE_NAME.equals(engine.getName())) {
 				engine.setTooltip(baseTooltip);
 			} else {
 				engine.setTooltip(baseTooltip + " (" + engine.getName() + ")");
@@ -179,7 +170,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 
 	@Override
 	public EngineConfiguration getDefaultEngineConfiguration() {
-		return getEngineConfiguration(DEFAULT_ENGINE_NAME);
+		return getEngineConfiguration(IEngineProvider.DEFAULT_ENGINE_NAME);
 	}
 
 	@Override

@@ -24,7 +24,16 @@ import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.cibseven.webapp.rest.model.NewUser;
 
 public interface IEngineProvider {
-	
+	public static final String DEFAULT_ENGINE_NAME = "default";
+
+	public static boolean isDefaultEngine(String engine) {
+		return engine == null || engine.isEmpty() || DEFAULT_ENGINE_NAME.equalsIgnoreCase(engine);
+	}
+
+	public static boolean isExternalEngine(String engine) {
+		return engine != null && engine.contains("|");
+	}
+
 	public Collection<Engine> getProcessEngineNames();
 	public EngineConfiguration getDefaultEngineConfiguration();
 	public EngineConfiguration getEngineConfiguration(String engineName);
