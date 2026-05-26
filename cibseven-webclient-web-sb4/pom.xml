@@ -73,6 +73,13 @@
 			</exclusions>
 		</dependency>
 
+		<!-- No Log4j2 backend is declared here on purpose. Unlike the SB3 web
+		     module, this SB4 variant is only ever embedded into a Spring Boot host
+		     (run4) via its 'classes' artifact; that host provides the logging
+		     backend (logback). It is not deployed as a standalone WAR, so it needs
+		     no bundled backend. (SB4's war packaging also drops optional deps, so
+		     the web module's optional-binding trick would not survive here anyway.) -->
+
 		<!-- New in SB4: replaces RestTemplate idiom -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

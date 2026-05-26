@@ -38,6 +38,7 @@
             <includes>
                 <include>application.properties</include>
                 <include>application-wildfly.yaml</include>
+                <include>log4j2.component.properties</include>
             </includes>
           <outputDirectory>WEB-INF/classes</outputDirectory>
         </fileSet>
