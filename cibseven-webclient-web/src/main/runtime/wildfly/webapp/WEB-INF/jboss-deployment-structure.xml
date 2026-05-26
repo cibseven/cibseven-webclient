@@ -13,6 +13,7 @@
       <subsystem name="logging"/>
     </exclude-subsystems>
     <exclusions>
+      <module name="org.apache.logging.log4j.api"/>
       <module name="com.fasterxml.jackson.jakarta.jackson-jakarta-json-provider"/>
       <module name="com.fasterxml.jackson.core.jackson-core"/>
       <module name="com.fasterxml.jackson.core.jackson-annotations"/>
