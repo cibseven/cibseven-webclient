@@ -30,8 +30,7 @@ const ActivityStore = {
     setProcessActivities: function (state, activities) {
       state.processActivities = activities
     },
-    setSelectedActivityId: function (state, payload = { activityId: 0, listMode: 'all' }) {
-      const { activityId, listMode = 'all' } = payload
+    setSelectedActivityId: function (state, { activityId = '', listMode = 'all' } = {}) {
       state.selectedActivityId = activityId
       state.selectedActivityInstancesListMode = listMode
     },
@@ -59,8 +58,8 @@ const ActivityStore = {
     diagramXml: (state) => state.diagramXml
   },
   actions: {
-    selectActivity: function ({ commit }, payload = { activityId: 0, listMode: 'all' }) {
-      commit('setSelectedActivityId', payload)
+    selectActivity: function ({ commit }, { activityId = '', listMode = 'all' } = {}) {
+      commit('setSelectedActivityId', { activityId, listMode })
     },
     setHighlightedElement: function ({ commit }, element) {
       commit('setHighlightedElement', element)

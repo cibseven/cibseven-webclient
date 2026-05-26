@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <SidebarsFlow ref="regionFilter" role="region" :aria-label="$t('seven.filters')" @selected-filter="selectedFilter()" v-model:left-open="leftOpenFilter" :left-caption="leftCaptionFilter" :rightSize="[12, 4, 2, 2, 2]" :leftSize="[12, 4, 2, 2, 2]">
+  <SidebarsFlow ref="regionFilter" role="region" :aria-label="$t('nav-bar.filtersTitle')" @selected-filter="selectedFilter()" v-model:left-open="leftOpenFilter" :left-caption="leftCaptionFilter" :rightSize="[12, 4, 2, 2, 2]" :leftSize="[12, 4, 2, 2, 2]">
     <GlobalEvents
       v-for="shortcut in taskShortcuts"
       :key="shortcut.id"
@@ -45,15 +45,17 @@
           @search-filter="search = $event" @refresh-tasks="listTasksWithFilter()" @refresh-tasks-number="refreshTasksNumber"></TasksNavBar>
       </template>
 
-      <transition name="slide-in" mode="out-in">
-        <router-view v-if="task !== null" role="region" :aria-label="$t('task.selectedTask')" ref="down" class="h-100" style="overflow-y: auto" v-slot="{ Component }">
+      <router-view v-if="task !== null" role="region" :aria-label="$t('task.selectedTask')" ref="down" class="h-100" style="overflow-y: auto" v-slot="{ Component }">
+        <transition name="slide-in" mode="out-in">
           <component :is="Component" ref="taskComponent" @update-task="updateTask($event)"
             @update-assignee="updateAssignee($event, 'taskList')" :task="task" @complete-task="completedTask($event)" />
-        </router-view>
-        <BWaitingBox v-else-if="task === null && $route.query.externalMode !== undefined" class="h-100 d-flex justify-content-center" styling="width:20%"></BWaitingBox>
-        <div v-else class="text-secondary text-center">
-          <img :alt="$t('seven.selectTask')" src="@/assets/images/task/tasklist_empty.svg" class="mt-5" style="max-width: 250px">
-          <h5>{{ $t('seven.selectTask') }}</h5>
+        </transition>
+      </router-view>
+      <transition name="slide-in" mode="out-in">
+        <BWaitingBox v-if="task === null && $route.query.externalMode !== undefined" class="h-100 d-flex justify-content-center" styling="width:20%"></BWaitingBox>
+        <div v-else-if="task === null" class="text-secondary text-center">
+          <img alt="" src="@/assets/images/task/tasklist_empty.svg" class="mt-5" style="max-width: 250px">
+          <h3 class="h5">{{ $t('seven.selectTask') }}</h3>
         </div>
       </transition>
       <template v-slot:leftIcon>
@@ -76,7 +78,7 @@
     <SuccessAlert top="0" style="z-index: 1031" ref="completedTask">{{ $t('seven.taskCompleted') }}</SuccessAlert>
     <SuccessAlert top="0" style="z-index: 1031" ref="processStarted">{{ $t('process.processStarted') }}</SuccessAlert>
     <SuccessAlert top="0" style="z-index: 1031" ref="filter">
-      <i18n-t :keypath="'nav-bar.filters.' + filterMessage" tag="span" scope="global">
+      <i18n-t :keypath="filterMessage" tag="span" scope="global">
         <template #name>
           <strong>{{ filterName }}</strong>
         </template>
@@ -149,7 +151,7 @@ export default {
       return this.$store.state.filter.selected.name
     },
     leftCaptionFilter: function() {
-      return this.leftOpenTask ? this.$t('seven.filters') : ''
+      return this.leftOpenTask ? this.$t('nav-bar.filtersTitle') : ''
     },
     getTasksNavbarSize: function() { return this.tasksNavbarSizes[this.tasksNavbarSize] },
     taskShortcuts() {
@@ -244,7 +246,7 @@ export default {
       const taskSorting = [JSON.parse(localStorage.getItem('taskSorting'))]
       //If necessary we add the created extra sorting so the data is well sorted
       if (taskSorting[0].sortBy !== 'created') taskSorting.push({ sortBy: 'created', sortOrder: 'desc' })
-      const filters = { sorting: taskSorting }
+      const filters = { sorting: taskSorting, likePatternIgnoreCase: true }
       if (this.search) {
         filters.orQueries = splitToWords(this.search).map((searchQuery) => ({
             nameLike: '%' + searchQuery + '%',
@@ -272,6 +274,13 @@ export default {
             if (!filters.orQueries) filters.orQueries = []
             filters.orQueries.push(this.$store.getters.formatedCriteriaData)
           }
+        }
+        if (filters.processVariables || (filters.orQueries && filters.orQueries.some(q => q.processVariables))) {
+          filters.variableValuesIgnoreCase = true
+        }
+        const filterVariables = this.$store.state.filter.selected.properties?.variables
+        if (filterVariables && filterVariables.length > 0) {
+          filters.variableNames = filterVariables.map(v => v.name)
         }
         TaskService.findTasksByFilter(this.$store.state.filter.selected.id, filters,
           { firstResult: firstResult, maxResults: maxResults }).then(result => {
@@ -375,7 +384,7 @@ export default {
       this.task = task
       this.assignee = task.assignee || null
       updateAppTitle(
-        this.$root.config.productNamePageTitle || this.$t('cib-header.productName'),
+        this.$root.config.productNamePageTitle || this.$t('login.productName'),
         this.$t('start.taskList.title'),
         task.name
       )

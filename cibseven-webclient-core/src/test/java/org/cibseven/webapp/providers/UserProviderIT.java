@@ -121,6 +121,7 @@ public class UserProviderIT extends BaseHelper {
                 Optional.empty(),
                 Optional.of("firstName"),
                 Optional.of("asc"),
+                Optional.empty(),
                 user
         );
 

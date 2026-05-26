@@ -2,12 +2,6 @@
 	"commons": {
 		"edit": "Редагувати",
 		"save": "Зберегти",
-		"copyValue": "Скопіювати значення",
-		"noMoreResults": "Більше немає результатів",
-		"loadMore": {
-			"title": "Завантажити ще",
-			"tooltip": "Натисніть, щоб завантажити наступні {chunkSize} записів"
-		},
 		"actualisation": {
 			"progress": "Оновлення даних...",
 			"lastUpdate": "Останнє оновлення: {date}",
@@ -17,17 +11,24 @@
 		"notAvailable": {
 			"label": "N/A",
 			"tooltip": "Не доступно"
-		},
-		"remove": "Видалити"
+		}
 	},
 	"login": {
-		"productName": "@:cib-header.productName",
+		"productName": "CIB seven",
 		"productSlogan": "Платформа для керування процесами",
 		"username": "Ім’я користувача",
 		"password": "Пароль",
 		"rememberMe": "Запам’ятати пароль",
 		"email": "Електронна адреса",
 		"login": "Увійти",
+		"2fa": "Двоетапна перевірка",
+		"emailSent": "На електронну адресу {0} було надіслано повідомлення! Будь ласка, дотримуйтесь інструкцій. Не отримали лист? Перевірте папку зі спамом.",
+		"needOtp": "Будь ласка, підтвердьте запит через <b>додаток</b>.",
+		"otp": "Код підтвердження",
+		"register": "Ще немає акаунта?",
+		"registerLink": "Зареєструватися",
+		"reset2fa": "Скинути довірений пристрій",
+		"resetPassword": "Скинути пароль",
 		"forgotten": "Забули пароль?",
 		"usernameRequired": "Ім'я користувача обов'язкове",
 		"passwordRequired": "Пароль обов'язковий",
@@ -44,8 +45,7 @@
 			},
 			"open-incidents": {
 				"title": "Відкриті інциденти",
-				"tooltip": "Переглянути всі поточні відкриті інциденти",
-				"none": "Інциденти відсутні!"
+				"tooltip": "Переглянути всі поточні відкриті інциденти"
 			},
 			"open-human-tasks": {
 				"title": "Відкриті задачі користувачів",
@@ -91,6 +91,7 @@
 		"endTime": "Кінцева дата",
 		"businessKey": "Бізнес-ключ",
 		"title": "Процеси",
+		"viewMode": "Режим перегляду",
 		"view-comfy": "Маленькі",
 		"view-module": "Великі",
 		"view-list": "Список",
@@ -99,7 +100,6 @@
 		"start": "Почати",
 		"showProcess": "Показати процес",
 		"showInstance": "Показати екземпляр",
-		"showCockpit": "Відкрити в старому Cockpit",
 		"downloadBpmn": "Завантажити файл BPMN",
 		"openModeler": "Відкрити BPMN файл у Modeler",
 		"showManagement": "Керування процесами",
@@ -154,6 +154,9 @@
 		},
 		"emptyProcessList": "Ваш список процесів порожній.",
 		"emptyProcessListFiltered": "Немає процесів для вибраного фільтра.",
+		"definitionVersionNotFound": "Версія визначення процесу \"{0}\" не знайдена. Використовується остання версія.",
+		"definitionNotFound": "Визначення процесу з ключем \"{processKey}\" та ID клієнта \"{tenantId}\" не знайдено.",
+		"instanceNotFound": "Екземпляр процесу з ID \"{instanceId}\" не знайдено.\nВідповідь сервера:\n{error}",
 		"back": "Назад",
 		"incidentsCounter": "Інциденти: {0}",
 		"incidents": "Інциденти",
@@ -225,7 +228,6 @@
 		"processInstanceId": "ID екземпляра процесу",
 		"businessKey": "Бізнес-ключ",
 		"info": "Інформація про процес",
-		"variablesInfo": "Змінні процесу",
 		"active": "Активний",
 		"history": "Історія змін",
 		"download": "Завантажити",
@@ -246,6 +248,7 @@
 			"unknown": "Невідомо"
 		},
 		"details": {
+			"instancesChain": "Кореневий процес",
 			"startUser": "Користувач, що запустив",
 			"start": "Почато",
 			"finish": "Завершено",
@@ -278,6 +281,7 @@
 			"valueSerialized": "Серіалізоване значення",
 			"actions": "Дії",
 			"scope": "Область",
+			"activityInstanceId": "ID екземпляра активності",
 			"objectTypeName": "Назва типу об’єкта",
 			"serializationDataFormat": "Формат серіалізації даних",
 			"confirmDelete": "Бажаєте видалити змінну?",
@@ -419,7 +423,7 @@
 			"changeDueDateMsg": "Оберіть один з наступних варіантів для зміни цього таймера:",
 			"recalculate": "Перерахувати",
 			"scheduleAt": "Заплановано на",
-			"invalidDateError": "Ви повинні ввести дійсну дату",
+			"invalidDateError": "Введіть коректну дату",
 			"overrideAction": "Переписати"
 		},
 		"externalTasks": {
@@ -443,10 +447,6 @@
 			"zoomOut": "Зменшити",
 			"resetZoom": "Скинути масштаб",
 			"legend": {
-				"title": "Легенда",
-				"completedTask": "Завершене завдання",
-				"currentTask": "Поточне завдання",
-				"selectedTask": "@:task.selectedTask",
 				"runningInstances": "Запущені екземпляри завдань",
 				"openIncidents": "Відкриті інциденти",
 				"closedIncidents": "Закриті інциденти",
@@ -464,7 +464,6 @@
 			"info": "Інформація про завдання",
 			"reminder": "Дата нагадування",
 			"priority": "Пріоритет",
-			"variablesInfo": "Змінні завдання",
 			"taskId": "ID завдання",
 			"assign": "Призначити",
 			"assignToMe": "Призначити мені",
@@ -505,8 +504,6 @@
 			"userAssigned": "Користувача {0} успішно призначено"
 		},
 		"batches": {
-			"title": "Пакети",
-			"tooltip": "Операції з пакетами",
 			"inProgressBatches": "Поточні пакети",
 			"historicBatches": "Завершені пакети",
 			"runtimeDetails": "Деталі поточного пакета",
@@ -525,6 +522,7 @@
 			"activate": "Активувати пакет",
 			"remove": "Видалити пакет",
 			"confirmRemove": "Ви дійсно хочете видалити цей пакет та всі пов’язані завдання та визначення завдань?",
+			"historyLevelTooLow": "Ваша екземпляр движка налаштований з рівнем історії \"{historyLevel}\". Щоб отримати інформацію про завершені пакети, рівень історії повинен бути встановлений на \"повний\".",
 			"exception": "Виняток",
 			"actions": "Дії",
 			"retryJob": "Повторити завдання",
@@ -546,8 +544,8 @@
 				"failed": "Помилка",
 				"successful": "Успішно",
 				"unknown": "Невідомо"
-		}
-	},
+			}
+		},
 		"admin": {
 			"loading": "Завантаження...",
 			"loadingMoreData": "Завантаження додаткових даних...",
@@ -555,11 +553,11 @@
 			"exportCsv": "Експортувати все",
 			"users": {
 				"title": "Користувачі",
+				"tooltip": "Управление пользователями",
 				"id": "Користувач",
 				"firstName": "Ім’я",
 				"lastName": "Прізвище",
 				"email": "Електронна пошта",
-				"search": "Пошук",
 				"add": "Додати користувача",
 				"account": "Обліковий запис користувача",
 				"profile": "Профіль користувача",
@@ -573,14 +571,9 @@
 				"groups": "Групи",
 				"editMessage": "Редагувати користувача ({0})",
 				"update": "Оновити профіль",
-				"userPassword": "Пароль {0}",
-				"currentUserPassword": "поточний пароль",
-				"newPassword": "Новий пароль",
-				"newPasswordRepeat": "Новий пароль (ще раз)",
 				"editUser": "Редагувати користувача",
 				"viewUser": "Показати користувача",
 				"deleteUser": "Видалити користувача",
-				"changePassword": "Змінити пароль",
 				"updateProfileMessage": "Профіль користувача успішно оновлений",
 				"updatePasswordMessage": "Пароль успішно оновлено",
 				"unassignGroupMessage": "Користувач {0} видалений з групи",
@@ -621,6 +614,11 @@
 					"groupUS": "Формати США",
 					"groupISO": "ISO/Технічні формати"
 				},
+				"bpmn": {
+					"title": "BPMN-діаграма",
+					"shortenBadgeNumbers": "Скорочений формат чисел",
+					"shortenBadgeNumbersDescription": "Якщо увімкнено, числа на діаграмі BPMN для екземплярів та подій відображатимуться у скороченому форматі, наприклад, 1K замість 1.005."
+				},
 				"notifications": {
 					"title": "Сповіщення",
 					"showPopoverHowToAssign": {
@@ -635,11 +633,12 @@
 			},
 			"groups": {
 				"title": "Групи",
+				"tooltip": "Управление группами",
 				"id": "ID",
 				"name": "Назва",
 				"type": "Тип",
-				"search": "Пошук",
 				"add": "Додати групу",
+				"addCandidateGroups": "Додати кандидатські групи",
 				"cancel": "Скасувати",
 				"createLabel": "Створити нову групу",
 				"groupCreatedMessage": "Група {0} створена",
@@ -691,6 +690,7 @@
 			},
 			"authorizations": {
 				"title": "Авторизації",
+				"tooltip": "Управление авторизациями",
 				"type": "Тип",
 				"userIdGroupId": "Користувач / Група",
 				"permissions": "Дозволи",
@@ -703,7 +703,6 @@
 					"cancel": "Скасувати зміни"
 				},
 				"name": "Назва ресурсу",
-				"search": "Пошук",
 				"types": {
 					"allow": "ДОЗВОЛИТИ",
 					"deny": "ЗАБОРОНИТИ",
@@ -761,7 +760,6 @@
 				"execution-metrics": {
 					"title": "Метрики виконання",
 					"metricsHelp": "Зареєстрована кількість екземплярів процесів і рішень, оброблених движком, та користувачів завдань, призначених на завдання.",
-					"startDateContract": "Дата початку контракту",
 					"process-instances": "Екземпляри процесів",
 					"decision-instances": "Екземпляри рішень",
 					"task-users": "Користувачі завдань",
@@ -772,29 +770,7 @@
 				}
 			}
 		},
-		"account-form": {
-			"title": "Управління обліковим записом",
-			"username": "@:login.username",
-			"password": "@:login.password",
-			"email": "@:login.email",
-			"update": "Зберегти",
-			"delete": "Видалити обліковий запис",
-			"deleteMessage": "Видалити обліковий запис разом з усіма документами? Цю дію не можна скасувати."
-		},
-		"security-bar": {
-			"strength1": "Занадто простий",
-			"strength2": "Простий",
-			"strength3": "Прийнятний",
-			"strength4": "Надійний",
-			"strength5": "Дуже надійний",
-			"prefix": "Надійність:"
-		},
-		"error": {
-			"title": "Помилка",
-			"ok": "@:confirm.ok"
-		},
 		"confirm": {
-			"title": "Потрібне підтвердження",
 			"ok": "OK",
 			"cancel": "Скасувати",
 			"close": "Закрити",
@@ -810,28 +786,19 @@
 			"title": "Виникла проблема або пропозиція щодо покращення? Дайте нам знати!",
 			"ok": "Надіслати",
 			"cancel": "@:confirm.cancel",
-			"email": "@:account-form.email"
+			"email": "@:login.email"
 		},
 		"cib-header": {
-			"productName": "CIB seven",
 			"languages": "Мова",
 			"languagesMenu": "Мова",
 			"engine": "Двигун",
 			"engineMenu": "Вибір двигуна",
-			"help": "Інформація та допомога",
 			"helpMenu": "Допомога",
-			"logout": "Вихід",
-			"user": "Обліковий запис",
-			"userMenu": "Обліковий запис користувача",
 			"en": "English",
 			"de": "Deutsch",
 			"es": "Español",
 			"ua": "Українська",
 			"ru": "Русский"
-		},
-		"cib-datepicker": {
-			"months": "Січень_Лютий_Березень_Квітень_Травень_Червень_Липень_Серпень_Вересень_Жовтень_Листопад_Грудень",
-			"weeks": "Пн_Вт_Ср_Чт_Пт_Сб_Нд"
 		},
 		"cib-datepicker2": {
 			"noDate": "Дата не обрана",
@@ -842,48 +809,22 @@
 			"noDate": "Час не обрано",
 			"reset": "Очистити вибір"
 		},
-		"file-area": {
-			"titleAbove": "Перетягніть документи сюди",
-			"titleBelow": "або знайдіть їх"
-		},
-		"task-popper": {
-			"title": "Завантажити документ(и)"
-		},
-		"pdf-encryption": {
-			"title": "Безпека з початку!",
-			"text": "Ваші документи шифруються під час завантаження.<br>Введіть пароль, щоб продовжити:"
-		},
-		"register": {
-			"title": "Реєстрація",
-			"register": "Зареєструватися",
-			"login": "Вже є обліковий запис?",
-			"loginLink": "Увійти",
-			"username": "@:account-form.username",
-			"password": "@:account-form.password",
-			"email": "@:account-form.email"
-		},
 		"snapshot": {
-			"title": "Завантажте ваш знімок екрана",
 			"titleAbove": "Клацніть тут, а потім натисніть [Ctrl] + [V]",
 			"titleBelow": "(щоб додати знімок з буфера обміну)"
 	},
 	"seven": {
 		"feedback": "Зворотний зв'язок",
-		"about": "Про doXisafe",
-		"version": "Версія",
 		"selectTask": "Виберіть завдання зі списку для перегляду",
 		"taskCompleted": "Завдання виконано",
 		"allTasks": "Завдання",
 		"titleInfo": "Інформація",
-		"filters": "Фільтри",
-		"types": "Типи авторизацій",
-		"chat": "Чат"
+		"types": "Типи авторизацій"
 	},
 	"nav-bar": {
 		"no-tasks-pending": "У вас немає незавершених завдань",
 		"no-tasks": "Завдань не знайдено",
 		"tasks-count": "Відкритих завдань: {count}",
-		"processes": "@:process.title",
 		"filters": {
 			"addFilter": "Додати фільтр",
 			"updateFilter": "Оновити фільтр",
@@ -896,11 +837,15 @@
 			"addCriteria": "Додати критерій",
 			"filterExists": "Цей фільтр вже існує",
 			"selectedCriteria": "Вибраний критерій",
-			"deleteCriteria": "Видалити критерій",
 			"no-filters": "Фільтрів не знайдено",
 			"edit": "Редагувати фільтр",
-			"delete": "Видалити фільтр",
+			"editFilter": "Редагувати фільтр \"{filterName}\"",
+			"delete": "@:confirm.delete",
+			"deleteFilter": "Видалити фільтр \"{filterName}\"",
 			"pin": "Закріпити",
+			"pinFilter": "Закріпити фільтр \"{filterName}\"",
+			"unpin": "Відкріпити",
+			"unpinFilter": "Відкріпити фільтр \"{filterName}\"",
 			"includeAssigned": "Включити призначені завдання",
 			"keys": {
 				"processInstanceId": "ID екземпляра процесу",
@@ -978,7 +923,6 @@
 				"key": "Ключ критерію",
 				"value": "Значення критерію"
 			},
-			"matchAnyCriteria": "Відповідає будь-якому критерію",
 			"matchAllCriteria": "Відповідає всім критеріям",
 			"msgFilterCreated": "Фільтр \"{name}\" створено",
 			"msgFilterUpdated": "Фільтр \"{name}\" оновлено",
@@ -986,6 +930,16 @@
 			"legendExpression": "Властивості з закінченням \"*\" як значення можуть мати вирази, наприклад '${ currentUser() }' або '${ currentUserGroups() }'",
 			"legendMultiple": "Властивості з закінченням \"in\" можуть мати кілька значень, наприклад список значень, розділений комами: `keyC, keyA, keyB`",
 			"create": "Створити фільтр",
+			"variablesTitle": "Змінні",
+			"variablesLegend": "Ви можете задати змінні, які відображаються у списку завдань.",
+			"showUndefinedVariable": "Показувати невизначені змінні",
+			"addVariable": "Додати змінну",
+			"variable": {
+				"name": "Ім'я",
+				"label": "Мітка",
+				"namePlaceholder": "Ім'я змінної",
+				"labelPlaceholder": "Читабельна назва"
+			},
 			"operators": {
 				"eq": "=",
 				"neq": "≠",
@@ -1001,25 +955,11 @@
 				"txtlteq": "<= менше або дорівнює"
 			}
 		},
-		"additionalFiltersApplied": "Застосовано фільтрів: {n}",
 		"dueDate": "@:task.details.due",
 		"reminder": "Нагадування",
-		"reminderDate": {
-			"all": "До сьогоднішнього дня",
-			"today": "Завтра",
-			"next3D": "Післязавтра"
-		},
-		"taskDeadline": {
-			"all": "Усі",
-			"today": "До сьогоднішнього дня",
-			"next3D": "З завтрашнього дня"
-		},
 		"filtersTitle": "Фільтри",
-		"tasksTitle": "Завдання",
 		"refresh": "Оновити список завдань",
-		"sortingTitle": "Сортування",
-		"filtersAdditionalsTitle": "Додаткові фільтри",
-		"changeSize": "Збільшити ширину списку завдань"
+		"filtersAdditionalsTitle": "Додаткові фільтри"
 	},
 	"ienotify": {
 		"remember": "Більше не показувати це повідомлення",
@@ -1075,11 +1015,22 @@
 			"title": "Адмін",
 			"tooltip": "Відкрити Адмін панель"
 		},
-		"oldCockpit": {
-			"title": "Старий Cockpit",
-			"tooltip": "Відкрити старий Cockpit"
+		"modeler": {
+			"title": "Modeler",
+			"tooltip": "Відкрити Modeler для проектування та редагування BPMN, DMN та форм"
 		},
-		"emptyStart": "Наразі у вас немає прав для виконання будь-яких завдань. Будь ласка, зверніться до адміністратора CIB seven, щоб отримати права."
+		"account": {
+			"tooltip": "Переглянути та змінити інформацію про ваш обліковий запис або вийти з системи",
+			"profile": {
+				"title": "Профіль користувача",
+				"tooltip": "Переглянути та змінити інформацію про ваш обліковий запис"
+			},
+			"logout": {
+				"title": "Вийти",
+				"tooltip": "Вийти з {productName}"
+			}
+		},
+		"emptyStart": "Наразі у вас немає прав для виконання будь-яких завдань. Будь ласка, зверніться до адміністратора {productName}, щоб отримати права."
 	},
 	"errors": {
 		"invalid": "Будь ласка, введіть достовірну інформацію",
@@ -1123,12 +1074,10 @@
 		"unknown": "Сталася неочікувана помилка. Будь ласка, спробуйте ще раз."
 	},
 	"searches": {
-		"filter": "Фільтрувати",
+		"filter": "Фільтрувати...",
 		"refreshAndFilter": "Оновити та відфільтрувати",
 		"search": "Пошук...",
 		"searchByTaskName": "Пошук за назвою завдання...",
-		"searchByDeploymentName": "Пошук за назвою розгортання...",
-		"searchByBusinessKey": "Пошук за бізнес-ключем...",
 		"searchByFilterName": "Пошук за назвою фільтра...",
 		"wildcardHelp": "Підтримується пошук із підстановочними знаками.",
 		"wildcardExample": "Використовуйте % для представлення будь-якої кількості символів (наприклад, %процес%)."
@@ -1153,15 +1102,11 @@
 	"deployment": {
 		"title": "Розгортання процесів",
 		"resourcesCaption": "Включені моделі",
-		"version": "Версія",
-		"downloadVersionBpmn": "@:process.downloadBpmn",
 		"noDeployments": "Немає доступних розгортань процесів",
 		"deploymentTime": "Дата розгортання",
 		"source": "Джерело",
 		"confirmDeleteDeployment": "Ви дійсно хочете видалити обрані розгортання?",
 		"deleteRunningInstances": "Зупинити поточні екземпляри процесу",
-		"goToManagement": "Перейти в область керування процесами",
-		"loadingProcesses": "Завантаження...",
 		"noDeploymentSelected": "Виберіть розгортання для перегляду",
 		"selectAll": "Вибрати все",
 		"deleteDeployments": "Видалити розгортання",
@@ -1171,13 +1116,6 @@
 		"deploymentsDeleted": "{0} з {1} розгортань успішно видалено",
 		"tenant": "Орендар",
 		"errorLoading": "Не вдалося завантажити ресурс для обраного розгортання"
-	},
-	"cib-table2": {
-		"filter": "Фільтр"
-	},
-	"table": {
-		"selectColumns": "Показати стовпці",
-		"toggleColumn": "Перемкнути стовпець \"{column}\""
 	},
 	"navigation": {
 		"home": "Головна сторінка",
@@ -1220,9 +1158,9 @@
 			"email": "cibsupport{'@'}cib.de",
 			"version": "Версія"
 		},
-		"flowModalAbout": {
-			"modalText": "Про сайт",
-			"title": "CIB seven"
+		"about": {
+			"title": "Про сайт",
+			"tooltip": "Переглянути версію"
 		}
 	},
 	"multisort": {
@@ -1242,45 +1180,26 @@
 	},
 	"password": {
 		"recover": {
-			"title": "Відновлення пароля",
-			"email": "Ел. пошта",
-			"emailDescription": "Електронна пошта, пов’язана з обліковим записом, який ви хочете відновити",
-			"cancel": "Скасувати",
 			"sendEmail": "Надіслати лист для зміни пароля",
 			"id": "@:admin.users.id",
 			"changePassword": "Змінити пароль",
-			"emailSent": "Лист із посиланням для відновлення пароля надіслано."
+			"emailSent": "Лист із посиланням для відновлення пароля надіслано.",
+			"currentUserPassword": "Поточний пароль",
+			"newPassword": "Новий пароль",
+			"newPasswordRepeat": "Новий пароль (повторіть)"
 		},
 		"policy": {
 			"title": "Політика паролів",
 			"header": "Ваш пароль має відповідати таким критеріям:",
-			"items": [
-				"не повинен містити дані користувача (ідентифікатор, ім’я, прізвище, email)",
-				"мінімальна довжина 10 символів",
-				"щонайменше один символ верхнього регістру",
-				"щонайменше один символ нижнього регістру",
-				"щонайменше одна цифра",
-				"щонайменше один спеціальний символ"
-			]
-		},
-		"emailInfo": {
-			"title": "Лист було надіслано",
-			"header": "Щоб скинути пароль, підтвердьте посилання в листі.",
-			"body": "Ця сторінка автоматично закриється після відкриття листа й відбудеться перенаправлення на скидання пароля.",
-			"footerTitle": "Не отримали лист?",
-			"footerBody": "Перевірте папку зі спамом або натисніть «Надіслати лист повторно».",
-			"sendMail": "Надіслати лист повторно",
-			"support": "Якщо лист не надійшов, зверніться до служби підтримки.",
-			"supportLink": "Зв'язатися з підтримкою"
+			"items": {
+				"PASSWORD_POLICY_USER_DATA": "не повинен містити дані користувача (ідентифікатор, ім’я, прізвище, email)",
+				"PASSWORD_POLICY_LENGTH": "мінімальна довжина {minLength} символів",
+				"PASSWORD_POLICY_LOWERCASE": "щонайменше {minLowerCase} символ нижнього регістру",
+				"PASSWORD_POLICY_UPPERCASE": "щонайменше {minUpperCase} символ верхнього регістру",
+				"PASSWORD_POLICY_DIGIT": "щонайменше {minDigit} цифра",
+				"PASSWORD_POLICY_SPECIAL": "щонайменше {minSpecial} спеціальний символ"
+			}
 		}
-	},
-	"status-progress": {
-		"state": "Статус",
-		"stateOptions": {
-			"DONE": "Виконано",
-			"PENDING": "В очікуванні"
-		},
-		"noState": "Для цього завдання статус не задано"
 	},
 	"advanced-search": {
 		"title": "Розширений пошук",
@@ -1289,13 +1208,8 @@
 		"property": "Ім’я",
 		"value": "Значення",
 		"add": "Додати критерій",
-		"remove": "Видалити критерій",
-		"type": "Тип співпадіння",
 		"apply": "Застосувати",
 		"cancel": "Скасувати",
-		"cleanAll": "Очистити всі критерії",
-		"any": "Будь-який",
-		"all": "Усі",
 		"criteriaKeys": {
 			"processVariables": "Змінна процесу"
 		},
@@ -1326,14 +1240,10 @@
 		"emptyProcessList": "Список рішень наразі порожній.",
 		"emptyProcessListFiltered": "Немає рішень, що відповідають застосованому фільтру.",
 		"decision": "Рішення",
-		"deleteProcessDefinition": "Видалити визначення рішення",
 		"refreshVersions": "Оновити історію версій",
 		"loadVersions": "Завантажити всі версії історії",
 		"days": "днів",
 		"instances": "Екземпляри",
-		"activateProcess": "Активувати визначення рішення",
-		"downloadBpmn": "Завантажити файл DMN",
-		"showDeployment": "Переглянути розгортання",
 		"showInstance": "Переглянути екземпляр",
 		"evaluationTime": "Час оцінювання",
 		"callingProcess": "Викликаючий процес/кейс",
@@ -1386,6 +1296,37 @@
 		"noGroups": "без групи",
 		"groupName": "Група",
 		"assignmentsByGroupInfo": "Завдання може бути призначене кільком групам."
+	},
+	"deployed-form": {
+		"selectDate": "Вибрати дату",
+		"accept": "Прийняти",
+		"fullscreen": "Повноекранний режим",
+		"showProcess": "Переглянути процес"
+	},
+	"task-variables": {
+		"title": "Змінні завдання для \"{name}\"",
+		"introduction": "Тут ви можете переглядати та редагувати змінні екземпляра процесу, пов'язані з цим завданням. Зверніть увагу, що зміна значень змінних може мати непередбачувані наслідки для виконання процесу.",
+		"businessKey": "Бізнес-ключ: {businessKey}",
+		"noVariables": "Для цього завдання ще не вказано змінні.",
+		"noVariablesLoaded": "Додаткові змінні ще не додані.",
+		"editVariable": {
+			"tooltip": "Редагувати змінну \"{name}\""
+		},
+		"removeVariable": {
+			"tooltip": "Видалити змінну \"{name}\" зі списку"
+		},
+		"addVariable": {
+			"title": "@:process-instance.addVariable",
+			"tooltip": "Додати нову змінну до екземпляра процесу"
+		},
+		"showTaskVariables": {
+			"title": "Показати змінні завдання",
+			"tooltip": "Показати змінні, визначені для завдання. Ви можете редагувати значення цих змінних або додавати нові змінні до екземпляра процесу."
+		},
+		"showExistingVariables": {
+			"title": "Показати існуючі змінні",
+			"tooltip": "Показати змінні, які вже визначені для цього екземпляра процесу. Ви можете редагувати значення цих змінних або додавати нові змінні до екземпляра процесу."
+		}
 	},
 	"setup": {
 		"title": "Початкове налаштування",

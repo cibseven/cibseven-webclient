@@ -62,7 +62,8 @@ function getWrapper() {
         'b-form-select': true,
         'b-button': true,
         'b-form-checkbox': true,
-        'b-modal': true
+        'b-modal': true,
+        'b-badge': true
       },
       plugins: [i18n],
       mocks: {

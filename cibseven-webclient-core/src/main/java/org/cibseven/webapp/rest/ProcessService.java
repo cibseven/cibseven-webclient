@@ -17,14 +17,13 @@
 package org.cibseven.webapp.rest;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-
-import java.nio.charset.StandardCharsets;
 
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
@@ -35,7 +34,6 @@ import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.logger.TaskLogger;
 import org.cibseven.webapp.providers.PermissionConstants;
-import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.ActivityInstance;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
@@ -63,6 +61,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -71,7 +71,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.core.MediaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @ApiResponses({
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
@@ -80,12 +79,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/process")
 public class ProcessService extends BaseService implements InitializingBean {
 	
-	SevenProvider sevenProvider;
-	
 	public void afterPropertiesSet() {
-		if (bpmProvider instanceof SevenProvider)
-			sevenProvider = (SevenProvider) bpmProvider;
-		else throw new SystemException("ProcessService expects a BpmProvider");
 	}
 
 	@Operation(
@@ -509,7 +503,6 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Variables to start process") @RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		//checkPermission(user, SevenResourceType.MESSAGE, PermissionConstants.CREATE_ALL);
 		return bpmProvider.correlateMessage(data, user);
 	}
 	
@@ -649,7 +642,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
-		return sevenProvider.findProcessInstance(processInstanceId, user);
+		return bpmProvider.findProcessInstance(processInstanceId, user);
 	}
 
 	//Requested by OFDKA
@@ -675,7 +668,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
 		
 		// Get the variable data from the provider
-		ResponseEntity<byte[]> response = sevenProvider.fetchProcessInstanceVariableData(processInstanceId, variableName, user);
+		ResponseEntity<byte[]> response = bpmProvider.fetchProcessInstanceVariableData(processInstanceId, variableName, user);
 		
 		// If contentType is provided, set preview headers
 		if (contentType.isPresent() && !contentType.get().isEmpty()) {
@@ -685,7 +678,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			headers.setContentType(org.springframework.http.MediaType.valueOf(contentType.get()));
 			headers.set("Content-Disposition", "inline");
 			
-			return new ResponseEntity<>(response.getBody(), headers, response.getStatusCode());
+			return ResponseEntity.status(response.getStatusCode()).headers(headers).body(response.getBody());
 		}
 		
 		return response;
@@ -706,7 +699,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.UPDATE_INSTANCE_VARIABLE_ALL);
 		final String valueTypeStr = valueType.orElse("File"); //  Enum: "Bytes" "File"
 		try {
-			sevenProvider.uploadProcessInstanceVariableFileData(processInstanceId, variableName, data, valueTypeStr, user);
+			bpmProvider.uploadProcessInstanceVariableFileData(processInstanceId, variableName, data, valueTypeStr, user);
 			return ResponseEntity.noContent().build();
 		} catch (Exception e) {
 			if (e instanceof NoObjectFoundException) {
@@ -729,7 +722,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
 		boolean deserialize = (deserializeValue == null) || (deserializeValue != null && deserializeValue == true);
-		return sevenProvider.fetchProcessInstanceVariable(processInstanceId, variableName, deserialize, user);
+		return bpmProvider.fetchProcessInstanceVariable(processInstanceId, variableName, deserialize, user);
 	}
 
 	@Operation(
@@ -745,11 +738,9 @@ public class ProcessService extends BaseService implements InitializingBean {
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
 		
-		// TODO: Check the permission, but not considered the groups, needs to be checked.
-		// checkSpecificProcessRights(user, processDefinitionKey);
 		try {
 			boolean deserializeValue = (deserialize == null) || (deserialize != null && deserialize == "true");
-			return sevenProvider.fetchProcessInstanceVariable(processInstanceId, "chatComments", deserializeValue, user);	
+			return bpmProvider.fetchProcessInstanceVariable(processInstanceId, "chatComments", deserializeValue, user);	
 		} catch(NoObjectFoundException e) {
 			return null;
 		}
@@ -768,11 +759,10 @@ public class ProcessService extends BaseService implements InitializingBean {
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
-		// TODO: Check the permission, but not considered the groups, needs to be checked.
-		// checkSpecificProcessRights(user, processDefinitionKey);
+		
 		try {
 			boolean deserializeValue = (deserialize == null) || (deserialize != null && deserialize == "true");
-			return sevenProvider.fetchProcessInstanceVariable(processInstanceId, "_statusDataset", deserializeValue, user);	
+			return bpmProvider.fetchProcessInstanceVariable(processInstanceId, "_statusDataset", deserializeValue, user);	
 		} catch(NoObjectFoundException e) {
 			return null;
 		}
@@ -786,7 +776,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 		CIBUser userAuth = (CIBUser) checkAuthorization(rq, true);
 		checkPermission(userAuth, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.UPDATE_INSTANCE_VARIABLE_ALL);
 		bpmProvider.submitVariables(processInstanceId, variables, userAuth, processDefinitionKey.orElse("cib flow"));
-		return new ResponseEntity<>("ok", new HttpHeaders(), HttpStatus.OK);
+		return ResponseEntity.ok("ok");
 		
 	}	
 	
@@ -796,7 +786,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 		headers.setContentDispositionFormData("attachment", ds.getName());
 		if (ds.getSize() != -1)
 			headers.setContentLength(ds.getSize());
-		return new ResponseEntity<>(ds.getInput(), headers, HttpStatus.OK);
+		return ResponseEntity.ok().headers(headers).body(ds.getInput());
 	}
 
 	//Requested by OFDKA
@@ -811,8 +801,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Event name") @RequestParam Optional<String> eventName,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		//checkPermission(user, SevenResourceType.EVENT_SUBSCRIPTION, PermissionConstants.READ_ALL);
-		return sevenProvider.getEventSubscriptions(processInstanceId, eventType, eventName, user);
+		return bpmProvider.getEventSubscriptions(processInstanceId, eventType, eventName, user);
 	}
 
 	@Operation(
@@ -855,7 +844,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 		logger.info("[INFO] Start process with key=" + processDefinitionId + " (" + getClass().getSimpleName() + ")");
 		ProcessStart processStart = bpmProvider.submitStartFormVariables(processDefinitionId, formResult, user);
 		logger.info("[INFO] Started process with key=" + processDefinitionId + " (" + getClass().getSimpleName() + ")");
-		return new ResponseEntity<>(processStart, new HttpHeaders(), HttpStatus.OK);
+		return ResponseEntity.ok(processStart);
 	}
 
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -865,7 +854,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
 			checkPermission(userAuth, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.UPDATE_INSTANCE_VARIABLE_ALL);
 			bpmProvider.saveVariableInProcessInstanceId(processInstanceId, variables, userAuth);    
-			return new ResponseEntity<>("ok", new HttpHeaders(), HttpStatus.OK);
+			return ResponseEntity.ok("ok");
 		} catch (Exception e) {
 			if (e instanceof NoObjectFoundException) return generateErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
 			else return generateErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -879,7 +868,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 			CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
 			checkPermission(userAuth, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.UPDATE_INSTANCE_VARIABLE_ALL);
 			Variable variable = bpmProvider.fetchVariableByProcessInstanceId(processInstanceId, variableName, userAuth);    
-			return new ResponseEntity<>(variable, new HttpHeaders(), HttpStatus.OK);
+			return ResponseEntity.ok(variable);
 		} catch (Exception e) {
 			if (e instanceof NoObjectFoundException) return generateErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
 			else return generateErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -888,7 +877,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 
 	@SuppressWarnings("unchecked")
 	protected <T> ResponseEntity<T> generateErrorResponse(String message, HttpStatus status) {
-		ResponseEntity<?> response = new ResponseEntity<>(message, status);
+		ResponseEntity<?> response = ResponseEntity.status(status).body(message);
 		return (ResponseEntity<T>) response;
 	}
 

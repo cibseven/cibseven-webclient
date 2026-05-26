@@ -17,18 +17,18 @@
 
 -->
 <template>
-  <FlowTable striped resizable thead-class="sticky-header" :items="instances" primary-key="id" prefix="decision."
+  <FlowTable striped resizable thead-class="sticky-header" :items="instances" primary-key="id"
     :sort-by="sortByDefaultKey" :sort-desc="sortDesc" :fields="[
-    { label: 'id', key: 'id', class: 'col-2', tdClass: 'py-1 position-relative' },
-    { label: 'evaluationTime', key: 'evaluationTime', class: 'col-2', tdClass: 'py-1' },
-    { label: 'callingProcess', key: 'processDefinitionKey', class: 'col-3', tdClass: 'py-1 position-relative' },
-    { label: 'callingInstanceId', key: 'processInstanceId', class: 'col-3', tdClass: 'py-1' },
-    { label: 'activityId', key: 'activityId', class: 'col-2', tdClass: 'py-1' }]">
+    { label: 'decision.id', key: 'id', class: 'col-2', tdClass: 'py-1 position-relative' },
+    { label: 'decision.evaluationTime', key: 'evaluationTime', class: 'col-2', tdClass: 'py-1' },
+    { label: 'decision.callingProcess', key: 'processDefinitionKey', class: 'col-3', tdClass: 'py-1 position-relative' },
+    { label: 'decision.callingInstanceId', key: 'processInstanceId', class: 'col-3', tdClass: 'py-1' },
+    { label: 'decision.activityId', key: 'activityId', class: 'col-2', tdClass: 'py-1' }]">
 
     <template v-slot:cell(id)="table">
       <CopyableActionButton
         :display-value="table.item.id"
-        :title="$t('decision.id') + ':\n' + table.item.id"
+        :title="$t('decision.showInstance') + '\n' + $t('decision.id') + ': ' + table.item.id"
         @copy="copyValueToClipboard"
         @click="goToInstance(table.item)"
       />
@@ -45,7 +45,7 @@
         :display-value="table.item.processDefinitionKey"
         :title="$t('decision.callingProcess') + ':\n' + table.item.processDefinitionKey"
         @copy="copyValueToClipboard"
-        @click="goToProcessDefinition(table.item)"
+        :to="getProcessDefinitionRoute(table.item)"
       />
     </template>
 
@@ -76,7 +76,6 @@ import { permissionsMixin } from '@/permissions.js'
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { FlowTable, SuccessAlert, CopyableActionButton } from '@cib/common-frontend'
-import { HistoryService } from '@/services.js'
 import { mapMutations, mapGetters } from 'vuex'
 
 export default {
@@ -105,19 +104,13 @@ export default {
         }
       })
     },
-    async goToProcessDefinition(instance) {
-      const processData = await HistoryService.findProcessInstance(instance.processInstanceId)
-      this.$router.push({
-        name: 'process',
+    getProcessDefinitionRoute(instance) {
+      return {
+        name: 'process-definition-id',
         params: {
-          processKey: processData.processDefinitionKey,
-          versionIndex: processData.processDefinitionVersion
-        },
-        query: {
-          ...(processData.tenantId ? { tenantId: processData.tenantId } : {}),
-          tab: 'instances',
+          definitionId: instance.processDefinitionId,
         }
-      })
+      }
     }
   }
 }

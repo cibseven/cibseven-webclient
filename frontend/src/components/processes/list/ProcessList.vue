@@ -36,7 +36,7 @@
                 v-model.trim="filter"
                 :placeholder="$t('searches.filter')"
                 :aria-label="$t('searches.filter')"
-                class="form-control-plaintext w-100"
+                class="form-control-plaintext w-100 border-0 px-2"
               />
             </div>
             <div class="block text-secondary ms-2 me-3 text-nowrap"
@@ -63,7 +63,7 @@
     </div>
     <div class="container overflow-auto h-100 rounded g-0">
       <div class="m-3 mb-0">
-      <FlowTable :items="processesFiltered" thead-class="sticky-header" striped primary-key="id" prefix="process." :fields="fields" @click="goToShowProcessHistory($event)">
+      <FlowTable :items="processesFiltered" thead-class="sticky-header" striped primary-key="id" :fields="fields" @click="goToShowProcessHistory($event)">
         <template v-slot:cell(key)="table">
           <CopyableActionButton
             :display-value="table.item.key"
@@ -98,11 +98,10 @@
           <component :is="ProcessDefinitionActionsPlugin" v-if="ProcessDefinitionActionsPlugin" :item="table.item" :onlyWithIncidents="onlyIncidents" :onlyActive="onlyActive"></component>
           <CellActionButton @click.stop="goToShowProcessHistory(table.item)" :title="$t('process.showManagement')" icon="mdi-account-tie-outline"></CellActionButton>
           <CellActionButton @click.stop="goToDeployment(table.item)" :title="$t('process.showDeployment')" icon="mdi-file-eye-outline"></CellActionButton>
-          <CellActionButton @click.stop="goToCockpit(table.item)" :title="$t('process.showCockpit')" icon="mdi-radar"></CellActionButton>
         </template>
       </FlowTable>
       <div v-if="!processesFiltered.length">
-        <img :alt="$t(textEmptyProcessesList)" src="@/assets/images/process/empty_processes_list.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">
+        <img alt="" src="@/assets/images/process/empty_processes_list.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">
         <div class="h5 text-secondary text-center">{{ $t(textEmptyProcessesList) }}</div>
       </div>
       </div>
@@ -192,12 +191,12 @@ export default {
     },
     fields: function() {
       return [
-        { label: 'status', key: 'incidents', thClass:'py-0', tdClass:'py-0 ps-0', class: 'col-1 d-flex align-items-center justify-content-center' },
-        { label: 'runningInstances', key: 'runningInstances', class: 'col-1 d-flex justify-content-center', tdClass: 'py-1' },
-        { label: 'key', key: 'key', class: 'col-3', tdClass: 'py-1' },
-        { label: 'name', key: 'name', class: 'col-3', tdClass: 'py-1' },
-        { label: 'tenant', key: 'tenantId', class: 'col-2', tdClass: 'py-1' },
-        { label: 'actions', key: 'actions', sortable: false, class: 'col-2 d-flex justify-content-center', tdClass: 'py-0' },
+        { label: 'process.status', key: 'incidents', thClass:'py-0', tdClass:'py-0 ps-0', class: 'col-1 d-flex align-items-center justify-content-center' },
+        { label: 'process.runningInstances', key: 'runningInstances', class: 'col-1 d-flex justify-content-center', tdClass: 'py-1' },
+        { label: 'process.key', key: 'key', class: 'col-3', tdClass: 'py-1' },
+        { label: 'process.name', key: 'name', class: 'col-3', tdClass: 'py-1' },
+        { label: 'process.tenant', key: 'tenantId', class: 'col-2', tdClass: 'py-1' },
+        { label: 'process.actions', key: 'actions', sortable: false, class: 'col-2 d-flex justify-content-center', tdClass: 'py-0' },
       ]
     }
   },
@@ -209,9 +208,6 @@ export default {
   methods: {
     goToDeployment: function(process) {
       this.$router.push({ name: 'deployments', params: { deploymentId: process.deploymentId } })
-    },
-    goToCockpit: function(process) {
-      window.open(this.$root.config.cockpitUrl + '#/process-definition/' + process.id, '_blank')
     },
     goToShowProcessHistory: function(process) {
       this.$router.push(this.getProcessRoute(process))

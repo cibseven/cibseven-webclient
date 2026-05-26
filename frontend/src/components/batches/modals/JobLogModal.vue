@@ -19,7 +19,7 @@
 <template>
   <b-modal ref="jobLogModal" :title="$t('batches.jobLog.modalTitle')" size="xl">
     <div>
-      <FlowTable v-if="jobLogs && !selectedJobLog && !loading" striped thead-class="sticky-header" :items="jobLogs" primary-key="id" prefix="batches.jobLog."
+      <FlowTable v-if="jobLogs && !selectedJobLog && !loading" striped thead-class="sticky-header" :items="jobLogs" primary-key="id"
         :fields="jobLogFields" @click="showJobLogDetails($event)">
         <template v-slot:cell(state)="table">{{ state(table.item) }}</template>
         <template v-slot:cell(jobExceptionMessage)="table">
@@ -94,15 +94,15 @@
       ...mapGetters('job', ['jobLogs']),
       jobLogFields: function() {
         return [
-          { label: 'state', key: 'state', class: 'col-1', tdClass: 'p-1', sortable: false },
-          { label: 'message', key: 'jobExceptionMessage', class: 'col-1', tdClass: 'p-1', sortable: false },
-          { label: 'timestamp', key: 'timestamp', class: 'col-2', tdClass: 'p-1' },
-          { label: 'jobId', key: 'jobId', class: 'col-2', tdClass: 'p-1' },
-          { label: 'type', key: 'jobDefinitionType', class: 'col-1', tdClass: 'p-1', sortable: false },
-          { label: 'configuration', key: 'jobDefinitionConfiguration', class: 'col-1', tdClass: 'p-1', sortable: false },
-          { label: 'retries', key: 'jobRetries', class: 'col-1', tdClass: 'p-1 text-center' },
-          { label: 'hostname', key: 'hostname', class: 'col-2', tdClass: 'p-1' },
-          { label: 'priority', key: 'jobPriority', class: 'col-1', tdClass: 'p-1 text-center' }
+          { label: 'batches.jobLog.state', key: 'state', class: 'col-1', tdClass: 'p-1', sortable: false },
+          { label: 'batches.jobLog.message', key: 'jobExceptionMessage', class: 'col-1', tdClass: 'p-1', sortable: false },
+          { label: 'batches.jobLog.timestamp', key: 'timestamp', class: 'col-2', tdClass: 'p-1' },
+          { label: 'batches.jobLog.jobId', key: 'jobId', class: 'col-2', tdClass: 'p-1' },
+          { label: 'batches.jobLog.type', key: 'jobDefinitionType', class: 'col-1', tdClass: 'p-1', sortable: false },
+          { label: 'batches.jobLog.configuration', key: 'jobDefinitionConfiguration', class: 'col-1', tdClass: 'p-1', sortable: false },
+          { label: 'batches.jobLog.retries', key: 'jobRetries', class: 'col-1', tdClass: 'p-1 text-center' },
+          { label: 'batches.jobLog.hostname', key: 'hostname', class: 'col-2', tdClass: 'p-1' },
+          { label: 'batches.jobLog.priority', key: 'jobPriority', class: 'col-1', tdClass: 'p-1 text-center' }
         ]
       },
       filteredJobLogFields: function() {

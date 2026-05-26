@@ -21,22 +21,7 @@
     <div style="background-color: rgba(98, 142, 199, 0.2);">
       <div class="d-flex align-items-center py-2 container-fluid">
         <div class="col-8 d-flex align-items-center gap-2">
-          <div class="border rounded d-flex flex-fill align-items-center bg-white" style="max-width: 220px;">
-            <b-button
-              size="sm" class="mdi mdi-magnify mdi-18px text-secondary py-0" variant="link"
-              :title="$t('searches.search')"></b-button>
-            <div class="flex-grow-1">
-              <label class="visually-hidden" for="filter-deployment-list">{{ $t('searches.search') }}</label>
-              <input
-                id="filter-deployment-list"
-                type="text"
-                v-model.trim="filter"
-                :placeholder="$t('searches.search')"
-                :aria-label="$t('searches.search')"
-                class="form-control-plaintext form-control-sm w-100"
-              />
-            </div>
-          </div>
+          <SearchInput class="border rounded" size="sm" v-model.trim="filter"/>
           <span 
             ref="wildcardHelper"
             class="mdi mdi-help-circle mdi-18px text-secondary me-3" 
@@ -167,11 +152,12 @@ import { moment } from '@/globals.js'
 import { debounce } from '@/utils/debounce.js'
 import DeploymentList from '@/components/deployment/DeploymentList.vue'
 import ResourcesNavBar from '@/components/deployment/ResourcesNavBar.vue'
+import SearchInput from '@/components/common-components/SearchInput.vue'
 import { SidebarsFlow, SuccessAlert, PagedScrollableContent } from '@cib/common-frontend'
 
 export default {
   name: 'DeploymentsView',
-  components: { PagedScrollableContent, DeploymentList, ResourcesNavBar, SidebarsFlow, SuccessAlert },
+  components: { PagedScrollableContent, DeploymentList, ResourcesNavBar, SidebarsFlow, SuccessAlert, SearchInput },
   inject: ['loadProcesses'],
   mixins: [permissionsMixin],
   props: { deploymentId: String },
@@ -348,58 +334,43 @@ export default {
       }
       this.loadDeployments(this.deployments.length)
     },
-    deleteDeployments: function () {
-      const vm = this
+    deleteDeployments: async function () {
       this.deleteLoader = true
       this.deploymentsDelData.total = this.deploymentsSelected.length
       this.deploymentsDelData.deleted = 0
-      let pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
-      pool.forEach(deployment => {
-        const found = this.groups.findIndex(group => {
-          const index = group.data.findIndex(d => {
-            return deployment.id === d.id
+      const pool = this.deploymentsSelected.slice()
+       for (const deployment of pool) {
+        try {
+          await ProcessService.deleteDeployment(deployment.id, true)
+          const found = this.groups.findIndex(group => {
+            const index = group.data.findIndex(d => {
+              return deployment.id === d.id
+              })
+              if (index !== -1) {
+                group.data.splice(index, 1)
+              return group
+            }
           })
-          if (index !== -1) {
-            group.data.splice(index, 1)
-            return group
+          if (found !== -1) {
+            if (this.groups[found].data.length < 1) {
+              this.groups.splice(found, 1)
+            }
           }
-        })
-        if (found !== -1) {
-          if (this.groups[found].data.length < 1) {
-            this.groups.splice(found, 1)
+          this.deploymentsDelData.deleted++
+          this.deployments = this.deployments.filter(df => deployment.id !== df.id)
+          if (this.deployment && deployment.id === this.deployment.id) {
+            this.deployment = null
+            this.resources = null
+            this.$router.push({ name: 'deployments' })
           }
-        }
-      })
-      pool = this.deploymentsSelected.slice(0, this.deploymentsSelected.length)
-      startTask()
-      function startTask() {
-        const deployment = pool.shift()
-        if (deployment) {
-          deleteDeployment(deployment)
-        } else {
-          vm.loadProcesses(false)
-          vm.deleteLoader = false
-          vm.$refs.deploymentsDeleted.show()
+        } catch (error) {
+          console.error(`Failed to delete deployment with id ${deployment.id}:`, error)
         }
       }
-      function deleteDeployment(deployment) {
-        ProcessService.deleteDeployment(deployment.id, true).then(() => {
-          vm.deploymentsDelData.deleted++
-          vm.deployments = vm.deployments.filter(df => {
-            return deployment.id !== df.id
-          })
-          if (vm.deployment && deployment.id === vm.deployment.id) {
-            vm.deployment = null
-            vm.resources = null
-            vm.$router.push({
-              name: 'deployments'
-            })
-          }
-          setTimeout(() => {
-            startTask()
-          }, 1000)
-        })
-      }
+      this.loadProcesses(false)
+      this.deleteLoader = false
+      this.$refs.deploymentsDeleted.show()
+      this.refreshTotalCount()
     },
     deleteDeployment: function () {
       ProcessService.deleteDeployment(this.deploymentId, true).then(() => {

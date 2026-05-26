@@ -18,18 +18,24 @@ package org.cibseven.webapp.rest;
 
 import java.util.Collection;
 import java.util.Map;
+
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.exception.AccessDeniedException;
-import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.providers.PermissionConstants;
-import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.JobDefinition;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -43,12 +49,8 @@ import jakarta.servlet.http.HttpServletRequest;
 public class JobDefinitionService extends BaseService implements InitializingBean {
 
 	@Autowired BpmProvider bpmProvider;
-	SevenProvider sevenProvider;
 	
 	public void afterPropertiesSet() {
-		if (bpmProvider instanceof SevenProvider)
-			sevenProvider = (SevenProvider) bpmProvider;
-		else throw new SystemException("JobDefinitionService expects a BpmProvider");
 	}
 	
 	@Operation(
@@ -57,7 +59,6 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	@PostMapping("")
 	public Collection<JobDefinition> findJobDefinitions(@RequestBody String params, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		//checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.READ_ALL);
 		return bpmProvider.findJobDefinitions(params, user);
 	}
 	
@@ -88,7 +89,6 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	@PutMapping("/{jobDefinitionId}/job-priority")
 	public ResponseEntity<Void> overrideJobDefinitionPriority(@PathVariable String jobDefinitionId, @RequestBody String params, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		//checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.UPDATE_ALL);
 		bpmProvider.overrideJobDefinitionPriority(jobDefinitionId, params, user);
 		// return 204 No Content, no body
 		return ResponseEntity.noContent().build();
@@ -101,7 +101,6 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	@GetMapping("/{id}")
 	public JobDefinition findJobDefinition(@PathVariable String id, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		//checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.READ_ALL);
 		return bpmProvider.findJobDefinition(id, user);
 	}
 	
@@ -112,7 +111,6 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	@PutMapping("/{id}/retries")
 	public ResponseEntity<Void> retryJobDefinitionById(@PathVariable String id, @RequestBody Map<String, Object> data, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		//checkPermission(user, SevenResourceType.JOB_DEFINITION, PermissionConstants.UPDATE_ALL);
 		bpmProvider.retryJobDefinitionById(id, data, user);
 		// return 204 No Content, no body
 		return ResponseEntity.noContent().build();

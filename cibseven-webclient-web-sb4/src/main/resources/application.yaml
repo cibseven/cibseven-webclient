@@ -1,0 +1,191 @@
+spring:
+  banner:
+    location: classpath:banner.txt
+  config:
+    import:
+      - optional:classpath:cibseven-webclient.properties
+      - optional:classpath:cibseven-webclient.yaml
+  datasource:
+    url:
+    username:
+    password:
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        integration:
+          envers:
+            enabled: false
+  servlet:
+    register-default-servlet: true
+    multipart:
+      # Configures the maximum size for each individual file upload.
+      max-file-size: 10MB
+      # Configures the maximum size allowed for the entire request, including all files and form data.
+      max-request-size: 1GB
+
+cibseven:
+  webclient:
+    # Global enable/disable flag for the entire CIB seven webclient
+    enabled: true
+    modeler:
+      # Enable or disable the modeler (JPA entities, repositories, REST endpoints).
+      # Requires the parent project to provide a configured DataSource and pre-created schema.
+      # Set to false for deployments where the modeler is not needed.
+      enabled: false
+    # Engine rest
+    engineRest:
+      url: http://localhost:8080
+      # Configurable path for the engine REST API (default: /engine-rest)
+      # This allows customization for different Jersey application paths
+      # Example: path: /different-path
+      path: /engine-rest
+      displayName:
+      tooltip:
+      # additionalEngineRest:
+      #   - url: http://localhost:5173
+      #     path: /engine-rest
+      #     displayName: Local Server Test
+      #     tooltip: Local test environment
+      #     jwtSecret:
+      #   - url: https://dev.cib.de/
+      #     path: /engine-rest
+      #     displayName: Dev Server
+      #     tooltip: Development environment
+      #     jwtSecret:
+    # Token generation
+    authentication:
+      jwtSecret:
+      tokenValidMinutes: 60
+      tokenProlongMinutes: 1440
+    # LDAP
+    ldap:
+      url: ldap://ldap.cibseven.org
+      folder: DC=cibseven,DC=org
+      userNameAttribute: samAccountName
+      userDisplayNameAttribute: name
+      modifiedDateFormat: yyyyMMddHHmmss.SX
+      followReferrals: follow
+
+    # BPM Provider
+    bpm:
+      provider: org.cibseven.webapp.providers.SevenProvider
+
+    # User providers
+    user:
+      provider: org.cibseven.webapp.auth.SevenUserProvider
+      # provider: org.cibseven.webapp.auth.LdapUserProvider
+      # provider: org.cibseven.webapp.auth.OAuth2UserProvider
+      # provider: org.cibseven.webapp.auth.AdfsUserProvider
+      editable:
+      userPasswordChangeEnabled: true
+
+    # Set the wild card is gonna be used for the users search. By default is "*".
+    users:
+      search:
+        wildcard:
+
+    # If this params is set to false, the number of instances and incidents wont be taken.
+    fetchInstances: true
+    fetchIncidents: true
+
+    # External token user creation
+    token:
+      secret:
+      deny:
+        external:
+          ip: true
+
+    theme: cib
+
+    # RestTemplate configuration
+    rest:
+      # Whether the custom RestTemplate is enabled. If false, a default RestTemplate will be used.
+      enabled: true
+      # Whether the socket connection should be kept alive between requests.
+      keepAlive: true
+      # Socket read timeout in seconds (0 = infinite). Maximum time to wait for data from an established connection.
+      socketTimeout: 3600
+      # Time in seconds to establish connection (0 = infinite). Maximum time to wait while establishing a connection.
+      connectTimeout: 30
+      # Time to wait in seconds for a connection from the connection pool.
+      connectionRequestTimeout: 180
+      # Max response wait time in seconds (0 = infinite). If not set, the socketTimeout value will be used.
+      connectionResponseTimeout:
+      # Max HTTP connections per route. Limits the number of connections to a specific host.
+      maxConnPerRoute: 20
+      # Total max HTTP connections across all routes. Defaults to 2 * maxConnPerRoute if not specified.
+      maxConnTotal: 40
+      # Connection time to live in milliseconds. Maximum time a connection can be reused.
+      connectionTimeToLive: 50000
+      # Whether to enable connection pooling. Improves performance by reusing connections.
+      connectionPoolingEnabled: true
+      # Whether to enable connection reuse. Allows reusing connections for multiple requests.
+      connectionReuseEnabled: true
+      # Whether to enable Micrometer metrics for monitoring connection pool usage.
+      metricsEnabled: false
+      # Whether to enable request/response logging for debugging purposes.
+      requestLoggingEnabled: false
+      # Whether to automatically follow HTTP redirects (status codes 3xx).
+      followRedirects: true
+
+    services:
+      basePath: services/v1
+
+    api:
+      common:
+        title: "CIB seven webclient API"
+        description: "This API exposes the functionality of CIB seven webclient as a REST service under the Apache License 2.0."
+        termsOfService: "https://www.apache.org/licenses/LICENSE-2.0"
+        license: "Apache 2.0"
+        licenseUrl: "https://www.apache.org/licenses/LICENSE-2.0"
+        contact:
+          name: "CIB seven"
+          url: "https://cibseven.org"
+          email: "info@cibseven.org"
+        # webclient server url for the swagger-ui. Only needs to be set if the automatic detection is wrong.
+        url:
+        
+    deprecated:
+    # Check permission for some usecases in the webclient backend (behaviour until 2.2.0)
+      authorization:
+        enabled: false
+
+#    custom:
+#      spring:
+#        jackson:
+#          parser:
+#            max-size: 25000000
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui
+    operationsSorter: alpha
+    tagsSorter: alpha
+    doc-expansion: none
+
+# Activate "/actuator/info" and "/actuator/health" endpoints
+management:
+  endpoints:
+    access:
+      default: none # Disable all endpoints by default
+    web:
+      exposure:
+        include: health,info # Include only health and info endpoints
+  endpoint:
+    info:
+      access: read-only # Enable the info endpoint
+    health:
+      access: read-only # Enable the health endpoint
+      probes:
+        enabled: true # Enable health probes (if applicable)
+  info:
+    build:
+      enabled: true # Enable build information
+    git:
+      enabled: true # Enable git information
+      mode: full # Use full mode for git information
+    java:
+      enabled: true # Enable Java information (ensure your setup supports this)

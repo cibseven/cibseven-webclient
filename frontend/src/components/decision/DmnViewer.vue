@@ -166,6 +166,12 @@ export default {
       this.viewer.getActiveViewer()?.get('canvas')?.zoom('fit-viewport')
     },
     getBadgeOverlayHtml(number, classes, type, elementId) {
+      // Options are:
+      // - 'bpmn-viewer.legend.runningInstances'
+      // - 'bpmn-viewer.legend.openIncidents'
+      // - 'bpmn-viewer.legend.closedIncidents'
+      // - 'bpmn-viewer.legend.activitiesHistory'
+      // - 'bpmn-viewer.legend.canceledInstances'      
       const title = this.$t('dmn-viewer.legend.' + type)
       const styleStr = "width: max-content; cursor: pointer;"
       return `

@@ -100,7 +100,7 @@ public class FilterProviderIT extends BaseHelper {
             "New Filter",
             "user1",
             new FilterCriterias(),
-            new FilterProperties("blue", false, "Test Description", true, 10)
+            new FilterProperties("blue", false, "Test Description", true, 10, null)
         );
 
         // Load the mock response from a file
@@ -131,7 +131,7 @@ public class FilterProviderIT extends BaseHelper {
             "Updated Filter",
             "user1",
             new FilterCriterias(),
-            new FilterProperties("red", true, "Updated Description", true, 20)
+            new FilterProperties("red", true, "Updated Description", true, 20, null)
         );
 
         mockWebServer.enqueue(new MockResponse().setResponseCode(204));

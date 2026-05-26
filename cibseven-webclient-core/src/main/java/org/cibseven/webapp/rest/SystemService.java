@@ -20,9 +20,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.BpmProvider;
-import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.Metric;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,15 +42,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 public class SystemService extends BaseService implements InitializingBean {
 
  @Autowired BpmProvider bpmProvider;
-	SevenProvider sevenProvider;
 
 	@Autowired
 	private CustomRestTemplate restTemplate;
 
 	public void afterPropertiesSet() {
-		if (bpmProvider instanceof SevenProvider)
-			sevenProvider = (SevenProvider) bpmProvider;
-		else throw new SystemException("SystemService expects a BpmProvider");
 	}
 
 	@GetMapping("/telemetry/data")

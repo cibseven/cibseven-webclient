@@ -61,24 +61,24 @@
               <div :class="getClasses(filter)" class="ms-auto">
                 <button v-if="filterByPermissions($root.config.permissions.editFilter, $store.state.filter.selected)"
                   class="btn btn-light btn-sm border-0 me-1" type="button" :title="$t('nav-bar.filters.edit')" @click.stop="selectFilter(filter); showFilterDialog('edit')" @keydown.enter.stop.prevent="selectFilter(filter); showFilterDialog('edit')" @keydown.space.stop.prevent="selectFilter(filter); showFilterDialog('edit')">
-                  <span class="visually-hidden">{{ $t('nav-bar.filters.edit') }}</span>
+                  <span class="visually-hidden">{{ $t('nav-bar.filters.editFilter', { filterName: filter.name }) }}</span>
                   <span class="mdi mdi-pencil"></span>
                 </button>
                 <button v-if="filterByPermissions($root.config.permissions.deleteFilter, $store.state.filter.selected)"
                   class="btn btn-light btn-sm border-0 me-1" type="button" :title="$t('nav-bar.filters.delete')"
                   @click.stop="workingFilter = filter; $refs.confirmDeleteFilter.show()" @keydown.enter.stop.prevent="workingFilter = filter; $refs.confirmDeleteFilter.show()" @keydown.space.stop.prevent="workingFilter = filter; $refs.confirmDeleteFilter.show()">
-                  <span class="visually-hidden">{{ $t('nav-bar.filters.delete') }}</span>
+                  <span class="visually-hidden">{{ $t('nav-bar.filters.deleteFilter', { filterName: filter.name }) }}</span>
                   <span class="mdi mdi-close"></span>
                 </button>
               </div>
               <button v-if="filter.favorite" class="btn btn-light btn-sm border-0" type="button"
-                @click.stop="deleteFavoriteFilter(filter)" @keydown.enter.stop.prevent="deleteFavoriteFilter(filter)" @keydown.space.stop.prevent="deleteFavoriteFilter(filter)" :title="$t('nav-bar.filters.pin')">
-                <span class="visually-hidden">{{ $t('nav-bar.filters.pin') }}</span>
+                @click.stop="deleteFavoriteFilter(filter)" @keydown.enter.stop.prevent="deleteFavoriteFilter(filter)" @keydown.space.stop.prevent="deleteFavoriteFilter(filter)" :title="$t('nav-bar.filters.unpin')">
+                <span class="visually-hidden">{{ $t('nav-bar.filters.unpinFilter', { filterName: filter.name }) }}</span>
                 <span class="mdi mdi-pin text-dark"></span>
               </button>
               <button v-else class="btn btn-light btn-sm border-0" type="button"
                 @click.stop="setFavoriteFilter(filter)" @keydown.enter.stop.prevent="setFavoriteFilter(filter)" @keydown.space.stop.prevent="setFavoriteFilter(filter)" :title="$t('nav-bar.filters.pin')">
-                <span class="visually-hidden">{{ $t('nav-bar.filters.pin') }}</span>
+                <span class="visually-hidden">{{ $t('nav-bar.filters.pinFilter', { filterName: filter.name }) }}</span>
                 <span class="mdi mdi-pin text-muted"></span>
               </button>
             </div>
@@ -231,24 +231,24 @@ export default {
         let selectedFilter = this.$store.state.filter.list.find(f => {
           return f.id === filter.id
         })
-        try {
-          //Use of '*' as special character when we don't specify the filter on a link
-          selectedFilter = (!this.$route.params.filterId || this.$route.params.filterId === '*') && localStorage.getItem('filter') ?
-            JSON.parse(localStorage.getItem('filter')) : selectedFilter
-        } catch(error) {
-          console.error('Filter format wrong: corrected')
-          console.error(error)
-        }
-        if ((!this.$route.params.filterId || selectedFilter) || !selectedFilter) {
-          this.$store.state.filter.selected = selectedFilter || this.$store.state.filter.list[0]
-          this.$emit('selected-filter', this.$store.state.filter.selected.id)
-          localStorage.setItem('filter', JSON.stringify(this.$store.state.filter.selected))
-          const filterId = this.$route.params.filterId === '*' ? '*' : this.$store.state.filter.selected.id
-          const path = '/seven/auth/tasks/' + filterId + (taskId ? '/' + taskId : '')
-          if (this.$route.path !== path) {
-            this.isSelectingFilter = true
-            this.$router.replace(path)
+        if (!selectedFilter ) {
+          try {
+            //Use of '*' as special character when we don't specify the filter on a link
+            selectedFilter = (!this.$route.params.filterId || this.$route.params.filterId === '*') && localStorage.getItem('filter') ?
+              JSON.parse(localStorage.getItem('filter')) : selectedFilter
+          } catch(error) {
+            console.error('Filter format wrong: corrected')
+            console.error(error)
           }
+        }
+        this.$store.state.filter.selected = selectedFilter || this.$store.state.filter.list[0]
+        this.$emit('selected-filter', this.$store.state.filter.selected.id)
+        localStorage.setItem('filter', JSON.stringify(this.$store.state.filter.selected))
+        const filterId = this.$route.params.filterId === '*' ? '*' : this.$store.state.filter.selected.id
+        const path = '/seven/auth/tasks/' + filterId + (taskId ? '/' + taskId : '')
+        if (this.$route.path !== path) {
+          this.isSelectingFilter = true
+          this.$router.replace(path)
         }
         this.updateSelectedFilterTasksCountIfNeeded()
       }
@@ -266,7 +266,7 @@ export default {
     },
     deleteFilter: function() {
       this.$store.dispatch('deleteFilter', { filterId: this.workingFilter.id }).then(() => {
-        this.$emit('filter-alert', { message: 'msgFilterDeleted', filter: this.workingFilter.name })
+        this.$emit('filter-alert', { message: 'nav-bar.filters.msgFilterDeleted', filter: this.workingFilter.name })
         localStorage.removeItem('filter')
 		if (this.$store.state.filter.selected === this.workingFilter && this.$store.state.filter.list[0]) {
 			this.selectFilter(this.$store.state.filter.list[0])

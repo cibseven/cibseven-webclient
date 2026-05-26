@@ -23,7 +23,7 @@
         <h2 class="h4">{{ $t('setup.title') }}</h2>
         <p>{{ $t('setup.description') }}</p>
       </div>
-
+      
       <div class="container-fluid">
         <div class="row justify-content-center">
           <!-- Help Text - shows first on mobile -->
@@ -71,22 +71,6 @@
                     <div class="mb-3">
                       <label class="form-label" for="password">
                         {{ $t('admin.users.password') }} <span class="text-danger">*</span>
-                        <span
-                          v-if="passwordPolicyEnabled"
-                          ref="passwordHelper"
-                          class="mdi mdi-help-circle"
-                          :class="passwordPolicyError ? 'text-danger' : 'text-secondary'"
-                          style="cursor: pointer"
-                        ></span>
-                        <b-popover v-if="passwordPolicyEnabled" :target="() => $refs.passwordHelper" triggers="hover" placement="right">
-                          <h6>{{ $t('password.policy.title') }}</h6>
-                          <div>{{ $t('password.policy.header') }}</div>
-                          <ul class="mb-0 ps-3">
-                            <li v-for="(item, index) in $tm('password.policy.items')" :key="index">
-                              {{ item }}
-                            </li>
-                          </ul>
-                        </b-popover>
                       </label>
                       <div class="input-group">
                         <input
@@ -94,10 +78,9 @@
                           :type="showPassword ? 'text' : 'password'"
                           class="form-control"
                           v-model="credentials.password"
-                          :class="{
-                            'is-invalid': submitted && !notEmpty(credentials.password),
-                            'is-valid': notEmpty(credentials.password) && !passwordPolicyError,
-                          }"
+                          @blur="validatePassword"
+                          @input="resetPasswordValidation"
+                          :class="{'is-valid': passwordValid === true,'is-invalid': passwordValid === false}"
                           required
                         />
                         <button
@@ -108,6 +91,15 @@
                         >
                           <span :class="showPassword ? 'mdi mdi-eye-off' : 'mdi mdi-eye'"></span>
                         </button>
+                        <div v-if="passwordValid === false" class="invalid-feedback d-block">
+                          <h6>{{ $t('password.policy.title') }}</h6>
+                          <div>{{ $t('password.policy.header') }}</div>
+                          <ul>
+                            <li v-for="(item, idx) in invalidPasswordRules" :key="idx">
+                              {{ $t('password.policy.items.' + item.placeholder, item.parameter) }}
+                            </li>
+                          </ul>
+                        </div>
                       </div>
                       <div v-if="passwordPolicyError" class="text-danger small mt-1">
                         {{ $t('errors.PasswordPolicyException') }}
@@ -234,17 +226,38 @@ export default {
       userIdError: false,
       submitted: false,
       submitting: false,
+      passwordValid: null,
+      passwordRules: []
     }
   },
   computed: {
-    passwordPolicyEnabled() {
-      return this.$root?.config?.admin?.passwordPolicyEnabled || false
-    },
     engineName() {
       return localStorage.getItem(ENGINE_STORAGE_KEY) || 'default'
     },
+    invalidPasswordRules() {
+      return (this.passwordRules ).filter(item => {
+        return item && typeof item === 'object' && item.valid === false
+      })
+    }
   },
   methods: {
+    resetPasswordValidation: function () {
+      this.passwordValid = null
+      this.passwordRules = []
+    },
+    validatePassword: function () {
+      if (notEmpty(this.credentials.password)) {
+        SetupService.validatePasswordPolicy(this.credentials.password, this.profile).then((response) => {
+          this.passwordValid = response.data.valid
+          this.passwordRules = response.data.rules
+        }, error => {
+          const data = error.response.data
+          if (data && data.type === 'PasswordPolicyException') {
+            this.passwordPolicyError = true
+          }
+        })
+      }
+    },
     notEmpty(value) {
       return notEmpty(value)
     },

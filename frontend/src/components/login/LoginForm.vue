@@ -21,9 +21,8 @@
   <div>
     <CIBForm @submitted="onLogin">
       <b-form-group label-cols="4" content-cols="8" label-for="username-input" :label="$t('login.username')">
-        <input id="username-input" ref="username" v-model="credentials.username" class="form-control" :class="{ 'is-invalid': usernameError || generalError }" autocomplete="username" :aria-describedby="(usernameError || generalError) ? 'username-error' : null" :aria-invalid="(usernameError || generalError) ? 'true' : 'false'" :aria-required="true">
-        <div v-if="usernameError" id="username-error" class="invalid-feedback d-block" role="alert">{{ usernameError }}</div>
-        <div v-if="generalError" id="username-error" class="invalid-feedback d-block" role="alert">{{ generalError }}</div>
+        <input id="username-input" ref="username" v-model="credentials.username" class="form-control" :class="{ 'is-invalid': computedUsernameError }" autocomplete="username" :aria-describedby="computedUsernameError ? 'username-error' : null" :aria-invalid="computedUsernameError ? 'true' : 'false'" :aria-required="true">
+        <div v-if="computedUsernameError" id="username-error" class="invalid-feedback d-block" role="alert">{{ computedUsernameError }}</div>
       </b-form-group>
       <b-form-group label-cols="4" content-cols="8" label-for="password-input" :label="$t('login.password')">
         <SecureInput ref="password" v-model="credentials.password" :aria-describedby="passwordError ? 'password-error' : null" :has-error="!!passwordError" :required="true"></SecureInput>
@@ -50,15 +49,20 @@
       </div>
     </CIBForm>
 
-    <b-modal ref="emailDialog" :title="$t('login.forgotten')" @shown="$refs.email.focus()">
-      <CIBForm ref="form" @submitted="onForgotten">
-        <b-form-group :invalid-feedback="$t('errors.invalid')">
-          <label for="email" class="mb-2">{{ $t('login.email') }}</label>
-          <input id="email" ref="email" :type="forgottenType" :placeholder="$t('login.email')" class="form-control" required autocomplete="email">
+    <b-modal ref="emailDialog" :title="$t('login.forgotten')" @shown="onEmailDialogShown">
+      <CIBForm ref="form" @submitted="onForgotten" @fail="onEmailFail">
+        <b-form-group label-for="email" :label="$t('login.email')">
+          <input id="email" ref="email" :type="forgottenType" :placeholder="$t('login.email')"
+            class="form-control" :class="{ 'is-invalid': emailError }"
+            required autocomplete="email"
+            :aria-required="true"
+            :aria-invalid="emailError ? 'true' : 'false'"
+            :aria-describedby="emailError ? 'email-error' : null">
+          <div v-if="emailError" id="email-error" class="invalid-feedback d-block" role="alert">{{ emailError }}</div>
         </b-form-group>
       </CIBForm>
       <template v-slot:modal-footer>
-        <b-button @click="$refs.form.onSubmit()" variant="primary">{{ $t('confirm.ok') }}</b-button>
+        <b-button type="button" @click="$refs.form.onSubmit()" variant="primary">{{ $t('confirm.ok') }}</b-button>
       </template>
     </b-modal>
 
@@ -92,9 +96,15 @@ export default {
       rememberMe: true,
       show: false,
       email: null,
+      emailError: null,
       usernameError: null,
       passwordError: null,
       generalError: null
+    }
+  },
+  computed: {
+    computedUsernameError() {
+      return this.usernameError || this.generalError
     }
   },
   mounted: function() {
@@ -142,7 +152,16 @@ export default {
       })
     }, // https://vuejs.org/v2/guide/components-custom-events.html
 
+    onEmailDialogShown: function() {
+      this.emailError = null
+      this.$refs.email.focus()
+    },
+    onEmailFail: function() {
+      this.emailError = this.$t('errors.invalid')
+      this.$nextTick(() => this.$refs.email.focus())
+    },
     onForgotten: function() {
+      this.emailError = null
       this.email = this.$refs.email.value
       if (this.credentials2) this.credentials2.email = this.email
       AuthService.requestPasswordReset({ email: this.email }).then(function() {

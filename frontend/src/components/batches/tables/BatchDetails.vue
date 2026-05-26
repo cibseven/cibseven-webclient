@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <ContentBlock :title="$t('batches.' + batchType + 'Details')" v-if="batchId && batchType">
+  <ContentBlock :title="$t(titleLabel)" v-if="batchId && batchType">
     <template #actions>
       <div v-if="batchDetails && batchDetails.length > 0 && !loading">
         <b-button v-if="batchType === 'runtime'" class="me-1" size="sm" variant="light"
@@ -35,10 +35,10 @@
     </template>
     <div v-if="batchDetails && batchDetails.length > 0 && !loading" class="p-0">
       <div class="overflow-auto">
-        <FlowTable v-if="batchDetails" striped thead-class="sticky-header" :items="batchDetails" primary-key="id" prefix="batches."
+        <FlowTable v-if="batchDetails" striped thead-class="sticky-header" :items="batchDetails" primary-key="id"
           :fields="[
-            { label: 'property', key: 'property', class: 'col-6', tdClass: 'p-1' },
-            { label: 'value', key: 'value', class: 'col-6', tdClass: 'p-1' },
+            { label: 'batches.property', key: 'property', class: 'col-6', tdClass: 'p-1' },
+            { label: 'batches.value', key: 'value', class: 'col-6', tdClass: 'p-1' },
           ]">
         </FlowTable>
       </div>
@@ -86,6 +86,9 @@ export default {
     },
     batchType: function() {
       return this.$route.query.type
+    },
+    titleLabel: function() {
+      return (this.batchType === 'history') ? 'batches.historyDetails' : 'batches.runtimeDetails'
     },
     batchDetails: function() {
       if (!this.batch) return []

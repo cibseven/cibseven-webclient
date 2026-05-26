@@ -31,16 +31,27 @@
       </div>
     </div>
     <div class="overflow-y-scroll bg-white container-fluid g-0 flex-grow-1">
-      <FlowTable v-if="!loading" striped resizable thead-class="sticky-header" :items="filteredVariables" primary-key="id" prefix="process-instance.variables."
-        sort-by="name" :fields="[
-        { label: 'name', key: 'name', class: 'col-3', tdClass: 'py-1' },
-        { label: 'type', key: 'type', class: 'col-2', tdClass: 'py-1' },
-        { label: 'value', key: 'value', class: 'col-3', tdClass: 'py-1' },
-        { label: 'scope', key: 'scope', class: 'col-2', tdClass: 'py-1' },
-        { label: 'actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-0' }]">
+      <FlowTable v-if="!loading" striped resizable thead-class="sticky-header" :items="filteredVariables" primary-key="id"
+        native-layout
+        useCase="instance-variables"
+        :columns="['name', 'type', 'value', 'scope', 'actions']"
+        sort-by="name"
+        :column-definitions="[
+          { label: 'process-instance.variables.name', key: 'name', tdClass: 'pb-0' },
+          { label: 'process-instance.variables.type', key: 'type', tdClass: 'pb-0' },
+          { label: 'process-instance.variables.value', key: 'value', tdClass: 'pb-0' },
+          { label: 'process-instance.variables.scope', key: 'scope', tdClass: 'pb-0', groupSeparator: true },
+          { label: 'process-instance.variables.activityInstanceId', key: 'activityInstanceId', tdClass: 'pb-0' },
+          { label: 'process-instance.variables.actions', key: 'actions', groupSeparator: true, disableToggle: true, sortable: false, tdClass: 'py-0' },
+        ]">
 
         <template v-slot:cell(name)="table">
-          <div :title="table.item.name" class="text-truncate">{{ table.item.name }}</div>
+          <CopyableActionButton
+            :displayValue="table.item.name"
+            :clickable="false"
+            :title="$t('process-instance.variables.name') + ':\n' + table.item.name"
+            @copy="copyValueToClipboard"
+          />          
         </template>
 
         <template v-slot:cell(type)="table">
@@ -58,26 +69,43 @@
         </template>
 
         <template v-slot:cell(scope)="table">
-          <div :title="table.item.scope">{{ table.item.scope }}</div>
+          <CopyableActionButton
+            :displayValue="table.item.scope"
+            :clickable="!!table.item.scopeActivityId"
+            :title="$t('process-instance.variables.scope') + ':\n' + table.item.scope + '\n\n' + $t('process-instance.variables.activityInstanceId') + ':\n' + table.item.activityInstanceId"
+            @click="highlightScope(table.item)"
+            @copy="copyValueToClipboard"
+          />          
+        </template>
+
+        <template v-slot:cell(activityInstanceId)="table">
+          <CopyableActionButton
+            :displayValue="table.item.activityInstanceId"
+            :clickable="false"
+            :title="$t('process-instance.variables.activityInstanceId') + ':\n' + table.item.activityInstanceId"
+            @copy="copyValueToClipboard"
+          />
         </template>
 
         <template v-slot:cell(actions)="table">
-          <component :is="VariablesTableActionsPlugin" v-if="VariablesTableActionsPlugin" :table-item="table.item" :selected-instance="selectedInstance" :file-objects="fileObjects"></component>
-          <CellActionButton v-if="isFile(table.item)" :title="displayValueTooltip(table.item)"
-            icon="mdi-download-outline"
-            @click="downloadFile(table.item)">
-          </CellActionButton>
-          <CellActionButton v-if="isFile(table.item) && isActiveInstance" :title="$t('process-instance.upload')"
-            icon="mdi-upload-outline"
-            @click="selectedVariable = table.item; $refs.uploadFile.show()">
-          </CellActionButton>
-          <CellActionButton v-if="'File' !== table.item.type && !isFileValueDataSource(table.item)"
-            :title="$t(isActiveInstance ? 'process-instance.edit' : 'process-instance.variables.historicVariable.tooltip')" 
-            :icon="isActiveInstance ? 'mdi-square-edit-outline' : 'mdi-eye-outline'"
-            @click="modifyVariable(table.item)">
-          </CellActionButton>
-          <CellActionButton v-if="hasDeletionPermission" :title="$t('confirm.delete')" 
-            icon="mdi-delete-outline" @click="deleteVariable(table.item)"></CellActionButton>
+          <div class="d-flex">
+            <component :is="VariablesTableActionsPlugin" v-if="VariablesTableActionsPlugin" :table-item="table.item" :selected-instance="selectedInstance" :file-objects="fileObjects"></component>
+            <CellActionButton v-if="isFile(table.item)" :title="displayValueTooltip(table.item)"
+              icon="mdi-download-outline"
+              @click="downloadFile(table.item)">
+            </CellActionButton>
+            <CellActionButton v-if="isFile(table.item) && isActiveInstance" :title="$t('process-instance.upload')"
+              icon="mdi-upload-outline"
+              @click="selectedVariable = table.item; $refs.uploadFile.show()">
+            </CellActionButton>
+            <CellActionButton v-if="'File' !== table.item.type && !isFileValueDataSource(table.item)"
+              :title="$t(isActiveInstance ? 'process-instance.edit' : 'process-instance.variables.historicVariable.tooltip')" 
+              :icon="isActiveInstance ? 'mdi-square-edit-outline' : 'mdi-eye-outline'"
+              @click="modifyVariable(table.item)">
+            </CellActionButton>
+            <CellActionButton v-if="hasDeletionPermission" :title="$t('confirm.delete')" 
+              icon="mdi-delete-outline" @click="deleteVariable(table.item)"></CellActionButton>
+          </div>
         </template>
       </FlowTable>
       <div v-else>
@@ -116,7 +144,8 @@ import processesVariablesMixin from '@/components/process/mixins/processesVariab
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { permissionsMixin } from '@/permissions.js'
-import { mapGetters } from 'vuex'
+import { mapGetters, mapActions } from 'vuex'
+import variableUtils from '@/components/process/mixins/variableUtils'
 
 export default {
   name: 'VariablesTable',
@@ -125,7 +154,7 @@ export default {
   data: function() {
     return {
       filteredVariables: [],
-      fileObjects: ['de.cib.cibflow.api.files.FileValueDataFlowSource', 'de.cib.cibflow.api.files.FileValueDataSource']
+      fileObjects: variableUtils.getFileObjects(),
     }
   },
   computed: {
@@ -163,6 +192,13 @@ export default {
     },
   },
   methods: {
+    ...mapActions(['setHighlightedElement', 'selectActivity']),
+    highlightScope(variable) {
+      if (variable.scopeActivityId) {
+        this.selectActivity({ activityId: variable.scopeActivityId })
+        this.setHighlightedElement(variable.scopeActivityId)
+      }
+    },
     async addNewVariable() {
       this.$refs.addVariableModal.show()
     },
