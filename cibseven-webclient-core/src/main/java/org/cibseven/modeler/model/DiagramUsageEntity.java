@@ -42,7 +42,7 @@ import lombok.Setter;
 @Getter
 @RequiredArgsConstructor
 @Entity
-@Table(name = "mod_diagram_usage")
+@Table(name = "MOD_DIAGRAM_USAGE")
 public class DiagramUsageEntity {
 
 	@Id

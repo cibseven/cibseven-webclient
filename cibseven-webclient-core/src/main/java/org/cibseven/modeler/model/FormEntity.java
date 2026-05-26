@@ -36,7 +36,7 @@ import lombok.Setter;
 @Getter
 @RequiredArgsConstructor
 @Entity
-@Table(name = "mod_forms")
+@Table(name = "MOD_FORMS")
 public class FormEntity {
 
 	@Id

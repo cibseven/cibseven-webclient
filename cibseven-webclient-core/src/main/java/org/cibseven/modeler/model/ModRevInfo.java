@@ -27,7 +27,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "mod_revinfo")
+@Table(name = "MOD_REVINFO")
 @RevisionEntity
 public class ModRevInfo{
     @Id
