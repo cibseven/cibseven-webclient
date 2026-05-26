@@ -295,7 +295,12 @@
 				"historic": "Історичну змінну було успішно видалено.",
 				"historicError": "Сталася помилка під час спроби видалити історичну змінну \"{name}\"."
 			},
-			"enterValue": "Введіть значення"
+			"enterValue": "Введіть значення",
+			"activityIdBadge": {
+				"remove": "Видалити критерій - для відображення всіх змінних",
+				"title": "{activityId}",
+				"tooltip": "Показувати лише змінні області \"{activityId}\"."
+			}
 		},
 		"incidents": {
 			"activityIdBadge": {

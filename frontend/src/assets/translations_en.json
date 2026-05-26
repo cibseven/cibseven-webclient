@@ -295,7 +295,12 @@
 				"historic": "The historic variable was deleted successfully.",
 				"historicError": "An error occurred while attempting to delete the historic variable \"{name}\"."
 			},
-			"enterValue": "Enter value"
+			"enterValue": "Enter value",
+			"activityIdBadge": {
+				"remove": "Remove criteria - to list all variables",
+				"title": "{activityId}",
+				"tooltip": "Show only variables in scope \"{activityId}\"."
+			}
 		},
 		"incidents": {
 			"activityIdBadge": {
