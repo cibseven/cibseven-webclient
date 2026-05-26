@@ -25,8 +25,9 @@ import org.cibseven.modeler.config.ElementTemplateProperties;
 import org.cibseven.modeler.model.ElementTemplate;
 import org.cibseven.modeler.model.ElementTemplateOrigin;
 import org.cibseven.modeler.repository.ElementTemplateRepository;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Component;
@@ -45,7 +46,7 @@ import lombok.extern.slf4j.Slf4j;
     matchIfMissing = false
 )
 @Slf4j
-public class ElementTemplateLoader implements InitializingBean {
+public class ElementTemplateLoader {
 
 	private final ObjectMapper mapper;
 	private final ElementTemplateRepository elementTemplateRepository;
@@ -63,8 +64,15 @@ public class ElementTemplateLoader implements InitializingBean {
 		this.resourcePatternResolver = resourcePatternResolver;
 	}
 
-	@Override
-	public void afterPropertiesSet() throws Exception {
+	// Defer to context refresh: the engine creates the MOD_* tables during ProcessEngine
+	// bootstrap (ProcessEngineFactoryBean.getObject -> dbSchemaCreateModeler), which runs
+	// while singletons are being instantiated. Querying them in afterPropertiesSet races
+	// the engine and fails on a fresh database.
+	@EventListener
+	public void onContextRefreshed(ContextRefreshedEvent event) {
+		if (event.getApplicationContext().getParent() != null) {
+			return;
+		}
 		transactionTemplate.executeWithoutResult(status -> populateElementTemplatesDatabase());
 	}
 
