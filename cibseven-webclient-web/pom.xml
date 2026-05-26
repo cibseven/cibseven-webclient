@@ -21,24 +21,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-starter-logging</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<!-- Log4j2 backend for standalone deployment (WildFly/Tomcat WAR), pairing
-		     with the starter-logging (logback) exclusion above; slf4j2 matches
-		     slf4j-api 2.x. optional=true so it is still packaged into this WAR but
-		     is NOT inherited transitively when the webclient is embedded into a
-		     Spring Boot host (run/run4), which provides its own logback backend. -->
-		<dependency>
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-slf4j2-impl</artifactId>
-			<scope>runtime</scope>
-			<optional>true</optional>
 		</dependency>
 
 		<dependency>
