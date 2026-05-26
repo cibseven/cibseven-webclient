@@ -20,11 +20,25 @@ import java.util.Collection;
 
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.rest.model.Engine;
+import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.cibseven.webapp.rest.model.NewUser;
 
+import org.springframework.lang.Nullable;
+
 public interface IEngineProvider {
-	
+	public static final String DEFAULT_ENGINE_NAME = "default";
+
+	public static boolean isDefaultEngine(String engine) {
+		return engine == null || engine.isEmpty() || DEFAULT_ENGINE_NAME.equalsIgnoreCase(engine);
+	}
+
+	public static boolean isExternalEngine(String engine) {
+		return engine != null && engine.contains("|");
+	}
+
 	public Collection<Engine> getProcessEngineNames();
+	@Nullable public EngineConfiguration getDefaultEngineConfiguration();
+	@Nullable public EngineConfiguration getEngineConfiguration(String engineName);
 	public Boolean requiresSetup(String engine);
 	public void createSetupUser(NewUser user, String engine) throws InvalidUserIdException;
 }

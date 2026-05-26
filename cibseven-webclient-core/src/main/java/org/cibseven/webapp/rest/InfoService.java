@@ -17,10 +17,13 @@
 package org.cibseven.webapp.rest;
 
 import org.cibseven.webapp.auth.SevenUserProvider;
+import org.cibseven.webapp.providers.IEngineProvider;
+import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.cibseven.webapp.rest.model.InfoVersion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,6 +36,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +50,15 @@ public class InfoService extends BaseService {
 	@Value("${cibseven.webclient.sso.endpoints.authorization:}") private String authorizationEndpoint;
 	@Value("${cibseven.webclient.sso.clientId:}") private String clientId;
 	@Value("${cibseven.webclient.sso.scopes:}") private String scopes;
+	/**
+	 * Legacy fallback used only with engine-rest versions prior to 2.2.0.
+	 *
+	 * Since 2.2.0, the history level is exposed by the engine configuration endpoint,
+	 * allowing it to be resolved dynamically. This property is therefore used only
+	 * when communicating with older engine-rest versions that do not support that endpoint,
+	 * keeping the "/info" endpoint backward-compatible without requiring the history level
+	 * to be maintained in the application configuration.
+	 */
 	@Value("${cibseven.webclient.historyLevel:full}") private String camundaHistoryLevel;
 	@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") private String userProvider;
 	@Value("${cibseven.webclient.user.editable:#{null}}") private Boolean userEditable;
@@ -63,13 +76,24 @@ public class InfoService extends BaseService {
 	@Value("${cibseven.webclient.support-dialog:}") private String supportDialog;
 	@Value("${cibseven.webclient.engineRest.path:/engine-rest}") private String engineRestPath;
 	@Value("${cibseven.webclient.engineRest.url:./}") private String engineRestUrl;
-
+	/**
+	 * Legacy fallback used only with engine-rest versions prior to 2.2.0.
+	 *
+	 * Since 2.2.0, the authorizationEnabled is exposed by the engine configuration endpoint,
+	 * allowing it to be resolved dynamically. This property is therefore used only
+	 * when communicating with older engine-rest versions that do not support that endpoint,
+	 * keeping the "/info" endpoint backward-compatible without requiring the authorizationEnabled
+	 * to be maintained in the application configuration.
+	 */
 	@Value("${camunda.bpm.authorization.enabled:true}") private boolean authorizationEnabled;
 	@Value("${cibseven.webclient.legacy.authorization.enabled:false}") private boolean legacyAuthorizationEnabled;
 	@Value("${cibseven.webclient.modeler.enabled:false}") private boolean modelerEnabled;
 	
 	@Autowired
 	InfoVersion infoVersion;
+
+	@Autowired
+	IEngineProvider engineProvider;
 	
 	@PostConstruct
 	public void init() {
@@ -88,17 +112,51 @@ public class InfoService extends BaseService {
 	}
 	
 	@Operation(
-			summary = "Get config JSON",
-			description = "<strong>Return: Config JSON object")
+			summary = "Get properties for webclient configuration and engine configuration",
+			description = "<strong>Return: JSON object")
 	@GetMapping("/properties")
-	public ObjectNode getConfig() {
+	public ObjectNode getConfig(
+		@Parameter(description = "Optional engine definition to get configuration for. If not provided, default engine configuration will be returned")
+		@RequestHeader(value = "X-Process-Engine", required = false) String engine
+	) {
+
+		// when newer middleware is connected to old engine-rest,
+		// the engine configuration endpoint might not be available (404).
+		// In this case we will get properties from old configuration properties (history level, authorization enabled) and use them to create a default engine configuration object
+		final boolean isDefaultOrExternalEngine = IEngineProvider.isDefaultEngine(engine) || IEngineProvider.isExternalEngine(engine);
+		EngineConfiguration engineConfig =
+			isDefaultOrExternalEngine
+				? engineProvider.getDefaultEngineConfiguration()
+				: engineProvider.getEngineConfiguration(engine);
+		if (engineConfig == null) {
+			// when newer middleware is connected to old engine-rest,
+			// the engine configuration endpoint may not exist yet (404).
+			// In that case we fallback to legacy configuration properties.
+			log.warn(
+				"engine-rest does not support the configuration endpoint, falling back to legacy configuration"
+			);
+
+			engineConfig = new EngineConfiguration();
+			engineConfig.setHistoryLevel(camundaHistoryLevel);
+			engineConfig.setAuthorizationEnabled(authorizationEnabled);
+			// Before 2.2.0 passwordPolicyEnabled was specified inside the config.json.
+			// Since 2.2.0, it is available only in the engine configuration endpoint.
+			// But since 2.2.0 it is not used anymore on webclient, so we can skip it here,
+			// making the whole this "/info" endpoint compatible with both old and new versions of engine-rest without the need to maintain the password policy property in the configuration file.
+			//
+			// disabled (no need right now):
+			// `engineConfig.setEnablePasswordPolicy(false);`
+		}
+
 		ObjectNode configJson = JsonNodeFactory.instance.objectNode();
 		configJson.put("theme", theme);
 		configJson.put("ssoActive", ssoActive);
-		configJson.put("camundaHistoryLevel", camundaHistoryLevel);
+		configJson.put("camundaHistoryLevel", engineConfig.getHistoryLevel());
 		configJson.put("userProvider", userProvider);
 		configJson.put("userEditable", userEditable);
 		configJson.put("userPasswordChangeEnabled", userPasswordChangeEnabled);
+		// disabled (no need right now):
+		// `configJson.put("passwordPolicyEnabled", engineConfig.isEnablePasswordPolicy());`
 		configJson.put("flowLinkTerms", flowLinkTerms);
 		configJson.put("flowLinkPrivacy", flowLinkPrivacy);
 		configJson.put("flowLinkImprint", flowLinkImprint);
@@ -109,7 +167,7 @@ public class InfoService extends BaseService {
 		
 		configJson.put("engineRestPath", engineRestPath);
 		configJson.put("engineRestUrl", engineRestUrl);
-		configJson.put("authorizationEnabled", authorizationEnabled || legacyAuthorizationEnabled);
+		configJson.put("authorizationEnabled", engineConfig.isAuthorizationEnabled() || legacyAuthorizationEnabled);
 		configJson.put("modelerEnabled", modelerEnabled);
 		
         try {

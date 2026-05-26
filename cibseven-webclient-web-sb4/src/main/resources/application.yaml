@@ -55,7 +55,6 @@ cibseven:
       #     displayName: Dev Server
       #     tooltip: Development environment
       #     jwtSecret:
-    historyLevel: full
     # Token generation
     authentication:
       jwtSecret:
