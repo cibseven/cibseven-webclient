@@ -51,7 +51,13 @@ public class InfoService extends BaseService {
 	@Value("${cibseven.webclient.sso.clientId:}") private String clientId;
 	@Value("${cibseven.webclient.sso.scopes:}") private String scopes;
 	/**
-	 * Available only before 2.2.0
+	 * Legacy fallback used only with engine-rest versions prior to 2.2.0.
+	 *
+	 * Since 2.2.0, the history level is exposed by the engine configuration endpoint,
+	 * allowing it to be resolved dynamically. This property is therefore used only
+	 * when communicating with older engine-rest versions that do not support that endpoint,
+	 * keeping the "/info" endpoint backward-compatible without requiring the history level
+	 * to be maintained in the application configuration.
 	 */
 	@Value("${cibseven.webclient.historyLevel:full}") private String camundaHistoryLevel;
 	@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") private String userProvider;
@@ -71,7 +77,13 @@ public class InfoService extends BaseService {
 	@Value("${cibseven.webclient.engineRest.path:/engine-rest}") private String engineRestPath;
 	@Value("${cibseven.webclient.engineRest.url:./}") private String engineRestUrl;
 	/**
-	 * Available only before 2.2.0
+	 * Legacy fallback used only with engine-rest versions prior to 2.2.0.
+	 *
+	 * Since 2.2.0, the authorizationEnabled is exposed by the engine configuration endpoint,
+	 * allowing it to be resolved dynamically. This property is therefore used only
+	 * when communicating with older engine-rest versions that do not support that endpoint,
+	 * keeping the "/info" endpoint backward-compatible without requiring the authorizationEnabled
+	 * to be maintained in the application configuration.
 	 */
 	@Value("${camunda.bpm.authorization.enabled:true}") private boolean authorizationEnabled;
 	@Value("${cibseven.webclient.legacy.authorization.enabled:false}") private boolean legacyAuthorizationEnabled;
@@ -130,7 +142,7 @@ public class InfoService extends BaseService {
 			// Before 2.2.0 passwordPolicyEnabled was specified inside the config.json.
 			// Since 2.2.0, it is available only in the engine configuration endpoint.
 			// But since 2.2.0 it is not used anymore on webclient, so we can skip it here,
-			// making the whole this endpoint compatible with both old and new versions of engine-rest without the need to maintain the password policy property in the configuration file.
+			// making the whole this "/info" endpoint compatible with both old and new versions of engine-rest without the need to maintain the password policy property in the configuration file.
 			//
 			// disabled (no need right now):
 			// `engineConfig.setEnablePasswordPolicy(false);`
