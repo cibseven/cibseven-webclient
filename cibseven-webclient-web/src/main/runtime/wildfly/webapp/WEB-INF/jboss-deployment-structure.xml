@@ -11,8 +11,12 @@
     </dependencies>
     <exclude-subsystems>
       <subsystem name="logging"/>
+      <subsystem name="jpa"/>
     </exclude-subsystems>
     <exclusions>
+      <module name="org.hibernate"/>
+      <module name="org.hibernate.commons-annotations"/>
+      <module name="jakarta.persistence.api"/> 
       <module name="com.fasterxml.jackson.jakarta.jackson-jakarta-json-provider"/>
       <module name="com.fasterxml.jackson.core.jackson-core"/>
       <module name="com.fasterxml.jackson.core.jackson-annotations"/>
