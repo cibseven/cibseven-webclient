@@ -155,7 +155,7 @@
                 <div class="row g-0" :class="expandedTasks[task.id] ? '' : 'task-variables-collapsed'">
                   <div v-for="filterVar in visibleFilterVariables(task)" :key="filterVar.name" class="col-12 h6 fw-normal m-0 mt-2">
                     <div class="d-flex">
-                      <div class="text-truncate fw-semibold me-1" :title="displayTooltip(task, filterVar)">{{ filterVar.label }}:</div>
+                      <div class="text-truncate fw-semibold me-1" :title="displayTooltip(task, filterVar)">{{ filterVar.label || filterVar.name }}:</div>
                       <div v-if="task.variables && task.variables[filterVar.name] !== undefined && task.variables[filterVar.name] !== null" class="text-truncate" :title="displayTooltip(task, filterVar)">
                         {{ displayValue(task, filterVar) }}
                       </div>
@@ -351,7 +351,7 @@ export default {
       return variableUtils.shortValue(variableUtils.displayValue(variable))
     },
     displayTooltip: function(task, filterVar) {
-      const header = filterVar.label + ' (' + filterVar.name + '):'
+      const header = filterVar.label ? filterVar.label + ' (' + filterVar.name + '):' : filterVar.name + ':'
       const variable = { 
         name: filterVar.name, 
         value: task.variables?.[filterVar.name], 
