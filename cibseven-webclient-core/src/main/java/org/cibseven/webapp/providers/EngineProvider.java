@@ -183,7 +183,9 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 		try {
 			return doGet(url, EngineConfiguration.class, null, false).getBody();
 		} catch (SystemException e) {
-			if (e.getCause() instanceof HttpClientErrorException.NotFound) {
+			if (e.getCause() instanceof HttpClientErrorException.NotFound ||
+				// for CIB seven before 2.2.0, with auth enabled, the endpoint returns 401 instead of 404 when not found
+				e.getCause() instanceof HttpClientErrorException.Unauthorized) {
 				log.warn("Engine configuration endpoint not found at {}, falling back to legacy configuration", url);
 				return null;
 			}
