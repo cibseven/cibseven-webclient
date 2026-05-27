@@ -43,7 +43,6 @@ import org.cibseven.bpm.engine.rest.dto.repository.RedeploymentDto;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.NoRessourcesFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.WrongDeploymenIdException;

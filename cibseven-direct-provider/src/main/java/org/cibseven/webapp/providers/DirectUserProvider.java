@@ -20,10 +20,10 @@ import static org.cibseven.webapp.auth.SevenAuthorizationUtils.resourceType;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.cibseven.bpm.engine.ProcessEngineException;
 import org.cibseven.bpm.engine.authorization.AuthorizationQuery;
@@ -51,7 +51,6 @@ import org.cibseven.webapp.rest.model.SevenUser;
 import org.cibseven.webapp.rest.model.SevenVerifyUser;
 import org.cibseven.webapp.rest.model.User;
 import org.cibseven.webapp.rest.model.UserGroup;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 
 public class DirectUserProvider implements IUserProvider {
@@ -92,15 +91,19 @@ public class DirectUserProvider implements IUserProvider {
 				null);
 		GroupQuery groupQuery = directProviderUtil.getProcessEngine(user).getIdentityService().createGroupQuery();
 		List<Group> userGroups = groupQuery.groupMember(userId).orderByGroupName().asc().unlimitedList();
-		List<String> listGroups = userGroups.stream().map(Group::getId).collect(Collectors.toList());
 
-		AuthorizationQueryDto groupIdQueryDto = new AuthorizationQueryDto();
-		groupIdQueryDto.setGroupIdIn(listGroups.toArray(new String[0]));
-		groupIdQueryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
-		AuthorizationQuery groupIdQuery = groupIdQueryDto.toQuery(directProviderUtil.getProcessEngine(user));
-		List<org.cibseven.bpm.engine.authorization.Authorization> groupIdResultList = QueryUtil.list(groupIdQuery, null,
-				null);
-		Collection<Authorization> groupsAuthorizations = createAuthorizationCollection(groupIdResultList);
+		Collection<Authorization> groupsAuthorizations;
+		if (!userGroups.isEmpty()) {
+			String[] listGroups = userGroups.stream().map(Group::getId).toArray(String[]::new);
+			AuthorizationQueryDto groupIdQueryDto = new AuthorizationQueryDto();
+			groupIdQueryDto.setGroupIdIn(listGroups);
+			groupIdQueryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
+			AuthorizationQuery groupIdQuery = groupIdQueryDto.toQuery(directProviderUtil.getProcessEngine(user));
+			List<org.cibseven.bpm.engine.authorization.Authorization> groupIdResultList = QueryUtil.list(groupIdQuery, null, null);
+			groupsAuthorizations = createAuthorizationCollection(groupIdResultList);
+		} else {
+			groupsAuthorizations = Collections.emptyList();
+		}
 
 		AuthorizationQueryDto globalIdQueryDto = new AuthorizationQueryDto();
 		globalIdQueryDto.setType(0);

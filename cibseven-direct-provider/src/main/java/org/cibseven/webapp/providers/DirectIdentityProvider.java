@@ -1,7 +1,6 @@
 package org.cibseven.webapp.providers;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.cibseven.bpm.engine.IdentityService;
@@ -9,13 +8,9 @@ import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.identity.PasswordPolicyResult;
 import org.cibseven.bpm.engine.identity.PasswordPolicyRule;
 import org.cibseven.bpm.engine.identity.User;
-import org.cibseven.bpm.engine.rest.dto.identity.CheckPasswordPolicyResultDto;
 import org.cibseven.bpm.engine.rest.dto.identity.CheckPasswordPolicyRuleDto;
-import org.cibseven.bpm.engine.rest.dto.identity.UserProfileDto;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.SystemException;
-import org.cibseven.webapp.providers.IIdentityProvider;
-import org.cibseven.webapp.providers.IVariableProvider;
 import org.cibseven.webapp.rest.model.PasswordPolicyRequest;
 import org.cibseven.webapp.rest.model.PasswordPolicyResponse;
 
