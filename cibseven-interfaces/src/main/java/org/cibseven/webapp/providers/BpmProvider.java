@@ -43,6 +43,7 @@ import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
 import org.cibseven.webapp.rest.model.Engine;
+import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.cibseven.webapp.rest.model.EventSubscription;
 import org.cibseven.webapp.rest.model.ExternalTask;
 import org.cibseven.webapp.rest.model.Filter;
@@ -76,6 +77,7 @@ import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.cibseven.webapp.rest.model.VariableInstance;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -1921,6 +1923,25 @@ public interface BpmProvider {
 
 	default Collection<Engine> getProcessEngineNames() throws SystemException {
 		return getEngineProvider().getProcessEngineNames();
+	}
+
+	/**
+	 * Returns the configuration for the default BPM engine.
+	 *
+	 * @return the default {@link EngineConfiguration}, or {@code null} if no default engine is configured
+	 */
+	default @Nullable public EngineConfiguration getDefaultEngineConfiguration() {
+		return getEngineProvider().getDefaultEngineConfiguration();
+	}
+
+	/**
+	 * Returns the configuration for the BPM engine with the given name.
+	 *
+	 * @param engineName the name of the engine to look up
+	 * @return the {@link EngineConfiguration} for the specified engine, or {@code null} if no engine with that name is configured
+	 */
+	default @Nullable public EngineConfiguration getEngineConfiguration(String engineName) {
+		return getEngineProvider().getEngineConfiguration(engineName);
 	}
 
 	/**
