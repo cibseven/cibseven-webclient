@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -47,7 +49,6 @@ import org.cibseven.bpm.engine.history.HistoricTaskInstance;
 import org.cibseven.bpm.engine.history.HistoricTaskInstanceQuery;
 import org.cibseven.bpm.engine.identity.Group;
 import org.cibseven.bpm.engine.identity.GroupQuery;
-import org.cibseven.bpm.engine.impl.form.validator.FormFieldValidationException;
 import org.cibseven.bpm.engine.impl.identity.Authentication;
 import org.cibseven.bpm.engine.impl.util.IoUtil;
 import org.cibseven.bpm.engine.query.Query;
@@ -57,7 +58,6 @@ import org.cibseven.bpm.engine.rest.dto.converter.DelegationStateConverter;
 import org.cibseven.bpm.engine.rest.dto.converter.StringListConverter;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricTaskInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricTaskInstanceQueryDto;
-import org.cibseven.bpm.engine.rest.dto.runtime.StartProcessInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.task.CompleteTaskDto;
 import org.cibseven.bpm.engine.rest.dto.task.FormDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskBpmnErrorDto;
@@ -66,7 +66,6 @@ import org.cibseven.bpm.engine.rest.dto.task.TaskDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskQueryDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskWithAttachmentAndCommentDto;
 import org.cibseven.bpm.engine.rest.exception.RestException;
-import org.cibseven.bpm.engine.rest.mapper.JacksonConfigurator;
 import org.cibseven.bpm.engine.rest.util.ApplicationContextPathUtil;
 import org.cibseven.bpm.engine.rest.util.EncodingUtil;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
@@ -86,13 +85,14 @@ import org.cibseven.webapp.rest.model.TaskFiltering;
 import org.cibseven.webapp.rest.model.TaskForm;
 import org.cibseven.webapp.rest.model.TaskHistory;
 import org.cibseven.webapp.rest.model.Variable;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 
 public class DirectTaskProvider implements ITaskProvider {
 
@@ -299,8 +299,31 @@ public class DirectTaskProvider implements ITaskProvider {
 
 	@Override
 	public Integer findTasksCountByFilter(String filterId, CIBUser user, TaskFiltering filters) {
-		List<?> entities = executeFilterList(filters, filterId, user, null, null);
-		return entities.size();
+		// authentication is required to access the current user while executing the
+		// query
+		GroupQuery groupQuery = directProviderUtil.getProcessEngine(user).getIdentityService().createGroupQuery();
+		List<Group> userGroups = groupQuery.groupMember(user.getId()).orderByGroupName().asc().unlimitedList();
+		List<String> groupNames = new ArrayList<>();
+		for (Group userGroup : userGroups)
+			groupNames.add(userGroup.getId());
+
+		Authentication authentication = new Authentication(user.getId(), groupNames);
+		directProviderUtil.getProcessEngine(user).getIdentityService().setAuthentication(authentication);
+
+		String extendingQueryString;
+		try {
+			extendingQueryString = filters.json();
+		} catch (JsonProcessingException e) {
+			throw new SystemException("Failed json conversion", e);
+		}
+
+		Query<?, ?> extendingQuery = convertQuery(extendingQueryString, filterId, user);
+		try {
+			long count = directProviderUtil.getProcessEngine(user).getFilterService().count(filterId, extendingQuery);
+			return (int) count;
+		} catch (NullValueException e) {
+			throw new SystemException("Filter not found", e);
+		}
 	}
 
 	@Override
@@ -470,12 +493,15 @@ public class DirectTaskProvider implements ITaskProvider {
 	}
 
 	private List<org.cibseven.bpm.engine.task.Task> queryTasks(Map<String, Object> filters, CIBUser user) {
-		ObjectMapper localObjectMapper = new ObjectMapper();
-		JacksonConfigurator.configureObjectMapper(localObjectMapper);
-		localObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-		TaskQueryDto dto = localObjectMapper.convertValue(filters, TaskQueryDto.class);
-		TaskQuery taskQuery = dto.toQuery(directProviderUtil.getProcessEngine(user));
-		List<org.cibseven.bpm.engine.task.Task> taskList = taskQuery.taskInvolvedUser(user.getUserID()).list();
+		MultivaluedMap<String, String> multiValueMap = new MultivaluedHashMap<>();
+		for (Entry<String, Object> entry : filters.entrySet()) {
+			multiValueMap.put(entry.getKey(), Arrays.asList(String.valueOf(entry.getValue())));
+		}
+		TaskQueryDto dto = new TaskQueryDto(directProviderUtil.getObjectMapper(user), multiValueMap);
+		ProcessEngine engine = directProviderUtil.getProcessEngine(user);
+		TaskQuery taskQuery = dto.toQuery(engine);
+		List<org.cibseven.bpm.engine.task.Task> taskList = taskQuery.list();
+
 		return taskList;
 	}
 

@@ -1059,14 +1059,10 @@ public interface BpmProvider {
 	}
 
 	default Object evaluateDecisionDefinitionByKeyAndTenant(Map<String, Object> data, String key, String tenant, CIBUser user) {
-		//TODO: not implemented in DecisionProvider
-		//interface should contain parameters like evaluateDecisionDefinitionByKey 
 		return getDecisionProvider().evaluateDecisionDefinitionByKeyAndTenant(data, key, tenant, user);
 	}
 
 	default void updateHistoryTTLByKeyAndTenant(Map<String, Object> data, String key, String tenant, CIBUser user) {
-		//TODO: not implemented in DecisionProvider
-		//interface should contain parameters like HistoryTTLByKey 
 		getDecisionProvider().updateHistoryTTLByKeyAndTenant(data, key, tenant, user);
 	}
 
@@ -1091,7 +1087,6 @@ public interface BpmProvider {
 	}
 
 	default Object evaluateDecisionDefinitionById(String id, Map<String, Object> data, CIBUser user) {
-		//TODO: not implemented in DecisionProvider
 		return getDecisionProvider().evaluateDecisionDefinitionById(id, data, user);
 	}
 
