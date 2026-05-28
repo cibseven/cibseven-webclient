@@ -47,16 +47,14 @@ application:
       password: ""
     jpa:
       hibernate:
-        ddl-auto: validate
+        ddl-auto: none
+        naming:
+          physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
       properties:
         hibernate:
           integration:
             envers:
               enabled: false
-        org:
-          hibernate:
-            envers:
-              revision_table_name: mod_revinfo
   cibseven:
     webclient:
       modeler:
