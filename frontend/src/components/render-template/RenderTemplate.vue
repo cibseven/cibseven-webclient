@@ -128,6 +128,7 @@ export default {
     this.loadIframe()
     const formFrame = this.$refs['template-frame']
     window.addEventListener('message', this.processMessage)
+    formFrame.addEventListener('load', this.onIframeLoad)
 
     formFrame.setAttribute('allowfullscreen', true)
     formFrame.setAttribute('webkitallowfullscreen', true)
@@ -150,6 +151,8 @@ export default {
       this.loader = true
       this.submitForm = false
       this.formFrame = true
+      const currentFrame = this.$refs['template-frame']
+      if (currentFrame) currentFrame.src = 'about:blank'
       const theme = localStorage.getItem('theme') || this.$root.theme
       let themeContext = ''
       let translationContext = ''
@@ -165,26 +168,20 @@ export default {
       //Startforms
       if (this.task.url) {
         formFrame.src = this.task.url + '/' + themeContext + '/' + translationContext
-
-        this.loader = false
       } else if (this.task.isEmbedded && this.task.processDefinitionId) {
         formFrame.src = `embedded-forms.html?processDefinitionId=${this.task.processDefinitionId}&lang=${this.currentLanguage()}`
-        this.loader = false
       } else if (this.task.isGenerated && this.task.processDefinitionId) {
         formFrame.src = `embedded-forms.html?generated=true&processDefinitionId=${this.task.processDefinitionId}&lang=${this.currentLanguage()}`
-        this.loader = false
       } else if (this.task.id) {
         const form = this.task.formKey || await TaskService.form(this.task.id)
         if (form.key && form.key.includes('/rendered-form')) {
           // Generated forms
           this.formFrame = true
           formFrame.src = `embedded-forms.html?generated=true&taskId=${this.task.id}&lang=${this.currentLanguage()}`
-          this.loader = false
         } else  if (this.task.formKey && this.task.formKey.startsWith('embedded:') && this.task.formKey !== 'embedded:/camunda/app/tasklist/ui-element-templates/template.html') {
           //Embedded forms if not "standard" ui-element-templates
           this.formFrame = true
           formFrame.src = `embedded-forms.html?taskId=${this.task.id}&lang=${this.currentLanguage()}`
-          this.loader = false
         } else {
           let formReferencePromise
           //Camunda Forms
@@ -204,8 +201,6 @@ export default {
 
             formFrame.src = '#/' + formReference + '/' + this.currentLanguage() + '/' +
             this.task.id + '/' + this.$root.user.authToken + '/' + themeContext + '/' + translationContext
-
-            this.loader = false
           }, () => {
             // Not needed but just in case something changes in the backend method
             this.formFrame = false
@@ -400,6 +395,12 @@ export default {
         this.loadIframe()
       }
     },
+    onIframeLoad: function() {
+      const formFrame = this.$refs['template-frame']
+      if (formFrame && formFrame.src !== 'about:blank' && !formFrame.src.endsWith('about:blank')) {
+        this.loader = false
+      }
+    },
     handleScrollIframe(deltaY, x, y) {
       const frame = this.$refs['template-frame']
       const ctx = getIframeContext(frame, x, y)
@@ -410,6 +411,8 @@ export default {
   },
   beforeUnmount: function() {
     window.removeEventListener('message', this.processMessage)
+    const formFrame = this.$refs['template-frame']
+    if (formFrame) formFrame.removeEventListener('load', this.onIframeLoad)
   }
 }
 </script>
