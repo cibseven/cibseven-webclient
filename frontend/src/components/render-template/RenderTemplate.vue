@@ -150,6 +150,8 @@ export default {
       this.loader = true
       this.submitForm = false
       this.formFrame = true
+      const currentFrame = this.$refs['template-frame']
+      if (currentFrame) currentFrame.src = 'about:blank'
       const theme = localStorage.getItem('theme') || this.$root.theme
       let themeContext = ''
       let translationContext = ''
