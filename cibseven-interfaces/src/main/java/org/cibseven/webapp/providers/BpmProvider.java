@@ -1522,9 +1522,9 @@ public interface BpmProvider {
 	}
 
 	/**
-	 * Submit a form to start a process with the given key.
+	 * Submit a form to start a process with the given process definition id.
 	 *
-	 * @param key the process definition key
+	 * @param processDefinitionId the process definition id
 	 * @param formResult the form submission data as a JSON string
 	 * @param user the authenticated user submitting the form
 	 * @return information about the started process instance
@@ -1532,8 +1532,8 @@ public interface BpmProvider {
 	 * @throws ExpressionEvaluationException when an expression in the process definition cannot be evaluated
 	 * @throws SystemException in case of any other error
 	 */
-	default ProcessStart submitForm(String key, String formResult, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
-		return getProcessProvider().submitForm(key, formResult, user);
+	default ProcessStart submitForm(String processDefinitionId, String formResult, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
+		return getProcessProvider().submitForm(processDefinitionId, formResult, user);
 	}
 	
 	/**

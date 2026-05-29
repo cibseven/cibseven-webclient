@@ -846,7 +846,7 @@ public class DirectProcessProvider implements IProcessProvider {
 	}
 
 	@Override
-	public ProcessStart submitForm(String processDefinitionKey, String formResult, CIBUser user)
+	public ProcessStart submitForm(String processDefinitionId, String formResult, CIBUser user)
 			throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
 		ObjectMapper objectMapper = directProviderUtil.getObjectMapper(user);
 		StartProcessInstanceDto parameters;
@@ -854,34 +854,24 @@ public class DirectProcessProvider implements IProcessProvider {
 			parameters = objectMapper.readValue(formResult, StartProcessInstanceDto.class);
 		} catch (JsonProcessingException e) {
 			throw new SystemException(e.getMessage(), e);
-		} 
-    FormService formService = directProviderUtil.getProcessEngine(user).getFormService();
-
-    org.cibseven.bpm.engine.runtime.ProcessInstance instance = null;
-		ProcessDefinition processDefinition = directProviderUtil.getProcessEngine(user).getRepositoryService().createProcessDefinitionQuery()
-				.processDefinitionKey(processDefinitionKey)
-				.withoutTenantId().latestVersion().singleResult();
-
-		if (processDefinition == null) {
-			String errorMessage = String.format("No matching process definition with key: %s", processDefinitionKey);
-			throw new SystemException(errorMessage);
 		}
+		FormService formService = directProviderUtil.getProcessEngine(user).getFormService();
 
+		org.cibseven.bpm.engine.runtime.ProcessInstance instance = null;
 		try {
 			Map<String, Object> variables = VariableValueDto.toMap(parameters.getVariables(), directProviderUtil.getProcessEngine(user), objectMapper);
 			String businessKey = parameters.getBusinessKey();
 			if (businessKey != null) {
-				instance = formService.submitStartForm(processDefinition.getId(), businessKey, variables);
+				instance = formService.submitStartForm(processDefinitionId, businessKey, variables);
 			} else {
-				instance = formService.submitStartForm(processDefinition.getId(), variables);
+				instance = formService.submitStartForm(processDefinitionId, variables);
 			}
-    } catch (AuthorizationException e) {
-      throw e;
-
-    } catch (ProcessEngineException|RestException e) {
-      String errorMessage = String.format("Cannot instantiate process definition %s: %s", processDefinition.getId(), e.getMessage());
-      throw new SystemException(errorMessage, e);
-    }
+		} catch (AuthorizationException e) {
+			throw e;
+		} catch (ProcessEngineException|RestException e) {
+			String errorMessage = String.format("Cannot instantiate process definition %s: %s", processDefinitionId, e.getMessage());
+			throw new SystemException(errorMessage, e);
+		}
 
     ProcessInstanceDto result = ProcessInstanceDto.fromProcessInstance(instance);
     return  directProviderUtil.convertValue(result, ProcessStart.class, user);
