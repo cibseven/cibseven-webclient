@@ -5,6 +5,10 @@
       <module name="org.jboss.logging"/>
       <module name="org.cibseven.bpm.cibseven-engine"/>
       <module name="org.cibseven.bpm.dmn.cibseven-engine-dmn"/>
+      <!-- ai-agent connector module: optional so the WAR still deploys when the
+           module is absent (AI disabled). Gives the modeler visibility to the
+           connector's bundled /element-templates/*.json (CIB7-1445). -->
+      <module name="org.cibseven.connect.cibseven-connect-ai-agent" optional="true"/>
       <system>
         <paths>
           <path name="jdk/net"/>
