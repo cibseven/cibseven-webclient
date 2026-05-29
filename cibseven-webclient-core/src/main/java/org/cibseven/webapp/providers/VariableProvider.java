@@ -282,19 +282,20 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	}
 
 	@Override
-	public Map<String, Variable> fetchProcessFormVariables(String key, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException {
-		String url = getEngineRestUrl(user) + "/process-definition/key/" + key + "/form-variables";
-		url += "?deserializeValues=" + deserializeValues;
+	public Map<String, Variable> fetchProcessFormVariablesByKey(String key, List<String> variableListName, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException {
+		String url = getEngineRestUrl(user) + "/process-definition/key/" + key + "/form-variables?deserializeValues=" + deserializeValues;
+		if (variableListName != null && !variableListName.isEmpty()) {
+			url += "&variableNames=" + String.join(",", variableListName);
+		}
 		return doGet(url, new ParameterizedTypeReference<Map<String, Variable>>() {}, user).getBody();
 	}
 
 	@Override
-	public Map<String, Variable> fetchProcessFormVariables(List<String> variableListName, String key, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException {
-		String url = getEngineRestUrl(user) + "/process-definition/" + key + "/form-variables?deserializeValues=" + deserializeValues + "&variableNames=";
-		for(String variable: variableListName) {
-			url += variable + ",";
+	public Map<String, Variable> fetchProcessFormVariablesById(String processDefinitionId, List<String> variableListName, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException {
+		String url = getEngineRestUrl(user) + "/process-definition/" + processDefinitionId + "/form-variables?deserializeValues=" + deserializeValues;
+		if (variableListName != null && !variableListName.isEmpty()) {
+			url += "&variableNames=" + String.join(",", variableListName);
 		}
-
 		return doGet(url, new ParameterizedTypeReference<Map<String, Variable>>() {}, user).getBody();
 	}
 
@@ -589,12 +590,6 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		}
-	}
-
-	@Override
-	public Map<String, Variable> fetchProcessFormVariablesById(String id, CIBUser user) throws SystemException {
-		String url = getEngineRestUrl(user) + "/process-definition/" + id + "/form-variables";
-		return doGet(url, new ParameterizedTypeReference<Map<String, Variable>>() {}, user).getBody();
 	}
 
 	@Override

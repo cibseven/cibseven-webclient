@@ -45,8 +45,8 @@ public interface IVariableProvider {
 	public void deleteVariable(String taskId, String variableName, CIBUser user) throws NoObjectFoundException, SystemException;
 	public Map<String, Variable> fetchFormVariables(String taskId, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException;
 	public Map<String, Variable> fetchFormVariables(List<String> variableListName, String taskId, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException;
-	public Map<String, Variable> fetchProcessFormVariables(String key, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException;
-	public Map<String, Variable> fetchProcessFormVariables(List<String> variableListName, String processDefinitionId, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException;
+	public Map<String, Variable> fetchProcessFormVariablesByKey(String key, List<String> variableListName, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException;
+	public Map<String, Variable> fetchProcessFormVariablesById(String processDefinitionId, List<String> variableListName, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException;
 	public NamedByteArrayDataSource fetchVariableFileData(String taskId, String variableName, CIBUser user) throws NoObjectFoundException, UnexpectedTypeException, SystemException;
 	public void uploadVariableFileData(String taskId, String variableName, MultipartFile data, String valueType, CIBUser user) throws NoObjectFoundException, SystemException;
 	public ResponseEntity<byte[]> fetchProcessInstanceVariableData(String processInstanceId, String variableName,
@@ -56,7 +56,6 @@ public interface IVariableProvider {
 	public Variable fetchVariableByProcessInstanceId(String processInstanceId, String variableName, CIBUser user) throws SystemException;
 	public void saveVariableInProcessInstanceId(String processInstanceId, List<Variable> variables, CIBUser user) throws SystemException;
 	public void submitVariables(String processInstanceId, List<Variable> formResult, CIBUser user, String processDefinitionId) throws SystemException;
-	public Map<String, Variable> fetchProcessFormVariablesById(String id, CIBUser user) throws SystemException;
 	public void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user);
 	default public void mergeVariablesValues(
 			Collection<Variable> variablesDeserialized,

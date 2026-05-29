@@ -970,13 +970,14 @@ public interface BpmProvider {
 		return getVariableProvider().fetchFormVariables(variableListName, taskId, deserializeValues, user);
 	}
 
-	default Map<String, Variable> fetchProcessFormVariables(String key, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException {
-		return getVariableProvider().fetchProcessFormVariables(key, deserializeValues, user);
+	default Map<String, Variable> fetchProcessFormVariablesByKey(String key, List<String> variableListName, boolean deserializeValues, CIBUser user)
+			throws NoObjectFoundException, SystemException {
+		return getVariableProvider().fetchProcessFormVariablesByKey(key, variableListName, deserializeValues, user);
 	}
 
-	default Map<String, Variable> fetchProcessFormVariables(List<String> variableListName, String processDefinitionId, boolean deserializeValues, CIBUser user)
+	default Map<String, Variable> fetchProcessFormVariablesById(String processDefinitionId, List<String> variableListName, boolean deserializeValues, CIBUser user)
 			throws NoObjectFoundException, SystemException {
-				return getVariableProvider().fetchProcessFormVariables(variableListName, processDefinitionId, deserializeValues, user);
+		return getVariableProvider().fetchProcessFormVariablesById(processDefinitionId, variableListName, deserializeValues, user);
 	}
 
 	default NamedByteArrayDataSource fetchVariableFileData(String taskId, String variableName, CIBUser user) throws NoObjectFoundException, UnexpectedTypeException, SystemException {
@@ -1010,10 +1011,6 @@ public interface BpmProvider {
 
 	default void submitVariables(String processInstanceId, List<Variable> formResult, CIBUser user, String processDefinitionId) throws SystemException {
 		getVariableProvider().submitVariables(processInstanceId, formResult, user, processDefinitionId);
-	}
-
-	default Map<String, Variable> fetchProcessFormVariablesById(String id, CIBUser user) throws SystemException {
-		return getVariableProvider().fetchProcessFormVariablesById(id, user);
 	}
 
 	default void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user) {

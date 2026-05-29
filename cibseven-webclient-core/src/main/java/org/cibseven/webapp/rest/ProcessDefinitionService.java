@@ -79,12 +79,12 @@ public class ProcessDefinitionService extends BaseService implements Initializin
 
 	@Operation(
 			summary = "Get form variables for process definition",
-			description = "<strong>Return: Map of form variable names to Variable objects for the given process definition key. "
+			description = "<strong>Return: Map of form variable names to Variable objects for the given process definition id. "
 					+ "Variables can optionally be deserialized and filtered by name.</strong>")
 	@ApiResponse(responseCode = "404", description = "Process definition or form variables not found")
-	@RequestMapping(value = "/{key}/form-variables", method = RequestMethod.GET)
+	@RequestMapping(value = "/{processDefinitionId}/form-variables", method = RequestMethod.GET)
 	public Map<String, Variable> fetchProcessDefinitionFormVariablesByNames(
-			@PathVariable String key,
+			@PathVariable String processDefinitionId,
 			@RequestParam(required = false, defaultValue = "true") boolean deserializeValues,
 			@RequestParam(required = false) String variableNames,
 			CIBUser user) {
@@ -93,11 +93,7 @@ public class ProcessDefinitionService extends BaseService implements Initializin
 		if (variableNames != null && !variableNames.isEmpty()) {
 			variableListName = List.of(variableNames.split(","));
 		}
-		if (variableListName != null) {
-			return bpmProvider.fetchProcessFormVariables(variableListName, key, deserializeValues, user);
-		} else {
-			return bpmProvider.fetchProcessFormVariables(key, deserializeValues, user);
-		}
+		return bpmProvider.fetchProcessFormVariablesById(processDefinitionId, variableListName, deserializeValues, user);
 	}
 
 	@Consumes(MediaType.APPLICATION_JSON)
