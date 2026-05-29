@@ -28,7 +28,6 @@ import java.util.Map.Entry;
 
 import org.apache.commons.io.IOUtils;
 import org.cibseven.bpm.engine.AuthorizationException;
-import org.cibseven.bpm.engine.FormService;
 import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.ProcessEngineException;
 import org.cibseven.bpm.engine.history.HistoricVariableInstance;
@@ -829,24 +828,15 @@ public class DirectVariableProvider implements IVariableProvider {
 	}
 
 	@Override
-	public Map<String, Variable> fetchProcessFormVariables(List<String> variableListName, String key,
+	public Map<String, Variable> fetchProcessFormVariables(List<String> variableListName, String processDefinitionId,
 			boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException {
-		ProcessDefinition processDefinition = directProviderUtil.getProcessEngine(user).getRepositoryService()
-				.createProcessDefinitionQuery().processDefinitionKey(key).withoutTenantId().latestVersion().singleResult();
-		if (processDefinition == null) {
-			String errorMessage = String.format("No matching process definition with key: %s and no tenant-id", key);
-			throw new SystemException(errorMessage);
+		VariableMap startFormVariables = directProviderUtil.getProcessEngine(user).getFormService()
+				.getStartFormVariables(processDefinitionId, variableListName, deserializeValues);
+		Map<String, VariableValueDto> variableDtos = VariableValueDto.fromMap(startFormVariables);
+		Map<String, Variable> variablesMap = new HashMap<>();
+		for (Entry<String, VariableValueDto> e : variableDtos.entrySet()) {
+			variablesMap.put(e.getKey(), directProviderUtil.convertValue(e.getValue(), Variable.class, user));
 		}
-
-		FormService formService = directProviderUtil.getProcessEngine(user).getFormService();
-		VariableMap startFormVariables = formService.getStartFormVariables(processDefinition.getId(), variableListName,
-				deserializeValues);
-		Map<String, Variable> result = new HashMap<>();
-		for (String variableName : startFormVariables.keySet()) {
-			VariableValueDto valueDto = VariableValueDto.fromTypedValue(startFormVariables.getValueTyped(variableName),
-					false);
-			result.put(variableName, directProviderUtil.convertValue(valueDto, Variable.class, user));
-		}
-		return result;
+		return variablesMap;
 	}
 }

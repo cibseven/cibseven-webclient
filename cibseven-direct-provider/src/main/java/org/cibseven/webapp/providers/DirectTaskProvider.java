@@ -43,6 +43,7 @@ import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.ProcessEngineException;
 import org.cibseven.bpm.engine.exception.NotFoundException;
 import org.cibseven.bpm.engine.exception.NullValueException;
+import org.cibseven.bpm.engine.filter.Filter;
 import org.cibseven.bpm.engine.form.CamundaFormRef;
 import org.cibseven.bpm.engine.form.FormData;
 import org.cibseven.bpm.engine.history.HistoricTaskInstance;
@@ -146,7 +147,7 @@ public class DirectTaskProvider implements ITaskProvider {
 		org.cibseven.bpm.engine.task.Task result = directProviderUtil.getProcessEngine(user).getTaskService().createTaskQuery().taskId(id).initializeFormKeys()
 				.singleResult();
 		if (result == null)
-			throw new NoObjectFoundException(null);
+			throw new NoObjectFoundException("No matching task with id " + Optional.ofNullable(id).orElse("null"));
 		return directProviderUtil.getObjectMapper(user).convertValue(TaskDto.fromEntity(result), Task.class);
 	}
 
@@ -156,7 +157,7 @@ public class DirectTaskProvider implements ITaskProvider {
 				.singleResult();
 
 		if (foundTask == null) {
-			throw new NoObjectFoundException(new SystemException("No matching task with id " + task.getId()));
+			throw new NoObjectFoundException("No matching task with id " + Optional.ofNullable(task.getId()).orElse("null"));
 		}
 
 		foundTask.setName(task.getName());
@@ -552,7 +553,7 @@ public class DirectTaskProvider implements ITaskProvider {
 				return directProviderUtil.getProcessEngine(user).getFilterService().list(filterId, extendingQuery);
 			}
 		} catch (NullValueException e) {
-			throw new SystemException("Filter not found", e);
+			throw new NoObjectFoundException("Filter not found", e);
 		}
 	}
 
@@ -561,7 +562,11 @@ public class DirectTaskProvider implements ITaskProvider {
 			return null;
 		} else {
 			ProcessEngine processEngine = directProviderUtil.getProcessEngine(user);
-			String resourceType = directProviderUtil.getProcessEngine(user).getFilterService().getFilter(filterId).getResourceType();
+			Filter filter = processEngine.getFilterService().getFilter(filterId);
+			if (filter == null) {
+				throw new NoObjectFoundException("Filter with id '" + filterId + "' not found.");
+			}
+			String resourceType = filter.getResourceType();
 
 			AbstractQueryDto<?> queryDto = getQueryDtoForQuery(queryString, resourceType, user);
 			queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));

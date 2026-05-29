@@ -20,6 +20,14 @@ public class NoObjectFoundException extends ApplicationException {
 
 	private static final long serialVersionUID = -92972413203905944L;
 
+	public NoObjectFoundException(String message) {
+		super(message);
+	}
+
+	public NoObjectFoundException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
 	public NoObjectFoundException(Throwable cause) {
 		super("The object could not be found!", cause);
 	}
