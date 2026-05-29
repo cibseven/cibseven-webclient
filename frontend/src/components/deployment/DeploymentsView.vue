@@ -233,6 +233,9 @@ export default {
     allLoaded() {
       return (this.totalCount === undefined) ? false : (this.deployments.length >= this.totalCount)
     },
+    nameLike() {
+      return this.filter ? '%' + this.filter + '%' : ''
+    },
     DeploymentsViewActionsPlugin: function() {
       return this.$options.components && this.$options.components.DeploymentsViewActionsPlugin
         ? this.$options.components.DeploymentsViewActionsPlugin
@@ -274,7 +277,7 @@ export default {
     },
     refreshTotalCount() {
       this.totalCount = undefined
-      ProcessService.findDeploymentsCount(this.filter).then(count => {
+      ProcessService.findDeploymentsCount(this.nameLike).then(count => {
         this.totalCount = count
       })
         .catch(error => {
@@ -293,7 +296,7 @@ export default {
     loadDeployments: function (offset) {
       let found = false
       this.loading = true
-      ProcessService.findDeployments(this.filter, offset, this.maxResults, this.sortBy, this.sortOrder).then(deployments => {
+      ProcessService.findDeployments(this.nameLike, offset, this.maxResults, this.sortBy, this.sortOrder).then(deployments => {
         this.processDeployments(deployments)
         this.deployments.push(...deployments)
         this.loading = false
@@ -434,7 +437,7 @@ export default {
     },
     refreshDeployments() {
       // Fetch the latest deployments to check for new ones
-      ProcessService.findDeployments(this.filter, 0, this.maxResults, this.sortBy, this.sortOrder).then(latestDeployments => {
+      ProcessService.findDeployments(this.nameLike, 0, this.maxResults, this.sortBy, this.sortOrder).then(latestDeployments => {
         // Find new deployments that don't exist in current list
         const existingIds = new Set(this.deployments.map(d => d.id))
         const newDeployments = latestDeployments.filter(d => !existingIds.has(d.id))
