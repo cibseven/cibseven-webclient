@@ -88,9 +88,11 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 				throw new AuthenticationException(login.getUsername());		
 			}
 			
-		} catch(RuntimeException e) {
+		} catch(AuthenticationException e) {
+			throw e;
+		} catch(Exception e) {
 			log.warn("Authentication failed for user: {}", login.getUsername(), e);
-			throw new SystemException("login failed for user: " + Optional.ofNullable(login.getUsername()).orElse("unknown"));
+			throw new AuthenticationException("login failed for user: " + Optional.ofNullable(login.getUsername()).orElse("unknown"));
 		}
 	}
 	
