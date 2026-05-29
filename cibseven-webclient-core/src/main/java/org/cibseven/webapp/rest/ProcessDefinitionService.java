@@ -101,13 +101,13 @@ public class ProcessDefinitionService extends BaseService implements Initializin
 	}
 
 	@Consumes(MediaType.APPLICATION_JSON)
-	@RequestMapping(value = "/{processDefinitionKey}/submit-form", method = RequestMethod.POST)
+	@RequestMapping(value = "/{processDefinitionId}/submit-form", method = RequestMethod.POST)
 	public ResponseEntity<ProcessStart> submitForm(
-			@PathVariable String processDefinitionKey, 
-			@RequestBody String formResult, 
+			@PathVariable String processDefinitionId,
+			@RequestBody String formResult,
 			HttpServletRequest rq, CIBUser user) {
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.CREATE_ALL);
-		ProcessStart processStart = bpmProvider.submitForm(processDefinitionKey, formResult, user);
+		ProcessStart processStart = bpmProvider.submitForm(processDefinitionId, formResult, user);
 		return ResponseEntity.ok(processStart);
 	}
 }
