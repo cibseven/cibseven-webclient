@@ -6,3 +6,12 @@ cibseven:
   webclient:
     modeler:
       enabled: true
+      # Element-template discovery for the modeler. classpath*: picks up templates
+      # bundled in connector modules (e.g. the ai-agent module, made visible to this
+      # WAR via the optional dependency in jboss-deployment-structure.xml); the file:
+      # entry lets operators drop their own JSONs into
+      # <standalone>/configuration/element-templates/.
+      templates:
+        paths:
+          - "classpath*:element-templates/*.json"
+          - "file:${jboss.server.config.dir}/element-templates/*.json"
