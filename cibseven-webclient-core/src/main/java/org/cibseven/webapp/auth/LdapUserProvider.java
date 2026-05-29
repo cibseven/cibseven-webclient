@@ -102,8 +102,12 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 			user.setAuthToken(createToken(tokenSettings, true, false, user));
 	        
 	        return user;
-		} catch (NamingException x) {
+		} catch (javax.naming.AuthenticationException x) {
+			log.debug("Login failed for user {}: invalid credentials", login.getUsername());
 			throw new LoginException();
+		} catch (NamingException x) {
+			log.warn("Login failed for user {} due to technical error", login.getUsername(), x);
+			throw new SystemException("Login failed due to technical error");
 		}
 	}
 	
@@ -127,13 +131,18 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 			searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 			NamingEnumeration<SearchResult> results = initialDirContext.search(ldapFolder, "(&(" + ldapNameAttribute + "=" + userName + "))", searchControls);
 			if(!results.hasMore()) {
-				throw new LoginException("[ERROR][LdapUserProvider] getFullUserDN not user found with the following username: " + userName);
+				log.debug("No DN found for user {}", userName);
+				throw new LoginException();
 			}
 			SearchResult result = results.next();
 			log.debug("Ldap result: user full DN " + result.getNameInNamespace());
 			return result.getNameInNamespace();
-		} catch (NamingException x) {
+		} catch (javax.naming.PartialResultException x) {
+			log.debug("No DN found for user {}: {}", userName, x.getMessage());
 			throw new LoginException();
+		} catch (NamingException x) {
+			log.warn("Failed to get full DN for user {} due to technical error", userName, x);
+			throw new SystemException("Login failed due to technical error");
 		}
 	}
 

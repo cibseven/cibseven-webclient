@@ -18,6 +18,7 @@ package org.cibseven.webapp.auth;
 
 import java.io.IOException;
 import java.util.Base64;
+import java.util.Optional;
 
 import javax.crypto.SecretKey;
 
@@ -28,7 +29,6 @@ import org.cibseven.webapp.auth.utils.EngineTokenUtils;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.BpmProvider;
-import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.SevenUser;
 import org.cibseven.webapp.rest.model.SevenVerifyUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +44,9 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 	
 	@Value("${cibseven.webclient.authentication.jwtSecret:}") String secret;
@@ -86,8 +88,11 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 				throw new AuthenticationException(login.getUsername());		
 			}
 			
+		} catch(AuthenticationException e) {
+			throw e;
 		} catch(Exception e) {
-			throw new AuthenticationException(login.getUsername());	
+			log.warn("Authentication failed for user: {}", login.getUsername(), e);
+			throw new AuthenticationException("login failed for user: " + Optional.ofNullable(login.getUsername()).orElse("unknown"));
 		}
 	}
 	
