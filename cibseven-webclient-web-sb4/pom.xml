@@ -10,27 +10,38 @@
 	<name>CIB seven webclient web (Spring Boot 4)</name>
 	<description>Web application module for the CIB seven webclient platform (Spring Boot 4.x).</description>
 
-	<properties>
-		<!-- Override the parent's default Spring Boot version for this flavour. -->
-		<version.spring.boot>4.0.6</version.spring.boot>
-		<version.openapi-starter-webmvc-ui>3.0.2</version.openapi-starter-webmvc-ui>
-		<!--
-			Jackson 2 is no longer bundled in SB4 by default but the shared core
-			compiles against com.fasterxml.jackson.* — we pull it back in
-			explicitly. Version aligned with the transitive 2.x that swagger /
-			jjwt-jackson / springdoc bring in.
-		-->
-		<version.jackson2>2.21.2</version.jackson2>
-	</properties>
+	<!-- All version numbers live in the parent pom's <properties>; this flavour selects the
+	     SB4 variants (version.spring.boot4, version.openapi-starter-webmvc-ui4, version.tomcat). -->
 
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-dependencies</artifactId>
-				<version>${version.spring.boot}</version>
+				<version>${version.spring.boot4}</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+			<!--
+				Apache Tomcat 11.x line for Spring Boot 4. The SB4 BOM pins 11.0.21, which is
+				affected by the same CVEs as 10.1.54 (fixed in 11.0.22). These entries override the
+				parent's SB3 tomcat-embed management (10.1.55) for this module — see CVE-2026-41293,
+				-43512, -43515, -41284, -43513, -42498, -43514.
+			-->
+			<dependency>
+				<groupId>org.apache.tomcat.embed</groupId>
+				<artifactId>tomcat-embed-core</artifactId>
+				<version>${version.tomcat}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.tomcat.embed</groupId>
+				<artifactId>tomcat-embed-el</artifactId>
+				<version>${version.tomcat}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.tomcat.embed</groupId>
+				<artifactId>tomcat-embed-websocket</artifactId>
+				<version>${version.tomcat}</version>
 			</dependency>
 			<!--
 				Force convergence between the version brought by common-auth
@@ -100,7 +111,7 @@
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-			<version>${version.openapi-starter-webmvc-ui}</version>
+			<version>${version.openapi-starter-webmvc-ui4}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.apache.commons</groupId>
@@ -277,7 +288,7 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<version>${version.spring.boot}</version>
+				<version>${version.spring.boot4}</version>
 				<configuration>
 					<fork>true</fork>
 					<mainClass>org.cibseven.webapp.SevenWebclientApplication</mainClass>
