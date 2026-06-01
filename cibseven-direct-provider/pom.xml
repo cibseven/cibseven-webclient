@@ -14,17 +14,18 @@
 		    <groupId>jakarta.ws.rs</groupId>
 		    <artifactId>jakarta.ws.rs-api</artifactId>
 		</dependency>	
+	    <!-- TODO: revert to ${project.version} once resolved: https://helpdesk.cib.de/browse/CIB7-1464 -->
 	    <dependency>
 	        <groupId>org.cibseven.bpm</groupId>
 	        <artifactId>cibseven-engine-rest-core-jakarta</artifactId>
-			<version>${project.version}</version>
+			<version>2.2.0</version>
 	    </dependency>
         <dependency>
            <groupId>org.cibseven.bpm</groupId>
            <artifactId>cibseven-engine</artifactId>
            <scope>provided</scope>
            <type>jar</type>
-           <version>${project.version}</version>
+           <version>2.2.0</version>
        </dependency>
 	    <dependency>
 	        <groupId>org.cibseven.webapp</groupId>
