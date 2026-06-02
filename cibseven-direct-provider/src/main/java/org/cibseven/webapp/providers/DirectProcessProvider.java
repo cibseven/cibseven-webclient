@@ -44,6 +44,7 @@ import org.cibseven.bpm.engine.exception.NotFoundException;
 import org.cibseven.bpm.engine.exception.NullValueException;
 import org.cibseven.bpm.engine.form.StartFormData;
 import org.cibseven.bpm.engine.history.HistoricActivityStatistics;
+import org.cibseven.bpm.engine.history.HistoricActivityStatisticsPostQuery;
 import org.cibseven.bpm.engine.history.HistoricActivityStatisticsQuery;
 import org.cibseven.bpm.engine.history.HistoricProcessInstance;
 import org.cibseven.bpm.engine.history.HistoricProcessInstanceQuery;
@@ -59,6 +60,7 @@ import org.cibseven.bpm.engine.rest.dto.HistoryTimeToLiveDto;
 import org.cibseven.bpm.engine.rest.dto.StatisticsResultDto;
 import org.cibseven.bpm.engine.rest.dto.VariableValueDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricActivityStatisticsDto;
+import org.cibseven.bpm.engine.rest.dto.history.HistoricActivityStatisticsPostQueryDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricProcessInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricProcessInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.dto.repository.ActivityStatisticsResultDto;
@@ -91,6 +93,7 @@ import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnsupportedTypeException;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
+import org.cibseven.webapp.rest.model.HistoryStatistics;
 import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
@@ -806,6 +809,23 @@ public class DirectProcessProvider implements IProcessProvider {
 		List<HistoricActivityStatistics> statistics = query.unlimitedList();
 		for (HistoricActivityStatistics currentStatistics : statistics) {
 			result.add(HistoricActivityStatisticsDto.fromHistoricActivityStatistics(currentStatistics));
+		}
+		return result;
+	}
+
+	@Override
+	public Collection<HistoryStatistics> findHistoricActivityStatistics(String id, Map<String, Object> filters, CIBUser user) {
+		HistoricActivityStatisticsPostQueryDto queryDto = directProviderUtil.getObjectMapper(user)
+				.convertValue(filters, HistoricActivityStatisticsPostQueryDto.class);
+		queryDto.setProcessDefinitionId(id);
+		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
+
+		HistoricActivityStatisticsPostQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
+		List<HistoricActivityStatistics> matchingStatistics = query.list();
+		List<HistoryStatistics> result = new ArrayList<>();
+		for (HistoricActivityStatistics statistic : matchingStatistics) {
+			HistoricActivityStatisticsDto activityResult = HistoricActivityStatisticsDto.fromHistoricActivityStatistics(statistic);
+			result.add(directProviderUtil.convertValue(activityResult, HistoryStatistics.class, user));
 		}
 		return result;
 	}

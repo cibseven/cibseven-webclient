@@ -123,6 +123,7 @@
             :sorting="sorting"
             :tenant-id="tenantId"
             :filter="computedFilter"
+            @instances-loaded="syncStatisticsWithInstances"
             @instance-deleted="$emit('instance-deleted')"
             @filter-instances="$emit('filter-instances', $event)"
           ></InstancesTable>
@@ -319,7 +320,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'setDiagramXml', 'loadHistoricActivityStatistics', 'clearHistoricActivityStatistics']),
+    ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'setDiagramXml', 'loadHistoricActivityStatistics', 'clearHistoricActivityStatistics','loadHistoricActivityStatisticsForInstances']),
     ...mapActions('calledProcessDefinitions', ['loadStaticCalledProcessDefinitions']),
     applySorting: function(sortingCriteria) {
       this.sorting = true
@@ -397,6 +398,10 @@ export default {
         this.clearActivitySelection()
       }
       this.$emit('filter-instances', queryObject)
+    },
+     syncStatisticsWithInstances: function(filter) {
+      if (!this.process?.id) return
+      this.loadHistoricActivityStatisticsForInstances({ processDefinitionId: this.process.id, filter})
     },
     onInput: debounce(800, function(freeText) {
       this.$emit('filter-instances', {

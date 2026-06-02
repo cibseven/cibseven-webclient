@@ -37,6 +37,7 @@ import org.cibseven.webapp.exception.ExpressionEvaluationException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnsupportedTypeException;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
+import org.cibseven.webapp.rest.model.HistoryStatistics;
 import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.IncidentInfo;
 import org.cibseven.webapp.rest.model.KeyTenant;
@@ -601,4 +602,16 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	    ResponseEntity<Object> response = doGet(url, Object.class, user, true);
 	    return response.getBody();
 	}
+
+    @Override
+    public Collection<HistoryStatistics> findHistoricActivityStatistics(String processDefinitionId, Map<String, Object> filters, CIBUser user){
+    	if (processDefinitionId == null || processDefinitionId.isEmpty()) {
+        	throw new SystemException("processDefinitionId is required in filters");
+		}
+		String url = getEngineRestUrl(user) + "/history/process-definition/" + processDefinitionId + "/statistics";
+		Collection<HistoryStatistics> result = java.util.Arrays.asList(
+			((ResponseEntity<HistoryStatistics[]>) doPost(url, filters, HistoryStatistics[].class, user)).getBody());
+		return result;
+    }
+	
 }

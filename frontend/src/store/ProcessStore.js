@@ -88,6 +88,11 @@ const ProcessStore = {
       const historyActivityStatistics = await HistoryService.findHistoryActivityStatistics(processDefinitionId, finalParams)      
       commit('setHistoricActivityStatistics', { key: processDefinitionId, data: historyActivityStatistics })
     },
+    async loadHistoricActivityStatisticsForInstances({ commit }, { processDefinitionId, filter}) {
+      const finalParams = { includeCanceled: true, includeCompleteScoped: true, includeFinished: true, includeIncidents: true, ...filter }
+      const historyActivityStatistics = await HistoryService.findHistoryActivityStatisticsForInstances(processDefinitionId, finalParams, null)
+      commit('setHistoricActivityStatistics', { key: processDefinitionId, data: historyActivityStatistics })
+    },
     setSuspended: function (ctx, params) {
       ctx.commit('setSuspended', { process: params.process, suspended: params.suspended })
     },

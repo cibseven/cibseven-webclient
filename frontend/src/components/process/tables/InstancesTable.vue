@@ -112,7 +112,7 @@ import CellActionButton from '@/components/common-components/CellActionButton.vu
 export default {
   name: 'InstancesTable',
   components: { FlowTable, SuccessAlert, ConfirmActionOnProcessInstanceModal, BWaitingBox, CopyableActionButton, CellActionButton },
-  emits: ['instance-deleted', 'filter-instances'],
+  emits: ['instance-deleted', 'filter-instances','instances-loaded'],
   mixins: [copyToClipboardMixin, permissionsMixin],
   props: {
     process: Object,
@@ -178,6 +178,8 @@ export default {
         this.resetInstances()
       }
       this.loading = true
+      // Load historic activity statistics for the loaded instances
+      this.$emit('instances-loaded', this.filter)
       try {
         const instances = await this.loadInstances({
           processId: this.process.id,
