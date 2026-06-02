@@ -89,7 +89,7 @@ const ProcessStore = {
       commit('setHistoricActivityStatistics', { key: processDefinitionId, data: historyActivityStatistics })
     },
     async loadHistoricActivityStatisticsForInstances({ commit }, { processDefinitionId, filter}) {
-      const finalParams = { includeCanceled: true, includeCompleteScoped: true, includeFinished: true, includeIncidents: true, ...filter }
+      const finalParams = { includeCanceled: true, includeCompleteScope: true, includeFinished: true, includeIncidents: true, ...filter }
       const historyActivityStatistics = await HistoryService.findHistoryActivityStatisticsForInstances(processDefinitionId, finalParams, null)
       commit('setHistoricActivityStatistics', { key: processDefinitionId, data: historyActivityStatistics })
     },

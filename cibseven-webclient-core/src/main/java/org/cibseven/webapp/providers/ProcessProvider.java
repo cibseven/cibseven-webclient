@@ -606,7 +606,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
     @Override
     public Collection<HistoryStatistics> findHistoricActivityStatistics(String processDefinitionId, Map<String, Object> filters, CIBUser user){
     	if (processDefinitionId == null || processDefinitionId.isEmpty()) {
-        	throw new SystemException("processDefinitionId is required in filters");
+        	throw new SystemException("processDefinitionId is required");
 		}
 		String url = getEngineRestUrl(user) + "/history/process-definition/" + processDefinitionId + "/statistics";
 		Collection<HistoryStatistics> result = java.util.Arrays.asList(
