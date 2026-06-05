@@ -364,7 +364,8 @@ function loadEmbeddedForm(
                 done: function(err, form) {
                   if (err) {
                       const errorMessage = extractErrorMessage(err);
-                      const message = isFormElementError(errorMessage)
+                      const httpStatus = err.status || (err.response && err.response.status);
+                      const message = (isFormElementError(errorMessage) || httpStatus === 404)
                           ? i18n.global.t('errors.formNotFound', [formInfo.key])
                           : errorMessage;
                       services.displayErrorMessage(message);
@@ -413,15 +414,9 @@ function loadEmbeddedForm(
                     if (embeddedContainer) embeddedContainer.style.display = 'none';
                 } catch (err) {
                     console.error('Error fetching form content:', err);
-                    // Fallback: construct form path from formInfo key and use containerElement approach
-                    const formPath = formInfo.key
-                        .replace('embedded:', '')
-                        .replace('app:', (formInfo.contextPath || '') + '/')
-                        .replace(/^(\/+|([^/]))/, '/$2')
-                        .replace(/\/\/+/, '/');
-                    formConfig.formUrl = formPath;
-                    formConfig.containerElement = $(embeddedContainer);
-                    if (formContainer) formContainer.style.display = 'none';
+                    services.displayErrorMessage(i18n.global.t('errors.formNotFound', [formInfo.key]));
+                    reject(err);
+                    return;
                 }
             }
 
