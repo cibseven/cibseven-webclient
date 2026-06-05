@@ -1,3 +1,5 @@
+server:
+  port: 8087
 spring:
   banner:
     location: classpath:banner.txt
@@ -6,9 +8,10 @@ spring:
       - optional:classpath:cibseven-webclient.properties
       - optional:classpath:cibseven-webclient.yaml
   datasource:
-    url:
-    username:
-    password:
+    url: jdbc:postgresql://localhost:5432/cibseven-webclient
+    driver-class-name: org.postgresql.Driver
+    username: postgres
+    password: postgres
   jpa:
     open-in-view: false
     hibernate:
@@ -34,7 +37,7 @@ cibseven:
       # Enable or disable the modeler (JPA entities, repositories, REST endpoints).
       # Requires the parent project to provide a configured DataSource and pre-created schema.
       # Set to false for deployments where the modeler is not needed.
-      enabled: false
+      enabled: true
     # Engine rest
     engineRest:
       url: http://localhost:8080
@@ -58,7 +61,7 @@ cibseven:
     historyLevel: full
     # Token generation
     authentication:
-      jwtSecret:
+      jwtSecret: YWY1NDhhOdYxOGJjNTg2NjMzOWM0ZTQ5NjkwNjZlNjU4NTk4ODYWY1NDhhOdYxOGJjNTg2NjMzOWM0ZTQ5NjkwNjZlNjU4NTk4ODYWY1NDhhOdYxOGJjNTg2NjMzOWM0ZTQ5NjkwNjZlNjU4NTk4OD
       tokenValidMinutes: 60
       tokenProlongMinutes: 1440
     # LDAP
