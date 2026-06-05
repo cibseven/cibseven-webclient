@@ -133,23 +133,6 @@ test('my test', async ({ page }) => {
 - ✅ UI interactions with tables, modals, and forms
 - ✅ Environment-specific behavior (stage filtering)
 
-## Differences from Cypress Implementation
-
-### Selector Improvements
-- Replaced fragile `:nth-child()` selectors with more robust Playwright selectors
-- Used `filter()` and `locator()` chaining for better element targeting
-- Leveraged Playwright's auto-waiting capabilities
-
-### Async/Await
-- All test functions are properly async
-- Proper use of await for all page interactions
-
-### Error Handling
-Playwright automatically handles many common errors that required explicit handling in Cypress:
-- ResizeObserver loop warnings
-- Timing issues with auto-waiting
-- Element visibility checks
-
 ## Configuration
 
 The Playwright configuration is defined in `playwright.config.js`:
@@ -162,14 +145,6 @@ The Playwright configuration is defined in `playwright.config.js`:
 - **Screenshots**: On failure only
 - **Trace**: On first retry
 - **Reporters**: HTML (target/playwright/html-report), JUnit (target/playwright/junit-results.xml)
-
-## Coexistence with Cypress
-
-Both Playwright and Cypress test suites coexist in this repository:
-- **Cypress tests**: `cypress/e2e/*.cy.js`
-- **Playwright tests**: `playwright/e2e/*.spec.js`
-
-This allows for gradual migration and comparison between the two frameworks.
 
 ## Best Practices
 

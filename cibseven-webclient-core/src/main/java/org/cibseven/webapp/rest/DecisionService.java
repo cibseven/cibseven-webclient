@@ -25,9 +25,7 @@ import org.cibseven.webapp.rest.model.HistoricDecisionInstance;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
-import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.PermissionConstants;
-import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.Decision;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.http.ResponseEntity;
@@ -66,12 +64,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 @RestController("WebclientDecisionService") @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/decision")
 public class DecisionService extends BaseService implements InitializingBean {
 	
-	SevenProvider sevenProvider;
-	
 	public void afterPropertiesSet() {
-		if (bpmProvider instanceof SevenProvider)
-			sevenProvider = (SevenProvider) bpmProvider;
-		else throw new SystemException("DecisionService expects a BpmProvider");
 	}
 	
 	@Operation(
@@ -130,14 +123,14 @@ public class DecisionService extends BaseService implements InitializingBean {
 	}
 
 	@PostMapping("/key/{key}/tenant/{tenant}/evaluate")
-	public Object evaluateDecisionDefinitionByKeyAndTenant(@PathVariable String key, @PathVariable String tenant, CIBUser user) {
+	public Object evaluateDecisionDefinitionByKeyAndTenant(@RequestBody Map<String, Object> data, @PathVariable String key, @PathVariable String tenant, CIBUser user) {
 		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.CREATE_INSTANCE_ALL);
-		return bpmProvider.evaluateDecisionDefinitionByKeyAndTenant(key, tenant, user);
+		return bpmProvider.evaluateDecisionDefinitionByKeyAndTenant(data, key, tenant, user);
 	}
 
 	@PutMapping("/key/{key}/tenant/{tenant}/history-ttl")
-	public Object updateHistoryTTLByKeyAndTenant(@PathVariable String key, @PathVariable String tenant, CIBUser user) {
-		return bpmProvider.updateHistoryTTLByKeyAndTenant(key, tenant, user);
+	public void updateHistoryTTLByKeyAndTenant(@RequestBody Map<String, Object> data, @PathVariable String key, @PathVariable String tenant, CIBUser user) {
+		bpmProvider.updateHistoryTTLByKeyAndTenant(data, key, tenant, user);
 	}
 
 	@GetMapping("/key/{key}/xml")
@@ -165,9 +158,9 @@ public class DecisionService extends BaseService implements InitializingBean {
 	}
 
 	@PostMapping("/id/{id}/evaluate")
-	public Object evaluateDecisionDefinitionById(@PathVariable String id, CIBUser user) {
+	public Object evaluateDecisionDefinitionById(@PathVariable String id, @RequestBody Map<String, Object> data, CIBUser user) {
 		checkPermission(user, SevenResourceType.DECISION_DEFINITION, PermissionConstants.CREATE_INSTANCE_ALL);
-		return bpmProvider.evaluateDecisionDefinitionById(id, user);
+		return bpmProvider.evaluateDecisionDefinitionById(id, data, user);
 	}
 
 	@PutMapping("/id/{id}/history-ttl")

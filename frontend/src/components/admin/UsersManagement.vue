@@ -28,7 +28,7 @@
       </div>
       <div v-else>
         <img src="@/assets/images/start/empty_start_page.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px" alt="">
-        <div class="h5 text-secondary text-center">{{ $t('start.emptyStart') }}</div>
+        <div class="h5 text-secondary text-center">{{ $t('start.emptyStart', { productName }) }}</div>
       </div>
     </div>
   </div>
@@ -50,6 +50,9 @@ export default {
   mixins: [permissionsMixin],
   components: { StartViewItem },
   computed: {
+    productName() {
+      return this.$root.config.productNamePageTitle || this.$t('login.productName')
+    },
     items: function() {
       const rawItems = [
         {

@@ -15,6 +15,7 @@
  *  limitations under the License.
  */
 import { HistoryService, ProcessService } from '@/services.js'
+import variableUtils from '@/components/process/mixins/variableUtils.js'
 
 const serviceMap = {
 	ProcessService: ProcessService,
@@ -51,22 +52,35 @@ export default {
 		activityInstancesGrouped: 'loadSelectedInstanceVariables'
 	},
 	computed: {
-		activityInstancesGrouped: function () {
-				const res = []
-				if (this.activityInstance) {
-					res[this.activityInstance.id] = this.activityInstance.name
-					this.activityInstance.childActivityInstances.forEach(ai => {
-						res[ai.id] = ai.name || ai.activityId
+		activityInstanceData: function () {
+				const names = {}
+				const activityIds = {}
+				const flatten = instances => {
+					instances.forEach(ai => {
+						names[ai.id] = ai.name || ai.activityId
+						activityIds[ai.id] = ai.activityId
+						if (ai.childActivityInstances?.length > 0) flatten(ai.childActivityInstances)
 					})
+				}
+				if (this.activityInstance) {
+					names[this.activityInstance.id] = this.activityInstance.name
+					flatten(this.activityInstance.childActivityInstances)
 				} else {
-					res[this.selectedInstance.id] = this.selectedInstance.processDefinitionName
+					names[this.selectedInstance.id] = this.selectedInstance.processDefinitionName
 					if (this.activityInstanceHistory) {
 						this.activityInstanceHistory.forEach(ai => {
-							res[ai.id] = ai.activityName || ai.activityId
+							names[ai.id] = ai.activityName || ai.activityId
+							activityIds[ai.id] = ai.activityId
 						})
 					}
 				}
-				return res
+				return { names, activityIds }
+		},
+		activityInstancesGrouped: function () {
+			return this.activityInstanceData.names
+		},
+		activityInstanceIdToActivityId: function () {
+			return this.activityInstanceData.activityIds
 		},
 		restFilter: function () {
 			const result = {
@@ -92,8 +106,14 @@ export default {
 				if (this.selectedInstance.state === 'ACTIVE' || this.$root.config.camundaHistoryLevel === 'none') {
 					this.fetchInstanceVariables('ProcessService', 'fetchProcessInstanceVariables')
 				} else {
-					if (this.$root.config.camundaHistoryLevel === 'full') {
+					if (this.$root.config.camundaHistoryLevel === 'full' || this.$root.config.camundaHistoryLevel === 'audit') {
 						this.fetchInstanceVariables('HistoryService', 'fetchProcessInstanceVariablesHistory')
+					} else {
+						// no variables available for finished process instances if history level is 'activity' or 'none'
+						this.variables = []
+						this.filteredVariables = []
+						this.loading = false
+						this.fetching = false
 					}
 				}
 			}
@@ -103,7 +123,8 @@ export default {
 			this.loading = true
 			const variables = await serviceMap[service][method](this.selectedInstance.id, this.restFilter)
 			variables.forEach(v => {
-				v.scope = this.activityInstancesGrouped[v.activityInstanceId]
+				v.scope = this.activityInstancesGrouped[v.activityInstanceId] || v.activityInstanceId
+				v.scopeActivityId = this.activityInstanceIdToActivityId[v.activityInstanceId] || null
 			})
 			variables.sort((a, b) => a.name.localeCompare(b.name))
 
@@ -112,48 +133,8 @@ export default {
 			this.loading = false
 			this.fetching = false
 		},    
-    displayValue(item) {
-      if (this.isFileValueDataSource(item)) {
-        return this.getFileVariableName(item)
-      }
-      else if (item.type === 'File') {
-        return item.valueInfo.filename
-      }
-      else if (item.type === 'Json') {
-        if (typeof item.valueSerialized === 'string') {
-          return item.valueSerialized
-        }
-        else if (typeof item.value === 'object') {
-          try {
-            return JSON.stringify(item.value, null, 2)
-          } catch {
-            return '- Json Object -'
-          }
-        }
-        return '- Json Object -'
-      }
-      else if (item.type === 'Object') {
-        if (item.valueDeserialized && typeof item.valueDeserialized === 'object') {
-          return JSON.stringify(item.valueDeserialized, null, 2)
-        }
-        else if (typeof item.value === 'object') {
-          try {
-            return JSON.stringify(item.value, null, 2)
-          } catch {
-            return '- Object -'
-          }
-        }
-        else if (typeof item.value === 'string') {
-          return item.value
-        }
-        return '- Object -'
-      }
-      else if (item.type === 'Null') {
-        return ''
-      }
-      else {
-        return '' + item.value
-      }
+    displayValue(variable) {
+	  return variableUtils.displayValue(variable)
     },
     displayValueTooltip(item) {
       if (this.isFile(item)) {
@@ -163,33 +144,15 @@ export default {
         return this.displayValue(item)
       }
     },
-    isFile: function(item) {
-      if (item.type === 'File') return true
-      else return this.isFileValueDataSource(item)
+    isFile(variable) {
+      return variableUtils.isFile(variable)
     },
-		isFileValueDataSource: function(item) {
-      if (item.type === 'Object') {
-        const objectTypeName =
-          (item.value && item.value.objectTypeName) ||
-          (item.valueInfo && item.valueInfo.objectTypeName)
-        if (objectTypeName && this.fileObjects.includes(objectTypeName)) return true
-      }
-      return false
+    isFileValueDataSource(variable) {
+      return variableUtils.isFileValueDataSource(variable)
     },
-		getFileVariableName: function(item) {
-			// Prioritize valueDeserialized over value
-			const targetValue = item.valueDeserialized || item.value
-			if (targetValue && typeof targetValue === 'object' && targetValue.name) {
-				return targetValue.name
-			}
-			if (targetValue && typeof targetValue === 'string') {
-				try {
-					const parsed = JSON.parse(targetValue)
-					if (parsed && parsed.name) return parsed.name
-				} catch { return '' }
-			}
-			return ''
-		},
+    getFileVariableName(variable) {
+      return variableUtils.getFileVariableName(variable)
+    },
 		downloadFile: function(variable) {
 			if (this.isFileValueDataSource(variable)) {
 				const filter = { variableName: variable.name, deserializeValues: true }
@@ -197,12 +160,12 @@ export default {
 					if (result && result.length > 0) {
 						const value = result[0].value
 						const fileData = typeof value === 'string' ? JSON.parse(value) : value
-						const blob = new Blob([Uint8Array.from(atob(fileData.data), c => c.charCodeAt(0))], { type: fileData.contentType })
+						const blob = new Blob([Uint8Array.from(atob(fileData.data), c => c.codePointAt(0))], { type: fileData.contentType })
 						this.$refs.importPopper.triggerDownload(blob, fileData.name)
 					}
 				})
 			} else if (variable.type === 'Object') {
-				const blob = new Blob([Uint8Array.from(atob(variable.value.data), c => c.charCodeAt(0))], { type: variable.value.contentType })
+				const blob = new Blob([Uint8Array.from(atob(variable.value.data), c => c.codePointAt(0))], { type: variable.value.contentType })
 				this.$refs.importPopper.triggerDownload(blob, this.getFileVariableName(variable))
 			} else {
 				const download = this.selectedInstance.state === 'ACTIVE' ?

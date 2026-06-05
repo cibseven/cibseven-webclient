@@ -110,7 +110,7 @@ describe('router', () => {
 
     // No '/seven/auth/start' direct usage
     // TODO unskip when fixing all occurrences (82 as of Nov 2025)
-    it.skip('no hardcoded URLs in *.js|*.vue files', () => {
+    it.todo('no hardcoded URLs in *.js|*.vue files', () => {
       allFiles.forEach(f => {
         const routerFilePath = path.resolve(srcDir, f)
         const routerContent = fs.readFileSync(routerFilePath, 'utf-8')

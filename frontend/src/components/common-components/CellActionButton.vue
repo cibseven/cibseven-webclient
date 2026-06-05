@@ -61,12 +61,13 @@ export default {
   color: var(--bs-dark) !important;
 }
 .hovered-link:focus,
-.hovered-button:focus  {
+.hovered-link:focus-visible,
+.hovered-button:focus,
+.hovered-button:focus-visible {
   background-color: var(--bs-gray-500) !important;
   color: var(--bs-dark) !important;
-  box-shadow: none;
   outline: 2px solid var(--bs-dark);
-  outline-offset: 2px;
+  outline-offset: 0px !important;
 }
 
 /* Specific styles for link and button to prevent layout shift on focus */

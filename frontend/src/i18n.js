@@ -15,7 +15,8 @@
  *  limitations under the License.
  */
 import { createI18n } from 'vue-i18n'
-import { mergeLocaleMessage as loadTranslationsFromCommonComponents } from '@cib/common-frontend'
+import { mergeLocaleMessage as commonFrontendMergeLocaleMessage } from '@cib/common-frontend'
+import { mergeModelerTranslations } from 'cibseven-modeler'
 import { axios, moment } from './globals.js'
 import { getTheme } from './utils/init'
 import 'moment/dist/locale/de'
@@ -49,6 +50,10 @@ const loadTranslationsFromSevenComponents = function(i18n, lang) {
   i18n.global.mergeLocaleMessage(lang, translation)
 }
 
+const loadTranslationsFromModeler = function(i18n, lang) {
+  mergeModelerTranslations(i18n, lang)
+}
+
 const loadTranslationsFromPublic = async function(lang) {
   // Load translations from public/translations_*.json
   try {
@@ -73,6 +78,7 @@ const loadTranslationsFromThemes = async function(config, lang) {
 const translationSources = {
   commonComponents: 'commonComponents',
   sevenComponents: 'sevenComponents',
+  modelerComponents: 'modelerComponents',
   public: 'public',
   themes: 'themes'
 }
@@ -80,17 +86,25 @@ const translationSources = {
 const defaultTranslationSources = [
   translationSources.commonComponents,
   translationSources.sevenComponents,
+  translationSources.modelerComponents,
   translationSources.public,
   translationSources.themes
 ]
 
 const loadTranslations = async function(config, lang, sources = defaultTranslationSources) {
-  // Add translations from @cib/common-frontend library
-  loadTranslationsFromCommonComponents(i18n, lang)
+  if (sources.includes(translationSources.commonComponents)) {
+    // Add translations from @cib/common-frontend library
+    commonFrontendMergeLocaleMessage(i18n, lang)
+  }
 
   if (sources.includes(translationSources.sevenComponents)) {
     // Add translations from src/assets/translations_*.json
     loadTranslationsFromSevenComponents(i18n, lang)
+  }
+
+  if (sources.includes(translationSources.modelerComponents)) {
+    // Add translations from cibseven-modeler library
+    loadTranslationsFromModeler(i18n, lang)
   }
 
   if (sources.includes(translationSources.public)) {

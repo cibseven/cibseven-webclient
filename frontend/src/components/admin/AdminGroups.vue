@@ -42,10 +42,12 @@
     </div>
     <div class="container overflow-auto bg-white shadow-sm border rounded g-0" @scroll="showMore">
       <FlowTable thead-class="sticky-header" striped :items="groups" primary-key="id"
-        prefix="admin.groups." :fields="[{label: 'id', key: 'id', class: 'col-md-4 col-sm-4', tdClass: 'py-1' },
-            {label: 'name', key: 'name', class: 'col-md-4 col-sm-4', tdClass: 'py-1' },
-            {label: 'type', key: 'type', class: 'col-md-2 col-sm-2', tdClass: 'py-1' },
-            {label: 'actions', key: 'actions', class: 'col-md-2 col-sm-2 text-center', sortable: false, thClass: 'justify-content-center', tdClass: 'justify-content-center py-0' }]"
+        :fields="[
+          { label: 'admin.groups.id', key: 'id', class: 'col-md-4 col-sm-4', tdClass: 'py-1' },
+          { label: 'admin.groups.name', key: 'name', class: 'col-md-4 col-sm-4', tdClass: 'py-1' },
+          { label: 'admin.groups.type', key: 'type', class: 'col-md-2 col-sm-2', tdClass: 'py-1' },
+          { label: 'admin.groups.actions', key: 'actions', class: 'col-md-2 col-sm-2 text-center', sortable: false, thClass: 'justify-content-center', tdClass: 'justify-content-center py-0' },
+        ]"
       >
         <template v-slot:cell(actions)="row">
           <template v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'">

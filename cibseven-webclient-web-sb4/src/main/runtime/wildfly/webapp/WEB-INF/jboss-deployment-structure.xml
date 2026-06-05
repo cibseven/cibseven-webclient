@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss-deployment-structure>
+  <deployment>
+    <dependencies>
+      <module name="org.jboss.logging"/>
+      <module name="org.cibseven.bpm.cibseven-engine"/>
+      <module name="org.cibseven.bpm.dmn.cibseven-engine-dmn"/>
+      <!-- ai-agent connector module: optional so the WAR still deploys when the
+           module is absent (AI disabled). Gives the modeler visibility to the
+           connector's bundled /element-templates/*.json (CIB7-1445). -->
+      <module name="org.cibseven.connect.cibseven-connect-ai-agent" optional="true"/>
+      <system>
+        <paths>
+          <path name="jdk/net"/>
+        </paths>
+      </system>
+    </dependencies>
+    <exclude-subsystems>
+      <subsystem name="logging"/>
+    </exclude-subsystems>
+    <exclusions>
+      <module name="org.hibernate"/>
+      <module name="org.hibernate.commons-annotations"/>
+      <module name="jakarta.persistence.api"/> 
+      <module name="com.fasterxml.jackson.jakarta.jackson-jakarta-json-provider"/>
+      <module name="com.fasterxml.jackson.core.jackson-core"/>
+      <module name="com.fasterxml.jackson.core.jackson-annotations"/>
+      <module name="com.fasterxml.jackson.core.jackson-databind"/>
+      <module name="com.fasterxml.jackson.datatype.jackson-datatype-jsr310"/>
+      <module name="com.fasterxml.jackson.datatype.jackson-datatype-jdk8"/>
+      <module name="org.jboss.resteasy.resteasy-jackson2-provider"/>
+    </exclusions>
+  </deployment>
+</jboss-deployment-structure>

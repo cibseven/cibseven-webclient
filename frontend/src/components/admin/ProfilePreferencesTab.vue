@@ -62,6 +62,16 @@
       </b-form-group>
     </ContentBlock>
 
+    <ContentBlock :title="$t('admin.preferences.bpmn.title')">
+      <b-form-group>
+        <b-form-checkbox v-model="shortenBadgeNumbers">
+          <span class="fw-semibold">{{ $t('admin.preferences.bpmn.shortenBadgeNumbers') }}</span>
+          <br/>
+        <span class="small text-secondary">{{ $t('admin.preferences.bpmn.shortenBadgeNumbersDescription') }}</span>
+        </b-form-checkbox>
+      </b-form-group>
+    </ContentBlock>
+
     <ContentBlock :title="$t('admin.preferences.notifications.title')"
       v-if="$root.config.notifications.tasks.enabled || $root.config.layout.showPopoverHowToAssign"
     >
@@ -208,7 +218,7 @@ export default {
       const options = []
 
       options.push({
-        label: this.$root.config.productNamePageTitle || this.$t('cib-header.productName'),
+        label: this.$root.config.productNamePageTitle || this.$t('login.productName'),
         options: [
           { value: 'start', text: this.$t('admin.preferences.general.startPage.options.home') },
         ]
@@ -283,6 +293,15 @@ export default {
       },
       set(val) {
         localStorage?.setItem('showPopoverHowToAssign', val)
+      }
+    },
+    shortenBadgeNumbers: {
+      get() {
+        if (!localStorage) return false
+        return localStorage.getItem('cibseven:preferences:shortenBadgeNumbers') !== 'false'
+      },
+      set(val) {
+        localStorage?.setItem('cibseven:preferences:shortenBadgeNumbers', val)
       }
     },
 

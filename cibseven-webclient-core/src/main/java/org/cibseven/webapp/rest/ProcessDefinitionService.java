@@ -22,9 +22,7 @@ import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
-import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.PermissionConstants;
-import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.StartForm;
 import org.cibseven.webapp.rest.model.Variable;
@@ -49,13 +47,9 @@ import jakarta.ws.rs.core.MediaType;
 @RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/process-definition")
 public class ProcessDefinitionService extends BaseService implements InitializingBean {
 	
-	SevenProvider sevenProvider;
-	
+
 	@Override
 	public void afterPropertiesSet() {
-		if (bpmProvider instanceof SevenProvider)
-			sevenProvider = (SevenProvider) bpmProvider;
-		else throw new SystemException("ProcessDefinitionService expects a BpmProvider");
 	}
 
     @Operation(
@@ -107,13 +101,13 @@ public class ProcessDefinitionService extends BaseService implements Initializin
 	}
 
 	@Consumes(MediaType.APPLICATION_JSON)
-	@RequestMapping(value = "/{processDefinitionKey}/submit-form", method = RequestMethod.POST)
+	@RequestMapping(value = "/{processDefinitionId}/submit-form", method = RequestMethod.POST)
 	public ResponseEntity<ProcessStart> submitForm(
-			@PathVariable String processDefinitionKey, 
-			@RequestBody String formResult, 
+			@PathVariable String processDefinitionId,
+			@RequestBody String formResult,
 			HttpServletRequest rq, CIBUser user) {
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.CREATE_ALL);
-		ProcessStart processStart = bpmProvider.submitForm(processDefinitionKey, formResult, user);
-		return new ResponseEntity<>(processStart, new HttpHeaders(), HttpStatus.OK);
+		ProcessStart processStart = bpmProvider.submitForm(processDefinitionId, formResult, user);
+		return ResponseEntity.ok(processStart);
 	}
 }

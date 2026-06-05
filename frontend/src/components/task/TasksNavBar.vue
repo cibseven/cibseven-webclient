@@ -20,10 +20,14 @@
   <div v-show="showTasks" class="overflow-auto h-100">
     <div class="h-100 d-flex flex-column border border-end-0 border-top-0 bg-light">
 
-      <b-button style="top: 3px; right: 30px" class="border-0 position-absolute" v-if="$root.config.layout.showTaskListManualRefresh"
-        variant="btn-outline-primary" size="sm" :title="$t('nav-bar.refresh')" @click="refreshTasks()" :style="pauseRefreshButton ? 'opacity: 0.5' : ''">
-        <span class="visually-hidden">{{ $t('nav-bar.refresh') }}</span>
-        <span class="mdi mdi-18px mdi-refresh"></span>
+      <b-button v-if="$root.config.layout.showTaskListManualRefresh"
+        type="button" @click="refreshTasks()" 
+        variant="btn-outline-primary" size="sm"
+        :title="$t('nav-bar.refresh')"
+        :aria-label="$t('nav-bar.refresh')"
+        style="top: 3px; right: 30px" class="border-0 position-absolute" 
+        :style="pauseRefreshButton ? 'opacity: 0.5' : ''">
+        <span class="mdi mdi-18px mdi-refresh" aria-hidden="true"></span>
       </b-button>
 
       <div class="py-1 px-2 mb-1 bg-task-filter">
@@ -41,23 +45,25 @@
                 <template #button-content>
                   <i class="mdi mdi-18px mdi-filter-variant"></i><span class="visually-hidden">{{ $t('sorting.sortBy') }}</span>
                 </template>
-                <b-dd-item-btn v-for="item in filteredFields" :key="item" @click="taskSorting.sortBy = item; setSorting('key'); $refs.sortingList.hide()" :class="taskSorting.sortBy === item ? 'active' : ''">
+                <b-dropdown-item-button v-for="item in filteredFields" :key="item"
+                  @click="taskSorting.sortBy = item; setSorting('key'); $refs.sortingList.hide()"
+                  :active="taskSorting.sortBy === item">
                   {{ $t('sorting.' + item) }}
-                </b-dd-item-btn>
+                </b-dropdown-item-button>
               </b-dropdown>
               <b-button variant="link" class="text-decoration-none px-0" @click="$refs.sortingList.show()">{{ $t('sorting.' + taskSorting.sortBy) }}</b-button>
               <template v-slot:append>
                 <b-button size="sm" variant="link" @click="setSorting('order')" class="mdi mdi-18px ms-1"
                   :class="taskSorting.sortOrder === 'desc' ? 'mdi-arrow-down' : 'mdi-arrow-up'"
-                  :title="taskSorting.sortOrder === 'desc' ? $t('sorting.desc') : $t('sorting.asc')">
-                  <span v-if="taskSorting.sortOrder === 'desc'" class="visually-hidden">{{ $t('sorting.desc') }}</span>
-                  <span v-else class="visually-hidden">{{ $t('sorting.asc') }}</span>
+                  :title="taskSorting.sortOrder === 'desc' ? $t('sorting.desc') : $t('sorting.asc')"
+                  :aria-label="taskSorting.sortOrder === 'desc' ? $t('sorting.desc') : $t('sorting.asc')">
                 </b-button>
               </template>
             </b-input-group>
           </b-form-group>
           <div v-if="$root.config.layout.showFilterReminderDate || $root.config.layout.showFilterDueDate ||
-            ($root.config.taskFilter.advancedSearch.processVariables.length > 0 && $root.config.taskFilter.advancedSearch.filterEnabled)" class="ms-auto col-auto">
+            ($root.config.taskFilter.advancedSearch.processVariables.length > 0 && $root.config.taskFilter.advancedSearch.filterEnabled) ||
+            filterVariables.length > 0" class="ms-auto col-auto">
             <b-button ref="filters" variant="link" :title="$t('nav-bar.filtersAdditionalsTitle')">
               <span class="mdi mdi-18px"
                 :class="$store.state.filter.settings.reminder || $store.state.filter.settings.dueDate || $store.state.advancedSearch.criterias.length > 0 ? 'mdi-filter-menu text-primary' : 'mdi-filter-menu-outline'"></span>
@@ -79,11 +85,20 @@
           </b-form-checkbox>
         </div>
         <div v-if="$root.config.taskFilter.advancedSearch.filterEnabled">
-          <div v-for="(criteria, index) in advancedFilter" :key="index">
+          <div v-for="(criteria, index) in advancedFilter.filter(c => c.source !== 'filter')" :key="index">
             <b-form-checkbox v-model="criteria.check">
               <h5 class="d-flex fw-normal">{{ criteria.displayName }}</h5>
             </b-form-checkbox>
             <b-form-input v-if="criteria.check && criteria.defaultValue === ''" v-model="criteria.value" size="sm" class="mb-2"></b-form-input>
+          </div>
+        </div>
+        <div v-if="filterVariables.length > 0">
+          <hr class="my-2">
+          <div v-for="(criteria, index) in advancedFilter.filter(c => c.source === 'filter')" :key="'fv-' + index">
+            <b-form-checkbox v-model="criteria.check">
+              <h5 class="d-flex fw-normal">{{ criteria.displayName }}</h5>
+            </b-form-checkbox>
+            <b-form-input v-if="criteria.check" v-model="criteria.value" size="sm" class="mb-2"></b-form-input>
           </div>
         </div>
       </b-popover>
@@ -93,23 +108,33 @@
             <b-list-group-item @click="selectedTask(task)" v-for="task of tasksFiltered" :key="task.id" :ref="'taskItem-' + task.id"
               @mouseenter="focused = task" @focusin="focused = task"
               @mouseleave="focused = null" @focusout="focused = null"
-              class="rounded-0 mt-3 p-2 bg-white border-0" :class="task.id === $route.params.taskId ? 'active shadow' : ''" draggable="false"
+              class="rounded-0 mt-3 p-2 bg-white border-0 text-break" :class="task.id === $route.params.taskId ? 'active shadow' : ''" draggable="false"
               tabindex=0 style="cursor: pointer" v-on:keyup.enter="selectedTask(task)" action>
               <div class="d-flex align-items-center">
-                <h6 style="max-width: 100%; font-size: 1rem">
-                  <HighlightedText :text="task.name" :keyword="search" class="fw-bold">{{ task.name }}</HighlightedText>
-                </h6>
+                <h3 class="h6" style="max-width: 100%; font-size: 1rem">
+                  <HighlightedText :text="task.name" :keyword="search" class="fw-bold" style="min-width: 0">{{ task.name }}</HighlightedText>
+                </h3>
                 <div class="d-flex ms-auto">
-                  <b-button @click.stop="$refs['followUp' + task.id][0].show()" @keydown.enter.stop.prevent="$refs['followUp' + task.id][0].show()" @keyup.enter.stop.prevent 
-                  @keydown.space.stop.prevent="$refs['followUp' + task.id][0].show()" v-if="$root.config.layout.showFilterReminderDate" size="sm" :class="getReminderClasses(task)" variant="light" class="mdi mdi-18px mdi-alarm border-0 me-1" :title="getDateFormatted(task.followUp, 'L', 'setReminder')"></b-button>
-                  <b-button @click.stop="$refs['due' + task.id][0].show()" @keydown.enter.stop.prevent="$refs['due' + task.id][0].show()" @keyup.enter.stop.prevent 
-                  @keydown.space.stop.prevent="$refs['due' + task.id][0].show()" v-if="$root.config.layout.showFilterDueDate" size="sm" :class="getDueClasses(task)" variant="light" class="mdi mdi-18px mdi-calendar-alert border-0" :title="getDateFormatted(task.due, 'L', 'setDeadline')"></b-button>
+                  <b-button
+                    @click.stop="copyTaskForDateManagement(task, 'followUp'); $refs.followUp.show()"
+                    @keydown.enter.stop.prevent="copyTaskForDateManagement(task, 'followUp'); $refs.followUp.show()"
+                    @keyup.enter.stop.prevent 
+                    @keydown.space.stop.prevent="$refs.followUp.show()"
+                    v-if="$root.config.layout.showFilterReminderDate"
+                    size="sm" :class="getReminderClasses(task)" variant="light" class="mdi mdi-18px mdi-alarm border-0 me-1" :title="getDateFormatted(task.followUp, 'L', 'setReminder')"></b-button>
+                  <b-button
+                    @click.stop="copyTaskForDateManagement(task, 'due'); $refs.due.show()"
+                    @keydown.enter.stop.prevent="copyTaskForDateManagement(task, 'due'); $refs.due.show()"
+                    @keyup.enter.stop.prevent 
+                    @keydown.space.stop.prevent="$refs.due.show()"
+                    v-if="$root.config.layout.showFilterDueDate"
+                    size="sm" :class="getDueClasses(task)" variant="light" class="mdi mdi-18px mdi-calendar-alert border-0" :title="getDateFormatted(task.due, 'L', 'setDeadline')"></b-button>
                 </div>
               </div>
               <div v-if="task.businessKey && $root.config.layout.showBusinessKey" class="d-flex align-items-center mb-1">
-                <HighlightedText :text="task.businessKey" :keyword="search" :title="$t('process.businessKey') + ': ' + task.businessKey"/>
+                <HighlightedText :text="task.businessKey" :keyword="search" :title="$t('process.businessKey') + ': ' + task.businessKey" style="min-width: 0"/>
               </div>
-              <div v-if="getProcessName(task.processDefinitionId)" class="fw-normal h5">
+              <div v-if="getProcessName(task.processDefinitionId)" class="fw-normal h5"  style="min-width: 0">
                 {{ getProcessName(task.processDefinitionId) }}
               </div>
               <div class="d-flex align-items-center">
@@ -119,46 +144,76 @@
                     <HighlightedText :text="getCompleteName(task)" :keyword="search" class="mdi mdi-18px mdi-account text-secondary p-1"></HighlightedText>
                   </div>
                   <div class="h6 text-end p-0 fw-normal n-0" v-if="task.assignee == null">
-                    <b-button variant="link" class="p-0 text-dark" @click.stop="checkAssignee(task)" @keydown.enter.stop="checkAssignee(task)" @keyup.enter.stop.prevent @keydown.space.prevent.stop="checkAssignee(task)">
+                    <b-button variant="link" class="p-0 lh-1 text-dark" @click.stop="checkAssignee(task)" @keydown.enter.stop="checkAssignee(task)" @keyup.enter.stop.prevent @keydown.space.prevent.stop="checkAssignee(task)">
                       <span class="mdi mdi-18px mdi-account-question text-secondary"></span>
                       {{ $t('task.assignToMe') }}
                     </b-button>
                   </div>
                 </div>
               </div>
-              <b-modal :ref="'followUp' + task.id" @show="copyTaskForDateManagement(task, 'followUp')" @hide="selectedDateT = {}">
-                <b-calendar @input="setTime(null, 'followUp')" v-model="selectedDateT.followUp" value-as-date :start-weekday="1" :locale="currentLanguage()" block
-                :label-no-date-selected="$t('cib-datepicker2.noDate')" :date-format-options="{ year: 'numeric', month: '2-digit', day: '2-digit' }"
-                :label-reset-button="$t('cib-datepicker2.reset')" :label-today-button="$t('cib-datepicker2.today')" :date-disabled-fn="isInThePast" label-help="">
-                </b-calendar>
-                <template v-slot:modal-footer>
-                  <b-button @click="$refs['followUp' + task.id][0].hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
-                  <b-button @click="setDate(task, 'followUp')" variant="primary">{{ $t('task.setReminder') }}</b-button>
-                </template>
-              </b-modal>
-              <b-modal :ref="'due' + task.id" @show="copyTaskForDateManagement(task, 'due')" @hide="selectedDateT = {}">
-                <b-calendar @input="setTime(selectedDateT.dueTime, 'due')" v-model="selectedDateT.due" value-as-date :start-weekday="1" :locale="currentLanguage()" block
-                :label-no-date-selected="$t('cib-datepicker2.noDate')" :date-format-options="{ year: 'numeric', month: '2-digit', day: '2-digit' }"
-                :label-reset-button="$t('cib-datepicker2.reset')" :label-today-button="$t('cib-datepicker2.today')" label-help="">
-                </b-calendar>
-                <hr>
-                <b-form-timepicker v-model="selectedDateT.dueTime" @input="setTime($event, 'due')" no-close-button :label-no-time-selected="$t('cib-timepicker.noDate')"
-                  reset-button class="flex-fill" reset-value="23:59:00" :label-reset-button="$t('cib-timepicker.reset')" :locale="currentLanguage()"></b-form-timepicker>
-                <template v-slot:modal-footer>
-                  <b-button :title="$t('confirm.cancel')" @click="$refs['due' + task.id][0].hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
-                  <b-button :title="$t('task.setDeadline')" @click="setDate(task, 'due')" variant="primary">{{ $t('task.setDeadline') }}</b-button>
-                </template>
-              </b-modal>
+              <div v-if="visibleFilterVariables(task).length > 0" class="position-relative mt-1 pt-1 border-top">
+                <div class="row g-0" :class="expandedTasks[task.id] ? '' : 'task-variables-collapsed'">
+                  <div v-for="filterVar in visibleFilterVariables(task)" :key="filterVar.name" class="col-12 h6 fw-normal m-0 mt-2">
+                    <div class="d-flex">
+                      <div class="text-truncate fw-semibold me-1" :title="displayTooltip(task, filterVar)">{{ filterVar.label || filterVar.name }}:</div>
+                      <div v-if="task.variables && task.variables[filterVar.name] !== undefined && task.variables[filterVar.name] !== null" class="text-truncate" :title="displayTooltip(task, filterVar)">
+                        {{ displayValue(task, filterVar) }}
+                      </div>
+                      <div v-else class="text-muted fst-italic" :title="displayTooltip(task, filterVar)">&lt;undefined&gt;</div>
+                    </div>
+                  </div>
+                </div>
+                <div v-if="!expandedTasks[task.id]"
+                  class="task-variables-overlay position-absolute d-flex justify-content-center align-items-end w-100"
+                  style="bottom: 0; left: 0; right: 0" role="button" tabindex="0"
+                  @click.stop="toggleTaskVariables(task.id)"
+                  @keydown.enter.stop.prevent="toggleTaskVariables(task.id)"
+                  @keydown.space.stop.prevent="toggleTaskVariables(task.id)">
+                  <span class="mdi mdi-18px text-secondary mdi-chevron-down"></span>
+                </div>
+                <div v-else
+                  class="d-flex justify-content-center w-100" role="button" tabindex="0"
+                  @click.stop="toggleTaskVariables(task.id)"
+                  @keydown.enter.stop.prevent="toggleTaskVariables(task.id)"
+                  @keydown.space.stop.prevent="toggleTaskVariables(task.id)">
+                  <span class="mdi mdi-18px text-secondary mdi-chevron-up"></span>
+                </div>
+              </div>
             </b-list-group-item>
           </b-list-group>
+
+          <b-modal ref="followUp" @hide="selectedDateT = {}" :title="$t('task.setReminder') + (taskToEdit ? ' - ' + taskToEdit.name : '')">
+            <b-calendar uid="followUp" @input="setTime(null, 'followUp')" v-model="selectedDateT.followUp" value-as-date :start-weekday="1" :locale="currentLanguage()" block
+              :label-no-date-selected="$t('cib-datepicker2.noDate')" :date-format-options="{ year: 'numeric', month: '2-digit', day: '2-digit' }"
+              :label-reset-button="$t('cib-datepicker2.reset')" :label-today-button="$t('cib-datepicker2.today')" :date-disabled-fn="isInThePast" label-help="">
+            </b-calendar>
+            <template v-slot:modal-footer>
+              <b-button @click="$refs.followUp.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
+              <b-button @click="setDate(taskToEdit, 'followUp')" variant="primary">{{ $t('task.setReminder') }}</b-button>
+            </template>
+          </b-modal>
+          <b-modal ref="due" @hide="selectedDateT = {}" :title="$t('task.setDeadline') + (taskToEdit ? ' - ' + taskToEdit.name : '')">
+            <b-calendar uid="due" @input="setTime(selectedDateT.dueTime, 'due')" v-model="selectedDateT.due" value-as-date :start-weekday="1" :locale="currentLanguage()" block
+              :label-no-date-selected="$t('cib-datepicker2.noDate')" :date-format-options="{ year: 'numeric', month: '2-digit', day: '2-digit' }"
+              :label-reset-button="$t('cib-datepicker2.reset')" :label-today-button="$t('cib-datepicker2.today')" label-help="">
+            </b-calendar>
+            <hr>
+            <b-form-timepicker v-model="selectedDateT.dueTime" @input="setTime($event, 'due')" no-close-button :label-no-time-selected="$t('cib-timepicker.noDate')"
+              reset-button class="flex-fill" reset-value="23:59:00" :label-reset-button="$t('cib-timepicker.reset')" :locale="currentLanguage()"></b-form-timepicker>
+            <template v-slot:modal-footer>
+              <b-button @click="$refs.due.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
+              <b-button @click="setDate(taskToEdit, 'due')" variant="primary">{{ $t('task.setDeadline') }}</b-button>
+            </template>
+          </b-modal>
+
         </div>
         <BWaitingBox v-show="tasksFiltered.length < 1" ref="taskLoader" class="d-flex justify-content-center pt-4" styling="width:30%">
           <div v-if="tasksFiltered.length < 1 && $store.state.filter.selected.name === 'default'">
-            <img :alt="$t('nav-bar.no-tasks-pending')" src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-3 mb-2" style="width: 200px">
+            <img alt="" src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-3 mb-2" style="width: 200px">
             <div class="h5 text-secondary text-center">{{ $t('nav-bar.no-tasks-pending') }}</div>
           </div>
           <div v-if="tasksFiltered.length < 1 && $store.state.filter.selected.name !== 'default'">
-            <img :alt="$t('nav-bar.no-tasks')" src="@/assets/images/task/no_tasks.svg" class="d-block mx-auto mt-3 mb-2" style="width: 200px">
+            <img alt="" src="@/assets/images/task/no_tasks.svg" class="d-block mx-auto mt-3 mb-2" style="width: 200px">
             <div class="h5 text-secondary text-center">{{ $t('nav-bar.no-tasks') }}</div>
           </div>
         </BWaitingBox>
@@ -177,12 +232,13 @@
 import { moment } from '@/globals.js'
 import { TaskService, AdminService } from '@/services.js'
 import { debounce } from '@/utils/debounce.js'
-import { formatDateForTooltips } from '@/utils/dates.js'
+import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import StartProcess from '@/components/start-process/StartProcess.vue'
 import AdvancedSearchModal from '@/components/task/AdvancedSearchModal.vue'
 import SmartSearch from '@/components/task/SmartSearch.vue'
 import { ConfirmDialog, BWaitingBox, HighlightedText } from '@cib/common-frontend'
 import { mapActions } from 'vuex'
+import variableUtils from '@/components/process/mixins/variableUtils.js'
 
 export default {
   name: 'TasksNavBar',
@@ -198,10 +254,12 @@ export default {
       mode: 'create',
       focused: null,
       taskSorting: { sortBy: null, sortOrder: 'desc' },
+      taskToEdit: null,
       selectedDateT: {},
       pauseRefreshButton: false,
       advancedFilter: [],
       advancedFilterAux: null,
+      expandedTasks: {},
 	    justSelectedFromList: false,
       pendingScrollToTaskId: null
     }
@@ -237,6 +295,16 @@ export default {
           this.updateAdvancedFilters()
         }
       }
+    },
+    'filterVariables': function() {
+      const cleaned = this.$store.state.advancedSearch.criterias.filter(c => !c.id?.startsWith('fv_'))
+      if (cleaned.length !== this.$store.state.advancedSearch.criterias.length) {
+        this.$store.dispatch('updateAdvancedSearch', {
+          matchAllCriteria: this.$store.state.advancedSearch.matchAllCriteria,
+          criterias: cleaned
+        })
+      }
+      this.loadAdvancedFilters()
     }
   },
   computed: {
@@ -255,6 +323,12 @@ export default {
     },
     filteredFields() {
       return this.$root.config.taskSorting.fields.filter(item => this.showFields(item))
+    },
+    filterVariables: function() {
+      return this.$store.state.filter.selected.properties?.variables || []
+    },
+    showUndefinedVariable: function() {
+      return this.$store.state.filter.selected.properties?.showUndefinedVariable || false
     }
   },
   created: function () {
@@ -267,6 +341,37 @@ export default {
   methods: {
     ...mapActions('task', ['setSelectedAssignee']),
     formatDateForTooltips,
+    displayValue: function(task, filterVar) {
+      const variable = { 
+        name: filterVar.name, 
+        value: task.variables?.[filterVar.name], 
+        type: task.variableTypes?.[filterVar.name] 
+      }
+      if (variable.type === 'Date') return formatDate(variable.value)
+      return variableUtils.shortValue(variableUtils.displayValue(variable))
+    },
+    displayTooltip: function(task, filterVar) {
+      const header = filterVar.label ? filterVar.label + ' (' + filterVar.name + '):' : filterVar.name + ':'
+      const variable = { 
+        name: filterVar.name, 
+        value: task.variables?.[filterVar.name], 
+        type: task.variableTypes?.[filterVar.name] 
+      }
+      if (variable.value == null) return header + '\n'
+      const value = variable.type === 'Date'
+        ? formatDateForTooltips(variable.value)
+        : variableUtils.displayValue(variable)
+      return header + '\n' + value
+    },
+    toggleTaskVariables: function(taskId) {
+      this.expandedTasks[taskId] = !this.expandedTasks[taskId]
+    },
+    visibleFilterVariables: function(task) {
+      return this.filterVariables.filter(filterVar =>
+        (task.variables && task.variables[filterVar.name] !== undefined && task.variables[filterVar.name] !== null) ||
+        this.showUndefinedVariable
+      )
+    },
     loadAdvancedFilters: function() {
       this.advancedFilter = []
       this.$root.config.taskFilter.advancedSearch.processVariables.forEach(pv => {
@@ -290,8 +395,24 @@ export default {
           advancedFilterObj.value = pv.type === 'Boolean' ? '' : pv.value
         }
         this.advancedFilter.push(advancedFilterObj)
-        this.advancedFilterAux = JSON.stringify(this.advancedFilter)
       })
+      this.filterVariables.forEach(fv => {
+        const key = 'fv_' + fv.name
+        const criteria = this.$store.state.advancedSearch.criterias
+          .find(obj => obj.id === key && obj.operator === 'like')
+        this.advancedFilter.push({
+          key: key,
+          variableName: fv.name,
+          displayName: fv.label || fv.name,
+          type: 'String',
+          defaultValue: '',
+          operator: 'like',
+          source: 'filter',
+          check: !!criteria,
+          value: criteria ? criteria.value.slice(1, -1) : ''
+        })
+      })
+      this.advancedFilterAux = JSON.stringify(this.advancedFilter)
     },
     updateAdvancedFilters: debounce(800, function() {
       const criterias = this.advancedFilter
@@ -442,7 +563,7 @@ export default {
     setDate: function(task, type) {
       task[type] = this.selectedDateT[type] ? moment(this.selectedDateT[type]).format('YYYY-MM-DDTHH:mm:ss.SSSZZ') : null
       TaskService.update(task)
-      this.$refs[type + task.id][0].hide()
+      this.$refs[type].hide()
     },
     handleScrollTasks: function(el) {
       if (this.tasks.length < this.taskResultsIndex) return
@@ -463,6 +584,7 @@ export default {
       }
     },
     copyTaskForDateManagement: function(task, type) {
+      this.taskToEdit = task
       this.selectedDateT = JSON.parse(JSON.stringify(task))
       if (task[type]) {
         this.selectedDateT[type] = new Date(task[type])
@@ -517,6 +639,16 @@ export default {
 </script>
 
 <style scoped>
+.task-variables-collapsed {
+  max-height: 3rem;
+  overflow: hidden;
+}
+
+.task-variables-overlay {
+  height: 3rem;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.92) 60%);
+}
+
 .action-button-hidden {
   opacity: 0;
   transition: opacity 0.2s;

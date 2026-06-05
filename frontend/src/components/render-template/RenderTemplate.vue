@@ -20,17 +20,33 @@
   <div>
     <BWaitingBox v-if="loader" class="h-100 d-flex justify-content-center" ref="loader" styling="width:20%"></BWaitingBox>
     <div v-show="!loader" class="h-100">
-      <iframe v-show="!submitForm && formFrame" class="h-100" ref="template-frame" frameBorder="0"
+      <iframe v-show="!submitForm && formFrame" :tabindex="iframeTabIndex" class="h-100" ref="template-frame" frameBorder="0"
         src="" width="100%" height="100%" :style="fullModeStyles" :title="task?.name"></iframe>
       <div class="pt-2" v-if="!formFrame">
         <span class="small-text d-none d-sm-inline" style="vertical-align: middle">
           <strong>{{ $t('task.emptyTask') }}</strong> |
         </span>
         <IconButton icon="check" @click="completeEmptyTask()" variant="secondary" :text="$t('task.actions.submit')"></IconButton>
+        <div>
+          <button v-if="!taskVariablesVisible"
+            @click="taskVariablesVisible = true"
+            class="btn btn-sm btn-link m-0 p-0 align-baseline"
+            type="button"
+            :title="$t('task-variables.showTaskVariables.tooltip')"
+          >
+            {{ $t('task-variables.showTaskVariables.title') }}
+          </button>
+          <template v-else>
+             <TaskVariables :task="task" @variables-updated="emptyTaskVariables = $event" />
+             <div class="d-flex justify-content-end mt-2">
+               <IconButton icon="check" @click="completeEmptyTask()" variant="secondary" :text="$t('task.actions.submit')"></IconButton>
+             </div>
+          </template>
+        </div>
       </div>
       <SuccessAlert top="0" style="z-index: 1031" ref="messageSaved"> {{ $t('alert.successSaveTask') }}</SuccessAlert>
       <SuccessAlert top="0" style="z-index: 1031" ref="messageSuccess"> {{ $t('alert.successOperation') }}</SuccessAlert>
-      <b-modal ref="datePickerModal">
+      <b-modal ref="datePickerModal" :title="$t('deployed-form.selectDate')">
         <b-calendar
           v-model="datePickerValue"
           value-as-date
@@ -44,8 +60,8 @@
           label-help=""
         ></b-calendar>
         <template v-slot:modal-footer>
-          <b-button :title="$t('confirm.cancel')" @click="$refs.datePickerModal.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
-          <b-button :title="$t('confirm.ok')" @click="onDatePickerConfirm()" variant="primary">{{ $t('confirm.ok') }}</b-button>
+          <b-button @click="$refs.datePickerModal.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
+          <b-button @click="onDatePickerConfirm()" variant="primary">{{ $t('confirm.ok') }}</b-button>
         </template>
       </b-modal>
     </div>
@@ -58,22 +74,26 @@ import { TaskService } from '@/services.js'
 import IconButton from '@/components/forms/IconButton.vue'
 import { SuccessAlert, BWaitingBox } from '@cib/common-frontend'
 import { ENGINE_STORAGE_KEY } from '@/constants.js'
+import TaskVariables from '@/components/render-template/TaskVariables.vue'
+import { getIframeContext, findAndScroll } from '@/utils/iframe.js'
 
 export default {
   name: 'RenderTemplate',
-  components: { IconButton, SuccessAlert, BWaitingBox },
+  components: { IconButton, SuccessAlert, BWaitingBox, TaskVariables },
   props: ['task'],
   mixins: [permissionsMixin],
   inject: ['currentLanguage', 'AuthService'],
   emits: ['complete-task'],
   data: function() {
     return {
+      taskVariablesVisible: false,
       userInstruction: null,
       formReference: null,
       height: 0,
       submitForm: false,
       formFrame: true,
       loader: false,
+      emptyTaskVariables: {},
       datePickerValue: null,
       datePickerRequest: null
     }
@@ -89,6 +109,14 @@ export default {
     }
   },
   computed: {
+    iframeTabIndex: function() {
+      const assigneeId = typeof this.task.assignee === 'string'
+        ? this.task.assignee
+        : this.task.assignee?.id || ''
+      const currentUserId = this.$root.user?.id || ''
+      const isAssignedToCurrentUser = assigneeId.toLowerCase() === currentUserId.toLowerCase()
+      return (!this.task.assignee || !isAssignedToCurrentUser) ? -1 : undefined
+    },
     fullModeStyles: function() {
       if (this.$route.query.fullMode === 'true') {
         return 'position: fixed; top: 0; left: 0; z-index: 1030'
@@ -100,6 +128,7 @@ export default {
     this.loadIframe()
     const formFrame = this.$refs['template-frame']
     window.addEventListener('message', this.processMessage)
+    formFrame.addEventListener('load', this.onIframeLoad)
 
     formFrame.setAttribute('allowfullscreen', true)
     formFrame.setAttribute('webkitallowfullscreen', true)
@@ -117,9 +146,13 @@ export default {
   },
   methods: {
     loadIframe: async function() {
+      this.taskVariablesVisible = false
+      this.emptyTaskVariables = {}
       this.loader = true
       this.submitForm = false
       this.formFrame = true
+      const currentFrame = this.$refs['template-frame']
+      if (currentFrame) currentFrame.src = 'about:blank'
       const theme = localStorage.getItem('theme') || this.$root.theme
       let themeContext = ''
       let translationContext = ''
@@ -135,26 +168,20 @@ export default {
       //Startforms
       if (this.task.url) {
         formFrame.src = this.task.url + '/' + themeContext + '/' + translationContext
-
-        this.loader = false
       } else if (this.task.isEmbedded && this.task.processDefinitionId) {
         formFrame.src = `embedded-forms.html?processDefinitionId=${this.task.processDefinitionId}&lang=${this.currentLanguage()}`
-        this.loader = false
       } else if (this.task.isGenerated && this.task.processDefinitionId) {
         formFrame.src = `embedded-forms.html?generated=true&processDefinitionId=${this.task.processDefinitionId}&lang=${this.currentLanguage()}`
-        this.loader = false
       } else if (this.task.id) {
         const form = this.task.formKey || await TaskService.form(this.task.id)
         if (form.key && form.key.includes('/rendered-form')) {
           // Generated forms
           this.formFrame = true
           formFrame.src = `embedded-forms.html?generated=true&taskId=${this.task.id}&lang=${this.currentLanguage()}`
-          this.loader = false
         } else  if (this.task.formKey && this.task.formKey.startsWith('embedded:') && this.task.formKey !== 'embedded:/camunda/app/tasklist/ui-element-templates/template.html') {
           //Embedded forms if not "standard" ui-element-templates
           this.formFrame = true
           formFrame.src = `embedded-forms.html?taskId=${this.task.id}&lang=${this.currentLanguage()}`
-          this.loader = false
         } else {
           let formReferencePromise
           //Camunda Forms
@@ -174,8 +201,6 @@ export default {
 
             formFrame.src = '#/' + formReference + '/' + this.currentLanguage() + '/' +
             this.task.id + '/' + this.$root.user.authToken + '/' + themeContext + '/' + translationContext
-
-            this.loader = false
           }, () => {
             // Not needed but just in case something changes in the backend method
             this.formFrame = false
@@ -192,8 +217,11 @@ export default {
         }
       }
     },
-    completeEmptyTask: function() {
-      TaskService.submit(this.task.id).then(() => {
+    completeEmptyTask() {
+      const hasVariables = Object.keys(this.emptyTaskVariables).length > 0
+      const method = hasVariables ? TaskService.submitWithVariables : TaskService.submit
+      const params = hasVariables ? { variables: this.emptyTaskVariables } : null
+      method(this.task.id, params).then(() => {
         this.completeTask()
       })
     },
@@ -363,13 +391,28 @@ export default {
     onBeforeUnload: function() {
       const formFrame = this.$refs['template-frame']
       if (formFrame) {
-        formFrame.contentWindow.postMessage({ type: 'contextChanged' }, '*');
+        formFrame.contentWindow.postMessage({ type: 'contextChanged' }, '*')
         this.loadIframe()
       }
+    },
+    onIframeLoad: function() {
+      const formFrame = this.$refs['template-frame']
+      if (formFrame && formFrame.src !== 'about:blank' && !formFrame.src.endsWith('about:blank')) {
+        this.loader = false
+      }
+    },
+    handleScrollIframe(deltaY, x, y) {
+      const frame = this.$refs['template-frame']
+      const ctx = getIframeContext(frame, x, y)
+      if (!ctx) return
+      const el = ctx.doc.elementFromPoint(ctx.x, ctx.y)
+      findAndScroll(el, deltaY, ctx.x, ctx.y, ctx.doc)
     }
   },
   beforeUnmount: function() {
     window.removeEventListener('message', this.processMessage)
+    const formFrame = this.$refs['template-frame']
+    if (formFrame) formFrame.removeEventListener('load', this.onIframeLoad)
   }
 }
 </script>

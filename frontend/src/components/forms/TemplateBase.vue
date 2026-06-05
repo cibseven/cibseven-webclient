@@ -28,7 +28,7 @@
           :activityInstanceHistory="templateMetaData.activityInstanceHistory" class="h-100" ref="diagram"></BpmnViewer>
         </div>
         <template v-slot:modal-footer>
-          <b-button variant="secondary" @click="$refs.process.hide()">{{ $t('bpmn-viewer.accept') }}</b-button>
+          <b-button variant="secondary" @click="$refs.process.hide()">{{ $t('deployed-form.accept') }}</b-button>
         </template>
       </b-modal>
 
@@ -39,8 +39,8 @@
 
     <div v-if="showButtons" v-show="!loader" class="border-top pb-2 pt-3 shadow text-center bg-white" style="z-index: 9999">
       <slot name="button-row"></slot>
-      <IconButton v-if="!isMobile" icon="fullscreen" @click="fullScreen()" :text="$t('actions.fullscreen')"></IconButton>
-      <IconButton v-if="!noDiagramm && !isMobile()" icon="package-variant-closed" @click="showDiagram()" :text="$t('actions.showProcess')"></IconButton>
+      <IconButton v-if="!isMobile" icon="fullscreen" @click="fullScreen()" :text="$t('deployed-form.fullscreen')"></IconButton>
+      <IconButton v-if="!noDiagramm && !isMobile()" icon="package-variant-closed" @click="showDiagram()" :text="$t('deployed-form.showProcess')"></IconButton>
     </div>
 
   </div>
@@ -55,6 +55,7 @@ import IconButton from '@/components/forms/IconButton.vue'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 import { FormsService, createDocumentEndpointUrl } from '@/services.js'
 import { findDocumentPreviewComponents, getDocumentReferenceVariableName } from './formJsUtils.js'
+import { getFileContentBase64 } from '@/utils/fileUtils.js'
 
 export default {
   name: 'TemplateBase',
@@ -168,23 +169,9 @@ export default {
 
       if (this.formFiles && Object.keys(this.formFiles).length > 0) {
         for (const [key, file] of Object.entries(this.formFiles)) {
-          // Convert file to base64
-          const base64Content = await new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => {
-              // Remove the data:*/*;base64, prefix to get only the base64 content
-              const base64 = reader.result.split(',')[1];
-              resolve(base64);
-            };
-            reader.onerror = () => {
-              reject(new Error(`Failed to read file: ${file.name}`));
-            };
-            reader.readAsDataURL(file);
-          });
-
           fileVariables[key] = {
             name: key,
-            value: base64Content,
+            value: await getFileContentBase64(file),
             type: "File",
             valueInfo: {
               filename: file.name,

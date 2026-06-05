@@ -29,6 +29,7 @@ const DEFAULT_CONFIG = {
   permissions: {
     tasklist: { application: ["ACCESS"] },
     cockpit: { application: ["ACCESS"] },
+    modeler: { application: ["ACCESS"] },
     displayTasks: { task: ["READ", "UPDATE"] },
     displayFilter: { filter: ["READ"] },
     editFilter: { filter: ["UPDATE"] },
@@ -145,7 +146,6 @@ const DEFAULT_CONFIG = {
       "15": { "id": "15", "key": "optimize", "permissions": ["READ"] },
       "16": { "id": "16", "key": "operationLogCategory", "permissions": ["READ","DELETE"] },
       "12": { "id": "12", "key": "system", "permissions": ["READ","UPDATE","DELETE"] },
-      "18": { "id": "18", "key": "property", "permissions": ["READ","UPDATE","DELETE"] },
       "1": { "id": "1", "key": "user", "permissions": ["READ","UPDATE","CREATE","DELETE"] }
     }
   },
@@ -169,7 +169,21 @@ const DEFAULT_CONFIG = {
     { "key": "createdBefore", "text": "createdBefore", "type": "text", "group": "datesGroup" },
     { "key": "dueBefore", "text": "dueBefore", "type": "text", "group": "datesGroup" },
     { "key": "dueAfter", "text": "dueAfter", "type": "text", "group": "datesGroup" }
-  ]
+  ],
+  modeler: {
+    excludeTemplates: [],
+    filterBpmn: [
+      { "name": "User Task", "type": "bpmn:UserTask", "color": "#E10030" },
+      { "name": "Service Task", "type": "bpmn:ServiceTask", "color": "#003DE1" },
+      { "name": "Send Task", "type": "bpmn:SendTask", "color": "#2AD300" },
+      { "name": "Receive Task", "type": "bpmn:ReceiveTask", "color": "#BEB005" },
+      { "name": "Business Rule Task", "type": "bpmn:BusinessRuleTask", "color": "#A300CF" },
+      { "name": "Manual Task", "type": "bpmn:ManualTask", "color": "#9D3F05" },
+      { "name": "Script Task", "type": "bpmn:ScriptTask", "color": "#F9B100" },
+      { "name": "Call Activity", "type": "bpmn:CallActivity", "color": "#059DBB" }
+    ],
+    filterBpmnOpacity: "0.4"
+  }
 }
 
 /**

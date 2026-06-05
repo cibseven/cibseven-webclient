@@ -49,6 +49,8 @@ import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer'
 import { BWaitingBox } from '@cib/common-frontend'
 import { mapActions, mapGetters } from 'vuex'
 import { HistoryService } from '@/services.js'
+import { abbreviateNumber } from 'js-abbreviation-number'
+import ElementTemplateIconRendererModule from '@/components/process/ElementTemplateIconRenderer.js'
 
 const interactionTypes = [
   // Tasks
@@ -102,15 +104,22 @@ export default {
     ...mapGetters(['highlightedElement', 'getHistoricActivityStatistics']),
     ...mapGetters('calledProcessDefinitions', ['getStaticCalledProcessDefinitions']),
     ...mapGetters('job', ['jobDefinitions']),
+    ...mapGetters('modeler/elementTemplates', { allElementTemplateContents: 'allElementTemplateContents' }),
     historicActivityStatistics() {
       return this.getHistoricActivityStatistics(this.processDefinitionId)
     }
   },
   watch: {
     historicActivityStatistics: {
-      handler() {
-        this.drawDiagramState()
-      },
+      handler() { this.drawDiagramState() },
+      deep: true
+    },
+    statistics: {
+      handler() { if (this.viewer) this.drawDiagramState() },
+      deep: true
+    },
+    activityInstance: {
+      handler() { if (this.viewer) this.drawDiagramState() },
       deep: true
     },
     jobDefinitions: {
@@ -125,21 +134,54 @@ export default {
     highlightedElement: function(newVal) {
       this.highlightElement(newVal)
     },
+    allElementTemplateContents: {
+      handler() { this.applyElementTemplateIcons() },
+      deep: true
+    }
   },
   mounted: function() {
-    this.viewer = new NavigatedViewer({ container: this.$refs.diagram })
+    this.viewer = new NavigatedViewer({
+      container: this.$refs.diagram,
+      additionalModules: [ElementTemplateIconRendererModule]
+    })
     this.viewer.on('import.done', () => {
       this.drawDiagramState()
       this.attachEventListeners()
+      this.applyElementTemplateIcons()
       //Small timer so the diagram is fully rendered before setting it ready
       setTimeout(() => {
         this.setDiagramReady(true)
       }, 500)
     })
+    this.ensureElementTemplatesLoaded()
   },
   methods: {
     ...mapActions(['selectActivity', 'clearActivitySelection', 'setHighlightedElement', 'loadActivitiesInstanceHistory', 'getProcessById']),
     ...mapActions('diagram', ['setDiagramReady']),
+    ...mapActions('modeler/elementTemplates', ['fetchAllElementTemplates']),
+    ensureElementTemplatesLoaded: function() {
+      if (this.allElementTemplateContents && this.allElementTemplateContents.length > 0) return
+      this.fetchAllElementTemplates().catch(err => {
+        console.warn('BpmnViewer: failed to load element templates for icon rendering', err)
+      })
+    },
+    applyElementTemplateIcons: function() {
+      if (!this.viewer) return
+      let registry
+      try {
+        registry = this.viewer.get('elementTemplateIcons')
+      } catch {
+        return
+      }
+      const contents = this.allElementTemplateContents || []
+      const iconMap = new Map()
+      contents.forEach(template => {
+        const id = template && template.id
+        const icon = template && template.icon && template.icon.contents
+        if (id && icon) iconMap.set(id, icon)
+      })
+      registry.setIcons(iconMap)
+    },
     showDiagram: function(xml, selectedActivityId = null) {
       this.setDiagramReady(false)
       this.loader = true
@@ -308,7 +350,7 @@ export default {
       const historyStatistics = this.historicActivityStatistics
       const historyLevel = this.$root.config.camundaHistoryLevel
       const mergedStatistics = this.getMergedStatistics(historyStatistics, historyLevel)
-      
+
       mergedStatistics.forEach(stat => {
         this.drawActivityBadges(stat, elementRegistry)
       })
@@ -322,45 +364,57 @@ export default {
         return this.getProcessMergedStatisticsFullHistory(historyStatistics)
       }
     },
-    getInstanceMergedStatistics: function(historyStatistics, historyLevel) {
-      // Always merge with childTransitionInstances to get running instances
-      if (!this.activityInstance?.childTransitionInstances) {
-        return historyStatistics
+    getInstanceMergedStatistics(historyStatistics, historyLevel) {
+
+      if (!this.activityInstance) return historyStatistics
+
+      const isFull = historyLevel === 'full'
+      const activitiesMap = new Map()
+
+      const addInstance = (activityId, incidentCount = 0) => {
+        const existing = activitiesMap.get(activityId) || { instances: 0, openIncidents: 0 }
+        activitiesMap.set(activityId, {
+          instances: existing.instances + 1,
+          openIncidents: isFull ? undefined : existing.openIncidents + incidentCount
+        })
       }
 
-      const transitionMap = new Map()
-      this.activityInstance.childTransitionInstances.forEach(trans => {
-        transitionMap.set(trans.activityId, {
-          instances: 1,
-          // Only use incidents from transitions when historyLevel is not "full"
-          openIncidents: historyLevel !== 'full' ? (trans.incidents?.length || 0) : undefined
+      // Transition instances: activities currently between sequence flows/gateways
+      this.activityInstance.childTransitionInstances?.forEach(trans =>
+        addInstance(trans.activityId, trans.incidents?.length || 0)
+      )
+
+      // On non-full history levels the history API has no incident data, so we
+      // read incidents directly from the runtime activity tree instead.
+      if (!isFull) {
+        this.activityInstance.childActivityInstances?.forEach(act =>
+          addInstance(act.activityId, act.incidents?.length || 0)
+        )
+      }
+
+      // Merge runtime data into history entries.
+      // Full history: only override instance count. Otherwise merge all runtime fields.
+      const merged = historyStatistics.map(stat => {
+        const runtime = activitiesMap.get(stat.id)
+        if (!runtime) return stat
+        return isFull ? { ...stat, instances: runtime.instances } : { ...stat, ...runtime }
+      })
+
+      // Append runtime-only activities not present in history
+      const knownIds = new Set(historyStatistics.map(stat => stat.id))
+      activitiesMap.forEach((data, activityId) => {
+        if (knownIds.has(activityId)) return
+        merged.push({
+          id: activityId,
+          instances: data.instances,
+          finished: 0,
+          canceled: 0,
+          openIncidents: isFull ? 0 : (data.openIncidents || 0),
+          resolvedIncidents: 0,
+          deletedIncidents: 0
         })
       })
-      
-      const merged = historyStatistics.map(hs => {
-        const transData = transitionMap.get(hs.id)
-        if (!transData) return hs        
-        // Merge, but only override openIncidents if historyLevel is not "full"
-        return historyLevel === 'full' 
-          ? { ...hs, instances: transData.instances }
-          : { ...hs, ...transData }
-      })
-      
-      // Add transitions not in historyStatistics
-      this.activityInstance.childTransitionInstances.forEach(trans => {
-        if (!historyStatistics.some(hs => hs.id === trans.activityId)) {
-          merged.push({
-            id: trans.activityId,
-            instances: 1,
-            finished: 0,
-            canceled: 0,
-            openIncidents: historyLevel !== 'full' ? (trans.incidents?.length || 0) : 0,
-            resolvedIncidents: 0,
-            deletedIncidents: 0
-          })
-        }
-      })
-      
+
       return merged
     },
     getProcessMergedStatistics: function(historyStatistics) {
@@ -369,7 +423,7 @@ export default {
       }
 
       const historyMap = new Map((historyStatistics || []).map(hs => [hs.id, hs]))
-      
+
       const merged = this.statistics.map(stat => {
         const historyStat = historyMap.get(stat.id)
         return {
@@ -382,14 +436,14 @@ export default {
           deletedIncidents: historyStat?.deletedIncidents || 0
         }
       })
-      
+
       // Add historyStatistics not in this.statistics
       historyStatistics?.forEach(hs => {
         if (!this.statistics.some(s => s.id === hs.id)) {
           merged.push(hs)
         }
       })
-      
+
       return merged
     },
     getProcessMergedStatisticsFullHistory: function(historyStatistics) {
@@ -403,7 +457,7 @@ export default {
       if (!element) return
 
       const options = this.badgeOptions || {}
-      
+
       this.drawCanceledBadge(stat, options)
       this.drawFinishedBadge(stat, options)
       this.drawClosedIncidentsBadge(stat, options)
@@ -420,7 +474,7 @@ export default {
       const actualFinished = stat.finished - (stat.canceled || 0)
       if (options.showHistory && actualFinished > 0) {
         const position = stat.canceled > 0 ? { bottom: 35, right: 13 } : { bottom: 15, right: 13 }
-        const html = this.getBadgeOverlayHtml(actualFinished, 'bg-gray', 'activitiesHistory', stat.id)
+        const html = this.getBadgeOverlayHtml(actualFinished, 'bg-gray text-dark', 'activitiesHistory', stat.id)
         this.setHtmlOnDiagram(stat.id, html, position)
       }
     },
@@ -428,10 +482,10 @@ export default {
       if (!options.showClosedIncidents || !this.selectedInstance) return
       if (stat.resolvedIncidents === 0 && stat.deletedIncidents === 0) return
 
-      const mainOccupied = 
+      const mainOccupied =
         (options.showCanceled && stat.canceled > 0) ||
         ((!stat.canceled || stat.canceled === 0) && (options.showHistory && (stat.finished - (stat.canceled || 0)) > 0))
-      
+
       const position = mainOccupied ? { bottom: 15, right: 36 } : { bottom: 15, right: 13 }
       const html = this.getBadgeOverlayHtml('!', 'bg-danger', 'closedIncidents', stat.id)
       this.setHtmlOnDiagram(stat.id, html, position)
@@ -500,7 +554,7 @@ export default {
 
         const button = document.createElement('button')
         button.type = 'button'
-        button.className = 'btn btn-info btn-sm mdi mdi-link-variant px-1 py-0'
+        button.className = 'btn btn-info btn-sm mdi mdi-link-variant px-1 py-0 text-white'
 
         if (disabled) {
           button.disabled = true
@@ -521,9 +575,14 @@ export default {
       if (activityId) {
         styleStr += " cursor: pointer;"
       }
+
+      
+
+      const formattedNumber = localStorage?.getItem('cibseven:preferences:shortenBadgeNumbers') !== 'false' ? abbreviateNumber(number,0,{symbols:["", "K", "M"]}) : number
+
       const overlayHtml = `
         <span data-activity-id="${activityId || ''}" data-type="${type || ''}" class="bubble position-absolute" style="${styleStr}" title="${title}">
-          <span class="badge rounded-pill border border-dark px-2 py-1 me-1 ${classes}">${number}</span>
+          <span class="badge rounded-pill border border-dark px-2 py-1 me-1 ${classes}">${formattedNumber}</span>
         </span>
       `
       return overlayHtml

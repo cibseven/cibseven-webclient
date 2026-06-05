@@ -4,12 +4,12 @@
 	<parent>
 		<groupId>org.cibseven</groupId>
 		<artifactId>release-parent</artifactId>
-		<version>1.3.0</version>
+		<version>1.4.0</version>
 	</parent>
 
 	<groupId>org.cibseven.webapp</groupId>
 	<artifactId>cibseven-webclient</artifactId>
- 	<version>2.2.0-SNAPSHOT</version>
+ 	<version>2.3.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>CIB seven webclient</name>
@@ -27,26 +27,66 @@
 		<maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
 		<maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
 		<maven-enforcer-plugin.version>3.6.2</maven-enforcer-plugin.version>
+		<jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
 
 		<git-commit-id-maven-plugin.version>9.0.2</git-commit-id-maven-plugin.version>
 
 		<jjwt.version>0.12.6</jjwt.version>
 		<commons-io.version>2.18.0</commons-io.version>
 		<common-auth.version>1.3.0</common-auth.version>
-		<version.spring.boot>3.5.10</version.spring.boot>
+		<!-- ============================================================================
+		     Spring Boot 3 — default flavour (cibseven-webclient-web, -core, direct-provider).
+		     ============================================================================ -->
+		<version.spring.boot>3.5.14</version.spring.boot>
 		<version.openapi-starter-webmvc-ui>2.8.13</version.openapi-starter-webmvc-ui>
+
+		<!-- ============================================================================
+		     Spring Boot 4 flavour (cibseven-webclient-web-sb4). The "4" / SB4-specific
+		     suffix marks versions that diverge from the SB3 default above. Naming mirrors
+		     cibseven-parent (~/cibseven/cibseven/parent/pom.xml) so these can be consolidated
+		     there later: version.spring-boot4, version.tomcat (11.x) vs version.tomcat10.
+		     ============================================================================ -->
+		<version.spring.boot4>4.0.6</version.spring.boot4>
+		<version.openapi-starter-webmvc-ui4>3.0.2</version.openapi-starter-webmvc-ui4>
+		<!-- SB4 no longer bundles Jackson 2, but the shared core compiles against
+		     com.fasterxml.jackson.* (Jackson 2); the SB4 module pulls it back in explicitly. -->
+		<version.jackson2>2.21.2</version.jackson2>
+
+		<!-- ============================================================================
+		     CVE overrides. This project imports spring-boot-dependencies as a BOM (not as the
+		     parent), so the usual ${tomcat.version}/${postgresql.version} BOM-property overrides
+		     do NOT take effect — the fixed versions are pinned via explicit dependencyManagement
+		     entries below.
+		     ============================================================================ -->
+		<!-- Apache Tomcat: CVE-2026-41293, -43512, -43515, -41284, -43513, -42498, -43514.
+		     SB3 runs the Tomcat 10.1.x line (fixed in 10.1.55), SB4 the 11.0.x line (fixed in 11.0.22).
+		     Suffix mirrors cibseven-parent: version.tomcat = 11.x (SB4), version.tomcat10 = 10.x (SB3). -->
+		<version.tomcat10>10.1.55</version.tomcat10>
+		<version.tomcat>11.0.22</version.tomcat>
+		<!-- swagger-ui webjar (via springdoc, both flavours): bundles DOMPurify 3.4.0 ->
+		     CVE-2026-41240, -0540, CVE-2025-15599, CVE-2026-41238, -41239 and related GHSAs. -->
+		<version.swagger-ui>5.32.6</version.swagger-ui>
 		<version.commons-lang3>3.18.0</version.commons-lang3>
 		
-		<image.tomcat-10-base>harbor.cib.de/dev/tomcat-10-base:3.0.0</image.tomcat-10-base>
+		<image.tomcat-11-base>harbor.cib.de/dev/tomcat-11-base:0.1.0@sha256:49e9bd250b4bc4e33465195106831b1afa69d38c0147f9960075cb1b45a8f7f5</image.tomcat-11-base>
 		<jib-maven-plugin.version>3.5.1</jib-maven-plugin.version>
-		<jib.from.image>${image.tomcat-10-base}</jib.from.image>
+		<jib.from.image>${image.tomcat-11-base}</jib.from.image>
 		<jib.to.image>harbor.cib.de/dev/cibseven-webclient:${project.version}</jib.to.image>
 
 		<version.eirslett.frontend.maven.plugin>1.15.4</version.eirslett.frontend.maven.plugin>
 		<version.nodejs>24.13.1</version.nodejs>
 		<version.npm>11.8.0</version.npm>
 
-		<version.log4j2>2.25.3</version.log4j2>
+		<version.log4j2>2.25.4</version.log4j2>
+
+		<!-- Database driver versions (used by modeler JPA integration) -->
+		<version.postgresql>42.7.11</version.postgresql>
+		<version.mariadb>3.5.7</version.mariadb>
+		<version.h2>2.4.240</version.h2>
+		<version.mysql>9.5.0</version.mysql>
+		<version.oracle>23.26.0.0.0</version.oracle>
+		<version.mssql>12.8.2.jre11</version.mssql>
+		<version.db2>11.5.9.0</version.db2>
 
 		<!-- NPM publish tag configuration - empty by default (uses 'latest'), can be overridden with tag dev -->
 		<npm.publish.tag.arg></npm.publish.tag.arg>
@@ -78,8 +118,11 @@ You may obtain a copy of the License at
 				</property>
 			</activation>
 			<modules>
+				<module>cibseven-interfaces</module>
 				<module>cibseven-webclient-web</module>
 				<module>cibseven-webclient-core</module>
+				<module>cibseven-direct-provider</module>
+				<module>cibseven-webclient-web-sb4</module>
 			</modules>
 			<build>
 				<plugins>
@@ -120,7 +163,7 @@ You may obtain a copy of the License at
 								</goals>
 								<phase>generate-resources</phase>
 								<configuration>
-									<arguments>install --no-audit --no-fund</arguments>
+									<arguments>ci --no-audit --no-fund</arguments>
 								</configuration>
 							</execution>
 							<!--
@@ -218,7 +261,7 @@ You may obtain a copy of the License at
 								</goals>
 								<phase>generate-resources</phase>
 								<configuration>
-									<arguments>install --no-audit --no-fund</arguments>
+									<arguments>ci --no-audit --no-fund</arguments>
 								</configuration>
 							</execution>
 							<execution>
@@ -289,6 +332,7 @@ You may obtain a copy of the License at
 
 	<dependencyManagement>
 		<dependencies>
+		
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-dependencies</artifactId>
@@ -296,6 +340,7 @@ You may obtain a copy of the License at
 				<type>pom</type>
 				<version>${version.spring.boot}</version>
 			</dependency>
+		
 			<!-- Override log4j versions to fix security vulnerabilities -->
 			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>
@@ -316,6 +361,41 @@ You may obtain a copy of the License at
 				<groupId>org.apache.logging.log4j</groupId>
 				<artifactId>log4j-to-slf4j</artifactId>
 				<version>${version.log4j2}</version>
+			</dependency>
+
+			<!-- Override Apache Tomcat for the SB3 flavour (BOM pins the vulnerable 10.1.54) to fix
+			     CVE-2026-41293, -43512, -43515, -41284, -43513, -42498, -43514 (fixed in 10.1.55).
+			     The SB4 module overrides these to ${version.tomcat} (11.0.22) in its own pom. -->
+			<dependency>
+				<groupId>org.apache.tomcat.embed</groupId>
+				<artifactId>tomcat-embed-core</artifactId>
+				<version>${version.tomcat10}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.tomcat.embed</groupId>
+				<artifactId>tomcat-embed-el</artifactId>
+				<version>${version.tomcat10}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.tomcat.embed</groupId>
+				<artifactId>tomcat-embed-websocket</artifactId>
+				<version>${version.tomcat10}</version>
+			</dependency>
+
+			<!-- Override pgjdbc (managed by the Spring Boot BOM at 42.7.10) to fix
+			     CVE-2026-42198 (fixed in 42.7.11) -->
+			<dependency>
+				<groupId>org.postgresql</groupId>
+				<artifactId>postgresql</artifactId>
+				<version>${version.postgresql}</version>
+			</dependency>
+
+			<!-- Override the swagger-ui webjar pulled transitively by springdoc to ship
+			     DOMPurify 3.4.0 (CVE-2026-41240, -0540, CVE-2025-15599, CVE-2026-41238, -41239 + GHSAs) -->
+			<dependency>
+				<groupId>org.webjars</groupId>
+				<artifactId>swagger-ui</artifactId>
+				<version>${version.swagger-ui}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -367,6 +447,7 @@ You may obtain a copy of the License at
 				<configuration>
 					<source>${maven.compiler.source}</source>
 					<target>${maven.compiler.target}</target>
+					<release>${maven.compiler.target}</release>
 					<compilerArgs>
 						<arg>-parameters</arg>
 						<arg>-Werror</arg>
@@ -380,6 +461,26 @@ You may obtain a copy of the License at
 					<failOnError>false</failOnError>
 					<doclint>none</doclint>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>${jacoco-maven-plugin.version}</version>
+				<executions>
+					<execution>
+						<id>jacoco-prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>jacoco-report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 		<pluginManagement>
@@ -420,24 +521,11 @@ You may obtain a copy of the License at
 
 	<repositories>
 		<repository>
-			<id>maven-central</id>
-			<name>Maven Central</name>
-			<url>https://repo1.maven.org/maven2</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-		<!-- Required for local builds by community users on master branch -->
-			<id>mvn-cibseven-public</id>
-			<name>CIB seven Public Repository</name>
-			<url>https://artifacts.cibseven.org/repository/public</url>
-			</repository>
-		<repository>
-		<!-- Required for local builds by developers on maintainance branches -->
-			<id>mvn-cibseven-snapshots</id>
-			<name>CIB seven Snapshots repository</name>
-			<url>https://artifacts.cibseven.org/repository/snapshots</url>
+			<id>mvn-group</id>
+			<name>Maven group</name>
+			<!-- Links to repos for local builds by community users on master branch,
+			for local builds by developers on maintainance branches, jboss and maven central -->
+			<url>https://artifacts.cibseven.org/repository/mvn-group</url>
 		</repository>
 	</repositories>
 

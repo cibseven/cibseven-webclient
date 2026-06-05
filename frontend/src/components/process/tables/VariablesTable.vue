@@ -16,7 +16,7 @@
 -->
 <template>
   <div class="d-flex flex-column h-100">
-    <div v-if="isActiveInstance || ProcessVariablesSearchBoxPlugin" class="bg-white d-flex w-100">
+    <div v-if="isActiveInstance || ProcessVariablesSearchBoxPlugin || selectedActivityId || selectedScopeInstanceId" class="bg-white d-flex w-100 flex-wrap">
       <div v-if="ProcessVariablesSearchBoxPlugin" :class="isActiveInstance ? 'col-10 p-2' : 'col-12 p-2'">
         <component :is="ProcessVariablesSearchBoxPlugin"
           :query="filter"
@@ -29,18 +29,37 @@
           <span class="mdi mdi-plus"></span> {{ $t('process-instance.addVariable') }}
         </b-button>
       </div>
+      <div v-if="!ProcessVariablesSearchBoxPlugin && (selectedActivityId || selectedScopeInstanceId)" class="p-3">
+        <RemovableBadge
+          @on-remove="clearActivityFilter"
+          :tooltip-remove="$t('process-instance.variables.activityIdBadge.remove')"
+          :label="$t('process-instance.variables.activityIdBadge.title', { activityId: selectedScopeName })"
+          :tooltip="$t('process-instance.variables.activityIdBadge.tooltip', { activityId: selectedScopeName })"
+        />
+      </div>
     </div>
     <div class="overflow-y-scroll bg-white container-fluid g-0 flex-grow-1">
-      <FlowTable v-if="!loading" striped resizable thead-class="sticky-header" :items="filteredVariables" primary-key="id" prefix="process-instance.variables."
-        sort-by="name" :fields="[
-        { label: 'name', key: 'name', class: 'col-3', tdClass: 'py-1' },
-        { label: 'type', key: 'type', class: 'col-2', tdClass: 'py-1' },
-        { label: 'value', key: 'value', class: 'col-3', tdClass: 'py-1' },
-        { label: 'scope', key: 'scope', class: 'col-2', tdClass: 'py-1' },
-        { label: 'actions', key: 'actions', class: 'col-2', sortable: false, tdClass: 'py-0' }]">
+      <FlowTable v-if="!loading" striped resizable thead-class="sticky-header" :items="filteredVariables" primary-key="id"
+        native-layout
+        useCase="instance-variables"
+        :columns="['name', 'type', 'value', 'scope', 'actions']"
+        sort-by="name"
+        :column-definitions="[
+          { label: 'process-instance.variables.name', key: 'name', tdClass: 'pb-0' },
+          { label: 'process-instance.variables.type', key: 'type', tdClass: 'pb-0' },
+          { label: 'process-instance.variables.value', key: 'value', tdClass: 'pb-0' },
+          { label: 'process-instance.variables.scope', key: 'scope', tdClass: 'pb-0', groupSeparator: true },
+          { label: 'process-instance.variables.activityInstanceId', key: 'activityInstanceId', tdClass: 'pb-0' },
+          { label: 'process-instance.variables.actions', key: 'actions', groupSeparator: true, disableToggle: true, sortable: false, tdClass: 'py-0' },
+        ]">
 
         <template v-slot:cell(name)="table">
-          <div :title="table.item.name" class="text-truncate">{{ table.item.name }}</div>
+          <CopyableActionButton
+            :displayValue="table.item.name"
+            :clickable="false"
+            :title="$t('process-instance.variables.name') + ':\n' + table.item.name"
+            @copy="copyValueToClipboard"
+          />          
         </template>
 
         <template v-slot:cell(type)="table">
@@ -58,26 +77,43 @@
         </template>
 
         <template v-slot:cell(scope)="table">
-          <div :title="table.item.scope">{{ table.item.scope }}</div>
+          <CopyableActionButton
+            :displayValue="table.item.scope"
+            :clickable="true"
+            :title="$t('process-instance.variables.scope') + ':\n' + table.item.scope + '\n\n' + $t('process-instance.variables.activityInstanceId') + ':\n' + table.item.activityInstanceId"
+            @click="highlightScope(table.item)"
+            @copy="copyValueToClipboard"
+          />          
+        </template>
+
+        <template v-slot:cell(activityInstanceId)="table">
+          <CopyableActionButton
+            :displayValue="table.item.activityInstanceId"
+            :clickable="false"
+            :title="$t('process-instance.variables.activityInstanceId') + ':\n' + table.item.activityInstanceId"
+            @copy="copyValueToClipboard"
+          />
         </template>
 
         <template v-slot:cell(actions)="table">
-          <component :is="VariablesTableActionsPlugin" v-if="VariablesTableActionsPlugin" :table-item="table.item" :selected-instance="selectedInstance" :file-objects="fileObjects"></component>
-          <CellActionButton v-if="isFile(table.item)" :title="displayValueTooltip(table.item)"
-            icon="mdi-download-outline"
-            @click="downloadFile(table.item)">
-          </CellActionButton>
-          <CellActionButton v-if="isFile(table.item) && isActiveInstance" :title="$t('process-instance.upload')"
-            icon="mdi-upload-outline"
-            @click="selectedVariable = table.item; $refs.uploadFile.show()">
-          </CellActionButton>
-          <CellActionButton v-if="'File' !== table.item.type && !isFileValueDataSource(table.item)"
-            :title="$t(isActiveInstance ? 'process-instance.edit' : 'process-instance.variables.historicVariable.tooltip')" 
-            :icon="isActiveInstance ? 'mdi-square-edit-outline' : 'mdi-eye-outline'"
-            @click="modifyVariable(table.item)">
-          </CellActionButton>
-          <CellActionButton v-if="hasDeletionPermission" :title="$t('confirm.delete')" 
-            icon="mdi-delete-outline" @click="deleteVariable(table.item)"></CellActionButton>
+          <div class="d-flex">
+            <component :is="VariablesTableActionsPlugin" v-if="VariablesTableActionsPlugin" :table-item="table.item" :selected-instance="selectedInstance" :file-objects="fileObjects"></component>
+            <CellActionButton v-if="isFile(table.item)" :title="displayValueTooltip(table.item)"
+              icon="mdi-download-outline"
+              @click="downloadFile(table.item)">
+            </CellActionButton>
+            <CellActionButton v-if="isFile(table.item) && isActiveInstance" :title="$t('process-instance.upload')"
+              icon="mdi-upload-outline"
+              @click="selectedVariable = table.item; $refs.uploadFile.show()">
+            </CellActionButton>
+            <CellActionButton v-if="'File' !== table.item.type && !isFileValueDataSource(table.item)"
+              :title="$t(isActiveInstance ? 'process-instance.edit' : 'process-instance.variables.historicVariable.tooltip')" 
+              :icon="isActiveInstance ? 'mdi-square-edit-outline' : 'mdi-eye-outline'"
+              @click="modifyVariable(table.item)">
+            </CellActionButton>
+            <CellActionButton v-if="hasDeletionPermission" :title="$t('confirm.delete')" 
+              icon="mdi-delete-outline" @click="deleteVariable(table.item)"></CellActionButton>
+          </div>
         </template>
       </FlowTable>
       <div v-else>
@@ -109,6 +145,7 @@
 
 <script>
 import { BWaitingBox, FlowTable, TaskPopper, SuccessAlert, CopyableActionButton } from '@cib/common-frontend'
+import RemovableBadge from '@/components/common-components/RemovableBadge.vue'
 import DeleteVariableModal from '@/components/process/modals/DeleteVariableModal.vue'
 import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
 import EditVariableModal from '@/components/process/modals/EditVariableModal.vue'
@@ -116,21 +153,58 @@ import processesVariablesMixin from '@/components/process/mixins/processesVariab
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { permissionsMixin } from '@/permissions.js'
-import { mapGetters } from 'vuex'
+import { mapGetters, mapActions } from 'vuex'
+import variableUtils from '@/components/process/mixins/variableUtils'
 
 export default {
   name: 'VariablesTable',
-  components: { FlowTable, TaskPopper, AddVariableModal, DeleteVariableModal, EditVariableModal, SuccessAlert, BWaitingBox, CopyableActionButton, CellActionButton },
+  components: { FlowTable, TaskPopper, AddVariableModal, DeleteVariableModal, EditVariableModal, SuccessAlert, BWaitingBox, CopyableActionButton, CellActionButton, RemovableBadge },
   mixins: [ processesVariablesMixin, copyToClipboardMixin, permissionsMixin ],
   data: function() {
     return {
       filteredVariables: [],
-      fileObjects: ['de.cib.cibflow.api.files.FileValueDataFlowSource', 'de.cib.cibflow.api.files.FileValueDataSource']
+      fileObjects: variableUtils.getFileObjects(),
+      selectedScopeInstanceId: null,
     }
+  },
+  watch: {
+    variables() { this.applyActivityFilter() },
+    'filter.activityInstanceIdIn'(newVal) {
+      if (this.ProcessVariablesSearchBoxPlugin && !newVal) {
+        this.clearActivitySelection()
+        this.setHighlightedElement('')
+      }
+    },
+    selectedActivityId() {
+      this.selectedScopeInstanceId = null
+      if (this.ProcessVariablesSearchBoxPlugin) {
+        const newFilter = { ...this.filter }
+        delete newFilter.activityInstanceIdIn
+        if (this.selectedActivityId) {
+          const instanceIds = Object.keys(this.activityInstanceIdToActivityId)
+            .filter(id => this.activityInstanceIdToActivityId[id] === this.selectedActivityId)
+          if (instanceIds.length > 0) newFilter.activityInstanceIdIn = instanceIds
+        }
+        this.filter = { ...newFilter, deserializeValues: false }
+      }
+      this.applyActivityFilter()
+    },
   },
   computed: {
     ...mapGetters('variableInstance', ['currentVariableInstance']),
     ...mapGetters('historicVariableInstance', ['currentHistoricVariableInstance']),
+    ...mapGetters(['selectedActivityId']),
+    selectedScopeName() {
+      if (this.selectedScopeInstanceId) {
+        return this.activityInstancesGrouped[this.selectedScopeInstanceId] || this.selectedScopeInstanceId
+      }
+      if (this.selectedActivityId) {
+        const instanceId = Object.keys(this.activityInstanceIdToActivityId)
+          .find(id => this.activityInstanceIdToActivityId[id] === this.selectedActivityId)
+        return instanceId ? this.activityInstancesGrouped[instanceId] : this.selectedActivityId
+      }
+      return ''
+    },
     ProcessVariablesSearchBoxPlugin: function() {
       return this.$options.components && this.$options.components.ProcessVariablesSearchBoxPlugin
         ? this.$options.components.ProcessVariablesSearchBoxPlugin
@@ -163,6 +237,38 @@ export default {
     },
   },
   methods: {
+    ...mapActions(['setHighlightedElement', 'selectActivity', 'clearActivitySelection']),
+    applyActivityFilter() {
+      if (this.selectedScopeInstanceId) {
+        this.filteredVariables = this.variables.filter(v => v.activityInstanceId === this.selectedScopeInstanceId)
+      } else if (this.filter.activityInstanceIdIn?.length) {
+        const ids = this.filter.activityInstanceIdIn
+        this.filteredVariables = this.variables.filter(v => ids.includes(v.activityInstanceId))
+      } else if (this.selectedActivityId) {
+        this.filteredVariables = this.variables.filter(v => v.scopeActivityId === this.selectedActivityId)
+      } else {
+        this.filteredVariables = [...this.variables]
+      }
+    },
+    clearActivityFilter() {
+      this.selectedScopeInstanceId = null
+      this.clearActivitySelection()
+      this.setHighlightedElement('')
+      this.applyActivityFilter()
+    },
+    highlightScope(variable) {
+      if (this.ProcessVariablesSearchBoxPlugin) {
+        if (variable.scopeActivityId) this.setHighlightedElement(variable.scopeActivityId)
+        this.changeFilter({ ...this.filter, activityInstanceIdIn: [variable.activityInstanceId] })
+      } else {
+        this.selectedScopeInstanceId = variable.activityInstanceId
+        if (variable.scopeActivityId) {
+          this.selectActivity({ activityId: variable.scopeActivityId })
+          this.setHighlightedElement(variable.scopeActivityId)
+        }
+        this.applyActivityFilter()
+      }
+    },
     async addNewVariable() {
       this.$refs.addVariableModal.show()
     },

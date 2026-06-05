@@ -52,6 +52,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.mvc.WebContentInterceptor;
 
 import com.fasterxml.jackson.core.StreamReadConstraints;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
@@ -62,7 +63,13 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 	havingValue = "true",
 	matchIfMissing = true
 )
-@ComponentScan({ "org.cibseven.webapp.providers", "org.cibseven.webapp.auth", "org.cibseven.webapp.rest", "org.cibseven.webapp.template", "org.cibseven.webapp.config" })
+@ComponentScan({
+	"org.cibseven.webapp.providers",
+	"org.cibseven.webapp.auth",
+	"org.cibseven.webapp.rest",
+	"org.cibseven.webapp.template",
+	"org.cibseven.webapp.config"
+})
 public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArgumentResolver {
 
 	BaseUserProvider provider;
@@ -70,17 +77,18 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 	@Value("${cibseven.webclient.custom.spring.jackson.parser.max-size:20000000}")
 	int jacksonParserMaxSize;
 
-    @Bean
-    public ObjectMapper objectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        StreamReadConstraints streamReadConstraints = StreamReadConstraints
-                .builder()
-                .maxStringLength(jacksonParserMaxSize)
-                .build();
-        objectMapper.getFactory().setStreamReadConstraints(streamReadConstraints);
-        objectMapper.registerModule(new JavaTimeModule());
-        return objectMapper;
-    }
+	@Bean
+	public ObjectMapper objectMapper() {
+		ObjectMapper objectMapper = new ObjectMapper();
+		StreamReadConstraints streamReadConstraints = StreamReadConstraints
+				.builder()
+				.maxStringLength(jacksonParserMaxSize)
+				.build();
+		objectMapper.getFactory().setStreamReadConstraints(streamReadConstraints);
+		objectMapper.registerModule(new JavaTimeModule());
+		objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+		return objectMapper;
+	}
 
 	@Override
 	public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
@@ -88,7 +96,7 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 		converters.add(new StringHttpMessageConverter(StandardCharsets.UTF_8)); // needed for UiService
 		converters.add(new ByteArrayHttpMessageConverter()); // needed for fetching data variables
 		converters.add(new FormHttpMessageConverter());
-        MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
+		MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
 		converter.setObjectMapper(objectMapper());
 		converters.add(converter);
 	}

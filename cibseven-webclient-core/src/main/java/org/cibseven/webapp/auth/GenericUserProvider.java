@@ -37,6 +37,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
@@ -54,6 +56,12 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class GenericUserProvider extends BaseUserProvider<StandardLogin> {
+
+	private static MultiValueMap<String, String> toMultiValueMap(HttpHeaders headers) {
+		LinkedMultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+		headers.forEach(map::put);
+		return map;
+	}
 
 	@Value("${cibseven.webclient.authentication.jwtSecret:}")
 	String secret;
@@ -88,7 +96,7 @@ public class GenericUserProvider extends BaseUserProvider<StandardLogin> {
 
 			RestTemplate rest = new RestTemplate();
 			SevenAdminAuth response = ((ResponseEntity<SevenAdminAuth>) rest.exchange(url, HttpMethod.GET,
-					new HttpEntity<>(headers), SevenAdminAuth.class)).getBody();
+					new HttpEntity<>(null, toMultiValueMap(headers)), SevenAdminAuth.class)).getBody();
 
 			if (response != null && userId.equals(response.getUserId())) {
 				CIBUser user = new CIBUser(userId);
@@ -140,7 +148,7 @@ public class GenericUserProvider extends BaseUserProvider<StandardLogin> {
 			headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 			RestTemplate template = new RestTemplate();
 			try {
-				CIBUser body = template.exchange(cibsevenWebclientUrl + "/auth", HttpMethod.GET, new HttpEntity(headers),
+				CIBUser body = template.exchange(cibsevenWebclientUrl + "/auth", HttpMethod.GET, new HttpEntity<>(null, toMultiValueMap(headers)),
 								CIBUser.class).getBody();
 				if (body == null)
 					throw new NullPointerException();

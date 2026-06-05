@@ -35,8 +35,9 @@
             path: `/seven/auth/process/${version.key}/${version.version}`,
             query: {
               ...Object.fromEntries(
-                Object.entries($route.query).filter(([key]) => key !== 'tab')
+                Object.entries($route.query).filter(([key]) => !['tab', 'tenantId'].includes(key))
               ),
+              tenantId: version.tenantId ? version.tenantId : undefined,
               tab: 'instances'
             }
           }" class="btn border-0">
@@ -46,6 +47,9 @@
           >
             <div class="d-flex align-items-center">
               <h6 style="font-size: 1rem">
+                <template v-if="version.suspended === 'true'">
+                  <span class="mdi mdi-18px mdi-pause-circle-outline text-warning me-1" :title="$t('process-instance.jobDefinitions.suspended')"></span>
+                </template>
                 <span class="fw-bold">{{ $t('process.details.definitionVersion') + ': ' + version.version }}</span>
               </h6>
               <div class="d-flex ms-auto" :id="version.id">

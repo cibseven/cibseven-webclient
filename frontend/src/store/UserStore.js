@@ -57,8 +57,8 @@ const UserStore = {
         ctx.commit('setSearchUsers', users)
         return Promise.resolve()
       } else {
-        const firstNameLike = { firstNameLike: '*' + params.filter + '*', maxResults: params.maxResults }
-        const lastNameLike = { lastNameLike: '*' + params.filter + '*', maxResults: params.maxResults }
+        const firstNameLike = { firstNameLike: '*' + params.filter + '*', maxResults: params.maxResults, likePatternIgnoreCase: params.likePatternIgnoreCase }
+        const lastNameLike = { lastNameLike: '*' + params.filter + '*', maxResults: params.maxResults, likePatternIgnoreCase: params.likePatternIgnoreCase }
         const id = { id: params.filter }
         return Promise.all([AdminService.findUsers(firstNameLike), AdminService.findUsers(lastNameLike), AdminService.findUsers(id)])
         .then(users => {

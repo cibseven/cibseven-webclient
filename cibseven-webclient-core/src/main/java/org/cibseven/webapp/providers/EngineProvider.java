@@ -26,10 +26,13 @@ import org.cibseven.webapp.config.EngineRestSource;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Engine;
+import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -39,8 +42,30 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class EngineProvider extends SevenProviderBase implements IEngineProvider {
 
+	private static final String ENGINE_SUB_PATH = "/engine";
+
 	@Autowired(required = false)
 	private EngineRestProperties engineRestProperties;
+
+	private String getNamedEngineRestUrl(String engine) {
+		String url = getEngineRestUrl();
+		if (engine != null && !engine.isEmpty()) {
+			// Parse engine ID format: "url|path|engineName"
+			if (IEngineProvider.isExternalEngine(engine)) {
+				String[] parts = engine.split("\\|", 3);
+				if (parts.length == 3) {
+					url = buildUrl(parts[0], parts[1]);
+				} else {
+					log.warn("Invalid engine ID format: {}, expected 'url|path|engineName'", engine);
+				}
+			}
+			else if (!IEngineProvider.isDefaultEngine(engine)) {
+				// Default engine or legacy format
+				url += ENGINE_SUB_PATH + "/" + engine;
+			}
+		}
+		return url;
+	}
 
 	@Override
 	public Collection<Engine> getProcessEngineNames() {
@@ -57,7 +82,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 		String defaultTooltip = engineRestProperties != null ? engineRestProperties.getTooltip() : null;
 		
 		try {
-			String fullUrl = buildUrl(defaultUrl, defaultPath) + "/engine";
+			String fullUrl = buildUrl(defaultUrl, defaultPath) + ENGINE_SUB_PATH;
 			Engine[] defaultEngines = ((ResponseEntity<Engine[]>) doGet(fullUrl, Engine[].class, null, false)).getBody();
 			
 			if (defaultEngines != null) {
@@ -80,7 +105,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 					String additionalPath = additional.getPath() != null && !additional.getPath().isEmpty() 
 						? additional.getPath() 
 						: "/engine-rest";
-					String additionalUrl = buildUrl(additional.getUrl(), additionalPath) + "/engine";
+					String additionalUrl = buildUrl(additional.getUrl(), additionalPath) + ENGINE_SUB_PATH;
 					Engine[] additionalEngines = ((ResponseEntity<Engine[]>) doGet(additionalUrl, Engine[].class, null, false)).getBody();
 					
 					if (additionalEngines != null) {
@@ -126,7 +151,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 		
 		// Set displayName: append engine name in parentheses if not "default"
 		if (baseDisplayName != null && !baseDisplayName.isEmpty()) {
-			if ("default".equals(engine.getName())) {
+			if (IEngineProvider.DEFAULT_ENGINE_NAME.equals(engine.getName())) {
 				engine.setDisplayName(baseDisplayName);
 			} else {
 				engine.setDisplayName(baseDisplayName + " (" + engine.getName() + ")");
@@ -137,14 +162,37 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 		
 		// Set tooltip: append engine name in parentheses if not "default"
 		if (baseTooltip != null && !baseTooltip.isEmpty()) {
-			if ("default".equals(engine.getName())) {
+			if (IEngineProvider.DEFAULT_ENGINE_NAME.equals(engine.getName())) {
 				engine.setTooltip(baseTooltip);
 			} else {
 				engine.setTooltip(baseTooltip + " (" + engine.getName() + ")");
 			}
 		}
 	}
-	
+
+	@Override
+	@Nullable
+	public EngineConfiguration getDefaultEngineConfiguration() {
+		return getEngineConfiguration(IEngineProvider.DEFAULT_ENGINE_NAME);
+	}
+
+	@Override
+	@Nullable
+	public EngineConfiguration getEngineConfiguration(String engine) {
+		String url = getNamedEngineRestUrl(engine) + "/configuration";
+		try {
+			return doGet(url, EngineConfiguration.class, null, false).getBody();
+		} catch (SystemException e) {
+			if (e.getCause() instanceof HttpClientErrorException.NotFound ||
+				// for CIB seven before 2.2.0, with auth enabled, the endpoint returns 401 instead of 404 when not found
+				e.getCause() instanceof HttpClientErrorException.Unauthorized) {
+				log.warn("Engine configuration endpoint not found or secured at {}, falling back to legacy configuration", url);
+				return null;
+			}
+			throw e;
+		}
+	}
+
 	/**
 	 * Builds a URL from base URL and path.
 	 */
@@ -162,21 +210,13 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 
 	@Override
 	public Boolean requiresSetup(String engine) {
-		String url = getEngineRestUrl();
-		if (engine != null && !engine.isEmpty() && !"default".equals(engine)) {
-		url+= "/engine/" + engine;
-	  }
-		url+=  "/setup/status";
-		return ((ResponseEntity<Boolean>) doGet(url, Boolean.class, null, false)).getBody();
+		String url = getNamedEngineRestUrl(engine) + "/setup/status";
+		return doGet(url, Boolean.class, null, false).getBody();
 	}
 
 	@Override
 	public void createSetupUser(NewUser user, String engine) throws InvalidUserIdException {
-		String url = getEngineRestUrl();
-		if (engine != null && !engine.isEmpty() && !"default".equals(engine)) {
-		url+= "/engine/" + engine;
-		}
-		url+=  "/setup/user/create";
+		String url = getNamedEngineRestUrl(engine) + "/setup/user/create";
 		try {
 			//	A JSON object with the following properties:
 			//	Name 	Type 	Description

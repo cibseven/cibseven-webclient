@@ -16,13 +16,12 @@
  */
 package org.cibseven.webapp.rest;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-
-import java.nio.charset.StandardCharsets;
 
 import org.cibseven.webapp.NamedByteArrayDataSource;
 import org.cibseven.webapp.auth.CIBUser;
@@ -33,7 +32,6 @@ import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.logger.TaskLogger;
 import org.cibseven.webapp.providers.PermissionConstants;
-import org.cibseven.webapp.providers.SevenProvider;
 import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Task;
@@ -51,6 +49,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -66,18 +66,13 @@ import jakarta.ws.rs.core.MediaType;
 @RestController("WebclientTaskService") @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}")
 public class TaskService extends BaseService implements InitializingBean {
 	
-	SevenProvider sevenProvider;
-	
 	@Autowired
 	private CustomRestTemplate restTemplate;
-	
+
 	@Value("${cibseven.webclient.engineRest.url:./}") 
 	private String cibsevenUrl;
-	
+
 	public void afterPropertiesSet() {
-		if (bpmProvider instanceof SevenProvider)
-			sevenProvider = (SevenProvider) bpmProvider;
-		else throw new SystemException("TaskService expects a BpmProvider");
 	}	
 	
 	/*
@@ -96,7 +91,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			@RequestBody Map<String, Object> filters,
 			Locale loc, CIBUser user) {
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
-		return sevenProvider.findTasksCount(filters, user);
+		return bpmProvider.findTasksCount(filters, user);
 	}
 	 
 	//Not used
@@ -261,16 +256,60 @@ public class TaskService extends BaseService implements InitializingBean {
 		}
 	}
 
-	@Operation(summary = "Submit form with variables", description = "Request body: Form variables to submit" + "<br>" +
-			"<strong>Return: void</strong>")
-	@ApiResponse(responseCode = "404", description = "Task not found")
-	@RequestMapping(value = "/task/{taskId}/submit-form", method = RequestMethod.POST)
-	public void submit(
+	/**
+	 * Submit Form
+	 *
+	 * <p>Completes a task and updates process variables using a form submit. There are two differences
+	 * between this method and the complete method:</p>
+	 * <ul>
+	 *   <li>If the task is in state PENDING - i.e., has been delegated before, it is not completed but
+	 *       resolved. Otherwise it will be completed.</li>
+	 *   <li>If the task has Form Field Metadata defined, the process engine will perform backend
+	 *       validation for any form fields which have validators defined. See the Generated Task Forms
+	 *       section of the User Guide for more information.</li>
+	 * </ul>
+	 *
+	 * <p><strong>Authorizations:</strong> basicAuth</p>
+	 *
+	 * <p><strong>Path Parameters:</strong></p>
+	 * <ul>
+	 *   <li>{@code taskId} (required, string) - The id of the task to submit the form for.</li>
+	 * </ul>
+	 *
+	 * <p><strong>Request Body (application/json):</strong></p>
+	 * <ul>
+	 *   <li>{@code variables} (object or null) - A JSON object containing variable key-value pairs.</li>
+	 *   <li>{@code withVariablesInReturn} (boolean or null, default: false) - Indicates whether the
+	 *       response should contain the process variables or not. If set to true the response contains
+	 *       the process variables and has a response code of 200. If the task is not associated with a
+	 *       process instance (e.g. if it's part of a case instance) no variables will be returned.</li>
+	 * </ul>
+	 *
+	 * <p><strong>Responses:</strong></p>
+	 * <ul>
+	 *   <li>204 - Request successful. The response contains no variables.</li>
+	 *   <li>400 - The variable value or type is invalid, for example if the value could not be parsed
+	 *       to an Integer value or the passed variable type is not supported.</li>
+	 *   <li>500 - If the task does not exist or the corresponding process instance could not be resumed
+	 *       successfully.</li>
+	 * </ul>
+	 */
+	@Operation(
+			summary = "Submit form with variables",
+			description = "Completes a task and updates process variables using a form submit." + "<br>" +
+			"Request body: Form variables to submit" + "<br>" +
+			"<strong>Return: 200 with process variables if withVariablesInReturn=true, otherwise 204 No Content</strong>")
+	@ApiResponse(responseCode = "204", description = "Request successful. The response contains no variables.")
+	@ApiResponse(responseCode = "400", description = "The variable value or type is invalid.")
+	@PostMapping(value = "/task/{taskId}/submit-form")
+	public ResponseEntity<Void> submit(
 			@Parameter(description = "Task id") @PathVariable String taskId,
 			@RequestBody String formResult,
 			Locale loc, HttpServletRequest rq, CIBUser user) {
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.UPDATE_ALL);
 		bpmProvider.submit(taskId, formResult, user);
+		// return 204 No Content, no body
+		return ResponseEntity.noContent().build();
 	}
 	
 	@Operation(
@@ -315,7 +354,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
-		return sevenProvider.findTasksPost(data, user);
+		return bpmProvider.findTasksPost(data, user);
 	}
 
 	@Operation(
@@ -404,7 +443,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	      }
 	      
 	      logger.info("[INFO] Submited variables in task with name=" + taskName + " and ID=" + taskId + " (" + getClass().getSimpleName() + ")");
-	      return new ResponseEntity<>("ok", new HttpHeaders(), HttpStatus.OK);
+	      return ResponseEntity.ok("ok");
 	    } catch (Exception e) {
 	      logger.info("[INFO] Exception when submiting variables in task with name=" + taskName + " and ID=" + taskId + " (" + getClass().getSimpleName() + ")", e);
 	      if (e instanceof NoObjectFoundException) return generateErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
@@ -415,7 +454,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	  
 	  @SuppressWarnings("unchecked")
 	  protected <T> ResponseEntity<T> generateErrorResponse(String message, HttpStatus status) {
-	    ResponseEntity<?> response = new ResponseEntity<>(message, status);
+	    ResponseEntity<?> response = ResponseEntity.status(status).body(message);
 	    return (ResponseEntity<T>) response;
 	  }
 

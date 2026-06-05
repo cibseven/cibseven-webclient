@@ -1,15 +1,13 @@
 #!groovy
 
-@Library('cib-pipeline-library@master') _
+@Library('cib-pipeline-library') _
 
 import de.cib.pipeline.library.Constants
 import de.cib.pipeline.library.kubernetes.BuildPodCreator
-import de.cib.pipeline.library.logging.Logger
 import de.cib.pipeline.library.ConstantsInternal
 import de.cib.pipeline.library.MavenProjectInformation
 import groovy.transform.Field
 
-@Field Logger log = new Logger(this)
 @Field MavenProjectInformation mavenProjectInformation = null
 @Field Map pipelineParams = [
     pom: ConstantsInternal.DEFAULT_MAVEN_POM_PATH,
@@ -23,7 +21,7 @@ import groovy.transform.Field
         (Constants.MAVEN_JDK_17_CONTAINER): [
             resources: [
                 cpu: '4',
-                memory: '8Gi',
+                memory: '10Gi',
                 ephemeralStorage: '8Gi'
             ]
         ]
@@ -68,6 +66,12 @@ pipeline {
                     .asYaml()
             defaultContainer pipelineParams.mvnContainerName
         }
+    }
+
+    environment {
+        // Give Maven enough heap for the WAR assembly under -T4 parallelism.
+        // Default heap (~256m) OOMs while packaging the frontend bundle.
+        MAVEN_OPTS = '-Xmx4g -Xms1g'
     }
 
     // Parameter that can be changed in the Jenkins UI
@@ -140,12 +144,12 @@ pipeline {
                     def groupId = pom.groupId
                     if (groupId == null) {
                         groupId = pom.parent.groupId
-                        log.info "parent groupId is used"
+                        echo "parent groupId is used"
                     }
 
                     mavenProjectInformation = new MavenProjectInformation(groupId, pom.artifactId, pom.version, pom.name, pom.description)
 
-                    log.info "Build Project: ${mavenProjectInformation.groupId}:${mavenProjectInformation.artifactId}, ${mavenProjectInformation.name} with version ${mavenProjectInformation.version}"
+                    echo "Build Project: ${mavenProjectInformation.groupId}:${mavenProjectInformation.artifactId}, ${mavenProjectInformation.name} with version ${mavenProjectInformation.version}"
 
                     // Avoid Git "dubious ownership" error in checked out repository. Needed in
                     // build containers with newer Git versions. Originates from Jenkins running
@@ -170,20 +174,30 @@ pipeline {
 
                         // Show coverage in Jenkins UI
                         recordCoverage(
-                            tools: [[parser: 'COBERTURA', pattern: 'frontend/target/coverage/cobertura-coverage.xml']],
+                            tools: [
+                                [parser: 'COBERTURA', pattern: 'frontend/target/coverage/cobertura-coverage.xml'],
+                                [parser: 'JACOCO', pattern: '**/target/site/jacoco/jacoco.xml']
+                            ],
                             sourceCodeRetention: 'LAST_BUILD',
-                            sourceDirectories: [[path: 'frontend/src']]
+                            sourceDirectories: [
+                                [path: 'frontend/src'],
+                                [path: 'cibseven-webclient-core/src/main/java'],
+                                [path: 'cibseven-webclient-web/src/main/java']
+                            ]
                         )
 
                         // This archives the whole HTML coverage report so you can download or view it from Jenkins
                         // This archives the Vitest test reports so you can download or view them from Jenkins
                         archiveArtifacts artifacts: 'frontend/target/coverage/lcov-report/**, frontend/target/vitest-reports/**, cibseven-webclient-core/target/failsafe-reports/**', allowEmptyArchive: false, fingerprint: true
+
+                        // This archives the JaCoCo HTML coverage reports for Java subprojects
+                        archiveArtifacts artifacts: '**/target/site/jacoco/**', allowEmptyArchive: true, fingerprint: true
                     }
                 }
             }
         }
 
-        stage('SAST') {
+        stage('SAST, frontend') {
             when {
                 allOf {
                     branch pipelineParams.primaryBranch
@@ -281,10 +295,48 @@ pipeline {
                                     timeout(time: 5, unit: 'MINUTES') {
                                         def qg = waitForQualityGate()
                                         if (qg.status != 'OK') {
-                                            log.info "Pipeline unstable due to quality gate failure: ${qg.status}"
+                                            echo "WARNING: Pipeline unstable due to quality gate failure: ${qg.status}"
                                             // currentBuild.result = 'UNSTABLE'
                                         }
                                     }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('SAST, middleware') {
+            when {
+                allOf {
+                    branch pipelineParams.primaryBranch
+                    expression { params.VERIFY }
+                }
+            }
+            steps {
+                script {
+                    stage('Run SonarQube Checks') {
+                        withSonarQubeEnv(credentialsId: Constants.SONARQUBE_CREDENTIALS_ID, installationName: 'SonarQube') {
+                            withMaven() {
+                                sh """
+                                    mvn -f ${pipelineParams.pom} \
+                                        compile \
+                                        sonar:sonar \
+                                        -Dmaven.test.skip \
+                                        -DskipTests \
+                                        -Dlicense.skipDownloadLicenses=true \
+                                        -Dsonar.dependencyCheck.jsonReportPath=target/dependency-check-report.json \
+                                        -Dsonar.dependencyCheck.htmlReportPath=target/dependency-check-report.html
+                                """
+                            }
+                        }
+                        timeout(time: 5, unit: 'MINUTES') {
+                            script {
+                                def qg = waitForQualityGate()
+                                if (qg.status != 'OK') {
+                                    echo "WARNING: Pipeline unstable due to quality gate failure: ${qg.status}"
+                                    currentBuild.result = 'UNSTABLE'
                                 }
                             }
                         }
@@ -430,6 +482,8 @@ pipeline {
                         // -Djib.useOnlyProjectCache=true and -Djib.disableUpdateChecks=true are used to speed up the build
                         // and to resolve the build failure which is related to the Jib Maven plugin trying to access a cache directory.
                         // This is a common issue when building Docker images with Jib in Jenkins.
+                        //
+                        // -Djib.serialize=true - force Jib to run sequentially while allowing the rest of the Maven build to remain parallel.
                         sh """
                             mvn -f ./pom.xml \
                                 package \
@@ -439,13 +493,13 @@ pipeline {
                                 -Dlicense.skipDownloadLicenses=true \
                                 -Djib.useOnlyProjectCache=true \
                                 -Djib.disableUpdateChecks=true \
-                                -T4 \
+                                -Djib.serialize=true \
                                 -Dbuild.number=${BUILD_NUMBER}
                         """
                     }
                     //TODO SBOM needed?
 //                    if (params.RELEASE_BUILD) {
-//                        log.info 'Generating and uploading SBOM for image due to release build'
+//                        echo 'Generating and uploading SBOM for image due to release build'
 //                        container(Constants.SYFT_CONTAINER) {
 //                            withCredentials([string(credentialsId: Constants.DEPENDENCY_TRACK_CREDENTIALS_ID, variable: 'API_KEY')]) {
 //                                def files = findFiles(glob: '**/target/jib-image.json')
@@ -474,7 +528,7 @@ pipeline {
 //                            }
 //                        }
 //                    } else {
-//                        log.info 'Skipping SBOM generation and upload for image'
+//                        echo 'Skipping SBOM generation and upload for image'
 //                    }
                 }
             }
@@ -503,13 +557,13 @@ pipeline {
     post {
         always {
             script {
-                log.info 'End of the build'
+                echo 'End of the build'
             }
         }
 
         success {
             script {
-                log.info '✅ Build successful'
+                echo '✅ Build successful'
                 if (params.RELEASE_BUILD == true) {
                     notifyResult(
                         office365WebhookId: pipelineParams.office365WebhookId,
@@ -536,13 +590,13 @@ pipeline {
 
         unstable {
             script {
-                log.warning '⚠️ Build unstable'
+                echo '⚠️ Build unstable'
             }
         }
 
         failure {
             script {
-                log.warning '❌ Build failed'
+                echo '❌ Build failed'
                 if (env.BRANCH_NAME == pipelineParams.primaryBranch) {
                     notifyResult(
                         office365WebhookId: pipelineParams.office365WebhookId,
@@ -554,7 +608,7 @@ pipeline {
 
         fixed {
             script {
-                log.info '✅ Previous issues fixed'
+                echo '✅ Previous issues fixed'
                 if (env.BRANCH_NAME == pipelineParams.primaryBranch) {
                     notifyResult(
                         office365WebhookId: pipelineParams.office365WebhookId,
@@ -610,7 +664,7 @@ def isNpmVersionPublished() {
         ).trim()
     }
 
-    log.info "Checking if npm package ${packageName} with version ${packageVersion} is published. Result: ${result}"
+    echo "Checking if npm package ${packageName} with version ${packageVersion} is published. Result: ${result}"
 
     return result == packageVersion
 }

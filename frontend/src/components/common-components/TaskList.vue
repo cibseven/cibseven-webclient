@@ -27,7 +27,7 @@
         </b-progress>
       </div>
       <div class="col-1">
-        <b-button-close v-if="task.cancel && task.state == null" @click="task.cancel" style="margin-top: -0.4rem" :title="$t('task-list.close')"></b-button-close>
+        <b-button-close v-if="task.cancel && task.state == null" @click="task.cancel" style="margin-top: -0.4rem" :title="$t('confirm.close')"></b-button-close>
       </div>
     </div>
   </div>

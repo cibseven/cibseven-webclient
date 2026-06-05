@@ -295,7 +295,7 @@ export default {
             this.value = JSON.stringify(obj, null, 2)
 
             if (!this.objectTypeName) {
-              if (obj instanceof Array) this.objectTypeName = 'java.util.List'
+              if (Array.isArray(obj)) this.objectTypeName = 'java.util.List'
               if (obj instanceof Object) this.objectTypeName = 'java.util.Map'
               else this.objectTypeName = ''
             }
