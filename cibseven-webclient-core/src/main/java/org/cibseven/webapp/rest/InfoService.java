@@ -121,12 +121,13 @@ public class InfoService extends BaseService {
 		@RequestHeader(value = "X-Process-Engine", required = false) String engine
 	) {
 
-		// when newer middleware is connected to old engine-rest,
-		// the engine configuration endpoint might not be available (404).
-		// In this case we will get properties from old configuration properties (history level, authorization enabled) and use them to create a default engine configuration object
-		final boolean isDefaultOrExternalEngine = IEngineProvider.isDefaultEngine(engine) || IEngineProvider.isExternalEngine(engine);
+		// Route to the correct engine-rest: default engine uses getDefaultEngineConfiguration(),
+		// all other engines (named or external url|path|engineName) use getEngineConfiguration(engine)
+		// which resolves the URL via getNamedEngineRestUrl(). If the remote engine does not support
+		// the /configuration endpoint (404/401), getEngineConfiguration returns null and we fall back
+		// to legacy configuration properties below.
 		EngineConfiguration engineConfig =
-			isDefaultOrExternalEngine
+			IEngineProvider.isDefaultEngine(engine)
 				? bpmProvider.getDefaultEngineConfiguration()
 				: bpmProvider.getEngineConfiguration(engine);
 		if (engineConfig == null) {

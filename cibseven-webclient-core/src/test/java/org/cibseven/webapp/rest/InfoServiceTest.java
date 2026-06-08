@@ -202,6 +202,33 @@ public class InfoServiceTest {
 	}
 
 	@Test
+	public void testGetConfig_withExternalEngine_usesExternalEngineConfiguration() {
+		String externalEngine = "http://remote:8080|/engine-rest|default";
+		EngineConfiguration config = new EngineConfiguration("default", "audit", false, false);
+		when(bpmProvider.getEngineConfiguration(externalEngine)).thenReturn(config);
+
+		ObjectNode result = infoService.getConfig(externalEngine);
+
+		verify(bpmProvider).getEngineConfiguration(externalEngine);
+		verify(bpmProvider, never()).getDefaultEngineConfiguration();
+		assertEquals("audit", result.get("camundaHistoryLevel").asText());
+		assertFalse(result.get("authorizationEnabled").asBoolean());
+	}
+
+	@Test
+	public void testGetConfig_withExternalEngine_nullConfigFallsBackToLegacy() {
+		String externalEngine = "http://remote:8080|/engine-rest|default";
+		ReflectionTestUtils.setField(infoService, "camundaHistoryLevel", "none");
+		when(bpmProvider.getEngineConfiguration(externalEngine)).thenReturn(null);
+
+		ObjectNode result = infoService.getConfig(externalEngine);
+
+		verify(bpmProvider).getEngineConfiguration(externalEngine);
+		verify(bpmProvider, never()).getDefaultEngineConfiguration();
+		assertEquals("none", result.get("camundaHistoryLevel").asText());
+	}
+
+	@Test
 	public void testGetConfig_systemException_propagates() {
 		when(bpmProvider.getDefaultEngineConfiguration())
 			.thenThrow(new SystemException("Engine unreachable"));
