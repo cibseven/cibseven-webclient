@@ -76,15 +76,18 @@ public class InfoServiceTest {
 		ReflectionTestUtils.setField(infoService, "authorizationEnabled", true);
 	}
 
+	// Passing null HttpServletRequest: checkAuthorization throws NPE which is caught, leaving user=null.
+
 	@Test
 	public void testGetConfig_withNoEngineName_usesDefaultEngineConfiguration() {
 		EngineConfiguration config = new EngineConfiguration("default", "full", true, false);
 		when(bpmProvider.getDefaultEngineConfiguration()).thenReturn(config);
 
-		infoService.getConfig(null);
+		infoService.getConfig(null, null);
 
 		verify(bpmProvider).getDefaultEngineConfiguration();
 		verify(bpmProvider, never()).getEngineConfiguration(any());
+		verify(bpmProvider, never()).getEngineConfiguration(any(), any());
 	}
 
 	@Test
@@ -92,20 +95,21 @@ public class InfoServiceTest {
 		EngineConfiguration config = new EngineConfiguration("default", "full", true, false);
 		when(bpmProvider.getDefaultEngineConfiguration()).thenReturn(config);
 
-		infoService.getConfig("");
+		infoService.getConfig("", null);
 
 		verify(bpmProvider).getDefaultEngineConfiguration();
 		verify(bpmProvider, never()).getEngineConfiguration(any());
+		verify(bpmProvider, never()).getEngineConfiguration(any(), any());
 	}
 
 	@Test
 	public void testGetConfig_withEngineName_usesNamedEngineConfiguration() {
 		EngineConfiguration config = new EngineConfiguration("myEngine", "audit", true, false);
-		when(bpmProvider.getEngineConfiguration("myEngine")).thenReturn(config);
+		when(bpmProvider.getEngineConfiguration("myEngine", null)).thenReturn(config);
 
-		infoService.getConfig("myEngine");
+		infoService.getConfig("myEngine", null);
 
-		verify(bpmProvider).getEngineConfiguration("myEngine");
+		verify(bpmProvider).getEngineConfiguration("myEngine", null);
 		verify(bpmProvider, never()).getDefaultEngineConfiguration();
 	}
 
@@ -114,7 +118,7 @@ public class InfoServiceTest {
 		ReflectionTestUtils.setField(infoService, "camundaHistoryLevel", "audit");
 		when(bpmProvider.getDefaultEngineConfiguration()).thenReturn(null);
 
-		ObjectNode result = infoService.getConfig(null);
+		ObjectNode result = infoService.getConfig(null, null);
 
 		assertEquals("audit", result.get("camundaHistoryLevel").asText());
 	}
@@ -124,7 +128,7 @@ public class InfoServiceTest {
 		EngineConfiguration config = new EngineConfiguration("default", "audit", true, false);
 		when(bpmProvider.getDefaultEngineConfiguration()).thenReturn(config);
 
-		ObjectNode result = infoService.getConfig(null);
+		ObjectNode result = infoService.getConfig(null, null);
 
 		assertEquals("audit", result.get("camundaHistoryLevel").asText());
 	}
@@ -135,7 +139,7 @@ public class InfoServiceTest {
 		when(bpmProvider.getDefaultEngineConfiguration()).thenReturn(config);
 		ReflectionTestUtils.setField(infoService, "legacyAuthorizationEnabled", false);
 
-		ObjectNode result = infoService.getConfig(null);
+		ObjectNode result = infoService.getConfig(null, null);
 
 		assertFalse(result.get("authorizationEnabled").asBoolean());
 	}
@@ -146,7 +150,7 @@ public class InfoServiceTest {
 		when(bpmProvider.getDefaultEngineConfiguration()).thenReturn(config);
 		ReflectionTestUtils.setField(infoService, "legacyAuthorizationEnabled", true);
 
-		ObjectNode result = infoService.getConfig(null);
+		ObjectNode result = infoService.getConfig(null, null);
 
 		assertTrue(result.get("authorizationEnabled").asBoolean());
 	}
@@ -156,7 +160,7 @@ public class InfoServiceTest {
 		EngineConfiguration config = new EngineConfiguration("default", "full", true, true);
 		when(bpmProvider.getDefaultEngineConfiguration()).thenReturn(config);
 
-		ObjectNode result = infoService.getConfig(null);
+		ObjectNode result = infoService.getConfig(null, null);
 
 		assertNull(result.get("passwordPolicyEnabled"));
 	}
@@ -166,7 +170,7 @@ public class InfoServiceTest {
 		EngineConfiguration config = new EngineConfiguration("default", "full", true, false);
 		when(bpmProvider.getDefaultEngineConfiguration()).thenReturn(config);
 
-		ObjectNode result = infoService.getConfig(null);
+		ObjectNode result = infoService.getConfig(null, null);
 
 		assertNull(result.get("passwordPolicyEnabled"));
 	}
@@ -176,7 +180,7 @@ public class InfoServiceTest {
 		ReflectionTestUtils.setField(infoService, "camundaHistoryLevel", "audit");
 		when(bpmProvider.getDefaultEngineConfiguration()).thenReturn(null);
 
-		ObjectNode result = infoService.getConfig(null);
+		ObjectNode result = infoService.getConfig(null, null);
 
 		assertEquals("audit", result.get("camundaHistoryLevel").asText());
 	}
@@ -186,7 +190,7 @@ public class InfoServiceTest {
 		ReflectionTestUtils.setField(infoService, "authorizationEnabled", false);
 		when(bpmProvider.getDefaultEngineConfiguration()).thenReturn(null);
 
-		ObjectNode result = infoService.getConfig(null);
+		ObjectNode result = infoService.getConfig(null, null);
 
 		assertFalse(result.get("authorizationEnabled").asBoolean());
 	}
@@ -194,9 +198,9 @@ public class InfoServiceTest {
 	@Test
 	public void testGetConfig_notFoundExceptionForNamedEngine_fallsBackToLegacyConfiguration() {
 		ReflectionTestUtils.setField(infoService, "camundaHistoryLevel", "none");
-		when(bpmProvider.getEngineConfiguration("myEngine")).thenReturn(null);
+		when(bpmProvider.getEngineConfiguration("myEngine", null)).thenReturn(null);
 
-		ObjectNode result = infoService.getConfig("myEngine");
+		ObjectNode result = infoService.getConfig("myEngine", null);
 
 		assertEquals("none", result.get("camundaHistoryLevel").asText());
 	}
@@ -205,11 +209,11 @@ public class InfoServiceTest {
 	public void testGetConfig_withExternalEngine_usesExternalEngineConfiguration() {
 		String externalEngine = "http://remote:8080|/engine-rest|default";
 		EngineConfiguration config = new EngineConfiguration("default", "audit", false, false);
-		when(bpmProvider.getEngineConfiguration(externalEngine)).thenReturn(config);
+		when(bpmProvider.getEngineConfiguration(externalEngine, null)).thenReturn(config);
 
-		ObjectNode result = infoService.getConfig(externalEngine);
+		ObjectNode result = infoService.getConfig(externalEngine, null);
 
-		verify(bpmProvider).getEngineConfiguration(externalEngine);
+		verify(bpmProvider).getEngineConfiguration(externalEngine, null);
 		verify(bpmProvider, never()).getDefaultEngineConfiguration();
 		assertEquals("audit", result.get("camundaHistoryLevel").asText());
 		assertFalse(result.get("authorizationEnabled").asBoolean());
@@ -219,11 +223,11 @@ public class InfoServiceTest {
 	public void testGetConfig_withExternalEngine_nullConfigFallsBackToLegacy() {
 		String externalEngine = "http://remote:8080|/engine-rest|default";
 		ReflectionTestUtils.setField(infoService, "camundaHistoryLevel", "none");
-		when(bpmProvider.getEngineConfiguration(externalEngine)).thenReturn(null);
+		when(bpmProvider.getEngineConfiguration(externalEngine, null)).thenReturn(null);
 
-		ObjectNode result = infoService.getConfig(externalEngine);
+		ObjectNode result = infoService.getConfig(externalEngine, null);
 
-		verify(bpmProvider).getEngineConfiguration(externalEngine);
+		verify(bpmProvider).getEngineConfiguration(externalEngine, null);
 		verify(bpmProvider, never()).getDefaultEngineConfiguration();
 		assertEquals("none", result.get("camundaHistoryLevel").asText());
 	}
@@ -233,6 +237,6 @@ public class InfoServiceTest {
 		when(bpmProvider.getDefaultEngineConfiguration())
 			.thenThrow(new SystemException("Engine unreachable"));
 
-		assertThrows(SystemException.class, () -> infoService.getConfig(null));
+		assertThrows(SystemException.class, () -> infoService.getConfig(null, null));
 	}
 }

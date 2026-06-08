@@ -18,6 +18,7 @@ package org.cibseven.webapp.providers;
 
 import java.util.Collection;
 
+import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.rest.model.Engine;
 import org.cibseven.webapp.rest.model.EngineConfiguration;
@@ -39,6 +40,10 @@ public interface IEngineProvider {
 	public Collection<Engine> getProcessEngineNames();
 	@Nullable public EngineConfiguration getDefaultEngineConfiguration();
 	@Nullable public EngineConfiguration getEngineConfiguration(String engineName);
+	/** Fetch engine configuration using the given user's credentials (e.g. for external engines that require auth). */
+	@Nullable default public EngineConfiguration getEngineConfiguration(String engineName, @Nullable CIBUser user) {
+		return getEngineConfiguration(engineName);
+	}
 	public Boolean requiresSetup(String engine);
 	public void createSetupUser(NewUser user, String engine) throws InvalidUserIdException;
 }

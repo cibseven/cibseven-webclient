@@ -16,6 +16,7 @@
  */
 package org.cibseven.webapp.rest;
 
+import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenUserProvider;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.providers.IEngineProvider;
@@ -27,6 +28,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 import jakarta.annotation.PostConstruct;
 
@@ -118,18 +121,32 @@ public class InfoService extends BaseService {
 	@GetMapping("/properties")
 	public ObjectNode getConfig(
 		@Parameter(description = "Optional engine definition to get configuration for. If not provided, default engine configuration will be returned")
-		@RequestHeader(value = "X-Process-Engine", required = false) String engine
+		@RequestHeader(value = "X-Process-Engine", required = false) String engine,
+		HttpServletRequest rq
 	) {
 
+		// For external engines the configuration endpoint requires authentication.
+		// Try to resolve the current user so we can forward their credentials.
+		// If the user is not yet authenticated (e.g. initial page load) we fall back to null,
+		// which will cause a 401 from the remote engine and trigger the legacy-config fallback.
+		CIBUser user = null;
+		try {
+			user = checkAuthorization(rq, true);
+		} catch (Exception e) {
+			log.debug("Could not resolve authenticated user for engine configuration request: {}", e.getMessage());
+		}
+
+		final CIBUser resolvedUser = user;
+
 		// Route to the correct engine-rest: default engine uses getDefaultEngineConfiguration(),
-		// all other engines (named or external url|path|engineName) use getEngineConfiguration(engine)
-		// which resolves the URL via getNamedEngineRestUrl(). If the remote engine does not support
-		// the /configuration endpoint (404/401), getEngineConfiguration returns null and we fall back
-		// to legacy configuration properties below.
+		// all other engines (named or external url|path|engineName) use getEngineConfiguration(engine, user)
+		// which resolves the URL via getNamedEngineRestUrl() and passes auth credentials.
+		// If the remote engine does not support the /configuration endpoint (404/401),
+		// getEngineConfiguration returns null and we fall back to legacy configuration properties below.
 		EngineConfiguration engineConfig =
 			IEngineProvider.isDefaultEngine(engine)
 				? bpmProvider.getDefaultEngineConfiguration()
-				: bpmProvider.getEngineConfiguration(engine);
+				: bpmProvider.getEngineConfiguration(engine, resolvedUser);
 		if (engineConfig == null) {
 			// when newer middleware is connected to old engine-rest,
 			// the engine configuration endpoint may not exist yet (404).

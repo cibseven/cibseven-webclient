@@ -1939,6 +1939,10 @@ public interface BpmProvider {
 		return getEngineProvider().getEngineConfiguration(engineName);
 	}
 
+	default @Nullable public EngineConfiguration getEngineConfiguration(String engineName, @Nullable CIBUser user) {
+		return getEngineProvider().getEngineConfiguration(engineName, user);
+	}
+
 	/**
 	 * Determine whether an initial user needs to be created
 	 *
