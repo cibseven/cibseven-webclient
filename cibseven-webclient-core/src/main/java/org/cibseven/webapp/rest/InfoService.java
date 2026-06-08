@@ -125,28 +125,24 @@ public class InfoService extends BaseService {
 		HttpServletRequest rq
 	) {
 
-		// For external engines the configuration endpoint requires authentication.
-		// Try to resolve the current user so we can forward their credentials.
-		// If the user is not yet authenticated (e.g. initial page load) we fall back to null,
-		// which will cause a 401 from the remote engine and trigger the legacy-config fallback.
-		CIBUser user = null;
-		try {
-			user = checkAuthorization(rq, true);
-		} catch (Exception e) {
-			log.debug("Could not resolve authenticated user for engine configuration request: {}", e.getMessage());
-		}
-
-		final CIBUser resolvedUser = user;
+		// /info/properties is called both before login (to render the login / SSO page) and after.
+		// The per-engine configuration endpoint of external engines requires authentication, so we
+		// resolve the user only when an Authorization header is present. Pre-login there is no token,
+		// so a named/external engine falls back to the default/legacy configuration; the frontend
+		// re-fetches these properties once authenticated (see the user watcher in app.js).
+		CIBUser user = (rq != null && rq.getHeader("Authorization") != null)
+			? checkAuthorization(rq, true)
+			: null;
 
 		// Route to the correct engine-rest: default engine uses getDefaultEngineConfiguration(),
 		// all other engines (named or external url|path|engineName) use getEngineConfiguration(engine, user)
-		// which resolves the URL via getNamedEngineRestUrl() and passes auth credentials.
+		// which resolves the URL via getNamedEngineRestUrl() and forwards the user's credentials.
 		// If the remote engine does not support the /configuration endpoint (404/401),
 		// getEngineConfiguration returns null and we fall back to legacy configuration properties below.
 		EngineConfiguration engineConfig =
 			IEngineProvider.isDefaultEngine(engine)
 				? bpmProvider.getDefaultEngineConfiguration()
-				: bpmProvider.getEngineConfiguration(engine, resolvedUser);
+				: bpmProvider.getEngineConfiguration(engine, user);
 		if (engineConfig == null) {
 			// when newer middleware is connected to old engine-rest,
 			// the engine configuration endpoint may not exist yet (404).

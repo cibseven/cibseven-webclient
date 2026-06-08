@@ -91,6 +91,7 @@ Promise.all([
         watch: {
           user: function(user) {
             if (user) {
+              this.refreshEngineProperties()
               this.handleTaskWorker()
               this.startProcessAutoUpdate()
             } else {
@@ -107,6 +108,16 @@ Promise.all([
         methods: {
           remember: function() { localStorage.setItem('consent', true) },
           sendReport: function(data) { axios.post('report', data) },
+          refreshEngineProperties: function() {
+            // The initial getProperties() call in app.js runs before login, so per-engine
+            // configuration (history level, authorization, password policy) for external engines
+            // — whose /configuration endpoint requires auth — could not be resolved. Now that we
+            // are authenticated, re-fetch and merge so those values reflect the selected engine.
+            // The response interceptor (registered above) already unwraps to response.data.
+            InfoService.getProperties()
+              .then(data => { Object.assign(this.config, data) })
+              .catch(error => console.warn('Could not refresh engine properties after login:', error))
+          },
           handleTaskWorker: function() {
             setupTaskNotifications(this, this.$root, theme)
           },
