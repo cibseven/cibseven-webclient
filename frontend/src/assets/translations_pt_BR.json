@@ -1,0 +1,1349 @@
+{
+	"commons": {
+		"edit": "Editar",
+		"save": "Salvar",
+		"actualisation": {
+			"progress": "Atualizando dados...",
+			"lastUpdate": "Última atualização: {date}",
+			"disabled": "Última atualização: {date}\n\nAtualizações automáticas estão desabilitadas.\nPressione F5 para recarregar os dados.",
+			"enabled": "Última atualização: {date}\n\nAtualizações automáticas estão habilitadas.\nAtualizando a cada {seconds} segundos."
+		},
+		"notAvailable": {
+			"label": "N/D",
+			"tooltip": "Não disponível"
+		}
+	},
+	"login": {
+		"productName": "CIB seven",
+		"productSlogan": "Plataforma de Gestão de Processos",
+		"username": "Usuário",
+		"password": "Senha",
+		"rememberMe": "Lembrar-me",
+		"email": "E-mail",
+		"login": "Entrar",
+		"2fa": "Verificação em duas etapas",
+		"emailSent": "Uma mensagem foi enviada para o seguinte endereço de e-mail: {0}! Por favor, siga as instruções. Não recebeu o e-mail? Verifique sua pasta de spam.",
+		"needOtp": "Por favor, confirme sua solicitação pelo <b>aplicativo</b>.",
+		"otp": "Código de verificação",
+		"register": "Ainda não tem uma conta?",
+		"registerLink": "Cadastre-se agora",
+		"reset2fa": "Redefinir dispositivo confiável",
+		"resetPassword": "Redefinir senha",
+		"forgotten": "Esqueceu a senha?",
+		"usernameRequired": "O usuário é obrigatório",
+		"passwordRequired": "A senha é obrigatória",
+		"showPassword": "Exibir senha",
+		"hidePassword": "Ocultar senha"
+	},
+	"processes-dashboard": {
+		"headerActive": "Painel de Operações",
+		"headerDeployed": "Publicado",
+		"items": {
+			"running-instances": {
+				"title": "Instâncias de Processo em Execução",
+				"tooltip": "Navegar por todas as instâncias de processo ativas"
+			},
+			"open-incidents": {
+				"title": "Incidentes em Aberto",
+				"tooltip": "Revisar todos os incidentes em aberto"
+			},
+			"open-human-tasks": {
+				"title": "Tarefas Humanas em Aberto",
+				"tooltip": "@:start.cockpit.humanTasks.tooltip",
+				"assigned": "Atribuída a um usuário",
+				"unassigned": "Não atribuída",
+				"assignedGroups": "Atribuída a 1 ou mais grupos"
+			},
+			"processes": {
+				"title": "Definições de Processo",
+				"tooltip": "@:start.cockpit.processes.tooltip"
+			},
+			"decisions": {
+				"title": "Definições de Decisão",
+				"tooltip": "@:start.cockpit.decisions.tooltip"
+			},
+			"deployments": {
+				"title": "@:start.cockpit.deployments.title",
+				"tooltip": "@:start.cockpit.deployments.tooltip"
+			},
+			"batches": {
+				"title": "@:start.cockpit.batches.title",
+				"tooltip": "@:start.cockpit.batches.tooltip"
+			}
+		},
+		"others": "Outros",
+		"unnamedProcess": "Processo sem nome"
+	},
+	"process": {
+		"instanceRunning": "Instância em execução",
+		"instanceIncidents": "Instância com incidentes",
+		"instanceSuspended": "Instância suspensa",
+		"instanceWithoutIncidents": "Instância sem incidentes",
+		"instanceFinished": "Instância finalizada",
+		"name": "Nome",
+		"key": "Chave do processo",
+		"state": "Estado",
+		"id": "ID",
+		"instanceId": "ID",
+		"processId": "ID do processo",
+		"startUserId": "Usuário",
+		"startTime": "Hora de início",
+		"endTime": "Hora de término",
+		"businessKey": "Chave de negócio",
+		"title": "Processos",
+		"viewMode": "Modo de exibição",
+		"view-comfy": "Pequeno",
+		"view-module": "Grande",
+		"view-list": "Lista",
+		"image-outline": "Compacto",
+		"startProcess": "Iniciar processo",
+		"start": "Iniciar",
+		"showProcess": "Visualizar processo",
+		"showInstance": "Visualizar instância",
+		"downloadBpmn": "Baixar arquivo BPMN",
+		"openModeler": "Abrir arquivo BPMN no Modeler",
+		"showManagement": "Gerenciamento",
+		"showHistory": "Histórico",
+		"showDeployment": "Ver publicação",
+		"organizeDeployment": "Organizar publicações",
+		"tasks": "tarefas",
+		"processCheck": "Processo iniciado - Verifique suas {tasks}",
+		"processStarted": "Processo iniciado",
+		"runningProcesess": "Processos em execução",
+		"process": "Processo",
+		"info": "Detalhes da definição de processo",
+		"description": "Descrição",
+		"favorite": "Favorito",
+		"actions": "Ações",
+		"status": "Status",
+		"tenant": "Tenant",
+		"details": {
+			"titleProcessActions": "Ações sobre a definição de processo",
+			"titleInstancesActions": "Ações sobre o processo",
+			"firstStart": "Primeiro início em",
+			"lastStart": "Último início em",
+			"totalInstances": "Total de instâncias",
+			"unfinishedInstances": "Instâncias em execução",
+			"finishedInstances": "Total de instâncias concluídas sem erro",
+			"definitionVersion": "Versão da definição",
+			"versionTag": "Tag de versão",
+			"definitionId": "ID da definição",
+			"definitionKey": "Chave da definição",
+			"definitionName": "Nome da definição",
+			"deploymentId": "ID da publicação",
+			"superProcessInstanceId": "ID da instância de processo pai",
+			"instancesRunning": "Instâncias em execução",
+			"currentVersion": "Versão atual",
+			"allVersions": "Todas as versões",
+			"versionInstances": "Instâncias desta versão",
+			"historyVersions": "Versões históricas",
+			"variable": "Variáveis do processo",
+			"copyValue": "Copiar valor",
+			"historyTimeToLive": "Tempo de retenção do histórico",
+			"tenantId": "ID do tenant"
+		},
+		"sections": {
+			"all": "Todos",
+			"favorites": "Favoritos",
+			"mostUsed": "Mais utilizados",
+			"startables": "Meus processos",
+			"mostStarted": "Mais iniciados"
+		},
+		"diagram": {
+			"title": "Diagrama do processo: {0}"
+		},
+		"emptyProcessList": "Sua lista de processos está vazia.",
+		"emptyProcessListFiltered": "Não há processo para o filtro aplicado.",
+		"definitionVersionNotFound": "Versão \"{0}\" da definição de processo não encontrada. Carregando a versão mais recente.",
+		"definitionNotFound": "Definição de processo com chave \"{processKey}\" e tenant ID \"{tenantId}\" não encontrada.",
+		"instanceNotFound": "Instância de processo com ID \"{instanceId}\" não encontrada.\nResposta do servidor:\n{error}",
+		"back": "Voltar",
+		"incidentsCounter": "Incidentes: {0}",
+		"incidents": "Incidentes",
+		"variables": "Variáveis",
+		"usertasks": "Tarefas de usuário",
+		"calledProcessInstances": "Instâncias de processo chamadas",
+		"onlyIncidents": {
+			"title": "Somente com incidentes",
+			"tooltip": "Exibir apenas processos que possuem incidentes"
+		},
+		"onlyActive": {
+			"title": "Somente ativos",
+			"tooltip": "Exibir apenas processos com definições de processo não suspensas"
+		},
+		"runningInstances": "Instâncias",
+		"instances": "Instâncias",
+		"statistics": "Estatísticas",
+		"suspendInstance": "Suspender instância de processo",
+		"stopInstance": "Interromper instância de processo",
+		"deleteHistoryInstance": "Excluir instância histórica de processo",
+		"suspendProcess": "Suspender definição de processo",
+		"activateProcess": "Ativar definição de processo",
+		"activateInstance": "Ativar instância de processo",
+		"copySuccess": "Valor selecionado copiado",
+		"refreshVersions": "Atualizar versões históricas",
+		"loadVersions": "Carregar todas as versões históricas",
+		"externalProcessStarted": "Processo iniciado com sucesso",
+		"exportInstances": "Exportar instâncias",
+		"days": "dias",
+		"deleteProcessDefinition": {
+			"tooltip": "Excluir definição de processo",
+			"confirm": {
+				"title": "@:confirm.delete",
+				"line1": "Excluir definição de processo?",
+				"line2": "Nome: {name}Versão: {version}"
+			}
+		},
+		"confirm": {
+			"suspend": "Deseja realmente suspender a definição de processo com todas as instâncias em execução?",
+			"activate": "Deseja realmente ativar a definição de processo com todas as instâncias em execução?"
+		},
+		"activityIdBadge": {
+			"remove": "Remover critério - para listar todas as instâncias de processo",
+			"title": {
+				"executed": "{activityId} (somente executadas)",
+				"active": "{activityId} (somente ativas)",
+				"all": "{activityId}"
+			},
+			"tooltip": {
+				"executed": "Listar instâncias que executaram a atividade {activityId}",
+				"active": "Listar instâncias ainda ativas na atividade {activityId}",
+				"all": "Listar instâncias que executaram ou ainda estão ativas na atividade {activityId}"
+			}
+		},
+		"true": "Verdadeiro",
+		"false": "Falso",
+		"jobDefinitions": "Definições de job",
+		"jobs": "Jobs",
+		"calledProcessDefinitions": "Definições de processo chamadas",
+		"jobLog": "Log de jobs",
+		"userOperations": "Operações de usuário",
+		"externalTasksLog": "Log de tarefas externas",
+		"modify": "Modificar",
+		"restart": "Reiniciar",
+		"documentation": "Documentação",
+		"externalTasks": "Tarefas externas"
+	},
+	"process-instance": {
+		"processInstanceId": "ID da instância de processo",
+		"businessKey": "Chave de negócio",
+		"info": "Detalhes do processo",
+		"active": "Ativo",
+		"history": "Histórico",
+		"download": "Baixar",
+		"edit": "@:commons.edit",
+		"save": "@:commons.save",
+		"upload": "Enviar arquivo",
+		"selectFile": "Selecionar arquivo",
+		"calledProcessDefinitions": {
+			"calledProcessDefinition": "Definição de processo chamada",
+			"process": "Processo",
+			"version": "Versão",
+			"activities": "Atividades que chamam",
+			"activity": "Atividade",
+			"state": "Estado",
+			"referenced": "Referenciada",
+			"running": "Em execução",
+			"runningAndReferenced": "Em execução e referenciada",
+			"unknown": "Desconhecido"
+		},
+		"details": {
+			"instancesChain": "Processo raiz",
+			"startUser": "Usuário que iniciou",
+			"start": "Iniciado em",
+			"finish": "Concluído em",
+			"duration": "Duração",
+			"superProcessInstanceId": "ID da instância de processo pai",
+			"superCaseInstanceId": "ID da instância de caso pai",
+			"caseInstanceId": "ID da instância de caso",
+			"startActivityId": "ID da atividade inicial",
+			"version": "Versão",
+			"state": "Estado",
+			"deleted": "Excluído em",
+			"deletedReason": "Motivo da exclusão",
+			"currentTaskAssignee": "Responsável atual",
+			"currentTaskCreated": "Tarefa atual criada em"
+		},
+		"confirm": {
+			"suspend": "Deseja realmente suspender esta instância do processo?",
+			"activate": "Deseja realmente ativar esta instância do processo?",
+			"stopInstance": "Deseja realmente interromper esta instância do processo?",
+			"deleteHistoryInstance": "Deseja realmente excluir esta instância histórica do processo?"
+		},
+		"variables": {
+			"historicVariable": {
+				"title": "Variável histórica",
+				"tooltip": "Visualizar variável histórica"
+			},
+			"name": "Nome",
+			"type": "Tipo",
+			"value": "Valor",
+			"valueSerialized": "Valor serializado",
+			"actions": "Ações",
+			"scope": "Escopo",
+			"activityInstanceId": "ID da instância de atividade",
+			"objectTypeName": "Nome do tipo do objeto",
+			"serializationDataFormat": "Formato de serialização",
+			"confirmDelete": "Deseja excluir a variável?",
+			"loadStatus": {
+				"runtimeError": "Ocorreu um erro ao tentar carregar a variável \"{name}\" com ID {id}.",
+				"historicError": "Ocorreu um erro ao tentar carregar a variável histórica \"{name}\" com ID {id}."
+			},
+			"deleteStatus": {
+				"runtime": "A variável foi excluída com sucesso.",
+				"runtimeError": "Ocorreu um erro ao tentar excluir a variável \"{name}\".",
+				"historic": "A variável histórica foi excluída com sucesso.",
+				"historicError": "Ocorreu um erro ao tentar excluir a variável histórica \"{name}\"."
+			},
+			"enterValue": "Informe o valor",
+			"activityIdBadge": {
+				"remove": "Remover critério - para listar todas as variáveis",
+				"title": "{activityId}",
+				"tooltip": "Exibir apenas variáveis no escopo \"{activityId}\"."
+			}
+		},
+		"incidents": {
+			"activityIdBadge": {
+				"remove": "Remover critério - para listar todos os incidentes",
+				"title": "{activityId} (atividade com falha)",
+				"tooltip": "Listar apenas incidentes criados devido à falha da atividade \"{activityId}\"."
+			},
+			"state": "Estado",
+			"processInstance": "Instância de processo",
+			"deleted": "Excluído",
+			"resolved": "Resolvido",
+			"open": "Em aberto",
+			"unknown": "Desconhecido",
+			"message": "Mensagem",
+			"timestamp": "Data/hora",
+			"activity": "Atividade",
+			"failedActivity": "Atividade com falha",
+			"executionId": "ID de execução",
+			"incidentType": "Tipo de incidente",
+			"retryJob": "Incrementar número de tentativas do job com falha",
+			"annotation": "Anotação",
+			"actions": "Ações",
+			"incrementNumberRetries": "Incrementar número de tentativas",
+			"retryMsg": "O número de tentativas do job com falha correspondente ao incidente selecionado será incrementado.",
+			"dueDateMsg": "O momento de execução de um job é determinado pela data de vencimento:",
+			"keepDueDate": "Manter data de vencimento",
+			"setDueDate": "Definir data de vencimento",
+			"dueDate": "Data de vencimento",
+			"scheduleAt": "Agendar para",
+			"invalidDateError": "Informe uma data válida",
+			"retry": "Tentar novamente",
+			"editAnnotation": "Editar anotação",
+			"causeIncidentProcessInstanceId": "ID da instância de processo causadora",
+			"rootCauseIncidentProcessInstanceId": "ID da instância de processo causa raiz",
+			"createTime": "Data de criação",
+			"endTime": "Data de término"
+		},
+		"jobDefinitions": {
+			"state": "Estado",
+			"activity": "Atividade",
+			"type": "Tipo",
+			"configuration": "Configuração",
+			"overridingJobPriority": "Prioridade de job sobreposta",
+			"actions": "Ações",
+			"active": "Ativo",
+			"suspendJob": "Suspender definição de job",
+			"activateJob": "Ativar definição de job",
+			"suspended": "Suspenso",
+			"activateMsg": "Esta definição de job será ativada, de modo que os novos jobs baseados nela sejam inicialmente ativos.",
+			"suspendMsg": "Esta definição de job será suspensa, de modo que os novos jobs baseados nela sejam inicialmente suspensos.",
+			"includeExisting": "Incluir job existente",
+			"execute": "Executar",
+			"immediately": "Imediatamente",
+			"delayed": "Com atraso",
+			"scheduleAt": "Agendar para",
+			"suspend": "Suspender",
+			"activate": "Ativar",
+			"changeJobPriority": "Alterar prioridade de job sobreposta",
+			"overridingMsg": "Altere a prioridade de sobreposição para os jobs da definição de job informada.",
+			"jobPriority": "Prioridade",
+			"clear": "Limpar prioridade de job sobreposta",
+			"set": "Definir prioridade de job sobreposta",
+			"invalidPriorityError": "Informe um valor inteiro",
+			"overrideAction": "Sobrepor",
+			"clearAction": "Limpar",
+			"invalidDateError": "Informe uma data válida"
+		},
+		"usertasks": {
+			"activity": "Atividade",
+			"assignee": "Responsável",
+			"owner": "Proprietário",
+			"startTime": "Hora de início",
+			"due": "Data de vencimento",
+			"followUp": "Acompanhamento",
+			"taskID": "ID da tarefa",
+			"actions": "Ações",
+			"openTask": "Abrir tarefa \"{name}\" na Lista de Tarefas"
+		},
+		"calledProcesses": {
+			"callingActivity": "Atividade",
+			"process": "Definição de processo",
+			"calledProcessInstance": "Instâncias de processo chamadas",
+			"state": "Estado",
+			"startTime": "Hora de início",
+			"endTime": "Hora de término"
+		},
+		"assignModal": {
+			"manageUsersGroups": "Gerenciar usuários/grupos",
+			"manageAssignee": "Gerenciar usuário responsável",
+			"manageGroups": "Gerenciar grupos",
+			"manageUsers": "Gerenciar usuários",
+			"groupId": "ID do grupo",
+			"userId": "@:admin.users.id",
+			"groups": "Grupos",
+			"users": "Usuários",
+			"assignee": "Responsável",
+			"add": "Adicionar",
+			"delete": "@:confirm.delete",
+			"actions": "Ações",
+			"exists": "Esta entidade já está atribuída"
+		},
+		"noResults": "Nenhum resultado",
+		"noIncidents": "Nenhum incidente",
+		"noJobDefinitions": "Nenhuma definição de job",
+		"stacktrace": "Rastreamento de pilha",
+		"copyValueToClipboard": "Copiar valor para a área de transferência",
+		"confirmRetryJob": "Tem certeza que deseja incrementar o número de tentativas?",
+		"successRetryJob": "Incremento do número de tentativas concluído com sucesso.",
+		"addVariable": "Adicionar variável",
+		"jobs": {
+			"id": "ID",
+			"dueDate": "Data de vencimento",
+			"createTime": "Data de criação",
+			"retries": "Tentativas",
+			"activity": "Atividade",
+			"failedActivity": "Atividade com falha",
+			"actions": "Ações",
+			"suspend": "Suspender",
+			"resume": "Retomar",
+			"changeDueDate": "Alterar data de vencimento do timer",
+			"recalculateFromCreation": "A partir da hora de criação",
+			"recalculateFromCurrent": "A partir da hora atual",
+			"setSpecificDate": "Definir uma data específica",
+			"cascade": "Propagar para processos filhos",
+			"changeDueDateMsg": "Selecione uma das opções a seguir para alterar este timer:",
+			"recalculate": "Recalcular",
+			"scheduleAt": "Agendar para",
+			"invalidDateError": "Informe uma data válida",
+			"overrideAction": "Sobrepor"
+		},
+		"externalTasks": {
+			"id": "ID da tarefa externa",
+			"activityId": "Atividade",
+			"topicName": "Tópico",
+			"workerId": "ID do worker",
+			"lockExpirationTime": "Expiração do bloqueio",
+			"retries": "Tentativas",
+			"priority": "Prioridade",
+			"noExternalTasks": "Nenhuma tarefa externa encontrada"
+		}
+	},
+	"dmn-viewer": {
+		"zoomIn": "Ampliar",
+		"zoomOut": "Reduzir",
+		"resetZoom": "Redefinir zoom"
+	},
+	"bpmn-viewer": {
+		"zoomIn": "Ampliar",
+		"zoomOut": "Reduzir",
+		"resetZoom": "Redefinir zoom",
+		"legend": {
+			"runningInstances": "Instâncias de atividade em execução",
+			"openIncidents": "Incidentes em aberto",
+			"closedIncidents": "Incidentes encerrados",
+			"suspendedJobDefinition": "Definição de job suspensa",
+			"activitiesHistory": "Instâncias de atividade executadas",
+			"canceledInstances": "Instâncias de atividade canceladas",
+			"openSubprocess": "Exibir definição de processo chamado",
+			"disabledSubprocess": "A definição de processo chamado será resolvida em tempo de execução"
+		}
+	},
+	"task": {
+		"options": "Opções",
+		"title": "Tarefa",
+		"created": "Criada",
+		"info": "Detalhes da tarefa",
+		"reminder": "Data de lembrete",
+		"priority": "Prioridade",
+		"taskId": "ID da tarefa",
+		"assign": "Atribuir a alguém",
+		"assignToMe": "Atribuir a mim",
+		"assignPopoverTitle": "Tarefa não está atribuída a você",
+		"assignPopoverContent": "Para começar a trabalhar na tarefa, atribua-a a você mesmo.",
+		"assignPopoverContent2": "Lembre-se que você também pode atribuí-la a outra pessoa, para isso vá até a seção de ações no topo da barra lateral direita.",
+		"disablePopover": "Não exibir novamente",
+		"currentTask": "Tarefa atual",
+		"currentTasks": "Tarefas atuais",
+		"completedTasks": "Tarefas concluídas",
+		"notStarted": "A tarefa selecionada ainda não foi iniciada.",
+		"setDeadline": "Definir prazo",
+		"setReminder": "Definir lembrete",
+		"selectedTask": "Tarefa selecionada",
+		"details": {
+			"name": "Nome da tarefa",
+			"assignee": "Responsável",
+			"created": "Criada em",
+			"finish": "@:process-instance.details.finish",
+			"processStart": "Processo iniciado em",
+			"processUser": "Usuário que iniciou o processo",
+			"due": "Prazo da tarefa"
+		},
+		"actions": {
+			"title": "Ações da tarefa",
+			"submit": "Concluir",
+			"save": "Salvar",
+			"saveError": "Ocorreu um erro ao salvar a tarefa: {0}",
+			"initError": "Ocorreu um erro ao inicializar o formulário: {0}"
+		},
+		"emptyTask": "Tarefa vazia",
+		"showMore": "Exibir mais...",
+		"showOnlyAddFilters": "Exibir tarefas com:",
+		"expand": "Expandir",
+		"collapse": "Recolher",
+		"assignedUserTitle": "Excluir usuário atribuído",
+		"usersFound": "Resultados encontrados: O filtro de busca identificou usuários que correspondem aos seus critérios",
+		"userAssigned": "O usuário {0} foi atribuído com sucesso"
+	},
+	"batches": {
+		"inProgressBatches": "Lotes em andamento",
+		"historicBatches": "Lotes encerrados",
+		"runtimeDetails": "Detalhes do lote em andamento",
+		"historyDetails": "Detalhes do lote concluído",
+		"id": "ID",
+		"type": "Tipo",
+		"startTime": "Iniciado",
+		"endTime": "Encerrado",
+		"user": "Usuário",
+		"failedJobs": "Jobs com falha",
+		"progress": "Progresso",
+		"loading": "Carregando...",
+		"property": "Propriedade",
+		"value": "Valor",
+		"suspend": "Suspender lote",
+		"activate": "Ativar lote",
+		"remove": "Remover lote",
+		"confirmRemove": "Deseja realmente excluir este lote e todos os jobs e definições de job relacionados?",
+		"historyLevelTooLow": "Sua instância do motor está configurada com o nível de histórico \"{historyLevel}\".\nPara obter informações sobre lotes concluídos, o nível de histórico deve ser definido como \"full\".",
+		"exception": "Exceção",
+		"actions": "Ações",
+		"retryJob": "Tentar job novamente",
+		"deleteJob": "Excluir job",
+		"seeFullLog": "Ver log completo",
+		"retryFailedJobs": "Tentar jobs com falha novamente",
+		"jobLog": {
+			"modalTitle": "Log de jobs",
+			"state": "Estado",
+			"message": "Mensagem",
+			"timestamp": "Data/hora",
+			"jobId": "ID do job",
+			"type": "Tipo",
+			"configuration": "Configuração",
+			"retries": "Tentativas",
+			"hostname": "Hostname",
+			"priority": "Prioridade",
+			"created": "Criado",
+			"failed": "Com falha",
+			"successful": "Com sucesso",
+			"unknown": "Desconhecido"
+		}
+	},
+	"admin": {
+		"loading": "Carregando...",
+		"loadingMoreData": "Carregando mais dados...",
+		"noResults": "Nenhum resultado",
+		"exportCsv": "Exportar todos",
+		"users": {
+			"title": "Usuários",
+			"tooltip": "Gerenciamento de usuários",
+			"id": "ID do usuário",
+			"firstName": "Nome",
+			"lastName": "Sobrenome",
+			"email": "E-mail",
+			"add": "Adicionar usuário",
+			"account": "Conta do usuário",
+			"profile": "Perfil do usuário",
+			"password": "Senha",
+			"passwordRepeat": "Senha (repetir)",
+			"cancel": "Cancelar",
+			"create": "Criar novo usuário",
+			"userCreatedMessage": "Usuário {0} criado",
+			"confirmDelete": "Deseja realmente excluir o usuário com os seguintes parâmetros?",
+			"userDeletedMessage": "Usuário {0} excluído",
+			"groups": "Grupos",
+			"editMessage": "Editar usuário ({0})",
+			"update": "Atualizar perfil",
+			"editUser": "Editar usuário",
+			"viewUser": "Visualizar usuário",
+			"deleteUser": "Excluir usuário",
+			"updateProfileMessage": "Perfil do usuário atualizado com sucesso",
+			"updatePasswordMessage": "Senha atualizada com sucesso",
+			"unassignGroupMessage": "Usuário {0} removido do grupo",
+			"actions": "Ações",
+			"group": {
+				"title": "Grupos de {0}",
+				"add": "Adicionar a um grupo"
+			}
+		},
+		"preferences": {
+			"title": "Preferências",
+			"general": {
+				"title": "Configurações gerais",
+				"startPage": {
+					"label": "Página inicial padrão",
+					"description": "Selecione a página que será exibida após o login.",
+					"goTo": "Ir para {page}",
+					"options": {
+						"home": "Início",
+						"groupTasklist": "Lista de Tarefas",
+						"startProcess": "Iniciar Processo",
+						"tasks": "Tarefas",
+						"groupCockpit": "Cockpit",
+						"processesDashboard": "Painel de Processos",
+						"decisionsList": "Lista de Decisões",
+						"humanTasksDashboard": "Painel de Tarefas Humanas"
+					}
+				}
+			},
+			"dates": {
+				"title": "Formatos de data e hora",
+				"formatDefault": "Formato",
+				"formatLong": "Formato longo (com hora exata)",
+				"formatDefaultDescription": "Utilizado em campos de data em geral",
+				"formatLongDescription": "Utilizado em campos de data onde a hora exata é necessária (como timestamps de incidentes) e em tooltips para todas as datas",
+				"groupStandard": "Padrão internacional",
+				"groupEuropean": "Formatos europeus",
+				"groupUS": "Formatos dos EUA",
+				"groupISO": "Formatos ISO/Técnicos"
+			},
+			"bpmn": {
+				"title": "Diagrama BPMN",
+				"shortenBadgeNumbers": "Formato de número abreviado",
+				"shortenBadgeNumbersDescription": "Se habilitado, os números no diagrama BPMN para instâncias e ocorrências serão exibidos em formato abreviado, ex.: 1K em vez de 1.005."
+			},
+			"notifications": {
+				"title": "Notificações",
+				"showPopoverHowToAssign": {
+					"label": "Exibir popup 'Tarefa não está atribuída a você'",
+					"description": "Quando habilitado, ao abrir uma tarefa não atribuída na Lista de Tarefas, será exibido um popup informativo para ajudá-lo a atribuir a tarefa a si mesmo ou a outra pessoa."
+				},
+				"tasksCheckNotificationsDisabled": {
+					"label": "Desabilitar notificações de tarefas",
+					"description": "Se marcado, você não receberá notificações no navegador quando novas tarefas forem atribuídas a você."
+				}
+			}
+		},
+		"groups": {
+			"title": "Grupos",
+			"tooltip": "Gerenciamento de grupos",
+			"id": "ID do grupo",
+			"name": "Nome",
+			"type": "Tipo",
+			"add": "Adicionar grupo",
+			"addCandidateGroups": "Adicionar grupos candidatos",
+			"cancel": "Cancelar",
+			"createLabel": "Criar novo grupo",
+			"groupCreatedMessage": "Grupo {0} criado",
+			"actions": "Ações",
+			"confirmDelete": "Deseja realmente excluir o grupo com os seguintes parâmetros?",
+			"information": "Informações",
+			"editMessage": "Editar grupo ({0})",
+			"users": "Usuários",
+			"update": "Atualizar grupo",
+			"viewGroup": "Visualizar grupo",
+			"editGroup": "Editar grupo",
+			"deleteGroup": "Excluir grupo",
+			"updateGroupMessage": "Grupo {0} atualizado",
+			"deleteGroupMessage": "Grupo {0} removido",
+			"user": {
+				"title": "Usuários do grupo"
+			}
+		},
+		"tenants": {
+			"title": "Tenants",
+			"tooltip": "Gerenciamento de tenants",
+			"associationTitle": "Tenants de {0}",
+			"fullId": "ID do tenant",
+			"fullName": "Nome do tenant",
+			"actions": "Ações",
+			"unassignUserMessage": "Usuário {0} removido do tenant",
+			"unassignGroupMessage": "Grupo {0} removido do tenant",
+			"addTo": "Adicionar a um tenant",
+			"unassignTenant": "Desatribuir do tenant",
+			"id": "ID",
+			"name": "Nome",
+			"add": "Adicionar tenant",
+			"create": "Criar novo tenant",
+			"cancel": "Cancelar",
+			"tenantCreatedMessage": "Tenant {0} criado",
+			"confirmDelete": "Deseja realmente excluir o tenant com os seguintes parâmetros?",
+			"tenantDeletedMessage": "Tenant {0} excluído",
+			"deleteTenant": "Excluir tenant",
+			"editTenant": "Editar tenant",
+			"information": "Informações",
+			"users": "Usuários",
+			"groups": "Grupos",
+			"editMessage": "Editar tenant ({0})",
+			"update": "Atualizar tenant",
+			"updateTenantMessage": "Tenant {0} atualizado",
+			"deleteTenantMessage": "Tenant {0} removido",
+			"tenantUsers": "Usuários do tenant",
+			"tenantGroups": "Grupos do tenant"
+		},
+		"authorizations": {
+			"title": "Autorizações",
+			"tooltip": "Gerenciamento de autorizações",
+			"type": "Tipo",
+			"userIdGroupId": "Usuário / Grupo",
+			"permissions": "Permissões",
+			"resourceId": "ID do recurso",
+			"actions": "Ações",
+			"buttons": {
+				"edit": "Editar autorização",
+				"delete": "Excluir autorização",
+				"save": "Salvar autorização",
+				"cancel": "Cancelar modificações"
+			},
+			"name": "Nome do recurso",
+			"types": {
+				"allow": "PERMITIR",
+				"deny": "NEGAR",
+				"global": "GLOBAL"
+			},
+			"resourcesTypes": {
+				"application": "Aplicação",
+				"user": "Usuário",
+				"group": "Grupo",
+				"groupMembership": "Membro de grupo",
+				"authorization": "Autorização",
+				"system": "Sistema",
+				"filter": "Filtro",
+				"processDefinition": "Definição de processo",
+				"task": "Tarefa",
+				"processInstance": "Instância de processo",
+				"deployment": "Publicação",
+				"decisionDefinition": "Definição de decisão",
+				"tenant": "Tenant",
+				"tenantMembership": "Membro de tenant",
+				"batch": "Lote",
+				"decisionRequirements": "Definição de requisitos de decisão",
+				"report": "Relatório",
+				"dashboard": "Painel",
+				"userOperationLogCategory": "Categoria de log de operação de usuário",
+				"historicTask": "Tarefa histórica",
+				"historicProcessInstance": "Instância de processo histórica",
+				"optimize": "Optimize",
+				"operationLogCategory": "Categoria de log de operação",
+				"property": "Propriedade"
+			},
+			"unselectAll": "Desmarcar todos",
+			"selectAll": "Selecionar todos",
+			"confirmDelete": "Deseja realmente excluir a permissão com os seguintes parâmetros?",
+			"confirmParams": {
+				"type": "Tipo: {value}",
+				"user": "Usuário: {value}",
+				"group": "Grupo: {value}",
+				"permissions": "Permissões: {value}",
+				"resource": "Recurso: {value}",
+				"resourceId": "ID do recurso: {value}"
+			},
+			"add": "Adicionar autorização",
+			"noAuthSelected": "Nenhum tipo de autorização selecionado"
+		},
+		"system": {
+			"title": "Sistema",
+			"tooltip": "Configurações e diagnóstico do sistema",
+			"settings": "Configurações",
+			"system-diagnostics": {
+				"title": "Diagnóstico",
+				"diagnosticHelp": "Os dados de diagnóstico permitem entender o ambiente para auxiliar no diagnóstico de problemas.",
+				"diagnosticData": "Dados de diagnóstico"
+			},
+			"execution-metrics": {
+				"title": "Métricas de execução",
+				"metricsHelp": "Número registrado de Instâncias de Processo e Instâncias de Decisão processadas pelo motor, e Tarefas de Usuário atribuídas a um usuário.",
+				"process-instances": "Instâncias de processo",
+				"decision-instances": "Instâncias de decisão",
+				"task-users": "Usuários de tarefas",
+				"usageLast12MonthsByMonth": "Uso nos últimos 12 meses por mês",
+				"annualUsageBySubscriptionTerm": "Métricas de uso anual por período de assinatura",
+				"fromUpToToday": "{from} até hoje",
+				"fromTo": "{from} a {to}"
+			}
+		}
+	},
+	"confirm": {
+		"ok": "Ok",
+		"cancel": "Cancelar",
+		"close": "Fechar",
+		"delete": "Excluir",
+		"deleteFilter": "Deseja realmente excluir o filtro selecionado {name}?",
+		"assignUser": "Esta tarefa já está atribuída a outra pessoa, deseja realmente alterar esta atribuição?"
+	},
+	"alert": {
+		"successSaveTask": "A tarefa foi salva com sucesso. Lembre-se que você deve fechá-la para finalizar seu trabalho.",
+		"successOperation": "A operação foi realizada com sucesso."
+	},
+	"problem-report": {
+		"title": "Por favor, informe seu problema ou sugestões de melhoria",
+		"ok": "Enviar",
+		"cancel": "@:confirm.cancel",
+		"email": "@:login.email"
+	},
+	"cib-header": {
+		"languages": "Idioma",
+		"languagesMenu": "Idioma",
+		"engine": "Motor",
+		"engineMenu": "Seleção de motor",
+		"helpMenu": "Ajuda",
+		"en": "English",
+		"de": "Deutsch",
+		"es": "Español",
+		"ua": "Українська",
+		"ru": "Русский"
+	},
+	"cib-datepicker2": {
+		"noDate": "Sem data",
+		"reset": "Limpar seleção",
+		"today": "Hoje"
+	},
+	"cib-timepicker": {
+		"noDate": "Nenhuma hora selecionada",
+		"reset": "Limpar seleção"
+	},
+	"snapshot": {
+		"titleAbove": "Clique aqui e pressione [Ctrl] + [V]",
+		"titleBelow": "(com sua captura de tela na área de transferência)"
+	},
+	"seven": {
+		"feedback": "Feedback",
+		"selectTask": "Selecione uma tarefa da lista para visualizá-la",
+		"taskCompleted": "Tarefa concluída",
+		"allTasks": "Tarefas",
+		"titleInfo": "Informações",
+		"types": "Tipos"
+	},
+	"nav-bar": {
+		"no-tasks-pending": "Você não possui tarefas pendentes",
+		"no-tasks": "Nenhuma tarefa encontrada",
+		"tasks-count": "Tarefas em aberto: {count}",
+		"filters": {
+			"addFilter": "Adicionar filtro",
+			"updateFilter": "Atualizar filtro",
+			"filterNameLabel": "Nome do filtro",
+			"filterNamePlaceholder": "ex.: Minhas tarefas",
+			"filterPriorityLabel": "Prioridade",
+			"selectProperty": "Selecionar chave",
+			"insertValue": "Informe o valor",
+			"insertVariableKey": "Informe o nome da variável",
+			"addCriteria": "Adicionar critério",
+			"filterExists": "Este filtro já existe",
+			"selectedCriteria": "Critérios selecionados",
+			"no-filters": "Nenhum filtro encontrado",
+			"edit": "@:commons.edit",
+			"editFilter": "Editar filtro \"{filterName}\"",
+			"delete": "@:confirm.delete",
+			"deleteFilter": "Excluir filtro \"{filterName}\"",
+			"pin": "Fixar",
+			"pinFilter": "Fixar filtro \"{filterName}\"",
+			"unpin": "Desafixar",
+			"unpinFilter": "Desafixar filtro \"{filterName}\"",
+			"includeAssigned": "Incluir tarefas atribuídas",
+			"keys": {
+				"processInstanceId": "ID da instância de processo",
+				"processInstanceBusinessKey": "Chave de negócio da instância de processo",
+				"processInstanceBusinessKeyExpression": "Chave de negócio da instância de processo *",
+				"processInstanceBusinessKeyLike": "Chave de negócio da instância de processo semelhante a",
+				"processInstanceBusinessKeyLikeExpression": "Chave de negócio da instância de processo semelhante a *",
+				"processDefinitionId": "ID da definição de processo",
+				"processDefinitionKey": "Chave da definição de processo",
+				"processDefinitionKeyIn": "Chave da definição de processo em",
+				"processDefinitionName": "Nome da definição de processo",
+				"processDefinitionNameLike": "Nome da definição de processo semelhante a",
+				"caseInstanceId": "@:process-instance.details.caseInstanceId",
+				"caseInstanceBusinessKey": "Chave de negócio da instância de caso",
+				"caseInstanceBusinessKeyLike": "Chave de negócio da instância de caso semelhante a",
+				"caseDefinitionId": "ID da definição de caso",
+				"caseDefinitionKey": "Chave da definição de caso",
+				"caseDefinitionName": "Nome da definição de caso",
+				"caseDefinitionNameLike": "Nome da definição de caso semelhante a",
+				"executionId": "ID de execução",
+				"activityInstanceIdIn": "ID da instância de atividade em",
+				"active": "Ativo",
+				"assignee": "Responsável",
+				"assigneeExpression": "Responsável *",
+				"assigneeIn": "Responsável em",
+				"assigneeLike": "Responsável semelhante a",
+				"assigneeLikeExpression": "Responsável semelhante a *",
+				"ownerExpression": "Proprietário *",
+				"candidateGroup": "Grupo candidato",
+				"candidateGroupExpression": "Grupo candidato *",
+				"candidateGroups": "Grupos candidatos",
+				"candidateGroupsExpression": "Grupos candidatos *",
+				"candidateUser": "Usuário candidato",
+				"candidateUserExpression": "Usuário candidato *",
+				"involvedUser": "Usuário envolvido",
+				"involvedUserExpression": "Usuário envolvido *",
+				"unassigned": "Não atribuído",
+				"delegationState": "Estado de delegação",
+				"taskDefinitionKey": "Chave da definição de tarefa",
+				"taskDefinitionKeyIn": "Chave da definição de tarefa em",
+				"taskDefinitionKeyLike": "Chave da definição de tarefa semelhante a",
+				"name": "Nome",
+				"nameLike": "Nome semelhante a",
+				"description": "Descrição",
+				"descriptionLike": "Descrição semelhante a",
+				"priority": "Prioridade",
+				"maxPriority": "Prioridade máxima",
+				"minPriority": "Prioridade mínima",
+				"tenantIdIn": "ID do tenant em",
+				"withoutTenantId": "Sem ID de tenant",
+				"createdBefore": "Criado antes de",
+				"createdBeforeExpression": "Criado antes de *",
+				"dueBefore": "Vence antes de",
+				"dueBeforeExpression": "Vence antes de *",
+				"dueAfter": "Vence após",
+				"dueAfterExpression": "Vence após *",
+				"followUpAfter": "Acompanhamento após",
+				"followUpAfterExpression": "Acompanhamento após *",
+				"followUpBefore": "Acompanhamento antes de",
+				"followUpBeforeExpression": "Acompanhamento antes de *",
+				"followUpBeforeOrNotExistent": "Acompanhamento antes ou inexistente",
+				"followUpBeforeOrNotExistentExpression": "Acompanhamento antes ou inexistente *",
+				"processVariables": "Variáveis do processo",
+				"processInstanceGroup": "Instância de processo",
+				"processDefinitionGroup": "Definição de processo",
+				"caseInstanceGroup": "Instância de caso",
+				"caseDefinitionGroup": "Definição de caso",
+				"otherGroup": "Outros",
+				"usersGroup": "Usuário / Grupo",
+				"taskGroup": "Tarefa",
+				"datesGroup": "Datas"
+			},
+			"noCriterias": "Você ainda não definiu nenhum critério de filtro",
+			"criteria": {
+				"key": "Chave do critério",
+				"value": "Valor do critério"
+			},
+			"matchAllCriteria": "Todos os critérios são satisfeitos",
+			"msgFilterCreated": "Filtro \"{name}\" criado",
+			"msgFilterUpdated": "Filtro \"{name}\" alterado com sucesso",
+			"msgFilterDeleted": "Filtro \"{name}\" excluído",
+			"legendExpression": "Chaves terminadas com \"*\" aceitam expressões como valor. Ex.: '&#36;&#123; currentUser&#40;&#41; &#125;' ou '&#36;&#123; currentUserGroups&#40;&#41; &#125;'",
+			"legendMultiple": "Chaves terminadas com \"in\" aceitam múltiplos valores separados por vírgula. Ex.: `chaveC, chaveA, chaveB`",
+			"create": "Criar filtro",
+			"variablesTitle": "Variáveis",
+			"variablesLegend": "Você pode definir variáveis exibidas na lista de tarefas.",
+			"showUndefinedVariable": "Exibir variáveis não definidas",
+			"addVariable": "Adicionar variável",
+			"variable": {
+				"name": "Nome",
+				"label": "Rótulo",
+				"namePlaceholder": "Nome da variável",
+				"labelPlaceholder": "Rótulo legível"
+			},
+			"operators": {
+				"eq": "=",
+				"neq": "≠",
+				"gt": ">",
+				"gteq": ">=",
+				"lt": "<",
+				"lteq": "<=",
+				"txteq": "= igual a",
+				"txtneq": "≠ diferente de",
+				"txtgt": "> maior que",
+				"txtgteq": ">= maior ou igual a",
+				"txtlt": "< menor que",
+				"txtlteq": "<= menor ou igual a"
+			}
+		},
+		"dueDate": "@:task.details.due",
+		"reminder": "Data de lembrete",
+		"filtersTitle": "Filtros",
+		"refresh": "Atualizar lista de tarefas",
+		"filtersAdditionalsTitle": "Filtros adicionais"
+	},
+	"ienotify": {
+		"remember": "Não exibir esta mensagem novamente",
+		"text": "O CIB seven não é totalmente compatível com o Internet Explorer. Para aproveitar melhor o CIB seven, sugerimos utilizar outro navegador."
+	},
+	"start": {
+		"close": "Fechar",
+		"startProcess": {
+			"title": "@:process.startProcess",
+			"tooltip": "Abrir a visão Iniciar Processo com possibilidade de busca"
+		},
+		"taskList": {
+			"title": "Lista de Tarefas",
+			"tooltip": "Abrir Lista de Tarefas"
+		},
+		"cockpit": {
+			"title": "Cockpit",
+			"tooltip": "Abrir Cockpit",
+			"processes": {
+				"title": "Processos",
+				"tooltip": "Explorar as definições de processo disponíveis"
+			},
+			"process-definition": {
+				"title": "Definição de processo"
+			},
+			"process-instance": {
+				"title": "Instância de processo"
+			},
+			"decisions": {
+				"title": "Decisões",
+				"tooltip": "Explorar as definições de decisão disponíveis"
+			},
+			"decision-definition": {
+				"title": "Definição de decisão"
+			},
+			"decision-instance": {
+				"title": "Instância de decisão"
+			},
+			"humanTasks": {
+				"title": "Tarefas Humanas",
+				"tooltip": "Visualizar todas as tarefas humanas pendentes"
+			},
+			"deployments": {
+				"title": "Publicações",
+				"tooltip": "Visualizar todos os recursos de processo publicados"
+			},
+			"batches": {
+				"title": "Lotes",
+				"tooltip": "Gerenciar e visualizar operações em lote"
+			}
+		},
+		"admin": {
+			"title": "Admin",
+			"tooltip": "Abrir Admin"
+		},
+		"modeler": {
+			"title": "Modeler",
+			"tooltip": "Abrir o Modeler para projetar e editar BPMN, DMN e Formulários"
+		},
+		"account": {
+			"tooltip": "Visualizar e editar as informações da sua conta ou sair",
+			"profile": {
+				"title": "Perfil do usuário",
+				"tooltip": "Visualizar e editar as informações da sua conta"
+			},
+			"logout": {
+				"title": "Sair",
+				"tooltip": "Sair do {productName}"
+			}
+		},
+		"emptyStart": "No momento você não tem permissão para realizar nenhuma tarefa aqui. Entre em contato com o administrador do {productName} para obter permissões."
+	},
+	"errors": {
+		"invalid": "Por favor, informe dados válidos",
+		"invalidName": "Este nome não é válido ou já está em uso",
+		"Network_Error": "Há um problema de conexão",
+		"FolderUploadError": "O envio de pastas não é permitido, por favor envie apenas arquivos.",
+		"SystemException": "Ocorreu um erro técnico inesperado. Deseja enviar um relatório?",
+		"DoxichangeException": "A pré-visualização não pode ser gerada. Deseja enviar o documento afetado para análise?",
+		"AccessDeniedException": "Sem permissão ({0})",
+		"NoPermission": "Você não possui as permissões necessárias para executar esta ação.\nPermissão necessária: \"{permission}\".\nReferenciado em: {refPath}",
+		"EntryAlreadyExistsException": "{0} já existe",
+		"formNotFound": "O formulário \"{0}\" não pôde ser carregado. O formulário está vazio ou o recurso de formulário não foi publicado corretamente. Verifique a publicação e tente novamente.",
+		"deployedFormNotFound": "O recurso de formulário publicado \"{0}\" não foi encontrado na publicação. Verifique se o recurso de formulário está incluído na publicação e tente novamente.",
+		"NoObjectFoundException": "Ocorreu um problema específico ao executar esta operação. Por favor, atualize a página no navegador e tente novamente.",
+		"InvalidAttributeValueException": "Ocorreu um problema específico ao executar esta operação. Por favor, atualize a página no navegador e tente novamente.",
+		"SubmitDeniedException": "Ocorreu um problema específico ao executar esta operação. Por favor, atualize a página no navegador e tente novamente.",
+		"UnsupportedTypeException": "Ocorreu um problema específico ao executar esta operação. Por favor, atualize a página no navegador e tente novamente.",
+		"ExpressionEvaluationException": "Ocorreu um problema específico ao executar esta operação. Por favor, atualize a página no navegador e tente novamente.",
+		"CmisConstraintException": "Os seguintes caracteres não são permitidos: \\ / : * ? \" | < >",
+		"MaxUploadSizeExceededException": "Os arquivos são muito grandes, o limite de envio é {0}",
+		"ContentForbiddenException": "Tipos de arquivo como \"{0}\" não são suportados para esta ação.",
+		"InvalidNameException": "O código especificado \"{0}\" pode conter apenas os seguintes caracteres especiais: !#'()*+-.<=>@^_{|}$&.<br>Além disso, seu comprimento deve estar entre 3 e 512 caracteres, sem espaços ou caracteres especiais.",
+		"AuthenticationException": "Dados de autenticação incorretos",
+		"LoginException": "Usuário ou senha incorretos",
+		"TokenExpiredException": "Dados de autenticação expirados",
+		"WrongDeploymenIdException": "Nenhuma publicação encontrada para este ID.",
+		"NoRessourcesFoundException": "Recursos de publicação para este ID de publicação não existem.",
+		"urlError": "URL inválida",
+		"errorSaveTask": "Ocorreu um erro ao salvar a tarefa.",
+		"taskSelectedNotExist": "Esta tarefa não está mais disponível e será removida da área de trabalho",
+		"ExistingUserRequestException": "Usuário já existe",
+		"ExistingGroupRequestException": "Grupo já existe",
+		"VariableModificationException": "A variável não pôde ser alterada com sucesso. Por favor, atualize a página e tente novamente.",
+		"processNotFound": "Processo com chave \"{0}\" não encontrado",
+		"notFoundInstanceId": "A instância de processo com ID \"{instanceId}\" não foi encontrada.\nReferenciado em: {refPath}",
+		"filterSaveError": "Ocorreu um erro ao tentar salvar o filtro, verifique os dados informados.",
+		"passwordDoNotMatch": "As senhas não coincidem",
+		"PasswordPolicyException": "A senha não atende à política de senhas",
+		"InvalidUserIdException": "O ID do usuário contém caracteres inválidos. Apenas caracteres alfanuméricos (a-z, A-Z, 0-9) são permitidos. Por favor, corrija sua entrada.",
+		"invalidEmail": "Por favor, informe um endereço de e-mail válido.",
+		"InvalidValueHistoryTimeToLive": "Valores nulos não são permitidos para o tempo de retenção do histórico.",
+		"DmnTransformationException": "O recurso não pôde ser atualizado. Não foi possível transformar o recurso DMN.",
+		"unknown": "Ocorreu um erro inesperado. Por favor, tente novamente."
+	},
+	"searches": {
+		"filter": "Filtrar...",
+		"refreshAndFilter": "Atualizar e filtrar",
+		"search": "Buscar...",
+		"searchByTaskName": "Buscar por nome da tarefa...",
+		"searchByFilterName": "Buscar por nome do filtro...",
+		"wildcardHelp": "A busca com caractere curinga é suportada.",
+		"wildcardExample": "Use % para representar qualquer número de caracteres (ex.: %processo%)."
+	},
+	"sorting": {
+		"created": "@:task.details.created",
+		"followUpDate": "@:task.reminder",
+		"dueDate": "@:task.details.due",
+		"name": "@:task.details.name",
+		"processDefinitionId": "@:process.key",
+		"assignee": "@:task.details.assignee",
+		"priority": "@:task.priority",
+		"sortBy": "Ordenar por",
+		"asc": "Crescente",
+		"desc": "Decrescente",
+		"select": "Selecione uma propriedade",
+		"deployments": {
+			"name": "Nome",
+			"deploymentTime": "Data"
+		}
+	},
+	"deployment": {
+		"title": "Publicações",
+		"resourcesCaption": "Modelos contidos",
+		"noDeployments": "Nenhuma publicação disponível",
+		"deploymentTime": "Publicado em",
+		"source": "Fonte",
+		"confirmDeleteDeployment": "Deseja realmente excluir as publicações selecionadas?",
+		"deleteRunningInstances": "Interromper instâncias de processo em execução",
+		"noDeploymentSelected": "Selecione uma publicação para visualizá-la",
+		"selectAll": "Selecionar todas",
+		"deleteDeployments": "Excluir publicações",
+		"showModel": "Exibir modelo",
+		"delete": "Excluir publicação",
+		"showDeployment": "Carregar publicação na lista",
+		"deploymentsDeleted": "{0} de {1} publicações foram excluídas com sucesso",
+		"tenant": "Tenant",
+		"errorLoading": "Não foi possível carregar o recurso da publicação selecionada"
+	},
+	"navigation": {
+		"home": "Início",
+		"navigation": "Navegação",
+		"menu": "Menu de navegação",
+		"infoAndHelp": "Informações e ajuda"
+	},
+	"infoAndHelp": {
+		"flowLinkTerms": "Termos de uso",
+		"flowLinkPrivacy": "Declaração de privacidade",
+		"flowLinkImprint": "Impressum",
+		"flowLinkAccessibility": "Declaração de acessibilidade",
+		"flowLinkHelp": "Ajuda",
+		"shortcuts": {
+			"title": "Atalhos",
+			"tooltip": "Ver atalhos disponíveis",
+			"columnShortcut": "Atalho",
+			"columnDescription": "Descrição",
+			"buttonCtrl": "Ctrl",
+			"shortcuts": {
+				"startProcessView": "Ir para a visão \"Iniciar processo\"",
+				"tasksView": "Ir para a visão \"Tarefas\"",
+				"processesView": "Ir para a visão \"Processos\"",
+				"startProcess": "Abrir janela pop-up \"Iniciar processo\"",
+				"claimTask": "Assumir a tarefa atualmente selecionada",
+				"focusFilters": "Focar nos filtros",
+				"focusTasks": "Focar na lista de tarefas filtradas",
+				"focusTask": "Focar na tarefa selecionada"
+			}
+		},
+		"flowModalSupport": {
+			"modalText": "Suporte",
+			"title": "Informações",
+			"supportHotline": "Central de suporte",
+			"openingHours": "Horário de atendimento",
+			"openingHoursInfo": "Segunda a sexta-feira, 08h00 às 19h00",
+			"phone": "Telefone",
+			"phoneNumber": "+49 89 14360 111",
+			"emailAddress": "Endereço de e-mail",
+			"email": "cibsupport{'@'}cib.de",
+			"version": "Versão"
+		},
+		"about": {
+			"title": "Sobre",
+			"tooltip": "Ver versão"
+		}
+	},
+	"multisort": {
+		"title": "Critérios de ordenação",
+		"column": "Coluna",
+		"order": "Ordem",
+		"orderBy": "Ordenar por",
+		"thenBy": "Depois por",
+		"asc": "Crescente",
+		"desc": "Decrescente",
+		"add": "Adicionar critério",
+		"moveUp": "Mover para cima",
+		"moveDown": "Mover para baixo",
+		"remove": "Remover",
+		"cancel": "Cancelar",
+		"apply": "Aplicar"
+	},
+	"password": {
+		"recover": {
+			"sendEmail": "Enviar e-mail de recuperação",
+			"id": "@:admin.users.id",
+			"changePassword": "Alterar senha",
+			"emailSent": "O e-mail com o link para recuperar sua senha foi enviado.",
+			"currentUserPassword": "Senha atual",
+			"newPassword": "Nova senha",
+			"newPasswordRepeat": "Nova senha (repetir)"
+		},
+		"policy": {
+			"title": "Política de senhas",
+			"header": "Sua senha deve atender aos seguintes critérios: ",
+			"items": {
+				"PASSWORD_POLICY_USER_DATA": "não deve conter dados do usuário (ex.: ID de usuário, nome, sobrenome, e-mail)",
+				"PASSWORD_POLICY_LENGTH": "comprimento mínimo de {minLength} caracteres",
+				"PASSWORD_POLICY_LOWERCASE": "pelo menos {minLowerCase} caractere minúsculo",
+				"PASSWORD_POLICY_UPPERCASE": "pelo menos {minUpperCase} caractere maiúsculo",
+				"PASSWORD_POLICY_DIGIT": "pelo menos {minDigit} dígito",
+				"PASSWORD_POLICY_SPECIAL": "pelo menos {minSpecial} caractere especial"
+			}
+		}
+	},
+	"advanced-search": {
+		"title": "Busca avançada",
+		"criteriaKey": "Chave do critério",
+		"selectProperty": "Selecionar propriedade",
+		"property": "Nome da propriedade",
+		"value": "Valor",
+		"add": "Adicionar critério",
+		"apply": "Aplicar",
+		"cancel": "Cancelar",
+		"criteriaKeys": {
+			"processVariables": "Variável de processo"
+		},
+		"table": {
+			"key": "Chave",
+			"value": "Valor"
+		},
+		"operators": {
+			"eq": "=",
+			"neq": "≠",
+			"gt": ">",
+			"gteq": ">=",
+			"lt": "<",
+			"lteq": "<=",
+			"like": "semelhante a",
+			"notLike": "não semelhante a"
+		}
+	},
+	"notification": {
+		"newTasks": "Novas tarefas",
+		"newTasksTitle": "Você recebeu novas tarefas no CIB seven"
+	},
+	"decision": {
+		"id": "ID",
+		"name": "Nome",
+		"tenantId": "ID do tenant",
+		"actions": "Ações",
+		"emptyProcessList": "Sua lista de decisões está vazia.",
+		"emptyProcessListFiltered": "Não há decisão para o filtro aplicado.",
+		"decision": "Decisão",
+		"refreshVersions": "Atualizar versões históricas",
+		"loadVersions": "Carregar todas as versões históricas",
+		"days": "dias",
+		"instances": "Instâncias",
+		"showInstance": "Visualizar instância",
+		"evaluationTime": "Hora de avaliação",
+		"callingProcess": "Processo/Caso chamador",
+		"callingInstanceId": "ID da instância chamadora",
+		"activityId": "ID da atividade",
+		"copySuccess": "Valor selecionado copiado",
+		"details": {
+			"titleProcessActions": "Ações sobre a definição de decisão",
+			"titleInstancesActions": "Ações sobre a decisão",
+			"firstStart": "Primeira avaliação em",
+			"lastStart": "Última avaliação em",
+			"totalInstances": "Total de instâncias",
+			"unfinishedInstances": "Instâncias em execução",
+			"finishedInstances": "Total de instâncias concluídas sem erro",
+			"definitionVersion": "Versão da definição",
+			"versionTag": "Tag de versão",
+			"definitionId": "ID da definição",
+			"definitionKey": "Chave da definição",
+			"definitionName": "Nome da definição",
+			"deploymentId": "ID da publicação",
+			"instancesRunning": "Instâncias em execução",
+			"currentVersion": "Versão atual",
+			"allVersions": "Todas as versões",
+			"versionInstances": "Instâncias desta versão",
+			"historyVersions": "Versões históricas",
+			"variable": "Variáveis da decisão",
+			"copyValue": "Copiar valor",
+			"historyTimeToLive": "Tempo de retenção do histórico"
+		},
+		"showManagement": "@:process.showManagement",
+		"type": "Tipo",
+		"value": "Valor",
+		"inputs": "Entradas",
+		"outputs": "Saídas",
+		"decisionInstanceId": "ID da instância de decisão"
+	},
+	"decision-instance": {
+		"edit": "@:commons.edit",
+		"save": "@:commons.save"
+	},
+	"human-tasks": {
+		"assignmentsByType": "Atribuições por tipo",
+		"assignmentsByGroup": "Atribuições por grupo",
+		"user": "atribuída a um usuário",
+		"group": "atribuída a 1 ou mais grupos",
+		"unassigned": "não atribuída",
+		"total": "Total",
+		"tasks": "Tarefas",
+		"types": "Tipos",
+		"noGroups": "sem grupo",
+		"groupName": "Grupo",
+		"assignmentsByGroupInfo": "Uma tarefa pode ter múltiplos grupos."
+	},
+	"deployed-form": {
+		"selectDate": "Selecionar uma data",
+		"accept": "Aceitar",
+		"fullscreen": "Tela cheia",
+		"showProcess": "Visualizar processo"
+	},
+	"task-variables": {
+		"title": "Variáveis de tarefa para \"{name}\"",
+		"introduction": "Aqui você pode visualizar e editar as variáveis da instância de processo relacionada a esta tarefa. Observe que alterar os valores das variáveis pode ter consequências não intencionais na execução do processo.",
+		"businessKey": "Chave de negócio: {businessKey}",
+		"noVariables": "Nenhuma variável especificada para esta tarefa ainda.",
+		"noVariablesLoaded": "Nenhuma variável adicional adicionada ainda.",
+		"editVariable": {
+			"tooltip": "Editar variável \"{name}\""
+		},
+		"removeVariable": {
+			"tooltip": "Remover variável \"{name}\" da lista"
+		},
+		"addVariable": {
+			"title": "@:process-instance.addVariable",
+			"tooltip": "Adicionar uma nova variável à instância de processo"
+		},
+		"showTaskVariables": {
+			"title": "Adicionar variáveis de tarefa",
+			"tooltip": "Exibir as variáveis definidas para a tarefa. Você pode editar os valores dessas variáveis ou adicionar novas variáveis à instância de processo."
+		},
+		"showExistingVariables": {
+			"title": "Exibir variáveis existentes",
+			"tooltip": "Exibir as variáveis já definidas para esta instância de processo. Você pode editar os valores dessas variáveis ou adicionar novas variáveis à instância de processo."
+		}
+	},
+	"setup": {
+		"title": "Configuração inicial",
+		"description": "Bem-vindo ao CIB seven! Crie uma conta de administrador para começar.",
+		"createAdminUser": "Criar conta de administrador",
+		"createUser": "Criar usuário",
+		"success": "Conta de administrador criada com sucesso! Redirecionando para o login...",
+		"help": {
+			"title": "Por que esta página está sendo exibida?",
+			"description": "Você está tentando acessar o motor de processos \"{0}\". Este motor está configurado para utilizar o serviço de identidade integrado (banco de dados), mas não possui usuários administrativos configurados. Esta página permite criar um usuário inicial para acessar o motor de processos."
+		}
+	}
+}
