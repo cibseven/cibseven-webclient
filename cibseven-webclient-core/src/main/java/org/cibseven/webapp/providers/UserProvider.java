@@ -402,7 +402,8 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		String url = getEngineRestUrl(user) + "/authorization/create";
 
 		try {
-			return doPost(url, authorization.json(), Authorization.class, user);
+			ResponseEntity<Authorization> response = doPost(url, authorization.json(), Authorization.class, user);
+			return new ResponseEntity<>(response.getBody(), response.getStatusCode());
 		} 
 		catch (JsonProcessingException e) {
 			SystemException se = new SystemException(e);
