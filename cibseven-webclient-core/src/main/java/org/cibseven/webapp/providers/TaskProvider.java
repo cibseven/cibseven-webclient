@@ -186,7 +186,7 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 
 	@Override
 	public Collection<Task> findTasksByFilter(TaskFiltering filters, String filterId, CIBUser user, Integer firstResult, Integer maxResults) {
-		String url = getEngineRestUrl(user) + "/filter/" + filterId + "/list?firstResult=" + firstResult + "&maxResults=" + maxResults;
+		String url = getEngineRestUrl(user) + "/task" + "?firstResult=" + firstResult + "&maxResults=" + maxResults;
 		try {
 			List<Task> tasks = new ArrayList<>(Arrays.asList(((ResponseEntity<Task[]>) doPost(url, filters.json(), Task[].class, user)).getBody()));
 			List<String> variableNames = filters.getVariableNames();
