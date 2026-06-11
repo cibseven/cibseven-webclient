@@ -397,6 +397,13 @@ You may obtain a copy of the License at
 				<artifactId>swagger-ui</artifactId>
 				<version>${version.swagger-ui}</version>
 			</dependency>
+
+			<!-- Force a single ANTLR runtime version to satisfy enforcer dependency-convergence -->
+			<dependency>
+				<groupId>org.antlr</groupId>
+				<artifactId>antlr4-runtime</artifactId>
+				<version>4.13.2</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
