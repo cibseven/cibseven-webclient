@@ -37,7 +37,7 @@
 		<!-- ============================================================================
 		     Spring Boot 3 — default flavour (cibseven-webclient-web, -core, direct-provider).
 		     ============================================================================ -->
-		<version.spring.boot>3.5.14</version.spring.boot>
+		<version.spring.boot>3.5.15</version.spring.boot>
 		<version.openapi-starter-webmvc-ui>2.8.13</version.openapi-starter-webmvc-ui>
 
 		<!-- ============================================================================
@@ -46,7 +46,7 @@
 		     cibseven-parent (~/cibseven/cibseven/parent/pom.xml) so these can be consolidated
 		     there later: version.spring-boot4, version.tomcat (11.x) vs version.tomcat10.
 		     ============================================================================ -->
-		<version.spring.boot4>4.0.6</version.spring.boot4>
+		<version.spring.boot4>4.0.7</version.spring.boot4>
 		<version.openapi-starter-webmvc-ui4>3.0.2</version.openapi-starter-webmvc-ui4>
 		<!-- SB4 no longer bundles Jackson 2, but the shared core compiles against
 		     com.fasterxml.jackson.* (Jackson 2); the SB4 module pulls it back in explicitly. -->
