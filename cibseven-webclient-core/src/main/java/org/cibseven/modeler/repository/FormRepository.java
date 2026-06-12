@@ -40,19 +40,16 @@ public interface FormRepository extends JpaRepository<FormEntity, String> {
 
 	@Transactional
 	@Modifying
-	@Query(value = "DELETE FROM MOD_FORMS_AUD fa "
-			+ " WHERE form_schema IS NOT NULL "
-			+ "AND NOT EXISTS ( "
-			+ "    SELECT 1 "
-			+ "    FROM ( "
-			+ "        SELECT id, version, "
-			+ "               ROW_NUMBER() OVER (PARTITION BY id ORDER BY version DESC) AS rn "
-			+ "        FROM MOD_FORMS_AUD "
-			+ "        WHERE version IS NOT NULL"
-			+ "    ) AS ranked "
-			+ "    WHERE ranked.id = fa.id "
-			+ "      AND ranked.version = fa.version "
-			+ "      AND ranked.rn <= :versionLimit )", nativeQuery = true)
+	@Query(value = "DELETE FROM MOD_FORMS_AUD fa " +
+		" WHERE fa.form_schema IS NOT NULL " +
+  		" AND fa.version IS NOT NULL " +
+  		" AND ( " +
+    	" SELECT COUNT(*) " +
+    	" FROM MOD_FORMS_AUD newer " +
+     	" WHERE newer.id = fa.id " +
+      	" AND newer.version IS NOT NULL " +
+       	" AND newer.version > fa.version " +
+  		") >= :versionLimit", nativeQuery = true)
 	void deleteOldRecords(@Param("versionLimit") int versionLimit);
 
 }
