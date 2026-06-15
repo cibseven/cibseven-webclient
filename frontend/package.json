@@ -16,7 +16,8 @@
       "import": "./dist/cibseven-components.es.js",
       "require": "./dist/cibseven-components.umd.js"
     },
-    "./themes/*": "./src/themes/*"
+    "./themes/*": "./src/themes/*",
+    "./dist/cibseven-components.css": "./dist/cibseven-components.css"
   },
   "scripts": {
     "dev": "vite",
