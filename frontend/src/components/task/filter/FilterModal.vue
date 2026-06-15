@@ -162,9 +162,8 @@
 
 <script>
 import { permissionsMixin } from '@/permissions.js'
-import FilterableSelect from '@/components/task/filter/FilterableSelect.vue'
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
-import { FlowTable } from '@cib/common-frontend'
+import { FilterableSelect, FlowTable } from '@cib/common-frontend'
 
 const candidateOptions = ['candidateGroup', 'candidateGroupExpression',
   'candidateGroups', 'candidateGroupsExpression', 'candidateUser', 'candidateUserExpression']
