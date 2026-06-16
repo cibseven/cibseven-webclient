@@ -79,7 +79,7 @@ import { FlowTable, SuccessAlert, CopyableActionButton } from '@cib/common-front
 import { mapMutations, mapGetters } from 'vuex'
 
 export default {
-  name: 'InstancesTable',
+  name: 'DecisionInstancesTable',
   components: { FlowTable, SuccessAlert, CopyableActionButton },
   mixins: [copyToClipboardMixin, permissionsMixin],
   props: {
