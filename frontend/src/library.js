@@ -138,6 +138,7 @@ export { default as DecisionList } from '@/components/decisions/list/DecisionLis
 export { default as DecisionListView } from '@/components/decisions/list/DecisionListView.vue'
 export { default as DecisionInstance } from './components/decision/DecisionInstance.vue'
 export { default as DecisionDefinitionVersion } from '@/components/decision/DecisionDefinitionVersion.vue'
+export { default as DecisionInstancesTable } from '@/components/decision/DecisionInstancesTable.vue'
 export { default as TenantsView } from '@/components/tenants/TenantsView.vue'
 export { default as EditTenant } from './components/tenants/EditTenant.vue'
 export { default as CreateTenant } from './components/tenants/CreateTenant.vue'
