@@ -314,6 +314,7 @@ export default {
           this.$refs.filterHandler.hide()
           this.$emit('set-filter', filter.id)
           this.$emit('select-filter', filter)
+          this.$emit('new-filter-tasks-count')
           this.$store.state.filter.selected = filter
           this.selectedFilterId = filter.id
           localStorage.setItem('filter', JSON.stringify(this.$store.state.filter.selected))
