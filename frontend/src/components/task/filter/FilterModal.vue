@@ -178,7 +178,8 @@ export default {
     'filter-alert',
     'set-filter',
     'filter-updated',
-    'select-filter'
+    'select-filter',
+    'new-filter-tasks-count'
   ],
   data: function () {
     return {
