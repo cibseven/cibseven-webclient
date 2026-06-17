@@ -255,7 +255,7 @@ export default {
     },
     updateSelectedFilterTasksCountIfNeeded(newFilter) {
       const f = this.$store.state.filter.selected
-      if (f && f.id && ((!this.$root.config.taskFilter.tasksNumber.enabled && this.$root.config.taskFilter.selectedFilterTasksNumber.enabled) || newFilter === true)) {
+      if (f && f.id && ((!this.$root.config.taskFilter.tasksNumber.enabled && this.$root.config.taskFilter.selectedFilterTasksNumber.enabled) || (this.$root.config.taskFilter.tasksNumber.enabled && newFilter === true))) {
         this.updateFilterTasksCount({ filterId: f.id, filters: {} })
       }
     },
