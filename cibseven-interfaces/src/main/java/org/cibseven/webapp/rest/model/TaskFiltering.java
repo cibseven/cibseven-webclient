@@ -34,6 +34,7 @@ public class TaskFiltering {
 	List<TaskSorting> sorting;
 	List<ProcessVariablesCriteria> processVariables;
 	List<TaskFilterQuery> orQueries;
+	Boolean active;
 	Boolean likePatternIgnoreCase;
 	Boolean variableValuesIgnoreCase;
 	List<String> variableNames;
