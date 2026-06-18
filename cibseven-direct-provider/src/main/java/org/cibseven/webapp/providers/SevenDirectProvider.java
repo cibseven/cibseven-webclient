@@ -26,51 +26,61 @@ public class SevenDirectProvider implements BpmProvider {
     //decides about ldap/adfs
 	@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") String sevenUserProvider;
 	@Value("${cibseven.webclient.users.search.wildcard:}") String wildcard;
+	
 	// base project providers
-	private DirectTaskProvider taskProvider = null;
-	private DirectProcessProvider processProvider = null;
-	private DirectFilterProvider filterProvider = null;
-	private DirectDeploymentProvider deploymentProvider = null;
-	private DirectVariableProvider variableProvider = null;
-	private DirectActivityProvider activityProvider = null;
-	private DirectIncidentProvider incidentProvider = null;
-	private DirectUserProvider userProvider;
-	private DirectVariableInstanceProvider variableInstanceProvider = null;
-	private DirectUtilsProvider utilsProvider = null;
-	private DirectHistoricVariableInstanceProvider historicVariableInstanceProvider = null;
-	private DirectExternalTaskProvider externalTaskProvider = null;
-	private DirectDecisionProvider decisionProvider = null;
-	private DirectJobProvider jobProvider = null;
-	private DirectJobDefinitionProvider jobDefinitionProvider = null;
-	private DirectEngineProvider engineProvider = null;
-	private DirectBatchProvider batchProvider = null;
-	private DirectTenantProvider tenantProvider = null;
-	private DirectSystemProvider systemProvider = null;
-	private DirectIdentityProvider identityProvider = null;
+	private ITaskProvider taskProvider = null;
+	private IProcessProvider processProvider = null;
+	private IFilterProvider filterProvider = null;
+	private IDeploymentProvider deploymentProvider = null;
+	private IVariableProvider variableProvider = null;
+	private IActivityProvider activityProvider = null;
+	private IIncidentProvider incidentProvider = null;
+	private IUserProvider userProvider;
+	private IVariableInstanceProvider variableInstanceProvider = null;
+	private IUtilsProvider utilsProvider = null;
+	private IHistoricVariableInstanceProvider historicVariableInstanceProvider = null;
+	private IExternalTaskProvider externalTaskProvider = null;
+	private IDecisionProvider decisionProvider = null;
+	private IJobProvider jobProvider = null;
+	private IJobDefinitionProvider jobDefinitionProvider = null;
+	private IEngineProvider engineProvider = null;
+	private IBatchProvider batchProvider = null;
+	private ITenantProvider tenantProvider = null;
+	private ISystemProvider systemProvider = null;
+	private IIdentityProvider identityProvider = null;
 
 	DirectProviderUtil directProviderUtil = null;
 
+	/**
+	 * Wraps a Direct*Provider so the engine enforces its authorizations for every call carrying a CIBUser.
+	 * @see AuthorizingProviderProxy
+	 */
+	protected <T> T authorizing(T provider, Class<T> iface) {
+		return AuthorizingProviderProxy.wrap(provider, iface, directProviderUtil);
+	}
+
 	@PostConstruct
   	public void init() {
-  		directProviderUtil = new DirectProviderUtil(); 
-		deploymentProvider = new DirectDeploymentProvider(getDirectProviderUtil());
-		variableProvider = new DirectVariableProvider(getDirectProviderUtil());
-		variableInstanceProvider = new DirectVariableInstanceProvider(getDirectProviderUtil());
-		historicVariableInstanceProvider = new DirectHistoricVariableInstanceProvider(getDirectProviderUtil());
-		taskProvider = new DirectTaskProvider(getDirectProviderUtil());
-		processProvider = new DirectProcessProvider(getDirectProviderUtil(), this);
-		activityProvider = new DirectActivityProvider(getDirectProviderUtil());
-		filterProvider = new DirectFilterProvider(getDirectProviderUtil());
-		utilsProvider = new DirectUtilsProvider(getDirectProviderUtil());
-		incidentProvider = new DirectIncidentProvider(getDirectProviderUtil());
-		jobDefinitionProvider = new DirectJobDefinitionProvider(getDirectProviderUtil());
-		userProvider = new DirectUserProvider(getDirectProviderUtil(), sevenUserProvider, wildcard);
-		decisionProvider = new DirectDecisionProvider(getDirectProviderUtil());
-		jobProvider = new DirectJobProvider(getDirectProviderUtil());
-		batchProvider = new DirectBatchProvider(getDirectProviderUtil());
-		systemProvider = new DirectSystemProvider(getDirectProviderUtil());
-		tenantProvider = new DirectTenantProvider(getDirectProviderUtil());
-		externalTaskProvider = new DirectExternalTaskProvider(getDirectProviderUtil());
-		engineProvider = new DirectEngineProvider(getDirectProviderUtil());
-  	}	
+  		directProviderUtil = new DirectProviderUtil();
+		deploymentProvider = authorizing(new DirectDeploymentProvider(getDirectProviderUtil()), IDeploymentProvider.class);
+		variableProvider = authorizing(new DirectVariableProvider(getDirectProviderUtil()), IVariableProvider.class);
+		variableInstanceProvider = authorizing(new DirectVariableInstanceProvider(getDirectProviderUtil()), IVariableInstanceProvider.class);
+		historicVariableInstanceProvider = authorizing(new DirectHistoricVariableInstanceProvider(getDirectProviderUtil()), IHistoricVariableInstanceProvider.class);
+		taskProvider = authorizing(new DirectTaskProvider(getDirectProviderUtil()), ITaskProvider.class);
+		processProvider = authorizing(new DirectProcessProvider(getDirectProviderUtil(), this), IProcessProvider.class);
+		activityProvider = authorizing(new DirectActivityProvider(getDirectProviderUtil()), IActivityProvider.class);
+		filterProvider = authorizing(new DirectFilterProvider(getDirectProviderUtil()), IFilterProvider.class);
+		utilsProvider = authorizing(new DirectUtilsProvider(getDirectProviderUtil()), IUtilsProvider.class);
+		incidentProvider = authorizing(new DirectIncidentProvider(getDirectProviderUtil()), IIncidentProvider.class);
+		jobDefinitionProvider = authorizing(new DirectJobDefinitionProvider(getDirectProviderUtil()), IJobDefinitionProvider.class);
+		userProvider = authorizing(new DirectUserProvider(getDirectProviderUtil(), sevenUserProvider, wildcard), IUserProvider.class);
+		decisionProvider = authorizing(new DirectDecisionProvider(getDirectProviderUtil()), IDecisionProvider.class);
+		jobProvider = authorizing(new DirectJobProvider(getDirectProviderUtil()), IJobProvider.class);
+		batchProvider = authorizing(new DirectBatchProvider(getDirectProviderUtil()), IBatchProvider.class);
+		systemProvider = authorizing(new DirectSystemProvider(getDirectProviderUtil()), ISystemProvider.class);
+		tenantProvider = authorizing(new DirectTenantProvider(getDirectProviderUtil()), ITenantProvider.class);
+		externalTaskProvider = authorizing(new DirectExternalTaskProvider(getDirectProviderUtil()), IExternalTaskProvider.class);
+		engineProvider = authorizing(new DirectEngineProvider(getDirectProviderUtil()), IEngineProvider.class);
+		identityProvider = authorizing(new DirectIdentityProvider(getDirectProviderUtil()), IIdentityProvider.class);
+  	}
 }

@@ -48,9 +48,6 @@ import org.cibseven.bpm.engine.form.CamundaFormRef;
 import org.cibseven.bpm.engine.form.FormData;
 import org.cibseven.bpm.engine.history.HistoricTaskInstance;
 import org.cibseven.bpm.engine.history.HistoricTaskInstanceQuery;
-import org.cibseven.bpm.engine.identity.Group;
-import org.cibseven.bpm.engine.identity.GroupQuery;
-import org.cibseven.bpm.engine.impl.identity.Authentication;
 import org.cibseven.bpm.engine.impl.util.IoUtil;
 import org.cibseven.bpm.engine.query.Query;
 import org.cibseven.bpm.engine.rest.dto.AbstractQueryDto;
@@ -300,17 +297,6 @@ public class DirectTaskProvider implements ITaskProvider {
 
 	@Override
 	public Integer findTasksCountByFilter(String filterId, CIBUser user, TaskFiltering filters) {
-		// authentication is required to access the current user while executing the
-		// query
-		GroupQuery groupQuery = directProviderUtil.getProcessEngine(user).getIdentityService().createGroupQuery();
-		List<Group> userGroups = groupQuery.groupMember(user.getId()).orderByGroupName().asc().unlimitedList();
-		List<String> groupNames = new ArrayList<>();
-		for (Group userGroup : userGroups)
-			groupNames.add(userGroup.getId());
-
-		Authentication authentication = new Authentication(user.getId(), groupNames);
-		directProviderUtil.getProcessEngine(user).getIdentityService().setAuthentication(authentication);
-
 		String extendingQueryString;
 		try {
 			extendingQueryString = filters.json();
@@ -517,25 +503,13 @@ public class DirectTaskProvider implements ITaskProvider {
 
 	private List<?> executeFilterList(TaskFiltering filters, String filterId, CIBUser user, Integer firstResult,
 			Integer maxResults) {
-		// authentication is required to access the current user while executing the
-		// query
-		GroupQuery groupQuery = directProviderUtil.getProcessEngine(user).getIdentityService().createGroupQuery();
-		List<Group> userGroups = groupQuery.groupMember(user.getId()).orderByGroupName().asc().unlimitedList();
-		List<String> groupNames = new ArrayList<>();
-		for (Group userGroup : userGroups)
-			groupNames.add(userGroup.getId());
-
-		Authentication authentication = new Authentication(user.getId(), groupNames);
-		directProviderUtil.getProcessEngine(user).getIdentityService().setAuthentication(authentication);
-
 		String extendingQuery;
 		try {
 			extendingQuery = filters.json();
 		} catch (JsonProcessingException e) {
 			throw new SystemException("Failed json conversion", e);
 		}
-		List<?> entities = executeFilterList(extendingQuery, filterId, firstResult, maxResults, user);
-		return entities;
+		return executeFilterList(extendingQuery, filterId, firstResult, maxResults, user);
 	}
 
 	private List<?> executeFilterList(String extendingQueryString, String filterId, Integer firstResult, Integer maxResults, CIBUser user) {
