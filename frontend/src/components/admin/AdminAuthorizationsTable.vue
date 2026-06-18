@@ -351,7 +351,7 @@ export default {
         this.authorizations.unshift({
           id: "0",
           type: "1",
-          permissions: ["ALL"],
+          permissions: ["READ", "UPDATE", "DELETE", "CREATE"],
           userId: null,
           groupId: null,
           resourceType: this.$route.params.resourceTypeId,
