@@ -70,9 +70,25 @@ application:
         userClass: ""
         user: ""
         password: ""
-
-      # Keycloak / ADFS (see src/main/resources for more info)
-      #sso: {}
+      
+      # Single Sign-On
+      #sso:
+      #  active: true
+      #  endpoints:
+      #    authorization: <authUri>
+      #    token: <tokenUri>
+      #    jwks: <certsUri>
+      #    user: <usersUri>
+      #    introspection:
+      #  clientId: <clientId>
+      #  clientSecret: <clientSecret>
+      #  scopes: openid email profile
+      #  userIdProperty:
+      #  userNameProperty:
+      #  accessTokenToEngineRest:
+      #  assertion:
+      #    type:
+      #    locationKey:
 
       # Token generation
       authentication:
