@@ -62,6 +62,25 @@ cibseven:
       jwtSecret:
       tokenValidMinutes: 60
       tokenProlongMinutes: 1440
+    # Single Sign-On
+    #sso:
+    #  active: true
+    #  endpoints:
+    #    authorization: <authUri>
+    #    token: <tokenUri>
+    #    jwks: <certsUri>
+    #    user: <usersUri>
+    #    introspection:
+    #  clientId: <clientId>
+    #  clientSecret: <clientSecret>
+    #  scopes: openid email profile
+    #  userIdProperty:
+    #  userNameProperty:
+    #  accessTokenToEngineRest:
+    #  assertion:
+    #    type:
+    #    locationKey:
+
     # LDAP
     ldap:
       url: ldap://ldap.cibseven.org
