@@ -527,6 +527,18 @@ public class ModelerService extends BaseService {
 		}
 		return ResponseEntity.ok(entity);
 	}
+
+	@RequestMapping(value = "/process/find-by-key", method = RequestMethod.GET)
+	public ResponseEntity<ProcessDiagramEntity> findByKeyEntity(@RequestParam String key, HttpServletRequest rq) {
+		if (authenticationEnabled) {
+			checkAuthorization(rq, true);
+		}
+		ProcessDiagramEntity entity = dbProcessDiagramProvider.findByProcessKey(key);
+		if (entity == null) {
+			return ResponseEntity.notFound().build();
+		}
+		return ResponseEntity.ok(entity);
+	}
 	
 	@RequestMapping(value = "/process/delete/{id}", method = RequestMethod.DELETE)
 	public void delete(@PathVariable String id, HttpServletRequest rq) {
@@ -615,6 +627,18 @@ public class ModelerService extends BaseService {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		return ResponseEntity.ok().headers(headers).body(file);
+	}
+
+	@RequestMapping(value = "/form/find-by-formid", method = RequestMethod.GET)
+	public ResponseEntity<FormEntity> findByFormId(@RequestParam String formId, HttpServletRequest rq) {
+		if (authenticationEnabled) {
+			checkAuthorization(rq, true);
+		}
+		FormEntity form = formProvider.findByFormId(formId);
+		if (form == null) {
+			return ResponseEntity.notFound().build();
+		}
+		return ResponseEntity.ok(form);
 	}
 
 	private static String userIdFrom(CIBUser user) {

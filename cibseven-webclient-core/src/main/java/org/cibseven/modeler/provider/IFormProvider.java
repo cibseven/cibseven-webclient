@@ -36,10 +36,17 @@ public interface IFormProvider {
 	
 	/**
 	 * Find form by id
-	 * 
+	 *
 	 * @param id
 	 */
 	Optional<FormEntity> findById(String id) throws SystemException;
+
+	/**
+	 * Find a form by its (unique) formId. Returns null when none exists.
+	 *
+	 * @param formId
+	 */
+	FormEntity findByFormId(String formId) throws SystemException;
     
     /**
 	 * Create a new form.
