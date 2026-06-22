@@ -63,7 +63,6 @@ export default {
   name: "StartView",
   components: { ErrorDialog, StartViewItem },
   mixins: [permissionsMixin, navigationPermissionsMixin],
-  inject: ['loadProcesses'],
   data: function() {
     return {
       showAdminOptions: false,
@@ -135,10 +134,6 @@ export default {
     },
   },
   methods: {
-    startProcess: function () {
-      this.$refs.startProcess.show()
-      this.loadProcesses(false)
-    },
     updateItems() {
       if (this.$refs.startContainer) {
         this.items = Array.from(this.$refs.startContainer.children)
