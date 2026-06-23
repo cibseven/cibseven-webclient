@@ -246,7 +246,6 @@ public class HistoryProcessService extends BaseService {
                     @Parameter(description = "Id of the process definition") @PathVariable String id,
                     @Parameter(description = "Parameters to filter query") @RequestBody Map<String, Object> filters,
                     CIBUser user) {
-            checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.READ_ALL);
             return bpmProvider.findHistoricActivityStatistics(id, filters, user);
     }
 	

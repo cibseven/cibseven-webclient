@@ -597,10 +597,10 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	}
 	
 	@Override
-	public Object fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user) {
+	public Collection<HistoryStatistics> fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user) {
 	    String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/history/process-definition/" + id + "/statistics", params);
-	    ResponseEntity<Object> response = doGet(url, Object.class, user, true);
-	    return response.getBody();
+	    ResponseEntity<HistoryStatistics[]> response = doGet(url, HistoryStatistics[].class, user, true);
+	    return Arrays.asList(response.getBody());
 	}
 
     @Override

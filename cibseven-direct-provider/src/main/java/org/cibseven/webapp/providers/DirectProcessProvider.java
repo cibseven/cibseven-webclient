@@ -814,7 +814,11 @@ public class DirectProcessProvider implements IProcessProvider {
 	}
 
 	@Override
-	public Collection<HistoryStatistics> findHistoricActivityStatistics(String id, Map<String, Object> filters, CIBUser user) {
+	public Collection<HistoryStatistics> findHistoricActivityStatistics(String id, Map<String, Object> filters, CIBUser user)
+			throws SystemException {
+		if (id == null || id.isEmpty()) {
+        	throw new SystemException("processDefinitionId is required");
+		}
 		HistoricActivityStatisticsPostQueryDto queryDto = directProviderUtil.getObjectMapper(user)
 				.convertValue(filters, HistoricActivityStatisticsPostQueryDto.class);
 		queryDto.setProcessDefinitionId(id);
