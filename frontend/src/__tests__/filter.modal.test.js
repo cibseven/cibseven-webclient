@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 import { mount } from '@vue/test-utils'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { i18n } from '@/i18n'
 import FilterModal from '@/components/task/filter/FilterModal.vue'
 import { readFileSync } from 'node:fs'
@@ -138,4 +138,17 @@ describe('FilterModal', () => {
       expect(wrapper.vm.unfixLike(key, wrapper.vm.fixLike(key, '%val%'))).toBe('val')
     })
   })
+  it('emits new-filter-tasks-count after successfully creating a filter', async () => {
+  const dispatch = vi.fn().mockResolvedValue({
+    id: 'new-filter-id',
+    properties: {}
+  })
+
+  const wrapper = getWrapper()
+  wrapper.vm.$store.dispatch = dispatch
+  wrapper.vm.mode = 'create'
+  wrapper.vm.$refs.filterHandler.hide = vi.fn()
+  await wrapper.vm.createFilter()
+  expect(wrapper.emitted('new-filter-tasks-count')).toHaveLength(1)
+})
 })

@@ -228,7 +228,7 @@ export default {
       this.fetchTasks(0, this.taskResultsIndex)
     },
     refreshTasksNumber: function() {
-      this.$refs.filterNavbar.updateSelectedFilterTasksCountIfNeeded()
+      this.$refs.filterNavbar.updateSelectedFilterTasksCountIfNeeded(false)
     },
     listTasksWithFilterAuto: function(showMore) {
       if (this.$route.params.filterId) {

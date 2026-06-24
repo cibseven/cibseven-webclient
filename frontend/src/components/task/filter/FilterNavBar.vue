@@ -20,7 +20,7 @@
   <div v-show="showFilters" class="overflow-auto h-100">
     <div class="h-100 d-flex flex-column">
 
-      <FilterModal ref="filterModal" @select-filter="selectFilter($event)" @filter-alert="$emit('filter-alert', $event)" @set-filter="$emit('set-filter', $event)"></FilterModal>
+      <FilterModal ref="filterModal" @select-filter="selectFilter($event)" @filter-alert="$emit('filter-alert', $event)" @set-filter="$emit('set-filter', $event)" @new-filter-tasks-count="updateSelectedFilterTasksCountIfNeeded(true)"></FilterModal>
 
       <div v-if="$root.config.filtersSearch" class="p-2" style="background-color: rgb(98, 142, 199, 0.3)">
         <b-input-group>
@@ -250,12 +250,12 @@ export default {
           this.isSelectingFilter = true
           this.$router.replace(path)
         }
-        this.updateSelectedFilterTasksCountIfNeeded()
+        this.updateSelectedFilterTasksCountIfNeeded(false)
       }
     },
-    updateSelectedFilterTasksCountIfNeeded() {
+    updateSelectedFilterTasksCountIfNeeded(newFilter) {
       const f = this.$store.state.filter.selected
-      if (f && f.id && !this.$root.config.taskFilter.tasksNumber.enabled && this.$root.config.taskFilter.selectedFilterTasksNumber.enabled) {
+      if (f && f.id && ((!this.$root.config.taskFilter.tasksNumber.enabled && this.$root.config.taskFilter.selectedFilterTasksNumber.enabled) || (this.$root.config.taskFilter.tasksNumber.enabled && newFilter === true))) {
         this.updateFilterTasksCount({ filterId: f.id, filters: {} })
       }
     },
