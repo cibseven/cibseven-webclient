@@ -22,27 +22,7 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-			<!--
-				Apache Tomcat 11.x line for Spring Boot 4. The SB4 BOM pins 11.0.21, which is
-				affected by the same CVEs as 10.1.54 (fixed in 11.0.22). These entries override the
-				parent's SB3 tomcat-embed management (10.1.55) for this module — see CVE-2026-41293,
-				-43512, -43515, -41284, -43513, -42498, -43514.
-			-->
-			<dependency>
-				<groupId>org.apache.tomcat.embed</groupId>
-				<artifactId>tomcat-embed-core</artifactId>
-				<version>${version.tomcat}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.tomcat.embed</groupId>
-				<artifactId>tomcat-embed-el</artifactId>
-				<version>${version.tomcat}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.tomcat.embed</groupId>
-				<artifactId>tomcat-embed-websocket</artifactId>
-				<version>${version.tomcat}</version>
-			</dependency>
+			
 			<!--
 				Force convergence between the version brought by common-auth
 				(2.2.36) and the one brought by springdoc 3.0.2 (2.2.43).
