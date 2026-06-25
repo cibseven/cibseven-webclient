@@ -337,7 +337,7 @@ You may obtain a copy of the License at
 			<dependency>
 				<groupId>com.fasterxml.jackson</groupId>
 				<artifactId>jackson-bom</artifactId>
-				<version>2.22.0</version>
+				<version>${version.jackson2}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
