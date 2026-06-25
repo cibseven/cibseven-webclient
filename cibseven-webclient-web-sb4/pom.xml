@@ -15,26 +15,27 @@
 
 	<dependencyManagement>
 		<dependencies>
-			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-dependencies</artifactId>
-				<version>${version.spring.boot4}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-
 			<!--
-				Spring Boot 4 ships with Jackson 3 (tools.jackson via jackson-bom 3.x) and does not
-				manage any com.fasterxml.jackson.* (Jackson 2) dependencies.
-				This project explicitly uses Jackson 2, and springdoc/swagger brings in Jackson 2
-				modules transitively at older versions.
-				Import the Jackson 2 BOM so every com.fasterxml.jackson.* artifact 
-				(incl. swagger's transitive jackson-datatype-jsr310) converges on ${version.jackson2}.
+				Spring Boot 4's BOM (4.0.x) still manages the Jackson 2 (com.fasterxml.jackson.*)
+				artifacts that springdoc/swagger and the shared core pull in transitively, and pins
+				them at 2.21.4 (vulnerable to CVE-2026-24400). The root pom's jackson-bom 2.22.0
+				import does NOT reach this module: importing spring-boot-dependencies here in the
+				module's own dependencyManagement overrides the inherited management.
+				So we import jackson-bom 2.22.0 locally, and it MUST be declared BEFORE
+				spring-boot-dependencies — the one declared first wins.
 			-->
 			<dependency>
 				<groupId>com.fasterxml.jackson</groupId>
 				<artifactId>jackson-bom</artifactId>
 				<version>${version.jackson2}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-dependencies</artifactId>
+				<version>${version.spring.boot4}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
