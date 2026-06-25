@@ -50,7 +50,7 @@
 		<version.openapi-starter-webmvc-ui4>3.0.2</version.openapi-starter-webmvc-ui4>
 		<!-- SB4 no longer bundles Jackson 2, but the shared core compiles against
 		     com.fasterxml.jackson.* (Jackson 2); the SB4 module pulls it back in explicitly. -->
-		<version.jackson2>2.21.5</version.jackson2>
+		<version.jackson2>2.22.0</version.jackson2>
 
 		<!-- ============================================================================
 		     CVE overrides. This project imports spring-boot-dependencies as a BOM (not as the
@@ -332,6 +332,15 @@ You may obtain a copy of the License at
 
 	<dependencyManagement>
 		<dependencies>
+
+			<!-- temporary override fasterxml version 2.21.x, referenced from springboot 3.5.15, to version 2.22.0 to fix CVE-2026-24400 -->
+			<dependency>
+				<groupId>com.fasterxml.jackson</groupId>
+				<artifactId>jackson-bom</artifactId>
+				<version>2.22.0</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
 		
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
