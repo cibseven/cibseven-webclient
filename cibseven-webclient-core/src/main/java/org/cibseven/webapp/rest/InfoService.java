@@ -124,10 +124,9 @@ public class InfoService extends BaseService {
 		// when newer middleware is connected to old engine-rest,
 		// the engine configuration endpoint might not be available (404).
 		// In this case we will get properties from old configuration properties (history level, authorization enabled) and use them to create a default engine configuration object
-		final boolean isDefaultOrExternalEngine = IEngineProvider.isDefaultEngine(engine) || IEngineProvider.isExternalEngine(engine);
 		EngineConfiguration engineConfig =
-			isDefaultOrExternalEngine
-				? bpmProvider.getDefaultEngineConfiguration()
+			IEngineProvider.isEngineUnspecified(engine)
+				? bpmProvider.getEffectiveDefaultEngineConfiguration()
 				: bpmProvider.getEngineConfiguration(engine);
 		if (engineConfig == null) {
 			// when newer middleware is connected to old engine-rest,

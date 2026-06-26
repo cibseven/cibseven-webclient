@@ -33,9 +33,15 @@ import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.springframework.lang.Nullable;
 
+import lombok.Getter;
+import lombok.Setter;
+
 public class DirectEngineProvider implements IEngineProvider {
 
 	DirectProviderUtil directProviderUtil;
+
+	@Getter @Setter
+	private String effectiveDefaultEngineName = null;
 
 	DirectEngineProvider(DirectProviderUtil directProviderUtil){
 		this.directProviderUtil = directProviderUtil;
@@ -54,14 +60,10 @@ public class DirectEngineProvider implements IEngineProvider {
 
 	@Override
 	@Nullable
-	public EngineConfiguration getDefaultEngineConfiguration() {
-		return getEngineConfiguration(IEngineProvider.DEFAULT_ENGINE_NAME);
-	}
-
-	@Override
-	@Nullable
 	public EngineConfiguration getEngineConfiguration(String engine) {
-		org.cibseven.bpm.engine.ProcessEngine processEngine = directProviderUtil.getProcessEngine(engine);
+		// An unspecified engine resolves to the engine named "default", matching the HTTP provider.
+		String engineName = IEngineProvider.isEngineUnspecified(engine) ? IEngineProvider.ENGINE_NAME_DEFAULT : engine;
+		org.cibseven.bpm.engine.ProcessEngine processEngine = directProviderUtil.getProcessEngine(engineName);
 		if (processEngine == null) {
 			return null;
 		}
