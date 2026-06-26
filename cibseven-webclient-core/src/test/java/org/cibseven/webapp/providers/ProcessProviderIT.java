@@ -223,9 +223,9 @@ public class ProcessProviderIT extends BaseHelper {
 
         HistoryStatistics firstStatistic = statistics.iterator().next();
         assertThat(firstStatistic.getId()).isEqualTo("activity-1");
-        assertThat(firstStatistic.getInstances()).isEqualTo("4");
-        assertThat(firstStatistic.getCanceled()).isEqualTo("1");
-        assertThat(firstStatistic.getFinished()).isEqualTo("3");
+        assertThat(firstStatistic.getInstances()).isEqualTo(4);
+        assertThat(firstStatistic.getCanceled()).isEqualTo(1);
+        assertThat(firstStatistic.getFinished()).isEqualTo(3);
 
         RecordedRequest request = mockWebServer.takeRequest();
         assertThat(request.getMethod()).isEqualTo("POST");
