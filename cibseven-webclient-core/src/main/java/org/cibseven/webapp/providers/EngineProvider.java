@@ -36,6 +36,8 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -44,6 +46,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 
 	private static final String ENGINE_SUB_PATH = "/engine";
 
+	@Getter @Setter
 	private String effectiveDefaultEngineName = null;
 
 	@Autowired(required = false)
@@ -171,25 +174,6 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 				engine.setTooltip(baseTooltip + " (" + engine.getName() + ")");
 			}
 		}
-	}
-
-	@Override
-	@Nullable
-	public EngineConfiguration getEffectiveDefaultEngineConfiguration() {
-		if (effectiveDefaultEngineName == null) {
-			Collection<Engine> engineNames = getProcessEngineNames();
-			for (Engine engine : engineNames) {
-				if (IEngineProvider.isNamedDefaultEngine(engine.getName())) {
-					effectiveDefaultEngineName = engine.getName();
-					break;
-				}
-			}
-			if (effectiveDefaultEngineName == null && !engineNames.isEmpty()) {
-				// If no engine is explicitly named "default", pick the first one as the effective default
-				effectiveDefaultEngineName = engineNames.iterator().next().getId();
-			}
-		}
-		return getEngineConfiguration(effectiveDefaultEngineName);
 	}
 
 	@Override

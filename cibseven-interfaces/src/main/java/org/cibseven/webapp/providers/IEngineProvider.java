@@ -29,6 +29,8 @@ public interface IEngineProvider {
 	/** The literal name of the engine called "default" in the engine-rest API. */
 	public static final String ENGINE_NAME_DEFAULT = "default";
 
+	public String effectiveDefaultEngineName = null;
+
 	/**
 	 * Whether no engine was specified (null or empty).
 	 */
@@ -50,11 +52,30 @@ public interface IEngineProvider {
 	}
 
 	public Collection<Engine> getProcessEngineNames();
+
 	/**
 	 * Returns the configuration of the <em>effective default</em> engine, i.e. the engine the webclient
 	 * uses when none is specified: the engine named "default" if present, otherwise the first available engine.
 	 */
-	@Nullable public EngineConfiguration getEffectiveDefaultEngineConfiguration();
+	public default EngineConfiguration getEffectiveDefaultEngineConfiguration() {
+		if (getEffectiveDefaultEngineName() == null) {
+			Collection<Engine> engineNames = getProcessEngineNames();
+			for (Engine engine : engineNames) {
+				if (IEngineProvider.isNamedDefaultEngine(engine.getName())) {
+					setEffectiveDefaultEngineName(engine.getId());
+					break;
+				}
+			}
+			if (getEffectiveDefaultEngineName() == null && !engineNames.isEmpty()) {
+				// If no engine is explicitly named "default", pick the first one as the effective default
+				setEffectiveDefaultEngineName(engineNames.iterator().next().getId());
+			}
+		}
+		return getEffectiveDefaultEngineName() == null ? null : getEngineConfiguration(getEffectiveDefaultEngineName());
+	}
+
+	void setEffectiveDefaultEngineName(String engineName);
+	String getEffectiveDefaultEngineName();
 	@Nullable public EngineConfiguration getEngineConfiguration(String engineName);
 	public Boolean requiresSetup(String engine);
 	public void createSetupUser(NewUser user, String engine) throws InvalidUserIdException;

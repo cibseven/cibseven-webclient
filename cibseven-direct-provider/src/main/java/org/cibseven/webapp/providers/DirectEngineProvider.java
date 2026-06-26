@@ -33,9 +33,15 @@ import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.springframework.lang.Nullable;
 
+import lombok.Getter;
+import lombok.Setter;
+
 public class DirectEngineProvider implements IEngineProvider {
 
 	DirectProviderUtil directProviderUtil;
+
+	@Getter @Setter
+	private String effectiveDefaultEngineName = null;
 
 	DirectEngineProvider(DirectProviderUtil directProviderUtil){
 		this.directProviderUtil = directProviderUtil;
@@ -50,24 +56,6 @@ public class DirectEngineProvider implements IEngineProvider {
 		}
 
 		return results;
-	}
-
-	@Override
-	@Nullable
-	public EngineConfiguration getEffectiveDefaultEngineConfiguration() {
-		// The effective default is the engine named "default" if present, otherwise the first available engine.
-		Collection<Engine> engines = getProcessEngineNames();
-		String effectiveDefaultEngineName = null;
-		for (Engine engine : engines) {
-			if (IEngineProvider.isNamedDefaultEngine(engine.getName())) {
-				effectiveDefaultEngineName = engine.getName();
-				break;
-			}
-		}
-		if (effectiveDefaultEngineName == null && !engines.isEmpty()) {
-			effectiveDefaultEngineName = engines.iterator().next().getName();
-		}
-		return effectiveDefaultEngineName == null ? null : getEngineConfiguration(effectiveDefaultEngineName);
 	}
 
 	@Override
