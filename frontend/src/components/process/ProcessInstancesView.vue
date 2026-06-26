@@ -242,7 +242,6 @@ export default {
   },
   mounted: function() {
     this.clearHistoricActivityStatistics()
-    const params = { canceled: true, completedScoped: true, finished: true, incidents: true }
     this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
     ProcessService.fetchDiagram(this.process.id).then(response => {
       setTimeout(() => {
