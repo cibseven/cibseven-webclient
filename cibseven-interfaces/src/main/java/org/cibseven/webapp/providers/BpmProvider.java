@@ -49,6 +49,7 @@ import org.cibseven.webapp.rest.model.ExternalTask;
 import org.cibseven.webapp.rest.model.Filter;
 import org.cibseven.webapp.rest.model.HistoricDecisionInstance;
 import org.cibseven.webapp.rest.model.HistoryBatch;
+import org.cibseven.webapp.rest.model.HistoryStatistics;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.JobDefinition;
@@ -1699,8 +1700,12 @@ public interface BpmProvider {
 	 * @return a list or map containing the historic activity statistics
 	 * @throws SystemException in case of an error
 	 */
-	default Object fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user) throws SystemException {
+	default Collection<HistoryStatistics> fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user) throws SystemException {
 		return getProcessProvider().fetchHistoricActivityStatistics(id, params, user);
+	}
+
+	default Collection<HistoryStatistics> findHistoricActivityStatistics(String id, Map<String, Object> filters, CIBUser user) throws SystemException {
+		return getProcessProvider().findHistoricActivityStatistics(id, filters, user);
 	}
 
 	/**

@@ -29,6 +29,7 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.ExpressionEvaluationException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnsupportedTypeException;
+import org.cibseven.webapp.rest.model.HistoryStatistics;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.cibseven.webapp.rest.model.ProcessInstance;
@@ -83,7 +84,8 @@ public interface IProcessProvider {
 	public void deleteProcessDefinition(String id, Optional<Boolean> cascade, CIBUser user);
 	public Long countProcessesInstancesHistory(Map<String, Object> filters, CIBUser user);
 	public Long countProcessesInstancesRuntime(Map<String, Object> filters, CIBUser user);
-	public Object fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user);
+	public Collection<HistoryStatistics> fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user);
+	public Collection<HistoryStatistics> findHistoricActivityStatistics(String id, Map<String, Object> filters, CIBUser user);
 	
 	default List<ProcessStatistics> groupProcessStatisticsByKeyAndTenantImpl(Collection<ProcessStatistics> processStatistics) {
         return processStatistics.stream()

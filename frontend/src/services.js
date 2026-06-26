@@ -447,7 +447,48 @@ const HistoryService = {
   },
   findHistoryActivityStatistics: function(processDefinitionId, params) {
     return axios.get(getServicesBasePath() + "/process-history/process-definition/" + processDefinitionId + "/statistics", { params })
-  }
+  },
+  findHistoryActivityStatisticsForInstances: function(processDefinitionId, filter, active) {
+    const requestBody = {
+      ...(filter || {}),
+    }
+
+    // Add text search with OR logic (business key LIKE or exact process instance ID)
+    const text = filter?.editField || ''
+    if (text && text.trim() !== '') {
+      const trimmedText = text.trim()
+      requestBody.orQueries = [
+        {
+          processInstanceBusinessKeyLike: `%${trimmedText}%`,
+          processInstanceId: trimmedText
+        }
+      ]
+    }
+
+    // Add active/finished filter
+    if (active !== undefined && active !== null) {
+      if (active) {
+        requestBody.unfinished = true
+      } else {
+        requestBody.finished = true
+      }
+    }
+
+    if (requestBody.activeOrExecutedActivityIdIn !== undefined) {
+      if (requestBody.orQueries === undefined) {
+        requestBody.orQueries = []
+      }
+      requestBody.orQueries.push({
+        // [activityIdIn] - restrict to instances with an active activity with one of the given ids.
+        // In contrast to the [activeActivityIdIn] filter, [activityIdIn] can query for async and incident activities.
+        activityIdIn: requestBody.activeOrExecutedActivityIdIn,
+        // [executedActivityIdIn] - Restrict to instances that executed an activity with one of given ids
+        executedActivityIdIn: requestBody.activeOrExecutedActivityIdIn
+      })
+      delete requestBody.activeOrExecutedActivityIdIn
+    }
+    return axios.post(getServicesBasePath() + "/process-history/process-definition/" + processDefinitionId + "/statistics", requestBody);
+   }
 }
 
 const JobDefinitionService = {

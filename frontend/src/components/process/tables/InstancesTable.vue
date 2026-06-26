@@ -112,7 +112,7 @@ import CellActionButton from '@/components/common-components/CellActionButton.vu
 export default {
   name: 'InstancesTable',
   components: { FlowTable, SuccessAlert, ConfirmActionOnProcessInstanceModal, BWaitingBox, CopyableActionButton, CellActionButton },
-  emits: ['instance-deleted', 'filter-instances'],
+  emits: ['instance-deleted', 'filter-instances','load-statistics'],
   mixins: [copyToClipboardMixin, permissionsMixin],
   props: {
     process: Object,
@@ -139,7 +139,7 @@ export default {
       hasMoreData: true,
       sortingCriteria: [], // Store the sorting criteria for backend calls
       currentSortBy: null, // Track current sort field for FlowTable display
-      currentSortDesc: false // Track current sort direction for FlowTable display
+      currentSortDesc: false, // Track current sort direction for FlowTable display
     }
   },
   watch: {
@@ -178,6 +178,8 @@ export default {
         this.resetInstances()
       }
       this.loading = true
+      // Load historic activity statistics for the loaded instances
+        this.$emit('load-statistics', this.filter)
       try {
         const instances = await this.loadInstances({
           processId: this.process.id,

@@ -123,6 +123,7 @@
             :sorting="sorting"
             :tenant-id="tenantId"
             :filter="computedFilter"
+            @load-statistics="syncStatisticsWithInstances"
             @instance-deleted="$emit('instance-deleted')"
             @filter-instances="$emit('filter-instances', $event)"
           ></InstancesTable>
@@ -218,7 +219,6 @@ export default {
       handler: async function(newId, oldId) {
         if (newId && newId !== oldId) {
           this.clearHistoricActivityStatistics()
-          await this.loadHistoricActivityStatistics({ processDefinitionId: this.process.id })
           await this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
           ProcessService.fetchDiagram(newId).then(response => {
             this.$refs.diagram.showDiagram(response.bpmn20Xml, this.selectedActivityId)
@@ -242,8 +242,6 @@ export default {
   },
   mounted: function() {
     this.clearHistoricActivityStatistics()
-    const params = { canceled: true, completedScoped: true, finished: true, incidents: true }
-    this.loadHistoricActivityStatistics({ processDefinitionId: this.process.id, params })
     this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
     ProcessService.fetchDiagram(this.process.id).then(response => {
       setTimeout(() => {
@@ -319,7 +317,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'setDiagramXml', 'loadHistoricActivityStatistics', 'clearHistoricActivityStatistics']),
+    ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'setDiagramXml', 'clearHistoricActivityStatistics','loadHistoricActivityStatisticsForInstances']),
     ...mapActions('calledProcessDefinitions', ['loadStaticCalledProcessDefinitions']),
     applySorting: function(sortingCriteria) {
       this.sorting = true
@@ -397,6 +395,10 @@ export default {
         this.clearActivitySelection()
       }
       this.$emit('filter-instances', queryObject)
+    },
+     syncStatisticsWithInstances: function(filter) {
+      if (!this.process?.id) return
+      this.loadHistoricActivityStatisticsForInstances({ processDefinitionId: this.process.id, filter})
     },
     onInput: debounce(800, function(freeText) {
       this.$emit('filter-instances', {
