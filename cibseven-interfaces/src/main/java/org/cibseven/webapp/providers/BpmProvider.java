@@ -1921,12 +1921,13 @@ public interface BpmProvider {
 	}
 
 	/**
-	 * Returns the configuration for the default BPM engine.
+	 * Returns the configuration of the effective default BPM engine, i.e. the engine used when none is
+	 * specified: the engine named "default" if present, otherwise the first available engine.
 	 *
-	 * @return the default {@link EngineConfiguration}, or {@code null} if no default engine is configured
+	 * @return the effective default {@link EngineConfiguration}, or {@code null} if no engine is configured
 	 */
-	default @Nullable public EngineConfiguration getDefaultEngineConfiguration() {
-		return getEngineProvider().getDefaultEngineConfiguration();
+	default @Nullable public EngineConfiguration getEffectiveDefaultEngineConfiguration() {
+		return getEngineProvider().getEffectiveDefaultEngineConfiguration();
 	}
 
 	/**

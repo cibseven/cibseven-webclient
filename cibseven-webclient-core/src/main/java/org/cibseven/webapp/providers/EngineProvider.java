@@ -44,6 +44,8 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 
 	private static final String ENGINE_SUB_PATH = "/engine";
 
+	private String effectiveDefaultEngineName = null;
+
 	@Autowired(required = false)
 	private EngineRestProperties engineRestProperties;
 
@@ -59,8 +61,9 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 					log.warn("Invalid engine ID format: {}, expected 'url|path|engineName'", engine);
 				}
 			}
-			else if (!IEngineProvider.isDefaultEngine(engine)) {
-				// Default engine or legacy format
+			else if (!IEngineProvider.isNamedDefaultEngine(engine)) {
+				// A specifically named engine (other than "default") lives at /engine/{name}.
+				// The engine named "default" lives at the base /engine path.
 				url += ENGINE_SUB_PATH + "/" + engine;
 			}
 		}
@@ -151,7 +154,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 		
 		// Set displayName: append engine name in parentheses if not "default"
 		if (baseDisplayName != null && !baseDisplayName.isEmpty()) {
-			if (IEngineProvider.DEFAULT_ENGINE_NAME.equals(engine.getName())) {
+			if (IEngineProvider.isNamedDefaultEngine(engine.getName())) {
 				engine.setDisplayName(baseDisplayName);
 			} else {
 				engine.setDisplayName(baseDisplayName + " (" + engine.getName() + ")");
@@ -159,10 +162,10 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 		} else {
 			engine.setDisplayName(engine.getName());
 		}
-		
+
 		// Set tooltip: append engine name in parentheses if not "default"
 		if (baseTooltip != null && !baseTooltip.isEmpty()) {
-			if (IEngineProvider.DEFAULT_ENGINE_NAME.equals(engine.getName())) {
+			if (IEngineProvider.isNamedDefaultEngine(engine.getName())) {
 				engine.setTooltip(baseTooltip);
 			} else {
 				engine.setTooltip(baseTooltip + " (" + engine.getName() + ")");
@@ -172,8 +175,21 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 
 	@Override
 	@Nullable
-	public EngineConfiguration getDefaultEngineConfiguration() {
-		return getEngineConfiguration(IEngineProvider.DEFAULT_ENGINE_NAME);
+	public EngineConfiguration getEffectiveDefaultEngineConfiguration() {
+		if (effectiveDefaultEngineName == null) {
+			Collection<Engine> engineNames = getProcessEngineNames();
+			for (Engine engine : engineNames) {
+				if (IEngineProvider.isNamedDefaultEngine(engine.getName())) {
+					effectiveDefaultEngineName = engine.getName();
+					break;
+				}
+			}
+			if (effectiveDefaultEngineName == null && !engineNames.isEmpty()) {
+				// If no engine is explicitly named "default", pick the first one as the effective default
+				effectiveDefaultEngineName = engineNames.iterator().next().getId();
+			}
+		}
+		return getEngineConfiguration(effectiveDefaultEngineName);
 	}
 
 	@Override

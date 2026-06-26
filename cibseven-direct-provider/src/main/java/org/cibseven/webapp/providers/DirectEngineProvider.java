@@ -54,14 +54,28 @@ public class DirectEngineProvider implements IEngineProvider {
 
 	@Override
 	@Nullable
-	public EngineConfiguration getDefaultEngineConfiguration() {
-		return getEngineConfiguration(IEngineProvider.DEFAULT_ENGINE_NAME);
+	public EngineConfiguration getEffectiveDefaultEngineConfiguration() {
+		// The effective default is the engine named "default" if present, otherwise the first available engine.
+		Collection<Engine> engines = getProcessEngineNames();
+		String effectiveDefaultEngineName = null;
+		for (Engine engine : engines) {
+			if (IEngineProvider.isNamedDefaultEngine(engine.getName())) {
+				effectiveDefaultEngineName = engine.getName();
+				break;
+			}
+		}
+		if (effectiveDefaultEngineName == null && !engines.isEmpty()) {
+			effectiveDefaultEngineName = engines.iterator().next().getName();
+		}
+		return effectiveDefaultEngineName == null ? null : getEngineConfiguration(effectiveDefaultEngineName);
 	}
 
 	@Override
 	@Nullable
 	public EngineConfiguration getEngineConfiguration(String engine) {
-		org.cibseven.bpm.engine.ProcessEngine processEngine = directProviderUtil.getProcessEngine(engine);
+		// An unspecified engine resolves to the engine named "default", matching the HTTP provider.
+		String engineName = IEngineProvider.isEngineUnspecified(engine) ? IEngineProvider.ENGINE_NAME_DEFAULT : engine;
+		org.cibseven.bpm.engine.ProcessEngine processEngine = directProviderUtil.getProcessEngine(engineName);
 		if (processEngine == null) {
 			return null;
 		}
