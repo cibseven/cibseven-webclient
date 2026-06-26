@@ -796,7 +796,7 @@ public class DirectProcessProvider implements IProcessProvider {
 	}
 
 	@Override
-	public Object fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user) {
+	public Collection<HistoryStatistics> fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user) {
 		MultivaluedMap<String, String> queryParams = new MultivaluedHashMap<>();
 		for (String key : params.keySet()) {
 			queryParams.put(key, Arrays.asList((String) params.get(key)));
@@ -805,10 +805,10 @@ public class DirectProcessProvider implements IProcessProvider {
 		HistoricActivityStatisticsQueryDto historicActivityStatisticsQueryDto = new HistoricActivityStatisticsQueryDto(
 				directProviderUtil.getObjectMapper(user), id, queryParams);
 		HistoricActivityStatisticsQuery query = historicActivityStatisticsQueryDto.toQuery(directProviderUtil.getProcessEngine(user));
-		List<HistoricActivityStatisticsDto> result = new ArrayList<>();
+		List<HistoryStatistics> result = new ArrayList<>();
 		List<HistoricActivityStatistics> statistics = query.unlimitedList();
 		for (HistoricActivityStatistics currentStatistics : statistics) {
-			result.add(HistoricActivityStatisticsDto.fromHistoricActivityStatistics(currentStatistics));
+			result.add(directProviderUtil.convertValue(HistoricActivityStatisticsDto.fromHistoricActivityStatistics(currentStatistics), HistoryStatistics.class, user));
 		}
 		return result;
 	}

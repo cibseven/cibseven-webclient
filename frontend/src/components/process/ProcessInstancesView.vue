@@ -123,7 +123,7 @@
             :sorting="sorting"
             :tenant-id="tenantId"
             :filter="computedFilter"
-            @instances-loaded="syncStatisticsWithInstances"
+            @load-statistics="syncStatisticsWithInstances"
             @instance-deleted="$emit('instance-deleted')"
             @filter-instances="$emit('filter-instances', $event)"
           ></InstancesTable>
@@ -243,7 +243,6 @@ export default {
   mounted: function() {
     this.clearHistoricActivityStatistics()
     const params = { canceled: true, completedScoped: true, finished: true, incidents: true }
-    this.loadHistoricActivityStatistics({ processDefinitionId: this.process.id, params })
     this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
     ProcessService.fetchDiagram(this.process.id).then(response => {
       setTimeout(() => {
@@ -319,7 +318,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'setDiagramXml', 'loadHistoricActivityStatistics', 'clearHistoricActivityStatistics','loadHistoricActivityStatisticsForInstances']),
+    ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'setDiagramXml', 'clearHistoricActivityStatistics','loadHistoricActivityStatisticsForInstances']),
     ...mapActions('calledProcessDefinitions', ['loadStaticCalledProcessDefinitions']),
     applySorting: function(sortingCriteria) {
       this.sorting = true

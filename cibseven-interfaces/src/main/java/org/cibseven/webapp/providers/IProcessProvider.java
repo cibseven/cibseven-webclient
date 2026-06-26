@@ -84,7 +84,7 @@ public interface IProcessProvider {
 	public void deleteProcessDefinition(String id, Optional<Boolean> cascade, CIBUser user);
 	public Long countProcessesInstancesHistory(Map<String, Object> filters, CIBUser user);
 	public Long countProcessesInstancesRuntime(Map<String, Object> filters, CIBUser user);
-	public Object fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user);
+	public Collection<HistoryStatistics> fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user);
 	public Collection<HistoryStatistics> findHistoricActivityStatistics(String id, Map<String, Object> filters, CIBUser user);
 	
 	default List<ProcessStatistics> groupProcessStatisticsByKeyAndTenantImpl(Collection<ProcessStatistics> processStatistics) {

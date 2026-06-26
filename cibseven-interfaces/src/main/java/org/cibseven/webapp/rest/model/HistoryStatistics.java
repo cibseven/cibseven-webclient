@@ -28,10 +28,10 @@ import lombok.ToString;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class HistoryStatistics {
        String id;
-       String instances;
-       String canceled;
-       String finished;
-       String completeScope;
-       String resolvedIncidents;
-       String deletedIncidents;
+       int instances;
+       int canceled;
+       int finished;
+       int completeScope;
+       int resolvedIncidents;
+       int deletedIncidents;
 }

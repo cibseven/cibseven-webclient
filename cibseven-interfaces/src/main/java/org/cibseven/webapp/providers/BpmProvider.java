@@ -1700,7 +1700,7 @@ public interface BpmProvider {
 	 * @return a list or map containing the historic activity statistics
 	 * @throws SystemException in case of an error
 	 */
-	default Object fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user) throws SystemException {
+	default Collection<HistoryStatistics> fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user) throws SystemException {
 		return getProcessProvider().fetchHistoricActivityStatistics(id, params, user);
 	}
 
