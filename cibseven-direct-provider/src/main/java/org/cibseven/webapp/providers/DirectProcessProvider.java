@@ -284,6 +284,8 @@ public class DirectProcessProvider implements IProcessProvider {
 		// returns same array but in different order
 		ProcessDefinitionQueryDto queryDto = new ProcessDefinitionQueryDto();
 		queryDto.setKey(key);
+		queryDto.setSortBy("version");
+		queryDto.setSortOrder("desc");
 		if (tenantId != null)
 			queryDto.setTenantIdIn(Arrays.asList(tenantId));
 		else
