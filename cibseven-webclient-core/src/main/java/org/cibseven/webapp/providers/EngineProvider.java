@@ -36,8 +36,6 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -46,7 +44,6 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 
 	private static final String ENGINE_SUB_PATH = "/engine";
 
-	@Getter @Setter
 	private String effectiveDefaultEngineName = null;
 
 	@Autowired(required = false)
@@ -191,6 +188,14 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 			}
 			throw e;
 		}
+	}
+
+	@Override
+	public String getEffectiveDefaultEngineName() {
+		if (effectiveDefaultEngineName == null) {
+			effectiveDefaultEngineName = IEngineProvider.super.getEffectiveDefaultEngineName();
+		}
+		return effectiveDefaultEngineName;
 	}
 
 	/**

@@ -47,13 +47,14 @@ import org.cibseven.bpm.engine.rest.util.EngineUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.Setter;
+
 public class DirectProviderUtil {
 
 	protected Map<String, ProcessEngine> processEngines = new HashMap<>();
 	protected Map<String, ObjectMapper> objectMappers = new HashMap<>();
-
-	public DirectProviderUtil() {
-	}
+	@Setter
+	protected IEngineProvider engineProvider;
 
 	protected ProcessEngine getProcessEngine(String processEngineName) {
 		ProcessEngine processEngine = null;
@@ -93,11 +94,11 @@ public class DirectProviderUtil {
 	}
 
 	protected String getEngineName(CIBUser user) {
-	String processEngineName = user != null ? user.getEngine() : null;
-	// If engine name is provided and not "default", add it to the path
-	if (processEngineName == null || processEngineName.isEmpty())
-		processEngineName = "default";
-	return processEngineName;
+		String processEngineName = user != null ? user.getEngine() : null;
+		// If engine name is provided and not "default", add it to the path
+		if (processEngineName == null || processEngineName.isEmpty())
+			processEngineName = engineProvider.getEffectiveDefaultEngineName();
+		return processEngineName;
 	}
 
 	/**

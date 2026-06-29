@@ -25,7 +25,9 @@ import org.cibseven.bpm.BpmPlatform;
 import org.cibseven.bpm.engine.rest.dto.identity.UserCredentialsDto;
 import org.cibseven.bpm.engine.rest.dto.identity.UserDto;
 import org.cibseven.bpm.engine.rest.dto.identity.UserProfileDto;
+import org.cibseven.bpm.engine.rest.exception.RestException;
 import org.cibseven.bpm.engine.rest.impl.SetupRestServiceImpl;
+import org.cibseven.bpm.engine.rest.util.EngineUtil;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Engine;
@@ -33,14 +35,10 @@ import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.springframework.lang.Nullable;
 
-import lombok.Getter;
-import lombok.Setter;
-
 public class DirectEngineProvider implements IEngineProvider {
 
 	DirectProviderUtil directProviderUtil;
 
-	@Getter @Setter
 	private String effectiveDefaultEngineName = null;
 
 	DirectEngineProvider(DirectProviderUtil directProviderUtil){
@@ -49,10 +47,21 @@ public class DirectEngineProvider implements IEngineProvider {
 
 	@Override
 	public Collection<Engine> getProcessEngineNames() {
-		Set<String> engineNames = BpmPlatform.getProcessEngineService().getProcessEngineNames();
+		Set<String> engineNames = null;
+		// either one of the two methods can be used to lookup the process engine - the other might fail for unknown reasons
+		try {
+			engineNames = EngineUtil.getProcessEngineProvider().getProcessEngineNames();
+		} catch (RestException ex) {
+			engineNames = BpmPlatform.getProcessEngineService().getProcessEngineNames();
+		} finally {
+			if (engineNames == null)
+				throw new SystemException("No process engine found.");
+		}
 		List<Engine> results = new ArrayList<>();
 		for (String engineName : engineNames) {
-			results.add(new Engine(engineName));
+			Engine engine = new Engine(engineName);
+			engine.setId(engineName);
+			results.add(engine);
 		}
 
 		return results;
@@ -77,6 +86,14 @@ public class DirectEngineProvider implements IEngineProvider {
 		result.setAuthorizationEnabled(config.isAuthorizationEnabled());
 		result.setEnablePasswordPolicy(config.isEnablePasswordPolicy());
 		return result;
+	}
+
+	@Override
+	public String getEffectiveDefaultEngineName() {
+		if (effectiveDefaultEngineName == null) {
+			effectiveDefaultEngineName = IEngineProvider.super.getEffectiveDefaultEngineName();
+		}
+		return effectiveDefaultEngineName;
 	}
 
 	@Override
