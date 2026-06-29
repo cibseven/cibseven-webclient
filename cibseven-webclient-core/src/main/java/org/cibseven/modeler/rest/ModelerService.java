@@ -651,9 +651,26 @@ public class ModelerService extends BaseService {
 		return user != null ? user.getUserID() : null;
 	}
 
+	/**
+	 * Builds a DocumentBuilderFactory hardened against XXE for parsing untrusted (uploaded)
+	 * diagram XML: DOCTYPE declarations are rejected outright (BPMN/DMN never need one), which
+	 * also closes external-entity file/SSRF reads and entity-expansion ("billion laughs") DoS.
+	 */
+	private static DocumentBuilderFactory newSecureDocumentBuilderFactory() throws Exception {
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+		factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+		factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+		factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+		factory.setFeature(javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING, true);
+		factory.setXIncludeAware(false);
+		factory.setExpandEntityReferences(false);
+		return factory;
+	}
+
 	private static String getXmlAttribute(byte[] xmlBytes, String tagName, String propertyName) throws Exception {
 		ByteArrayInputStream inputStream = new ByteArrayInputStream(xmlBytes);
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilderFactory factory = newSecureDocumentBuilderFactory();
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document document = builder.parse(inputStream);
 		NodeList nodeList = document.getElementsByTagName(tagName);
@@ -666,7 +683,7 @@ public class ModelerService extends BaseService {
 
 	private static String getBpmnPrefix(byte[] xmlBytes) throws Exception {
 		ByteArrayInputStream inputStream = new ByteArrayInputStream(xmlBytes);
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		DocumentBuilderFactory factory = newSecureDocumentBuilderFactory();
 		DocumentBuilder builder = factory.newDocumentBuilder();
 		Document document = builder.parse(inputStream);
 
