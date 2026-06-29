@@ -51,10 +51,13 @@ public class DirectEngineProvider implements IEngineProvider {
 		// either one of the two methods can be used to lookup the process engine - the other might fail for unknown reasons
 		try {
 			engineNames = EngineUtil.getProcessEngineProvider().getProcessEngineNames();
+			if (engineNames == null || engineNames.isEmpty()) {
+				engineNames = BpmPlatform.getProcessEngineService().getProcessEngineNames();
+			}
 		} catch (RestException ex) {
 			engineNames = BpmPlatform.getProcessEngineService().getProcessEngineNames();
 		} finally {
-			if (engineNames == null)
+			if (engineNames == null || engineNames.isEmpty())
 				throw new SystemException("No process engine found.");
 		}
 		List<Engine> results = new ArrayList<>();
