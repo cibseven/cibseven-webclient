@@ -320,8 +320,9 @@ public class ModelerService extends BaseService {
 	public ResponseEntity<Object> closeSessions(@RequestParam MultiValueMap<String, String> data,
 		HttpServletRequest rq) {
 
+		CIBUser user = null;
 		if (authenticationEnabled) {
-			checkAuthorization(rq, true);
+			user = checkAuthorization(rq, true);
 		}
 
 		String sessionIdsString = data.getFirst("sessionId");
@@ -331,12 +332,13 @@ public class ModelerService extends BaseService {
 			for (String id : sessionIds) {
 				if (type.equals("form")) {
 					FormUsageEntity existingFormUsageEntity = formUsageProvider.findBySessionId(id);
-					if (existingFormUsageEntity != null) {
+					// A lock may only be released by its owner, so a user cannot close someone else's session.
+					if (existingFormUsageEntity != null && canReleaseSession(user, existingFormUsageEntity.getUserId())) {
 						formUsageProvider.closeSession(existingFormUsageEntity);
 					}
 				} else {
 					DiagramUsageEntity existingDiagramUsageEntity = diagramUsageProvider.findBySessionId(id);
-					if (existingDiagramUsageEntity != null) {
+					if (existingDiagramUsageEntity != null && canReleaseSession(user, existingDiagramUsageEntity.getUserId())) {
 						diagramUsageProvider.closeSession(existingDiagramUsageEntity);
 					}
 				}
@@ -345,7 +347,15 @@ public class ModelerService extends BaseService {
 
 		return ResponseEntity.ok().build();
 	}
-	
+
+	/**
+	 * A modeler session (edit lock) may only be released by the user that owns it. When
+	 * authentication is disabled (user == null, e.g. local/dev) any caller may close it.
+	 */
+	private boolean canReleaseSession(CIBUser user, String ownerUserId) {
+		return user == null || (ownerUserId != null && ownerUserId.equals(user.getUserID()));
+	}
+
 	@RequestMapping(value = "/process/session/check/{id}", method = RequestMethod.GET)
 	public ResponseEntity<Map<String, String>> checkProcessSession(@PathVariable String id,  HttpServletRequest rq) {
 
@@ -363,13 +373,11 @@ public class ModelerService extends BaseService {
 		//response.put("entity", newDiagramUsageEntity);
 		response.put("userId", newDiagramUsageEntity.getUserId());
 		response.put("openedAt", newDiagramUsageEntity.getOpenedAt().toString());
-		UserSessionEntity userSession = new UserSessionEntity();
-        userSession.setId(newDiagramUsageEntity.getSessionId());
-        newDiagramUsageEntity.setUserSession(userSession);
-		response.put("sessionId", userSession.getId());
-		
+
 		if (user != null && user.getUserID().equals(newDiagramUsageEntity.getUserId())) {
-			response.put("message", "SAME_USER");			
+			// Only the owner receives the sessionId — it is the token used to release the lock.
+			response.put("sessionId", newDiagramUsageEntity.getSessionId());
+			response.put("message", "SAME_USER");
 			return ResponseEntity.ok(response);
 		}
 		response.put("message", "SESSION_FOUND");
@@ -394,12 +402,10 @@ public class ModelerService extends BaseService {
 		//response.put("entity", newFormUsageEntity.getSessionId());
 		response.put("userId", newFormUsageEntity.getUserId());
 		response.put("openedAt", newFormUsageEntity.getOpenedAt().toString());
-		UserSessionEntity userSession = new UserSessionEntity();
-        userSession.setId(newFormUsageEntity.getSessionId());
-        newFormUsageEntity.setUserSession(userSession);
-		response.put("sessionId", userSession.getId());
-		
+
 		if (user != null && user.getUserID().equals(newFormUsageEntity.getUserId())) {
+			// Only the owner receives the sessionId — it is the token used to release the lock.
+			response.put("sessionId", newFormUsageEntity.getSessionId());
 			response.put("message", "SAME_USER");
 			return ResponseEntity.ok(response);
 		}
