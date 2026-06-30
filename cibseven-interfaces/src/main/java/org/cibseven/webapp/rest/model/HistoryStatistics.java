@@ -32,6 +32,7 @@ public class HistoryStatistics {
        int canceled;
        int finished;
        int completeScope;
+       int openIncidents;
        int resolvedIncidents;
        int deletedIncidents;
 }
