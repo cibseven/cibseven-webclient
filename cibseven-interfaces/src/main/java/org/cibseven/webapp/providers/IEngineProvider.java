@@ -29,8 +29,6 @@ public interface IEngineProvider {
 	/** The literal name of the engine called "default" in the engine-rest API. */
 	public static final String ENGINE_NAME_DEFAULT = "default";
 
-	public String effectiveDefaultEngineName = null;
-
 	/**
 	 * Whether no engine was specified (null or empty).
 	 */
