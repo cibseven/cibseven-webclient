@@ -47,57 +47,58 @@ import org.cibseven.bpm.engine.rest.util.EngineUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.Setter;
+
 public class DirectProviderUtil {
 
 	protected Map<String, ProcessEngine> processEngines = new HashMap<>();
 	protected Map<String, ObjectMapper> objectMappers = new HashMap<>();
+	@Setter
+	protected IEngineProvider engineProvider;
 
-	public DirectProviderUtil() {
-	}
-
-	protected ProcessEngine getProcessEngine(String processEngineName) {
+	protected ProcessEngine getProcessEngine(String engineId) {
 		ProcessEngine processEngine = null;
-		if (processEngines.containsKey(processEngineName))
-			processEngine = processEngines.get(processEngineName);
+		if (processEngines.containsKey(engineId))
+			processEngine = processEngines.get(engineId);
 		else {
 			// either one of the two methods can be used to lookup the process engine - the other might fail for unknown reasons
 			try {
-				processEngine = EngineUtil.lookupProcessEngine(processEngineName);
+				processEngine = EngineUtil.lookupProcessEngine(engineId);
 			} catch (RestException ex) {
-				processEngine = BpmPlatform.getProcessEngineService().getProcessEngine(processEngineName);
+				processEngine = BpmPlatform.getProcessEngineService().getProcessEngine(engineId);
 			} finally {
 				if (processEngine == null)
-					throw new SystemException("No process engine found with name " + processEngineName);
+					throw new SystemException("No process engine found with name " + engineId);
 			}
-			processEngines.put(processEngineName, processEngine);
+			processEngines.put(engineId, processEngine);
 			ObjectMapper objectMapper = new ObjectMapper();
 			JacksonConfigurator.configureObjectMapper(objectMapper);
-			objectMappers.put(processEngineName, objectMapper);
+			objectMappers.put(engineId, objectMapper);
 		}
 		return processEngine;
 	}
 
 	protected ProcessEngine getProcessEngine(CIBUser user) {
-		return getProcessEngine(getEngineName(user));
+		return getProcessEngine(getEngineId(user));
 	}
 
 	protected ObjectMapper getObjectMapper(CIBUser user) {
-		String engineName = getEngineName(user);
-		getProcessEngine(engineName);
-		return objectMappers.get(engineName);
+		String engineId = getEngineId(user);
+		getProcessEngine(engineId);
+		return objectMappers.get(engineId);
 	}
 
-	protected ObjectMapper getObjectMapper(String engineName) {
-		getProcessEngine(engineName);
-		return objectMappers.get(engineName);
+	protected ObjectMapper getObjectMapper(String engineId) {
+		getProcessEngine(engineId);
+		return objectMappers.get(engineId);
 	}
 
-	protected String getEngineName(CIBUser user) {
-	String processEngineName = user != null ? user.getEngine() : null;
-	// If engine name is provided and not "default", add it to the path
-	if (processEngineName == null || processEngineName.isEmpty())
-		processEngineName = "default";
-	return processEngineName;
+	protected String getEngineId(CIBUser user) {
+		String engineId = user != null ? user.getEngine() : null;
+		// If engine name is provided and not "default", add it to the path
+		if (engineId == null || engineId.isEmpty())
+			engineId = engineProvider.getEffectiveDefaultEngineId();
+		return engineId;
 	}
 
 	/**

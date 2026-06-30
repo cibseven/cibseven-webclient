@@ -62,7 +62,7 @@ public class EngineProviderTest {
 
 	@Test
 	public void testGetEffectiveDefaultEngineConfiguration_callsCorrectUrl() throws InterruptedException {
-		// First request: getProcessEngineNames() lists engines from the default source (/engine).
+		// First request: getProcessEngineDefinitions() lists engines from the default source (/engine).
 		mockWebServer.enqueue(new MockResponse()
 				.setBody("[{\"name\":\"default\"}]")
 				.addHeader("Content-Type", "application/json"));

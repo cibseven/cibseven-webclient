@@ -62,6 +62,8 @@ public class SevenDirectProvider implements BpmProvider {
 	@PostConstruct
   	public void init() {
   		directProviderUtil = new DirectProviderUtil();
+		engineProvider = authorizing(new DirectEngineProvider(getDirectProviderUtil()), IEngineProvider.class);
+		directProviderUtil.setEngineProvider(engineProvider);
 		deploymentProvider = authorizing(new DirectDeploymentProvider(getDirectProviderUtil()), IDeploymentProvider.class);
 		variableProvider = authorizing(new DirectVariableProvider(getDirectProviderUtil()), IVariableProvider.class);
 		variableInstanceProvider = authorizing(new DirectVariableInstanceProvider(getDirectProviderUtil()), IVariableInstanceProvider.class);
@@ -80,7 +82,6 @@ public class SevenDirectProvider implements BpmProvider {
 		systemProvider = authorizing(new DirectSystemProvider(getDirectProviderUtil()), ISystemProvider.class);
 		tenantProvider = authorizing(new DirectTenantProvider(getDirectProviderUtil()), ITenantProvider.class);
 		externalTaskProvider = authorizing(new DirectExternalTaskProvider(getDirectProviderUtil()), IExternalTaskProvider.class);
-		engineProvider = authorizing(new DirectEngineProvider(getDirectProviderUtil()), IEngineProvider.class);
 		identityProvider = authorizing(new DirectIdentityProvider(getDirectProviderUtil()), IIdentityProvider.class);
   	}
 }

@@ -29,8 +29,6 @@ public interface IEngineProvider {
 	/** The literal name of the engine called "default" in the engine-rest API. */
 	public static final String ENGINE_NAME_DEFAULT = "default";
 
-	public String effectiveDefaultEngineName = null;
-
 	/**
 	 * Whether no engine was specified (null or empty).
 	 */
@@ -51,32 +49,33 @@ public interface IEngineProvider {
 		return engine != null && engine.contains("|");
 	}
 
-	public Collection<Engine> getProcessEngineNames();
+	public Collection<Engine> getProcessEngineDefinitions();
 
 	/**
 	 * Returns the configuration of the <em>effective default</em> engine, i.e. the engine the webclient
 	 * uses when none is specified: the engine named "default" if present, otherwise the first available engine.
 	 */
 	public default EngineConfiguration getEffectiveDefaultEngineConfiguration() {
-		if (getEffectiveDefaultEngineName() == null) {
-			Collection<Engine> engineNames = getProcessEngineNames();
-			for (Engine engine : engineNames) {
-				if (IEngineProvider.isNamedDefaultEngine(engine.getName())) {
-					setEffectiveDefaultEngineName(engine.getId());
-					break;
-				}
-			}
-			if (getEffectiveDefaultEngineName() == null && !engineNames.isEmpty()) {
-				// If no engine is explicitly named "default", pick the first one as the effective default
-				setEffectiveDefaultEngineName(engineNames.iterator().next().getId());
-			}
-		}
-		return getEffectiveDefaultEngineName() == null ? null : getEngineConfiguration(getEffectiveDefaultEngineName());
+		return getEffectiveDefaultEngineId() == null ? null : getEngineConfiguration(getEffectiveDefaultEngineId());
 	}
 
-	void setEffectiveDefaultEngineName(String engineName);
-	String getEffectiveDefaultEngineName();
-	@Nullable public EngineConfiguration getEngineConfiguration(String engineName);
-	public Boolean requiresSetup(String engine);
-	public void createSetupUser(NewUser user, String engine) throws InvalidUserIdException;
+	public default String getEffectiveDefaultEngineId() {
+		Collection<Engine> engines = getProcessEngineDefinitions();
+		String effectiveDefaultEngineId = null;
+		for (Engine engine : engines) {
+			if (IEngineProvider.isNamedDefaultEngine(engine.getName())) {
+				effectiveDefaultEngineId = engine.getId();
+				break;
+			}
+		}
+		if (effectiveDefaultEngineId == null && !engines.isEmpty()) {
+			// If no engine is explicitly named "default", pick the first one as the effective default
+			effectiveDefaultEngineId = engines.iterator().next().getId();
+		}
+		return effectiveDefaultEngineId;
+	}
+	
+	@Nullable public EngineConfiguration getEngineConfiguration(String engineId);
+	public Boolean requiresSetup(String engineId);
+	public void createSetupUser(NewUser user, String engineId) throws InvalidUserIdException;
 }

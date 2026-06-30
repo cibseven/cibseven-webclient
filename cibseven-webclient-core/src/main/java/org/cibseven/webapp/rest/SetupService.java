@@ -76,13 +76,13 @@ public class SetupService extends BaseService implements InitializingBean {
 	@ApiResponse(responseCode = "200", description = "Setup status returned successfully")
 	@GetMapping("/status")
 	public boolean requiresSetup(
-			@RequestHeader(value = "X-Process-Engine", required = false) String engine) {
+			@RequestHeader(value = "X-Process-Engine", required = false) String engineId) {
 		// Setup is only applicable when using internal user provider (SevenUserProvider)
 		// For external identity providers (LDAP, ADFS, SSO), users are managed externally
 		if (!SEVEN_USER_PROVIDER.equals(userProvider)) {
 			return false;
 		}
-		return bpmProvider.requiresSetup(engine);
+		return bpmProvider.requiresSetup(engineId);
 	}
 
 	/**
@@ -93,7 +93,7 @@ public class SetupService extends BaseService implements InitializingBean {
 	 * The backend will handle group creation, authorization setup, and group membership.
 	 * 
 	 * @param newUser The user to create with profile and credentials
-	 * @param engine The process engine to use (from X-Process-Engine header)
+	 * @param engineId The process engine to use (from X-Process-Engine header)
 	 * @return Success response or error if users already exist or external provider is used
 	 */
 	@Operation(
@@ -106,17 +106,17 @@ public class SetupService extends BaseService implements InitializingBean {
 	@PostMapping("/user")
 	public ResponseEntity<Void> createInitialUser(
 			@RequestBody NewUser newUser,
-			@RequestHeader(value = "X-Process-Engine", required = false) String engine) {
+			@RequestHeader(value = "X-Process-Engine", required = false) String engineId) {
 		// Setup is only applicable when using internal user provider (SevenUserProvider)
 		if (!SEVEN_USER_PROVIDER.equals(userProvider)) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
-		if (!bpmProvider.requiresSetup(engine)) {
+		if (!bpmProvider.requiresSetup(engineId)) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
 
 		// Create the admin user - backend handles group and authorization setup
-		bpmProvider.createSetupUser(newUser, engine);
+		bpmProvider.createSetupUser(newUser, engineId);
 		
 		return ResponseEntity.status(HttpStatus.CREATED).build();
 	}
