@@ -37,7 +37,7 @@ public class EngineService extends BaseService {
 	@Operation(summary = "Get process engine names", description = "Retrieves the names of all process engines available on the engine")
 	@ApiResponse(responseCode = "200", description = "List of engine names successfully retrieved")
 	@GetMapping
-	public Collection<Engine> getProcessEngineNames() {
-		return bpmProvider.getProcessEngineNames();
+	public Collection<Engine> getProcessEngineDefinitions() {
+		return bpmProvider.getProcessEngineDefinitions();
 	}
 }

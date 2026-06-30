@@ -39,14 +39,14 @@ public class DirectEngineProvider implements IEngineProvider {
 
 	DirectProviderUtil directProviderUtil;
 
-	private String effectiveDefaultEngineName = null;
+	private String effectiveDefaultEngineId = null;
 
 	DirectEngineProvider(DirectProviderUtil directProviderUtil){
 		this.directProviderUtil = directProviderUtil;
 	}
 
 	@Override
-	public Collection<Engine> getProcessEngineNames() {
+	public Collection<Engine> getProcessEngineDefinitions() {
 		Set<String> engineNames = null;
 		// either one of the two methods can be used to lookup the process engine - the other might fail for unknown reasons
 		try {
@@ -72,10 +72,10 @@ public class DirectEngineProvider implements IEngineProvider {
 
 	@Override
 	@Nullable
-	public EngineConfiguration getEngineConfiguration(String engine) {
+	public EngineConfiguration getEngineConfiguration(String engineId) {
 		// An unspecified engine resolves to the engine named "default", matching the HTTP provider.
-		String engineName = IEngineProvider.isEngineUnspecified(engine) ? IEngineProvider.ENGINE_NAME_DEFAULT : engine;
-		org.cibseven.bpm.engine.ProcessEngine processEngine = directProviderUtil.getProcessEngine(engineName);
+		engineId = IEngineProvider.isEngineUnspecified(engineId) ? IEngineProvider.ENGINE_NAME_DEFAULT : engineId;
+		org.cibseven.bpm.engine.ProcessEngine processEngine = directProviderUtil.getProcessEngine(engineId);
 		if (processEngine == null) {
 			return null;
 		}
@@ -92,20 +92,20 @@ public class DirectEngineProvider implements IEngineProvider {
 	}
 
 	@Override
-	public String getEffectiveDefaultEngineName() {
-		if (effectiveDefaultEngineName == null) {
-			effectiveDefaultEngineName = IEngineProvider.super.getEffectiveDefaultEngineName();
+	public String getEffectiveDefaultEngineId() {
+		if (effectiveDefaultEngineId == null) {
+			effectiveDefaultEngineId = IEngineProvider.super.getEffectiveDefaultEngineId();
 		}
-		return effectiveDefaultEngineName;
+		return effectiveDefaultEngineId;
 	}
 
 	@Override
-	public Boolean requiresSetup(String engine) {
-		return new SetupRestServiceImpl(engine, directProviderUtil.getObjectMapper(engine)).requiresSetup();
+	public Boolean requiresSetup(String engineId) {
+		return new SetupRestServiceImpl(engineId, directProviderUtil.getObjectMapper(engineId)).requiresSetup();
 	}
 	
 	@Override
-	public void createSetupUser(NewUser user, String engine) throws InvalidUserIdException {
+	public void createSetupUser(NewUser user, String engineId) throws InvalidUserIdException {
 		UserDto userDto = new UserDto();
 		UserProfileDto profileDto = new UserProfileDto();
 		if (user.getProfile() == null || user.getCredentials() == null) 
@@ -118,7 +118,7 @@ public class DirectEngineProvider implements IEngineProvider {
 		UserCredentialsDto userCredentialsDto = new UserCredentialsDto();
 		userCredentialsDto.setPassword(user.getCredentials().getPassword());
 		userDto.setCredentials(userCredentialsDto);
-		new SetupRestServiceImpl(engine, directProviderUtil.getObjectMapper(engine)).createUser(userDto);
+		new SetupRestServiceImpl(engineId, directProviderUtil.getObjectMapper(engineId)).createUser(userDto);
 	}
 
 }

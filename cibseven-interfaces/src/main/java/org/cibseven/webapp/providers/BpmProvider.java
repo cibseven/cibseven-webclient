@@ -1921,8 +1921,8 @@ public interface BpmProvider {
 	 * @throws SystemException in case of an error
 	 */
 
-	default Collection<Engine> getProcessEngineNames() throws SystemException {
-		return getEngineProvider().getProcessEngineNames();
+	default Collection<Engine> getProcessEngineDefinitions() throws SystemException {
+		return getEngineProvider().getProcessEngineDefinitions();
 	}
 
 	/**
@@ -1938,11 +1938,11 @@ public interface BpmProvider {
 	/**
 	 * Returns the configuration for the BPM engine with the given name.
 	 *
-	 * @param engineName the name of the engine to look up
+	 * @param engineId the id of the engine to look up
 	 * @return the {@link EngineConfiguration} for the specified engine, or {@code null} if no engine with that name is configured
 	 */
-	default @Nullable public EngineConfiguration getEngineConfiguration(String engineName) {
-		return getEngineProvider().getEngineConfiguration(engineName);
+	default @Nullable public EngineConfiguration getEngineConfiguration(String engineId) {
+		return getEngineProvider().getEngineConfiguration(engineId);
 	}
 
 	/**
@@ -1951,8 +1951,8 @@ public interface BpmProvider {
 	 * @return true if admin group is available and write access is set
 	 * @throws SystemException in case of an error
 	 */
-	default Boolean requiresSetup(String engine) {
-		return getEngineProvider().requiresSetup(engine);
+	default Boolean requiresSetup(String engineId) {
+		return getEngineProvider().requiresSetup(engineId);
 	}
 
 	/**
@@ -1961,8 +1961,8 @@ public interface BpmProvider {
 	 * @param user the new user to be created.
 	 * @throws InvalidUserIdException when the user ID is invalid.
 	 */
-	default void createSetupUser(NewUser user, String engine) throws InvalidUserIdException {
-		getEngineProvider().createSetupUser(user, engine);
+	default void createSetupUser(NewUser user, String engineId) throws InvalidUserIdException {
+		getEngineProvider().createSetupUser(user, engineId);
 	}
 
 	/*

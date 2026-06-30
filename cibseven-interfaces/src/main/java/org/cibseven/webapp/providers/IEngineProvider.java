@@ -49,33 +49,33 @@ public interface IEngineProvider {
 		return engine != null && engine.contains("|");
 	}
 
-	public Collection<Engine> getProcessEngineNames();
+	public Collection<Engine> getProcessEngineDefinitions();
 
 	/**
 	 * Returns the configuration of the <em>effective default</em> engine, i.e. the engine the webclient
 	 * uses when none is specified: the engine named "default" if present, otherwise the first available engine.
 	 */
 	public default EngineConfiguration getEffectiveDefaultEngineConfiguration() {
-		return getEffectiveDefaultEngineName() == null ? null : getEngineConfiguration(getEffectiveDefaultEngineName());
+		return getEffectiveDefaultEngineId() == null ? null : getEngineConfiguration(getEffectiveDefaultEngineId());
 	}
 
-	public default String getEffectiveDefaultEngineName() {
-		Collection<Engine> engineNames = getProcessEngineNames();
-		String effectiveDefaultEngineName = null;
-		for (Engine engine : engineNames) {
+	public default String getEffectiveDefaultEngineId() {
+		Collection<Engine> engines = getProcessEngineDefinitions();
+		String effectiveDefaultEngineId = null;
+		for (Engine engine : engines) {
 			if (IEngineProvider.isNamedDefaultEngine(engine.getName())) {
-				effectiveDefaultEngineName = engine.getId();
+				effectiveDefaultEngineId = engine.getId();
 				break;
 			}
 		}
-		if (effectiveDefaultEngineName == null && !engineNames.isEmpty()) {
+		if (effectiveDefaultEngineId == null && !engines.isEmpty()) {
 			// If no engine is explicitly named "default", pick the first one as the effective default
-			effectiveDefaultEngineName = engineNames.iterator().next().getId();
+			effectiveDefaultEngineId = engines.iterator().next().getId();
 		}
-		return effectiveDefaultEngineName;
+		return effectiveDefaultEngineId;
 	}
 	
-	@Nullable public EngineConfiguration getEngineConfiguration(String engineName);
-	public Boolean requiresSetup(String engine);
-	public void createSetupUser(NewUser user, String engine) throws InvalidUserIdException;
+	@Nullable public EngineConfiguration getEngineConfiguration(String engineId);
+	public Boolean requiresSetup(String engineId);
+	public void createSetupUser(NewUser user, String engineId) throws InvalidUserIdException;
 }

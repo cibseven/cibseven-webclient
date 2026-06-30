@@ -71,7 +71,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 	}
 
 	@Override
-	public Collection<Engine> getProcessEngineNames() {
+	public Collection<Engine> getProcessEngineDefinitions() {
 		List<Engine> allEngines = new ArrayList<>();
 		
 		// Get default URL and path from properties, fallback to @Value fields from parent if not configured
@@ -175,8 +175,8 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 
 	@Override
 	@Nullable
-	public EngineConfiguration getEngineConfiguration(String engine) {
-		String url = getNamedEngineRestUrl(engine) + "/configuration";
+	public EngineConfiguration getEngineConfiguration(String engineId) {
+		String url = getNamedEngineRestUrl(engineId) + "/configuration";
 		try {
 			return doGet(url, EngineConfiguration.class, null, false).getBody();
 		} catch (SystemException e) {
@@ -191,9 +191,9 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 	}
 
 	@Override
-	public String getEffectiveDefaultEngineName() {
+	public String getEffectiveDefaultEngineId() {
 		if (effectiveDefaultEngineName == null) {
-			effectiveDefaultEngineName = IEngineProvider.super.getEffectiveDefaultEngineName();
+			effectiveDefaultEngineName = IEngineProvider.super.getEffectiveDefaultEngineId();
 		}
 		return effectiveDefaultEngineName;
 	}
@@ -214,14 +214,14 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 	}
 
 	@Override
-	public Boolean requiresSetup(String engine) {
-		String url = getNamedEngineRestUrl(engine) + "/setup/status";
+	public Boolean requiresSetup(String engineId) {
+		String url = getNamedEngineRestUrl(engineId) + "/setup/status";
 		return doGet(url, Boolean.class, null, false).getBody();
 	}
 
 	@Override
-	public void createSetupUser(NewUser user, String engine) throws InvalidUserIdException {
-		String url = getNamedEngineRestUrl(engine) + "/setup/user/create";
+	public void createSetupUser(NewUser user, String engineId) throws InvalidUserIdException {
+		String url = getNamedEngineRestUrl(engineId) + "/setup/user/create";
 		try {
 			//	A JSON object with the following properties:
 			//	Name 	Type 	Description
