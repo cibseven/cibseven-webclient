@@ -323,6 +323,7 @@ export default {
       this.$refs.completedTask.show(2)
       this.processInstanceHistory = null
       this.listTasksWithFilterAuto()
+      this.$refs.filterNavbar.fetchFilters()
       this.checkAndOpenTask(JSON.parse(JSON.stringify(this.task)))
       this.task = null
       this.assignee = null
