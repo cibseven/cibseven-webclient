@@ -67,7 +67,7 @@ application:
         userDisplayNameAttribute: ""
         modifiedDateFormat: ""
         followReferrals: ""
-        userClass: ""
+        userClass: "person"
         user: ""
         password: ""
       
