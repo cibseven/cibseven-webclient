@@ -428,7 +428,7 @@ export default {
       if (!filterQueryObject.activityIdIn) {
         this.clearActivitySelection()
       }
-      this.$emit('filter-instances', queryObject)
+      this.$emit('filter-instances', filterQueryObject)
     },
      syncStatisticsWithInstances: function(filter) {
       if (!this.process?.id) return
