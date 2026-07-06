@@ -30,7 +30,7 @@
             ]">
             <template v-slot:cell(tasks)="table">
               <transition name="fade" mode="out-in">
-                <span v-if="!loading[table.item.id]">{{ table.item.tasks }}</span>
+                <span v-if="!loading[table.item.id]"><i18n-n :value="table.item.tasks" /></span>
                 <span v-else><b-spinner small></b-spinner></span>
               </transition>
             </template>
@@ -48,8 +48,11 @@
               { label: 'human-tasks.tasks', key: 'taskCount', class: 'col-3', tdClass: 'py-1 justify-content-center', thClass: 'd-flex justify-content-center', sortable: false },
               { label: 'human-tasks.groupName', key: 'groupName', class: 'col-9', tdClass: 'py-1', sortable: false },
             ]">
+            <template v-slot:cell(taskCount)="table">
+              <i18n-n :value="table.item.taskCount" />
+            </template>
             <template v-slot:cell(groupName)="table">
-              <div>{{ table.item.groupName ? table.item.groupName : $t('human-tasks.noGroups') }}</div>
+              {{ table.item.groupName ? table.item.groupName : $t('human-tasks.noGroups') }}
             </template>
           </FlowTable>
           <div v-if="loading[4]" class="d-flex justify-content-center align-items-center">
