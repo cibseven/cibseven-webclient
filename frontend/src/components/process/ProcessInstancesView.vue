@@ -86,6 +86,14 @@
                   </template>
                   <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="(evt) => onInput(evt.target.value.trim())"></b-form-input>
                   <b-button size="sm" variant="light" @click="$refs.sortModal.show()" class="ms-1 border"><span class="mdi mdi-sort" style="line-height: initial"></span></b-button>
+                  <b-form-checkbox
+                    v-model="stateFilter"
+                    switch
+                    :title="$t('process.onlyActive.tooltip')"
+                    class="ms-2 d-flex align-items-center"
+                  >
+                    {{ $t('process.onlyActive.title') }}
+                  </b-form-checkbox>
                 </b-input-group>
               </div>
               <div v-if="selectedActivityId" class="col-3 p-3">
@@ -207,6 +215,7 @@ export default {
       topBarHeight: 0,
       events: {},
       usages: [],
+      stateFilter: false,
       sortByDefaultKey: 'startTime',
       sorting: false,
       sortDesc: true,
@@ -238,6 +247,26 @@ export default {
         }
       },
       immediate: true
+    },
+    filter: {
+      handler: function(newFilter) {
+        // Sync stateFilter from filter prop for CE
+        if (!this.ProcessInstancesSearchBoxPlugin) {
+          this.stateFilter = newFilter?.unfinished ?? false
+        }
+      },
+      deep: true,
+      immediate: true
+    },
+    stateFilter: function(newVal, oldVal) {
+      if (newVal === oldVal) {
+        return
+      }
+
+      this.$emit('filter-instances', {
+        ...this.computedFilter,
+        unfinished: newVal ? true : undefined
+      })
     }
   },
   mounted: function() {
@@ -391,7 +420,12 @@ export default {
       }
     },
     changeFilter: function(queryObject) {
-      if (!queryObject.activityIdIn) {
+      const filterQueryObject = {
+        ...queryObject,
+        stateFilter: queryObject.stateFilter
+      }
+
+      if (!filterQueryObject.activityIdIn) {
         this.clearActivitySelection()
       }
       this.$emit('filter-instances', queryObject)
@@ -402,7 +436,7 @@ export default {
     },
     onInput: debounce(800, function(freeText) {
       this.$emit('filter-instances', {
-        ...this.filter,
+        ...this.computedFilter,
         editField: freeText,
       })
     }),

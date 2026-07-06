@@ -377,14 +377,17 @@ const HistoryService = {
       ]
     }
 
-    // Add active/finished filter
-    if (active !== undefined && active !== null) {
+    // Prefer the shared query object for active-only filtering.
+    if (requestBody.stateFilter === true) {
+      requestBody.unfinished = true
+    } else if (active !== undefined && active !== null) {
       if (active) {
         requestBody.unfinished = true
       } else {
         requestBody.finished = true
       }
     }
+    delete requestBody.stateFilter
 
     if (requestBody.activeOrExecutedActivityIdIn !== undefined) {
       if (requestBody.orQueries === undefined) {
@@ -465,14 +468,17 @@ const HistoryService = {
       ]
     }
 
-    // Add active/finished filter
-    if (active !== undefined && active !== null) {
+    // Prefer the shared query object for active-only filtering.
+    if (requestBody.stateFilter === true) {
+      requestBody.unfinished = true
+    } else if (active !== undefined && active !== null) {
       if (active) {
         requestBody.unfinished = true
       } else {
         requestBody.finished = true
       }
     }
+    delete requestBody.stateFilter
 
     if (requestBody.activeOrExecutedActivityIdIn !== undefined) {
       if (requestBody.orQueries === undefined) {

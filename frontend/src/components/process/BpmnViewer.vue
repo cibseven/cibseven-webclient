@@ -428,7 +428,7 @@ export default {
         const historyStat = historyMap.get(stat.id)
         return {
           id: stat.id,
-          instances: stat.instances || 0,
+          instances: historyStat?.instances ?? (stat.instances || 0),
           finished: historyStat?.finished || 0,
           canceled: historyStat?.canceled || 0,
           openIncidents: stat.incidents?.reduce((sum, inc) => sum + (inc.incidentCount || 0), 0) || 0,
@@ -449,7 +449,7 @@ export default {
     getProcessMergedStatisticsFullHistory: function(historyStatistics) {
       return historyStatistics.map(hs => {
         const stat = this.statistics?.find(s => s.id === hs.id)
-        return stat ? { ...hs, instances: stat.instances } : hs
+        return stat ? { ...hs, instances: hs.instances ?? stat.instances } : hs
       })
     },
     drawActivityBadges: function(stat, elementRegistry) {
