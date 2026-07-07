@@ -73,7 +73,7 @@
               </div>
             </div>
             <b-popover :target="version.id" triggers="hover" placement="right" boundary="viewport" max-width="350px">
-              <ProcessDefinitionDetails :version="version" :instances="instances" :version-index="versionIndex"
+              <ProcessDefinitionDetails :version="version" :version-index="versionIndex"
                 :selected-instance="selectedInstance" @onUpdateHistoryTimeToLive="onUpdateHistoryTimeToLive"></ProcessDefinitionDetails>
             </b-popover>
           </div>

@@ -146,9 +146,8 @@
 </template>
 
 <script>
-import { moment } from '@/globals.js'
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
-import { ProcessService } from '@/services.js'
+import { ProcessService, HistoryService } from '@/services.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { SuccessAlert } from '@cib/common-frontend'
 
@@ -157,7 +156,6 @@ export default {
   components: { SuccessAlert },
   mixins: [ copyToClipboardMixin ],
   props: {
-    instances: Array,
     version: Object,
     selectedInstance: { type: Object, default: null },
     versionIndex: { type: String, default: '' }
@@ -166,7 +164,9 @@ export default {
     return {
       selectedDeployment: null,
       historyTimeToLive: null,
-      historyTimeToLiveChanged: null
+      historyTimeToLiveChanged: null,
+      minTimestamp: null,
+      maxTimestamp: null
     }
   },
   emits: ['onUpdateHistoryTimeToLive'],
@@ -185,19 +185,6 @@ export default {
   computed: {
     isVersionSelected() {
       return this.version.version === this.versionIndex
-    },
-    timestamps() {
-      return this.instances
-        .filter(i => i.processDefinitionVersion === this.version.version)
-        .map(i => moment(i.startTime).valueOf())
-    },
-    minTimestamp() {
-      if (this.timestamps.length === 0) return null
-      return Math.min(...this.timestamps)
-    },
-    maxTimestamp() {
-      if (this.timestamps.length === 0) return null
-      return Math.max(...this.timestamps)
     }
   },
   mounted() {
@@ -207,8 +194,18 @@ export default {
         this.selectedDeployment = deployment
       })
     }
+    this.getTimestamps()
   },
   methods: {
+    async getTimestamps() {
+      if (this.$root.config.camundaHistoryLevel === 'none') return
+      const [first, last] = await Promise.all([
+        HistoryService.findProcessesInstancesHistory({ processDefinitionId: this.version.id, sorting: [{ sortBy: 'startTime', sortOrder: 'asc' }] }, 0, 1),
+        HistoryService.findProcessesInstancesHistory({ processDefinitionId: this.version.id, sorting: [{ sortBy: 'startTime', sortOrder: 'desc' }] }, 0, 1)
+      ])
+      this.minTimestamp = first[0]?.startTime ?? null
+      this.maxTimestamp = last[0]?.startTime ?? null
+    },
     formatDate,
     formatDateForTooltips,
     editHistoryTimeToLive: function() {
