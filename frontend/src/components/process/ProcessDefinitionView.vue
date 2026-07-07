@@ -146,7 +146,7 @@ export default {
       task: null,
       activityInstance: null,
       activityInstanceHistory: null,
-      filter: this.initializeFilter(),
+      filter: { unfinished: true },
       loading: false,
       parentProcess: null
     }
@@ -191,9 +191,6 @@ export default {
   methods: {
     ...mapActions(['clearActivitySelection', 'getProcessById']),
     formatDate,
-    initializeFilter() {
-      return { unfinished: true }
-    },
     async findProcessInstance(instanceId) {
       return (this.$root.config.camundaHistoryLevel !== 'none') ?
         HistoryService.findProcessInstance(instanceId) :

@@ -87,10 +87,10 @@
                   <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="(evt) => onInput(evt.target.value.trim())"></b-form-input>
                   <b-button size="sm" variant="light" @click="$refs.sortModal.show()" class="ms-1 border"><span class="mdi mdi-sort" style="line-height: initial"></span></b-button>
                   <b-form-checkbox
-                  v-model="unfinishedFilter"
-                    switch
-                  :title="$t('process-instance.onlyUnfinished.tooltip')"
+                    v-model="unfinishedFilter"
                     class="ms-2 d-flex align-items-center"
+                    switch
+                    :title="$t('process-instance.onlyUnfinished.tooltip')"
                   >
                   {{ $t('process-instance.onlyUnfinished.title') }}
                   </b-form-checkbox>
@@ -105,7 +105,7 @@
               </div>
             </template>
 
-            <div :class="[ProcessInstancesSearchBoxPlugin ? 'col-2' : ( selectedActivityId ? 'col-6' : 'col-9'), 'p-3', 'text-end']">
+            <div :class="[ProcessInstancesSearchBoxPlugin ? 'col-2' : ( selectedActivityId ? 'col-5' : 'col-8'), 'p-3', 'text-end']">
               <div>
                 <b-button v-if="process.suspended === 'false'" size="sm" variant="light" @click="confirmSuspend" :title="$t('process.suspendProcess')">
                   <span class="mdi mdi-pause-circle-outline"></span> {{ collapseButtons ? '': $t('process.suspendProcess') }}
@@ -246,7 +246,7 @@ export default {
         }
       },
       immediate: true
-    },
+    }
   },
   mounted: function() {
     this.clearHistoricActivityStatistics()
