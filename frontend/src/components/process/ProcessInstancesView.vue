@@ -105,7 +105,7 @@
               </div>
             </template>
 
-            <div :class="[ProcessInstancesSearchBoxPlugin ? 'col-2' : ( selectedActivityId ? 'col-5' : 'col-9'), 'p-3', 'text-end']">
+            <div :class="[ProcessInstancesSearchBoxPlugin ? 'col-2' : ( selectedActivityId ? 'col-6' : 'col-9'), 'p-3', 'text-end']">
               <div>
                 <b-button v-if="process.suspended === 'false'" size="sm" variant="light" @click="confirmSuspend" :title="$t('process.suspendProcess')">
                   <span class="mdi mdi-pause-circle-outline"></span> {{ collapseButtons ? '': $t('process.suspendProcess') }}
