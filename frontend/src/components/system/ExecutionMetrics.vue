@@ -61,6 +61,7 @@ import { SystemService } from '@/services.js'
 import { moment } from '@/globals.js'
 import VueApexCharts from 'vue3-apexcharts'
 import { FlowTable, BWaitingBox } from '@cib/common-frontend'
+import { i18n } from '@/i18n.js'
 
 export default {
   name: 'ExecutionMetrics',
@@ -178,7 +179,7 @@ export default {
             grouped[monthKey][metric] = 0
           })
         }
-        grouped[monthKey][item.metric] = item.sum
+        grouped[monthKey][item.metric] = i18n.global.n(item.sum)
       })
       return Object.values(grouped)
         .sort((a, b) => moment(b.month, 'MMMM YYYY') - moment(a.month, 'MMMM YYYY'))
@@ -194,7 +195,7 @@ export default {
             grouped[year][metric] = 0
           })
         }
-        grouped[year][item.metric] = item.sum
+        grouped[year][item.metric] = i18n.global.n(item.sum)
       })
       const sortedGroup = Object.values(grouped)
         .sort((a, b) => b.year - a.year)
