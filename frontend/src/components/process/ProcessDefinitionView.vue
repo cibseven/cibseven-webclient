@@ -133,16 +133,6 @@ export default {
       if (this.process && this.process.key === this.processKey && this.instanceId) {
         await this.loadInstanceById(this.instanceId)
       }
-    },
-    '$route.query.unfinished': {
-      handler() {
-        // Update filter when unfinished query parameter changes
-        if (this.$route.query.unfinished === 'false') {
-          this.filter = { ...this.filter, unfinished: undefined }
-        } else if (this.$route.query.unfinished === 'true') {
-          this.filter = { ...this.filter, unfinished: true }
-        }
-      }
     }
   },
   data() {
@@ -202,17 +192,7 @@ export default {
     ...mapActions(['clearActivitySelection', 'getProcessById']),
     formatDate,
     initializeFilter() {
-      // Default filter with unfinished: true for both CE and EE
-      const defaultFilter = { unfinished: true }
-      
-      // Override with query parameters if present (for EE compatibility)
-      if (this.$route.query.unfinished === 'false') {
-        defaultFilter.unfinished = undefined
-      } else if (this.$route.query.unfinished === 'true') {
-        defaultFilter.unfinished = true
-      }
-      
-      return defaultFilter
+      return { unfinished: true }
     },
     async findProcessInstance(instanceId) {
       return (this.$root.config.camundaHistoryLevel !== 'none') ?

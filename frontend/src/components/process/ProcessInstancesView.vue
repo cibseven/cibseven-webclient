@@ -72,7 +72,7 @@
         <template v-if="isInstancesView">
           <div ref="filterTable" class="d-flex w-100">
 
-            <div v-if="ProcessInstancesSearchBoxPlugin" class="col-9 p-2">
+            <div v-if="ProcessInstancesSearchBoxPlugin" class="col-10 p-2">
               <component :is="ProcessInstancesSearchBoxPlugin"
                 :query="computedFilter"
                 @change-query-object="changeFilter"
@@ -87,7 +87,7 @@
                   <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="(evt) => onInput(evt.target.value.trim())"></b-form-input>
                   <b-button size="sm" variant="light" @click="$refs.sortModal.show()" class="ms-1 border"><span class="mdi mdi-sort" style="line-height: initial"></span></b-button>
                   <b-form-checkbox
-                    v-model="stateFilter"
+                  v-model="unfinishedFilter"
                     switch
                   :title="$t('process-instance.onlyUnfinished.tooltip')"
                     class="ms-2 d-flex align-items-center"
@@ -105,7 +105,7 @@
               </div>
             </template>
 
-            <div :class="[ProcessInstancesSearchBoxPlugin ? 'col-3' : ( selectedActivityId ? 'col-5' : 'col-8'), 'p-3', 'text-end']">
+            <div :class="[ProcessInstancesSearchBoxPlugin ? 'col-2' : ( selectedActivityId ? 'col-5' : 'col-9'), 'p-3', 'text-end']">
               <div>
                 <b-button v-if="process.suspended === 'false'" size="sm" variant="light" @click="confirmSuspend" :title="$t('process.suspendProcess')">
                   <span class="mdi mdi-pause-circle-outline"></span> {{ collapseButtons ? '': $t('process.suspendProcess') }}
@@ -215,7 +215,6 @@ export default {
       topBarHeight: 0,
       events: {},
       usages: [],
-      stateFilter: false,
       sortByDefaultKey: 'startTime',
       sorting: false,
       sortDesc: true,
@@ -248,26 +247,6 @@ export default {
       },
       immediate: true
     },
-    filter: {
-      handler: function(newFilter) {
-        // Sync stateFilter from filter prop for CE
-        if (!this.ProcessInstancesSearchBoxPlugin) {
-          this.stateFilter = newFilter?.unfinished ?? false
-        }
-      },
-      deep: true,
-      immediate: true
-    },
-    stateFilter: function(newVal, oldVal) {
-      if (newVal === oldVal) {
-        return
-      }
-
-      this.$emit('filter-instances', {
-        ...this.computedFilter,
-        unfinished: newVal ? true : undefined
-      })
-    }
   },
   mounted: function() {
     this.clearHistoricActivityStatistics()
@@ -280,6 +259,17 @@ export default {
     })
   },
   computed: {
+    unfinishedFilter: {
+    get: function() {
+      return this.filter?.unfinished ?? false
+    },
+    set: function(newVal) {
+      this.$emit('filter-instances', {
+      ...this.computedFilter,
+      unfinished: newVal ? true : undefined
+      })
+    }
+    },
     ProcessInstancesSearchBoxPlugin: function() {
       return this.$options.components && this.$options.components.ProcessInstancesSearchBoxPlugin
         ? this.$options.components.ProcessInstancesSearchBoxPlugin
@@ -420,15 +410,10 @@ export default {
       }
     },
     changeFilter: function(queryObject) {
-      const filterQueryObject = {
-        ...queryObject,
-        stateFilter: queryObject.stateFilter
-      }
-
-      if (!filterQueryObject.activityIdIn) {
+      if (!queryObject.activityIdIn) {
         this.clearActivitySelection()
       }
-      this.$emit('filter-instances', filterQueryObject)
+      this.$emit('filter-instances', queryObject)
     },
      syncStatisticsWithInstances: function(filter) {
       if (!this.process?.id) return
