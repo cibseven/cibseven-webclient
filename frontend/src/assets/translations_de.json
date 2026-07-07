@@ -440,6 +440,10 @@
 			"retries": "Wiederholungen",
 			"priority": "Priorität",
 			"noExternalTasks": "Keine externen Aufgaben gefunden"
+		},
+		"onlyUnfinished": {
+			"title": "Nur unvollendete",
+			"tooltip": "Nur unvollendete Prozessinstanzen anzeigen"
 		}
 	},
 	"dmn-viewer": {

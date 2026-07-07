@@ -72,14 +72,14 @@
         <template v-if="isInstancesView">
           <div ref="filterTable" class="d-flex w-100">
 
-            <div v-if="ProcessInstancesSearchBoxPlugin" class="col-10 p-2">
+            <div v-if="ProcessInstancesSearchBoxPlugin" class="col-9 p-2">
               <component :is="ProcessInstancesSearchBoxPlugin"
                 :query="computedFilter"
                 @change-query-object="changeFilter"
               ></component>
             </div>
             <template v-else>
-              <div class="col-3 p-3">
+              <div class="col-4 p-3">
                 <b-input-group size="sm">
                   <template #prepend>
                     <b-button :title="$t('searches.search')" aria-hidden="true" size="sm" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
@@ -89,10 +89,10 @@
                   <b-form-checkbox
                     v-model="stateFilter"
                     switch
-                    :title="$t('process.onlyActive.tooltip')"
+                  :title="$t('process-instance.onlyUnfinished.tooltip')"
                     class="ms-2 d-flex align-items-center"
                   >
-                    {{ $t('process.onlyActive.title') }}
+                  {{ $t('process-instance.onlyUnfinished.title') }}
                   </b-form-checkbox>
                 </b-input-group>
               </div>
@@ -105,7 +105,7 @@
               </div>
             </template>
 
-            <div :class="[ProcessInstancesSearchBoxPlugin ? 'col-2' : ( selectedActivityId ? 'col-6' : 'col-9'), 'p-3', 'text-end']">
+            <div :class="[ProcessInstancesSearchBoxPlugin ? 'col-3' : ( selectedActivityId ? 'col-5' : 'col-8'), 'p-3', 'text-end']">
               <div>
                 <b-button v-if="process.suspended === 'false'" size="sm" variant="light" @click="confirmSuspend" :title="$t('process.suspendProcess')">
                   <span class="mdi mdi-pause-circle-outline"></span> {{ collapseButtons ? '': $t('process.suspendProcess') }}
