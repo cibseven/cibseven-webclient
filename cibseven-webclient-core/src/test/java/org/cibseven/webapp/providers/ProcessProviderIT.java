@@ -231,4 +231,33 @@ public class ProcessProviderIT extends BaseHelper {
         assertThat(request.getMethod()).isEqualTo("POST");
         assertThat(request.getPath()).isEqualTo("/engine-rest/history/process-definition/process-1/statistics");
     }
+
+    @Test
+    void testFindHistoricActivityStatisticsFallsBackToGetOn405() throws Exception {
+        String processDefinitionId = "process-1";
+        CIBUser user = getCibUser();
+        Map<String, Object> filters = Map.of("canceled", true);
+
+        String mockResponseBody = loadMockResponse("mocks/history_statistics_mock.json");
+
+        mockWebServer.enqueue(new MockResponse()
+                .setResponseCode(405)
+                .setBody("Method Not Allowed")
+                .addHeader("Content-Type", "text/plain"));
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(mockResponseBody)
+                .addHeader("Content-Type", "application/json"));
+
+        Collection<HistoryStatistics> statistics = processProvider.findHistoricActivityStatistics(processDefinitionId, filters, user);
+
+        assertThat(statistics).isNotNull();
+        assertThat(statistics).hasSize(2);
+
+        RecordedRequest postRequest = mockWebServer.takeRequest();
+        assertThat(postRequest.getMethod()).isEqualTo("POST");
+
+        RecordedRequest getRequest = mockWebServer.takeRequest();
+        assertThat(getRequest.getMethod()).isEqualTo("GET");
+        assertThat(getRequest.getPath()).contains("/engine-rest/history/process-definition/process-1/statistics?");
+    }
 }
