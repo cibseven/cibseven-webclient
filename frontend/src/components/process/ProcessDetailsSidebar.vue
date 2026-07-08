@@ -52,7 +52,7 @@
                 </template>
                 <span class="fw-bold">{{ $t('process.details.definitionVersion') + ': ' + version.version }}</span>
               </h6>
-              <div class="d-flex ms-auto" :id="version.id">
+              <div class="d-flex ms-auto" :id="version.id" @mouseenter="hoveredVersionId = version.id">
                 <span class="mdi mdi-18px mdi-information-outline text-info"></span>
               </div>
             </div>
@@ -74,6 +74,7 @@
             </div>
             <b-popover :target="version.id" triggers="hover" placement="right" boundary="viewport" max-width="350px">
               <ProcessDefinitionDetails :version="version" :version-index="versionIndex"
+                :load-timestamps="hoveredVersionId === version.id"
                 :selected-instance="selectedInstance" @onUpdateHistoryTimeToLive="onUpdateHistoryTimeToLive"></ProcessDefinitionDetails>
             </b-popover>
           </div>
@@ -107,6 +108,11 @@ export default {
     selectedInstance: { type: Object, default: null }
   },
   emits: ['onDeleteProcessDefinition', 'onRefreshProcessDefinitions'],
+  data() {
+    return {
+      hoveredVersionId: null
+    }
+  },
   computed: {
     hasHistory() {
       return this.$root.config.camundaHistoryLevel !== 'none'

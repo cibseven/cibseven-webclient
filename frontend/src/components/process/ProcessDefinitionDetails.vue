@@ -158,7 +158,8 @@ export default {
   props: {
     version: Object,
     selectedInstance: { type: Object, default: null },
-    versionIndex: { type: String, default: '' }
+    versionIndex: { type: String, default: '' },
+    loadTimestamps: { type: Boolean, default: false }
   },
   data: function() {
     return {
@@ -166,11 +167,15 @@ export default {
       historyTimeToLive: null,
       historyTimeToLiveChanged: null,
       minTimestamp: null,
-      maxTimestamp: null
+      maxTimestamp: null,
+      timestampsLoaded: false
     }
   },
   emits: ['onUpdateHistoryTimeToLive'],
   watch: {
+    loadTimestamps(val) {
+      if (val) this.getTimestamps()
+    },
     versionIndex() {
       if (this.isVersionSelected) {
         ProcessService.findDeployment(this.version.deploymentId).then(deployment => {
@@ -194,17 +199,26 @@ export default {
         this.selectedDeployment = deployment
       })
     }
-    this.getTimestamps()
   },
   methods: {
     async getTimestamps() {
       if (this.$root.config.camundaHistoryLevel === 'none') return
-      const [first, last] = await Promise.all([
-        HistoryService.findProcessesInstancesHistory({ processDefinitionId: this.version.id, sorting: [{ sortBy: 'startTime', sortOrder: 'asc' }] }, 0, 1),
-        HistoryService.findProcessesInstancesHistory({ processDefinitionId: this.version.id, sorting: [{ sortBy: 'startTime', sortOrder: 'desc' }] }, 0, 1)
-      ])
-      this.minTimestamp = first[0]?.startTime ?? null
-      this.maxTimestamp = last[0]?.startTime ?? null
+      if (this.timestampsLoaded) return
+      this.timestampsLoaded = true
+      try {
+        const [first, last] = await Promise.all([
+          HistoryService.findProcessesInstancesHistory({ processDefinitionId: this.version.id, sorting: [{ sortBy: 'startTime', sortOrder: 'asc' }] }, 0, 1),
+          HistoryService.findProcessesInstancesHistory({ processDefinitionId: this.version.id, sorting: [{ sortBy: 'startTime', sortOrder: 'desc' }] }, 0, 1)
+        ])
+
+        this.minTimestamp = first?.[0]?.startTime ?? null
+        this.maxTimestamp = last?.[0]?.startTime ?? null
+      }
+      catch {
+        this.minTimestamp = null
+        this.maxTimestamp = null
+        this.timestampsLoaded = false
+      }
     },
     formatDate,
     formatDateForTooltips,
