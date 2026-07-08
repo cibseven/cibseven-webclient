@@ -609,9 +609,17 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
         	throw new SystemException("processDefinitionId is required");
 		}
 		String url = getEngineRestUrl(user) + "/history/process-definition/" + processDefinitionId + "/statistics";
-		Collection<HistoryStatistics> result = java.util.Arrays.asList(
-			((ResponseEntity<HistoryStatistics[]>) doPost(url, filters, HistoryStatistics[].class, user)).getBody());
-		return result;
+		try {
+			return Arrays.asList(((ResponseEntity<HistoryStatistics[]>) doPost(url, filters, HistoryStatistics[].class, user)).getBody());
+		} catch (RuntimeException e) {
+			// Backwards compatibility: if Engine is 2.1.0 and older, this call is not supported
+			for (Throwable current = e; current != null; current = current.getCause()) {
+				if (current instanceof HttpStatusCodeException httpException && httpException.getStatusCode().value() == 405) {
+					return fetchHistoricActivityStatistics(processDefinitionId, Map.of("canceled", true, "completedScoped", true, "finished", true, "incidents", true), user);
+				}
+			}
+			throw e;
+		}
     }
 	
 }
