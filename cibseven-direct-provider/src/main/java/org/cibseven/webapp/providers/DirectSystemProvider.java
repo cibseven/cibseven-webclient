@@ -56,47 +56,94 @@ public class DirectSystemProvider implements ISystemProvider {
 
 	@Override
 	public Collection<Metric> getMetrics(Map<String, Object> queryParams, CIBUser user) {
+		String groupBy = queryParams.getOrDefault("groupBy", "month").toString();
+
+		switch (groupBy) {
+			case "year":
+				return getAnnualMetrics(queryParams, user);
+			case "month":
+				return getMonthlyMetrics(queryParams, user);
+			default:
+				throw new IllegalArgumentException("Invalid groupBy parameter: " + groupBy);
+		}
+	}
+
+	protected Collection<Metric> getAnnualMetrics(Map<String, Object> queryParams, CIBUser user) {
 		Collection<Metric> metrics = new ArrayList<>();
-		List<Map<String, Object>> queryData = new ArrayList<>();
-		List<String> metricNames = Optional.ofNullable(queryParams.get("metrics")).map(Object::toString)
-				.filter(s -> !s.isEmpty()).map(s -> Arrays.asList(s.split(",")))
-				.orElse(Arrays.asList("process-instances", "decision-instances", "task-users"));
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ");
-		String currentDate = ZonedDateTime.now(ZoneId.systemDefault()).format(formatter);
-		String groupBy = Optional.ofNullable(queryParams.get("groupBy")).map(Object::toString).orElse("month");
-		String subsStartDate = queryParams.get("subscriptionStartDate").toString();
-		ZonedDateTime subsStartDateParsed = ZonedDateTime.parse(subsStartDate, formatter);
-		if (groupBy.equals("year")) {
-			String prevDate = subsStartDateParsed.minusYears(1).format(formatter);
-			for (String metric : metricNames) {
-				queryData.add(createSumParamsMap(metric, subsStartDate, currentDate));
-				queryData.add(createSumParamsMap(metric, prevDate, subsStartDate));
-			}
-		} else if (groupBy.equals("month")) {
-			String startDate = queryParams.get("startDate").toString();
-			ZonedDateTime startDateParsed = ZonedDateTime.parse(startDate, formatter);
-			for (ZonedDateTime stDate = startDateParsed; !stDate.isAfter(subsStartDateParsed); stDate = stDate.plusMonths(1)) {
-				ZonedDateTime startDayM = stDate.with(TemporalAdjusters.firstDayOfMonth()).withHour(0).withMinute(0).withSecond(0)
-						.withNano(0);
-				ZonedDateTime endDayM = stDate.with(TemporalAdjusters.lastDayOfMonth()).withHour(23).withMinute(59).withSecond(59)
-						.withNano(999_000_000);
-				for (String metric : metricNames) {
-					queryData.add(createSumParamsMap(metric, startDayM.format(formatter), endDayM.format(formatter)));
-				}
+		int currentYear = ZonedDateTime.now(ZoneId.systemDefault()).getYear();
+		for (int year = currentYear; year > 2012; year--) {
+			Collection<Metric> yearMetrics = getAnnualMetricsForYear(queryParams, user, year);
+			metrics.addAll(yearMetrics);
+			// if all metrics for the year are zero, we can stop fetching
+			boolean allZero = yearMetrics.stream().allMatch(m -> m.getSum() == 0);
+			if (allZero) {
+				break;
 			}
 		}
-		for (Map<String, Object> params : queryData) {
+		return metrics;
+	}
+
+	protected Collection<Metric> getAnnualMetricsForYear(Map<String, Object> queryParams, CIBUser user, int year) {
+		Collection<Metric> metrics = new ArrayList<>();
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ");
+
+		List<String> metricNames = Optional.ofNullable(queryParams.get("metrics"))
+			.map(Object::toString)
+			.filter(s -> !s.isEmpty())
+			.map(s -> Arrays.asList(s.split(",")))
+			.orElse(Arrays.asList("process-instances", "decision-instances", "task-users"));
+
+		for (String metric : metricNames) {
+
+			String startOfYear = ZonedDateTime.now(ZoneId.systemDefault()).withDayOfYear(1).withYear(year).format(formatter);
+			String endOfYear = ZonedDateTime.now(ZoneId.systemDefault()).withDayOfYear(1).withYear(year + 1).format(formatter);
+			Map<String, Object> params = createSumParamsMap(metric, startOfYear, endOfYear);
+
+			int count = getSum(metric, params, user);
+
 			Metric metricsData = new Metric();
-			metricsData.setMetric(params.get("metric").toString());
-			ZonedDateTime startDate = ZonedDateTime.parse(params.get("startDate").toString(), formatter);
-			metricsData.setSubscriptionYear(startDate.getYear());
-			if (groupBy.equals("month")) {
-				metricsData.setSubscriptionMonth(startDate.getMonthValue());
-			}
-			int count = getSum(metricsData.getMetric(), params, user);
+			metricsData.setMetric(metric);
+			metricsData.setSubscriptionYear(year);
 			metricsData.setSum(count);
+
 			metrics.add(metricsData);
 		}
+
+		return metrics;
+	}
+
+	protected Collection<Metric> getMonthlyMetrics(Map<String, Object> queryParams, CIBUser user) {
+		Collection<Metric> metrics = new ArrayList<>();
+		List<String> metricNames = Optional.ofNullable(queryParams.get("metrics"))
+			.map(Object::toString)
+			.filter(s -> !s.isEmpty())
+			.map(s -> Arrays.asList(s.split(",")))
+			.orElse(Arrays.asList("process-instances", "decision-instances", "task-users"));
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ");
+		String subsStartDate = queryParams.get("subscriptionStartDate").toString();
+		ZonedDateTime subsStartDateParsed = ZonedDateTime.parse(subsStartDate, formatter);
+
+		String startDate = queryParams.get("startDate").toString();
+		ZonedDateTime startDateParsed = ZonedDateTime.parse(startDate, formatter);
+
+		for (ZonedDateTime stDate = startDateParsed; !stDate.isAfter(subsStartDateParsed); stDate = stDate.plusMonths(1)) {
+			ZonedDateTime startDayM = stDate.with(TemporalAdjusters.firstDayOfMonth()).withHour(0).withMinute(0).withSecond(0).withNano(0);
+			ZonedDateTime endDayM = stDate.with(TemporalAdjusters.lastDayOfMonth()).withHour(23).withMinute(59).withSecond(59).withNano(999_000_000);
+			for (String metric : metricNames) {
+
+				Map<String, Object> params = createSumParamsMap(metric, startDayM.format(formatter), endDayM.format(formatter));
+				int count = getSum(metric, params, user);
+
+				Metric metricsData = new Metric();
+				metricsData.setMetric(metric);
+				metricsData.setSubscriptionYear(startDayM.getYear());
+				metricsData.setSubscriptionMonth(startDayM.getMonthValue());
+				metricsData.setSum(count);
+
+				metrics.add(metricsData);
+			}
+		}
+
 		return metrics;
 	}
 
