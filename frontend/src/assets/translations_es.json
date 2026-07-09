@@ -440,6 +440,10 @@
 			"retries": "Reintentos",
 			"priority": "Prioridad",
 			"noExternalTasks": "No se encontraron tareas externas"
+		},
+		"onlyUnfinished": {
+			"title": "Solo no finalizadas",
+			"tooltip": "Mostrar solo instancias de proceso no finalizadas"
 		}
 	},
 	"dmn-viewer": {

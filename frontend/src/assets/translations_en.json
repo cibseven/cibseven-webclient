@@ -440,6 +440,10 @@
 			"retries": "Retries",
 			"priority": "Priority",
 			"noExternalTasks": "No external tasks found"
+		},
+		"onlyUnfinished": {
+			"title": "Only Unfinished",
+			"tooltip": "Show only unfinished process instances"
 		}
 	},
 	"dmn-viewer": {

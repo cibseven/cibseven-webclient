@@ -146,7 +146,7 @@ export default {
       task: null,
       activityInstance: null,
       activityInstanceHistory: null,
-      filter: {},
+      filter: { unfinished: true },
       loading: false,
       parentProcess: null
     }
