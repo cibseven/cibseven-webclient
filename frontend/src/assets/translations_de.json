@@ -442,8 +442,8 @@
 			"noExternalTasks": "Keine externen Aufgaben gefunden"
 		},
 		"onlyUnfinished": {
-			"title": "Nur unvollendete",
-			"tooltip": "Nur unvollendete Prozessinstanzen anzeigen"
+			"title": "Nur nicht abgeschlossene",
+			"tooltip": "Nur nicht abgeschlossene Prozessinstanzen anzeigen"
 		}
 	},
 	"dmn-viewer": {
