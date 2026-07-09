@@ -59,7 +59,7 @@
                 @click.stop.prevent="openVersionDetails(version.id)"
                 :title="$t('process.info')"
                 :aria-label="$t('process.info')">
-                <span class="mdi mdi-18px mdi-information-outline text-info"></span>
+                <span class="mdi mdi-18px mdi-information-outline text-info" aria-hidden="true"></span>
               </b-button>
             </div>
             <div class="d-flex">

@@ -223,16 +223,19 @@ export default {
       if (this.$root.config.camundaHistoryLevel === 'none') return
       if (this.timestampsLoaded) return
       this.timestampsLoaded = true
+      const requestedVersionId = this.version.id
       try {
         const [first, last] = await Promise.all([
-          HistoryService.findProcessesInstancesHistory({ processDefinitionId: this.version.id, sorting: [{ sortBy: 'startTime', sortOrder: 'asc' }] }, 0, 1),
-          HistoryService.findProcessesInstancesHistory({ processDefinitionId: this.version.id, sorting: [{ sortBy: 'startTime', sortOrder: 'desc' }] }, 0, 1)
+          HistoryService.findProcessesInstancesHistory({ processDefinitionId: requestedVersionId, sorting: [{ sortBy: 'startTime', sortOrder: 'asc' }] }, 0, 1),
+          HistoryService.findProcessesInstancesHistory({ processDefinitionId: requestedVersionId, sorting: [{ sortBy: 'startTime', sortOrder: 'desc' }] }, 0, 1)
         ])
 
+        if (this.version.id !== requestedVersionId) return
         this.minTimestamp = first?.[0]?.startTime ?? null
         this.maxTimestamp = last?.[0]?.startTime ?? null
       }
       catch {
+        if (this.version.id !== requestedVersionId) return
         this.minTimestamp = null
         this.maxTimestamp = null
         this.timestampsLoaded = false
