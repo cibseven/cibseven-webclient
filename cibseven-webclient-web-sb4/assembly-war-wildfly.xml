@@ -49,6 +49,7 @@
             <unpack>false</unpack>
             <excludes>
                 <exclude>org.apache.tomcat.embed:*</exclude>
+                <exclude>org.jboss.logging:jboss-logging</exclude>
             </excludes>
         </dependencySet>
     </dependencySets>
