@@ -52,9 +52,12 @@
                 </template>
                 <span class="fw-bold">{{ $t('process.details.definitionVersion') + ': ' + version.version }}</span>
               </h6>
-              <div class="d-flex ms-auto" :id="version.id" @mouseenter="hoveredVersionId = version.id">
+              <b-button class="d-flex ms-auto p-0 border-0 shadow-none" variant="link" size="sm"
+                :id="version.id"
+                @mouseenter="openVersionDetails(version.id)"
+                @focus="openVersionDetails(version.id)">
                 <span class="mdi mdi-18px mdi-information-outline text-info"></span>
-              </div>
+              </b-button>
             </div>
             <div class="d-flex">
               <div class="mb-1">
@@ -72,7 +75,7 @@
                 </b-button>
               </div>
             </div>
-            <b-popover :target="version.id" triggers="hover" placement="right" boundary="viewport" max-width="350px">
+            <b-popover :target="version.id" triggers="hover focus click" placement="right" boundary="viewport" max-width="350px">
               <ProcessDefinitionDetails :version="version" :version-index="versionIndex"
                 :load-timestamps="hoveredVersionId === version.id"
                 :selected-instance="selectedInstance" @onUpdateHistoryTimeToLive="onUpdateHistoryTimeToLive"></ProcessDefinitionDetails>
@@ -119,6 +122,9 @@ export default {
     }
   },
   methods: {
+    openVersionDetails(versionId) {
+      this.hoveredVersionId = versionId
+    },
     onRefreshProcessDefinitions: function(lazyLoadHistory) {
       this.$emit('onRefreshProcessDefinitions', lazyLoadHistory)
     },
