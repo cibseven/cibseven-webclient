@@ -108,7 +108,6 @@ export default {
       type: Array,
       required: true
     },
-    instances: Array,
     processKey: String,
     versionIndex: { type: String, default: '' },
     selectedInstance: { type: Object, default: null }

@@ -34,7 +34,6 @@
           :version-index="computedVersionIndex"
           @on-refresh-process-definitions="onRefreshProcessDefinitions"
           @on-delete-process-definition="onDeleteProcessDefinition"
-          :instances="instances"
           :selected-instance="selectedInstance"
         ></ProcessDetailsSidebar>
         <ProcessInstanceDetailsSidebar v-else-if="(selectedInstance || instanceId)"
