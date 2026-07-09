@@ -281,7 +281,6 @@ export default {
   methods: {
     async loadAnnualMetrics() {
       const params = {
-        subscriptionStartDate: moment(new Date()).format('YYYY-MM-DD[T]HH:mm:ss.SSSZZ'),
         groupBy: 'year',
       }
       return SystemService.getMetricsData(params).then((data) => {
