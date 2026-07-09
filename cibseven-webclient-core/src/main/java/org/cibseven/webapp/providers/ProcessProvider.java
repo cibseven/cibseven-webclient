@@ -57,6 +57,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -611,12 +612,11 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		String url = getEngineRestUrl(user) + "/history/process-definition/" + processDefinitionId + "/statistics";
 		try {
 			return Arrays.asList(((ResponseEntity<HistoryStatistics[]>) doPost(url, filters, HistoryStatistics[].class, user)).getBody());
-		} catch (RuntimeException e) {
+		} catch (SystemException e) {
 			// Backwards compatibility: if Engine is 2.1.0 and older, this call is not supported
-			for (Throwable current = e; current != null; current = current.getCause()) {
-				if (current instanceof HttpStatusCodeException httpException && httpException.getStatusCode().value() == 405) {
-					return fetchHistoricActivityStatistics(processDefinitionId, Map.of("canceled", true, "completedScoped", true, "finished", true, "incidents", true), user);
-				}
+			Throwable cause = e.getCause();
+			if(cause instanceof HttpClientErrorException.MethodNotAllowed) {
+				return fetchHistoricActivityStatistics(processDefinitionId, Map.of("canceled", true, "completedScoped", true, "finished", true, "incidents", true), user);
 			}
 			throw e;
 		}
