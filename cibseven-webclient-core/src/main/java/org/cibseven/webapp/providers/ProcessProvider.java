@@ -613,9 +613,8 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		try {
 			return Arrays.asList(((ResponseEntity<HistoryStatistics[]>) doPost(url, filters, HistoryStatistics[].class, user)).getBody());
 		} catch (SystemException e) {
-			// Backwards compatibility: if Engine is 2.1.0 and older, this call is not supported
-			Throwable cause = e.getCause();
-			if(cause instanceof HttpClientErrorException.MethodNotAllowed) {
+			// Backwards compatibility: this call is only supported for Engine version 2.2.0 and over
+			if (e.getCause() instanceof HttpClientErrorException.MethodNotAllowed) {
 				return fetchHistoricActivityStatistics(processDefinitionId, Map.of("canceled", true, "completedScoped", true, "finished", true, "incidents", true), user);
 			}
 			throw e;
