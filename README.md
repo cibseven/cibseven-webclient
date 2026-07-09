@@ -1,3 +1,4 @@
+Nothing to see here
 # CIB seven webclient
 
 [![License](https://img.shields.io/github/license/cibseven/cibseven-webclient?color=blue&logo=apache)](https://github.com/cibseven/cibseven-webclient/blob/master/LICENSE)
