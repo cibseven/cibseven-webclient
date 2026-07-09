@@ -57,6 +57,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -609,9 +610,15 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
         	throw new SystemException("processDefinitionId is required");
 		}
 		String url = getEngineRestUrl(user) + "/history/process-definition/" + processDefinitionId + "/statistics";
-		Collection<HistoryStatistics> result = java.util.Arrays.asList(
-			((ResponseEntity<HistoryStatistics[]>) doPost(url, filters, HistoryStatistics[].class, user)).getBody());
-		return result;
+		try {
+			return Arrays.asList(((ResponseEntity<HistoryStatistics[]>) doPost(url, filters, HistoryStatistics[].class, user)).getBody());
+		} catch (SystemException e) {
+			// Backwards compatibility: this call is only supported for Engine version 2.2.0 and over
+			if (e.getCause() instanceof HttpClientErrorException.MethodNotAllowed) {
+				return fetchHistoricActivityStatistics(processDefinitionId, Map.of("canceled", true, "completedScoped", true, "finished", true, "incidents", true), user);
+			}
+			throw e;
+		}
     }
 	
 }
