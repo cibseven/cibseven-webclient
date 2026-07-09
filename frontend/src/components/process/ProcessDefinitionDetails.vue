@@ -176,6 +176,19 @@ export default {
     loadTimestamps(val) {
       if (val) this.getTimestamps()
     },
+    'version.id': function() {
+      this.resetTimestampsCache()
+      if (this.loadTimestamps) {
+        this.getTimestamps()
+      }
+    },
+    'version.allInstances': function(newVal, oldVal) {
+      if (newVal === oldVal) return
+      this.resetTimestampsCache()
+      if (this.loadTimestamps) {
+        this.getTimestamps()
+      }
+    },
     versionIndex() {
       if (this.isVersionSelected) {
         ProcessService.findDeployment(this.version.deploymentId).then(deployment => {
@@ -201,6 +214,11 @@ export default {
     }
   },
   methods: {
+    resetTimestampsCache() {
+      this.timestampsLoaded = false
+      this.minTimestamp = null
+      this.maxTimestamp = null
+    },
     async getTimestamps() {
       if (this.$root.config.camundaHistoryLevel === 'none') return
       if (this.timestampsLoaded) return

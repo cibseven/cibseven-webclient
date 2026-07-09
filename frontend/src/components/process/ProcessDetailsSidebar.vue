@@ -55,7 +55,10 @@
               <b-button class="d-flex ms-auto p-0 border-0 shadow-none" variant="link" size="sm"
                 :id="version.id"
                 @mouseenter="openVersionDetails(version.id)"
-                @focus="openVersionDetails(version.id)">
+                @focus="openVersionDetails(version.id)"
+                @click.stop.prevent="openVersionDetails(version.id)"
+                :title="$t('process.info')"
+                :aria-label="$t('process.info')">
                 <span class="mdi mdi-18px mdi-information-outline text-info"></span>
               </b-button>
             </div>
