@@ -71,6 +71,22 @@ public interface ProcessDiagramRepository extends JpaRepository<ProcessDiagramEn
 		@Param("type") String type,
 		Pageable pageable);
 
+	@Query(value =
+		"SELECT * FROM ( " +
+		"   SELECT p.id, p.name, p.type, p.processkey, " +
+		"          NULL AS formid, " +
+		"          p.description, p.created, p.updated, p.updated_by, p.version " +
+		"   FROM MOD_PROCESSES_DIAGRAMS p " +
+		"   WHERE p.id = :id " +
+		"   UNION ALL " +
+		"   SELECT f.id, f.formid, 'form', f.formid, f.formid, " +
+		"          f.description, f.created, f.updated, f.updated_by, f.version " +
+		"   FROM MOD_FORMS f " +
+		"   WHERE f.id = :id " +
+		") t",
+		nativeQuery = true)
+	List<UnifiedDiagram> findUnifiedById(@Param("id") String id);
+
 	@Transactional
 	@Modifying
 	@Query(value = "DELETE FROM MOD_PROCESSES_DIAGRAMS_AUD pa "
