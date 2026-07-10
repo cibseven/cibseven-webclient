@@ -191,18 +191,18 @@ export default {
         .sort((a, b) => b.year - a.year)
         .map((entry, i) => ({ index: i + 1, ...entry }))
         .map((entry) => {
-          const startOfYear = moment().startOf('year')
-          const subsDate = moment(startOfYear).format('L')
-          const prevDate = moment(startOfYear).subtract(1, 'years').format('L')
+          const startOfEntryYear = moment().year(entry.year).startOf('year')
+          const fromDate = startOfEntryYear.format('L')
+          const toDate = moment(startOfEntryYear).add(1, 'years').format('L')
           if (entry.year === currentYear) {
             entry.year = this.$t('admin.system.execution-metrics.fromUpToToday', {
-              from: subsDate
+              from: fromDate
             })
           }
           else {
             entry.year = this.$t('admin.system.execution-metrics.fromTo', {
-              from: prevDate,
-              to: subsDate
+              from: fromDate,
+              to: toDate
             })
           }
           return entry
