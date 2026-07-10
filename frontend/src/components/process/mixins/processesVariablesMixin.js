@@ -32,6 +32,7 @@ export default {
 				deserializeValues: false,
 			},
 			variables: [],
+			variablesSource: null,
 			file: null,
 			selectedVariable: null
 		}
@@ -49,9 +50,36 @@ export default {
 				this.loadSelectedInstanceVariables()
 			}
 		},
-		activityInstancesGrouped: 'loadSelectedInstanceVariables'
+		activityInstancesGrouped: 'onScopeMapChanged'
 	},
 	computed: {
+		isActiveInstance: function() {
+			if (this.selectedInstance?.state) {
+				// 'state' is available from historic process instances
+				const activeStates = ['ACTIVE', 'SUSPENDED']
+				return this.selectedInstance && activeStates.includes(this.selectedInstance.state)
+			}
+			else {
+				// use runtime instance
+				// they have 'ended' and 'suspended' states
+				return this.selectedInstance && this.selectedInstance.ended === false
+			}
+		},
+		historyAvailable: function () {
+			return ['full', 'audit'].includes(this.$root.config.camundaHistoryLevel)
+		},
+		liveActivityInstanceIds: function () {
+			const ids = new Set()
+			if (this.activityInstance) {
+				const collect = ai => {
+					ids.add(ai.id)
+					ai.childActivityInstances?.forEach(collect)
+					ai.childTransitionInstances?.forEach(ti => ids.add(ti.id))
+				}
+				collect(this.activityInstance)
+			}
+			return ids
+		},
 		activityInstanceData: function () {
 				const names = {}
 				const activityIds = {}
@@ -62,17 +90,18 @@ export default {
 						if (ai.childActivityInstances?.length > 0) flatten(ai.childActivityInstances)
 					})
 				}
+				// finished scopes first, so the runtime tree overrides entries for scopes present in both
+				if (this.activityInstanceHistory) {
+					this.activityInstanceHistory.forEach(ai => {
+						names[ai.id] = ai.activityName || ai.activityId
+						activityIds[ai.id] = ai.activityId
+					})
+				}
 				if (this.activityInstance) {
 					names[this.activityInstance.id] = this.activityInstance.name
 					flatten(this.activityInstance.childActivityInstances)
-				} else {
+				} else if (this.selectedInstance) {
 					names[this.selectedInstance.id] = this.selectedInstance.processDefinitionName
-					if (this.activityInstanceHistory) {
-						this.activityInstanceHistory.forEach(ai => {
-							names[ai.id] = ai.activityName || ai.activityId
-							activityIds[ai.id] = ai.activityId
-						})
-					}
 				}
 				return { names, activityIds }
 		},
@@ -103,36 +132,61 @@ export default {
 		loadSelectedInstanceVariables: function() {
 			if (this.fetching) return // Prevent concurrent requests
 			if (this.selectedInstance && this.activityInstancesGrouped) {
-				if (this.selectedInstance.state === 'ACTIVE' || this.$root.config.camundaHistoryLevel === 'none') {
+				if (this.historyAvailable) {
+					// the history query is a superset of the runtime query (same ids, current values)
+					// and also contains variables whose scope has already finished
+					this.fetchInstanceVariables('HistoryService', 'fetchProcessInstanceVariablesHistory')
+				} else if (this.isActiveInstance) {
 					this.fetchInstanceVariables('ProcessService', 'fetchProcessInstanceVariables')
 				} else {
-					if (this.$root.config.camundaHistoryLevel === 'full' || this.$root.config.camundaHistoryLevel === 'audit') {
-						this.fetchInstanceVariables('HistoryService', 'fetchProcessInstanceVariablesHistory')
-					} else {
-						// no variables available for finished process instances if history level is 'activity' or 'none'
-						this.variables = []
-						this.filteredVariables = []
-						this.loading = false
-						this.fetching = false
-					}
+					// no variables available for finished process instances if history level is 'activity' or 'none'
+					this.variables = []
+					this.filteredVariables = []
+					this.loading = false
+					this.fetching = false
 				}
 			}
+		},
+		onScopeMapChanged: function () {
+			// scope maps (runtime tree / historic activity instances) can arrive after the
+			// variables were already fetched - re-annotate in place instead of re-fetching
+			if (this.variables.length && !this.fetching) {
+				this.annotateVariables(this.variables)
+				// in-place annotation does not trigger the 'variables' watcher, so refresh the filtered list
+				if (typeof this.applyActivityFilter === 'function') this.applyActivityFilter()
+				else this.filteredVariables = [...this.variables]
+			} else {
+				this.loadSelectedInstanceVariables()
+			}
+		},
+		annotateVariables: function (variables) {
+			variables.forEach(v => {
+				v.scope = this.activityInstancesGrouped[v.activityInstanceId] || v.activityInstanceId
+				v.scopeActivityId = this.activityInstanceIdToActivityId[v.activityInstanceId] || null
+				v.isLive = this.isVariableScopeLive(v)
+			})
+		},
+		isVariableScopeLive: function (v) {
+			if (!this.isActiveInstance) return false
+			// runtime rows are live by definition
+			if (this.variablesSource === 'runtime') return true
+			if (this.activityInstance) return this.liveActivityInstanceIds.has(v.activityInstanceId)
+			// no runtime tree available (e.g. suspended instances, external embedders)
+			return true
 		},
 		fetchInstanceVariables: async function (service, method) {
 			this.fetching = true
 			this.loading = true
+			this.variablesSource = service === 'ProcessService' ? 'runtime' : 'history'
 			const variables = await serviceMap[service][method](this.selectedInstance.id, this.restFilter)
-			variables.forEach(v => {
-				v.scope = this.activityInstancesGrouped[v.activityInstanceId] || v.activityInstanceId
-				v.scopeActivityId = this.activityInstanceIdToActivityId[v.activityInstanceId] || null
-			})
+			this.annotateVariables(variables)
 			variables.sort((a, b) => a.name.localeCompare(b.name))
 
 			this.variables = variables
 			this.filteredVariables = [...variables]
 			this.loading = false
 			this.fetching = false
-		},    
+		},
     displayValue(variable) {
 	  return variableUtils.displayValue(variable)
     },
@@ -168,7 +222,7 @@ export default {
 				const blob = new Blob([Uint8Array.from(atob(variable.value.data), c => c.codePointAt(0))], { type: variable.value.contentType })
 				this.$refs.importPopper.triggerDownload(blob, this.getFileVariableName(variable))
 			} else {
-				const download = this.selectedInstance.state === 'ACTIVE' ?
+				const download = variable.isLive ?
 					ProcessService.fetchVariableDataByExecutionId(variable.executionId, variable.name) :
 					HistoryService.fetchHistoryVariableDataById(variable.id)
 				download.then(data => {
