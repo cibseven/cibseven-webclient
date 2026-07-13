@@ -120,6 +120,18 @@ public class ModelerService extends BaseService {
 		return unifiedDiagramProvider.getDiagrams(keyword, type, firstResult, maxResults);
 	}
 
+	@RequestMapping(value = "/unified-diagrams/{id}", method = RequestMethod.GET)
+	public ResponseEntity<UnifiedDiagram> getUnifiedDiagramById(
+		@PathVariable String id,
+		HttpServletRequest rq) {
+		if (authenticationEnabled) {
+			checkAuthorization(rq, true);
+		}
+		return unifiedDiagramProvider.getDiagramById(id)
+			.map(ResponseEntity::ok)
+			.orElse(ResponseEntity.notFound().build());
+	}
+
 	@RequestMapping(value = "/deployment/create", method = RequestMethod.POST)
 	public Deployment deployBpmn(
 			@Parameter(description = "Metadata of the diagram to be deployed (deployment-name, deployment-source, deploy-changed-only)") @RequestParam MultiValueMap<String, Object> data,
