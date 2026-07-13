@@ -22,7 +22,7 @@
     <div class="alert alert-info">{{ $t('admin.system.execution-metrics.metricsHelp') }}</div>
     <template v-if="!loading">
       <h5>{{ $t('admin.system.execution-metrics.usageLast12MonthsByMonth') }}</h5>
-      <apexchart height="380" :options="options" :series="series"></apexchart>
+      <apexchart ref="monthlyChart" height="380" :options="options" :series="series"></apexchart>
       <div class="pb-3">
         <FlowTable
           striped
@@ -31,6 +31,7 @@
           :items="monthlyItems"
           primary-key="index"
           :fields="monthlyFields"
+          @click="onMonthlyRowClick"
         >
         </FlowTable>
       </div>
@@ -71,7 +72,8 @@ export default {
         monthly: [],
       },
       metricNames: ['process-instances', 'decision-instances', 'task-users'],
-      loading: true
+      loading: true,
+      selectedMonthIndex: null
     }
   },
   computed: {
@@ -307,6 +309,27 @@ export default {
       const oneYearAgo = moment().subtract(1, 'years').startOf('day')
       const dateMoment = moment(date).startOf('day')
       return dateMoment.isBefore(oneYearAgo) || dateMoment.isAfter(today)
+    },
+    onMonthlyRowClick(item) {
+      const chart = this.$refs.monthlyChart
+      const dataPointIndex = this.labels.indexOf(item.month)
+      if (!chart || dataPointIndex === -1) return
+
+      if (this.selectedMonthIndex !== null) {
+        this.series.forEach((_, seriesIndex) =>
+          chart.toggleDataPointSelection(seriesIndex, this.selectedMonthIndex)
+        )
+      }
+
+      if (this.selectedMonthIndex === dataPointIndex) {
+        this.selectedMonthIndex = null
+      }
+      else {
+        this.series.forEach((_, seriesIndex) =>
+          chart.toggleDataPointSelection(seriesIndex, dataPointIndex)
+        )
+        this.selectedMonthIndex = dataPointIndex
+      }
     }
   },
 }
