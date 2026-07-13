@@ -271,15 +271,45 @@ describe('CIBHeaderFlow.vue', () => {
       wrapper = createWrapper()
       wrapper.vm.selectedEngine = 'engine1'
       localStorage.setItem('token', 'old-token')
-      
+
       engineTokensMock.hasTokenForEngine.mockReturnValue(false)
-      
+
       // Spy on logout method
       const logoutSpy = vi.spyOn(wrapper.vm, 'logout')
-      
+
       wrapper.vm.selectEngine('engine2')
-      
+
       expect(logoutSpy).toHaveBeenCalled()
+    })
+
+    it('should move to start page before logout when no cached token exists', async () => {
+      wrapper = createWrapper()
+      wrapper.vm.selectedEngine = 'engine1'
+      localStorage.setItem('token', 'old-token')
+
+      engineTokensMock.hasTokenForEngine.mockReturnValue(false)
+
+      // Mock window.location
+      const originalLocation = window.location
+      delete window.location
+      window.location = {
+        hash: '',
+        reload: vi.fn()
+      }
+
+      // Record the hash at the moment logout runs: it must already point at the
+      // start page, otherwise the post-login nextUrl captures the old engine's page
+      const hashAtLogout = []
+      vi.spyOn(wrapper.vm, 'logout').mockImplementation(() => {
+        hashAtLogout.push(window.location.hash)
+      })
+
+      wrapper.vm.selectEngine('engine2')
+
+      expect(hashAtLogout).toEqual(['#/seven/auth/start-configurable'])
+
+      // Restore original location
+      window.location = originalLocation
     })
   })
 })

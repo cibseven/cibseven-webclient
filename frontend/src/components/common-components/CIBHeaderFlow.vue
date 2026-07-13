@@ -237,7 +237,12 @@ export default {
         window.location.hash = '#/seven/auth/start-configurable'
         window.location.reload()
       } else {
-        // No cached token, need to logout and re-authenticate
+        // No cached token, need to logout and re-authenticate.
+        // Move to the start page first (like the cached-token branch) so the
+        // login redirect (nextUrl) doesn't return to engine-specific state
+        // from the previous engine. Must happen before logout(): its emit
+        // chain triggers location.reload() synchronously.
+        window.location.hash = '#/seven/auth/start-configurable'
         this.logout()
       }
     }
