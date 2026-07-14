@@ -78,27 +78,6 @@ public class DirectActivityProvider implements IActivityProvider {
 	}
 
 	@Override
-	public ActivityInstance findActivityInstances(String processInstanceId, CIBUser user) throws SystemException {
-
-		org.cibseven.bpm.engine.runtime.ActivityInstance activityInstance = null;
-
-		try {
-			activityInstance = directProviderUtil.getProcessEngine(user).getRuntimeService().getActivityInstance(processInstanceId);
-		} catch (AuthorizationException e) {
-			throw e;
-		} catch (ProcessEngineException e) {
-			throw new SystemException(e.getMessage(), e);
-		}
-
-		if (activityInstance == null) {
-			throw new NoObjectFoundException(new SystemException("Process instance with id " + processInstanceId + " does not exist"));
-		}
-
-		ActivityInstanceDto result = ActivityInstanceDto.fromActivityInstance(activityInstance);
-		return directProviderUtil.convertValue(result, ActivityInstance.class, user);
-	}
-
-	@Override
 	public List<ActivityInstanceHistory> findActivityInstanceHistory(String processInstanceId, CIBUser user)
 			throws SystemException {
 

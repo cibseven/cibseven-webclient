@@ -31,7 +31,6 @@ public interface IActivityProvider {
 	public List<ActivityInstanceHistory> findActivitiesInstancesHistory(Map<String, Object> queryParams, CIBUser user);
 	public List<ActivityInstanceHistory> findActivitiesInstancesHistory(String processInstanceId, CIBUser user);
 	public List<ActivityInstanceHistory> findActivityInstanceHistory(String processInstanceId, CIBUser user) throws SystemException;
-	public ActivityInstance findActivityInstances(String processInstanceId, CIBUser user) throws SystemException;
 	public void deleteVariableByExecutionId(String executionId, String variableName, CIBUser user);
 	public void deleteVariableHistoryInstance(String id, CIBUser user);
 	public Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(String processDefinitionId, Map<String, Object> params, CIBUser user);

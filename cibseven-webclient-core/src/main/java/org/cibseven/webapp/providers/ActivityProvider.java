@@ -58,12 +58,6 @@ public class ActivityProvider extends SevenProviderBase implements IActivityProv
 	}
 	
 	@Override
-	public ActivityInstance findActivityInstances(String processInstanceId, CIBUser user) throws SystemException {
-		String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId + "/activity-instances";
-		return doGet(url, ActivityInstance.class, user, false).getBody();
-	}
-	
-	@Override
 	public void deleteVariableByExecutionId(String executionId, String variableName, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/execution/" + executionId + "/localVariables/" + variableName;
 		try {
