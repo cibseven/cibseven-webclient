@@ -194,16 +194,25 @@ describe('CIBHeaderFlow.vue', () => {
 
   describe('Engine Token Management', () => {
     let engineTokensMock
+    let originalLocation
 
     beforeEach(async () => {
       vi.clearAllMocks()
       localStorage.clear()
       sessionStorage.clear()
+      // Capture the real window.location so afterEach can always restore it,
+      // even if a test that mocks it fails mid-assertion.
+      originalLocation = window.location
       // Get the mocked module
       engineTokensMock = await import('@/utils/engineTokens.js')
     })
 
     afterEach(() => {
+      // Restore only if a test replaced it; the guard avoids a self-assign that
+      // jsdom would treat as navigation for the tests that never mock location.
+      if (window.location !== originalLocation) {
+        window.location = originalLocation
+      }
       localStorage.clear()
       sessionStorage.clear()
     })
@@ -249,22 +258,18 @@ describe('CIBHeaderFlow.vue', () => {
       engineTokensMock.hasTokenForEngine.mockReturnValue(true)
       engineTokensMock.restoreTokenForEngine.mockReturnValue('cached-token')
       
-      // Mock window.location
-      const originalLocation = window.location
+      // Mock window.location (restored by afterEach)
       delete window.location
       window.location = {
         hash: '',
         reload: vi.fn()
       }
-      
+
       wrapper.vm.selectEngine('engine2')
-      
+
       expect(engineTokensMock.restoreTokenForEngine).toHaveBeenCalledWith('engine2')
       expect(window.location.hash).toBe('#/seven/auth/start-configurable')
       expect(window.location.reload).toHaveBeenCalled()
-      
-      // Restore original location
-      window.location = originalLocation
     })
 
     it('should call logout when no cached token exists for new engine', async () => {
@@ -289,8 +294,7 @@ describe('CIBHeaderFlow.vue', () => {
 
       engineTokensMock.hasTokenForEngine.mockReturnValue(false)
 
-      // Mock window.location
-      const originalLocation = window.location
+      // Mock window.location (restored by afterEach)
       delete window.location
       window.location = {
         hash: '',
@@ -307,9 +311,6 @@ describe('CIBHeaderFlow.vue', () => {
       wrapper.vm.selectEngine('engine2')
 
       expect(hashAtLogout).toEqual(['#/seven/auth/start-configurable'])
-
-      // Restore original location
-      window.location = originalLocation
     })
   })
 })
