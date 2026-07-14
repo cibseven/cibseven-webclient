@@ -431,8 +431,6 @@ export default {
       }
     },
     logout: function() {
-      this.$router.push('/')
-      location.reload() //refresh to empty vuex and axios defaults
       //Remove some storage variables when logout
       //https://helpdesk.cib.de/browse/BPM4CIB-3691
       localStorage.removeItem('accessToken')
@@ -440,6 +438,10 @@ export default {
       sessionStorage.removeItem('accessToken')
       sessionStorage.removeItem('tokenModeler')
       // Note: engine token cleanup is handled by CIBHeaderFlow.logout()
+      // Set the hash before reload: router.push is async and loses the race, so the
+      // reload would otherwise land on the current page instead of the start page.
+      window.location.hash = '#/'
+      window.location.reload() //refresh to empty vuex and axios defaults
     },
     openStartProcess: function() {
       this.$eventBus.emit('openStartProcess')
