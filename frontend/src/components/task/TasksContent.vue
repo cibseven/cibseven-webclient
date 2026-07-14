@@ -222,6 +222,7 @@ export default {
       }
     },
     listTasksWithFilter: function() {
+      this.taskResultsIndex = this.$root.config.maxTaskResults
       this.tasks = []
       this.processesInstances = []
       if (this.$refs.navbar.$refs.taskLoader) this.$refs.navbar.$refs.taskLoader.done = false
