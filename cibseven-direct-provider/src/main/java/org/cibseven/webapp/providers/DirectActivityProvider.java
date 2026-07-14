@@ -78,15 +78,6 @@ public class DirectActivityProvider implements IActivityProvider {
 	}
 
 	@Override
-	public List<ActivityInstanceHistory> findActivityInstanceHistory(String processInstanceId, CIBUser user)
-			throws SystemException {
-
-		HistoricActivityInstanceQueryDto queryHistoricActivityInstanceDto = new HistoricActivityInstanceQueryDto();
-		queryHistoricActivityInstanceDto.setProcessInstanceId(processInstanceId);
-		return queryHistoricActivityInstance(queryHistoricActivityInstanceDto, user);
-	}
-
-	@Override
 	public void deleteVariableByExecutionId(String executionId, String variableName, CIBUser user) {
 		try {
 			directProviderUtil.getProcessEngine(user).getRuntimeService().removeVariableLocal(executionId, variableName);

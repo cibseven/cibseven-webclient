@@ -52,7 +52,7 @@ public class CibsevenFormUiTask implements TemplateTask {
 		template.setVariables(bpmProvider.fetchFormVariables(variablesList, taskId, true, user));
 		template.setBpmDiagram(bpmProvider.fetchDiagram(template.getTask().getProcessDefinitionId(), user));
 		template.setActivityInstances(bpmProvider.findActivityInstance(template.getTask().getProcessInstanceId(), user));
-		template.setActivityInstanceHistory(bpmProvider.findActivityInstanceHistory(template.getTask().getProcessInstanceId(), user));
+		template.setActivityInstanceHistory(bpmProvider.findActivitiesInstancesHistory(template.getTask().getProcessInstanceId(), user));
 
 		log(template.getTask(), "[INFO] Fetched variables", getClass().getSimpleName());
 		
