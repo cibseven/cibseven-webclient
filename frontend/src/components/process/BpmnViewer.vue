@@ -160,6 +160,7 @@ export default {
     ...mapActions('diagram', ['setDiagramReady']),
     ...mapActions('modeler/elementTemplates', ['fetchAllElementTemplates']),
     ensureElementTemplatesLoaded: function() {
+      if (!this.$root?.config?.modelerEnabled) return
       if (this.allElementTemplateContents && this.allElementTemplateContents.length > 0) return
       this.fetchAllElementTemplates().catch(err => {
         console.warn('BpmnViewer: failed to load element templates for icon rendering', err)
