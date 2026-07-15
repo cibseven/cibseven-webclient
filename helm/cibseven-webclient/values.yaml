@@ -59,6 +59,11 @@ application:
     webclient:
       modeler:
         enabled: false
+        # Element template JSONs loaded into the modeler DB at startup (needs modeler.enabled: true).
+        # Spring resource locations (globs resolved). Empty by default.
+        # e.g. - "file:/opt/cibseven/element-templates/*.json"
+        templates:
+          paths: []
       # LDAP
       ldap:
         url: ""
