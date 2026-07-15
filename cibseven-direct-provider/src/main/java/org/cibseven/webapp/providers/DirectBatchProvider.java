@@ -67,25 +67,11 @@ public class DirectBatchProvider implements IBatchProvider {
 		BatchQueryDto queryDto = new BatchQueryDto(directProviderUtil.getObjectMapper(user), paged.getQueryParams());
 		BatchQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 
-		List<Batch> batchResults = directProviderUtil.listAndConvert(query, paged.getFirstResult(), paged.getMaxResults(),
+		List<Batch> batches = directProviderUtil.listAndConvert(query, paged.getFirstResult(), paged.getMaxResults(),
 				BatchDto::fromBatch, Batch.class, user);
 
-		batchResults.forEach(batch -> {
-
-			String batchId = batch.getId();
-			Map<String, Object> statParams = new HashMap<>();
-			statParams.put("batchId", batchId);
-
-			Collection<Batch> statList = getBatchStatistics(statParams, user);
-			if (!statList.isEmpty()) {
-				Batch stats = statList.iterator().next();
-				batch.setCompletedJobs(stats.getCompletedJobs());
-				batch.setRemainingJobs(stats.getRemainingJobs());
-				batch.setFailedJobs(stats.getFailedJobs());
-			}
-		});
-
-		return batchResults;
+    addBatchStatistics(batches, user);
+		return batches;
 	}
 
 	@Override
