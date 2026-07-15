@@ -37,6 +37,11 @@ cibseven:
       # Requires the parent project to provide a configured DataSource and pre-created schema.
       # Set to false for deployments where the modeler is not needed.
       enabled: false
+      # Element template JSONs loaded into the modeler DB at startup (needs modeler.enabled: true).
+      # Values are Spring resource locations (globs resolved). Empty by default.
+      # e.g. - "file:/opt/cibseven/element-templates/*.json"
+      templates:
+        paths: []
     # Engine rest
     engineRest:
       url: http://localhost:8080

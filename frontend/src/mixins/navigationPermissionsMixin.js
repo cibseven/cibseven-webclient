@@ -47,6 +47,6 @@ export default {
     },
     permissionsSystemManagement() {
       return this.$root.user && this.adminManagementPermissions(this.$root.config.permissions.systemManagement, 'system')
-    },
+    }
   }
 }
