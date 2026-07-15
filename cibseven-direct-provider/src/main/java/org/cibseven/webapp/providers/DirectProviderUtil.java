@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Supplier;
 import java.util.function.Function;
 
@@ -51,6 +52,8 @@ import org.cibseven.bpm.engine.query.Query;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 import lombok.Setter;
 
 public class DirectProviderUtil {
@@ -233,5 +236,64 @@ public class DirectProviderUtil {
 	
 	protected <Q extends AbstractQueryDto<?>> Q parseQueryDto(Object params, Class<Q> queryDtoClass, CIBUser user) {
 		return getObjectMapper(user).convertValue(params, queryDtoClass);
-	}	
+	}
+
+	/**
+	 * Holds the pagination parameters ({@code firstResult}/{@code maxResults}) extracted
+	 * from a request parameter map, together with the remaining parameters as a
+	 * {@link MultivaluedMap} suitable for building a query DTO.
+	 */
+	public static class PagedParams {
+		private final Integer firstResult;
+		private final Integer maxResults;
+		private final MultivaluedMap<String, String> queryParams;
+
+		PagedParams(Integer firstResult, Integer maxResults, MultivaluedMap<String, String> queryParams) {
+			this.firstResult = firstResult;
+			this.maxResults = maxResults;
+			this.queryParams = queryParams;
+		}
+
+		public Integer getFirstResult() {
+			return firstResult;
+		}
+
+		public Integer getMaxResults() {
+			return maxResults;
+		}
+
+		public MultivaluedMap<String, String> getQueryParams() {
+			return queryParams;
+		}
+	}
+
+	/**
+	 * Extracts {@code firstResult}/{@code maxResults} from the given params and collects
+	 * the remaining entries into a {@link MultivaluedMap}.
+	 */
+	protected PagedParams extractPagedParams(Map<String, Object> params) {
+		MultivaluedMap<String, String> multiValueMap = new MultivaluedHashMap<>();
+		Integer firstResult = null;
+		Integer maxResults = null;
+		for (Entry<String, Object> entry : params.entrySet()) {
+			if (entry.getKey().equals("firstResult"))
+				firstResult = Integer.parseInt((String) entry.getValue());
+			else if (entry.getKey().equals("maxResults"))
+				maxResults = Integer.parseInt((String) entry.getValue());
+			else
+				multiValueMap.putSingle(entry.getKey(), (String) entry.getValue());
+		}
+		return new PagedParams(firstResult, maxResults, multiValueMap);
+	}
+
+	/**
+	 * Builds a {@link MultivaluedMap} containing all entries of the given params.
+	 */
+	protected MultivaluedMap<String, String> toMultivaluedMap(Map<String, Object> params) {
+		MultivaluedMap<String, String> multiValueMap = new MultivaluedHashMap<>();
+		for (Entry<String, Object> entry : params.entrySet()) {
+			multiValueMap.putSingle(entry.getKey(), (String) entry.getValue());
+		}
+		return multiValueMap;
+	}
 }

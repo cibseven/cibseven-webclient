@@ -556,10 +556,7 @@ private List<VariableInstanceDto> queryVariableInstances(VariableInstanceQueryDt
 	}
 
 	private List<org.cibseven.bpm.engine.task.Task> queryTasks(Map<String, Object> filters, CIBUser user) {
-		MultivaluedMap<String, String> multiValueMap = new MultivaluedHashMap<>();
-		for (Entry<String, Object> entry : filters.entrySet()) {
-			multiValueMap.put(entry.getKey(), Arrays.asList(String.valueOf(entry.getValue())));
-		}
+		MultivaluedMap<String, String> multiValueMap = directProviderUtil.toMultivaluedMap(filters);
 		TaskQueryDto dto = new TaskQueryDto(directProviderUtil.getObjectMapper(user), multiValueMap);
 		ProcessEngine engine = directProviderUtil.getProcessEngine(user);
 		TaskQuery taskQuery = dto.toQuery(engine);
