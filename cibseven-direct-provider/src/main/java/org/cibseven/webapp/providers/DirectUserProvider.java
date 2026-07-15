@@ -35,6 +35,7 @@ import org.cibseven.bpm.engine.impl.identity.Authentication;
 import org.cibseven.bpm.engine.impl.util.PermissionConverter;
 import org.cibseven.bpm.engine.rest.dto.authorization.AuthorizationDto;
 import org.cibseven.bpm.engine.rest.dto.authorization.AuthorizationQueryDto;
+import org.cibseven.bpm.engine.rest.dto.history.batch.HistoricBatchQueryDto;
 import org.cibseven.bpm.engine.rest.dto.identity.GroupQueryDto;
 import org.cibseven.bpm.engine.rest.dto.identity.UserQueryDto;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
@@ -589,7 +590,7 @@ public class DirectUserProvider implements IUserProvider {
 
 	@Override
 	public long countUsers(Map<String, Object> filters, CIBUser user) throws SystemException {
-		UserQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(filters, UserQueryDto.class);
+		UserQueryDto queryDto = directProviderUtil.parseQueryDto(filters, UserQueryDto.class, user);
 		UserQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 		return query.count();
 	}

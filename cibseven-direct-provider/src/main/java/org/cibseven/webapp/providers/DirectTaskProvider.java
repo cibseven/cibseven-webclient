@@ -56,6 +56,7 @@ import org.cibseven.bpm.engine.rest.dto.converter.DelegationStateConverter;
 import org.cibseven.bpm.engine.rest.dto.converter.StringListConverter;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricTaskInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricTaskInstanceQueryDto;
+import org.cibseven.bpm.engine.rest.dto.history.batch.HistoricBatchQueryDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.VariableInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.VariableInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.dto.task.CompleteTaskDto;
@@ -369,7 +370,7 @@ private List<VariableInstanceDto> queryVariableInstances(VariableInstanceQueryDt
 	    VariableInstanceDto resultInstance = VariableInstanceDto.fromVariableInstance(instance);
 	    instanceResults.add(resultInstance);
 	  }
-  return instanceResults;
+	  return instanceResults;
 	}
 	
 	@Override
@@ -415,7 +416,7 @@ private List<VariableInstanceDto> queryVariableInstances(VariableInstanceQueryDt
 
 	@Override
 	public Collection<Task> findTasksPost(Map<String, Object> data, CIBUser user) throws SystemException {
-		TaskQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(data, TaskQueryDto.class);
+		TaskQueryDto queryDto = directProviderUtil.parseQueryDto(data, TaskQueryDto.class, user);
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
 		TaskQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 
@@ -450,26 +451,15 @@ private List<VariableInstanceDto> queryVariableInstances(VariableInstanceQueryDt
 
 	@Override
 	public void createIdentityLink(String taskId, Map<String, Object> data, CIBUser user) {
-		String userId = (String) data.get("userId");
-		String groupId = (String) data.get("groupId");
-		if (userId != null && groupId != null) {
-			throw new SystemException("Identity Link requires userId or groupId, but not both.");
-		}
-
-		if (userId == null && groupId == null) {
-			throw new SystemException("Identity Link requires userId or groupId.");
-		}
-
-		String type = (String) data.get("type");
-		if (userId != null) {
-			directProviderUtil.getProcessEngine(user).getTaskService().addUserIdentityLink(taskId, userId, type);
-		} else if (groupId != null) {
-			directProviderUtil.getProcessEngine(user).getTaskService().addGroupIdentityLink(taskId, groupId, type);
-		}
+		createDeleteIdentityLink(taskId, data, user, true);
 	}
 
 	@Override
 	public void deleteIdentityLink(String taskId, Map<String, Object> data, CIBUser user) {
+		createDeleteIdentityLink(taskId, data, user, false);
+	}
+	
+	private void createDeleteIdentityLink(String taskId, Map<String, Object> data, CIBUser user, boolean isCreate) {
 		String userId = (String) data.get("userId");
 		String groupId = (String) data.get("groupId");
 		if (userId != null && groupId != null) {
@@ -481,12 +471,19 @@ private List<VariableInstanceDto> queryVariableInstances(VariableInstanceQueryDt
 		}
 
 		String type = (String) data.get("type");
-		if (userId != null) {
-			directProviderUtil.getProcessEngine(user).getTaskService().deleteUserIdentityLink(taskId, userId, type);
-		} else if (groupId != null) {
-			directProviderUtil.getProcessEngine(user).getTaskService().deleteGroupIdentityLink(taskId, groupId, type);
+		if (isCreate) {
+			if (userId != null) {
+				directProviderUtil.getProcessEngine(user).getTaskService().addUserIdentityLink(taskId, userId, type);
+			} else if (groupId != null) {
+				directProviderUtil.getProcessEngine(user).getTaskService().addGroupIdentityLink(taskId, groupId, type);
+			}
+		} else {
+			if (userId != null) {
+				directProviderUtil.getProcessEngine(user).getTaskService().deleteUserIdentityLink(taskId, userId, type);
+			} else if (groupId != null) {
+				directProviderUtil.getProcessEngine(user).getTaskService().deleteGroupIdentityLink(taskId, groupId, type);
+			}
 		}
-
 	}
 
 	@Override
@@ -531,7 +528,7 @@ private List<VariableInstanceDto> queryVariableInstances(VariableInstanceQueryDt
 
 	@Override
 	public Integer findHistoryTasksCount(Map<String, Object> filters, CIBUser user) {
-		HistoricTaskInstanceQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(filters, HistoricTaskInstanceQueryDto.class);
+		HistoricTaskInstanceQueryDto queryDto = directProviderUtil.parseQueryDto(filters, HistoricTaskInstanceQueryDto.class, user);
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
 		HistoricTaskInstanceQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 

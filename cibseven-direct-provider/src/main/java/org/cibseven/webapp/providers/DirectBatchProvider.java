@@ -38,6 +38,8 @@ import org.cibseven.bpm.engine.rest.dto.batch.BatchDto;
 import org.cibseven.bpm.engine.rest.dto.batch.BatchQueryDto;
 import org.cibseven.bpm.engine.rest.dto.batch.BatchStatisticsDto;
 import org.cibseven.bpm.engine.rest.dto.batch.BatchStatisticsQueryDto;
+import org.cibseven.bpm.engine.rest.dto.history.HistoricActivityInstanceDto;
+import org.cibseven.bpm.engine.rest.dto.history.HistoricIncidentQueryDto;
 import org.cibseven.bpm.engine.rest.dto.history.batch.CleanableHistoricBatchReportDto;
 import org.cibseven.bpm.engine.rest.dto.history.batch.CleanableHistoricBatchReportResultDto;
 import org.cibseven.bpm.engine.rest.dto.history.batch.HistoricBatchDto;
@@ -77,12 +79,9 @@ public class DirectBatchProvider implements IBatchProvider {
 		BatchQueryDto queryDto = new BatchQueryDto(directProviderUtil.getObjectMapper(user), multiValueMap);
 		BatchQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 
-		List<org.cibseven.bpm.engine.batch.Batch> matchingBatches = QueryUtil.list(query, firstResult, maxResults);
+		List<Batch> batchResults = directProviderUtil.listAndConvert(query, firstResult, maxResults,
+				BatchDto::fromBatch, Batch.class, user);
 
-		List<Batch> batchResults = new ArrayList<>();
-		for (org.cibseven.bpm.engine.batch.Batch matchingBatch : matchingBatches) {
-			batchResults.add(directProviderUtil.convertValue(BatchDto.fromBatch(matchingBatch), Batch.class, user));
-		}
 		batchResults.forEach(batch -> {
 
 			String batchId = batch.getId();
@@ -162,7 +161,7 @@ public class DirectBatchProvider implements IBatchProvider {
 
 	@Override
 	public Collection<HistoryBatch> getHistoricBatches(Map<String, Object> params, CIBUser user) {
-		HistoricBatchQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(params, HistoricBatchQueryDto.class);
+		HistoricBatchQueryDto queryDto = directProviderUtil.parseQueryDto(params, HistoricBatchQueryDto.class, user);
 		HistoricBatchQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 		Integer firstResult = null;
 		Integer maxResults = null;
@@ -183,7 +182,7 @@ public class DirectBatchProvider implements IBatchProvider {
 
 	@Override
 	public Long getHistoricBatchCount(Map<String, Object> queryParams, CIBUser user) {
-		HistoricBatchQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(queryParams, HistoricBatchQueryDto.class);
+		HistoricBatchQueryDto queryDto = directProviderUtil.parseQueryDto(queryParams, HistoricBatchQueryDto.class, user);
 		HistoricBatchQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 		return query.count();
 	}

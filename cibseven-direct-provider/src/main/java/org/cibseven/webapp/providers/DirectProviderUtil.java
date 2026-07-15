@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.function.Function;
 
 import org.cibseven.bpm.BpmPlatform;
 import org.cibseven.bpm.engine.AuthorizationException;
@@ -43,6 +44,9 @@ import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.cibseven.bpm.engine.rest.util.EngineUtil;
+import org.cibseven.bpm.engine.rest.dto.AbstractQueryDto;
+
+import org.cibseven.bpm.engine.query.Query;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -194,16 +198,8 @@ public class DirectProviderUtil {
 			query.disableCustomObjectDeserialization();
 		}
 
-		List<VariableInstance> matchingInstances = QueryUtil.list(query, firstResult,
-				maxResults);
-
-		List<Variable> instanceResults = new ArrayList<>();
-		for (VariableInstance instance : matchingInstances) {
-			VariableInstanceDto resultInstanceDto = VariableInstanceDto.fromVariableInstance(instance);
-			VariableHistory resultInstance = convertValue(resultInstanceDto, VariableHistory.class, user);
-			instanceResults.add(resultInstance);
-		}
-		return instanceResults;
+		return listAndConvert(query, firstResult, maxResults, 
+				VariableInstanceDto::fromVariableInstance, Variable.class, user);
 	}
 
 	public TypedValue getTypedValueForTaskVariable(String taskId, String variableName, boolean deserializeValue, CIBUser user) {
@@ -223,4 +219,19 @@ public class DirectProviderUtil {
 		}
 		return value;
 	}
+
+	protected <E, D, R> List<R> listAndConvert(Query<?, E> query, Integer firstResult, Integer maxResults,
+			Function<E, D> toIntermediateDto, Class<R> targetClass, CIBUser user) {
+
+		List<E> rawList = QueryUtil.list(query, firstResult, maxResults);
+		List<R> result = new ArrayList<>(rawList.size());
+		for (E item : rawList) {
+			result.add(convertValue(toIntermediateDto.apply(item), targetClass, user));
+		}
+		return result;
+	}
+	
+	protected <Q extends AbstractQueryDto<?>> Q parseQueryDto(Object params, Class<Q> queryDtoClass, CIBUser user) {
+		return getObjectMapper(user).convertValue(params, queryDtoClass);
+	}	
 }
