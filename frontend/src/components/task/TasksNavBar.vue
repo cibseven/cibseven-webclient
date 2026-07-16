@@ -74,12 +74,14 @@
         <div><h5 class="mt-3">{{ $t('task.showOnlyAddFilters') }}</h5></div>
         <hr class="my-2">
         <div class="mt-2">
-          <b-form-checkbox v-if="$root.config.layout.showFilterReminderDate" v-model="$store.state.filter.settings.reminder">
+          <b-form-checkbox v-if="$root.config.layout.showFilterReminderDate" v-model="$store.state.filter.settings.reminder"
+            @change="$emit('refresh-tasks')">
             <h5 class="d-flex fw-normal"><span class="mdi mdi-16px mdi-alarm align-middle pe-1"></span> {{ $t('nav-bar.reminder') }}</h5>
           </b-form-checkbox>
         </div>
         <div>
-          <b-form-checkbox v-if="$root.config.layout.showFilterDueDate" v-model="$store.state.filter.settings.dueDate">
+          <b-form-checkbox v-if="$root.config.layout.showFilterDueDate" v-model="$store.state.filter.settings.dueDate"
+            @change="$emit('refresh-tasks')">
             <h5 class="d-flex fw-normal"><span class="mdi mdi-16px mdi-calendar-alert align-middle pe-1"></span> {{ $t('nav-bar.dueDate') }}</h5>
           </b-form-checkbox>
         </div>
