@@ -78,5 +78,6 @@ describe('WarningBox.vue', () => {
   it('exposes toHtml as a method that escapes quotes around the strong tag', () => {
     const wrapper = createWrapper()
     expect(wrapper.vm.toHtml('say "hello" now')).toBe('say &quot;<strong>hello</strong>&quot; now')
+    expect(wrapper.vm.toHtml('say "hello" now, and "goodbye" after')).toBe('say &quot;<strong>hello</strong>&quot; now, and &quot;<strong>goodbye</strong>&quot; after')
   })
 })
