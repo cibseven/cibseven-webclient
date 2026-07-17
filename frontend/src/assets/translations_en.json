@@ -755,6 +755,7 @@
 				"resourceId": "Resource ID: {value}"
 			},
 			"add": "Add authorization",
+			"authorizationDisabledWarning": "The authorization management is disabled - all users have full access in the system.\nPlease check \"authorizationEnabled\" property in the engine configuration.",
 			"noAuthSelected": "No Authorization type selected"
 		},
 		"system": {
