@@ -714,30 +714,102 @@
 				"global": "GLOBAL"
 			},
 			"resourcesTypes": {
-				"application": "Application",
-				"user": "User",
-				"group": "Group",
-				"groupMembership": "Group Membership",
-				"authorization": "Authorization",
-				"system": "System",
-				"filter": "Filter",
-				"processDefinition": "Process Definition",
-				"task": "Task",
-				"processInstance": "Process Instance",
-				"deployment": "Deployment",
-				"decisionDefinition": "Decision Definition",
-				"tenant": "Tenant",
-				"tenantMembership": "Tenant Membership",
-				"batch": "Batch",
-				"decisionRequirements": "Decision Requirements Definition",
-				"report": "Report",
-				"dashboard": "Dashboard",
-				"userOperationLogCategory": "User Operation Log Category",
-				"historicTask": "Historic Task",
-				"historicProcessInstance": "Historic Process Instance",
-				"optimize": "Optimize",
-				"operationLogCategory": "Operation Log Category",
-				"property": "Property"
+				"application": {
+					"title": "Application",
+					"description": "Controls access to application areas such as Tasklist, Cockpit, and Modeler"
+				},
+				"user": {
+					"title": "User",
+					"description": "Controls access to user management, including viewing, creating, editing, and deleting users"
+				},
+				"group": {
+					"title": "Group",
+					"description": "Controls access to group management, including viewing, creating, editing, deleting groups, and managing assignments"
+				},
+				"groupMembership": {
+					"title": "Group Membership",
+					"description": "Controls adding and removing users in groups"
+				},
+				"authorization": {
+					"title": "Authorization",
+					"description": "Controls viewing, creating, editing, and deleting authorization entries"
+				},
+				"system": {
+					"title": "System",
+					"description": "Controls access to system diagnostics, execution metrics, and other system-related administration features"
+				},
+				"filter": {
+					"title": "Filter",
+					"description": "Controls access to saved task and search filters"
+				},
+				"processDefinition": {
+					"title": "Process Definition",
+					"description": "Controls access to process definitions and actions such as reading, starting, suspending, and migrating"
+				},
+				"task": {
+					"title": "Task",
+					"description": "Controls access to runtime tasks, including editing, assignment, and variables"
+				},
+				"processInstance": {
+					"title": "Process Instance",
+					"description": "Controls access to running process instances, including reading, updating, deleting, and suspending"
+				},
+				"deployment": {
+					"title": "Deployment",
+					"description": "Controls creating, viewing, and deleting deployments"
+				},
+				"decisionDefinition": {
+					"title": "Decision Definition",
+					"description": "Controls access to decision definitions and their history"
+				},
+				"tenant": {
+					"title": "Tenant",
+					"description": "Controls access to tenant management, including viewing, creating, editing, deleting tenants, and managing assignments"
+				},
+				"tenantMembership": {
+					"title": "Tenant Membership",
+					"description": "Controls adding and removing users or groups in tenants"
+				},
+				"batch": {
+					"title": "Batch",
+					"description": "Controls access to batches and mass operations such as migration, restart, deletion, and variable updates"
+				},
+				"decisionRequirements": {
+					"title": "Decision Requirements Definition",
+					"description": "Controls read access to Decision Requirements Diagrams (DRD)"
+				},
+				"report": {
+					"title": "Report",
+					"description": "Controls read access to reports and analytics data"
+				},
+				"dashboard": {
+					"title": "Dashboard",
+					"description": "Controls access to dashboard views, overviews, and metrics"
+				},
+				"userOperationLogCategory": {
+					"title": "User Operation Log Category",
+					"description": "Controls access to logs and audit entries of user actions"
+				},
+				"historicTask": {
+					"title": "Historic Task",
+					"description": "Controls read access to completed tasks and their variables"
+				},
+				"historicProcessInstance": {
+					"title": "Historic Process Instance",
+					"description": "Controls read access to completed or archived process instances"
+				},
+				"optimize": {
+					"title": "Optimize",
+					"description": "Controls access to Optimize-related resources"
+				},
+				"operationLogCategory": {
+					"title": "Operation Log Category",
+					"description": "Controls access to operation and system logs"
+				},
+				"property": {
+					"title": "Property",
+					"description": "Controls access to configuration-related properties"
+				}
 			},
 			"unselectAll": "Unselect All",
 			"selectAll": "Select All",

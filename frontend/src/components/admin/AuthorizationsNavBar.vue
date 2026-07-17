@@ -26,7 +26,7 @@
       :active="isActive(resourceType)"
       :to="editRoute(resourceType)"
       @click="$emit('middle')">
-      <span>{{ $t(`admin.authorizations.resourcesTypes.${resourceType.key}`) }}</span>
+      <span>{{ $t(`admin.authorizations.resourcesTypes.${resourceType.key}.title`) }}</span>
     </b-list-group-item>
     <component v-if="ExtendedAuthorizations" :is="ExtendedAuthorizations"></component>
   </b-list-group>

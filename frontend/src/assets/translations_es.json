@@ -714,30 +714,102 @@
 				"global": "GLOBAL"
 			},
 			"resourcesTypes": {
-				"application": "Aplicación",
-				"user": "Usuario",
-				"group": "Grupo",
-				"groupMembership": "Membresía de grupo",
-				"authorization": "Autorización",
-				"system": "Sistema",
-				"filter": "Filtro",
-				"processDefinition": "Definición de proceso",
-				"task": "Tarea",
-				"processInstance": "Instancia de proceso",
-				"deployment": "Despliegue",
-				"decisionDefinition": "Definición de decisión",
-				"tenant": "Arrendatario",
-				"tenantMembership": "Membresía de arrendatario",
-				"batch": "Lote",
-				"decisionRequirements": "Definición de requisitos de decisión",
-				"report": "Informe",
-				"dashboard": "Tablero",
-				"userOperationLogCategory": "Categoría de registro de operaciones de usuario",
-				"historicTask": "Tarea histórica",
-				"historicProcessInstance": "Instancia histórica de proceso",
-				"optimize": "Optimizar",
-				"operationLogCategory": "Categoría del registro de operaciones",
-				"property": "Propiedad"
+				"application": {
+					"title": "Aplicación",
+					"description": "Controla el acceso a áreas de la aplicación como Tasklist, Cockpit y Modeler"
+				},
+				"user": {
+					"title": "Usuario",
+					"description": "Controla el acceso a la gestión de usuarios, incluyendo ver, crear, editar y eliminar usuarios"
+				},
+				"group": {
+					"title": "Grupo",
+					"description": "Controla el acceso a la gestión de grupos, incluyendo ver, crear, editar, eliminar grupos y administrar asignaciones"
+				},
+				"groupMembership": {
+					"title": "Membresía de grupo",
+					"description": "Controla la adición y eliminación de usuarios en grupos"
+				},
+				"authorization": {
+					"title": "Autorización",
+					"description": "Controla la visualización, creación, edición y eliminación de entradas de autorización"
+				},
+				"system": {
+					"title": "Sistema",
+					"description": "Controla el acceso al diagnóstico del sistema, las métricas de ejecución y otras funciones administrativas del sistema"
+				},
+				"filter": {
+					"title": "Filtro",
+					"description": "Controla el acceso a filtros guardados de tareas y búsqueda"
+				},
+				"processDefinition": {
+					"title": "Definición de proceso",
+					"description": "Controla el acceso a definiciones de proceso y acciones como leer, iniciar, suspender o migrar"
+				},
+				"task": {
+					"title": "Tarea",
+					"description": "Controla el acceso a tareas en ejecución, incluyendo edición, asignación y variables"
+				},
+				"processInstance": {
+					"title": "Instancia de proceso",
+					"description": "Controla el acceso a instancias de proceso en ejecución, incluyendo lectura, actualización, eliminación y suspensión"
+				},
+				"deployment": {
+					"title": "Despliegue",
+					"description": "Controla la creación, visualización y eliminación de despliegues"
+				},
+				"decisionDefinition": {
+					"title": "Definición de decisión",
+					"description": "Controla el acceso a definiciones de decisión y su historial"
+				},
+				"tenant": {
+					"title": "Tenant",
+					"description": "Controla el acceso a la gestión de tenants, incluyendo ver, crear, editar, eliminar tenants y administrar asignaciones"
+				},
+				"tenantMembership": {
+					"title": "Membresía de tenant",
+					"description": "Controla la adición y eliminación de usuarios o grupos en tenants"
+				},
+				"batch": {
+					"title": "Lote",
+					"description": "Controla el acceso a lotes y operaciones masivas como migración, reinicio, eliminación o actualización de variables"
+				},
+				"decisionRequirements": {
+					"title": "Definición de requisitos de decisión",
+					"description": "Controla el acceso de solo lectura a diagramas de requisitos de decisión (DRD)"
+				},
+				"report": {
+					"title": "Informe",
+					"description": "Controla el acceso de solo lectura a informes y datos analíticos"
+				},
+				"dashboard": {
+					"title": "Panel",
+					"description": "Controla el acceso a vistas de panel, resúmenes y métricas"
+				},
+				"userOperationLogCategory": {
+					"title": "Categoría de registro de operaciones de usuario",
+					"description": "Controla el acceso a registros y entradas de auditoría de acciones de usuario"
+				},
+				"historicTask": {
+					"title": "Tarea histórica",
+					"description": "Controla el acceso de solo lectura a tareas completadas y sus variables"
+				},
+				"historicProcessInstance": {
+					"title": "Instancia histórica de proceso",
+					"description": "Controla el acceso de solo lectura a instancias de proceso completadas o archivadas"
+				},
+				"optimize": {
+					"title": "Optimizar",
+					"description": "Controla el acceso a recursos relacionados con Optimize"
+				},
+				"operationLogCategory": {
+					"title": "Categoría del registro de operaciones",
+					"description": "Controla el acceso a registros de operación y del sistema"
+				},
+				"property": {
+					"title": "Propiedad",
+					"description": "Controla el acceso a propiedades de configuración"
+				}
 			},
 			"unselectAll": "Deseleccionar todos",
 			"selectAll": "Seleccionar todos",

@@ -18,8 +18,14 @@
 -->
 <template>
   <div class="d-flex flex-column bg-light" :style="{ height: 'calc(100% - 55px)' }">
-    <div class="container-fluid pb-2 pt-4">
-      <div class="row align-items-center px-4">
+    <div class="container-fluid px-4 pb-2 pt-4">
+      <div class="mb-3">
+        <div class="rounded pb-2">
+          <div class="h4 fw-semibold text-dark mb-3">{{ resourceTypeInfo.title }}</div>
+          <div class="text-dark">{{ resourceTypeInfo.description }}</div>
+        </div>
+      </div>
+      <div class="row align-items-center">
         <div class="col-4">
           <b-input-group size="sm">
             <template #prepend>
@@ -234,13 +240,27 @@ export default {
     filterNameOptions: function() {
       return this.$store.state.filter.list.map(item => item.name)
     },
+    resourceTypeInfo() {
+      const resourceTypeKey = this.resourcesTypes[this.$route.params.resourceTypeId]?.key
+
+      if (!resourceTypeKey) {
+        return { title: '', description: '' }
+      }
+
+      const baseKey = 'admin.authorizations.resourcesTypes.' + resourceTypeKey
+
+      return {
+        title: this.$t(baseKey + '.title'),
+        description: this.$t(baseKey + '.description')
+      }
+    },
     authTranslationMap() {
       return {
         type: this.$t('admin.authorizations.types.' + this.types[this.authorizationSelected.type].key),
         user: this.authorizationSelected.userId,
         group: this.authorizationSelected.groupId,
         permissions: this.authorizationSelected.permissions.join(', '),
-        resource: this.$t('admin.authorizations.resourcesTypes.' + this.resourcesTypes[this.$route.params.resourceTypeId].key),
+        resource: this.$t('admin.authorizations.resourcesTypes.' + this.resourcesTypes[this.$route.params.resourceTypeId].key + '.title'),
         resourceId: this.authorizationSelected.resourceId
       }
     }
@@ -419,7 +439,7 @@ export default {
             csvContent += getStringObjByKeys(keys, r) + '\n'
           })
           const csvBlob = new Blob([csvContent], { type: 'text/csv' })
-          const filename = 'authorizations_' + this.$t('admin.authorizations.resourcesTypes.' + params.resourceTypeKey) +
+          const filename = 'authorizations_' + this.$t('admin.authorizations.resourcesTypes.' + params.resourceTypeKey + '.title') +
             '_' + moment().format('YYYYMMDD_HHmm') + '.csv'
           this.$refs.importPopper.triggerDownload(csvBlob, filename)
         }

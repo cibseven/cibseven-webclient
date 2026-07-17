@@ -714,30 +714,102 @@
 				"global": "GLOBAL"
 			},
 			"resourcesTypes": {
-				"application": "Anwendung",
-				"user": "Benutzer",
-				"group": "Gruppe",
-				"groupMembership": "Gruppenmitgliedschaft",
-				"authorization": "Berechtigung",
-				"system": "System",
-				"filter": "Filter",
-				"processDefinition": "Prozessdefinition",
-				"task": "Aufgabe",
-				"processInstance": "Prozessinstanz",
-				"deployment": "Bereitstellung",
-				"decisionDefinition": "Entscheidungsdefinition",
-				"tenant": "Mandant",
-				"tenantMembership": "Mandantenmitgliedschaft",
-				"batch": "Stapel",
-				"decisionRequirements": "Anforderungsdefinition für Entscheidung",
-				"report": "Bericht",
-				"dashboard": "Dashboard",
-				"userOperationLogCategory": "Kategorie des Benutzeraktionsprotokolls",
-				"historicTask": "Historische Aufgabe",
-				"historicProcessInstance": "Historische Prozessinstanz",
-				"optimize": "Optimieren",
-				"operationLogCategory": "Kategorie des Operationsprotokolls",
-				"property": "Eigenschaft"
+				"application": {
+					"title": "Anwendung",
+					"description": "Steuert den Zugriff auf Anwendungsbereiche wie Tasklist, Cockpit und Modeler"
+				},
+				"user": {
+					"title": "Benutzer",
+					"description": "Steuert den Zugriff auf die Benutzerverwaltung einschließlich Anzeigen, Anlegen, Bearbeiten und Löschen von Benutzern"
+				},
+				"group": {
+					"title": "Gruppe",
+					"description": "Steuert den Zugriff auf die Gruppenverwaltung einschließlich Anzeigen, Anlegen, Bearbeiten und Löschen von Gruppen sowie deren Zuordnungen"
+				},
+				"groupMembership": {
+					"title": "Gruppenmitgliedschaft",
+					"description": "Steuert das Hinzufügen und Entfernen von Benutzern zu Gruppen"
+				},
+				"authorization": {
+					"title": "Berechtigung",
+					"description": "Steuert das Anzeigen, Erstellen, Bearbeiten und Löschen von Berechtigungseinträgen"
+				},
+				"system": {
+					"title": "System",
+					"description": "Steuert den Zugriff auf Systemdiagnostik, Ausführungsmetriken und weitere systembezogene Verwaltungsfunktionen"
+				},
+				"filter": {
+					"title": "Filter",
+					"description": "Steuert den Zugriff auf gespeicherte Aufgaben- und Suchfilter"
+				},
+				"processDefinition": {
+					"title": "Prozessdefinition",
+					"description": "Steuert den Zugriff auf Prozessdefinitionen und Aktionen wie Lesen, Starten, Aussetzen oder Migrieren"
+				},
+				"task": {
+					"title": "Aufgabe",
+					"description": "Steuert den Zugriff auf Laufzeitaufgaben einschließlich Bearbeitung, Zuweisung und Variablen"
+				},
+				"processInstance": {
+					"title": "Prozessinstanz",
+					"description": "Steuert den Zugriff auf laufende Prozessinstanzen einschließlich Lesen, Ändern, Löschen und Suspendieren"
+				},
+				"deployment": {
+					"title": "Bereitstellung",
+					"description": "Steuert das Erstellen, Anzeigen und Löschen von Deployments"
+				},
+				"decisionDefinition": {
+					"title": "Entscheidungsdefinition",
+					"description": "Steuert den Zugriff auf Entscheidungsdefinitionen und deren Historie"
+				},
+				"tenant": {
+					"title": "Mandant",
+					"description": "Steuert den Zugriff auf die Mandantenverwaltung einschließlich Anzeigen, Anlegen, Bearbeiten und Löschen von Mandanten sowie deren Zuordnungen"
+				},
+				"tenantMembership": {
+					"title": "Mandantenmitgliedschaft",
+					"description": "Steuert das Hinzufügen und Entfernen von Benutzern oder Gruppen zu Mandanten"
+				},
+				"batch": {
+					"title": "Stapel",
+					"description": "Steuert den Zugriff auf Stapel und Massenoperationen wie Migration, Neustart, Löschung oder Variablenupdates"
+				},
+				"decisionRequirements": {
+					"title": "Anforderungsdefinition für Entscheidung",
+					"description": "Steuert den lesenden Zugriff auf Entscheidungsanforderungsdiagramme (DRD)"
+				},
+				"report": {
+					"title": "Bericht",
+					"description": "Steuert den lesenden Zugriff auf Berichte und Auswertungsdaten"
+				},
+				"dashboard": {
+					"title": "Dashboard",
+					"description": "Steuert den Zugriff auf Dashboard-Ansichten, Übersichten und Kennzahlen"
+				},
+				"userOperationLogCategory": {
+					"title": "Kategorie des Benutzeraktionsprotokolls",
+					"description": "Steuert den Zugriff auf Protokolle und Audit-Einträge von Benutzeraktionen"
+				},
+				"historicTask": {
+					"title": "Historische Aufgabe",
+					"description": "Steuert den lesenden Zugriff auf abgeschlossene Aufgaben und deren Variablen"
+				},
+				"historicProcessInstance": {
+					"title": "Historische Prozessinstanz",
+					"description": "Steuert den lesenden Zugriff auf abgeschlossene oder archivierte Prozessinstanzen"
+				},
+				"optimize": {
+					"title": "Optimieren",
+					"description": "Steuert den Zugriff auf Optimize-bezogene Ressourcen"
+				},
+				"operationLogCategory": {
+					"title": "Kategorie des Operationsprotokolls",
+					"description": "Steuert den Zugriff auf Betriebs- und Systemprotokolle"
+				},
+				"property": {
+					"title": "Eigenschaft",
+					"description": "Steuert den Zugriff auf konfigurationsbezogene Eigenschaften"
+				}
 			},
 			"unselectAll": "Alle abwählen",
 			"selectAll": "Alle auswählen",
