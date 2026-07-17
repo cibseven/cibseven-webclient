@@ -22,6 +22,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 public class EngineConfigurationTest {
 
@@ -70,5 +72,21 @@ public class EngineConfigurationTest {
 		assertEquals("none", config.getHistoryLevel());
 		assertFalse(config.isAuthorizationEnabled());
 		assertTrue(config.isEnablePasswordPolicy());
+	}
+
+	@ParameterizedTest
+	@CsvSource(value = {
+		"FULL, full",
+		"AUDIT, audit",
+		"Audit, audit",
+		"AuDiT, audit",
+		"audit, audit",
+		"Custom, custom",
+		"null, full"
+	}, nullValues = "null")
+	public void testGetHistoryLevel_normalizesValue(String input, String expected) {
+		EngineConfiguration config = new EngineConfiguration();
+		config.setHistoryLevel(input);
+		assertEquals(expected, config.getHistoryLevel());
 	}
 }
