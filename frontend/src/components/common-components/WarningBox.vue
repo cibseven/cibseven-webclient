@@ -23,8 +23,7 @@
     </div>
     <div>
       <p v-for="(line, index) in message.split('\n')" :key="index" style="overflow-wrap: break-word">
-        <!-- make strong each quoted word -->
-        <span v-html="line.replace(/&quot;(.*?)&quot;/g, '&quot;<strong>$1</strong>&quot;')"></span>
+        <span v-html="toHtml(line)"></span>
       </p>
       <slot></slot>
     </div>
@@ -37,5 +36,18 @@ export default {
   props: { 
     message: { type: String, default: '' },
   },
+  methods: {
+    toHtml(line) {
+      // make strong each quoted word
+      return line.replace(/"(.*?)"/g, '&quot;<strong>$1</strong>&quot;')
+    },
+  },
 }
 </script>
+
+<style lang="css" scoped>
+/* Strip margin from the last paragraph inside the warning box */
+div p:last-child {
+  margin-bottom: 0;
+}
+</style>
