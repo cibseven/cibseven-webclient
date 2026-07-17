@@ -755,6 +755,7 @@
 				"resourceId": "Ressourcen-ID: {value}"
 			},
 			"add": "Berechtigung hinzufügen",
+			"authorizationDisabledWarning": "Die Berechtigungsverwaltung ist deaktiviert - alle Benutzer haben vollen Zugriff im System.\nBitte überprüfen Sie die Eigenschaft \"authorizationEnabled\" in der Engine-Konfiguration.",
 			"noAuthSelected": "Kein Berechtigungstyp ausgewählt"
 		},
 		"system": {

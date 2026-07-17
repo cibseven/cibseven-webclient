@@ -18,6 +18,7 @@
 -->
 <template>
   <div class="d-flex flex-column bg-light" :style="{ height: 'calc(100% - 55px)' }">
+    <WarningBox v-if="authorizationDisabled" :message="$t('admin.authorizations.authorizationDisabledWarning')"/>
     <div class="container-fluid pb-2 pt-4">
       <div class="row align-items-center px-4">
         <div class="col-4">
@@ -176,10 +177,11 @@ import { debounce } from '@/utils/debounce.js'
 import { getStringObjByKeys } from '@/components/admin/utils.js'
 import { FlowTable, TaskPopper, ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
+import WarningBox from '@/components/common-components/WarningBox.vue'
 
 export default {
   name: 'AdminAuthorizationsTable',
-  components: { FlowTable, TaskPopper, BWaitingBox, ConfirmDialog, CellActionButton },
+  components: { FlowTable, TaskPopper, BWaitingBox, ConfirmDialog, CellActionButton, WarningBox },
   data: function () {
     return {
       selected: [],
@@ -214,6 +216,9 @@ export default {
     }
   },
   computed: {
+    authorizationDisabled() {
+      return !this.$root.config.authorizationEnabled
+    },
     authorizationFields: function() {
       const baseFields = [
         { label: 'admin.authorizations.type', key: 'type', class: 'col' },

@@ -755,6 +755,7 @@
 				"resourceId": "ID del recurso: {value}"
 			},
 			"add": "Añadir autorización",
+			"authorizationDisabledWarning": "La gestión de autorizaciones está deshabilitada: todos los usuarios tienen acceso completo en el sistema.\nPor favor, compruebe la propiedad \"authorizationEnabled\" en la configuración del motor.",
 			"noAuthSelected": "Ningún tipo de autorización seleccionada"
 		},
 		"system": {
