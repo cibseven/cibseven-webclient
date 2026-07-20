@@ -1127,7 +1127,10 @@
 		"showDeployment": "Load Deployment in list",
 		"deploymentsDeleted": "{0} out of {1} deployments have been successfully deleted",
 		"tenant": "Tenant",
-		"errorLoading": "Unable to load resource for the selected deployment"
+		"errorLoading": "Unable to load resource for the selected deployment",
+		"formPreviewError": "Unable to preview the selected form",
+		"formPreviewHeading": "Form Preview",
+		"formRawDataHeading": "Raw Data"
 	},
 	"navigation": {
 		"home": "Home",
