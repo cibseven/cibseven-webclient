@@ -227,6 +227,9 @@ export default {
       handler: async function(newId, oldId) {
         if (newId && newId !== oldId) {
           this.clearHistoricActivityStatistics()
+          if ((this.$route.query.tab || this.defaultTab) !== 'instances') {
+            this.syncStatisticsWithInstances(this.computedFilter)
+          }
           await this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
           ProcessService.fetchDiagram(newId).then(response => {
             this.$refs.diagram.showDiagram(response.bpmn20Xml, this.selectedActivityId)
@@ -250,6 +253,9 @@ export default {
   },
   mounted: function() {
     this.clearHistoricActivityStatistics()
+    if (!this.isInstancesView) {
+      this.syncStatisticsWithInstances(this.computedFilter)
+    }
     this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
     ProcessService.fetchDiagram(this.process.id).then(response => {
       setTimeout(() => {
