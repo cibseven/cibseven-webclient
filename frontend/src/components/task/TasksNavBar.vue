@@ -281,10 +281,10 @@ export default {
     'tasksFiltered': {
       immediate: false,
       handler: function () {
-        if (this.pendingScrollToTaskId) {
+        if (this.pendingScrollToTaskId &&
+          this.tasksFiltered.some(t => t.id === this.pendingScrollToTaskId)) {
           this.$nextTick(() => {
             this.scrollToSelectedTask()
-            this.pendingScrollToTaskId = null
           })
         }
       }
