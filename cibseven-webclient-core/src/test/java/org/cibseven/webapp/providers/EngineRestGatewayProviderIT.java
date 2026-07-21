@@ -27,6 +27,8 @@ import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
@@ -144,9 +146,18 @@ public class EngineRestGatewayProviderIT extends BaseHelper {
         assertThat(request.getBody().readUtf8()).isEqualTo("{\"variables\":{}}");
     }
 
-    @Test
-    void nonAllowListedGet_isDeniedWithoutForwarding() {
-        assertThatThrownBy(() -> provider.get("/deployment", Map.of(), getCibUser()))
+    @ParameterizedTest(name = "GET {0} is denied")
+    @ValueSource(strings = {
+        // curated middleware resources sharing the /services/v1 namespace (the "silent mismatch" risk)
+        "/deployment", "/batch", "/filter", "/job", "/job-definition", "/tenant",
+        "/authorization", "/incident", "/variable-instance", "/process-instance",
+        "/decision-definition", "/execution", "/metrics",
+        // allow-list boundary guards — regexes must not over-match
+        "/groups", "/user-tasks", "/process-definition/key/x/statistics",
+        "/task/42/variables", "/task/42/comment"
+    })
+    void nonAllowListedGet_deniedWithoutForwarding(String subPath) {
+        assertThatThrownBy(() -> provider.get(subPath, Map.of(), getCibUser()))
                 .isInstanceOf(AccessDeniedException.class);
         // deny-by-default must not reach the engine
         assertThat(mockWebServer.getRequestCount()).isZero();
@@ -160,10 +171,15 @@ public class EngineRestGatewayProviderIT extends BaseHelper {
         assertThat(mockWebServer.getRequestCount()).isZero();
     }
 
-    @Test
-    void nonAllowListedPost_isDeniedWithoutForwarding() {
-        // GET-only resource must not be reachable via POST
-        assertThatThrownBy(() -> provider.post("/group", "{}", getCibUser()))
+    @ParameterizedTest(name = "POST {0} is denied")
+    @ValueSource(strings = {
+        "/group", "/user",                       // GET-only resources not reachable via POST
+        "/task/42/form-variables",               // GET-allowed, but not as a write
+        "/task/42/complete", "/process-definition/key/x/start", "/deployment/create"
+    })
+    void nonAllowListedPost_deniedWithoutForwarding(String subPath) {
+        // submit-form is the only allowed write; everything else is denied
+        assertThatThrownBy(() -> provider.post(subPath, "{}", getCibUser()))
                 .isInstanceOf(AccessDeniedException.class);
         assertThat(mockWebServer.getRequestCount()).isZero();
     }

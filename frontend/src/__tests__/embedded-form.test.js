@@ -124,4 +124,26 @@ describe('embedded-form Option 1: single engine-rest gateway client', () => {
     expect(config.params).toEqual({ referenceId: 'task-9', isStartForm: false })
     expect(config.headers.authorization).toBe('Bearer x')
   })
+
+  it('loads a generated (rendered-form) start form via the gateway client', async () => {
+    // a Camunda-generated form: key contains /rendered-form (and not deployment:)
+    state.formKey = 'app:default:/rendered-form'
+
+    await run(true, 'pd:1')
+
+    const call = httpGetCalls.find((c) => c.path === 'process-definition/pd:1/rendered-form')
+    expect(call).toBeDefined()
+    expect(call.apiUri).toBe(GATEWAY)
+    expect(FormMock.mock.calls[0][0].client.apiUri).toBe(GATEWAY)
+  })
+
+  it('sets the X-Process-Engine header on the client when an engine id is provided', async () => {
+    await loadEmbeddedForm(true, false, 'pd:1', document.createElement('div'),
+      document.createElement('div'), { authToken: 'Bearer x', engineId: 'myengine' },
+      { servicesBasePath: BASE })
+
+    const config = ClientMock.mock.calls[0][0]
+    expect(config.headers['X-Process-Engine']).toBe('myengine')
+    expect(config.apiUri).toBe(GATEWAY)
+  })
 })
