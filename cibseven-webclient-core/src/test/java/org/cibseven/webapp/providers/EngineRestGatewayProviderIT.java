@@ -173,15 +173,31 @@ public class EngineRestGatewayProviderIT extends BaseHelper {
 
     @ParameterizedTest(name = "POST {0} is denied")
     @ValueSource(strings = {
-        "/group", "/user",                       // GET-only resources not reachable via POST
-        "/task/42/form-variables",               // GET-allowed, but not as a write
+        "/user", "/history/task",                  // no POST query variant is allow-listed for these
+        "/group/create", "/user/create",           // identity writes are not allowed
+        "/history/process-instance/delete",        // history delete is not a read query
+        "/task/42/form-variables",                 // form-variables is GET-only
         "/task/42/complete", "/process-definition/key/x/start", "/deployment/create"
     })
     void nonAllowListedPost_deniedWithoutForwarding(String subPath) {
-        // submit-form is the only allowed write; everything else is denied
+        // allowed POSTs are the read-query variants + submit-form; every other write is denied
         assertThatThrownBy(() -> provider.post(subPath, "{}", getCibUser()))
                 .isInstanceOf(AccessDeniedException.class);
         assertThat(mockWebServer.getRequestCount()).isZero();
+    }
+
+    @ParameterizedTest(name = "POST {0} (query variant) forwards")
+    @ValueSource(strings = {"/group", "/group/count"})
+    void allowListedPost_queryVariant_forwards(String subPath) throws Exception {
+        mockWebServer.enqueue(new MockResponse()
+                .setBody("[]")
+                .addHeader("Content-Type", "application/json"));
+
+        provider.post(subPath, "{}", getCibUser());
+
+        RecordedRequest request = mockWebServer.takeRequest();
+        assertThat(request.getMethod()).isEqualTo("POST");
+        assertThat(request.getPath()).isEqualTo("/engine-rest" + subPath);
     }
 
     @Test

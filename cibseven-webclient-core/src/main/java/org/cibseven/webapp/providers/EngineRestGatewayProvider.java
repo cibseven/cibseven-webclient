@@ -58,8 +58,16 @@ public class EngineRestGatewayProvider extends SevenProviderBase {
 			Pattern.compile("^/user(/.*)?$"),
 			Pattern.compile("^/history/.+$"));
 
-	/** POST calls embedded forms make: form submission only. */
+	/**
+	 * POST calls embedded forms make. CIB seven exposes a POST query-by-body variant of the group
+	 * resource (postQueryGroups {@code POST /group}), which the sdk uses to populate the group
+	 * dropdown, so that is allowed alongside form submission. Writes other than {@code submit-form}
+	 * (create/delete/complete/…) stay denied. Extend here if a form needs another POST query variant.
+	 */
 	private static final List<Pattern> ALLOWED_POST = List.of(
+			// group query (postQueryGroups + count-by-POST)
+			Pattern.compile("^/group(/count)?$"),
+			// form submission (the only allowed write)
 			Pattern.compile("^/task/[^/]+/submit-form$"),
 			Pattern.compile("^/process-definition/.+/submit-form$"));
 
