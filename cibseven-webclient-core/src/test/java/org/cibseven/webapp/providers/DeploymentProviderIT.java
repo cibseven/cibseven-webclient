@@ -25,6 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
@@ -34,6 +36,8 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @SpringBootTest
 @ContextConfiguration(classes = {DeploymentProvider.class, TestRestTemplateConfiguration.class, MockUserProviderTestConfiguration.class})
@@ -77,7 +81,9 @@ public class DeploymentProviderIT extends BaseHelper {
 
         // Act
         String nameLike = "";
-        Long deployments = deploymentProvider.countDeployments(user, nameLike);
+        MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
+        queryParams.add("nameLike", nameLike);
+        Long deployments = deploymentProvider.countDeployments(user, queryParams);
 
         // Assert
         assertThat(deployments).isNotNull();
@@ -101,7 +107,11 @@ public class DeploymentProviderIT extends BaseHelper {
         int maxResults = 50;
         String sortBy = "deploymentTime";
         String sortOrder = "desc";
-        List<Deployment> deployments = (List<Deployment>) deploymentProvider.findDeployments(user, nameLike, firstResult, maxResults, sortBy, sortOrder);
+
+        MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
+        queryParams.add("nameLike", nameLike);
+
+        List<Deployment> deployments = (List<Deployment>) deploymentProvider.findDeployments(user, queryParams, firstResult, maxResults, sortBy, sortOrder);
 
         // Assert
         assertThat(deployments).isNotNull();

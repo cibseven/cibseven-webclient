@@ -19,6 +19,7 @@ package org.cibseven.webapp.providers;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Collection;
 import java.util.Map;
 
@@ -86,31 +87,68 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 		return response.getBody();
 	}
 
+	/**
+	 * Queries for the number of deployments that fulfill given parameters.
+	 * Takes the same parameters as the Get Deployments method.
+	 */
 	@Override
-	public Long countDeployments(CIBUser user, String nameLike) {
+	public Long countDeployments(CIBUser user, MultiValueMap<String, String> queryParams) {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl(user) + "/deployment/count");
-		if (nameLike != null && !nameLike.isEmpty()) {
-			builder.queryParam("nameLike", nameLike);
+
+		if (queryParams != null) {
+			builder.queryParams(queryParams);
+
+			// replace "after" and "before" parameters with URL-encoded values
+			for (String param : List.of("after", "before")) {
+				String value = queryParams.getFirst(param);
+				if (value != null && !value.isEmpty()) {
+					builder.replaceQueryParam(
+						param,
+						value.replace(" ", "%2B").replace("+", "%2B")
+					);
+				}
+			}
 		}
+
 		String url = builder.toUriString();
-		JsonNode response = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, true)).getBody();
+		JsonNode response = doGet(url, JsonNode.class, user, true).getBody();
 		return response != null ? response.get("count").asLong() : 0L;
 	}
 
-  @Override
-	public Collection<Deployment> findDeployments(CIBUser user, String nameLike, int firstResult, int maxResults, String sortBy, String sortOrder) {
-		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl(user) + "/deployment")
+	/**
+	 * Queries for deployments that fulfill given parameters.
+	 * Parameters may be the properties of deployments, such as the id or name or a range of the deployment time.
+	 * The size of the result set can be retrieved by using the Get Deployment count method.
+	 */
+	@Override
+	public Collection<Deployment> findDeployments(CIBUser user, MultiValueMap<String, String> queryParams, int firstResult, int maxResults, String sortBy, String sortOrder) {
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl(user) + "/deployment");
+
+		if (queryParams != null) {
+			builder.queryParams(queryParams);
+
+			// replace "after" and "before" parameters with URL-encoded values
+			for (String param : List.of("after", "before")) {
+				String value = queryParams.getFirst(param);
+				if (value != null && !value.isEmpty()) {
+					builder.replaceQueryParam(
+						param,
+						value.replace(" ", "%2B").replace("+", "%2B")
+					);
+				}
+			}
+		}
+
+		builder
 			.queryParam("sortBy", sortBy)
 			.queryParam("sortOrder", sortOrder)
 			.queryParam("firstResult", firstResult)
 			.queryParam("maxResults", maxResults);
-		if (nameLike != null && !nameLike.isEmpty()) {
-			builder.queryParam("nameLike", nameLike);
-		}
+
 		String url = builder.toUriString();
-		return Arrays.asList(((ResponseEntity<Deployment[]>) doGet(url, Deployment[].class, user, true)).getBody());
+		return Arrays.asList(doGet(url, Deployment[].class, user, true).getBody());
 	}
-  
+
   	@Override
   	public Deployment findDeployment(String deploymentId, CIBUser user) {
   	    String url = getEngineRestUrl(user) + "/deployment/" + deploymentId;

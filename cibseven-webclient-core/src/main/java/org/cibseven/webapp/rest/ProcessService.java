@@ -51,8 +51,10 @@ import org.springframework.core.io.InputStreamSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -403,34 +405,109 @@ public class ProcessService extends BaseService implements InitializingBean {
 		return true;
 	}
 
+	private MultiValueMap<String, String> buildQueryParams(String id, String name, String nameLike, String source, Boolean withoutSource, String tenantIdIn, Boolean withoutTenantId, String after, String before) {
+		MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
+		if (id != null && !id.isEmpty()) {
+			queryParams.add("id", id);
+		}
+		if (name != null && !name.isEmpty()) {
+			queryParams.add("name", name);
+		}
+		if (nameLike != null && !nameLike.isEmpty()) {
+			queryParams.add("nameLike", nameLike);
+		}
+		if (source != null && !source.isEmpty()) {
+			queryParams.add("source", source);
+		}
+		if (withoutSource != null && withoutSource.booleanValue()) {
+			queryParams.add("withoutSource", withoutSource.toString());
+		}
+		if (tenantIdIn != null && !tenantIdIn.isEmpty()) {
+			queryParams.add("tenantIdIn", tenantIdIn);
+		}
+		if (withoutTenantId != null && withoutTenantId.booleanValue()) {
+			queryParams.add("withoutTenantId", withoutTenantId.toString());
+		}
+		if (after != null && !after.isEmpty()) {
+			queryParams.add("after", after.replace(" ", "+"));
+		}
+		if (before != null && !before.isEmpty()) {
+			queryParams.add("before", before.replace(" ", "+"));
+		}
+		
+		return queryParams;
+	}
+
 	@Operation(
 			summary = "Get count of all deployments for given query",
-			description = "<strong>Return: number of deployments")
-	@RequestMapping(value = "/deployments/count", method = RequestMethod.GET)
+			description = "Queries for the number of deployments that fulfill given parameters. Takes the same parameters as the Get Deployments method.<p><strong>Return: number of deployments</strong>")
+	@GetMapping(value = "/deployments/count")
 	public Long countDeployments(
 		CIBUser user,
-		@RequestParam(value = "nameLike", required = false, defaultValue = "") String nameLike
+		@Parameter(description = "Filter by deployment id")
+		@RequestParam(required = false, defaultValue = "") String id,
+		@Parameter(description = "Filter by the deployment name. Exact match.")
+		@RequestParam(required = false, defaultValue = "") String name,
+		@Parameter(description = "Filter by the deployment name that the parameter is a substring of. The parameter can include the wildcard % to express like-strategy such as: starts with (%name), ends with (name%) or contains (%name%).")
+		@RequestParam(required = false, defaultValue = "") String nameLike,
+		@Parameter(description = "Filter by the deployment source.")
+		@RequestParam(required = false, defaultValue = "") String source,
+		@Parameter(description = "Filter by the deployment source whereby source is equal to null.")
+		@RequestParam(required = false, defaultValue = "false") Boolean withoutSource,
+		@Parameter(description = "Filter by a comma-separated list of tenant ids. A deployment must have one of the given tenant ids.")
+		@RequestParam(required = false, defaultValue = "") String tenantIdIn,
+		@Parameter(description = "Only include deployments which belong to no tenant. Value may only be true, as false is the default behavior.")
+		@RequestParam(required = false, defaultValue = "false") Boolean withoutTenantId,
+		@Parameter(description = "Restricts to all deployments after the given date. By default, the date must have the format yyyy-MM-dd'T'HH:mm:ss.SSSZ, e.g., 2013-01-23T14:42:45.000+0200.")
+		@RequestParam(required = false, defaultValue = "") String after,
+		@Parameter(description = "Restricts to all deployments before the given date. By default, the date must have the format yyyy-MM-dd'T'HH:mm:ss.SSSZ, e.g., 2013-01-23T14:42:45.000+0200.")
+		@RequestParam(required = false, defaultValue = "") String before
 	) {
 		checkPermission(user, SevenResourceType.DEPLOYMENT, PermissionConstants.READ_ALL);
-		return bpmProvider.countDeployments(user, nameLike);
+		MultiValueMap<String, String> queryParams = buildQueryParams(id, name, nameLike, source, withoutSource, tenantIdIn, withoutTenantId, after, before);
+		return bpmProvider.countDeployments(user, queryParams);
 	}
 
 	@Operation(
 			summary = "Get all deployments for given query",
-			description = "<strong>Return: Collection of deployments")
-	@RequestMapping(value = "/deployments", method = RequestMethod.GET)
+			description = "Queries for deployments that fulfill given parameters. Parameters may be the properties of deployments, such as the id or name or a range of the deployment time. The size of the result set can be retrieved by using the Get Deployment count method.<p><strong>Return: Collection of deployments</strong>")
+	@GetMapping(value = "/deployments")
 	public Collection<Deployment> findDeployments(
 		CIBUser user,
-		@RequestParam(value = "nameLike", required = false, defaultValue = "") String nameLike,
+		@Parameter(description = "Filter by deployment id")
+		@RequestParam(required = false, defaultValue = "") String id,
+		@Parameter(description = "Filter by the deployment name. Exact match.")
+		@RequestParam(required = false, defaultValue = "") String name,
+		@Parameter(description = "Filter by the deployment name that the parameter is a substring of. The parameter can include the wildcard % to express like-strategy such as: starts with (%name), ends with (name%) or contains (%name%).")
+		@RequestParam(required = false, defaultValue = "") String nameLike,
+		@Parameter(description = "Filter by the deployment source.")
+		@RequestParam(required = false, defaultValue = "") String source,
+		@Parameter(description = "Filter by the deployment source whereby source is equal to null.")
+		@RequestParam(required = false, defaultValue = "false") Boolean withoutSource,
+		@Parameter(description = "Filter by a comma-separated list of tenant ids. A deployment must have one of the given tenant ids.")
+		@RequestParam(required = false, defaultValue = "") String tenantIdIn,
+		@Parameter(description = "Only include deployments which belong to no tenant. Value may only be true, as false is the default behavior.")
+		@RequestParam(required = false, defaultValue = "false") Boolean withoutTenantId,
+		@Parameter(description = "Restricts to all deployments after the given date. By default, the date must have the format yyyy-MM-dd'T'HH:mm:ss.SSSZ, e.g., 2013-01-23T14:42:45.000+0200.")
+		@RequestParam(required = false, defaultValue = "") String after,
+		@Parameter(description = "Restricts to all deployments before the given date. By default, the date must have the format yyyy-MM-dd'T'HH:mm:ss.SSSZ, e.g., 2013-01-23T14:42:45.000+0200.")
+		@RequestParam(required = false, defaultValue = "") String before,
+
+		@Parameter(description = "Pagination of results. Specifies the index of the first result to return. Defaults to 0.")
 		@RequestParam(value = "firstResult", required = false, defaultValue = "0") int firstResult,
+		@Parameter(description = "Pagination of results. Specifies the maximum number of results to return. Will return less results if there are no more results left. Defaults to 50.")
 		@RequestParam(value = "maxResults", required = false, defaultValue = "50") int maxResults,
+		@Parameter(description = "Sort the results lexicographically by a given criterion. Must be used in conjunction with the sortOrder parameter. Valid values are: id, name, deploymentTime, tenantId")
 		@RequestParam(value = "sortBy", required = false, defaultValue = "deploymentTime") String sortBy,
+		@Parameter(description = "Enum: \"asc\" \"desc\"\n" + //
+						"Sort the results in a given order. Values may be asc for ascending order or desc for descending order. Must be used in conjunction with the sortBy parameter.")
 		@RequestParam(value = "sortOrder", required = false, defaultValue = "desc") String sortOrder
 	) {
 		checkPermission(user, SevenResourceType.DEPLOYMENT, PermissionConstants.READ_ALL);
-		return bpmProvider.findDeployments(user, nameLike, firstResult, maxResults, sortBy, sortOrder);
+		MultiValueMap<String, String> queryParams = buildQueryParams(id, name, nameLike, source, withoutSource, tenantIdIn, withoutTenantId, after, before);
+		return bpmProvider.findDeployments(user, queryParams, firstResult, maxResults, sortBy, sortOrder);
 	}
-	
+
 	@Operation(
 			summary = "Get deployment with a specific Id",
 			description = "<strong>Return: Deployment")

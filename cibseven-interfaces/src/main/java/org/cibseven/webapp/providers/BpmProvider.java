@@ -469,8 +469,8 @@ public interface BpmProvider {
 	 * @return Fetched deployments.
 	 * @throws SystemException in case of any other error.
 	 */
-	default Long countDeployments(CIBUser user, String nameLike) throws SystemException {
-		return getDeploymentProvider().countDeployments(user, nameLike);
+	default Long countDeployments(CIBUser user, MultiValueMap<String, String> queryParams) throws SystemException {
+		return getDeploymentProvider().countDeployments(user, queryParams);
 	}
 
 	/**
@@ -479,8 +479,8 @@ public interface BpmProvider {
 	 * @return Fetched deployments.
 	 * @throws SystemException in case of any other error.
 	 */
-	default Collection<Deployment> findDeployments(CIBUser user, String nameLike, int firstResult, int maxResults, String sortBy, String sortOrder) throws SystemException {
-		return getDeploymentProvider().findDeployments(user, nameLike, firstResult, maxResults, sortBy, sortOrder);
+	default Collection<Deployment> findDeployments(CIBUser user, MultiValueMap<String, String> queryParams, int firstResult, int maxResults, String sortBy, String sortOrder) throws SystemException {
+		return getDeploymentProvider().findDeployments(user, queryParams, firstResult, maxResults, sortBy, sortOrder);
 	}
 
 	/**

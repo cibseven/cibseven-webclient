@@ -129,12 +129,18 @@ public final static String TENANT_ID = "tenant-id";
 	}
 
 	@Override
-	public Long countDeployments(CIBUser user, String nameLike) {
-		MultivaluedMap<String, String> queryParams = new MultivaluedHashMap<>();
-		if (nameLike != null && !nameLike.isEmpty()) {
-			queryParams.putSingle("nameLike", nameLike);
-		}
-		DeploymentQueryDto queryDto = new DeploymentQueryDto(directProviderUtil.getObjectMapper(user), queryParams);
+	public Long countDeployments(CIBUser user,
+		MultiValueMap<String, String> queryParams) {
+
+		// Convert MultiValueMap to MultivaluedMap for DeploymentQueryDto
+		MultivaluedMap<String, String> queryParamsMap = new MultivaluedHashMap<>();
+		queryParams.forEach((key, value) -> {
+			if (value != null && !value.isEmpty()) {
+				queryParamsMap.put(key, value);
+			}
+		});
+
+		DeploymentQueryDto queryDto = new DeploymentQueryDto(directProviderUtil.getObjectMapper(user), queryParamsMap);
 
 		DeploymentQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 
@@ -142,16 +148,23 @@ public final static String TENANT_ID = "tenant-id";
 	}
 
 	@Override
-	public Collection<Deployment> findDeployments(CIBUser user, String nameLike, int firstResult, int maxResults,
+	public Collection<Deployment> findDeployments(CIBUser user,
+			MultiValueMap<String, String> queryParams,
+		 	int firstResult, int maxResults,
 			String sortBy, String sortOrder) {
-		MultivaluedMap<String, String> queryParams = new MultivaluedHashMap<>();
-		queryParams.putSingle("sortBy", sortBy);
-		queryParams.putSingle("sortOrder", sortOrder);
-		if (nameLike != null && !nameLike.isEmpty()) {
-			queryParams.putSingle("nameLike", nameLike);
-		}
 
-		DeploymentQueryDto queryDto = new DeploymentQueryDto(directProviderUtil.getObjectMapper(user), queryParams);
+		// Convert MultiValueMap to MultivaluedMap for DeploymentQueryDto
+		MultivaluedMap<String, String> queryParamsMap = new MultivaluedHashMap<>();
+		queryParams.forEach((key, value) -> {
+			if (value != null && !value.isEmpty()) {
+				queryParamsMap.put(key, value);
+			}
+		});
+
+		queryParamsMap.putSingle("sortBy", sortBy);
+		queryParamsMap.putSingle("sortOrder", sortOrder);
+
+		DeploymentQueryDto queryDto = new DeploymentQueryDto(directProviderUtil.getObjectMapper(user), queryParamsMap);
 		DeploymentQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 		List<org.cibseven.bpm.engine.repository.Deployment> matchingDeployments = QueryUtil.list(query, firstResult,
 				maxResults);
