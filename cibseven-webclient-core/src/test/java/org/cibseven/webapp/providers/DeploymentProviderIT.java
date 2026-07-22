@@ -127,6 +127,12 @@ public class DeploymentProviderIT extends BaseHelper {
         assertThat(secondDeployment.getName()).isEqualTo("Deployment Two");
         assertThat(secondDeployment.getSource()).isEqualTo("source-2");
         assertThat(secondDeployment.getTenantId()).isEqualTo("tenant-2");
+
+        // verify the outgoing request query string (sort/pagination + filter)
+        var request = mockWebServer.takeRequest();
+        assertThat(request.getMethod()).isEqualTo("GET");
+        assertThat(request.getPath()).isEqualTo(
+                "/engine-rest/deployment?nameLike=&sortBy=deploymentTime&sortOrder=desc&firstResult=0&maxResults=50");
     }
 
     @Test
