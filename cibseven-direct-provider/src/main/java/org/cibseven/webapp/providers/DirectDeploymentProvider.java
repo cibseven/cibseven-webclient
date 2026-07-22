@@ -134,11 +134,13 @@ public final static String TENANT_ID = "tenant-id";
 
 		// Convert MultiValueMap to MultivaluedMap for DeploymentQueryDto
 		MultivaluedMap<String, String> queryParamsMap = new MultivaluedHashMap<>();
-		queryParams.forEach((key, value) -> {
-			if (value != null && !value.isEmpty()) {
-				queryParamsMap.put(key, value);
-			}
-		});
+		if (queryParams != null) {
+			queryParams.forEach((key, value) -> {
+				if (value != null && !value.isEmpty()) {
+					queryParamsMap.put(key, value);
+				}
+			});
+		}
 
 		DeploymentQueryDto queryDto = new DeploymentQueryDto(directProviderUtil.getObjectMapper(user), queryParamsMap);
 
@@ -155,11 +157,13 @@ public final static String TENANT_ID = "tenant-id";
 
 		// Convert MultiValueMap to MultivaluedMap for DeploymentQueryDto
 		MultivaluedMap<String, String> queryParamsMap = new MultivaluedHashMap<>();
-		queryParams.forEach((key, value) -> {
-			if (value != null && !value.isEmpty()) {
-				queryParamsMap.put(key, value);
-			}
-		});
+		if (queryParams != null) {
+			queryParams.forEach((key, value) -> {
+				if (value != null && !value.isEmpty()) {
+					queryParamsMap.put(key, value);
+				}
+			});
+		}
 
 		queryParamsMap.putSingle("sortBy", sortBy);
 		queryParamsMap.putSingle("sortOrder", sortOrder);
