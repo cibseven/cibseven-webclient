@@ -39,7 +39,7 @@ export default {
   methods: {
     toHtml(line) {
       // make strong each quoted word
-      return line.replace(/"(.*?)"/g, '&quot;<strong>$1</strong>&quot;')
+      return line.replaceAll(/"([^"]*)"/g, '&quot;<strong>$1</strong>&quot;')
     },
   },
 }

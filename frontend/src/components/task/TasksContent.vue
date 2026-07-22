@@ -102,6 +102,7 @@ import { getTaskEventShortcuts, checkKeyMatch } from '@/utils/shortcuts.js'
 import { mapActions, mapGetters } from 'vuex'
 import assigneeMixin from '@/mixins/assigneeMixin.js'
 import { formatDate } from '@/utils/dates.js'
+import { applyDatePresenceFilters } from '@/utils/taskDatePresenceFilter.js'
 
 export default {
   name: 'TasksContent',
@@ -283,6 +284,7 @@ export default {
         if (filterVariables && filterVariables.length > 0) {
           filters.variableNames = filterVariables.map(v => v.name)
         }
+        applyDatePresenceFilters(filters, this.$store.state.filter.settings)
         TaskService.findTasksByFilter(this.$store.state.filter.selected.id, filters,
           { firstResult: firstResult, maxResults: maxResults }).then(result => {
           const tasks = this.tasksByPermissions(this.$root.config.permissions.displayTasks, result)
