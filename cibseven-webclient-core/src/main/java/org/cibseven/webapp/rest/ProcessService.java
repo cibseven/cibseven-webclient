@@ -405,7 +405,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 		return true;
 	}
 
-	private MultiValueMap<String, String> buildQueryParams(String id, String name, String nameLike, String source, Boolean withoutSource, String tenantIdIn, Boolean withoutTenantId, String after, String before) {
+	private MultiValueMap<String, String> buildQueryParams(String id, String name, String nameLike, String source, Boolean withoutSource, String tenantIdIn, Boolean withoutTenantId, Boolean includeDeploymentsWithoutTenantId, String after, String before) {
 		MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
 		if (id != null && !id.isEmpty()) {
 			queryParams.add("id", id);
@@ -427,6 +427,9 @@ public class ProcessService extends BaseService implements InitializingBean {
 		}
 		if (withoutTenantId != null && withoutTenantId.booleanValue()) {
 			queryParams.add("withoutTenantId", withoutTenantId.toString());
+		}
+		if (includeDeploymentsWithoutTenantId != null && includeDeploymentsWithoutTenantId.booleanValue()) {
+			queryParams.add("includeDeploymentsWithoutTenantId", includeDeploymentsWithoutTenantId.toString());
 		}
 		if (after != null && !after.isEmpty()) {
 			queryParams.add("after", after.replace(" ", "+"));
@@ -458,13 +461,15 @@ public class ProcessService extends BaseService implements InitializingBean {
 		@RequestParam(required = false, defaultValue = "") String tenantIdIn,
 		@Parameter(description = "Only include deployments which belong to no tenant. Value may only be true, as false is the default behavior.")
 		@RequestParam(required = false, defaultValue = "false") Boolean withoutTenantId,
+		@Parameter(description = "Include deployments which belong to no tenant.  Can be used in combination with tenantIdIn. Value may only be true, as false is the default behavior.")
+		@RequestParam(required = false, defaultValue = "false") Boolean includeDeploymentsWithoutTenantId,
 		@Parameter(description = "Restricts to all deployments after the given date. By default, the date must have the format yyyy-MM-dd'T'HH:mm:ss.SSSZ, e.g., 2013-01-23T14:42:45.000+0200.")
 		@RequestParam(required = false, defaultValue = "") String after,
 		@Parameter(description = "Restricts to all deployments before the given date. By default, the date must have the format yyyy-MM-dd'T'HH:mm:ss.SSSZ, e.g., 2013-01-23T14:42:45.000+0200.")
 		@RequestParam(required = false, defaultValue = "") String before
 	) {
 		checkPermission(user, SevenResourceType.DEPLOYMENT, PermissionConstants.READ_ALL);
-		MultiValueMap<String, String> queryParams = buildQueryParams(id, name, nameLike, source, withoutSource, tenantIdIn, withoutTenantId, after, before);
+		MultiValueMap<String, String> queryParams = buildQueryParams(id, name, nameLike, source, withoutSource, tenantIdIn, withoutTenantId, includeDeploymentsWithoutTenantId, after, before);
 		return bpmProvider.countDeployments(user, queryParams);
 	}
 
@@ -488,6 +493,8 @@ public class ProcessService extends BaseService implements InitializingBean {
 		@RequestParam(required = false, defaultValue = "") String tenantIdIn,
 		@Parameter(description = "Only include deployments which belong to no tenant. Value may only be true, as false is the default behavior.")
 		@RequestParam(required = false, defaultValue = "false") Boolean withoutTenantId,
+		@Parameter(description = "Include deployments which belong to no tenant. Can be used in combination with tenantIdIn. Value may only be true, as false is the default behavior.")
+		@RequestParam(required = false, defaultValue = "false") Boolean includeDeploymentsWithoutTenantId,
 		@Parameter(description = "Restricts to all deployments after the given date. By default, the date must have the format yyyy-MM-dd'T'HH:mm:ss.SSSZ, e.g., 2013-01-23T14:42:45.000+0200.")
 		@RequestParam(required = false, defaultValue = "") String after,
 		@Parameter(description = "Restricts to all deployments before the given date. By default, the date must have the format yyyy-MM-dd'T'HH:mm:ss.SSSZ, e.g., 2013-01-23T14:42:45.000+0200.")
@@ -504,7 +511,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 		@RequestParam(value = "sortOrder", required = false, defaultValue = "desc") String sortOrder
 	) {
 		checkPermission(user, SevenResourceType.DEPLOYMENT, PermissionConstants.READ_ALL);
-		MultiValueMap<String, String> queryParams = buildQueryParams(id, name, nameLike, source, withoutSource, tenantIdIn, withoutTenantId, after, before);
+		MultiValueMap<String, String> queryParams = buildQueryParams(id, name, nameLike, source, withoutSource, tenantIdIn, withoutTenantId, includeDeploymentsWithoutTenantId, after, before);
 		return bpmProvider.findDeployments(user, queryParams, firstResult, maxResults, sortBy, sortOrder);
 	}
 
