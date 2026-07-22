@@ -36,8 +36,6 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 
 @SpringBootTest
 @ContextConfiguration(classes = {DeploymentProvider.class, TestRestTemplateConfiguration.class, MockUserProviderTestConfiguration.class})
