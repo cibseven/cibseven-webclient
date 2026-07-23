@@ -949,10 +949,11 @@ public class DirectProcessProvider implements IProcessProvider {
 
 		// fetch history for those ids to get full info
 		Map<String, Object> dataHistory = new HashMap<>();
-		dataHistory.put("processInstanceIds", instanceResults);
+		Set<String> processInstanceIds = instanceResults.stream().map(ProcessInstance::getId).collect(Collectors.toSet());
+		dataHistory.put("processInstanceIds", processInstanceIds);
+		dataHistory.put("fetchIncidents", Boolean.TRUE);
 
 		Integer firstResult0 = 0;
-		//TODO: dataHistory as input parameter could be wrong!
 		Collection<HistoryProcessInstance> historicInstances = findProcessesInstancesHistory(dataHistory, Optional.of(firstResult0), maxResults, user);
 	// sort [historicInstances] like they are inside [processInstanceIds]
 		historicInstances = historicInstances.stream()
