@@ -978,9 +978,9 @@
 	"start": {
 		"close": "Schließen",
 		"defaultStartForm": {
-			"introduction": "Wenn Sie möchten, können Sie einen Business Key festlegen und Variablen hinzufügen, bevor Sie ihn starten.",
-			"businessKey": "Business Key",
-			"businessKeyPlaceholder": "Business Key eingeben (optional)",
+			"introduction": "Wenn Sie möchten, können Sie einen fachlichen Schlüssel festlegen und Variablen hinzufügen, bevor Sie ihn starten.",
+			"businessKey": "Fachlicher Schlüssel",
+			"businessKeyPlaceholder": "Fachlichen Schlüssel eingeben (optional)",
 			"start": "Prozess starten"
 		},
 		"startProcess": {
