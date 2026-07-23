@@ -71,7 +71,9 @@ export default [
       ],
       // form-control-has-label only recognizes native tags by default; without this,
       // our @cib/common-frontend form wrappers (which render the native control inside
-      // a different component) get zero static a11y label coverage.
+      // a different component) get zero static a11y label coverage. b-form-datepicker and
+      // b-form-timepicker are deliberately excluded: they already bind a (generic) internal
+      // aria-label to their real input, so flagging usage sites is a false positive.
       "vuejs-accessibility/form-control-has-label": [
         "warn",
         {
@@ -79,9 +81,7 @@ export default [
             "b-form-select",
             "b-form-input",
             "b-form-textarea",
-            "b-form-file",
-            "b-form-datepicker",
-            "b-form-timepicker"
+            "b-form-file"
           ]
         }
       ],
