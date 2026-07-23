@@ -91,6 +91,8 @@ function skipValue(value, lang) {
       'allow',
       'deny',
       'global',
+
+      'operator', // technical term, identical in en/de
     ],
     'de': [
       'system',
