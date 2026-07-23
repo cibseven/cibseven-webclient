@@ -30,10 +30,10 @@
           <b-form-group class="mb-0">
             <b-input-group size="sm" class="align-items-center">
               <b-input-group-prepend class="me-2 align-items-center">
-                <span>{{ $t('sorting.sortBy') }}</span>
+                <label for="deployments-sort-select" class="mb-0">{{ $t('sorting.sortBy') }}</label>
               </b-input-group-prepend>
               <b-input-group-append class="d-flex align-items-center">
-                <b-form-select size="sm" v-model="sortBy" :options="sortingFields" class="mb-0"></b-form-select>
+                <b-form-select id="deployments-sort-select" size="sm" v-model="sortBy" :options="sortingFields" class="mb-0"></b-form-select>
                 <b-button size="sm" variant="secondary-outline"
                   @click="changeSortingOrder()" class="mdi mdi-18px ms-1 border-0"
                   :class="sortOrder === 'desc' ? 'mdi-arrow-down' : 'mdi-arrow-up'"

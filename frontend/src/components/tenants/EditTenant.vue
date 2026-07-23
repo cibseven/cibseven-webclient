@@ -45,9 +45,9 @@
               <b-card class="p-5 shadow-sm border rounded" :title="$t('admin.tenants.editMessage', [tenant.name])">
                 <b-card-text class="border-top pt-4 mt-3">
                   <CIBForm @submitted="update()">
-                    <b-form-group :label="$t('admin.tenants.name') + '*'" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
+                    <b-form-group :label="$t('admin.tenants.name') + '*'" label-for="edit-tenant-name" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
                       :invalid-feedback="$t('errors.invalid')">
-                      <b-form-input v-model="tenant.name" @update:modelValue="dirty=true" :state="notEmpty(tenant.name)" required></b-form-input>
+                      <b-form-input id="edit-tenant-name" v-model="tenant.name" @update:modelValue="dirty=true" :state="notEmpty(tenant.name)" required></b-form-input>
                     </b-form-group>
                     <div class="d-flex justify-content-between" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'">
                       <b-button variant="light" @click="$refs.deleteModal.show()">{{ $t('admin.tenants.deleteTenant') }}</b-button>
