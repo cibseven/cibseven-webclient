@@ -25,16 +25,16 @@
             <b-card-text class="border-top pt-4 mt-3">
               <CIBForm @submitted="onSubmit">
                 <b-form-group labels-cols-lg="2" label-size="lg" label-class="fw-bold pt-0 pb-4">
-                  <b-form-group :label="$t('admin.groups.id') + '*'" label-cols-sm="2"
+                  <b-form-group :label="$t('admin.groups.id') + '*'" label-for="create-group-id" label-cols-sm="2"
                     label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
-                    <b-form-input v-model="group.id" :state="isValidId(group.id)" required></b-form-input>
+                    <b-form-input id="create-group-id" v-model="group.id" :state="isValidId(group.id)" required></b-form-input>
                   </b-form-group>
-                  <b-form-group :label="$t('admin.groups.name') + '*'" label-cols-sm="2" label-align-sm="left" label-class="pb-4"
+                  <b-form-group :label="$t('admin.groups.name') + '*'" label-for="create-group-name" label-cols-sm="2" label-align-sm="left" label-class="pb-4"
                     :invalid-feedback="$t('errors.invalid')">
-                    <b-form-input v-model="group.name" :state="notEmpty(group.name)" required></b-form-input>
+                    <b-form-input id="create-group-name" v-model="group.name" :state="notEmpty(group.name)" required></b-form-input>
                   </b-form-group>
-                  <b-form-group :label="$t('admin.groups.type')" label-cols-sm="2" label-align-sm="left" label-class="pb-4">
-                    <b-form-input v-model="group.type"></b-form-input>
+                  <b-form-group :label="$t('admin.groups.type')" label-for="create-group-type" label-cols-sm="2" label-align-sm="left" label-class="pb-4">
+                    <b-form-input id="create-group-type" v-model="group.type"></b-form-input>
                   </b-form-group>
                   <div class="d-flex justify-content-end gap-2 mt-4">
                     <b-button type="button" @click="onReset()" variant="light">{{ $t('admin.groups.cancel') }}</b-button>

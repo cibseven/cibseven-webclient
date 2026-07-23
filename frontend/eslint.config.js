@@ -75,7 +75,7 @@ export default [
       // b-form-timepicker are deliberately excluded: they already bind a (generic) internal
       // aria-label to their real input, so flagging usage sites is a false positive.
       "vuejs-accessibility/form-control-has-label": [
-        "warn",
+        "error",
         {
           "controlComponents": [
             "b-form-select",
