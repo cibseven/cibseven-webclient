@@ -94,23 +94,14 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 	@Override
 	public Long countDeployments(CIBUser user, MultiValueMap<String, String> queryParams) {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl(user) + "/deployment/count");
-
 		if (queryParams != null) {
 			builder.queryParams(queryParams);
-
-			// replace "after" and "before" parameters with URL-encoded values
-			for (String param : List.of("after", "before")) {
-				String value = queryParams.getFirst(param);
-				if (value != null && !value.isEmpty()) {
-					builder.replaceQueryParam(
-						param,
-						value.replace(" ", "%2B").replace("+", "%2B")
-					);
-				}
-			}
 		}
-
-		String url = builder.toUriString();
+		// "+" is valid unescaped in a URI query per RFC 3986, so encode() leaves it untouched.
+		// The engine decodes query params using x-www-form-urlencoded conventions ("+" = space),
+		// so "+" must become "%2B" as the very last step, after toUriString(), to avoid being
+		// encoded a second time downstream (toUriString() itself calls encode() internally).
+		String url = builder.build().encode().toUriString().replace("+", "%2B");
 		JsonNode response = doGet(url, JsonNode.class, user, true).getBody();
 		return response != null ? response.get("count").asLong() : 0L;
 	}
@@ -123,29 +114,16 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 	@Override
 	public Collection<Deployment> findDeployments(CIBUser user, MultiValueMap<String, String> queryParams, int firstResult, int maxResults, String sortBy, String sortOrder) {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl(user) + "/deployment");
-
 		if (queryParams != null) {
 			builder.queryParams(queryParams);
-
-			// replace "after" and "before" parameters with URL-encoded values
-			for (String param : List.of("after", "before")) {
-				String value = queryParams.getFirst(param);
-				if (value != null && !value.isEmpty()) {
-					builder.replaceQueryParam(
-						param,
-						value.replace(" ", "%2B").replace("+", "%2B")
-					);
-				}
-			}
 		}
-
 		builder
-			.queryParam("sortBy", sortBy)
-			.queryParam("sortOrder", sortOrder)
-			.queryParam("firstResult", firstResult)
-			.queryParam("maxResults", maxResults);
-
-		String url = builder.toUriString();
+				.queryParam("sortBy", sortBy)
+				.queryParam("sortOrder", sortOrder)
+				.queryParam("firstResult", firstResult)
+				.queryParam("maxResults", maxResults);
+		// See countDeployments() above for why "+" is replaced as the very last step.
+		String url = builder.build().encode().toUriString().replace("+", "%2B");
 		return Arrays.asList(doGet(url, Deployment[].class, user, true).getBody());
 	}
 
