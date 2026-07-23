@@ -226,6 +226,7 @@ ui:
   maxProcessesResults: "50"
   maxUsersResults: "10"
   modelerEnabled: false
+  startProcessDefaultFormEnabled: false
   easyFormEnabled: false
   notAssignedTaskLayer: true
   automaticallyOpenTask: false
