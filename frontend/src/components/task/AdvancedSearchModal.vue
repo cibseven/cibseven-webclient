@@ -31,13 +31,16 @@
       </div>
       <div class="row mb-3">
         <div class="col-5">
-          <b-form-input :placeholder="$t('advanced-search.property')" v-model="selectedCriteriaValue.name"></b-form-input>
+          <label for="advanced-search-property" class="visually-hidden">{{ $t('advanced-search.property') }}</label>
+          <b-form-input id="advanced-search-property" :placeholder="$t('advanced-search.property')" v-model="selectedCriteriaValue.name"></b-form-input>
         </div>
         <div class="col-2">
-          <b-form-select v-model="selectedCriteriaValue.operator" :options="operators"></b-form-select>
+          <label for="advanced-search-operator" class="visually-hidden">{{ $t('commons.operator') }}</label>
+          <b-form-select id="advanced-search-operator" v-model="selectedCriteriaValue.operator" :options="operators"></b-form-select>
         </div>
         <div class="col-5">
-          <b-form-input :placeholder="$t('advanced-search.value')" v-model="selectedCriteriaValue.value"></b-form-input>
+          <label for="advanced-search-value" class="visually-hidden">{{ $t('advanced-search.value') }}</label>
+          <b-form-input id="advanced-search-value" :placeholder="$t('advanced-search.value')" v-model="selectedCriteriaValue.value"></b-form-input>
         </div>
       </div>
       <b-button @click="addCriteria" type="button" :title="$t('advanced-search.add')" variant="primary" class="mb-3">

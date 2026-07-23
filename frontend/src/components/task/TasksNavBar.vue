@@ -90,7 +90,8 @@
             <b-form-checkbox v-model="criteria.check">
               <h5 class="d-flex fw-normal">{{ criteria.displayName }}</h5>
             </b-form-checkbox>
-            <b-form-input v-if="criteria.check && criteria.defaultValue === ''" v-model="criteria.value" size="sm" class="mb-2"></b-form-input>
+            <label v-if="criteria.check && criteria.defaultValue === ''" :for="'tasks-criteria-value-' + index" class="visually-hidden">{{ criteria.displayName }}</label>
+            <b-form-input v-if="criteria.check && criteria.defaultValue === ''" :id="'tasks-criteria-value-' + index" v-model="criteria.value" size="sm" class="mb-2"></b-form-input>
           </div>
         </div>
         <div v-if="filterVariables.length > 0">
@@ -99,7 +100,8 @@
             <b-form-checkbox v-model="criteria.check">
               <h5 class="d-flex fw-normal">{{ criteria.displayName }}</h5>
             </b-form-checkbox>
-            <b-form-input v-if="criteria.check" v-model="criteria.value" size="sm" class="mb-2"></b-form-input>
+            <label v-if="criteria.check" :for="'tasks-fv-value-' + index" class="visually-hidden">{{ criteria.displayName }}</label>
+            <b-form-input v-if="criteria.check" :id="'tasks-fv-value-' + index" v-model="criteria.value" size="sm" class="mb-2"></b-form-input>
           </div>
         </div>
       </b-popover>

@@ -1,5 +1,6 @@
 {
 	"commons": {
+		"operator": "Operator",
 		"edit": "Edit",
 		"save": "Save",
 		"actualisation": {
