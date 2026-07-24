@@ -192,12 +192,6 @@ pipeline {
         }
 
         stage('SAST, frontend') {
-            when {
-                allOf {
-                    branch pipelineParams.primaryBranch
-                    expression { params.VERIFY }
-                }
-            }
             parallel {
                 stage('OWASP Dependency-Track') {
                     steps {
@@ -246,16 +240,19 @@ pipeline {
                 stage('Run SonarQube Checks') {
                     steps {
                         script {
+                            container(Constants.NODE_24_CONTAINER) {
+                                script {
+                                    // Install sonar-scanner
+                                    sh '''
+                                        echo "Installing sonarqube-scanner ..."
+                                        cd ./frontend
+                                        npm install -g sonarqube-scanner@4.3.2 --ignore-scripts
+                                    '''
+                                }
+                            }
                             container(Constants.MAVEN_JDK_21_CONTAINER) {
                                 withSonarQubeEnv(credentialsId: Constants.SONARQUBE_CREDENTIALS_ID, installationName: 'SonarQube') {
                                     script {
-                                        // Install sonar-scanner
-                                        sh '''
-                                            echo "Installing sonarqube-scanner ..."
-                                            cd ./frontend
-                                            npm install -g sonarqube-scanner@4.3.2 --ignore-scripts
-                                        '''
-
                                         // Read version from package.json
                                         def packageJson = readJSON file: './frontend/package.json'
                                         env.VERSION = packageJson.version
