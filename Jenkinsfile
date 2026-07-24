@@ -299,12 +299,6 @@ pipeline {
         }
 
         stage('SAST, middleware') {
-            when {
-                allOf {
-                    branch pipelineParams.primaryBranch
-                    expression { params.VERIFY }
-                }
-            }
             steps {
                 script {
                     stage('Run SonarQube Checks') {
