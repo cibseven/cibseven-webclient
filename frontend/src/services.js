@@ -555,16 +555,7 @@ const AuthService = {
     return axios.put(getServicesBasePath() + "/auth/password-recovery-update-password/" + userId,
       { password: password, authenticatedUserPassword: authenticatedUserPassword },
       { headers: { authorization: recoverToken } }
-    ) },
-  login: function(params, remember) {
-    const engineName = localStorage.getItem(ENGINE_STORAGE_KEY)
-    const headers = engineName ? { 'X-Process-Engine': engineName } : {}
-    return axios.create().post(getServicesBasePath() + '/auth/login', params, { headers: headers }).then(function(user) {
-      axios.defaults.headers.common.authorization = user.data.authToken
-      ;(remember ? localStorage : sessionStorage).setItem('token', user.data.authToken)
-      return user.data
-    })
-  }
+    ) }
 }
 
 const InfoService = {
