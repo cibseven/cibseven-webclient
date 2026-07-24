@@ -606,14 +606,6 @@ public interface BpmProvider {
 
 	/*UI Element templates methods migrated*/
 
-	default ActivityInstance findActivityInstances(String processInstanceId, CIBUser user) throws SystemException {
-		return getActivityProvider().findActivityInstances(processInstanceId, user);
-	}
-
-	default List<ActivityInstanceHistory> findActivityInstanceHistory(String processInstanceId, CIBUser user) throws SystemException {
-		return getActivityProvider().findActivityInstanceHistory(processInstanceId, user);
-	}
-
 	default void deleteVariableByExecutionId(String executionId, String variableName, CIBUser user) {
 		getActivityProvider().deleteVariableByExecutionId(executionId, variableName, user);
 	}

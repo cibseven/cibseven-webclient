@@ -153,14 +153,8 @@ public final static String TENANT_ID = "tenant-id";
 
 		DeploymentQueryDto queryDto = new DeploymentQueryDto(directProviderUtil.getObjectMapper(user), queryParams);
 		DeploymentQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
-		List<org.cibseven.bpm.engine.repository.Deployment> matchingDeployments = QueryUtil.list(query, firstResult,
-				maxResults);
-		List<Deployment> deployments = new ArrayList<>();
-		for (org.cibseven.bpm.engine.repository.Deployment deployment : matchingDeployments) {
-			DeploymentDto def = DeploymentDto.fromDeployment(deployment);
-			deployments.add(directProviderUtil.convertValue(def, Deployment.class, user));
-		}
-		return deployments;
+		return directProviderUtil.listAndConvert(query, firstResult, maxResults, DeploymentDto::fromDeployment, Deployment.class, user);
+
 	}
 
 	@Override

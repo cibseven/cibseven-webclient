@@ -58,15 +58,8 @@ public class DirectJobDefinitionProvider implements IJobDefinitionProvider {
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
 		JobDefinitionQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 
-		List<org.cibseven.bpm.engine.management.JobDefinition> matchingJobDefinitions = QueryUtil.list(query, null, null);
-
-		List<JobDefinition> jobDefinitionResults = new ArrayList<>();
-		for (org.cibseven.bpm.engine.management.JobDefinition jobDefinition : matchingJobDefinitions) {
-			JobDefinitionDto result = JobDefinitionDto.fromJobDefinition(jobDefinition);
-			jobDefinitionResults.add(directProviderUtil.convertValue(result, JobDefinition.class, user));
-		}
-
-		return jobDefinitionResults;
+		return directProviderUtil.listAndConvert(query, null, null, 
+				JobDefinitionDto::fromJobDefinition, JobDefinition.class, user);
 	}
 
 	@Override
