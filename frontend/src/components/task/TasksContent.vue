@@ -237,14 +237,15 @@ export default {
         if (showMore) this.$refs.navbar.$refs.taskLoader.done = false
         const firstResult = showMore ? this.taskResultsIndex : 0
         const maxResults = showMore ? this.$root.config.maxTaskResults : this.taskResultsIndex
+        const skipVariables = !showMore
         if (this.$store.state.filter.selected.id) {
-          this.fetchTasks(firstResult, maxResults, showMore)
+          this.fetchTasks(firstResult, maxResults, showMore, skipVariables)
         }
       } else {
         if (this.$refs.navbar && this.$refs.navbar.$refs.taskLoader) this.$refs.navbar.$refs.taskLoader.done = true
       }
     },
-    fetchTasks: function(firstResult, maxResults, showMore) {
+    fetchTasks: function(firstResult, maxResults, showMore, skipVariables) {
       const taskSorting = [JSON.parse(localStorage.getItem('taskSorting'))]
       //If necessary we add the created extra sorting so the data is well sorted
       if (taskSorting[0].sortBy !== 'created') taskSorting.push({ sortBy: 'created', sortOrder: 'desc' })
@@ -281,13 +282,14 @@ export default {
           filters.variableValuesIgnoreCase = true
         }
         const filterVariables = this.$store.state.filter.selected.properties?.variables
-        if (filterVariables && filterVariables.length > 0) {
+        if (!skipVariables && filterVariables && filterVariables.length > 0) {
           filters.variableNames = filterVariables.map(v => v.name)
         }
         applyDatePresenceFilters(filters, this.$store.state.filter.settings)
         TaskService.findTasksByFilter(this.$store.state.filter.selected.id, filters,
           { firstResult: firstResult, maxResults: maxResults }).then(result => {
           const tasks = this.tasksByPermissions(this.$root.config.permissions.displayTasks, result)
+          if (skipVariables) this.preserveExistingVariables(tasks)
           //Only needed to fetch the businessKey of every instance.
           this.updateProcessesInstances(tasks, showMore)
         }, () => {
@@ -412,6 +414,16 @@ export default {
       this.filterMessage = evt.message
       this.filterName = evt.filter
       this.$refs.filter.show(2)
+    },
+    preserveExistingVariables: function(tasks) {
+      const previous = new Map(this.tasks.map(t => [t.id, t]))
+      tasks.forEach(task => {
+        const old = previous.get(task.id)
+        if (old) {
+          task.variables = old.variables
+          task.variableTypes = old.variableTypes
+        }
+      })
     },
     updateProcessesInstances: function(tasks, showMore) {
       if (tasks && tasks.length > 0) {
