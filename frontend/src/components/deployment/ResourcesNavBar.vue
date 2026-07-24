@@ -90,8 +90,10 @@
           <span>{{ $t('deployment.errorLoading') }}</span>
         </div>
         <div v-show="!diagramLoading && error === false" style="height: calc(100vh - 210px)">
-          <BpmnViewer v-show="!isDmnResource" class="h-100" ref="diagram"></BpmnViewer>
-          <DmnViewer v-show="isDmnResource" class="h-100" ref="dmnDiagram"></DmnViewer>
+          <FormPreview v-show="isFormResource" class="h-100" ref="formPreview"></FormPreview>
+          <HtmlFormPreview v-show="isHtmlResource" class="h-100" ref="htmlFormPreview"></HtmlFormPreview>
+          <BpmnViewer v-show="!isFormResource && !isHtmlResource && !isDmnResource" class="h-100" ref="diagram"></BpmnViewer>
+          <DmnViewer v-show="!isFormResource && !isHtmlResource && isDmnResource" class="h-100" ref="dmnDiagram"></DmnViewer>
         </div>
       </div>
     </b-modal>
@@ -101,9 +103,11 @@
 </template>
 
 <script>
-import { ProcessService } from '@/services.js'
+import { ProcessService, DeploymentService } from '@/services.js'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 import DmnViewer from '@/components/decision/DmnViewer.vue'
+import FormPreview from '@/components/deployment/FormPreview.vue'
+import HtmlFormPreview from '@/components/deployment/HtmlFormPreview.vue'
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import { TaskPopper } from '@cib/common-frontend'
@@ -112,7 +116,7 @@ import { mapActions } from 'vuex'
 export default {
   name: 'ResourcesNavBar',
   emits: ['delete-deployment', 'show-deployment', 'deployment-success'],
-  components: { BpmnViewer, DmnViewer, CellActionButton, TaskPopper },
+  components: { BpmnViewer, DmnViewer, FormPreview, HtmlFormPreview, CellActionButton, TaskPopper },
   props: { resources: Array, deploymentId: String },
   data: function () {
     return {
@@ -121,7 +125,9 @@ export default {
       error: false,
       deployment: null,
       toggleIcon: 'mdi-chevron-down',
-      isDmnResource: false
+      isDmnResource: false,
+      isFormResource: false,
+      isHtmlResource: false
     }
   },
   watch: {
@@ -156,25 +162,33 @@ export default {
       this.error = false
       this.diagramLoading = true
       this.resource = resource
-      
-      // Determine if this is a DMN resource based on file extension
+
+      // Determine the resource type based on file extension
       this.isDmnResource = resource.name.toLowerCase().endsWith('.dmn')
-      
-      // Clean diagram state for the appropriate viewer
-      if (this.isDmnResource) {
-        this.$refs.dmnDiagram?.cleanDiagramState()
-      } else {
-        this.$refs.diagram?.cleanDiagramState()
-        this.$refs.diagram?.drawDiagramState()
+      this.isFormResource = resource.name.toLowerCase().endsWith('.form')
+      this.isHtmlResource = resource.name.toLowerCase().endsWith('.html')
+
+      // Clean diagram state for the appropriate viewer (not needed for forms)
+      if (!this.isFormResource && !this.isHtmlResource) {
+        if (this.isDmnResource) {
+          this.$refs.dmnDiagram?.cleanDiagramState()
+        } else {
+          this.$refs.diagram?.cleanDiagramState()
+          this.$refs.diagram?.drawDiagramState()
+        }
       }
-      
+
       this.$refs.diagramModal.show()
 
       const content = await this.getContent(resource)
       if (content) {
         setTimeout(() => {
           this.diagramLoading = false
-          if (this.isDmnResource) {
+          if (this.isFormResource) {
+            this.$refs.formPreview.showForm(content)
+          } else if (this.isHtmlResource) {
+            this.$refs.htmlFormPreview.showForm(content)
+          } else if (this.isDmnResource) {
             this.$refs.dmnDiagram.showDiagram(content)
           } else {
             this.$refs.diagram.showDiagram(content)
@@ -215,11 +229,16 @@ export default {
       this.diagramLoading = true
       let content = null
       const isBpmn = resource.name.toLowerCase().endsWith('.bpmn')
+      const isForm = resource.name.toLowerCase().endsWith('.form')
+      const isHtml = resource.name.toLowerCase().endsWith('.html')
       if (isBpmn) {
         const processesDefinition = await ProcessService.findProcessesWithFilters('deploymentId=' + this.deployment.id + '&resourceName=' + resource.name)
         const processDefinition = Array.isArray(processesDefinition) ? processesDefinition[0] : null
         const response = processDefinition ? await ProcessService.fetchDiagram(processDefinition.id) : null
         content = response ? response.bpmn20Xml : null
+      }
+      else if (isForm || isHtml) {
+        content = await DeploymentService.fetchDataFromDeploymentResource(resource.deploymentId, resource.id, resource.name, this.$root.user.authToken)
       }
       else {
         const decisions = await this.getDecisionList({ 

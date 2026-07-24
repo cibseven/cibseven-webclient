@@ -1128,7 +1128,10 @@
 		"showDeployment": "Cargar despliegue en lista",
 		"deploymentsDeleted": "{0} de {1} despliegues se han eliminado correctamente",
 		"tenant": "Tenant",
-		"errorLoading": "No se puede cargar el recurso para el despliegue seleccionado"
+		"errorLoading": "No se puede cargar el recurso para el despliegue seleccionado",
+		"formPreviewError": "No se puede previsualizar el formulario seleccionado",
+		"formPreviewHeading": "Vista previa del formulario",
+		"formRawDataHeading": "Datos sin procesar"
 	},
 	"navigation": {
 		"home": "Inicio",

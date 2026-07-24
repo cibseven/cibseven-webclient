@@ -839,6 +839,10 @@ const DeploymentService = {
       getServicesBasePath() + '/deployment/' + deploymentId + '/redeploy',
       data
     )
+  },
+  fetchDataFromDeploymentResource: function(deploymentId, resourceId, fileName, token) {
+   return axios.get(getServicesBasePath() + '/process/deployments/' + deploymentId + '/resources/' + resourceId +
+     '/data'+ '?filename=' + fileName + '&token=' + token);
   }
 }
 

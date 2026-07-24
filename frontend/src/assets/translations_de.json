@@ -1128,7 +1128,10 @@
 		"showDeployment": "Deployment in Liste laden",
 		"deploymentsDeleted": "{0} von {1} Deployments wurden erfolgreich gelöscht",
 		"tenant": "Mandant",
-		"errorLoading": "Ressource für die ausgewählte Bereitstellung konnte nicht geladen werden"
+		"errorLoading": "Ressource für die ausgewählte Bereitstellung konnte nicht geladen werden",
+		"formPreviewError": "Das ausgewählte Formular kann nicht angezeigt werden",
+		"formPreviewHeading": "Formularvorschau",
+		"formRawDataHeading": "Rohdaten"
 	},
 	"navigation": {
 		"home": "Startseite",
