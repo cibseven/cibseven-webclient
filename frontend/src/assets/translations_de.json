@@ -976,8 +976,14 @@
 		"remember": "Diese Meldung nicht mehr anzeigen",
 		"text": "CIB seven wird nicht vollständig vom Internet Explorer unterstützt. Um CIB seven in vollem Umfang nutzen zu können, empfehlen wir, einen anderen Browser zu verwenden."
 	},
-	"start": { 
+	"start": {
 		"close": "Schließen",
+		"defaultStartForm": {
+			"introduction": "Wenn Sie möchten, können Sie einen fachlichen Schlüssel festlegen und Variablen hinzufügen, bevor Sie ihn starten.",
+			"businessKey": "Fachlicher Schlüssel",
+			"businessKeyPlaceholder": "Fachlichen Schlüssel eingeben (optional)",
+			"start": "Prozess starten"
+		},
 		"startProcess": {
 			"title": "@:process.startProcess",
 			"tooltip": "Startprozess-Ansicht mit Suchfunktion öffnen"

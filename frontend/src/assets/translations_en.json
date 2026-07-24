@@ -978,6 +978,12 @@
 	},
 	"start": {
 		"close": "Close",
+		"defaultStartForm": {
+			"introduction": "If you'd like, you can set a business key and add variables before starting it.",
+			"businessKey": "Business Key",
+			"businessKeyPlaceholder": "Enter a business key (optional)",
+			"start": "Start process"
+		},
 		"startProcess": {
 			"title": "@:process.startProcess",
 			"tooltip": "Open Start Process view with search possibility"

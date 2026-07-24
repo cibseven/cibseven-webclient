@@ -119,6 +119,7 @@ export { default as DeploymentItem } from '@/components/processes/dashboard/Depl
 export { default as DeleteProcessDefinitionModal } from '@/components/process/modals/DeleteProcessDefinitionModal.vue'
 export { default as ConfirmActionOnProcessInstanceModal } from '@/components/process/modals/ConfirmActionOnProcessInstanceModal.vue'
 export { default as StartProcess } from '@/components/start-process/StartProcess.vue'
+export { default as StartProcessDefaultForm } from '@/components/start-process/StartProcessDefaultForm.vue'
 export { default as TaskAssignationModal } from '@/components/process/modals/TaskAssignationModal.vue'
 export { default as VariablesTable } from '@/components/process/tables/VariablesTable.vue'
 export { default as IncidentsTable } from '@/components/process/tables/IncidentsTable.vue'

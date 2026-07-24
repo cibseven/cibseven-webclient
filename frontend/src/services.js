@@ -144,15 +144,18 @@ const ProcessService = {
     return axios.get(getServicesBasePath() + "/process/called-process-definitions/" + processDefinitionId)
   },
   fetchDiagram: function(processId) { return axios.get(getServicesBasePath() + "/process/" + processId + "/diagram") },
-  startProcess: function(key, tenantId, locale) {
+  startProcess: function(key, tenantId, locale, businessKey, variables) {
     let url = `${getServicesBasePath()}/process/${key}/start`
     if (tenantId) url += `?tenantId=${tenantId}`
-    return axios.post(url, {
+    const data = {
       variables: {
-        _locale: { value: locale, type: String }
+        _locale: { value: locale, type: String },
         // initiator: { value: userId, type: String }
+        ...(variables || {})
       }
-    })
+    }
+    if (businessKey) data.businessKey = businessKey
+    return axios.post(url, data)
   },
   startForm: function(processDefinitionId) { return axios.get(getServicesBasePath() + "/process-definition/" + processDefinitionId + "/startForm") },
   getDeployedStartForm: function(processDefinitionId) { return axios.get(getServicesBasePath() + "/process/" + processDefinitionId + "/deployed-start-form") },
