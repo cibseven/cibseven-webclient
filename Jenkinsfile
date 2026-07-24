@@ -246,7 +246,7 @@ pipeline {
                 stage('Run SonarQube Checks') {
                     steps {
                         script {
-                            container(Constants.MAVEN_JDK_21_CONTAINER) {
+                            container(Constants.NODE_24_CONTAINER) {
                                 withSonarQubeEnv(credentialsId: Constants.SONARQUBE_CREDENTIALS_ID, installationName: 'SonarQube') {
                                     script {
                                         // Install sonar-scanner
