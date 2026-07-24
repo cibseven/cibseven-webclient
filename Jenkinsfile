@@ -192,6 +192,12 @@ pipeline {
         }
 
         stage('SAST, frontend') {
+            when {
+                allOf {
+                    branch pipelineParams.primaryBranch
+                    expression { params.VERIFY }
+                }
+            }
             parallel {
                 stage('OWASP Dependency-Track') {
                     steps {
@@ -296,6 +302,12 @@ pipeline {
         }
 
         stage('SAST, middleware') {
+            when {
+                allOf {
+                    branch pipelineParams.primaryBranch
+                    expression { params.VERIFY }
+                }
+            }
             steps {
                 script {
                     stage('Run SonarQube Checks') {
