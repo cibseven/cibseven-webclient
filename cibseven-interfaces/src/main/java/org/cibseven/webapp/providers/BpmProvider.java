@@ -43,11 +43,13 @@ import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.DeploymentResource;
 import org.cibseven.webapp.rest.model.Engine;
+import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.cibseven.webapp.rest.model.EventSubscription;
 import org.cibseven.webapp.rest.model.ExternalTask;
 import org.cibseven.webapp.rest.model.Filter;
 import org.cibseven.webapp.rest.model.HistoricDecisionInstance;
 import org.cibseven.webapp.rest.model.HistoryBatch;
+import org.cibseven.webapp.rest.model.HistoryStatistics;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.JobDefinition;
@@ -76,6 +78,7 @@ import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.cibseven.webapp.rest.model.VariableInstance;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -972,9 +975,9 @@ public interface BpmProvider {
 		return getVariableProvider().fetchProcessFormVariables(key, deserializeValues, user);
 	}
 
-	default Map<String, Variable> fetchProcessFormVariables(List<String> variableListName, String key, boolean deserializeValues, CIBUser user)
+	default Map<String, Variable> fetchProcessFormVariables(List<String> variableListName, String processDefinitionId, boolean deserializeValues, CIBUser user)
 			throws NoObjectFoundException, SystemException {
-				return getVariableProvider().fetchProcessFormVariables(variableListName, key, deserializeValues, user);
+				return getVariableProvider().fetchProcessFormVariables(variableListName, processDefinitionId, deserializeValues, user);
 	}
 
 	default NamedByteArrayDataSource fetchVariableFileData(String taskId, String variableName, CIBUser user) throws NoObjectFoundException, UnexpectedTypeException, SystemException {
@@ -1057,14 +1060,10 @@ public interface BpmProvider {
 	}
 
 	default Object evaluateDecisionDefinitionByKeyAndTenant(Map<String, Object> data, String key, String tenant, CIBUser user) {
-		//TODO: not implemented in DecisionProvider
-		//interface should contain parameters like evaluateDecisionDefinitionByKey 
 		return getDecisionProvider().evaluateDecisionDefinitionByKeyAndTenant(data, key, tenant, user);
 	}
 
 	default void updateHistoryTTLByKeyAndTenant(Map<String, Object> data, String key, String tenant, CIBUser user) {
-		//TODO: not implemented in DecisionProvider
-		//interface should contain parameters like HistoryTTLByKey 
 		getDecisionProvider().updateHistoryTTLByKeyAndTenant(data, key, tenant, user);
 	}
 
@@ -1089,7 +1088,6 @@ public interface BpmProvider {
 	}
 
 	default Object evaluateDecisionDefinitionById(String id, Map<String, Object> data, CIBUser user) {
-		//TODO: not implemented in DecisionProvider
 		return getDecisionProvider().evaluateDecisionDefinitionById(id, data, user);
 	}
 
@@ -1525,9 +1523,9 @@ public interface BpmProvider {
 	}
 
 	/**
-	 * Submit a form to start a process with the given key.
+	 * Submit a form to start a process with the given process definition id.
 	 *
-	 * @param key the process definition key
+	 * @param processDefinitionId the process definition id
 	 * @param formResult the form submission data as a JSON string
 	 * @param user the authenticated user submitting the form
 	 * @return information about the started process instance
@@ -1535,8 +1533,8 @@ public interface BpmProvider {
 	 * @throws ExpressionEvaluationException when an expression in the process definition cannot be evaluated
 	 * @throws SystemException in case of any other error
 	 */
-	default ProcessStart submitForm(String key, String formResult, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
-		return getProcessProvider().submitForm(key, formResult, user);
+	default ProcessStart submitForm(String processDefinitionId, String formResult, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
+		return getProcessProvider().submitForm(processDefinitionId, formResult, user);
 	}
 	
 	/**
@@ -1702,8 +1700,12 @@ public interface BpmProvider {
 	 * @return a list or map containing the historic activity statistics
 	 * @throws SystemException in case of an error
 	 */
-	default Object fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user) throws SystemException {
+	default Collection<HistoryStatistics> fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user) throws SystemException {
 		return getProcessProvider().fetchHistoricActivityStatistics(id, params, user);
+	}
+
+	default Collection<HistoryStatistics> findHistoricActivityStatistics(String id, Map<String, Object> filters, CIBUser user) throws SystemException {
+		return getProcessProvider().findHistoricActivityStatistics(id, filters, user);
 	}
 
 	/**
@@ -1919,8 +1921,28 @@ public interface BpmProvider {
 	 * @throws SystemException in case of an error
 	 */
 
-	default Collection<Engine> getProcessEngineNames() throws SystemException {
-		return getEngineProvider().getProcessEngineNames();
+	default Collection<Engine> getProcessEngineDefinitions() throws SystemException {
+		return getEngineProvider().getProcessEngineDefinitions();
+	}
+
+	/**
+	 * Returns the configuration of the effective default BPM engine, i.e. the engine used when none is
+	 * specified: the engine named "default" if present, otherwise the first available engine.
+	 *
+	 * @return the effective default {@link EngineConfiguration}, or {@code null} if no engine is configured
+	 */
+	default @Nullable public EngineConfiguration getEffectiveDefaultEngineConfiguration() {
+		return getEngineProvider().getEffectiveDefaultEngineConfiguration();
+	}
+
+	/**
+	 * Returns the configuration for the BPM engine with the given name.
+	 *
+	 * @param engineId the id of the engine to look up
+	 * @return the {@link EngineConfiguration} for the specified engine, or {@code null} if no engine with that name is configured
+	 */
+	default @Nullable public EngineConfiguration getEngineConfiguration(String engineId) {
+		return getEngineProvider().getEngineConfiguration(engineId);
 	}
 
 	/**
@@ -1929,8 +1951,8 @@ public interface BpmProvider {
 	 * @return true if admin group is available and write access is set
 	 * @throws SystemException in case of an error
 	 */
-	default Boolean requiresSetup(String engine) {
-		return getEngineProvider().requiresSetup(engine);
+	default Boolean requiresSetup(String engineId) {
+		return getEngineProvider().requiresSetup(engineId);
 	}
 
 	/**
@@ -1939,8 +1961,8 @@ public interface BpmProvider {
 	 * @param user the new user to be created.
 	 * @throws InvalidUserIdException when the user ID is invalid.
 	 */
-	default void createSetupUser(NewUser user, String engine) throws InvalidUserIdException {
-		getEngineProvider().createSetupUser(user, engine);
+	default void createSetupUser(NewUser user, String engineId) throws InvalidUserIdException {
+		getEngineProvider().createSetupUser(user, engineId);
 	}
 
 	/*

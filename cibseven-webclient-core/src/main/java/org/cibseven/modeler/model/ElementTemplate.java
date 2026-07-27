@@ -39,7 +39,7 @@ import java.time.LocalDateTime;
  * </p>
  */
 @Entity
-@Table(name = "mod_element_templates")
+@Table(name = "MOD_ELEMENT_TEMPLATES")
 @Data
 @NoArgsConstructor
 public class ElementTemplate {

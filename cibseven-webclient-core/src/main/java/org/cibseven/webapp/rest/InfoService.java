@@ -17,6 +17,7 @@
 package org.cibseven.webapp.rest;
 
 import org.cibseven.webapp.auth.SevenUserProvider;
+import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.providers.IEngineProvider;
 import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.cibseven.webapp.rest.model.InfoVersion;
@@ -93,8 +94,8 @@ public class InfoService extends BaseService {
 	InfoVersion infoVersion;
 
 	@Autowired
-	IEngineProvider engineProvider;
-	
+	BpmProvider bpmProvider;
+
 	@PostConstruct
 	public void init() {
 		// If userEditable is not set in yaml, set it based on userProvider
@@ -123,11 +124,10 @@ public class InfoService extends BaseService {
 		// when newer middleware is connected to old engine-rest,
 		// the engine configuration endpoint might not be available (404).
 		// In this case we will get properties from old configuration properties (history level, authorization enabled) and use them to create a default engine configuration object
-		final boolean isDefaultOrExternalEngine = IEngineProvider.isDefaultEngine(engine) || IEngineProvider.isExternalEngine(engine);
 		EngineConfiguration engineConfig =
-			isDefaultOrExternalEngine
-				? engineProvider.getDefaultEngineConfiguration()
-				: engineProvider.getEngineConfiguration(engine);
+			IEngineProvider.isEngineUnspecified(engine)
+				? bpmProvider.getEffectiveDefaultEngineConfiguration()
+				: bpmProvider.getEngineConfiguration(engine);
 		if (engineConfig == null) {
 			// when newer middleware is connected to old engine-rest,
 			// the engine configuration endpoint may not exist yet (404).

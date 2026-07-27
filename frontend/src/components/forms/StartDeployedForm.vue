@@ -39,6 +39,8 @@ import '@bpmn-io/form-js/dist/assets/form-js.css'
 
 import { determineValueTypeFromSchema } from './formJsUtils.js'
 
+import { extractErrorMessage } from '@/utils/error.js'
+
 export default {
   name: "StartDeployedForm",
   mixins: [postMessageMixin],
@@ -92,7 +94,7 @@ export default {
         this.loader = false
       } catch (error) {
         console.error('Error loading start form:', error)
-        this.sendMessageToParent({ method: 'displayErrorMessage', data: error.message || 'An error occurred during form loading' })
+        this.sendMessageToParent({ method: 'displayErrorMessage', data: extractErrorMessage(error) })
         this.loader = false
       }
     },
@@ -129,7 +131,7 @@ export default {
         this.loader = false
       } catch (error) {
         console.error('Error during form submission:', error)
-        this.sendMessageToParent({ method: 'displayErrorMessage', data: error })
+        this.sendMessageToParent({ method: 'displayErrorMessage', data: extractErrorMessage(error) })
         this.loader = false
       }
     }

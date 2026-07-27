@@ -37,6 +37,7 @@ import org.cibseven.webapp.exception.ExpressionEvaluationException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnsupportedTypeException;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
+import org.cibseven.webapp.rest.model.HistoryStatistics;
 import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.IncidentInfo;
 import org.cibseven.webapp.rest.model.KeyTenant;
@@ -56,6 +57,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -335,8 +337,8 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	}
 
 	@Override
-	public ProcessStart submitForm(String processDefinitionKey, String formResult, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
-		String url = getEngineRestUrl(user) + "/process-definition/" + processDefinitionKey + "/submit-form";	
+	public ProcessStart submitForm(String processDefinitionId, String formResult, CIBUser user) throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
+		String url = getEngineRestUrl(user) + "/process-definition/" + processDefinitionId + "/submit-form";
 		return doPost(url, formResult, ProcessStart.class, user).getBody();
 	}
 
@@ -596,9 +598,27 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	}
 	
 	@Override
-	public Object fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user) {
+	public Collection<HistoryStatistics> fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user) {
 	    String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/history/process-definition/" + id + "/statistics", params);
-	    ResponseEntity<Object> response = doGet(url, Object.class, user, true);
-	    return response.getBody();
+	    ResponseEntity<HistoryStatistics[]> response = doGet(url, HistoryStatistics[].class, user, true);
+	    return Arrays.asList(response.getBody());
 	}
+
+    @Override
+    public Collection<HistoryStatistics> findHistoricActivityStatistics(String processDefinitionId, Map<String, Object> filters, CIBUser user){
+    	if (processDefinitionId == null || processDefinitionId.isEmpty()) {
+        	throw new SystemException("processDefinitionId is required");
+		}
+		String url = getEngineRestUrl(user) + "/history/process-definition/" + processDefinitionId + "/statistics";
+		try {
+			return Arrays.asList(((ResponseEntity<HistoryStatistics[]>) doPost(url, filters, HistoryStatistics[].class, user)).getBody());
+		} catch (SystemException e) {
+			// Backwards compatibility: this call is only supported for Engine version 2.2.0 and over
+			if (e.getCause() instanceof HttpClientErrorException.MethodNotAllowed) {
+				return fetchHistoricActivityStatistics(processDefinitionId, Map.of("canceled", true, "completedScoped", true, "finished", true, "incidents", true), user);
+			}
+			throw e;
+		}
+    }
+	
 }

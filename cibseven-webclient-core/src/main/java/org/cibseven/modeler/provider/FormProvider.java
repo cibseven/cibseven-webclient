@@ -55,6 +55,11 @@ public class FormProvider implements IFormProvider {
 	public Optional<FormEntity> findById(String id) throws SystemException {
 		return formRepositoryDao.findById(id);
 	}
+
+	@Override
+	public FormEntity findByFormId(String formId) throws SystemException {
+		return formRepositoryDao.findByFormId(formId);
+	}
 	
 	@Override
 	public FormEntity createForm(FormEntity entity) throws SystemException {

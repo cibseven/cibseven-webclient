@@ -1,5 +1,6 @@
 {
 	"commons": {
+		"operator": "Operator",
 		"edit": "Bearbeiten",
 		"save": "Speichern",
 		"actualisation": {
@@ -295,7 +296,12 @@
 				"historic": "Die historische Variable wurde erfolgreich gelöscht.",
 				"historicError": "Beim Löschen der historischen Variable \"{name}\" ist ein Fehler aufgetreten."
 			},
-			"enterValue": "Wert eingeben"
+			"enterValue": "Wert eingeben",
+			"activityIdBadge": {
+				"remove": "Kriterium entfernen – um alle Variablen aufzulisten",
+				"title": "{activityId}",
+				"tooltip": "Nur Variablen im Sichtbarkeitsbereich \"{activityId}\" anzeigen."
+			}
 		},
 		"incidents": {
 			"activityIdBadge": {
@@ -435,6 +441,10 @@
 			"retries": "Wiederholungen",
 			"priority": "Priorität",
 			"noExternalTasks": "Keine externen Aufgaben gefunden"
+		},
+		"onlyUnfinished": {
+			"title": "Nur nicht abgeschlossen",
+			"tooltip": "Nur nicht abgeschlossene Prozessinstanzen anzeigen"
 		}
 	},
 	"dmn-viewer": {
@@ -746,6 +756,7 @@
 				"resourceId": "Ressourcen-ID: {value}"
 			},
 			"add": "Berechtigung hinzufügen",
+			"authorizationDisabledWarning": "Die Berechtigungsverwaltung ist deaktiviert - alle Benutzer haben vollen Zugriff im System.\nBitte überprüfen Sie die Eigenschaft \"authorizationEnabled\" in der Engine-Konfiguration.",
 			"noAuthSelected": "Kein Berechtigungstyp ausgewählt"
 		},
 		"system": {
@@ -1042,6 +1053,8 @@
 		"AccessDeniedException": "Keine Berechtigung ({0})",
 		"NoPermission": "Sie haben nicht die erforderlichen Berechtigungen, um diese Aktion auszuführen.\nErforderliche Berechtigung: \"{permission}\".\nReferenziert von: {refPath}",
 		"EntryAlreadyExistsException": "{0} ist bereits vorhanden",
+		"formNotFound": "Das Formular \"{0}\" konnte nicht geladen werden. Das Formular ist entweder leer oder die Formular-Ressource wurde nicht korrekt bereitgestellt. Bitte überprüfen Sie die Bereitstellung und versuchen Sie es erneut.",
+		"deployedFormNotFound": "Die bereitgestellte Formular-Ressource \"{0}\" konnte im Deployment nicht gefunden werden. Bitte überprüfen Sie, ob die Formular-Ressource im Deployment enthalten ist, und versuchen Sie es erneut.",
 		"NoObjectFoundException": "Bei der Ausführung der Anfrage ist ein Problem aufgetreten! Bitte aktualisieren Sie die Seite in Ihrem Browser und versuchen Sie es erneut.",
 		"InvalidAttributeValueException": "Bei der Ausführung der Anfrage ist ein Problem aufgetreten! Bitte aktualisieren Sie die Seite in Ihrem Browser und versuchen Sie es erneut.",
 		"SubmitDeniedException": "Bei der Ausführung der Anfrage ist ein Problem aufgetreten! Bitte aktualisieren Sie die Seite in Ihrem Browser und versuchen Sie es erneut.",

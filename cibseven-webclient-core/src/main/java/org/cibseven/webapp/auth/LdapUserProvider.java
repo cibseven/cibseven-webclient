@@ -60,6 +60,7 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 	@Value("${cibseven.webclient.ldap.folder:}") String ldapFolder;
 	@Value("${cibseven.webclient.ldap.userNameAttribute:}") String ldapNameAttribute;
 	@Value("${cibseven.webclient.ldap.userDisplayNameAttribute:}") String ldapDisplayNameAttribute;
+	@Value("${cibseven.webclient.ldap.userClass:person}") String ldapUserClass;
 	@Value("#{'${cibseven.webclient.ldap.attributes.filters:samAccountName;name}'.split(';\\s*')}") List<String> ldapAttributesFilters;
 	@Value("${cibseven.webclient.ldap.modifiedDateFormat:}") String ldapModifiedDateFormat;
 	@Value("${cibseven.webclient.ldap.countLimit:400}") int ldapCountLimit;
@@ -75,23 +76,29 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 	@Override
 	public CIBUser login(StandardLogin login, HttpServletRequest rq) {	
         try {
+			String fullUserDN = getFullUserDN(login.getUsername());
 			Hashtable<String, String> environment = new Hashtable<String, String>();
 	        environment.put(javax.naming.Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
 	        environment.put(javax.naming.Context.PROVIDER_URL, serverURL);
-	        environment.put(javax.naming.Context.SECURITY_PRINCIPAL, getFullUserDN(login.getUsername()));
+	        environment.put(javax.naming.Context.SECURITY_PRINCIPAL, fullUserDN);
 	        environment.put(javax.naming.Context.SECURITY_CREDENTIALS, login.getPassword());
 	        environment.put(javax.naming.Context.REFERRAL, ldapFollowReferrals);
 			InitialDirContext initialDirContext = new InitialDirContext(environment);
+			// do not use configured LDAP base, but full DN of logging in user, because normal users generally are not allowed to do LDAP searches
 			SearchControls searchControls = new SearchControls();
 			searchControls.setCountLimit(ldapCountLimit);
-			searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-			NamingEnumeration<SearchResult> results = initialDirContext.search(ldapFolder, "(&(" + ldapNameAttribute + "=" + login.getUsername() + ")(objectClass=person))", searchControls);
+			searchControls.setSearchScope(SearchControls.OBJECT_SCOPE);
+			NamingEnumeration<SearchResult> results = initialDirContext.search(fullUserDN, "(&(" + ldapNameAttribute + "=" + login.getUsername() + ")(objectClass=" + ldapUserClass + "))", searchControls);
 			if(!results.hasMore()) {
-				throw new LoginException("[ERROR][LdapUserProvider] login not user found with the following username: " + login.getUsername());
+				throw new LoginException("[ERROR][LdapUserProvider] login not user found with the following username: " + login.getUsername() + " and object class: " + ldapUserClass);
 			}
 			SearchResult result = results.next();
 			CIBUser user =  new CIBUser(result.getAttributes().get(ldapNameAttribute).get().toString());
-			user.setDisplayName(result.getAttributes().get(ldapDisplayNameAttribute).get().toString());
+			if (result.getAttributes().get(ldapDisplayNameAttribute) != null) {
+				user.setDisplayName(result.getAttributes().get(ldapDisplayNameAttribute).get().toString());
+			} else {
+				log.debug("User " + login.getUsername() + " does not have attribute " + ldapDisplayNameAttribute + " defined.");
+			}
 			
 			// Set engine from request header
 			EngineTokenUtils.setEngineFromRequest(user, rq);
@@ -102,8 +109,12 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 			user.setAuthToken(createToken(tokenSettings, true, false, user));
 	        
 	        return user;
-		} catch (NamingException x) {
+		} catch (javax.naming.AuthenticationException x) {
+			log.debug("Login failed for user {}: invalid credentials", login.getUsername());
 			throw new LoginException();
+		} catch (NamingException x) {
+			log.warn("Login failed for user {} due to technical error", login.getUsername(), x);
+			throw new SystemException("Login failed due to technical error");
 		}
 	}
 	
@@ -127,13 +138,18 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 			searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
 			NamingEnumeration<SearchResult> results = initialDirContext.search(ldapFolder, "(&(" + ldapNameAttribute + "=" + userName + "))", searchControls);
 			if(!results.hasMore()) {
-				throw new LoginException("[ERROR][LdapUserProvider] getFullUserDN not user found with the following username: " + userName);
+				log.debug("No DN found for user {}", userName);
+				throw new LoginException();
 			}
 			SearchResult result = results.next();
 			log.debug("Ldap result: user full DN " + result.getNameInNamespace());
 			return result.getNameInNamespace();
-		} catch (NamingException x) {
+		} catch (javax.naming.PartialResultException x) {
+			log.debug("No DN found for user {}: {}", userName, x.getMessage());
 			throw new LoginException();
+		} catch (NamingException x) {
+			log.warn("Failed to get full DN for user {} due to technical error", userName, x);
+			throw new SystemException("Login failed due to technical error");
 		}
 	}
 

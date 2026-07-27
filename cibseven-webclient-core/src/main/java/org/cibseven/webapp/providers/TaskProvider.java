@@ -325,7 +325,7 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 
 	@Override
 	public ResponseEntity<String> getRenderedForm(String taskId, Map<String, Object> params, CIBUser user) {
-		String url = URLUtils.buildUrlWithParams(getEngineRestUrl() + "/task/" + taskId + "/rendered-form", params);
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/task/" + taskId + "/rendered-form", params);
 		return doGetWithHeader(url, String.class, user, true, MediaType.ALL);
 	}
 

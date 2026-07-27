@@ -47,20 +47,23 @@ application:
       password: ""
     jpa:
       hibernate:
-        ddl-auto: validate
+        ddl-auto: none
+        naming:
+          physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
       properties:
         hibernate:
           integration:
             envers:
               enabled: false
-        org:
-          hibernate:
-            envers:
-              revision_table_name: mod_revinfo
   cibseven:
     webclient:
       modeler:
         enabled: false
+        # Element template JSONs loaded into the modeler DB at startup (needs modeler.enabled: true).
+        # Spring resource locations (globs resolved). Empty by default.
+        # e.g. - "file:/opt/cibseven/element-templates/*.json"
+        templates:
+          paths: []
       # LDAP
       ldap:
         url: ""
@@ -69,11 +72,28 @@ application:
         userDisplayNameAttribute: ""
         modifiedDateFormat: ""
         followReferrals: ""
+        userClass: "person"
         user: ""
         password: ""
-
-      # Keycloak / ADFS (see src/main/resources for more info)
-      #sso: {}
+      
+      # Single Sign-On
+      #sso:
+      #  active: true
+      #  endpoints:
+      #    authorization: <authUri>
+      #    token: <tokenUri>
+      #    jwks: <certsUri>
+      #    user: <usersUri>
+      #    introspection:
+      #  clientId: <clientId>
+      #  clientSecret: <clientSecret>
+      #  scopes: openid email profile
+      #  userIdProperty:
+      #  userNameProperty:
+      #  accessTokenToEngineRest:
+      #  assertion:
+      #    type:
+      #    locationKey:
 
       # Token generation
       authentication:

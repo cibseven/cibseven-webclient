@@ -32,7 +32,6 @@
 
       <div class="py-1 px-2 mb-1 bg-task-filter">
         <SmartSearch class="m-1 mb-2"
-          :maxlength="50"
           :options="$root.config.taskFilter.smartSearch.options"
           :initialFilter="$route.query.tasksFilter || ''"
           @search-filter="$emit('search-filter', $event)"
@@ -75,12 +74,14 @@
         <div><h5 class="mt-3">{{ $t('task.showOnlyAddFilters') }}</h5></div>
         <hr class="my-2">
         <div class="mt-2">
-          <b-form-checkbox v-if="$root.config.layout.showFilterReminderDate" v-model="$store.state.filter.settings.reminder">
+          <b-form-checkbox v-if="$root.config.layout.showFilterReminderDate" v-model="$store.state.filter.settings.reminder"
+            @change="$emit('refresh-tasks')">
             <h5 class="d-flex fw-normal"><span class="mdi mdi-16px mdi-alarm align-middle pe-1"></span> {{ $t('nav-bar.reminder') }}</h5>
           </b-form-checkbox>
         </div>
         <div>
-          <b-form-checkbox v-if="$root.config.layout.showFilterDueDate" v-model="$store.state.filter.settings.dueDate">
+          <b-form-checkbox v-if="$root.config.layout.showFilterDueDate" v-model="$store.state.filter.settings.dueDate"
+            @change="$emit('refresh-tasks')">
             <h5 class="d-flex fw-normal"><span class="mdi mdi-16px mdi-calendar-alert align-middle pe-1"></span> {{ $t('nav-bar.dueDate') }}</h5>
           </b-form-checkbox>
         </div>
@@ -89,7 +90,8 @@
             <b-form-checkbox v-model="criteria.check">
               <h5 class="d-flex fw-normal">{{ criteria.displayName }}</h5>
             </b-form-checkbox>
-            <b-form-input v-if="criteria.check && criteria.defaultValue === ''" v-model="criteria.value" size="sm" class="mb-2"></b-form-input>
+            <label v-if="criteria.check && criteria.defaultValue === ''" :for="'tasks-criteria-value-' + index" class="visually-hidden">{{ criteria.displayName }}</label>
+            <b-form-input v-if="criteria.check && criteria.defaultValue === ''" :id="'tasks-criteria-value-' + index" v-model="criteria.value" size="sm" class="mb-2"></b-form-input>
           </div>
         </div>
         <div v-if="filterVariables.length > 0">
@@ -98,7 +100,8 @@
             <b-form-checkbox v-model="criteria.check">
               <h5 class="d-flex fw-normal">{{ criteria.displayName }}</h5>
             </b-form-checkbox>
-            <b-form-input v-if="criteria.check" v-model="criteria.value" size="sm" class="mb-2"></b-form-input>
+            <label v-if="criteria.check" :for="'tasks-fv-value-' + index" class="visually-hidden">{{ criteria.displayName }}</label>
+            <b-form-input v-if="criteria.check" :id="'tasks-fv-value-' + index" v-model="criteria.value" size="sm" class="mb-2"></b-form-input>
           </div>
         </div>
       </b-popover>
@@ -155,7 +158,7 @@
                 <div class="row g-0" :class="expandedTasks[task.id] ? '' : 'task-variables-collapsed'">
                   <div v-for="filterVar in visibleFilterVariables(task)" :key="filterVar.name" class="col-12 h6 fw-normal m-0 mt-2">
                     <div class="d-flex">
-                      <div class="text-truncate fw-semibold me-1" :title="displayTooltip(task, filterVar)">{{ filterVar.label }}:</div>
+                      <div class="text-truncate fw-semibold me-1" :title="displayTooltip(task, filterVar)">{{ filterVar.label || filterVar.name }}:</div>
                       <div v-if="task.variables && task.variables[filterVar.name] !== undefined && task.variables[filterVar.name] !== null" class="text-truncate" :title="displayTooltip(task, filterVar)">
                         {{ displayValue(task, filterVar) }}
                       </div>
@@ -351,7 +354,7 @@ export default {
       return variableUtils.shortValue(variableUtils.displayValue(variable))
     },
     displayTooltip: function(task, filterVar) {
-      const header = filterVar.label + ' (' + filterVar.name + '):'
+      const header = filterVar.label ? filterVar.label + ' (' + filterVar.name + '):' : filterVar.name + ':'
       const variable = { 
         name: filterVar.name, 
         value: task.variables?.[filterVar.name], 

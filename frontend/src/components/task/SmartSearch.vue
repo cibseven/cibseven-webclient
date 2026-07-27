@@ -29,7 +29,7 @@
       <label :for="id" class="visually-hidden">{{ $t('searches.searchByTaskName').replace('...', '') }}</label>
       <b-form-input :title="$t('searches.searchByTaskName')" size="sm" ref="input" type="search" v-model="filter" :id="id"
         class="form-control border-start-0 ps-0 form-control border-light shadow-none"
-        :placeholder="$t('searches.searchByTaskName')" :maxlength="maxlength" @input="onInput"/>
+        :placeholder="$t('searches.searchByTaskName')" @input="onInput"/>
       <template v-slot:append v-if="$root.config.taskFilter.advancedSearch.criteriaKeys.length > 0 &&
         $root.config.taskFilter.advancedSearch.modalEnabled">
         <b-button variant="light" class="py-0" @click="$emit('open-advanced-search')" :title="$t('advanced-search.title')">
@@ -47,7 +47,6 @@ export default {
   name: 'SmartSearch',
   props: { 
     options: Array, 
-    maxlength: Number,
     initialFilter: { type: String, default: '' }
   },
   emits: ['open-advanced-search', 'search-filter'],

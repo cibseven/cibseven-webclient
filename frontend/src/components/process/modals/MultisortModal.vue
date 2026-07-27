@@ -38,10 +38,12 @@
               <span v-else>{{ $t('multisort.thenBy') }}</span>
             </div>
             <div class="col-5">
-              <b-form-select v-model="criteria.field" :options="sortKeysWithText"></b-form-select>
+              <label :for="'multisort-field-' + index" class="visually-hidden">{{ $t('multisort.column') }}</label>
+              <b-form-select :id="'multisort-field-' + index" v-model="criteria.field" :options="sortKeysWithText"></b-form-select>
             </div>
             <div class="col-5 pe-3">
-              <b-form-select v-model="criteria.order" :options="orders"></b-form-select>
+              <label :for="'multisort-order-' + index" class="visually-hidden">{{ $t('multisort.order') }}</label>
+              <b-form-select :id="'multisort-order-' + index" v-model="criteria.order" :options="orders"></b-form-select>
             </div>
           </div>
         </button>

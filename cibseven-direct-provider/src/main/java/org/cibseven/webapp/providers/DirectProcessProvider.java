@@ -44,6 +44,7 @@ import org.cibseven.bpm.engine.exception.NotFoundException;
 import org.cibseven.bpm.engine.exception.NullValueException;
 import org.cibseven.bpm.engine.form.StartFormData;
 import org.cibseven.bpm.engine.history.HistoricActivityStatistics;
+import org.cibseven.bpm.engine.history.HistoricActivityStatisticsPostQuery;
 import org.cibseven.bpm.engine.history.HistoricActivityStatisticsQuery;
 import org.cibseven.bpm.engine.history.HistoricProcessInstance;
 import org.cibseven.bpm.engine.history.HistoricProcessInstanceQuery;
@@ -59,6 +60,7 @@ import org.cibseven.bpm.engine.rest.dto.HistoryTimeToLiveDto;
 import org.cibseven.bpm.engine.rest.dto.StatisticsResultDto;
 import org.cibseven.bpm.engine.rest.dto.VariableValueDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricActivityStatisticsDto;
+import org.cibseven.bpm.engine.rest.dto.history.HistoricActivityStatisticsPostQueryDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricProcessInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricProcessInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.dto.repository.ActivityStatisticsResultDto;
@@ -91,6 +93,7 @@ import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnsupportedTypeException;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
+import org.cibseven.webapp.rest.model.HistoryStatistics;
 import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
@@ -100,14 +103,10 @@ import org.cibseven.webapp.rest.model.ProcessStatistics;
 import org.cibseven.webapp.rest.model.StartForm;
 import org.cibseven.webapp.rest.model.Variable;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.ws.rs.core.MultivaluedHashMap;
@@ -285,6 +284,8 @@ public class DirectProcessProvider implements IProcessProvider {
 		// returns same array but in different order
 		ProcessDefinitionQueryDto queryDto = new ProcessDefinitionQueryDto();
 		queryDto.setKey(key);
+		queryDto.setSortBy("version");
+		queryDto.setSortOrder("desc");
 		if (tenantId != null)
 			queryDto.setTenantIdIn(Arrays.asList(tenantId));
 		else
@@ -797,7 +798,7 @@ public class DirectProcessProvider implements IProcessProvider {
 	}
 
 	@Override
-	public Object fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user) {
+	public Collection<HistoryStatistics> fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user) {
 		MultivaluedMap<String, String> queryParams = new MultivaluedHashMap<>();
 		for (String key : params.keySet()) {
 			queryParams.put(key, Arrays.asList((String) params.get(key)));
@@ -806,10 +807,31 @@ public class DirectProcessProvider implements IProcessProvider {
 		HistoricActivityStatisticsQueryDto historicActivityStatisticsQueryDto = new HistoricActivityStatisticsQueryDto(
 				directProviderUtil.getObjectMapper(user), id, queryParams);
 		HistoricActivityStatisticsQuery query = historicActivityStatisticsQueryDto.toQuery(directProviderUtil.getProcessEngine(user));
-		List<HistoricActivityStatisticsDto> result = new ArrayList<>();
+		List<HistoryStatistics> result = new ArrayList<>();
 		List<HistoricActivityStatistics> statistics = query.unlimitedList();
 		for (HistoricActivityStatistics currentStatistics : statistics) {
-			result.add(HistoricActivityStatisticsDto.fromHistoricActivityStatistics(currentStatistics));
+			result.add(directProviderUtil.convertValue(HistoricActivityStatisticsDto.fromHistoricActivityStatistics(currentStatistics), HistoryStatistics.class, user));
+		}
+		return result;
+	}
+
+	@Override
+	public Collection<HistoryStatistics> findHistoricActivityStatistics(String id, Map<String, Object> filters, CIBUser user)
+			throws SystemException {
+		if (id == null || id.isEmpty()) {
+        	throw new SystemException("processDefinitionId is required");
+		}
+		HistoricActivityStatisticsPostQueryDto queryDto = directProviderUtil.getObjectMapper(user)
+				.convertValue(filters, HistoricActivityStatisticsPostQueryDto.class);
+		queryDto.setProcessDefinitionId(id);
+		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
+
+		HistoricActivityStatisticsPostQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
+		List<HistoricActivityStatistics> matchingStatistics = query.list();
+		List<HistoryStatistics> result = new ArrayList<>();
+		for (HistoricActivityStatistics statistic : matchingStatistics) {
+			HistoricActivityStatisticsDto activityResult = HistoricActivityStatisticsDto.fromHistoricActivityStatistics(statistic);
+			result.add(directProviderUtil.convertValue(activityResult, HistoryStatistics.class, user));
 		}
 		return result;
 	}
@@ -850,7 +872,7 @@ public class DirectProcessProvider implements IProcessProvider {
 	}
 
 	@Override
-	public ProcessStart submitForm(String processDefinitionKey, String formResult, CIBUser user)
+	public ProcessStart submitForm(String processDefinitionId, String formResult, CIBUser user)
 			throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
 		ObjectMapper objectMapper = directProviderUtil.getObjectMapper(user);
 		StartProcessInstanceDto parameters;
@@ -858,34 +880,24 @@ public class DirectProcessProvider implements IProcessProvider {
 			parameters = objectMapper.readValue(formResult, StartProcessInstanceDto.class);
 		} catch (JsonProcessingException e) {
 			throw new SystemException(e.getMessage(), e);
-		} 
-    FormService formService = directProviderUtil.getProcessEngine(user).getFormService();
-
-    org.cibseven.bpm.engine.runtime.ProcessInstance instance = null;
-		ProcessDefinition processDefinition = directProviderUtil.getProcessEngine(user).getRepositoryService().createProcessDefinitionQuery()
-				.processDefinitionKey(processDefinitionKey)
-				.withoutTenantId().latestVersion().singleResult();
-
-		if (processDefinition == null) {
-			String errorMessage = String.format("No matching process definition with key: %s", processDefinitionKey);
-			throw new SystemException(errorMessage);
 		}
+		FormService formService = directProviderUtil.getProcessEngine(user).getFormService();
 
+		org.cibseven.bpm.engine.runtime.ProcessInstance instance = null;
 		try {
 			Map<String, Object> variables = VariableValueDto.toMap(parameters.getVariables(), directProviderUtil.getProcessEngine(user), objectMapper);
 			String businessKey = parameters.getBusinessKey();
 			if (businessKey != null) {
-				instance = formService.submitStartForm(processDefinition.getId(), businessKey, variables);
+				instance = formService.submitStartForm(processDefinitionId, businessKey, variables);
 			} else {
-				instance = formService.submitStartForm(processDefinition.getId(), variables);
+				instance = formService.submitStartForm(processDefinitionId, variables);
 			}
-    } catch (AuthorizationException e) {
-      throw e;
-
-    } catch (ProcessEngineException|RestException e) {
-      String errorMessage = String.format("Cannot instantiate process definition %s: %s", processDefinition.getId(), e.getMessage());
-      throw new SystemException(errorMessage, e);
-    }
+		} catch (AuthorizationException e) {
+			throw e;
+		} catch (ProcessEngineException|RestException e) {
+			String errorMessage = String.format("Cannot instantiate process definition %s: %s", processDefinitionId, e.getMessage());
+			throw new SystemException(errorMessage, e);
+		}
 
     ProcessInstanceDto result = ProcessInstanceDto.fromProcessInstance(instance);
     return  directProviderUtil.convertValue(result, ProcessStart.class, user);

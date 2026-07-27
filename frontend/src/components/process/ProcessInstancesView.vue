@@ -79,13 +79,22 @@
               ></component>
             </div>
             <template v-else>
-              <div class="col-3 p-3">
+              <div class="col-4 p-3">
                 <b-input-group size="sm">
                   <template #prepend>
                     <b-button :title="$t('searches.search')" aria-hidden="true" size="sm" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
                   </template>
-                  <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="(evt) => onInput(evt.target.value.trim())"></b-form-input>
+                  <label for="process-instances-search" class="visually-hidden">{{ $t('searches.search') }}</label>
+                  <b-form-input id="process-instances-search" :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="(evt) => onInput(evt.target.value.trim())"></b-form-input>
                   <b-button size="sm" variant="light" @click="$refs.sortModal.show()" class="ms-1 border"><span class="mdi mdi-sort" style="line-height: initial"></span></b-button>
+                  <b-form-checkbox
+                    v-model="unfinishedFilter"
+                    class="ms-2 d-flex align-items-center"
+                    switch
+                    :title="$t('process-instance.onlyUnfinished.tooltip')"
+                  >
+                  {{ $t('process-instance.onlyUnfinished.title') }}
+                  </b-form-checkbox>
                 </b-input-group>
               </div>
               <div v-if="selectedActivityId" class="col-3 p-3">
@@ -97,7 +106,7 @@
               </div>
             </template>
 
-            <div :class="[ProcessInstancesSearchBoxPlugin ? 'col-2' : ( selectedActivityId ? 'col-6' : 'col-9'), 'p-3', 'text-end']">
+            <div :class="[ProcessInstancesSearchBoxPlugin ? 'col-2' : ( selectedActivityId ? 'col-5' : 'col-8'), 'p-3', 'text-end']">
               <div>
                 <b-button v-if="process.suspended === 'false'" size="sm" variant="light" @click="confirmSuspend" :title="$t('process.suspendProcess')">
                   <span class="mdi mdi-pause-circle-outline"></span> {{ collapseButtons ? '': $t('process.suspendProcess') }}
@@ -123,6 +132,7 @@
             :sorting="sorting"
             :tenant-id="tenantId"
             :filter="computedFilter"
+            @load-statistics="syncStatisticsWithInstances"
             @instance-deleted="$emit('instance-deleted')"
             @filter-instances="$emit('filter-instances', $event)"
           ></InstancesTable>
@@ -218,7 +228,6 @@ export default {
       handler: async function(newId, oldId) {
         if (newId && newId !== oldId) {
           this.clearHistoricActivityStatistics()
-          await this.loadHistoricActivityStatistics({ processDefinitionId: this.process.id })
           await this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
           ProcessService.fetchDiagram(newId).then(response => {
             this.$refs.diagram.showDiagram(response.bpmn20Xml, this.selectedActivityId)
@@ -242,8 +251,6 @@ export default {
   },
   mounted: function() {
     this.clearHistoricActivityStatistics()
-    const params = { canceled: true, completedScoped: true, finished: true, incidents: true }
-    this.loadHistoricActivityStatistics({ processDefinitionId: this.process.id, params })
     this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
     ProcessService.fetchDiagram(this.process.id).then(response => {
       setTimeout(() => {
@@ -253,6 +260,17 @@ export default {
     })
   },
   computed: {
+    unfinishedFilter: {
+    get: function() {
+      return this.filter?.unfinished ?? false
+    },
+    set: function(newVal) {
+      this.$emit('filter-instances', {
+      ...this.computedFilter,
+      unfinished: newVal ? true : undefined
+      })
+    }
+    },
     ProcessInstancesSearchBoxPlugin: function() {
       return this.$options.components && this.$options.components.ProcessInstancesSearchBoxPlugin
         ? this.$options.components.ProcessInstancesSearchBoxPlugin
@@ -319,7 +337,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'setDiagramXml', 'loadHistoricActivityStatistics', 'clearHistoricActivityStatistics']),
+    ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'setDiagramXml', 'clearHistoricActivityStatistics','loadHistoricActivityStatisticsForInstances']),
     ...mapActions('calledProcessDefinitions', ['loadStaticCalledProcessDefinitions']),
     applySorting: function(sortingCriteria) {
       this.sorting = true
@@ -398,9 +416,13 @@ export default {
       }
       this.$emit('filter-instances', queryObject)
     },
+     syncStatisticsWithInstances: function(filter) {
+      if (!this.process?.id) return
+      this.loadHistoricActivityStatisticsForInstances({ processDefinitionId: this.process.id, filter})
+    },
     onInput: debounce(800, function(freeText) {
       this.$emit('filter-instances', {
-        ...this.filter,
+        ...this.computedFilter,
         editField: freeText,
       })
     }),

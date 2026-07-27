@@ -17,42 +17,41 @@
 
 -->
 <template>
-  <div class="container-fluid pt-4 d-flex flex-column h-100">
+  <div class="container-fluid pt-4 d-flex flex-column h-100 flex-fill overflow-y-scroll">
     <h4>{{ $t('admin.system.execution-metrics.title') }}</h4>
     <div class="alert alert-info">{{ $t('admin.system.execution-metrics.metricsHelp') }}</div>
-		<div class="flex-fill overflow-auto">
-			<div v-if="!loading">
-				<h5>{{ $t('admin.system.execution-metrics.usageLast12MonthsByMonth') }}</h5>
-				<apexchart height="380" :options="options" :series="series"></apexchart>
-				<div class="pb-3">
-					<FlowTable
-						striped
-						resizable
-						thead-class="sticky-header"
-						:items="monthlyItems"
-						primary-key="index"
-						:fields="monthlyFields"
-					>
-					</FlowTable>
-				</div>
-				<div class="pb-3">
-					<h5>{{ $t('admin.system.execution-metrics.annualUsageBySubscriptionTerm') }}</h5>
-					<FlowTable
-						striped
-						resizable
-						thead-class="sticky-header"
-						:items="yearlyItems"
-						primary-key="index"
-						:fields="yearlyFields"
-					>
-					</FlowTable>
-				</div>
-			</div>
-			<div v-else class="py-3 text-center w-100">
-				<BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox>
-				{{ $t('admin.loading') }}
-			</div>
-		</div>
+    <template v-if="!loading">
+      <h5>{{ $t('admin.system.execution-metrics.usageLast12MonthsByMonth') }}</h5>
+      <apexchart ref="monthlyChart" height="380" :options="options" :series="series"></apexchart>
+      <div class="pb-3">
+        <FlowTable
+          striped
+          resizable
+          thead-class="sticky-header"
+          :items="monthlyItems"
+          primary-key="index"
+          :fields="monthlyFields"
+          @click="onMonthlyRowClick"
+        >
+        </FlowTable>
+      </div>
+      <div class="pb-3">
+        <h5>{{ $t('admin.system.execution-metrics.annualUsageBySubscriptionTerm') }}</h5>
+        <FlowTable
+          striped
+          resizable
+          thead-class="sticky-header"
+          :items="yearlyItems"
+          primary-key="index"
+          :fields="yearlyFields"
+        >
+        </FlowTable>
+      </div>
+    </template>
+    <div v-else class="py-3 text-center w-100">
+      <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox>
+      {{ $t('admin.loading') }}
+    </div>
   </div>
 </template>
 
@@ -61,6 +60,7 @@ import { SystemService } from '@/services.js'
 import { moment } from '@/globals.js'
 import VueApexCharts from 'vue3-apexcharts'
 import { FlowTable, BWaitingBox } from '@cib/common-frontend'
+import { i18n } from '@/i18n.js'
 
 export default {
   name: 'ExecutionMetrics',
@@ -72,16 +72,8 @@ export default {
         monthly: [],
       },
       metricNames: ['process-instances', 'decision-instances', 'task-users'],
-      subsDate: new Date(),
-      loading: true
-    }
-  },
-  watch: {
-    subsDate() {
-      this.loading = true
-      Promise.all([this.loadAnnualMetrics(), this.loadMonthlyMetrics()]).then(
-        () => (this.loading = false)
-      )
+      loading: true,
+      selectedMonthIndex: null
     }
   },
   computed: {
@@ -178,7 +170,7 @@ export default {
             grouped[monthKey][metric] = 0
           })
         }
-        grouped[monthKey][item.metric] = item.sum
+        grouped[monthKey][item.metric] = i18n.global.n(item.sum)
       })
       return Object.values(grouped)
         .sort((a, b) => moment(b.month, 'MMMM YYYY') - moment(a.month, 'MMMM YYYY'))
@@ -194,23 +186,29 @@ export default {
             grouped[year][metric] = 0
           })
         }
-        grouped[year][item.metric] = item.sum
+        grouped[year][item.metric] = i18n.global.n(item.sum)
       })
-      const sortedGroup = Object.values(grouped)
+      const currentYear = new Date().getFullYear()
+      return Object.values(grouped)
         .sort((a, b) => b.year - a.year)
         .map((entry, i) => ({ index: i + 1, ...entry }))
-      if (sortedGroup.length > 0) {
-        const subsDate = moment(this.subsDate).format('L')
-        const prevDate = moment(this.subsDate).subtract(1, 'years').format('L')
-        sortedGroup[0].year = this.$t('admin.system.execution-metrics.fromUpToToday', {
-          from: subsDate
+        .map((entry) => {
+          const startOfEntryYear = moment().year(entry.year).startOf('year')
+          const fromDate = startOfEntryYear.format('L')
+          const toDate = moment(startOfEntryYear).add(1, 'years').format('L')
+          if (entry.year === currentYear) {
+            entry.year = this.$t('admin.system.execution-metrics.fromUpToToday', {
+              from: fromDate
+            })
+          }
+          else {
+            entry.year = this.$t('admin.system.execution-metrics.fromTo', {
+              from: fromDate,
+              to: toDate
+            })
+          }
+          return entry
         })
-        sortedGroup[1].year = this.$t('admin.system.execution-metrics.fromTo', {
-          from: prevDate,
-          to: subsDate
-        })
-      }
-      return sortedGroup
     },
     monthlyFields() {
       return [
@@ -283,21 +281,21 @@ export default {
     )
   },
   methods: {
-    loadAnnualMetrics() {
+    async loadAnnualMetrics() {
       const params = {
-        subscriptionStartDate: moment(this.subsDate).format('YYYY-MM-DD[T]HH:mm:ss.SSSZZ'),
         groupBy: 'year',
       }
       return SystemService.getMetricsData(params).then((data) => {
         this.metrics.annual = data
       })
     },
-    loadMonthlyMetrics() {
+    async loadMonthlyMetrics() {
+      const subsDate = new Date()
       const params = {
-        subscriptionStartDate: moment(this.subsDate).format('YYYY-MM-DD[T]HH:mm:ss.SSSZZ'),
+        subscriptionStartDate: moment(subsDate).format('YYYY-MM-DD[T]HH:mm:ss.SSSZZ'),
         groupBy: 'month',
         metrics: 'process-instances,decision-instances,task-users',
-        startDate: moment(this.subsDate)
+        startDate: moment(subsDate)
           .subtract(1, 'years')
           .startOf('day')
           .format('YYYY-MM-DD[T]HH:mm:ss.SSSZZ'),
@@ -311,6 +309,27 @@ export default {
       const oneYearAgo = moment().subtract(1, 'years').startOf('day')
       const dateMoment = moment(date).startOf('day')
       return dateMoment.isBefore(oneYearAgo) || dateMoment.isAfter(today)
+    },
+    onMonthlyRowClick(item) {
+      const chart = this.$refs.monthlyChart
+      const dataPointIndex = this.labels.indexOf(item.month)
+      if (!chart || dataPointIndex === -1) return
+
+      if (this.selectedMonthIndex !== null) {
+        this.series.forEach((_, seriesIndex) =>
+          chart.toggleDataPointSelection(seriesIndex, this.selectedMonthIndex)
+        )
+      }
+
+      if (this.selectedMonthIndex === dataPointIndex) {
+        this.selectedMonthIndex = null
+      }
+      else {
+        this.series.forEach((_, seriesIndex) =>
+          chart.toggleDataPointSelection(seriesIndex, dataPointIndex)
+        )
+        this.selectedMonthIndex = dataPointIndex
+      }
     }
   },
 }

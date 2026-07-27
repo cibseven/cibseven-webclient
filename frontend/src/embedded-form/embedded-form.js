@@ -17,6 +17,7 @@
 import { InfoService } from "@/services";
 import { switchLanguage, i18n } from "@/i18n";
 import { getTheme, loadTheme } from "@/utils/init";
+import { extractErrorMessage, isDeployedFormNotFoundError, extractDeployedFormName, isFormElementError } from "@/utils/error";
 import CamSDK from "bpm-sdk";
 // Import jQuery to wrap DOM elements for BPM SDK compatibility - the SDK expects jQuery objects for .find() method calls
 import $ from 'jquery';
@@ -72,7 +73,7 @@ export function initEmbeddedForm(options = {}) {
                         embeddedForm.submit(err => {
                             if (err) {
                                 errorDiv.style.display = '';
-                                errorDiv.innerHTML = i18n.global.t('task.actions.saveError', [err]);
+                                errorDiv.innerHTML = i18n.global.t('task.actions.saveError', [extractErrorMessage(err)]);
                             } else {
                                 services.completeTask();
                             }
@@ -89,7 +90,7 @@ export function initEmbeddedForm(options = {}) {
                         embeddedForm.store(err => {
                             if (err) {
                                 errorDiv.style.display = '';
-                                errorDiv.innerHTML = i18n.global.t('task.actions.saveError', [err]);
+                                errorDiv.innerHTML = i18n.global.t('task.actions.saveError', [extractErrorMessage(err)]);
                             } else {
                                 services.displaySuccessMessage();
                             }
@@ -116,17 +117,11 @@ export function initEmbeddedForm(options = {}) {
                             }
                         },
                         err => {
-                            console.error(err);
-                            services.displayErrorMessage(err);
-                            throw err;
+                            // Error already displayed by specific handler inside loadEmbeddedForm; just consume the rejection
+                            console.error('Error initializing form:', err);
+                            loaderDiv.style.display = 'none';
                         }
-                    ).catch(err => {
-                        console.error('Error initializing embedded form:', err);
-                        errorDiv.style.display = '';
-                        errorDiv.innerHTML = i18n.global.t('task.actions.initError', [err]);
-                        loaderDiv.style.display = 'none';
-                        throw err;
-                    });
+                    );
                 });
             });
         });
@@ -295,7 +290,7 @@ function handleDateInputClick(e) {
 
     } catch (err) {
         console.error('Date picker error:', err);
-        services.displayErrorMessage(err);
+        services.displayErrorMessage(extractErrorMessage(err));
     }
 }
 
@@ -344,15 +339,23 @@ function loadEmbeddedForm(
         if (isStartForm) {
             const processService = client.resource('process-definition');
             processService.startForm({ id: referenceId }, (err, taskFormInfo) => {
-                if (err) reject(err);
-                else loadForm(taskFormInfo);
+                if (err) {
+                    services.displayErrorMessage(extractErrorMessage(err));
+                    reject(err);
+                } else {
+                    loadForm(taskFormInfo).catch(reject);
+                }
             });
         } else {
             const taskService = client.resource('task');
             // loads the task form using the task ID provided
             taskService.form(referenceId, (err, taskFormInfo) => {
-                if (err) reject(err);
-                else loadForm(taskFormInfo);
+                if (err) {
+                    services.displayErrorMessage(extractErrorMessage(err));
+                    reject(err);
+                } else {
+                    loadForm(taskFormInfo).catch(reject);
+                }
             });
         }
         async function loadForm(formInfo) {
@@ -360,6 +363,12 @@ function loadEmbeddedForm(
                 client: client,
                 done: function(err, form) {
                   if (err) {
+                      const errorMessage = extractErrorMessage(err);
+                      const httpStatus = err.status || (err.response && err.response.status);
+                      const message = (isFormElementError(errorMessage) || httpStatus === 404)
+                          ? i18n.global.t('errors.formNotFound', [formInfo.key])
+                          : errorMessage;
+                      services.displayErrorMessage(message);
                       reject(err);
                     } else if (form) {
                         resolve(form);
@@ -392,7 +401,7 @@ function loadEmbeddedForm(
                             },
                             done: function(err, formHtml) {
                                 if (err) {
-                                    console.error('Error fetching form content:', err);
+                                    // Do not show error, go to fallback
                                     rejectForm(err);
                                 } else {
                                     resolveForm(formHtml);
@@ -405,15 +414,9 @@ function loadEmbeddedForm(
                     if (embeddedContainer) embeddedContainer.style.display = 'none';
                 } catch (err) {
                     console.error('Error fetching form content:', err);
-                    // Fallback: construct form path from formInfo key and use containerElement approach
-                    const formPath = formInfo.key
-                        .replace('embedded:', '')
-                        .replace('app:', (formInfo.contextPath || '') + '/')
-                        .replace(/^(\/+|([^/]))/, '/$2')
-                        .replace(/\/\/+/, '/');
-                    formConfig.formUrl = formPath;
-                    formConfig.containerElement = $(embeddedContainer);
-                    if (formContainer) formContainer.style.display = 'none';
+                    services.displayErrorMessage(i18n.global.t('errors.formNotFound', [formInfo.key]));
+                    reject(err);
+                    return;
                 }
             }
 
@@ -438,6 +441,11 @@ function loadDeployedForm(client, isStartForm, referenceId) {
                 done: function(err, resource) {
                     if (err) {
                         console.error('Error loading deployed start form:', err);
+                        const errorMessage = extractErrorMessage(err);
+                        const message = isDeployedFormNotFoundError(errorMessage)
+                            ? i18n.global.t('errors.deployedFormNotFound', [extractDeployedFormName(errorMessage) || ''])
+                            : errorMessage;
+                        services.displayErrorMessage(message);
                         reject(err);
                     } else {
                         resolve(resource);
@@ -448,6 +456,11 @@ function loadDeployedForm(client, isStartForm, referenceId) {
             client.resource('task').deployedForm(referenceId, (err, resource) => {
                 if (err) {
                     console.error('Error loading deployed form:', err);
+                    const errorMessage = extractErrorMessage(err);
+                    const message = isDeployedFormNotFoundError(errorMessage)
+                        ? i18n.global.t('errors.deployedFormNotFound', [extractDeployedFormName(errorMessage) || ''])
+                        : errorMessage;
+                    services.displayErrorMessage(message);
                     reject(err);
                 } else {
                     resolve(resource);
@@ -474,6 +487,7 @@ function loadGeneratedForm(isStartForm, referenceId, formContainer, client, conf
             done: function(err, renderedFormHtml) {
                 if (err) {
                     console.error('Error getting rendered form:', err);
+                    services.displayErrorMessage(extractErrorMessage(err));
                     reject(err);
                 } else {
                     const updatedHtml = normalizeGeneratedFormHtml(renderedFormHtml);
@@ -498,6 +512,7 @@ function loadGeneratedForm(isStartForm, referenceId, formContainer, client, conf
                 done: function (err, renderedFormHtml) {
                     if (err) {
                         console.error('Error getting rendered form:', err);
+                        services.displayErrorMessage(extractErrorMessage(err));
                         reject(err);
                     } else {
                         const updatedHtml = normalizeGeneratedFormHtml(renderedFormHtml);

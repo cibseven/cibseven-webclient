@@ -3,35 +3,26 @@
 	<parent>
 		<groupId>org.cibseven.webapp</groupId>
 		<artifactId>cibseven-webclient</artifactId>
-		<version>2.2.0-SNAPSHOT</version>
+		<version>2.3.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>cibseven-webclient-web-spring-boot-4</artifactId>
 	<packaging>war</packaging>
 	<name>CIB seven webclient web (Spring Boot 4)</name>
 	<description>Web application module for the CIB seven webclient platform (Spring Boot 4.x).</description>
 
-	<properties>
-		<!-- Override the parent's default Spring Boot version for this flavour. -->
-		<version.spring.boot>4.0.6</version.spring.boot>
-		<version.openapi-starter-webmvc-ui>3.0.2</version.openapi-starter-webmvc-ui>
-		<!--
-			Jackson 2 is no longer bundled in SB4 by default but the shared core
-			compiles against com.fasterxml.jackson.* — we pull it back in
-			explicitly. Version aligned with the transitive 2.x that swagger /
-			jjwt-jackson / springdoc bring in.
-		-->
-		<version.jackson2>2.21.2</version.jackson2>
-	</properties>
+	<!-- All version numbers live in the parent pom's <properties>; this flavour selects the
+	     SB4 variants (version.spring.boot4, version.openapi-starter-webmvc-ui4, version.tomcat). -->
 
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-dependencies</artifactId>
-				<version>${version.spring.boot}</version>
+				<version>${version.spring.boot4}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+			
 			<!--
 				Force convergence between the version brought by common-auth
 				(2.2.36) and the one brought by springdoc 3.0.2 (2.2.43).
@@ -65,12 +56,12 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webmvc</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-starter-logging</artifactId>
-				</exclusion>
-			</exclusions>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+			<scope>provided</scope>
 		</dependency>
 
 		<!-- New in SB4: replaces RestTemplate idiom -->
@@ -100,7 +91,7 @@
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-			<version>${version.openapi-starter-webmvc-ui}</version>
+			<version>${version.openapi-starter-webmvc-ui4}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.apache.commons</groupId>
@@ -277,7 +268,7 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
-				<version>${version.spring.boot}</version>
+				<version>${version.spring.boot4}</version>
 				<configuration>
 					<fork>true</fork>
 					<mainClass>org.cibseven.webapp.SevenWebclientApplication</mainClass>
@@ -301,6 +292,28 @@
 						<appRoot>/usr/local/tomcat/webapps/seven</appRoot>
 					</container>
 				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>wildfly</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<descriptors>
+								<descriptor>assembly-war-wildfly.xml</descriptor>
+							</descriptors>
+							<classifier>wildfly</classifier>
+							<attach>true</attach>
+							<outputDirectory>target/</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 

@@ -62,9 +62,12 @@
         <div class="row"><small class="col-12" style="color: var(--gray)">{{ $t('nav-bar.filters.legendMultiple') }}</small></div>
         <div v-if="selectedCriteriaType === 'variable'" class="mt-4">
           <div v-for="(criteria, index) of selectedCriteriaVariable" class="col-12 input-group px-0 pb-2 d-flex align-items-center" :key="index">
-            <b-form-input class="rounded me-2" size="sm" :placeholder="$t('nav-bar.filters.insertVariableKey')" v-model="criteria.name"></b-form-input>
-            <b-form-select class="rounded me-2 mb-0" :options="variableOperators" size="sm" v-model="criteria.operator"></b-form-select>
-            <b-form-input class="rounded me-2" size="sm" :placeholder="$t('nav-bar.filters.insertValue')" v-model="criteria.value"></b-form-input>
+            <label :for="'filter-variable-key-' + index" class="visually-hidden">{{ $t('nav-bar.filters.insertVariableKey') }}</label>
+            <b-form-input :id="'filter-variable-key-' + index" class="rounded me-2" size="sm" :placeholder="$t('nav-bar.filters.insertVariableKey')" v-model="criteria.name"></b-form-input>
+            <label :for="'filter-variable-operator-' + index" class="visually-hidden">{{ $t('commons.operator') }}</label>
+            <b-form-select :id="'filter-variable-operator-' + index" class="rounded me-2 mb-0" :options="variableOperators" size="sm" v-model="criteria.operator"></b-form-select>
+            <label :for="'filter-variable-value-' + index" class="visually-hidden">{{ $t('nav-bar.filters.insertValue') }}</label>
+            <b-form-input :id="'filter-variable-value-' + index" class="rounded me-2" size="sm" :placeholder="$t('nav-bar.filters.insertValue')" v-model="criteria.value"></b-form-input>
             <span>
               <b-button :class="index > 0 ? '': 'invisible'" size="sm"  variant="outline-secondary" class="mdi mdi-18px mdi-delete-outline border-0" @click="deleteProcessVariable(index)" :title="$t('confirm.delete')"></b-button>
             </span>
@@ -162,9 +165,8 @@
 
 <script>
 import { permissionsMixin } from '@/permissions.js'
-import FilterableSelect from '@/components/task/filter/FilterableSelect.vue'
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
-import { FlowTable } from '@cib/common-frontend'
+import { FilterableSelect, FlowTable } from '@cib/common-frontend'
 
 const candidateOptions = ['candidateGroup', 'candidateGroupExpression',
   'candidateGroups', 'candidateGroupsExpression', 'candidateUser', 'candidateUserExpression']
@@ -178,7 +180,8 @@ export default {
     'filter-alert',
     'set-filter',
     'filter-updated',
-    'select-filter'
+    'select-filter',
+    'new-filter-tasks-count'
   ],
   data: function () {
     return {
@@ -314,6 +317,7 @@ export default {
           this.$refs.filterHandler.hide()
           this.$emit('set-filter', filter.id)
           this.$emit('select-filter', filter)
+          this.$emit('new-filter-tasks-count')
           this.$store.state.filter.selected = filter
           this.selectedFilterId = filter.id
           localStorage.setItem('filter', JSON.stringify(this.$store.state.filter.selected))

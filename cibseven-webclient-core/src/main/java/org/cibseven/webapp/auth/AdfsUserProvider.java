@@ -64,9 +64,9 @@ public class AdfsUserProvider extends BaseUserProvider<SSOLogin> {
 	JwtParser flowParser;
 	
 	@PostConstruct
-	public void init() {
+	public void init() throws Exception {
 		settings = new JwtTokenSettings(secret, validMinutes, prolongMinutes);
-		ssoHelper = new SsoHelper(tokenEndpoint, clientId, clientSecret, certEndpoint, null, null);
+		ssoHelper = new SsoHelper(tokenEndpoint, clientId, clientSecret, null, null, certEndpoint, null, null);
 		checkKey();
 		SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(settings.getSecret()));
 		flowParser = Jwts.parser().verifyWith(key).build();

@@ -33,6 +33,7 @@
 <script>
 import { BWaitingBox } from '@cib/common-frontend'
 import VueApexCharts from 'vue3-apexcharts'
+import { i18n } from '@/i18n.js'
 
 export default {
   name: 'PieChart',
@@ -87,7 +88,10 @@ export default {
                   color: '#0C1A29',
                   fontSize: '28.6px',
                   offsetY: 16,
-                  formatter: () => this.isEmptyChart ? '0' : this.values.reduce((a, b) => a + b, 0)
+                  formatter: () => {
+                    const value = this.isEmptyChart ? 0 : this.values.reduce((a, b) => a + b, 0)
+                    return i18n.global.n(value)
+                  },
                 },
                 value: {
                   show: true,
@@ -96,6 +100,9 @@ export default {
                   color: '#0C1A29',
                   fontSize: '28.6px',
                   offsetY: 16,
+                  formatter: (val) => {
+                    return i18n.global.n(Number.parseInt(val))
+                  },
                 },
               },
             },

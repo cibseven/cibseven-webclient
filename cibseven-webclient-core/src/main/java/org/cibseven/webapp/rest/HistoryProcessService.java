@@ -29,6 +29,7 @@ import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.providers.PermissionConstants;
 import org.cibseven.webapp.rest.model.ActivityInstanceHistory;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
+import org.cibseven.webapp.rest.model.HistoryStatistics;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -237,4 +238,15 @@ public class HistoryProcessService extends BaseService {
 		checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return bpmProvider.fetchHistoryVariableDataById(id, user);
 	}
+
+	@Operation(summary = "Queries for historic activity statistics of process instances that fulfill the given parameters")
+    @ApiResponse(responseCode = "400", description = "There is at least one invalid parameter value")
+    @RequestMapping(value = "/process-history/process-definition/{id}/statistics", method = RequestMethod.POST)
+    public Collection<HistoryStatistics> findHistoricActivityStatistics(
+                    @Parameter(description = "Id of the process definition") @PathVariable String id,
+                    @Parameter(description = "Parameters to filter query") @RequestBody Map<String, Object> filters,
+                    CIBUser user) {
+            return bpmProvider.findHistoricActivityStatistics(id, filters, user);
+    }
+	
 }

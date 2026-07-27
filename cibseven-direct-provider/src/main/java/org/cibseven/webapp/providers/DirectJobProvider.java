@@ -27,13 +27,13 @@ import org.cibseven.bpm.engine.ProcessEngineException;
 import org.cibseven.bpm.engine.exception.NotFoundException;
 import org.cibseven.bpm.engine.history.HistoricJobLog;
 import org.cibseven.bpm.engine.history.HistoricJobLogQuery;
-import org.cibseven.bpm.engine.management.JobDefinitionQuery;
+import org.cibseven.bpm.engine.runtime.JobQuery;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricJobLogDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricJobLogQueryDto;
-import org.cibseven.bpm.engine.rest.dto.management.JobDefinitionDto;
-import org.cibseven.bpm.engine.rest.dto.management.JobDefinitionQueryDto;
 import org.cibseven.bpm.engine.rest.dto.management.JobDefinitionSuspensionStateDto;
+import org.cibseven.bpm.engine.rest.dto.runtime.JobDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.JobDuedateDto;
+import org.cibseven.bpm.engine.rest.dto.runtime.JobQueryDto;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.SystemException;
@@ -51,6 +51,11 @@ public class DirectJobProvider implements IJobProvider {
 	public Collection<Job> getJobs(Map<String, Object> params, CIBUser user) {
 		Integer firstResult = null;
 		Integer maxResults = null;
+
+		Map<String, Object> queryParams = new java.util.HashMap<>(params);
+		queryParams.remove("firstResult");
+		queryParams.remove("maxResults");
+
 		for (Entry<String, Object> entry : params.entrySet()) {
 			if (entry.getKey().equals("firstResult"))
 				firstResult = Integer.parseInt((String) params.get("firstResult"));
@@ -58,18 +63,17 @@ public class DirectJobProvider implements IJobProvider {
 				maxResults = Integer.parseInt((String) params.get("maxResults"));
 		}
 
-		JobDefinitionQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(params, JobDefinitionQueryDto.class);
+		JobQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(queryParams, JobQueryDto.class);
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
-		JobDefinitionQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
-		List<org.cibseven.bpm.engine.management.JobDefinition> matchingJobDefinitions = QueryUtil.list(query, firstResult,
-				maxResults);
+		JobQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
+		List<org.cibseven.bpm.engine.runtime.Job> matchingJobs = QueryUtil.list(query, firstResult, maxResults);
 
-		List<Job> jobDefinitionResults = new ArrayList<>();
-		for (org.cibseven.bpm.engine.management.JobDefinition jobDefinition : matchingJobDefinitions) {
-			JobDefinitionDto result = JobDefinitionDto.fromJobDefinition(jobDefinition);
-			jobDefinitionResults.add(directProviderUtil.convertValue(result, Job.class, user));
+		List<Job> jobResults = new ArrayList<>();
+		for (org.cibseven.bpm.engine.runtime.Job job : matchingJobs) {
+			JobDto result = JobDto.fromJob(job);
+			jobResults.add(directProviderUtil.convertValue(result, Job.class, user));
 		}
-		return jobDefinitionResults;
+		return jobResults;
 	}
 
 	@Override

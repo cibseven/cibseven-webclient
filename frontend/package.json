@@ -1,6 +1,6 @@
 {
   "name": "cibseven-components",
-  "version": "2.2.0-dev.11",
+  "version": "2.3.0-dev.6",
   "type": "module",
   "license": "",
   "main": "./src/main.js",
@@ -16,7 +16,8 @@
       "import": "./dist/cibseven-components.es.js",
       "require": "./dist/cibseven-components.umd.js"
     },
-    "./themes/*": "./src/themes/*"
+    "./themes/*": "./src/themes/*",
+    "./dist/cibseven-components.css": "./dist/cibseven-components.css"
   },
   "scripts": {
     "dev": "vite",
@@ -39,15 +40,15 @@
   },
   "dependencies": {
     "@bpmn-io/form-js": "1.21.3",
-    "@cib/bootstrap-theme": "1.0.0-dev.0",
-    "@cib/common-frontend": "1.0.3-dev.16",
+    "@cib/bootstrap-theme": "1.0.1",
+    "@cib/common-frontend": "1.0.4",
     "@mdi/font": "7.4.47",
     "apexcharts": "4.7.0",
-    "axios": "1.15.2",
+    "axios": "1.18.1",
     "bootstrap": "5.3.8",
-    "bpm-sdk": "2.1.1",
+    "bpm-sdk": "2.1.3",
     "bpmn-js": "18.14.0",
-    "cibseven-modeler": "1.0.0-dev.18",
+    "cibseven-modeler": "1.2.0-dev.3",
     "dmn-js": "17.7.0",
     "js-abbreviation-number": "1.4.0",
     "js-sha256": "0.11.1",
@@ -61,9 +62,9 @@
     "vuex": "4.1.0"
   },
   "peerDependencies": {
-    "axios": "^1.15.2",
+    "axios": "^1.18.1",
     "bootstrap": "^5.3.8",
-    "cibseven-modeler": "^1.0.0-dev.17",
+    "cibseven-modeler": "^1.2.0-dev.3",
     "vue": "^3.5.33",
     "vue-i18n": "^11.4.0",
     "vue-router": "^5.0.6"
@@ -72,7 +73,7 @@
     "@eslint/js": "9.39.4",
     "@playwright/test": "^1.57.0",
     "@vitejs/plugin-vue": "6.0.6",
-    "@vitest/coverage-istanbul": "3.2.4",
+    "@vitest/coverage-istanbul": "3.2.7",
     "@vitest/eslint-plugin": "1.6.16",
     "@vue/compiler-dom": "3.5.33",
     "@vue/server-renderer": "3.5.33",
@@ -84,9 +85,9 @@
     "jsdom": "29.1.0",
     "sass": "1.89.0",
     "start-server-and-test": "2.0.11",
-    "vite": "6.4.2",
+    "vite": "6.4.3",
     "vite-plugin-vue-devtools": "8.1.1",
-    "vitest": "3.2.4"
+    "vitest": "3.2.7"
   },
   "publishConfig": {
     "registry": "https://artifacts.cibseven.org/repository/npm-hosted/"

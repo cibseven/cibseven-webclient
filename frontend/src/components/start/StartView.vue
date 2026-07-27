@@ -63,7 +63,6 @@ export default {
   name: "StartView",
   components: { ErrorDialog, StartViewItem },
   mixins: [permissionsMixin, navigationPermissionsMixin],
-  inject: ['loadProcesses'],
   data: function() {
     return {
       showAdminOptions: false,
@@ -122,23 +121,12 @@ export default {
       return tiles
     },
     startableProcesses: function() {
-      return this.processesFiltered.find(p => { return p.startableInTasklist })
+      return this.processesFilteredUnsorted.find(p => { return p.startableInTasklist })
     },
-    processesFiltered: function() {
+    processesFilteredUnsorted: function() {
       if (!this.$store.state.process.list) return []
       return this.$store.state.process.list.filter(process => {
         return ((!process.revoked))
-      }).sort((objA, objB) => {
-        const nameA = objA.name ? objA.name.toUpperCase() : objA.name
-        const nameB = objB.name ? objB.name.toUpperCase() : objB.name
-        const compareAMoreB = nameA > nameB ? 1 : 0
-        let comp = nameA < nameB ? -1 : compareAMoreB
-
-        if (this.$root.config.subProcessFolder) {
-          if (objA.resource.includes(this.$root.config.subProcessFolder)) comp = 1
-          else if (objB.resource.includes(this.$root.config.subProcessFolder)) comp = -1
-        }
-        return comp
       })
     },
     countStartItems: function () {
@@ -146,10 +134,6 @@ export default {
     },
   },
   methods: {
-    startProcess: function () {
-      this.$refs.startProcess.show()
-      this.loadProcesses(false)
-    },
     updateItems() {
       if (this.$refs.startContainer) {
         this.items = Array.from(this.$refs.startContainer.children)

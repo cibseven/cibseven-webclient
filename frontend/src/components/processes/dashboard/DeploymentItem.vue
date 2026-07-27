@@ -24,7 +24,7 @@
       @mouseleave="isClicked = false" @focusout="isClicked = false">
       <h5 class="link-dark">{{ title }}</h5>
       <h2 class="link-dark">
-        <span v-if="count !== null" :class="computedValueClass">{{ count }}</span>
+        <span v-if="count !== null" :class="computedValueClass">{{ computedCount }}</span>
         <span v-else><BWaitingBox class="d-inline" styling="width: 24px" :title="$t('admin.loading')"></BWaitingBox></span>
       </h2>
     </router-link>
@@ -33,6 +33,7 @@
 
 <script>
 import { BWaitingBox } from '@cib/common-frontend'
+import { i18n } from '@/i18n.js'
 
 export default {
   name: 'DeploymentItem',
@@ -52,6 +53,9 @@ export default {
     computedValueClass: function() {
       return this.count === 'x' ? 'text-warning' : ''
     },
+    computedCount() {
+      return (typeof this.count === 'number') ? i18n.global.n(this.count) : this.count
+    }
   }
 }
 </script>

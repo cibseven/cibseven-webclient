@@ -26,4 +26,20 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Setter
 public class ElementTemplateProperties {
     private List<String> paths;
+
+    /**
+     * Number of attempts to verify that the {@code MOD_ELEMENT_TEMPLATES} table exists
+     * before loading element templates. The table is created by the process engine
+     * (MyBatis), which has no Spring context and cannot be ordered against the webclient
+     * deployment, so on external databases (MySQL/PostgreSQL) and slow environments
+     * (e.g. arm64 under emulation) the table may not be present yet when this loader runs.
+     * Default 30 attempts.
+     */
+    private int schemaReadyMaxAttempts = 30;
+
+    /**
+     * Delay between schema-readiness attempts, in milliseconds. Default 2000ms,
+     * giving a default total wait of 60s ({@link #schemaReadyMaxAttempts} * this).
+     */
+    private long schemaReadyRetryDelayMs = 2000;
 }

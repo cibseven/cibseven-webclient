@@ -129,6 +129,7 @@ export default {
       }
     },
     async instanceId() {
+      this.clearActivitySelection()
       if (this.process && this.process.key === this.processKey && this.instanceId) {
         await this.loadInstanceById(this.instanceId)
       }
@@ -145,7 +146,7 @@ export default {
       task: null,
       activityInstance: null,
       activityInstanceHistory: null,
-      filter: {},
+      filter: { unfinished: true },
       loading: false,
       parentProcess: null
     }
@@ -275,6 +276,8 @@ export default {
           } else if (params.processDefinition.version !== this.computedVersionIndex) {
             // remove deleted process-definition from the list
             this.processDefinitions = versions
+            this.resetStatsLazyLoad(this.$root.config.lazyLoadHistory)
+            this.loadProcessVersion(this.process)
           }  else {
             // Find nearest process-definition to deleted one and select it.
             //
@@ -302,6 +305,7 @@ export default {
               }
             })
             this.processDefinitions = versions
+            this.resetStatsLazyLoad(this.$root.config.lazyLoadHistory)
           }
         })
       })

@@ -18,17 +18,16 @@ package org.cibseven.webapp.auth;
 
 import java.io.IOException;
 import java.util.Base64;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import javax.crypto.SecretKey;
 
+import org.cibseven.webapp.auth.assertion.AssertionType;
 import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.auth.exception.TokenExpiredException;
 import org.cibseven.webapp.auth.providers.JwtUserProvider;
@@ -68,11 +67,19 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> {
 	@Value("${cibseven.webclient.sso.endpoints.user}") String userEndpoint;
 	@Value("${cibseven.webclient.sso.endpoints.introspection:}") String introspectionEndpoint;
 	@Value("${cibseven.webclient.sso.clientId}") String clientId;
-	@Value("${cibseven.webclient.sso.clientSecret}") String clientSecret;
+	@Value("${cibseven.webclient.sso.clientSecret:}") String clientSecret;
 	@Value("${cibseven.webclient.sso.userIdProperty}") String userIdProperty;
 	@Value("${cibseven.webclient.sso.userNameProperty}") String userNameProperty;
 	@Value("${cibseven.webclient.sso.accessTokenToEngineRest:false}") boolean forwardToken;
 	@Value("${cibseven.webclient.authentication.jwtSecret}") String secret;
+	@Value("${cibseven.webclient.sso.assertion.type:}") AssertionType assertionType;
+	 /**
+     * Location of the PEM-encoded PKCS#8 private key file.
+     * Supports Spring resource prefixes: {@code classpath:}, {@code file:}.
+     * Required for {@link AssertionType#JJWT}.
+     * Not used for {@link AssertionType#AZURE_WORKLOAD_IDENTITY}.
+     */
+	@Value("${cibseven.webclient.sso.assertion.keyLocation:}") String assertionKeyLocation;
 	
 	@Getter private SsoHelper ssoHelper;
 	@Getter private JwtTokenSettings settings;
@@ -85,9 +92,20 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> {
 	private ScheduledExecutorService scheduler;
 	
 	@PostConstruct
-	public void init() {
-		settings = new JwtTokenSettings(secret, validMinutes, prolongMinutes);
-		ssoHelper = new SsoHelper(tokenEndpoint, clientId, clientSecret, certEndpoint, userEndpoint, introspectionEndpoint);
+	public void init() throws Exception {
+		if (clientSecret.isBlank() && assertionType == null) {
+			throw new IllegalStateException("Either clientSecret must be provided or an assertion must be specified.");
+		}
+		settings = new JwtTokenSettings(secret, validMinutes, prolongMinutes);		
+		ssoHelper = new SsoHelper(
+			tokenEndpoint,
+			clientId, 
+			clientSecret, 
+			assertionType,
+			assertionKeyLocation,
+			certEndpoint, 
+			userEndpoint, 
+			introspectionEndpoint);
 		checkKey();
 		SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(settings.getSecret()));
 		flowParser = Jwts.parser().verifyWith(key).build();

@@ -398,6 +398,10 @@ function setupGuard(to, from, next) {
 }
 
 function modelerGuard(to, from, next) {
+  if (!router.root?.config?.modelerEnabled) {
+    next({ name: 'start-configurable' })
+    return
+  }
   permissionsGuard('modeler')(to, from, next)
 }
 

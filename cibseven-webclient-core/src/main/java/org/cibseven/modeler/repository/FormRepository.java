@@ -31,6 +31,8 @@ public interface FormRepository extends JpaRepository<FormEntity, String> {
 
 	List<FormEntity> findAllBy(Pageable pageable);
 
+	FormEntity findByFormId(String formId);
+
 	@Query("select f from FormEntity f " +
 		"where lower(f.formId) like lower(concat('%', :keyword, '%')) " +
 		"or lower(f.description) like lower(concat('%', :keyword, '%'))")

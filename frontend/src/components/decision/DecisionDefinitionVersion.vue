@@ -60,7 +60,7 @@
           </div>
         </div>
         <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 60px; left: 0; bottom: 0" @scroll="handleScrollDecisions">
-          <InstancesTable ref="instancesTable" v-if="!loading && decisionInstances.length > 0 && !sorting" :instances="decisionInstances" :sortByDefaultKey="sortByDefaultKey" :sortDesc="sortDesc"></InstancesTable>
+          <DecisionInstancesTable ref="instancesTable" v-if="!loading && decisionInstances.length > 0 && !sorting" :instances="decisionInstances" :sortByDefaultKey="sortByDefaultKey" :sortDesc="sortDesc"></DecisionInstancesTable>
           <div v-else-if="loading" class="py-3 text-center w-100">
             <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
           </div>
@@ -77,7 +77,7 @@
 
 import { permissionsMixin } from '@/permissions.js'
 import DmnViewer from '@/components/decision/DmnViewer.vue'
-import InstancesTable from '@/components/decision/InstancesTable.vue'
+import DecisionInstancesTable from '@/components/decision/DecisionInstancesTable.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
@@ -87,7 +87,7 @@ import { debounce } from '@/utils/debounce.js'
 
 export default {
   name: 'DecisionDefinitionVersion',
-  components: { DmnViewer, InstancesTable, ViewerFrame, BWaitingBox, GenericTabs, ScrollableTabsContainer },
+  components: { DmnViewer, DecisionInstancesTable, ViewerFrame, BWaitingBox, GenericTabs, ScrollableTabsContainer },
   mixins: [permissionsMixin, resizerMixin],
   props: {
     versionIndex: String,

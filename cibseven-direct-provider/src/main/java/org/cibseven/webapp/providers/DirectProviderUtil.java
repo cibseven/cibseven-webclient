@@ -27,6 +27,8 @@ import org.cibseven.bpm.engine.AuthorizationException;
 import org.cibseven.bpm.engine.IdentityService;
 import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.ProcessEngineException;
+import org.cibseven.bpm.engine.identity.Group;
+import org.cibseven.bpm.engine.identity.Tenant;
 import org.cibseven.bpm.engine.impl.identity.Authentication;
 import org.cibseven.bpm.engine.rest.dto.runtime.VariableInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.VariableInstanceQueryDto;
@@ -45,57 +47,58 @@ import org.cibseven.bpm.engine.rest.util.EngineUtil;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.Setter;
+
 public class DirectProviderUtil {
 
 	protected Map<String, ProcessEngine> processEngines = new HashMap<>();
 	protected Map<String, ObjectMapper> objectMappers = new HashMap<>();
+	@Setter
+	protected IEngineProvider engineProvider;
 
-	public DirectProviderUtil() {
-	}
-
-	protected ProcessEngine getProcessEngine(String processEngineName) {
+	protected ProcessEngine getProcessEngine(String engineId) {
 		ProcessEngine processEngine = null;
-		if (processEngines.containsKey(processEngineName))
-			processEngine = processEngines.get(processEngineName);
+		if (processEngines.containsKey(engineId))
+			processEngine = processEngines.get(engineId);
 		else {
 			// either one of the two methods can be used to lookup the process engine - the other might fail for unknown reasons
 			try {
-				processEngine = EngineUtil.lookupProcessEngine(processEngineName);
+				processEngine = EngineUtil.lookupProcessEngine(engineId);
 			} catch (RestException ex) {
-				processEngine = BpmPlatform.getProcessEngineService().getProcessEngine(processEngineName);
+				processEngine = BpmPlatform.getProcessEngineService().getProcessEngine(engineId);
 			} finally {
 				if (processEngine == null)
-					throw new SystemException("No process engine found with name " + processEngineName);
+					throw new SystemException("No process engine found with name " + engineId);
 			}
-			processEngines.put(processEngineName, processEngine);
+			processEngines.put(engineId, processEngine);
 			ObjectMapper objectMapper = new ObjectMapper();
 			JacksonConfigurator.configureObjectMapper(objectMapper);
-			objectMappers.put(processEngineName, objectMapper);
+			objectMappers.put(engineId, objectMapper);
 		}
 		return processEngine;
 	}
 
 	protected ProcessEngine getProcessEngine(CIBUser user) {
-		return getProcessEngine(getEngineName(user));
+		return getProcessEngine(getEngineId(user));
 	}
 
 	protected ObjectMapper getObjectMapper(CIBUser user) {
-		String engineName = getEngineName(user);
-		getProcessEngine(engineName);
-		return objectMappers.get(engineName);
+		String engineId = getEngineId(user);
+		getProcessEngine(engineId);
+		return objectMappers.get(engineId);
 	}
 
-	protected ObjectMapper getObjectMapper(String engineName) {
-		getProcessEngine(engineName);
-		return objectMappers.get(engineName);
+	protected ObjectMapper getObjectMapper(String engineId) {
+		getProcessEngine(engineId);
+		return objectMappers.get(engineId);
 	}
 
-	protected String getEngineName(CIBUser user) {
-	String processEngineName = user != null ? user.getEngine() : null;
-	// If engine name is provided and not "default", add it to the path
-	if (processEngineName == null || processEngineName.isEmpty())
-		processEngineName = "default";
-	return processEngineName;
+	protected String getEngineId(CIBUser user) {
+		String engineId = user != null ? user.getEngine() : null;
+		// If engine name is provided and not "default", add it to the path
+		if (engineId == null || engineId.isEmpty())
+			engineId = engineProvider.getEffectiveDefaultEngineId();
+		return engineId;
 	}
 
 	/**
@@ -117,6 +120,65 @@ public class DirectProviderUtil {
 		} finally {
 			identityService.setAuthentication(currentAuthentication);
 		}
+	}
+
+	/**
+	 * Executes {@code action} with the given user authenticated on the engine, so that the engine
+	 * enforces its authorizations for the operation. The user's groups and tenants are resolved from
+	 * the engine's identity service.
+	 *
+	 * <p>If the engine has authorization disabled, the action runs unchanged: the engine performs
+	 * no authorization checks, so setting the authentication (and the group/tenant identity queries it
+	 * requires) would be pure overhead.
+	 */
+	protected <V extends Object> V runAsUser(CIBUser user, Supplier<V> action) {
+		ProcessEngine processEngine = getProcessEngine(user);
+		if (user == null || user.getId() == null
+				|| !processEngine.getProcessEngineConfiguration().isAuthorizationEnabled()) {
+			return action.get();
+		}
+		IdentityService identityService = processEngine.getIdentityService();
+		Authentication previousAuthentication = identityService.getCurrentAuthentication();
+		try {
+			identityService.setAuthentication(user.getId(), getGroupsOfUser(user), getTenantsOfUser(user));
+			return action.get();
+		} finally {
+			//Authentication set from another call will be restored
+			identityService.setAuthentication(previousAuthentication);
+		}
+	}
+
+	/**
+	 * Void variant of {@link #runAsUser(CIBUser, Supplier)} for operations that do not return a value.
+	 */
+	protected void runAsUser(CIBUser user, Runnable action) {
+		runAsUser(user, () -> {
+			action.run();
+			return null;
+		});
+	}
+
+	protected List<String> getGroupsOfUser(CIBUser user) {
+		List<Group> groups = getProcessEngine(user).getIdentityService().createGroupQuery()
+				.groupMember(user.getId())
+				.list();
+		List<String> groupIds = new ArrayList<>();
+		for (Group group : groups) {
+			groupIds.add(group.getId());
+		}
+		return groupIds;
+	}
+
+	protected List<String> getTenantsOfUser(CIBUser user) {
+		List<Tenant> tenants = getProcessEngine(user).getIdentityService().createTenantQuery()
+				.userMember(user.getId())
+				.includingGroupsOfUser(true)
+				.list();
+		List<String> tenantIds = new ArrayList<>();
+		for (Tenant tenant : tenants) {
+			tenantIds.add(tenant.getId());
+		}
+		return tenantIds;
 	}
 
 	public List<Variable> queryVariableInstances(VariableInstanceQueryDto queryDto, Integer firstResult,

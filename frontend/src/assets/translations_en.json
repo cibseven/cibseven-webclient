@@ -1,5 +1,6 @@
 {
 	"commons": {
+		"operator": "Operator",
 		"edit": "Edit",
 		"save": "Save",
 		"actualisation": {
@@ -295,7 +296,12 @@
 				"historic": "The historic variable was deleted successfully.",
 				"historicError": "An error occurred while attempting to delete the historic variable \"{name}\"."
 			},
-			"enterValue": "Enter value"
+			"enterValue": "Enter value",
+			"activityIdBadge": {
+				"remove": "Remove criteria - to list all variables",
+				"title": "{activityId}",
+				"tooltip": "Show only variables in scope \"{activityId}\"."
+			}
 		},
 		"incidents": {
 			"activityIdBadge": {
@@ -435,6 +441,10 @@
 			"retries": "Retries",
 			"priority": "Priority",
 			"noExternalTasks": "No external tasks found"
+		},
+		"onlyUnfinished": {
+			"title": "Only Unfinished",
+			"tooltip": "Show only unfinished process instances"
 		}
 	},
 	"dmn-viewer": {
@@ -746,6 +756,7 @@
 				"resourceId": "Resource ID: {value}"
 			},
 			"add": "Add authorization",
+			"authorizationDisabledWarning": "The authorization management is disabled - all users have full access in the system.\nPlease check \"authorizationEnabled\" property in the engine configuration.",
 			"noAuthSelected": "No Authorization type selected"
 		},
 		"system": {
@@ -1042,6 +1053,8 @@
 		"AccessDeniedException": "No Permission ({0})",
 		"NoPermission": "You do not have the necessary permissions to perform this action.\nRequired persmission: \"{permission}\".\nReferenced from: {refPath}",
 		"EntryAlreadyExistsException": "{0} already exists",
+		"formNotFound": "The form \"{0}\" could not be loaded. The form is either empty or the form resource was not deployed correctly. Please check the deployment and try again.",
+		"deployedFormNotFound": "The deployed form resource \"{0}\" could not be found in the deployment. Please verify that the form resource is included in the deployment and try again.",
 		"NoObjectFoundException": "While performing this operation a specific problem has occurred. Please refresh the page in your browser and try again.",
 		"InvalidAttributeValueException": "While performing this operation a specific problem has occurred. Please refresh the page in your browser and try again.",
 		"SubmitDeniedException": "While performing this operation a specific problem has occurred. Please refresh the page in your browser and try again.",

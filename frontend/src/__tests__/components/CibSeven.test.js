@@ -64,6 +64,25 @@ describe('CibSeven.vue', () => {
       mockThis.$route.path = '/seven/auth/admin/users'
       expect(CibSeven.methods.isMenuItemActive.call(mockThis, exactItem)).toBe(false)
     })
+
+    it('should navigate to the start page before reloading on logout', () => {
+      const originalLocation = window.location
+      const reloadOrder = []
+      delete window.location
+      window.location = {
+        hash: '#/seven/auth/processes/123',
+        reload: vi.fn(() => reloadOrder.push(window.location.hash))
+      }
+
+      CibSeven.methods.logout.call({})
+
+      // reload must fire AFTER the hash moves to the start page, else login returns
+      // to the (now-stale) previous page
+      expect(reloadOrder).toEqual(['#/'])
+      expect(window.location.hash).toBe('#/')
+
+      window.location = originalLocation
+    })
   })
 
   describe('Computed Properties', () => {

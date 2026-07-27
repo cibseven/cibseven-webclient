@@ -26,19 +26,56 @@ import org.cibseven.webapp.rest.model.NewUser;
 import org.springframework.lang.Nullable;
 
 public interface IEngineProvider {
-	public static final String DEFAULT_ENGINE_NAME = "default";
+	/** The literal name of the engine called "default" in the engine-rest API. */
+	public static final String ENGINE_NAME_DEFAULT = "default";
 
-	public static boolean isDefaultEngine(String engine) {
-		return engine == null || engine.isEmpty() || DEFAULT_ENGINE_NAME.equalsIgnoreCase(engine);
+	/**
+	 * Whether no engine was specified (null or empty).
+	 */
+	public static boolean isEngineUnspecified(String engine) {
+		return engine == null || engine.isEmpty();
+	}
+
+	/**
+	 * Whether the given reference points to the engine literally named "default".
+	 * This is distinct from {@link #isEngineUnspecified(String)}: it requires the explicit name
+	 * "default"
+	 */
+	public static boolean isNamedDefaultEngine(String engine) {
+		return ENGINE_NAME_DEFAULT.equalsIgnoreCase(engine);
 	}
 
 	public static boolean isExternalEngine(String engine) {
 		return engine != null && engine.contains("|");
 	}
 
-	public Collection<Engine> getProcessEngineNames();
-	@Nullable public EngineConfiguration getDefaultEngineConfiguration();
-	@Nullable public EngineConfiguration getEngineConfiguration(String engineName);
-	public Boolean requiresSetup(String engine);
-	public void createSetupUser(NewUser user, String engine) throws InvalidUserIdException;
+	public Collection<Engine> getProcessEngineDefinitions();
+
+	/**
+	 * Returns the configuration of the <em>effective default</em> engine, i.e. the engine the webclient
+	 * uses when none is specified: the engine named "default" if present, otherwise the first available engine.
+	 */
+	public default EngineConfiguration getEffectiveDefaultEngineConfiguration() {
+		return getEffectiveDefaultEngineId() == null ? null : getEngineConfiguration(getEffectiveDefaultEngineId());
+	}
+
+	public default String getEffectiveDefaultEngineId() {
+		Collection<Engine> engines = getProcessEngineDefinitions();
+		String effectiveDefaultEngineId = null;
+		for (Engine engine : engines) {
+			if (IEngineProvider.isNamedDefaultEngine(engine.getName())) {
+				effectiveDefaultEngineId = engine.getId();
+				break;
+			}
+		}
+		if (effectiveDefaultEngineId == null && !engines.isEmpty()) {
+			// If no engine is explicitly named "default", pick the first one as the effective default
+			effectiveDefaultEngineId = engines.iterator().next().getId();
+		}
+		return effectiveDefaultEngineId;
+	}
+	
+	@Nullable public EngineConfiguration getEngineConfiguration(String engineId);
+	public Boolean requiresSetup(String engineId);
+	public void createSetupUser(NewUser user, String engineId) throws InvalidUserIdException;
 }
