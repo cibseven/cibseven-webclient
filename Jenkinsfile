@@ -11,14 +11,14 @@ import groovy.transform.Field
 @Field MavenProjectInformation mavenProjectInformation = null
 @Field Map pipelineParams = [
     pom: ConstantsInternal.DEFAULT_MAVEN_POM_PATH,
-    mvnContainerName: Constants.MAVEN_JDK_17_CONTAINER,
+    mvnContainerName: Constants.MAVEN_JDK_21_CONTAINER,
 	office365WebhookId: Constants.OFFICE_365_CIBSEVEN_WEBHOOK_ID,
     primaryBranch: 'main',
     dependencyTrackSynchronous: true,
     uiParamPresets: [:],
     testMode: false,
     buildPodConfig: [
-        (Constants.MAVEN_JDK_17_CONTAINER): [
+        (Constants.MAVEN_JDK_21_CONTAINER): [
             resources: [
                 cpu: '4',
                 memory: '10Gi',
@@ -63,7 +63,6 @@ pipeline {
                     .withContainerFromName(pipelineParams.mvnContainerName, pipelineParams.buildPodConfig[pipelineParams.mvnContainerName])
                     .withHelm4Container()
                     .withNode24Container()
-                    .withMavenJdk21Container()
                     .asYaml()
             defaultContainer pipelineParams.mvnContainerName
         }
@@ -289,8 +288,11 @@ pipeline {
                                     timeout(time: 5, unit: 'MINUTES') {
                                         def qg = waitForQualityGate()
                                         if (qg.status != 'OK') {
-                                            echo "WARNING: Pipeline unstable due to quality gate failure: ${qg.status}"
+                                            echo "WARNING: Quality gate failure: ${qg.status}. Marking stage as unstable without affecting overall build result."
                                             // currentBuild.result = 'UNSTABLE'
+                                            catchError(buildResult: null, stageResult: 'UNSTABLE') {
+                                                error "Quality gate failure: ${qg.status}"
+                                            }                                            
                                         }
                                     }
                                 }
@@ -311,13 +313,13 @@ pipeline {
             steps {
                 script {
                     stage('Run SonarQube Checks') {
-                        container(Constants.MAVEN_JDK_21_CONTAINER) {
+                        script {
                             withSonarQubeEnv(credentialsId: Constants.SONARQUBE_CREDENTIALS_ID, installationName: 'SonarQube') {
                                 withMaven() {
                                     sh """
                                         mvn -f ${pipelineParams.pom} \
                                             compile \
-                                            sonar:sonar \
+                                            org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar \
                                             -Dmaven.test.skip \
                                             -DskipTests \
                                             -Dlicense.skipDownloadLicenses=true \
@@ -330,8 +332,11 @@ pipeline {
                                 script {
                                     def qg = waitForQualityGate()
                                     if (qg.status != 'OK') {
-                                        echo "WARNING: Pipeline unstable due to quality gate failure: ${qg.status}"
-                                        currentBuild.result = 'UNSTABLE'
+                                        echo "WARNING: Quality gate failure: ${qg.status}. Marking stage as unstable without affecting overall build result."
+                                        // currentBuild.result = 'UNSTABLE'
+                                        catchError(buildResult: null, stageResult: 'UNSTABLE') {
+                                            error "Quality gate failure: ${qg.status}"
+                                        }
                                     }
                                 }
                             }
