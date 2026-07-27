@@ -288,8 +288,11 @@ pipeline {
                                     timeout(time: 5, unit: 'MINUTES') {
                                         def qg = waitForQualityGate()
                                         if (qg.status != 'OK') {
-                                            echo "WARNING: Pipeline unstable due to quality gate failure: ${qg.status}"
+                                            echo "WARNING: Quality gate failure: ${qg.status}. Marking stage as unstable without affecting overall build result."
                                             // currentBuild.result = 'UNSTABLE'
+                                            catchError(buildResult: null, stageResult: 'UNSTABLE') {
+                                                error "Quality gate failure: ${qg.status}"
+                                            }                                            
                                         }
                                     }
                                 }
