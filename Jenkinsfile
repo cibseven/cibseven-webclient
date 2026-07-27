@@ -11,14 +11,14 @@ import groovy.transform.Field
 @Field MavenProjectInformation mavenProjectInformation = null
 @Field Map pipelineParams = [
     pom: ConstantsInternal.DEFAULT_MAVEN_POM_PATH,
-    mvnContainerName: Constants.MAVEN_JDK_17_CONTAINER,
+    mvnContainerName: Constants.MAVEN_JDK_21_CONTAINER,
 	office365WebhookId: Constants.OFFICE_365_CIBSEVEN_WEBHOOK_ID,
     primaryBranch: 'main',
     dependencyTrackSynchronous: true,
     uiParamPresets: [:],
     testMode: false,
     buildPodConfig: [
-        (Constants.MAVEN_JDK_17_CONTAINER): [
+        (Constants.MAVEN_JDK_21_CONTAINER): [
             resources: [
                 cpu: '4',
                 memory: '10Gi',
@@ -63,7 +63,6 @@ pipeline {
                     .withContainerFromName(pipelineParams.mvnContainerName, pipelineParams.buildPodConfig[pipelineParams.mvnContainerName])
                     .withHelm4Container()
                     .withNode24Container()
-                    .withMavenJdk21Container()
                     .asYaml()
             defaultContainer pipelineParams.mvnContainerName
         }
@@ -311,7 +310,7 @@ pipeline {
             steps {
                 script {
                     stage('Run SonarQube Checks') {
-                        container(Constants.MAVEN_JDK_21_CONTAINER) {
+                        script {
                             withSonarQubeEnv(credentialsId: Constants.SONARQUBE_CREDENTIALS_ID, installationName: 'SonarQube') {
                                 withMaven() {
                                     sh """
