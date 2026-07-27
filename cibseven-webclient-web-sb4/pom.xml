@@ -270,7 +270,6 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>${version.spring.boot4}</version>
 				<configuration>
-					<fork>true</fork>
 					<mainClass>org.cibseven.webapp.SevenWebclientApplication</mainClass>
 				</configuration>
 				<executions>
@@ -308,7 +307,6 @@
 							<descriptors>
 								<descriptor>assembly-war-wildfly.xml</descriptor>
 							</descriptors>
-							<classifier>wildfly</classifier>
 							<attach>true</attach>
 							<outputDirectory>target/</outputDirectory>
 						</configuration>
