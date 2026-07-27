@@ -306,7 +306,7 @@ pipeline {
         stage('SAST, middleware') {
             when {
                 allOf {
-                    // branch pipelineParams.primaryBranch
+                    branch pipelineParams.primaryBranch
                     expression { params.VERIFY }
                 }
             }
