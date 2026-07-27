@@ -304,7 +304,7 @@ pipeline {
         stage('SAST, middleware') {
             when {
                 allOf {
-                    branch pipelineParams.primaryBranch
+                    // branch pipelineParams.primaryBranch
                     expression { params.VERIFY }
                 }
             }
@@ -317,7 +317,7 @@ pipeline {
                                     sh """
                                         mvn -f ${pipelineParams.pom} \
                                             compile \
-                                            sonar:sonar \
+                                            org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar \
                                             -Dmaven.test.skip \
                                             -DskipTests \
                                             -Dlicense.skipDownloadLicenses=true \
