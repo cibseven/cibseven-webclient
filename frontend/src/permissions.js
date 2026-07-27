@@ -55,6 +55,11 @@ const permissionsMixin = {
 			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
 			return this.$_permissionsMixin_checkPermissionsAllowed(process, 'key', permissionsCheck)
 		},
+		canSuspendProcessInstance: function(instanceId) {
+			const requiredPermissions = { 'processInstance': ['SUSPEND'] }
+			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(requiredPermissions)
+			return this.$_permissionsMixin_checkPermissionsAllowed({id: instanceId}, 'id', permissionsCheck)
+		},
 		/**
 		 * @param {string} deploymentId 
 		 * @returns {boolean} `true` if the user has `READ` permission for the given deploymentId, `false` otherwise
