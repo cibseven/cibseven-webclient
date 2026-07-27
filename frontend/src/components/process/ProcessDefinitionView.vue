@@ -22,7 +22,7 @@
       <b-button :disabled="!instances || instances.length === 0" :title="$t('process.exportInstances')" variant="outline-secondary" @click="exportCSV()"
         class="ms-auto me-3 mdi mdi-18px mdi-download-outline border-0"></b-button>
     </div>
-    <SidebarsFlow ref="sidebars" class="border-top overflow-auto" :left-open="leftOpen" @update:left-open="leftOpen = $event" :left-caption="shortendLeftCaption">
+    <SidebarsFlow ref="sidebars" class="border-top overflow-auto" :left-open="leftOpen" @update:left-open="onLeftOpenChanged" :left-caption="shortendLeftCaption">
       <template v-slot:left>
         <template v-if="errorVersionNotFound !== null">
           <WarningBox :message="$t('process.definitionVersionNotFound', [errorVersionNotFound])"/>
@@ -133,11 +133,14 @@ export default {
       if (this.process && this.process.key === this.processKey && this.instanceId) {
         await this.loadInstanceById(this.instanceId)
       }
+    },
+    sidebarScope(newScope) {
+      this.leftOpen = this.getSavedLeftOpen(newScope)
     }
   },
   data() {
     return {
-      leftOpen: true,
+      leftOpen: this.getSavedLeftOpen(this.instanceId ? 'process-instance' : 'process-definition'),
       process: null, // selected process definition
       processDefinitions: [],
       errorVersionNotFound: null,
@@ -153,6 +156,9 @@ export default {
   },
   computed: {
     ...mapGetters('instances', ['instances']),
+    sidebarScope() {
+      return (this.selectedInstance || this.instanceId) ? 'process-instance' : 'process-definition'
+    },
     shortendLeftCaption() {
       if (this.selectedInstance || this.instanceId) {
         return this.$t('process-instance.info')
@@ -191,6 +197,22 @@ export default {
   methods: {
     ...mapActions(['clearActivitySelection', 'getProcessById']),
     formatDate,
+    getSavedLeftOpen(scope) {
+      try {
+        const saved = localStorage.getItem(`sidebar-left-open:${scope}`)
+        return saved === null ? true : saved === 'true'
+      } catch {
+        return true
+      }
+    },
+    onLeftOpenChanged(isOpen) {
+      this.leftOpen = isOpen
+      try {
+        localStorage.setItem(`sidebar-left-open:${this.sidebarScope}`, isOpen)
+      } catch {
+        // localStorage unavailable or quota exceeded - ignore
+      }
+    },
     async findProcessInstance(instanceId) {
       return (this.$root.config.camundaHistoryLevel !== 'none') ?
         HistoryService.findProcessInstance(instanceId) :
