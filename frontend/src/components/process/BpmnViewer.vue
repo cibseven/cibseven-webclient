@@ -68,7 +68,7 @@ const interactionTypes = [
 
 export default {
   name: 'BpmnViewer',
-  emits: ['task-selected', 'child-activity', 'overlay-click'],
+  emits: ['task-selected', 'child-activity', 'overlay-click', 'viewbox-changed'],
   components: { BWaitingBox },
   props: {
     activityInstance: Object,
@@ -97,7 +97,8 @@ export default {
       overlayList: [],
       loader: true,
       suspendedOverlayMap: {},
-      overlayClickHandler: null
+      overlayClickHandler: null,
+      viewboxChangeTimer: null
     }
   },
   computed: {
@@ -186,18 +187,25 @@ export default {
     showDiagram: function(xml, selectedActivityId = null) {
       this.setDiagramReady(false)
       this.loader = true
-      this.viewer.importXML(xml).then(() => {
-        setTimeout(() => {
-          if (!this.viewer || !this.$refs.diagram) return
-          try {
-            this.viewer.get('canvas').zoom('fit-viewport')
-            this.loader = false
-            this.highlightElement(selectedActivityId)
-          } catch {
-            console.warn('BpmnViewer: Unable to zoom diagram, component may have been unmounted')
-          }
-        }, 500)
+      return this.viewer.importXML(xml).then(() => {
+        return new Promise(resolve => {
+          setTimeout(() => {
+            if (!this.viewer || !this.$refs.diagram) return
+            try {
+              this.viewer.get('canvas').zoom('fit-viewport')
+              this.loader = false
+              this.highlightElement(selectedActivityId)
+            } catch {
+              console.warn('BpmnViewer: Unable to zoom diagram, component may have been unmounted')
+            }
+            resolve()
+          }, 500)
+        })
       })
+    },
+    setViewbox: function(viewbox) {
+      if (!this.viewer) return
+      this.viewer.get('canvas').viewbox(viewbox)
     },
     zoomIn: function() {
       this.viewer.get('zoomScroll').stepZoom(1)
@@ -215,6 +223,12 @@ export default {
       }
 
       const eventBus = this.viewer.get('eventBus')
+      eventBus.on('canvas.viewbox.changed', () => {
+        clearTimeout(this.viewboxChangeTimer)
+        this.viewboxChangeTimer = setTimeout(() => {
+          this.$emit('viewbox-changed', this.viewer.get('canvas').viewbox())
+        }, 300)
+      })
       // BPMN element click
       eventBus.on('element.click', (event) => {
         if (this.getTypeAllowed(event.element.type, interactionTypes)) {
@@ -695,6 +709,7 @@ export default {
   },
   beforeUnmount: function() {
     this.setDiagramReady(false)
+    clearTimeout(this.viewboxChangeTimer)
     // Clean up document event listener to prevent memory leaks
     if (this.overlayClickHandler) {
       document.removeEventListener('click', this.overlayClickHandler)
