@@ -24,7 +24,7 @@
         <b-list-group-item v-if="!user.noInfo" class="border-0 px-3 py-2" :active="selectedTab === 'profile'" exact :to="'?tab=profile'">
           <span> {{ $t('admin.users.profile') }}</span>
         </b-list-group-item>
-        <b-list-group-item v-if="!user.noInfo && $root.config.userEditable" class="border-0 px-3 py-2" :active="selectedTab === 'account'" exact :to="'?tab=account'">
+        <b-list-group-item v-if="canChangePassword" class="border-0 px-3 py-2" :active="selectedTab === 'account'" exact :to="'?tab=account'">
           <span> {{ $t('password.recover.changePassword') }}</span>
         </b-list-group-item>
         <b-list-group-item v-if="!user.noInfo" class="border-0 px-3 py-2" :active="selectedTab === 'groups'" exact :to="'?tab=groups'">
@@ -76,7 +76,7 @@
           </div>
 
           <!-- Account Tab -->
-          <div v-else-if="selectedTab === 'account' && $root.config.userEditable && $root.config.userPasswordChangeEnabled" class="row pt-3 ps-4 pe-4">
+          <div v-else-if="selectedTab === 'account' && canChangePassword" class="row pt-3 ps-4 pe-4">
             <ContentBlock
               :title="$t('password.recover.changePassword')"
               class="col-lg-6 col-md-8 col-sm-12">
@@ -384,6 +384,9 @@ export default {
         })
       }
       return fields
+    },
+    canChangePassword() {
+      return !this.user.noInfo && this.$root.config.userEditable && this.$root.config.userPasswordChangeEnabled
     }
   },
   created: function () {
