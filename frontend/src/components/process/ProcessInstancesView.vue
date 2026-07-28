@@ -42,6 +42,7 @@
 
     <ViewerFrame :resizerMixin="this">
       <component :is="BpmnViewerPlugin" v-if="BpmnViewerPlugin" ref="diagram" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
+        @viewbox-changed="onViewboxChanged"
         :process-definition-id="process.id" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
         :active-tab="activeTab" class="h-100">
       </component>
@@ -54,6 +55,7 @@
         :active-tab="activeTab"
         @task-selected="selectTask($event)"
         @activity-map-ready="activityMap = $event"
+        @viewbox-changed="onViewboxChanged"
         class="h-100">
       </BpmnViewer>
     </ViewerFrame>
@@ -180,6 +182,8 @@ import CalledProcessDefinitionsTable from '@/components/process/tables/CalledPro
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import tabUrlMixin from '@/components/process/mixins/tabUrlMixin.js'
+import bpmnViewportPersistenceMixin from '@/components/process/mixins/bpmnViewportPersistenceMixin.js'
+import viewerFrameSizePersistenceMixin from '@/components/process/mixins/viewerFrameSizePersistenceMixin.js'
 import { debounce } from '@/utils/debounce.js'
 import { SuccessAlert, ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
 import ProcessInstancesTabs from '@/components/process/ProcessInstancesTabs.vue'
@@ -194,7 +198,7 @@ export default {
      SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable, CalledProcessDefinitionsTable,
      ProcessInstancesTabs, ScrollableTabsContainer, ViewerFrame, RemovableBadge },
   inject: ['loadProcesses'],
-  mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin, tabUrlMixin],
+  mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin, tabUrlMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
   emits: ['task-selected', 'filter-instances', 'instance-deleted'],
   props: {
     process: Object,
@@ -230,7 +234,7 @@ export default {
           this.clearHistoricActivityStatistics()
           await this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
           ProcessService.fetchDiagram(newId).then(response => {
-            this.$refs.diagram.showDiagram(response.bpmn20Xml, this.selectedActivityId)
+            this.$refs.diagram.showDiagram(response.bpmn20Xml, this.selectedActivityId).then(() => this.restoreViewboxIfSaved())
             this.setDiagramXml(response.bpmn20Xml)
           })
         }
@@ -254,7 +258,7 @@ export default {
     this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
     ProcessService.fetchDiagram(this.process.id).then(response => {
       setTimeout(() => {
-        this.$refs.diagram.showDiagram(response.bpmn20Xml, this.selectedActivityId)
+        this.$refs.diagram.showDiagram(response.bpmn20Xml, this.selectedActivityId).then(() => this.restoreViewboxIfSaved())
         this.setDiagramXml(response.bpmn20Xml)
       }, 100)
     })

@@ -75,7 +75,7 @@
 
     <ViewerFrame :resizerMixin="this">
       <component :is="BpmnViewerPlugin" v-if="BpmnViewerPlugin" ref="diagram" class="h-100"
-        @child-activity="filterByChildActivity($event)" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
+        @child-activity="filterByChildActivity($event)" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event" @viewbox-changed="onViewboxChanged"
         :activityId="selectedActivityId" :activity-instance="activityInstance" :process-definition-id="process.id" :selected-instance="selectedInstance" :activity-instance-history="activityInstanceHistory" 
         :statistics="process.statistics" :active-tab="activeTab" >
       </component>
@@ -88,6 +88,7 @@
         :activityId="selectedActivityId" 
         @task-selected="selectTask($event)"
         @child-activity="filterByChildActivity($event)"
+        @viewbox-changed="onViewboxChanged"
         class="h-100">
       </BpmnViewer>
     </ViewerFrame>
@@ -122,6 +123,8 @@ import { mapActions, mapGetters } from 'vuex'
 
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import tabUrlMixin from '@/components/process/mixins/tabUrlMixin.js'
+import bpmnViewportPersistenceMixin from '@/components/process/mixins/bpmnViewportPersistenceMixin.js'
+import viewerFrameSizePersistenceMixin from '@/components/process/mixins/viewerFrameSizePersistenceMixin.js'
 
 import VariablesTable from '@/components/process/tables/VariablesTable.vue'
 import IncidentsTable from '@/components/process/tables/IncidentsTable.vue'
@@ -138,7 +141,7 @@ export default {
   name: 'ProcessInstanceView',
   components: { VariablesTable, IncidentsTable, UserTasksTable, BpmnViewer, 
     JobsTable, CalledProcessInstancesTable, ExternalTasksTable, ProcessInstanceTabs, ScrollableTabsContainer, ViewerFrame },
-  mixins: [resizerMixin, tabUrlMixin],
+  mixins: [resizerMixin, tabUrlMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
   props: {
     process: Object,
     tenantId: String,
@@ -158,7 +161,7 @@ export default {
   watch: {
     'process.id': function() {
       ProcessService.fetchDiagram(this.process.id).then(response => {
-        this.$refs.diagram?.showDiagram(response.bpmn20Xml, this.selectedActivityId)
+        this.$refs.diagram?.showDiagram(response.bpmn20Xml, this.selectedActivityId)?.then(() => this.restoreViewboxIfSaved())
       })
     },
     'selectedInstance.superProcessInstanceId': function(newVal) {
@@ -190,7 +193,7 @@ export default {
   },
   mounted: function() {
     ProcessService.fetchDiagram(this.process.id).then(response => {
-      this.$refs.diagram?.showDiagram(response.bpmn20Xml, this.selectedActivityId)
+      this.$refs.diagram?.showDiagram(response.bpmn20Xml, this.selectedActivityId)?.then(() => this.restoreViewboxIfSaved())
     })
     // Load super process instance if available
     if (this.selectedInstance?.superProcessInstanceId) {
