@@ -170,4 +170,15 @@ describe('package', () => {
       }
     })
   })
+
+  describe('package-lock.json', () => {
+    it('should resolve to artifacts.cibseven.org only', () => {
+      const packageLockPath = path.resolve(srcDir, '../package-lock.json')
+      const packageLockContent = fs.readFileSync(packageLockPath, 'utf-8')
+      const hasCibSevenRegistry = packageLockContent.includes('https://artifacts.cibseven.org')
+      const hasNpmRegistry = packageLockContent.includes('https://registry.npmjs.org')
+      expect(hasCibSevenRegistry).toBe(true)
+      expect(hasNpmRegistry).toBe(false)
+    })
+  })
 })

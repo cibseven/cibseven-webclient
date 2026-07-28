@@ -1,5 +1,6 @@
 {	
 	"commons": {
+		"operator": "Оператор",
 		"edit": "Редактировать",
 		"save": "Сохранить",
 		"actualisation": {

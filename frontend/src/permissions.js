@@ -55,6 +55,15 @@ const permissionsMixin = {
 			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
 			return this.$_permissionsMixin_checkPermissionsAllowed(process, 'key', permissionsCheck)
 		},
+		/**
+		 * @param {string} deploymentId 
+		 * @returns {boolean} `true` if the user has `READ` permission for the given deploymentId, `false` otherwise
+		 */
+		canReadDeployment(deploymentId) {
+			const requiredPermissions = { 'deployment': ['READ'] }
+			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(requiredPermissions)
+			return this.$_permissionsMixin_checkPermissionsAllowed({id: deploymentId}, 'id', permissionsCheck)
+		},
 		filtersByPermissions: function(permissionsRequired, filters) {
 			const tmpFilters = []
 			if (!filters || !Array.isArray(filters) || !filters.length) return tmpFilters // Return empty array if no filters are provided or filters is not an array

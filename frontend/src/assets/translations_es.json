@@ -1,5 +1,6 @@
 {
 	"commons": {
+		"operator": "Operador",
 		"edit": "Editar",
 		"save": "Guardar",
 		"actualisation": {

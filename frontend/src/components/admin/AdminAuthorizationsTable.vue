@@ -26,7 +26,8 @@
             <template #prepend>
               <b-button class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
             </template>
-            <b-form-input :placeholder="$t('searches.search')" v-model.trim="filter"></b-form-input>
+            <label for="authorizations-search" class="visually-hidden">{{ $t('searches.search') }}</label>
+            <b-form-input id="authorizations-search" :placeholder="$t('searches.search')" v-model.trim="filter"></b-form-input>
           </b-input-group>
         </div>
         <div class="col-8 text-end">
@@ -74,8 +75,9 @@
                     <span class="mdi" :class="isUserToEdit ? 'mdi-account' : 'mdi-account-group'"></span>
                   </b-button>
                 </b-input-group-prepend>
-                <b-form-input v-if="row.item.userId" v-model="row.item.userId"></b-form-input>
-                <b-form-input v-else v-model="row.item.groupId"></b-form-input>
+                <label :for="'authz-identity-' + row.item.id" class="visually-hidden">{{ $t('admin.authorizations.userIdGroupId') }}</label>
+                <b-form-input v-if="row.item.userId" :id="'authz-identity-' + row.item.id" v-model="row.item.userId"></b-form-input>
+                <b-form-input v-else :id="'authz-identity-' + row.item.id" v-model="row.item.groupId"></b-form-input>
               </b-input-group>
             </div>
             <div v-else>
@@ -118,7 +120,8 @@
           </template>
           <template v-slot:cell(name)="row">
             <div v-if="edit === row.item.id">
-              <b-form-select v-model="row.item.name" :options="filterNameOptions" @change="onFilterNameChange(row.item)">
+              <label :for="'authz-name-' + row.item.id" class="visually-hidden">{{ $t('admin.authorizations.name') }}</label>
+              <b-form-select :id="'authz-name-' + row.item.id" v-model="row.item.name" :options="filterNameOptions" @change="onFilterNameChange(row.item)">
                 <template v-slot:first>
                   <b-form-select-option :value="null"></b-form-select-option>
                 </template>
@@ -128,7 +131,8 @@
           </template>
           <template v-slot:cell(resourceId)="row">
             <div v-if="edit === row.item.id">
-              <b-form-input v-model="row.item.resourceId" :readonly="!!row.item.name"></b-form-input>
+              <label :for="'authz-resource-' + row.item.id" class="visually-hidden">{{ $t('admin.authorizations.resourceId') }}</label>
+              <b-form-input :id="'authz-resource-' + row.item.id" v-model="row.item.resourceId" :readonly="!!row.item.name"></b-form-input>
             </div>
             <div v-else> {{ row.item.resourceId }} </div>
           </template>
