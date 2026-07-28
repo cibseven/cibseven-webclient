@@ -124,6 +124,7 @@ import { mapActions, mapGetters } from 'vuex'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import tabUrlMixin from '@/components/process/mixins/tabUrlMixin.js'
 import bpmnViewportPersistenceMixin from '@/components/process/mixins/bpmnViewportPersistenceMixin.js'
+import viewerFrameSizePersistenceMixin from '@/components/process/mixins/viewerFrameSizePersistenceMixin.js'
 
 import VariablesTable from '@/components/process/tables/VariablesTable.vue'
 import IncidentsTable from '@/components/process/tables/IncidentsTable.vue'
@@ -140,7 +141,7 @@ export default {
   name: 'ProcessInstanceView',
   components: { VariablesTable, IncidentsTable, UserTasksTable, BpmnViewer, 
     JobsTable, CalledProcessInstancesTable, ExternalTasksTable, ProcessInstanceTabs, ScrollableTabsContainer, ViewerFrame },
-  mixins: [resizerMixin, tabUrlMixin, bpmnViewportPersistenceMixin],
+  mixins: [resizerMixin, tabUrlMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
   props: {
     process: Object,
     tenantId: String,

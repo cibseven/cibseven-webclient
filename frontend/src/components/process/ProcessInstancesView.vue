@@ -183,6 +183,7 @@ import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import tabUrlMixin from '@/components/process/mixins/tabUrlMixin.js'
 import bpmnViewportPersistenceMixin from '@/components/process/mixins/bpmnViewportPersistenceMixin.js'
+import viewerFrameSizePersistenceMixin from '@/components/process/mixins/viewerFrameSizePersistenceMixin.js'
 import { debounce } from '@/utils/debounce.js'
 import { SuccessAlert, ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
 import ProcessInstancesTabs from '@/components/process/ProcessInstancesTabs.vue'
@@ -197,7 +198,7 @@ export default {
      SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable, CalledProcessDefinitionsTable,
      ProcessInstancesTabs, ScrollableTabsContainer, ViewerFrame, RemovableBadge },
   inject: ['loadProcesses'],
-  mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin, tabUrlMixin, bpmnViewportPersistenceMixin],
+  mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin, tabUrlMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
   emits: ['task-selected', 'filter-instances', 'instance-deleted'],
   props: {
     process: Object,

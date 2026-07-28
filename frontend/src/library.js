@@ -58,6 +58,7 @@ export { default as processesVariablesMixin } from '@/components/process/mixins/
 export { default as resizerMixin } from '@/components/process/mixins/resizerMixin.js'
 export { default as tabUrlMixin } from '@/components/process/mixins/tabUrlMixin.js'
 export { default as bpmnViewportPersistenceMixin } from '@/components/process/mixins/bpmnViewportPersistenceMixin.js'
+export { default as viewerFrameSizePersistenceMixin } from '@/components/process/mixins/viewerFrameSizePersistenceMixin.js'
 export { default as usersMixin } from '@/mixins/usersMixin.js'
 export { default as copyToClipboardMixin } from '@/mixins/copyToClipboardMixin.js'
 export { default as assigneeMixin } from '@/mixins/assigneeMixin.js'
