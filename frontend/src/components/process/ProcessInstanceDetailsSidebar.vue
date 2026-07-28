@@ -119,7 +119,7 @@ export default {
   },
 
   computed: {
-    isHistoricView() {
+    isHistoricIncidentsView() {
       switch (this.$root.config.camundaHistoryLevel) {
         case 'none':
         case 'activity':
@@ -246,7 +246,7 @@ export default {
           processInstanceId: this.instance.id,
         }
 
-        const method = this.isHistoricView ?
+        const method = this.isHistoricIncidentsView ?
           IncidentService.fetchHistoricIncidentsCount :
           IncidentService.findIncidentsCount
 
