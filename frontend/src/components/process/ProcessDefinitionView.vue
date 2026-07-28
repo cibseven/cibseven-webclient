@@ -247,7 +247,8 @@ export default {
         await this.loadInstanceById(this.instanceId)
         if (this.selectedInstance) {
           // instance found, load its process definition
-          await ProcessService.findProcessById(this.selectedInstance.processDefinitionId, true).then(process => {
+          const definitionId = this.selectedInstance.processDefinitionId ?? this.selectedInstance.definitionId
+          await ProcessService.findProcessById(definitionId, true).then(process => {
             this.process = process
           })
           if (this.process) {
