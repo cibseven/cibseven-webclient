@@ -60,7 +60,7 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 	@Value("${cibseven.webclient.ldap.folder:}") String ldapFolder;
 	@Value("${cibseven.webclient.ldap.userNameAttribute:}") String ldapNameAttribute;
 	@Value("${cibseven.webclient.ldap.userDisplayNameAttribute:}") String ldapDisplayNameAttribute;
-	@Value("${cibseven.webclient.ldap.userClass:}") String ldapUserClass;
+	@Value("${cibseven.webclient.ldap.userClass:person}") String ldapUserClass;
 	@Value("#{'${cibseven.webclient.ldap.attributes.filters:samAccountName;name}'.split(';\\s*')}") List<String> ldapAttributesFilters;
 	@Value("${cibseven.webclient.ldap.modifiedDateFormat:}") String ldapModifiedDateFormat;
 	@Value("${cibseven.webclient.ldap.countLimit:400}") int ldapCountLimit;

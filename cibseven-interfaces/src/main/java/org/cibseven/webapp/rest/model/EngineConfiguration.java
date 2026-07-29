@@ -26,10 +26,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class EngineConfiguration {
+	private static final String DEFAULT_HISTORY_LEVEL = "full";
 
 	private String engineName;
-	private String historyLevel = "full";
+	private String historyLevel = DEFAULT_HISTORY_LEVEL;
 	private boolean authorizationEnabled = true;
 	private boolean enablePasswordPolicy;
 
+	public String getHistoryLevel() {
+		return historyLevel != null ? historyLevel.toLowerCase() : DEFAULT_HISTORY_LEVEL;
+	}
 }

@@ -132,7 +132,8 @@
 
     <b-modal ref="uploadFile" :title="$t('process-instance.upload')">
       <div>
-        <b-form-file placeholder="" :browse-text="$t('process-instance.selectFile')" v-model="file"></b-form-file>
+        <label for="variables-upload-file" class="visually-hidden">{{ $t('process-instance.upload') }}</label>
+        <b-form-file id="variables-upload-file" placeholder="" :browse-text="$t('process-instance.selectFile')" v-model="file"></b-form-file>
       </div>
       <template v-slot:modal-footer>
         <b-button @click="$refs.uploadFile.hide(); file = null" variant="light">{{ $t('confirm.cancel') }}</b-button>

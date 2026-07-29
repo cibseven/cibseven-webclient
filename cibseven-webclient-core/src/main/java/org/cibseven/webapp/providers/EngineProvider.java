@@ -44,6 +44,8 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 
 	private static final String ENGINE_SUB_PATH = "/engine";
 
+	private String effectiveDefaultEngineName = null;
+
 	@Autowired(required = false)
 	private EngineRestProperties engineRestProperties;
 
@@ -59,8 +61,9 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 					log.warn("Invalid engine ID format: {}, expected 'url|path|engineName'", engine);
 				}
 			}
-			else if (!IEngineProvider.isDefaultEngine(engine)) {
-				// Default engine or legacy format
+			else if (!IEngineProvider.isNamedDefaultEngine(engine)) {
+				// A specifically named engine (other than "default") lives at /engine/{name}.
+				// The engine named "default" lives at the base /engine path.
 				url += ENGINE_SUB_PATH + "/" + engine;
 			}
 		}
@@ -68,7 +71,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 	}
 
 	@Override
-	public Collection<Engine> getProcessEngineNames() {
+	public Collection<Engine> getProcessEngineDefinitions() {
 		List<Engine> allEngines = new ArrayList<>();
 		
 		// Get default URL and path from properties, fallback to @Value fields from parent if not configured
@@ -151,7 +154,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 		
 		// Set displayName: append engine name in parentheses if not "default"
 		if (baseDisplayName != null && !baseDisplayName.isEmpty()) {
-			if (IEngineProvider.DEFAULT_ENGINE_NAME.equals(engine.getName())) {
+			if (IEngineProvider.isNamedDefaultEngine(engine.getName())) {
 				engine.setDisplayName(baseDisplayName);
 			} else {
 				engine.setDisplayName(baseDisplayName + " (" + engine.getName() + ")");
@@ -159,10 +162,10 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 		} else {
 			engine.setDisplayName(engine.getName());
 		}
-		
+
 		// Set tooltip: append engine name in parentheses if not "default"
 		if (baseTooltip != null && !baseTooltip.isEmpty()) {
-			if (IEngineProvider.DEFAULT_ENGINE_NAME.equals(engine.getName())) {
+			if (IEngineProvider.isNamedDefaultEngine(engine.getName())) {
 				engine.setTooltip(baseTooltip);
 			} else {
 				engine.setTooltip(baseTooltip + " (" + engine.getName() + ")");
@@ -172,14 +175,8 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 
 	@Override
 	@Nullable
-	public EngineConfiguration getDefaultEngineConfiguration() {
-		return getEngineConfiguration(IEngineProvider.DEFAULT_ENGINE_NAME);
-	}
-
-	@Override
-	@Nullable
-	public EngineConfiguration getEngineConfiguration(String engine) {
-		String url = getNamedEngineRestUrl(engine) + "/configuration";
+	public EngineConfiguration getEngineConfiguration(String engineId) {
+		String url = getNamedEngineRestUrl(engineId) + "/configuration";
 		try {
 			return doGet(url, EngineConfiguration.class, null, false).getBody();
 		} catch (SystemException e) {
@@ -191,6 +188,14 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 			}
 			throw e;
 		}
+	}
+
+	@Override
+	public String getEffectiveDefaultEngineId() {
+		if (effectiveDefaultEngineName == null) {
+			effectiveDefaultEngineName = IEngineProvider.super.getEffectiveDefaultEngineId();
+		}
+		return effectiveDefaultEngineName;
 	}
 
 	/**
@@ -209,14 +214,14 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 	}
 
 	@Override
-	public Boolean requiresSetup(String engine) {
-		String url = getNamedEngineRestUrl(engine) + "/setup/status";
+	public Boolean requiresSetup(String engineId) {
+		String url = getNamedEngineRestUrl(engineId) + "/setup/status";
 		return doGet(url, Boolean.class, null, false).getBody();
 	}
 
 	@Override
-	public void createSetupUser(NewUser user, String engine) throws InvalidUserIdException {
-		String url = getNamedEngineRestUrl(engine) + "/setup/user/create";
+	public void createSetupUser(NewUser user, String engineId) throws InvalidUserIdException {
+		String url = getNamedEngineRestUrl(engineId) + "/setup/user/create";
 		try {
 			//	A JSON object with the following properties:
 			//	Name 	Type 	Description

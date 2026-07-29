@@ -17,6 +17,7 @@
 package org.cibseven.modeler.provider;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.modeler.model.UnifiedDiagram;
@@ -33,5 +34,7 @@ public interface IUnifiedDiagramProvider {
 	 * @param maxResults  page size
 	 */
 	List<UnifiedDiagram> getDiagrams(String keyword, String type, int firstResult, int maxResults) throws SystemException;
+
+	Optional<UnifiedDiagram> getDiagramById(String id);
 
 }

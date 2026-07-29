@@ -49,6 +49,7 @@ import org.cibseven.webapp.rest.model.ExternalTask;
 import org.cibseven.webapp.rest.model.Filter;
 import org.cibseven.webapp.rest.model.HistoricDecisionInstance;
 import org.cibseven.webapp.rest.model.HistoryBatch;
+import org.cibseven.webapp.rest.model.HistoryStatistics;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.JobDefinition;
@@ -1699,8 +1700,12 @@ public interface BpmProvider {
 	 * @return a list or map containing the historic activity statistics
 	 * @throws SystemException in case of an error
 	 */
-	default Object fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user) throws SystemException {
+	default Collection<HistoryStatistics> fetchHistoricActivityStatistics(String id, Map<String, Object> params, CIBUser user) throws SystemException {
 		return getProcessProvider().fetchHistoricActivityStatistics(id, params, user);
+	}
+
+	default Collection<HistoryStatistics> findHistoricActivityStatistics(String id, Map<String, Object> filters, CIBUser user) throws SystemException {
+		return getProcessProvider().findHistoricActivityStatistics(id, filters, user);
 	}
 
 	/**
@@ -1916,27 +1921,28 @@ public interface BpmProvider {
 	 * @throws SystemException in case of an error
 	 */
 
-	default Collection<Engine> getProcessEngineNames() throws SystemException {
-		return getEngineProvider().getProcessEngineNames();
+	default Collection<Engine> getProcessEngineDefinitions() throws SystemException {
+		return getEngineProvider().getProcessEngineDefinitions();
 	}
 
 	/**
-	 * Returns the configuration for the default BPM engine.
+	 * Returns the configuration of the effective default BPM engine, i.e. the engine used when none is
+	 * specified: the engine named "default" if present, otherwise the first available engine.
 	 *
-	 * @return the default {@link EngineConfiguration}, or {@code null} if no default engine is configured
+	 * @return the effective default {@link EngineConfiguration}, or {@code null} if no engine is configured
 	 */
-	default @Nullable public EngineConfiguration getDefaultEngineConfiguration() {
-		return getEngineProvider().getDefaultEngineConfiguration();
+	default @Nullable public EngineConfiguration getEffectiveDefaultEngineConfiguration() {
+		return getEngineProvider().getEffectiveDefaultEngineConfiguration();
 	}
 
 	/**
 	 * Returns the configuration for the BPM engine with the given name.
 	 *
-	 * @param engineName the name of the engine to look up
+	 * @param engineId the id of the engine to look up
 	 * @return the {@link EngineConfiguration} for the specified engine, or {@code null} if no engine with that name is configured
 	 */
-	default @Nullable public EngineConfiguration getEngineConfiguration(String engineName) {
-		return getEngineProvider().getEngineConfiguration(engineName);
+	default @Nullable public EngineConfiguration getEngineConfiguration(String engineId) {
+		return getEngineProvider().getEngineConfiguration(engineId);
 	}
 
 	/**
@@ -1945,8 +1951,8 @@ public interface BpmProvider {
 	 * @return true if admin group is available and write access is set
 	 * @throws SystemException in case of an error
 	 */
-	default Boolean requiresSetup(String engine) {
-		return getEngineProvider().requiresSetup(engine);
+	default Boolean requiresSetup(String engineId) {
+		return getEngineProvider().requiresSetup(engineId);
 	}
 
 	/**
@@ -1955,8 +1961,8 @@ public interface BpmProvider {
 	 * @param user the new user to be created.
 	 * @throws InvalidUserIdException when the user ID is invalid.
 	 */
-	default void createSetupUser(NewUser user, String engine) throws InvalidUserIdException {
-		getEngineProvider().createSetupUser(user, engine);
+	default void createSetupUser(NewUser user, String engineId) throws InvalidUserIdException {
+		getEngineProvider().createSetupUser(user, engineId);
 	}
 
 	/*

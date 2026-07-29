@@ -102,6 +102,7 @@ import { getTaskEventShortcuts, checkKeyMatch } from '@/utils/shortcuts.js'
 import { mapActions, mapGetters } from 'vuex'
 import assigneeMixin from '@/mixins/assigneeMixin.js'
 import { formatDate } from '@/utils/dates.js'
+import { applyDatePresenceFilters } from '@/utils/taskDatePresenceFilter.js'
 
 export default {
   name: 'TasksContent',
@@ -222,13 +223,14 @@ export default {
       }
     },
     listTasksWithFilter: function() {
+      this.taskResultsIndex = this.$root.config.maxTaskResults
       this.tasks = []
       this.processesInstances = []
       if (this.$refs.navbar.$refs.taskLoader) this.$refs.navbar.$refs.taskLoader.done = false
       this.fetchTasks(0, this.taskResultsIndex)
     },
     refreshTasksNumber: function() {
-      this.$refs.filterNavbar.updateSelectedFilterTasksCountIfNeeded()
+      this.$refs.filterNavbar.updateSelectedFilterTasksCountIfNeeded(false)
     },
     listTasksWithFilterAuto: function(showMore) {
       if (this.$route.params.filterId) {
@@ -282,6 +284,7 @@ export default {
         if (filterVariables && filterVariables.length > 0) {
           filters.variableNames = filterVariables.map(v => v.name)
         }
+        applyDatePresenceFilters(filters, this.$store.state.filter.settings)
         TaskService.findTasksByFilter(this.$store.state.filter.selected.id, filters,
           { firstResult: firstResult, maxResults: maxResults }).then(result => {
           const tasks = this.tasksByPermissions(this.$root.config.permissions.displayTasks, result)
@@ -323,6 +326,7 @@ export default {
       this.$refs.completedTask.show(2)
       this.processInstanceHistory = null
       this.listTasksWithFilterAuto()
+      this.$refs.filterNavbar.fetchFilters()
       this.checkAndOpenTask(JSON.parse(JSON.stringify(this.task)))
       this.task = null
       this.assignee = null

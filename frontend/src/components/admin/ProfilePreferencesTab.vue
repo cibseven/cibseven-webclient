@@ -21,13 +21,13 @@
 
     <ContentBlock :title="$t('admin.preferences.general.title')">
       <b-form-group>
-        <h6 class="fw-semibold">
+        <label for="preferences-start-page" class="fw-semibold d-block mb-2">
           {{ $t('admin.preferences.general.startPage.label') }}
           <span v-b-popover.hover.right="$t('admin.preferences.general.startPage.description')" class="mdi mdi-18px mdi-information-outline text-info ms-1"></span>
-        </h6>
+        </label>
         <div class="d-flex justify-content-between align-items-center">
           <div class="w-100">
-            <b-form-select v-model="startPage" :options="startPageOptions"
+            <b-form-select id="preferences-start-page" v-model="startPage" :options="startPageOptions"
               class="col-lg-6 col-md-8 col-sm-12 mb-0"
             />
           </div>
@@ -42,21 +42,21 @@
 
     <ContentBlock :title="$t('admin.preferences.dates.title')">
       <b-form-group>
-        <h6 class="fw-semibold">
+        <label for="preferences-format-default" class="fw-semibold d-block mb-2">
           {{ $t('admin.preferences.dates.formatDefault') }}
           <span v-b-popover.hover.right="$t('admin.preferences.dates.formatDefaultDescription')" class="mdi mdi-18px mdi-information-outline text-info ms-1"></span>
-        </h6>
-        <b-form-select v-model="formatDefault" :options="dateFormatOptions"
+        </label>
+        <b-form-select id="preferences-format-default" v-model="formatDefault" :options="dateFormatOptions"
           class="col-lg-6 col-md-8 col-sm-12 mb-0"
         />
       </b-form-group>
 
       <b-form-group>
-        <h6 class="fw-semibold">
+        <label for="preferences-format-long" class="fw-semibold d-block mb-2">
           {{ $t('admin.preferences.dates.formatLong') }}
           <span v-b-popover.hover.right="$t('admin.preferences.dates.formatLongDescription')" class="mdi mdi-18px mdi-information-outline text-info ms-1"></span>
-        </h6>
-        <b-form-select v-model="formatLong" :options="dateFormatOptions"
+        </label>
+        <b-form-select id="preferences-format-long" v-model="formatLong" :options="dateFormatOptions"
           class="col-lg-6 col-md-8 col-sm-12 mb-0"
         />
       </b-form-group>

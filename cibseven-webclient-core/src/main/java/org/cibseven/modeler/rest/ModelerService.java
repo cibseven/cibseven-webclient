@@ -120,6 +120,18 @@ public class ModelerService extends BaseService {
 		return unifiedDiagramProvider.getDiagrams(keyword, type, firstResult, maxResults);
 	}
 
+	@RequestMapping(value = "/unified-diagrams/{id}", method = RequestMethod.GET)
+	public ResponseEntity<UnifiedDiagram> getUnifiedDiagramById(
+		@PathVariable String id,
+		HttpServletRequest rq) {
+		if (authenticationEnabled) {
+			checkAuthorization(rq, true);
+		}
+		return unifiedDiagramProvider.getDiagramById(id)
+			.map(ResponseEntity::ok)
+			.orElse(ResponseEntity.notFound().build());
+	}
+
 	@RequestMapping(value = "/deployment/create", method = RequestMethod.POST)
 	public Deployment deployBpmn(
 			@Parameter(description = "Metadata of the diagram to be deployed (deployment-name, deployment-source, deploy-changed-only)") @RequestParam MultiValueMap<String, Object> data,
@@ -320,8 +332,9 @@ public class ModelerService extends BaseService {
 	public ResponseEntity<Object> closeSessions(@RequestParam MultiValueMap<String, String> data,
 		HttpServletRequest rq) {
 
+		CIBUser user = null;
 		if (authenticationEnabled) {
-			checkAuthorization(rq, true);
+			user = checkAuthorization(rq, true);
 		}
 
 		String sessionIdsString = data.getFirst("sessionId");
@@ -331,12 +344,13 @@ public class ModelerService extends BaseService {
 			for (String id : sessionIds) {
 				if (type.equals("form")) {
 					FormUsageEntity existingFormUsageEntity = formUsageProvider.findBySessionId(id);
-					if (existingFormUsageEntity != null) {
+					// A lock may only be released by its owner, so a user cannot close someone else's session.
+					if (existingFormUsageEntity != null && canReleaseSession(user, existingFormUsageEntity.getUserId())) {
 						formUsageProvider.closeSession(existingFormUsageEntity);
 					}
 				} else {
 					DiagramUsageEntity existingDiagramUsageEntity = diagramUsageProvider.findBySessionId(id);
-					if (existingDiagramUsageEntity != null) {
+					if (existingDiagramUsageEntity != null && canReleaseSession(user, existingDiagramUsageEntity.getUserId())) {
 						diagramUsageProvider.closeSession(existingDiagramUsageEntity);
 					}
 				}
@@ -345,7 +359,15 @@ public class ModelerService extends BaseService {
 
 		return ResponseEntity.ok().build();
 	}
-	
+
+	/**
+	 * A modeler session (edit lock) may only be released by the user that owns it. When
+	 * authentication is disabled (user == null, e.g. local/dev) any caller may close it.
+	 */
+	private boolean canReleaseSession(CIBUser user, String ownerUserId) {
+		return user == null || (ownerUserId != null && ownerUserId.equals(user.getUserID()));
+	}
+
 	@RequestMapping(value = "/process/session/check/{id}", method = RequestMethod.GET)
 	public ResponseEntity<Map<String, String>> checkProcessSession(@PathVariable String id,  HttpServletRequest rq) {
 
@@ -363,13 +385,11 @@ public class ModelerService extends BaseService {
 		//response.put("entity", newDiagramUsageEntity);
 		response.put("userId", newDiagramUsageEntity.getUserId());
 		response.put("openedAt", newDiagramUsageEntity.getOpenedAt().toString());
-		UserSessionEntity userSession = new UserSessionEntity();
-        userSession.setId(newDiagramUsageEntity.getSessionId());
-        newDiagramUsageEntity.setUserSession(userSession);
-		response.put("sessionId", userSession.getId());
-		
+
 		if (user != null && user.getUserID().equals(newDiagramUsageEntity.getUserId())) {
-			response.put("message", "SAME_USER");			
+			// Only the owner receives the sessionId — it is the token used to release the lock.
+			response.put("sessionId", newDiagramUsageEntity.getSessionId());
+			response.put("message", "SAME_USER");
 			return ResponseEntity.ok(response);
 		}
 		response.put("message", "SESSION_FOUND");
@@ -394,12 +414,10 @@ public class ModelerService extends BaseService {
 		//response.put("entity", newFormUsageEntity.getSessionId());
 		response.put("userId", newFormUsageEntity.getUserId());
 		response.put("openedAt", newFormUsageEntity.getOpenedAt().toString());
-		UserSessionEntity userSession = new UserSessionEntity();
-        userSession.setId(newFormUsageEntity.getSessionId());
-        newFormUsageEntity.setUserSession(userSession);
-		response.put("sessionId", userSession.getId());
-		
+
 		if (user != null && user.getUserID().equals(newFormUsageEntity.getUserId())) {
+			// Only the owner receives the sessionId — it is the token used to release the lock.
+			response.put("sessionId", newFormUsageEntity.getSessionId());
 			response.put("message", "SAME_USER");
 			return ResponseEntity.ok(response);
 		}
@@ -527,6 +545,18 @@ public class ModelerService extends BaseService {
 		}
 		return ResponseEntity.ok(entity);
 	}
+
+	@RequestMapping(value = "/process/find-by-key", method = RequestMethod.GET)
+	public ResponseEntity<ProcessDiagramEntity> findByKeyEntity(@RequestParam String key, HttpServletRequest rq) {
+		if (authenticationEnabled) {
+			checkAuthorization(rq, true);
+		}
+		ProcessDiagramEntity entity = dbProcessDiagramProvider.findByProcessKey(key);
+		if (entity == null) {
+			return ResponseEntity.notFound().build();
+		}
+		return ResponseEntity.ok(entity);
+	}
 	
 	@RequestMapping(value = "/process/delete/{id}", method = RequestMethod.DELETE)
 	public void delete(@PathVariable String id, HttpServletRequest rq) {
@@ -617,13 +647,42 @@ public class ModelerService extends BaseService {
 		return ResponseEntity.ok().headers(headers).body(file);
 	}
 
+	@RequestMapping(value = "/form/find-by-formid", method = RequestMethod.GET)
+	public ResponseEntity<FormEntity> findByFormId(@RequestParam String formId, HttpServletRequest rq) {
+		if (authenticationEnabled) {
+			checkAuthorization(rq, true);
+		}
+		FormEntity form = formProvider.findByFormId(formId);
+		if (form == null) {
+			return ResponseEntity.notFound().build();
+		}
+		return ResponseEntity.ok(form);
+	}
+
 	private static String userIdFrom(CIBUser user) {
 		return user != null ? user.getUserID() : null;
 	}
 
+	/**
+	 * Builds a DocumentBuilderFactory hardened against XXE for parsing untrusted (uploaded)
+	 * diagram XML: DOCTYPE declarations are rejected outright (BPMN/DMN never need one), which
+	 * also closes external-entity file/SSRF reads and entity-expansion ("billion laughs") DoS.
+	 */
+	private static DocumentBuilderFactory newSecureDocumentBuilderFactory() throws Exception {
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+		factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+		factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+		factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+		factory.setFeature(javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING, true);
+		factory.setXIncludeAware(false);
+		factory.setExpandEntityReferences(false);
+		return factory;
+	}
+
 	private static String getXmlAttribute(byte[] xmlBytes, String tagName, String propertyName) throws Exception {
 		ByteArrayInputStream inputStream = new ByteArrayInputStream(xmlBytes);
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilderFactory factory = newSecureDocumentBuilderFactory();
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document document = builder.parse(inputStream);
 		NodeList nodeList = document.getElementsByTagName(tagName);
@@ -636,7 +695,7 @@ public class ModelerService extends BaseService {
 
 	private static String getBpmnPrefix(byte[] xmlBytes) throws Exception {
 		ByteArrayInputStream inputStream = new ByteArrayInputStream(xmlBytes);
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		DocumentBuilderFactory factory = newSecureDocumentBuilderFactory();
 		DocumentBuilder builder = factory.newDocumentBuilder();
 		Document document = builder.parse(inputStream);
 

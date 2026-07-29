@@ -68,7 +68,7 @@ const interactionTypes = [
 
 export default {
   name: 'BpmnViewer',
-  emits: ['task-selected', 'child-activity', 'overlay-click'],
+  emits: ['task-selected', 'child-activity', 'overlay-click', 'viewbox-changed'],
   components: { BWaitingBox },
   props: {
     activityInstance: Object,
@@ -97,7 +97,8 @@ export default {
       overlayList: [],
       loader: true,
       suspendedOverlayMap: {},
-      overlayClickHandler: null
+      overlayClickHandler: null,
+      viewboxChangeTimer: null
     }
   },
   computed: {
@@ -160,6 +161,7 @@ export default {
     ...mapActions('diagram', ['setDiagramReady']),
     ...mapActions('modeler/elementTemplates', ['fetchAllElementTemplates']),
     ensureElementTemplatesLoaded: function() {
+      if (!this.$root?.config?.modelerEnabled) return
       if (this.allElementTemplateContents && this.allElementTemplateContents.length > 0) return
       this.fetchAllElementTemplates().catch(err => {
         console.warn('BpmnViewer: failed to load element templates for icon rendering', err)
@@ -185,18 +187,25 @@ export default {
     showDiagram: function(xml, selectedActivityId = null) {
       this.setDiagramReady(false)
       this.loader = true
-      this.viewer.importXML(xml).then(() => {
-        setTimeout(() => {
-          if (!this.viewer || !this.$refs.diagram) return
-          try {
-            this.viewer.get('canvas').zoom('fit-viewport')
-            this.loader = false
-            this.highlightElement(selectedActivityId)
-          } catch {
-            console.warn('BpmnViewer: Unable to zoom diagram, component may have been unmounted')
-          }
-        }, 500)
+      return this.viewer.importXML(xml).then(() => {
+        return new Promise(resolve => {
+          setTimeout(() => {
+            if (!this.viewer || !this.$refs.diagram) return
+            try {
+              this.viewer.get('canvas').zoom('fit-viewport')
+              this.loader = false
+              this.highlightElement(selectedActivityId)
+            } catch {
+              console.warn('BpmnViewer: Unable to zoom diagram, component may have been unmounted')
+            }
+            resolve()
+          }, 500)
+        })
       })
+    },
+    setViewbox: function(viewbox) {
+      if (!this.viewer) return
+      this.viewer.get('canvas').viewbox(viewbox)
     },
     zoomIn: function() {
       this.viewer.get('zoomScroll').stepZoom(1)
@@ -214,6 +223,12 @@ export default {
       }
 
       const eventBus = this.viewer.get('eventBus')
+      eventBus.on('canvas.viewbox.changed', () => {
+        clearTimeout(this.viewboxChangeTimer)
+        this.viewboxChangeTimer = setTimeout(() => {
+          this.$emit('viewbox-changed', this.viewer.get('canvas').viewbox())
+        }, 300)
+      })
       // BPMN element click
       eventBus.on('element.click', (event) => {
         if (this.getTypeAllowed(event.element.type, interactionTypes)) {
@@ -428,7 +443,7 @@ export default {
         const historyStat = historyMap.get(stat.id)
         return {
           id: stat.id,
-          instances: stat.instances || 0,
+          instances: historyStat?.instances ?? (stat.instances || 0),
           finished: historyStat?.finished || 0,
           canceled: historyStat?.canceled || 0,
           openIncidents: stat.incidents?.reduce((sum, inc) => sum + (inc.incidentCount || 0), 0) || 0,
@@ -449,7 +464,7 @@ export default {
     getProcessMergedStatisticsFullHistory: function(historyStatistics) {
       return historyStatistics.map(hs => {
         const stat = this.statistics?.find(s => s.id === hs.id)
-        return stat ? { ...hs, instances: stat.instances } : hs
+        return stat ? { ...hs, instances: hs.instances ?? stat.instances } : hs
       })
     },
     drawActivityBadges: function(stat, elementRegistry) {
@@ -694,6 +709,7 @@ export default {
   },
   beforeUnmount: function() {
     this.setDiagramReady(false)
+    clearTimeout(this.viewboxChangeTimer)
     // Clean up document event listener to prevent memory leaks
     if (this.overlayClickHandler) {
       document.removeEventListener('click', this.overlayClickHandler)

@@ -1,5 +1,6 @@
 {
 	"commons": {
+		"operator": "Operator",
 		"edit": "Edit",
 		"save": "Save",
 		"actualisation": {
@@ -440,6 +441,10 @@
 			"retries": "Retries",
 			"priority": "Priority",
 			"noExternalTasks": "No external tasks found"
+		},
+		"onlyUnfinished": {
+			"title": "Only Unfinished",
+			"tooltip": "Show only unfinished process instances"
 		}
 	},
 	"dmn-viewer": {
@@ -751,6 +756,7 @@
 				"resourceId": "Resource ID: {value}"
 			},
 			"add": "Add authorization",
+			"authorizationDisabledWarning": "The authorization management is disabled - all users have full access in the system.\nPlease check \"authorizationEnabled\" property in the engine configuration.",
 			"noAuthSelected": "No Authorization type selected"
 		},
 		"system": {

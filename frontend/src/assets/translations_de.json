@@ -1,5 +1,6 @@
 {
 	"commons": {
+		"operator": "Operator",
 		"edit": "Bearbeiten",
 		"save": "Speichern",
 		"actualisation": {
@@ -440,6 +441,10 @@
 			"retries": "Wiederholungen",
 			"priority": "Priorität",
 			"noExternalTasks": "Keine externen Aufgaben gefunden"
+		},
+		"onlyUnfinished": {
+			"title": "Nur nicht abgeschlossen",
+			"tooltip": "Nur nicht abgeschlossene Prozessinstanzen anzeigen"
 		}
 	},
 	"dmn-viewer": {
@@ -751,6 +756,7 @@
 				"resourceId": "Ressourcen-ID: {value}"
 			},
 			"add": "Berechtigung hinzufügen",
+			"authorizationDisabledWarning": "Die Berechtigungsverwaltung ist deaktiviert - alle Benutzer haben vollen Zugriff im System.\nBitte überprüfen Sie die Eigenschaft \"authorizationEnabled\" in der Engine-Konfiguration.",
 			"noAuthSelected": "Kein Berechtigungstyp ausgewählt"
 		},
 		"system": {

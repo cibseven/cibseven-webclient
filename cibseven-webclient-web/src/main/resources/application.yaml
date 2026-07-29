@@ -37,6 +37,11 @@ cibseven:
       # Requires the parent project to provide a configured DataSource and pre-created schema.
       # Set to false for deployments where the modeler is not needed.
       enabled: false
+      # Element template JSONs loaded into the modeler DB at startup (needs modeler.enabled: true).
+      # Values are Spring resource locations (globs resolved). Empty by default.
+      # e.g. - "file:/opt/cibseven/element-templates/*.json"
+      templates:
+        paths: []
     # Engine rest
     engineRest:
       url: http://localhost:8080
@@ -62,6 +67,25 @@ cibseven:
       jwtSecret:
       tokenValidMinutes: 60
       tokenProlongMinutes: 1440
+    # Single Sign-On
+    #sso:
+    #  active: true
+    #  endpoints:
+    #    authorization: <authUri>
+    #    token: <tokenUri>
+    #    jwks: <certsUri>
+    #    user: <usersUri>
+    #    introspection:
+    #  clientId: <clientId>
+    #  clientSecret: <clientSecret>
+    #  scopes: openid email profile
+    #  userIdProperty:
+    #  userNameProperty:
+    #  accessTokenToEngineRest:
+    #  assertion:
+    #    type:
+    #    locationKey:
+
     # LDAP
     ldap:
       url: ldap://ldap.cibseven.org

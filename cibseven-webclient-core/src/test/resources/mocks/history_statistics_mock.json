@@ -1,0 +1,20 @@
+[
+  {
+    "id": "activity-1",
+    "instances": "4",
+    "canceled": "1",
+    "finished": "3",
+    "completeScope": "2",
+    "resolvedIncidents": "0",
+    "deletedIncidents": "0"
+  },
+  {
+    "id": "activity-2",
+    "instances": "2",
+    "canceled": "0",
+    "finished": "2",
+    "completeScope": "1",
+    "resolvedIncidents": "1",
+    "deletedIncidents": "0"
+  }
+]

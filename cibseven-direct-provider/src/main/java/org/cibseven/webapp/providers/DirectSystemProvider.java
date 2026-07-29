@@ -56,51 +56,20 @@ public class DirectSystemProvider implements ISystemProvider {
 
 	@Override
 	public Collection<Metric> getMetrics(Map<String, Object> queryParams, CIBUser user) {
-		Collection<Metric> metrics = new ArrayList<>();
-		List<Map<String, Object>> queryData = new ArrayList<>();
-		List<String> metricNames = Optional.ofNullable(queryParams.get("metrics")).map(Object::toString)
-				.filter(s -> !s.isEmpty()).map(s -> Arrays.asList(s.split(",")))
-				.orElse(Arrays.asList("process-instances", "decision-instances", "task-users"));
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZZ");
-		String currentDate = ZonedDateTime.now(ZoneId.systemDefault()).format(formatter);
-		String groupBy = Optional.ofNullable(queryParams.get("groupBy")).map(Object::toString).orElse("month");
-		String subsStartDate = queryParams.get("subscriptionStartDate").toString();
-		ZonedDateTime subsStartDateParsed = ZonedDateTime.parse(subsStartDate, formatter);
-		if (groupBy.equals("year")) {
-			String prevDate = subsStartDateParsed.minusYears(1).format(formatter);
-			for (String metric : metricNames) {
-				queryData.add(createSumParamsMap(metric, subsStartDate, currentDate));
-				queryData.add(createSumParamsMap(metric, prevDate, subsStartDate));
-			}
-		} else if (groupBy.equals("month")) {
-			String startDate = queryParams.get("startDate").toString();
-			ZonedDateTime startDateParsed = ZonedDateTime.parse(startDate, formatter);
-			for (ZonedDateTime stDate = startDateParsed; !stDate.isAfter(subsStartDateParsed); stDate = stDate.plusMonths(1)) {
-				ZonedDateTime startDayM = stDate.with(TemporalAdjusters.firstDayOfMonth()).withHour(0).withMinute(0).withSecond(0)
-						.withNano(0);
-				ZonedDateTime endDayM = stDate.with(TemporalAdjusters.lastDayOfMonth()).withHour(23).withMinute(59).withSecond(59)
-						.withNano(999_000_000);
-				for (String metric : metricNames) {
-					queryData.add(createSumParamsMap(metric, startDayM.format(formatter), endDayM.format(formatter)));
-				}
-			}
+		String groupBy = queryParams.getOrDefault("groupBy", "month").toString();
+
+		switch (groupBy) {
+			case "year":
+				return getAnnualMetrics(queryParams, user);
+			case "month":
+				return getMonthlyMetrics(queryParams, user);
+			default:
+				throw new IllegalArgumentException("Invalid groupBy parameter: " + groupBy);
 		}
-		for (Map<String, Object> params : queryData) {
-			Metric metricsData = new Metric();
-			metricsData.setMetric(params.get("metric").toString());
-			ZonedDateTime startDate = ZonedDateTime.parse(params.get("startDate").toString(), formatter);
-			metricsData.setSubscriptionYear(startDate.getYear());
-			if (groupBy.equals("month")) {
-				metricsData.setSubscriptionMonth(startDate.getMonthValue());
-			}
-			int count = getSum(metricsData.getMetric(), params, user);
-			metricsData.setSum(count);
-			metrics.add(metricsData);
-		}
-		return metrics;
 	}
 
-	private int getSum(String metricsName, Map<String, Object> queryParams, CIBUser user) {
+	@Override
+	public int getSum(String metricsName, Map<String, Object> queryParams, CIBUser user) {
 		DateConverter dateConverter = new DateConverter();
 		dateConverter.setObjectMapper(directProviderUtil.getObjectMapper(user));
 
@@ -143,12 +112,5 @@ public class DirectSystemProvider implements ISystemProvider {
 		return null;
 	}
 
-	private Map<String, Object> createSumParamsMap(String metric, String startDate, String endDate) {
-		Map<String, Object> params = new HashMap<>();
-		params.put("metric", metric);
-		params.put("startDate", startDate);
-		params.put("endDate", endDate);
-		return params;
-	}
 
 }

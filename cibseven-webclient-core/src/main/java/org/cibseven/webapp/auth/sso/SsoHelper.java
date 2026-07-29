@@ -16,14 +16,23 @@
  */
 package org.cibseven.webapp.auth.sso;
 
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.interfaces.ECPrivateKey;
+import java.security.interfaces.RSAPrivateKey;
 import java.util.Date;
 import java.util.Map;
 
+import org.cibseven.webapp.auth.assertion.AssertionProvider;
+import org.cibseven.webapp.auth.assertion.AssertionType;
+import org.cibseven.webapp.auth.assertion.AzureWorkloadIdentityAssertionProvider;
+import org.cibseven.webapp.auth.assertion.JjwtAssertionProvider;
 import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.exception.SystemException;
+import org.springframework.boot.ssl.pem.PemContent;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -35,6 +44,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.DefaultResourceLoader;
 
 import io.jsonwebtoken.Claims;
 import lombok.Getter;
@@ -43,7 +54,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SsoHelper {
 	
-	String tokenEndpoint, clientId, clientSecret, userInfoEndpoint, introspectionEndpoint;
+	private static final String ASSERTION_TYPE = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer";
+
+	String tokenEndpoint, clientId, clientSecret, userInfoEndpoint, introspectionEndpoint, assertionKeyLocation;
+	AssertionType assertionType;
+	AssertionProvider assertionProvider;
 
 	HttpHeaders formUrlEncodedHeader = new HttpHeaders();
 	{
@@ -59,12 +74,24 @@ public class SsoHelper {
 	@Getter
 	KeyResolver keyResolver;
 	
-	public SsoHelper(String tokenEndpoint, String clientId, String clientSecret, String certEndpoint, String userInfoEndpoint, String introspectionEndpoint) {
+	public SsoHelper(
+		String tokenEndpoint, 
+		String clientId, 
+		String clientSecret,
+		AssertionType assertionType,
+		String assertionKeyLocation,
+		String certEndpoint, 
+		String userInfoEndpoint, 
+		String introspectionEndpoint) throws Exception {
+
 		this.tokenEndpoint = tokenEndpoint;
 		this.clientId = clientId;
 		this.clientSecret = clientSecret;
+		this.assertionType = assertionType;
+		this.assertionKeyLocation = assertionKeyLocation;
 		this.userInfoEndpoint = userInfoEndpoint;
 		this.introspectionEndpoint = introspectionEndpoint;
+ 		this.assertionProvider = buildAssertionProvider();
 		keyResolver = new KeyResolver(certEndpoint);
 	}
 	
@@ -75,7 +102,12 @@ public class SsoHelper {
 	public TokenResponse codeExchange(String code, String redirectUrl, String nonce, boolean nonceInAccess, boolean nonceInId) {
 		MultiValueMap<String, String> rqParams = new LinkedMultiValueMap<>();
 		rqParams.add("client_id", clientId);
-		rqParams.add("client_secret", clientSecret);
+		if (clientSecret != null && !clientSecret.isBlank()) {
+			rqParams.add("client_secret", clientSecret);
+		} else {
+			rqParams.add("client_assertion_type", ASSERTION_TYPE);
+			rqParams.add("client_assertion", assertionProvider.getAssertion());
+		}
 		rqParams.add("code", code);
 		rqParams.add("grant_type", "authorization_code");
 		rqParams.add("redirect_uri", redirectUrl); //https://openid.net/specs/openid-connect-core-1_0.html#rfc.section.3.1.3.2
@@ -114,7 +146,12 @@ public class SsoHelper {
 		
 		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 		params.add("client_id", clientId);
-		params.add("client_secret", clientSecret);
+		if (clientSecret != null && !clientSecret.isBlank()) {
+			params.add("client_secret", clientSecret);
+		} else {
+			params.add("client_assertion_type", ASSERTION_TYPE);
+			params.add("client_assertion", assertionProvider.getAssertion());
+		}
 		params.add("grant_type", "refresh_token");
 		params.add("refresh_token", refreshToken);
 		try {
@@ -124,6 +161,47 @@ public class SsoHelper {
 		} catch (RestClientResponseException e) {
 			throw new AuthenticationException(e.getResponseBodyAsString());
 		}
+	}
+
+	protected AssertionProvider buildAssertionProvider() throws Exception {
+		if (clientSecret != null && !clientSecret.isBlank()) return null;
+		if (assertionType == null) {
+			throw new IllegalStateException(
+				"cibseven.webclient.sso.assertion.type must be set to enable client assertion authentication");
+		}
+
+		if (assertionType == AssertionType.AZURE_WORKLOAD_IDENTITY) {
+			return new AzureWorkloadIdentityAssertionProvider();
+		}
+
+		if (assertionKeyLocation == null || assertionKeyLocation.isBlank()) {
+			throw new IllegalStateException(
+				"cibseven.webclient.sso.assertion.keyLocation must be set for assertion type " + assertionType);
+		}
+
+		Resource resource = new DefaultResourceLoader().getResource(assertionKeyLocation);
+		if (resource == null || !resource.exists()) {
+			throw new IllegalStateException("PEM resource not found at '" + assertionKeyLocation + "'");
+		}
+
+		PrivateKey privateKey;
+		try (InputStream is = resource.getInputStream()) {
+			privateKey = PemContent.load(is).getPrivateKey();
+		}
+
+		if (privateKey == null) {
+			throw new IllegalStateException(
+				"No private key found in PEM content at '" + assertionKeyLocation + "'");
+		}
+
+		if (!(privateKey instanceof RSAPrivateKey) && !(privateKey instanceof ECPrivateKey)) {
+			throw new IllegalStateException(
+				"Unsupported private key type '" + privateKey.getAlgorithm()
+					+ "' (" + privateKey.getClass().getName() + ") loaded from '" + assertionKeyLocation
+					+ "'. Expected RSA or EC key.");
+		}
+
+		return new JjwtAssertionProvider(clientId, tokenEndpoint, privateKey);
 	}
 	
 	public TokenResponse passwordLogin(String userName, String password) {

@@ -11,14 +11,14 @@ import groovy.transform.Field
 @Field MavenProjectInformation mavenProjectInformation = null
 @Field Map pipelineParams = [
     pom: ConstantsInternal.DEFAULT_MAVEN_POM_PATH,
-    mvnContainerName: Constants.MAVEN_JDK_17_CONTAINER,
+    mvnContainerName: Constants.MAVEN_JDK_21_CONTAINER,
 	office365WebhookId: Constants.OFFICE_365_CIBSEVEN_WEBHOOK_ID,
     primaryBranch: 'main',
     dependencyTrackSynchronous: true,
     uiParamPresets: [:],
     testMode: false,
     buildPodConfig: [
-        (Constants.MAVEN_JDK_17_CONTAINER): [
+        (Constants.MAVEN_JDK_21_CONTAINER): [
             resources: [
                 cpu: '4',
                 memory: '10Gi',
@@ -185,13 +185,6 @@ pipeline {
                                 [path: 'cibseven-webclient-web/src/main/java']
                             ]
                         )
-
-                        // This archives the whole HTML coverage report so you can download or view it from Jenkins
-                        // This archives the Vitest test reports so you can download or view them from Jenkins
-                        archiveArtifacts artifacts: 'frontend/target/coverage/lcov-report/**, frontend/target/vitest-reports/**, cibseven-webclient-core/target/failsafe-reports/**', allowEmptyArchive: false, fingerprint: true
-
-                        // This archives the JaCoCo HTML coverage reports for Java subprojects
-                        archiveArtifacts artifacts: '**/target/site/jacoco/**', allowEmptyArchive: true, fingerprint: true
                     }
                 }
             }
@@ -295,8 +288,11 @@ pipeline {
                                     timeout(time: 5, unit: 'MINUTES') {
                                         def qg = waitForQualityGate()
                                         if (qg.status != 'OK') {
-                                            echo "WARNING: Pipeline unstable due to quality gate failure: ${qg.status}"
+                                            echo "WARNING: Quality gate failure: ${qg.status}. Marking stage as unstable without affecting overall build result."
                                             // currentBuild.result = 'UNSTABLE'
+                                            catchError(buildResult: null, stageResult: 'UNSTABLE') {
+                                                error "Quality gate failure: ${qg.status}"
+                                            }                                            
                                         }
                                     }
                                 }
@@ -317,26 +313,31 @@ pipeline {
             steps {
                 script {
                     stage('Run SonarQube Checks') {
-                        withSonarQubeEnv(credentialsId: Constants.SONARQUBE_CREDENTIALS_ID, installationName: 'SonarQube') {
-                            withMaven() {
-                                sh """
-                                    mvn -f ${pipelineParams.pom} \
-                                        compile \
-                                        sonar:sonar \
-                                        -Dmaven.test.skip \
-                                        -DskipTests \
-                                        -Dlicense.skipDownloadLicenses=true \
-                                        -Dsonar.dependencyCheck.jsonReportPath=target/dependency-check-report.json \
-                                        -Dsonar.dependencyCheck.htmlReportPath=target/dependency-check-report.html
-                                """
+                        script {
+                            withSonarQubeEnv(credentialsId: Constants.SONARQUBE_CREDENTIALS_ID, installationName: 'SonarQube') {
+                                withMaven() {
+                                    sh """
+                                        mvn -f ${pipelineParams.pom} \
+                                            compile \
+                                            org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970:sonar \
+                                            -Dmaven.test.skip \
+                                            -DskipTests \
+                                            -Dlicense.skipDownloadLicenses=true \
+                                            -Dsonar.dependencyCheck.jsonReportPath=target/dependency-check-report.json \
+                                            -Dsonar.dependencyCheck.htmlReportPath=target/dependency-check-report.html
+                                    """
+                                }
                             }
-                        }
-                        timeout(time: 5, unit: 'MINUTES') {
-                            script {
-                                def qg = waitForQualityGate()
-                                if (qg.status != 'OK') {
-                                    echo "WARNING: Pipeline unstable due to quality gate failure: ${qg.status}"
-                                    currentBuild.result = 'UNSTABLE'
+                            timeout(time: 5, unit: 'MINUTES') {
+                                script {
+                                    def qg = waitForQualityGate()
+                                    if (qg.status != 'OK') {
+                                        echo "WARNING: Quality gate failure: ${qg.status}. Marking stage as unstable without affecting overall build result."
+                                        // currentBuild.result = 'UNSTABLE'
+                                        catchError(buildResult: null, stageResult: 'UNSTABLE') {
+                                            error "Quality gate failure: ${qg.status}"
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -385,9 +386,6 @@ pipeline {
                             sourceCodeRetention: 'LAST_BUILD',
                             sourceDirectories: [[path: 'frontend/src']]
                         )
-
-                        // This archives the whole HTML coverage report so you can download or view it from Jenkins
-                        archiveArtifacts artifacts: 'frontend/target/coverage/lcov-report/**', allowEmptyArchive: false
                     }
                 }
             }

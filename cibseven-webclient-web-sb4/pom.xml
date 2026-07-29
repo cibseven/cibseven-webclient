@@ -15,6 +15,29 @@
 
 	<dependencyManagement>
 		<dependencies>
+		
+			<!--
+				Import the Jackson 2 BOM before spring-boot-dependencies so it wins for every
+				com.fasterxml.jackson.* artifact (core, annotations, databind, datatype-*,
+				module-*, dataformat-*, jakarta-rs). spring-boot-dependencies already imports
+				this same jackson-bom itself (pinned to an older patch, e.g. 2.21.4), so ours
+				must be declared first to take precedence. Without this, only the artifacts
+				listed explicitly as direct dependencies below get pinned to version.jackson2.
+
+				DO NOT remove this in favour of the jackson-bom import in the parent pom.xml:
+				spring-boot-dependencies' own nested jackson-bom import is declared in THIS
+				module's dependencyManagement, so it counts as a local entry, not inherited —
+				and local entries always win over the parent's, regardless of the parent's own
+				import order.
+			-->
+			<dependency>
+				<groupId>com.fasterxml.jackson</groupId>
+				<artifactId>jackson-bom</artifactId>
+				<version>${version.jackson2}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-dependencies</artifactId>
@@ -22,27 +45,7 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-			<!--
-				Apache Tomcat 11.x line for Spring Boot 4. The SB4 BOM pins 11.0.21, which is
-				affected by the same CVEs as 10.1.54 (fixed in 11.0.22). These entries override the
-				parent's SB3 tomcat-embed management (10.1.55) for this module — see CVE-2026-41293,
-				-43512, -43515, -41284, -43513, -42498, -43514.
-			-->
-			<dependency>
-				<groupId>org.apache.tomcat.embed</groupId>
-				<artifactId>tomcat-embed-core</artifactId>
-				<version>${version.tomcat}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.tomcat.embed</groupId>
-				<artifactId>tomcat-embed-el</artifactId>
-				<version>${version.tomcat}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.tomcat.embed</groupId>
-				<artifactId>tomcat-embed-websocket</artifactId>
-				<version>${version.tomcat}</version>
-			</dependency>
+
 			<!--
 				Force convergence between the version brought by common-auth
 				(2.2.36) and the one brought by springdoc 3.0.2 (2.2.43).
@@ -91,8 +94,9 @@
 		</dependency>
 
 		<!--
-			Jackson 2 (com.fasterxml.jackson.*) — added explicitly because SB4 no
-			longer bundles it. cibseven-webclient-core's REST providers / model
+		    Spring Boot 4 defaults to Jackson 3 and deprecates Jackson 2 support, 
+			but still provides Jackson 2 compatibility modules.
+			cibseven-webclient-core's REST providers / model
 			classes use Jackson 2 ObjectMapper / JsonNode directly; this keeps them
 			working. Coexists with Jackson 3 (tools.jackson.*) since they're in
 			different top-level packages.
@@ -100,12 +104,10 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>${version.jackson2}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-jsr310</artifactId>
-			<version>${version.jackson2}</version>
 		</dependency>
 
 		<dependency>
@@ -290,7 +292,6 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>${version.spring.boot4}</version>
 				<configuration>
-					<fork>true</fork>
 					<mainClass>org.cibseven.webapp.SevenWebclientApplication</mainClass>
 				</configuration>
 				<executions>
@@ -328,7 +329,6 @@
 							<descriptors>
 								<descriptor>assembly-war-wildfly.xml</descriptor>
 							</descriptors>
-							<classifier>wildfly</classifier>
 							<attach>true</attach>
 							<outputDirectory>target/</outputDirectory>
 						</configuration>

@@ -17,6 +17,7 @@
 package org.cibseven.modeler.provider;
 
 import java.util.List;
+import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -38,6 +39,12 @@ public class UnifiedDiagramProvider implements IUnifiedDiagramProvider {
     	String typePattern = (type == null || type.isEmpty()) ? null : type + "%";
 
 		return processDiagramDao.findAllUnified(keywordPattern, typePattern, PageRequest.of(firstResult / maxResults, maxResults));
+	}
+
+	@Override
+	public Optional<UnifiedDiagram> getDiagramById(String id) {
+		List<UnifiedDiagram> results = processDiagramDao.findUnifiedById(id);
+		return results.isEmpty() ? Optional.empty() : Optional.of(results.get(0));
 	}
 
 }

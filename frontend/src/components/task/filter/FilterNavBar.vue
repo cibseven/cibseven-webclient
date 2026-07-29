@@ -20,7 +20,7 @@
   <div v-show="showFilters" class="overflow-auto h-100">
     <div class="h-100 d-flex flex-column">
 
-      <FilterModal ref="filterModal" @select-filter="selectFilter($event)" @filter-alert="$emit('filter-alert', $event)" @set-filter="$emit('set-filter', $event)"></FilterModal>
+      <FilterModal ref="filterModal" @select-filter="selectFilter($event)" @filter-alert="$emit('filter-alert', $event)" @set-filter="$emit('set-filter', $event)" @new-filter-tasks-count="updateSelectedFilterTasksCountIfNeeded(true)"></FilterModal>
 
       <div v-if="$root.config.filtersSearch" class="p-2" style="background-color: rgb(98, 142, 199, 0.3)">
         <b-input-group>
@@ -28,7 +28,8 @@
             <b-input-group-text class="py-0 border-light"><span class="mdi mdi-18px mdi-magnify"
             style="line-height: initial"></span></b-input-group-text>
           </template>
-          <b-form-input :title="$t('searches.searchByFilterName')" size="sm" ref="input" type="search" v-model.trim="filter"
+          <label for="filter-navbar-search" class="visually-hidden">{{ $t('searches.searchByFilterName') }}</label>
+          <b-form-input id="filter-navbar-search" :title="$t('searches.searchByFilterName')" size="sm" ref="input" type="search" v-model.trim="filter"
           class="form-control border-start-0 ps-0 form-control border-light shadow-none" :placeholder="$t('searches.searchByFilterName')"/>
           <template #append>
             <b-button size="sm" variant="light"
@@ -193,6 +194,7 @@ export default {
         this.$store.commit('setFilters',
           { filters: this.filtersByPermissions(this.$root.config.permissions.displayFilter, response) })
         if (this.$root.config.taskFilter.tasksNumber.enabled) {
+          clearInterval(this.interval)
           this.setTasksNumber()
           const interval = Math.max(this.$root.config.taskFilter.tasksNumber.interval, MIN_TASKNUMBER_INTERVAL)
           this.interval = setInterval(() => { this.setTasksNumber() }, interval)
@@ -250,12 +252,12 @@ export default {
           this.isSelectingFilter = true
           this.$router.replace(path)
         }
-        this.updateSelectedFilterTasksCountIfNeeded()
+        this.updateSelectedFilterTasksCountIfNeeded(false)
       }
     },
-    updateSelectedFilterTasksCountIfNeeded() {
+    updateSelectedFilterTasksCountIfNeeded(newFilter) {
       const f = this.$store.state.filter.selected
-      if (f && f.id && !this.$root.config.taskFilter.tasksNumber.enabled && this.$root.config.taskFilter.selectedFilterTasksNumber.enabled) {
+      if (f && f.id && ((!this.$root.config.taskFilter.tasksNumber.enabled && this.$root.config.taskFilter.selectedFilterTasksNumber.enabled) || (this.$root.config.taskFilter.tasksNumber.enabled && newFilter === true))) {
         this.updateFilterTasksCount({ filterId: f.id, filters: {} })
       }
     },

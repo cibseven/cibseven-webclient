@@ -42,6 +42,7 @@
 
     <ViewerFrame :resizerMixin="this">
       <component :is="BpmnViewerPlugin" v-if="BpmnViewerPlugin" ref="diagram" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
+        @viewbox-changed="onViewboxChanged"
         :process-definition-id="process.id" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
         :active-tab="activeTab" class="h-100">
       </component>
@@ -54,6 +55,7 @@
         :active-tab="activeTab"
         @task-selected="selectTask($event)"
         @activity-map-ready="activityMap = $event"
+        @viewbox-changed="onViewboxChanged"
         class="h-100">
       </BpmnViewer>
     </ViewerFrame>
@@ -79,13 +81,22 @@
               ></component>
             </div>
             <template v-else>
-              <div class="col-3 p-3">
+              <div class="col-4 p-3">
                 <b-input-group size="sm">
                   <template #prepend>
                     <b-button :title="$t('searches.search')" aria-hidden="true" size="sm" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
                   </template>
-                  <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="(evt) => onInput(evt.target.value.trim())"></b-form-input>
+                  <label for="process-instances-search" class="visually-hidden">{{ $t('searches.search') }}</label>
+                  <b-form-input id="process-instances-search" :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="(evt) => onInput(evt.target.value.trim())"></b-form-input>
                   <b-button size="sm" variant="light" @click="$refs.sortModal.show()" class="ms-1 border"><span class="mdi mdi-sort" style="line-height: initial"></span></b-button>
+                  <b-form-checkbox
+                    v-model="unfinishedFilter"
+                    class="ms-2 d-flex align-items-center"
+                    switch
+                    :title="$t('process-instance.onlyUnfinished.tooltip')"
+                  >
+                  {{ $t('process-instance.onlyUnfinished.title') }}
+                  </b-form-checkbox>
                 </b-input-group>
               </div>
               <div v-if="selectedActivityId" class="col-3 p-3">
@@ -97,7 +108,7 @@
               </div>
             </template>
 
-            <div :class="[ProcessInstancesSearchBoxPlugin ? 'col-2' : ( selectedActivityId ? 'col-6' : 'col-9'), 'p-3', 'text-end']">
+            <div :class="[ProcessInstancesSearchBoxPlugin ? 'col-2' : ( selectedActivityId ? 'col-5' : 'col-8'), 'p-3', 'text-end']">
               <div>
                 <b-button v-if="process.suspended === 'false'" size="sm" variant="light" @click="confirmSuspend" :title="$t('process.suspendProcess')">
                   <span class="mdi mdi-pause-circle-outline"></span> {{ collapseButtons ? '': $t('process.suspendProcess') }}
@@ -123,6 +134,7 @@
             :sorting="sorting"
             :tenant-id="tenantId"
             :filter="computedFilter"
+            @load-statistics="syncStatisticsWithInstances"
             @instance-deleted="$emit('instance-deleted')"
             @filter-instances="$emit('filter-instances', $event)"
           ></InstancesTable>
@@ -170,6 +182,8 @@ import CalledProcessDefinitionsTable from '@/components/process/tables/CalledPro
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import tabUrlMixin from '@/components/process/mixins/tabUrlMixin.js'
+import bpmnViewportPersistenceMixin from '@/components/process/mixins/bpmnViewportPersistenceMixin.js'
+import viewerFrameSizePersistenceMixin from '@/components/process/mixins/viewerFrameSizePersistenceMixin.js'
 import { debounce } from '@/utils/debounce.js'
 import { SuccessAlert, ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
 import ProcessInstancesTabs from '@/components/process/ProcessInstancesTabs.vue'
@@ -184,7 +198,7 @@ export default {
      SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable, CalledProcessDefinitionsTable,
      ProcessInstancesTabs, ScrollableTabsContainer, ViewerFrame, RemovableBadge },
   inject: ['loadProcesses'],
-  mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin, tabUrlMixin],
+  mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin, tabUrlMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
   emits: ['task-selected', 'filter-instances', 'instance-deleted'],
   props: {
     process: Object,
@@ -218,10 +232,9 @@ export default {
       handler: async function(newId, oldId) {
         if (newId && newId !== oldId) {
           this.clearHistoricActivityStatistics()
-          await this.loadHistoricActivityStatistics({ processDefinitionId: this.process.id })
           await this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
           ProcessService.fetchDiagram(newId).then(response => {
-            this.$refs.diagram.showDiagram(response.bpmn20Xml, this.selectedActivityId)
+            this.$refs.diagram.showDiagram(response.bpmn20Xml, this.selectedActivityId).then(() => this.restoreViewboxIfSaved())
             this.setDiagramXml(response.bpmn20Xml)
           })
         }
@@ -242,17 +255,26 @@ export default {
   },
   mounted: function() {
     this.clearHistoricActivityStatistics()
-    const params = { canceled: true, completedScoped: true, finished: true, incidents: true }
-    this.loadHistoricActivityStatistics({ processDefinitionId: this.process.id, params })
     this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
     ProcessService.fetchDiagram(this.process.id).then(response => {
       setTimeout(() => {
-        this.$refs.diagram.showDiagram(response.bpmn20Xml, this.selectedActivityId)
+        this.$refs.diagram.showDiagram(response.bpmn20Xml, this.selectedActivityId).then(() => this.restoreViewboxIfSaved())
         this.setDiagramXml(response.bpmn20Xml)
       }, 100)
     })
   },
   computed: {
+    unfinishedFilter: {
+    get: function() {
+      return this.filter?.unfinished ?? false
+    },
+    set: function(newVal) {
+      this.$emit('filter-instances', {
+      ...this.computedFilter,
+      unfinished: newVal ? true : undefined
+      })
+    }
+    },
     ProcessInstancesSearchBoxPlugin: function() {
       return this.$options.components && this.$options.components.ProcessInstancesSearchBoxPlugin
         ? this.$options.components.ProcessInstancesSearchBoxPlugin
@@ -319,7 +341,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'setDiagramXml', 'loadHistoricActivityStatistics', 'clearHistoricActivityStatistics']),
+    ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'setDiagramXml', 'clearHistoricActivityStatistics','loadHistoricActivityStatisticsForInstances']),
     ...mapActions('calledProcessDefinitions', ['loadStaticCalledProcessDefinitions']),
     applySorting: function(sortingCriteria) {
       this.sorting = true
@@ -398,9 +420,13 @@ export default {
       }
       this.$emit('filter-instances', queryObject)
     },
+     syncStatisticsWithInstances: function(filter) {
+      if (!this.process?.id) return
+      this.loadHistoricActivityStatisticsForInstances({ processDefinitionId: this.process.id, filter})
+    },
     onInput: debounce(800, function(freeText) {
       this.$emit('filter-instances', {
-        ...this.filter,
+        ...this.computedFilter,
         editField: freeText,
       })
     }),
