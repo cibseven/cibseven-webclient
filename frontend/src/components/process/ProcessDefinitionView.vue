@@ -403,7 +403,10 @@ export default {
         this.activityInstance = null
         this.activityInstanceHistory = selectedInstance ? this.activityInstanceHistory : null
         this.selectedInstance = selectedInstance
-        if (this.selectedInstance.state === 'ACTIVE') {
+        const isActiveInstance = 'state' in this.selectedInstance
+          ? this.selectedInstance.state === 'ACTIVE'
+          : this.selectedInstance.ended === false
+        if (isActiveInstance) {
           //Management
           await ProcessService.findActivityInstance(selectedInstance.id).then(async activityInstance => {
             this.activityInstance = activityInstance

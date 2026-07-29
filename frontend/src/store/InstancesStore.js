@@ -63,6 +63,7 @@ export default {
         const instances = await ProcessService.findCurrentProcessesInstances({
           processDefinitionId: processId,
           tenantId: tenantId,
+          ...(filter?.activityIdIn ? { activityIdIn: filter.activityIdIn } : {})
         })
         instances.forEach(instance => {
           instance.processDefinitionId = processDefinition.id
