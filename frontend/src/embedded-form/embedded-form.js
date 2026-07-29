@@ -19,7 +19,6 @@ import { switchLanguage, i18n } from "@/i18n";
 import { getTheme, loadTheme } from "@/utils/init";
 import { extractErrorMessage, isDeployedFormNotFoundError, extractDeployedFormName, isFormElementError } from "@/utils/error";
 import CamSDK from "bpm-sdk";
-import { axios } from "@/globals";
 // Import jQuery to wrap DOM elements for BPM SDK compatibility - the SDK expects jQuery objects for .find() method calls
 import $ from 'jquery';
 
@@ -330,13 +329,12 @@ export function loadEmbeddedForm(
         headers['X-Process-Engine'] = engineName;
     }
     
-    // All bpm-sdk calls go through the allow-listed engine-rest gateway. bpm-sdk binds one
-    // baseUrl per client and shares resource objects across clients, so a single client is used.
-    // The only CIB-only call with no engine-rest equivalent (task/form-proxy) is issued via axios
-    // directly against the middleware (see below).
+    // bpm-sdk binds one baseUrl per client and shares resource objects across clients, so a
+    // single client is used, pointed at the middleware. Every resource the sdk calls at runtime
+    // (group, user, history/task, form loading, submit-form) is served by the middleware.
     const client = new CamSDK.Client({
         mock: false,
-        apiUri: `${apiUri}/engine-rest`,
+        apiUri: apiUri,
         headers: headers,
         engine: false // false to define absolute apiUri
     });
@@ -392,21 +390,28 @@ export function loadEmbeddedForm(
                 formConfig.formElement = $(formContainer);
                 if (embeddedContainer) embeddedContainer.style.display = 'none';
             } else {
-                // Fetch form HTML via backend proxy - backend validates form URL and proxies content for security and CORS handling.
-                // form-proxy is CIB-only (no engine-rest equivalent), so it is called directly on the
-                // middleware via axios rather than through the engine-rest gateway client.
+                // Fetch form HTML via backend proxy - backend validates form URL and proxies content for security and CORS handling
                 try {
-                    const response = await axios.get(`${apiUri}/task/form-proxy`, {
-                        params: {
-                            referenceId: referenceId,
-                            isStartForm: isStartForm
-                        },
-                        headers: {
-                            ...headers,
-                            'Accept': 'text/html'
-                        }
+                    const resource = await new Promise((resolveForm, rejectForm) => {
+                        client.http.get('task/form-proxy', {
+                            data: {
+                                referenceId: referenceId,
+                                isStartForm: isStartForm
+                            },
+                            headers: {
+                                ...client.http.config.headers,
+                                'Accept': 'text/html'
+                            },
+                            done: function(err, formHtml) {
+                                if (err) {
+                                    // Do not show error, go to fallback
+                                    rejectForm(err);
+                                } else {
+                                    resolveForm(formHtml);
+                                }
+                            }
+                        });
                     });
-                    const resource = response.data;
                     formContainer.innerHTML = resource;
                     formConfig.formElement = $(formContainer);
                     if (embeddedContainer) embeddedContainer.style.display = 'none';
@@ -431,8 +436,7 @@ export function loadEmbeddedForm(
 function loadDeployedForm(client, isStartForm, referenceId) {
     return new Promise((resolve, reject) => {
         if (isStartForm) {
-            // engine-rest path (via the gateway); the CIB middleware alias is process/{id}/deployed-start-form
-            client.http.get(`process-definition/${referenceId}/deployed-start-form`, {
+            client.http.get(`process/${referenceId}/deployed-start-form`, {
                 headers: {
                     ...client.http.config.headers,
                     'Accept': '*/*'
