@@ -237,7 +237,8 @@ export default {
             const childActivity = this.activityInstance.childActivityInstances.find(obj => obj.activityId === event.element.id)
             this.$emit('child-activity', childActivity || event.element)
           } else {
-            this.selectActivity({ activityId: event.element.id, listMode: 'all' })
+            const listMode = this.$root.config.camundaHistoryLevel === 'none' ? 'active' : 'all'
+            this.selectActivity({ activityId: event.element.id, listMode })
           }
         } else {
           if (this.currentHighlight) {
