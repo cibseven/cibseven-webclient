@@ -312,6 +312,12 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	}
 
 	@Override
+	public void handleBpmnEscalation(String taskId, Map<String, Object> data, CIBUser user) throws SystemException {
+		String url = getEngineRestUrl(user) + "/task/" + taskId + "/bpmnEscalation";
+		doPost(url, data, null, user);
+	}
+
+	@Override
 	public Collection<TaskHistory> findTasksByTaskIdHistory(String taskId, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/history/task?taskId=" + taskId;
 		return Arrays.asList(((ResponseEntity<TaskHistory[]>) doGet(url, TaskHistory[].class, user, false)).getBody());
