@@ -359,6 +359,10 @@ public interface BpmProvider {
 		getTaskProvider().handleBpmnError(taskId, data, user);
 	}
 
+	default void handleBpmnEscalation(String taskId, Map<String, Object> data, CIBUser user) throws SystemException {
+		getTaskProvider().handleBpmnEscalation(taskId, data, user);
+	}
+
 	default Collection<TaskHistory> findTasksByTaskIdHistory(String taskId, CIBUser user) throws SystemException {
 		return getTaskProvider().findTasksByTaskIdHistory(taskId, user);
 	}

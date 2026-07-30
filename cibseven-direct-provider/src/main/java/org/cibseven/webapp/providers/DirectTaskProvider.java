@@ -62,6 +62,7 @@ import org.cibseven.bpm.engine.rest.dto.task.CompleteTaskDto;
 import org.cibseven.bpm.engine.rest.dto.task.FormDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskBpmnErrorDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskCountByCandidateGroupResultDto;
+import org.cibseven.bpm.engine.rest.dto.task.TaskEscalationDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskQueryDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskWithAttachmentAndCommentDto;
@@ -494,6 +495,17 @@ private List<VariableInstanceDto> queryVariableInstances(VariableInstanceQueryDt
 		TaskBpmnErrorDto dto = directProviderUtil.getObjectMapper(user).convertValue(data, TaskBpmnErrorDto.class);
 		try {
 			directProviderUtil.getProcessEngine(user).getTaskService().handleBpmnError(taskId, dto.getErrorCode(), dto.getErrorMessage(),
+					VariableValueDto.toMap(dto.getVariables(), directProviderUtil.getProcessEngine(user), directProviderUtil.getObjectMapper(user)));
+		} catch (NotFoundException e) {
+			throw new SystemException(e.getMessage(), e);
+		}
+	}
+
+	@Override
+	public void handleBpmnEscalation(String taskId, Map<String, Object> data, CIBUser user) throws SystemException {
+		TaskEscalationDto dto = directProviderUtil.getObjectMapper(user).convertValue(data, TaskEscalationDto.class);
+		try {
+			directProviderUtil.getProcessEngine(user).getTaskService().handleEscalation(taskId, dto.getEscalationCode(),
 					VariableValueDto.toMap(dto.getVariables(), directProviderUtil.getProcessEngine(user), directProviderUtil.getObjectMapper(user)));
 		} catch (NotFoundException e) {
 			throw new SystemException(e.getMessage(), e);
