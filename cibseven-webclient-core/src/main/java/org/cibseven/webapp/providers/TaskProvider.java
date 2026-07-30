@@ -346,6 +346,16 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	}
 
 	@Override
+	public Collection<TaskHistory> findHistoryTasks(Map<String, Object> filters,
+			Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) {
+		Map<String, Object> pagination = new HashMap<>();
+		firstResult.ifPresent(value -> pagination.put("firstResult", value));
+		maxResults.ifPresent(value -> pagination.put("maxResults", value));
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/history/task", pagination);
+		return Arrays.asList(((ResponseEntity<TaskHistory[]>) doPost(url, filters, TaskHistory[].class, user)).getBody());
+	}
+
+	@Override
 	public Collection<CandidateGroupTaskCount> getTaskCountByCandidateGroup(CIBUser user) {
 		String url = getEngineRestUrl(user) + "/task/report/candidate-group-count";
 		return Arrays.asList(((ResponseEntity<CandidateGroupTaskCount[]>) doGet(url, CandidateGroupTaskCount[].class, user, false)).getBody());

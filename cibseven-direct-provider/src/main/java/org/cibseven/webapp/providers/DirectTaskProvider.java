@@ -552,6 +552,24 @@ private List<VariableInstanceDto> queryVariableInstances(VariableInstanceQueryDt
 	}
 
 	@Override
+	public Collection<TaskHistory> findHistoryTasks(Map<String, Object> filters,
+			Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) {
+		HistoricTaskInstanceQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(filters, HistoricTaskInstanceQueryDto.class);
+		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
+		HistoricTaskInstanceQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
+
+		List<HistoricTaskInstance> results = (firstResult.isPresent() || maxResults.isPresent())
+				? query.listPage(firstResult.orElse(0), maxResults.orElse(Integer.MAX_VALUE))
+				: query.unlimitedList();
+
+		List<TaskHistory> taskHistoryList = new ArrayList<>();
+		for (HistoricTaskInstance result : results) {
+			taskHistoryList.add(directProviderUtil.convertValue(HistoricTaskInstanceDto.fromHistoricTaskInstance(result), TaskHistory.class, user));
+		}
+		return taskHistoryList;
+	}
+
+	@Override
 	public Collection<CandidateGroupTaskCount> getTaskCountByCandidateGroup(CIBUser user) {
 		TaskCountByCandidateGroupResultDto reportDto = new TaskCountByCandidateGroupResultDto();
 		List<TaskCountByCandidateGroupResult> results = reportDto.executeTaskCountByCandidateGroupReport(directProviderUtil.getProcessEngine(user));
