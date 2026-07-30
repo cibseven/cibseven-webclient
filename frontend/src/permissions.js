@@ -56,6 +56,15 @@ const permissionsMixin = {
 			return this.$_permissionsMixin_checkPermissionsAllowed(process, 'key', permissionsCheck)
 		},
 		/**
+		 * @param {Object} processDefinition 
+		 * @returns {boolean} `true` if the user has `DELETE_HISTORY` permission for the given processDefinition (delete historic process instances), `false` otherwise
+		 */
+		canDeleteHistoryProcessInstance(processDefinition) {
+			const requiredPermissions = { 'processDefinition': ['DELETE_HISTORY'] }
+			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(requiredPermissions)
+			return this.$_permissionsMixin_checkPermissionsAllowed(processDefinition, 'key', permissionsCheck)
+		},
+		/**
 		 * @param {string} deploymentId 
 		 * @returns {boolean} `true` if the user has `READ` permission for the given deploymentId, `false` otherwise
 		 */
