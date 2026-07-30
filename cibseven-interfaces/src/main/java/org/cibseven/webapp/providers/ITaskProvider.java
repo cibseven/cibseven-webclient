@@ -61,6 +61,13 @@ public interface ITaskProvider {
 	public ResponseEntity<byte[]> getDeployedForm(String taskId, CIBUser user);
 	public ResponseEntity<String> getRenderedForm(String taskId, Map<String, Object> params, CIBUser user);
 	public Integer findHistoryTasksCount(Map<String, Object> filters, CIBUser user);
+	/**
+	 * Queries historic task instances by forwarding an arbitrary filter map, as the engine's
+	 * historic task query accepts it. Complements the fixed-filter lookups above, which only
+	 * cover task id, process instance and task definition key.
+	 */
+	public Collection<TaskHistory> findHistoryTasks(Map<String, Object> filters,
+			Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user);
 	public Collection<CandidateGroupTaskCount> getTaskCountByCandidateGroup(CIBUser user);
 	
 }

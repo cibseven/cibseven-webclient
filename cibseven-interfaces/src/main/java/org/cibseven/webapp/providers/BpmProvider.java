@@ -374,6 +374,11 @@ public interface BpmProvider {
 		return getTaskProvider().findHistoryTasksCount(filters, user);
 	}
 
+	default Collection<TaskHistory> findHistoryTasks(Map<String, Object> filters,
+			Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) throws SystemException {
+		return getTaskProvider().findHistoryTasks(filters, firstResult, maxResults, user);
+	}
+
 	default Collection<CandidateGroupTaskCount> getTaskCountByCandidateGroup(CIBUser user)  {
 		return getTaskProvider().getTaskCountByCandidateGroup(user);
 	}
