@@ -78,7 +78,7 @@ public class FormProvider implements IFormProvider {
 		return formRepositoryDao.save(existing);
 	}
 	
-	@Transactional
+	@Transactional("transactionManager")
 	@Override
 	public void delete(String id) throws SystemException {
 		formRepositoryDao.deleteById(id);

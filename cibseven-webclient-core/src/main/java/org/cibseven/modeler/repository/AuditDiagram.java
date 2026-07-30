@@ -19,12 +19,14 @@ package org.cibseven.modeler.repository;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
+import org.springframework.orm.jpa.SharedEntityManagerCreator;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.EntityManagerFactory;
 
 import java.util.List;
 import java.util.Objects;
@@ -32,11 +34,16 @@ import java.util.Objects;
 @Repository
 public class AuditDiagram {
 
-	@PersistenceContext
-	private EntityManager entityManager;
+	private final EntityManager entityManager;
 
-	@Value("${cibseven.modeler.historicMaxResults:30}")
-	private int historicMaxResults;
+	private final int historicMaxResults;
+
+	// Resolved by name so the factory need not be @Primary.
+	public AuditDiagram(@Qualifier("entityManagerFactory") EntityManagerFactory entityManagerFactory,
+			@Value("${cibseven.modeler.historicMaxResults:30}") int historicMaxResults) {
+		this.entityManager = SharedEntityManagerCreator.createSharedEntityManager(entityManagerFactory);
+		this.historicMaxResults = historicMaxResults;
+	}
 
 	private AuditReader getAuditReader() {
 		return AuditReaderFactory.get(entityManager);

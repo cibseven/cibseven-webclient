@@ -282,7 +282,7 @@ public class ModelerService extends BaseService {
 		return dbProcessDiagramProvider.createDiagram(entity);
 	}
 
-	@Transactional
+	@Transactional("transactionManager")
 	@RequestMapping(value = "/session/save", method = RequestMethod.POST)
 	public Object saveSession(@RequestParam MultiValueMap<String, String> data,
 			@RequestParam MultiValueMap<String, MultipartFile> diagram, HttpServletRequest rq) {
@@ -327,7 +327,7 @@ public class ModelerService extends BaseService {
 		    }
 	}
 	
-	@Transactional
+	@Transactional("transactionManager")
 	@RequestMapping(value = "/session/close", method = RequestMethod.POST)
 	public ResponseEntity<Object> closeSessions(@RequestParam MultiValueMap<String, String> data,
 		HttpServletRequest rq) {
@@ -456,7 +456,7 @@ public class ModelerService extends BaseService {
 		}
 	}
 	
-	@Transactional
+	@Transactional("transactionManager")
 	@RequestMapping(value = "/process/update", method = RequestMethod.POST)
 	public ProcessDiagramEntity update(@RequestParam MultiValueMap<String, String> data, @RequestParam MultiValueMap<String, MultipartFile> diagram, HttpServletRequest rq) {
 		CIBUser user = null;
@@ -584,7 +584,7 @@ public class ModelerService extends BaseService {
 	    return formProvider.createForm(entity);
 	}
 	
-	@Transactional
+	@Transactional("transactionManager")
 	@RequestMapping(value = "/form/delete/{id}", method = RequestMethod.DELETE)
 	public void deleteForm(@PathVariable String id, HttpServletRequest rq) {
 		if (authenticationEnabled) {
@@ -593,7 +593,7 @@ public class ModelerService extends BaseService {
 		formProvider.delete(id);
 	}
 	
-	@Transactional
+	@Transactional("transactionManager")
 	@RequestMapping(value = "/form/update", method = RequestMethod.POST)
 	public FormEntity updateForm(@RequestParam("id") String id, @RequestParam("formid") String formid, 
 		@RequestParam("form_schema") MultipartFile formSchema, HttpServletRequest rq) {

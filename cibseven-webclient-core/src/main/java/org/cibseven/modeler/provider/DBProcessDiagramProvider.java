@@ -88,7 +88,7 @@ public class DBProcessDiagramProvider implements IProcessDiagramProvider {
 		return processDiagramDao.save(processDiagramEntity);
 	}
 	
-	@Transactional
+	@Transactional("transactionManager")
 	@Override
 	public void delete(String id) throws SystemException {
 		processDiagramDao.deleteById(id);
