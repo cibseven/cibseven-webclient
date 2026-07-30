@@ -161,7 +161,7 @@ export default {
     version: Object,
     selectedInstance: { type: Object, default: null },
     versionIndex: { type: String, default: '' },
-    loadTimestamps: { type: Boolean, default: false }
+    shown: { type: Boolean, default: false }
   },
   data: function() {
     return {
@@ -175,19 +175,19 @@ export default {
   },
   emits: ['onUpdateHistoryTimeToLive'],
   watch: {
-    loadTimestamps(val) {
+    shown(val) {
       if (val) this.getTimestamps()
     },
     'version.id': function() {
       this.resetTimestampsCache()
-      if (this.loadTimestamps) {
+      if (this.shown) {
         this.getTimestamps()
       }
     },
     'version.allInstances': function(newVal, oldVal) {
       if (newVal === oldVal) return
       this.resetTimestampsCache()
-      if (this.loadTimestamps) {
+      if (this.shown) {
         this.getTimestamps()
       }
     },

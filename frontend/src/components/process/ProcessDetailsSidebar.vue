@@ -80,7 +80,7 @@
             </div>
             <b-popover :target="version.id" triggers="hover focus click" placement="right" boundary="viewport" max-width="350px">
               <ProcessDefinitionDetails :version="version" :version-index="versionIndex"
-                :load-timestamps="hoveredVersionId === version.id"
+                :shown="hoveredVersionId === version.id"
                 :selected-instance="selectedInstance" @onUpdateHistoryTimeToLive="onUpdateHistoryTimeToLive"></ProcessDefinitionDetails>
             </b-popover>
           </div>
