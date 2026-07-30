@@ -461,7 +461,7 @@ public abstract class SevenProviderBase {
 			wrapperException = new ExistingGroupRequestException(cause);
 		} else if (technicalErrorMsg.matches(".*Group has an invalid id.*")) {
 			wrapperException = new InvalidGroupIdException(cause);
-		}else if (technicalErrorMsg.matches(".*The given authenticated user password is not valid.*")) {
+		} else if (technicalErrorMsg.matches(".*The given authenticated user password is not valid.*")) {
 			wrapperException = new SystemException(cause); // TODO? Create a specific exception this error.
 		} else if (technicalErrorMsg.matches(".*Cannot modify variables for execution.*execution.*doesn't exist: execution is null.*")) {
 			wrapperException = new VariableModificationException(cause);
