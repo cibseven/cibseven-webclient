@@ -81,7 +81,7 @@
           <CellActionButton v-if="['ACTIVE', 'SUSPENDED'].includes(table.item.state) && processByPermissions($root.config.permissions.deleteProcessInstance, table.item)"
           @click="confirmStopInstance(table.item)"
           icon="mdi-stop-circle-outline" :title="$t('process.stopInstance')"></CellActionButton>
-          <CellActionButton v-else-if="['COMPLETED', 'EXTERNALLY_TERMINATED', 'INTERNALLY_TERMINATED'].includes(table.item.state) && processByPermissions($root.config.permissions.deleteHistoricProcessInstance, table.item)"
+          <CellActionButton v-else-if="['COMPLETED', 'EXTERNALLY_TERMINATED', 'INTERNALLY_TERMINATED'].includes(table.item.state) && hasDeleteHistoryProcessInstancePermission"
           @click="confirmDeleteHistoryInstance(table.item)"
           icon="mdi-delete-outline" :title="$t('process.deleteHistoryInstance')"></CellActionButton>
         </div>
@@ -129,7 +129,10 @@ export default {
     ...mapGetters('instances', ['instances']),
     canLoadMore() {
       return this.hasMoreData && !this.loading
-    }
+    },
+    hasDeleteHistoryProcessInstancePermission() {
+      return this.canDeleteHistoryProcessInstance(this.process)
+    },
   },
   data() {
     return {

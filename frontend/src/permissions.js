@@ -56,18 +56,13 @@ const permissionsMixin = {
 			return this.$_permissionsMixin_checkPermissionsAllowed(process, 'key', permissionsCheck)
 		},
 		/**
-		 * @param {string} instanceId 
-		 * @returns {boolean} `true` if the user has permission to stop the given instanceId ('ACTIVE', 'SUSPENDED' -> 'EXTERNALLY_TERMINATED'), `false` otherwise
+		 * @param {Object} processDefinition 
+		 * @returns {boolean} `true` if the user has `DELETE_HISTORY` permission for the given processDefinition (delete historic process instances), `false` otherwise
 		 */
-		canStopProcessInstance: function(instanceId) {
-			const requiredPermissions = { 'processDefinition': ['SUSPEND'] }
-			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(requiredPermissions)
-			return this.$_permissionsMixin_checkPermissionsAllowed({id: instanceId}, 'id', permissionsCheck)
-		},
-		canDeleteProcessInstance: function(instanceId) {
+		canDeleteHistoryProcessInstance(processDefinition) {
 			const requiredPermissions = { 'processDefinition': ['DELETE_HISTORY'] }
 			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(requiredPermissions)
-			return this.$_permissionsMixin_checkPermissionsAllowed({id: instanceId}, 'id', permissionsCheck)
+			return this.$_permissionsMixin_checkPermissionsAllowed(processDefinition, 'key', permissionsCheck)
 		},
 		/**
 		 * @param {string} deploymentId 
