@@ -978,6 +978,12 @@
 	},
 	"start": {
 		"close": "Cerrar",
+		"defaultStartForm": {
+			"introduction": "Si lo deseas, puedes indicar una clave de negocio y añadir variables antes de iniciarlo.",
+			"businessKey": "Business Key",
+			"businessKeyPlaceholder": "Introduzca un Business Key (opcional)",
+			"start": "Iniciar proceso"
+		},
 		"startProcess": {
 			"title": "@:process.startProcess",
 			"tooltip": "Abrir vista de inicio del proceso con opción de búsqueda"

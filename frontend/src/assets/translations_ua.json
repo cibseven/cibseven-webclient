@@ -978,6 +978,12 @@
 	},
 	"start": {
 		"close": "Закрити",
+		"defaultStartForm": {
+			"introduction": "За бажанням ви можете вказати бізнес-ключ і додати змінні перед запуском, якщо хочете.",
+			"businessKey": "Бізнес-ключ",
+			"businessKeyPlaceholder": "Введіть бізнес-ключ (необов'язково)",
+			"start": "Запустити процес"
+		},
 		"startProcess": {
 			"title": "@:process.startProcess",
 			"tooltip": "Відкрити сторінку запуску процесу з можливістю пошуку"
