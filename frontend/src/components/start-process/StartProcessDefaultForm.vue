@@ -23,8 +23,8 @@
       {{ $t('start.defaultStartForm.introduction') }}
     </p>
 
-    <b-form-group :label="$t('start.defaultStartForm.businessKey')">
-      <b-form-input v-model.trim="businessKey" :placeholder="$t('start.defaultStartForm.businessKeyPlaceholder')"></b-form-input>
+    <b-form-group :label="$t('start.defaultStartForm.businessKey')" label-for="start-process-business-key">
+      <b-form-input id="start-process-business-key" v-model.trim="businessKey" :placeholder="$t('start.defaultStartForm.businessKeyPlaceholder')"></b-form-input>
     </b-form-group>
 
     <div class="table-responsive border rounded">
