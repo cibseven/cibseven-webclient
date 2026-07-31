@@ -144,15 +144,18 @@ const ProcessService = {
     return axios.get(getServicesBasePath() + "/process/called-process-definitions/" + processDefinitionId)
   },
   fetchDiagram: function(processId) { return axios.get(getServicesBasePath() + "/process/" + processId + "/diagram") },
-  startProcess: function(key, tenantId, locale) {
+  startProcess: function(key, tenantId, locale, businessKey, variables) {
     let url = `${getServicesBasePath()}/process/${key}/start`
     if (tenantId) url += `?tenantId=${tenantId}`
-    return axios.post(url, {
+    const data = {
       variables: {
-        _locale: { value: locale, type: String }
+        _locale: { value: locale, type: String },
         // initiator: { value: userId, type: String }
+        ...(variables || {})
       }
-    })
+    }
+    if (businessKey) data.businessKey = businessKey
+    return axios.post(url, data)
   },
   startForm: function(processDefinitionId) { return axios.get(getServicesBasePath() + "/process-definition/" + processDefinitionId + "/startForm") },
   getDeployedStartForm: function(processDefinitionId) { return axios.get(getServicesBasePath() + "/process/" + processDefinitionId + "/deployed-start-form") },
@@ -555,16 +558,7 @@ const AuthService = {
     return axios.put(getServicesBasePath() + "/auth/password-recovery-update-password/" + userId,
       { password: password, authenticatedUserPassword: authenticatedUserPassword },
       { headers: { authorization: recoverToken } }
-    ) },
-  login: function(params, remember) {
-    const engineName = localStorage.getItem(ENGINE_STORAGE_KEY)
-    const headers = engineName ? { 'X-Process-Engine': engineName } : {}
-    return axios.create().post(getServicesBasePath() + '/auth/login', params, { headers: headers }).then(function(user) {
-      axios.defaults.headers.common.authorization = user.data.authToken
-      ;(remember ? localStorage : sessionStorage).setItem('token', user.data.authToken)
-      return user.data
-    })
-  }
+    ) }
 }
 
 const InfoService = {

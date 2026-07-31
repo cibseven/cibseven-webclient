@@ -58,45 +58,101 @@ public interface IVariableProvider {
 	public void submitVariables(String processInstanceId, List<Variable> formResult, CIBUser user, String processDefinitionId) throws SystemException;
 	public Map<String, Variable> fetchProcessFormVariablesById(String id, CIBUser user) throws SystemException;
 	public void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user);
-	default public void mergeVariablesValues(
+
+	public default void mergeVariablesValuesRuntime(
 			Collection<Variable> variablesDeserialized,
 			Collection<Variable> variablesSerialized,
 			boolean deserializeValues) {
 
-			if (variablesDeserialized == null) {
-				return;
-			}
-
-			if (variablesSerialized == null) {
-				return;
-			}
-
-			Collection<Variable> variables = (deserializeValues) ? variablesDeserialized : variablesSerialized;
-			variables.forEach(variable -> {
-				String name = variable.getName();
-				
-				// Skip variables with null names to avoid NullPointerException
-				if (name == null) {
-					return;
-				}
-
-				Variable variableSerialized = (!deserializeValues) ? variable : variablesSerialized.stream()
-					.filter(v -> v.getName() != null && v.getName().equals(name))
-					.findFirst()
-					.orElse(null);
-				if (variableSerialized != null) {
-					variable.setValueSerialized(variableSerialized.getValue());
-				}
-
-				Variable variableDeserialized = (deserializeValues) ? variable : variablesDeserialized.stream()
-					.filter(v -> v.getName() != null && v.getName().equals(name))
-					.findFirst()
-					.orElse(null);
-				if (variableDeserialized != null) {
-					variable.setValueDeserialized(variableDeserialized.getValue());
-				}
-			});
+		if (variablesDeserialized == null) {
+			return;
 		}
 
+		if (variablesSerialized == null) {
+			return;
+		}
+
+		Collection<Variable> variables = (deserializeValues) ? variablesDeserialized : variablesSerialized;
+		int index = -1;
+		for (Variable variable : variables) {
+			index++;
+			String name = variable.getName();
+			
+			// Skip variables with null names to avoid NullPointerException
+			if (name == null) {
+				continue;
+			}
+
+			Variable variableSerialized = (!deserializeValues) ? variable : findVariableByIndexOrName(variablesSerialized, name, index);
+			if (variableSerialized != null) {
+				variable.setValueSerialized(variableSerialized.getValue());
+			}
+
+			Variable variableDeserialized = (deserializeValues) ? variable : findVariableByIndexOrName(variablesDeserialized, name, index);
+			if (variableDeserialized != null) {
+				variable.setValueDeserialized(variableDeserialized.getValue());
+			}
+		}
+	}
+
+	private static Variable findVariableByIndexOrName(Collection<Variable> variables, String name, int index) {
+		if (variables == null || name == null) {
+			return null;
+		}
+
+		// check [index] first and then by name
+		if (index >= 0 && index < variables.size()) {
+			Variable variable = variables.stream().skip(index).findFirst().orElse(null);
+			if (variable != null && name.equals(variable.getName())) {
+				return variable;
+			}
+		}
+
+		// find by name only
+		return variables.stream()
+				.filter(v -> name.equals(v.getName()))
+				.findFirst()
+				.orElse(null);
+	}
+
+	public default void mergeVariablesValuesHistory(
+			Collection<VariableHistory> variablesDeserialized,
+			Collection<VariableHistory> variablesSerialized,
+			boolean deserializeValues) {
+
+		if (variablesDeserialized == null) {
+			return;
+		}
+
+		if (variablesSerialized == null) {
+			return;
+		}
+
+		Collection<VariableHistory> variables = (deserializeValues) ? variablesDeserialized : variablesSerialized;
+		variables.forEach(variable -> {
+			String id = variable.getId();
+			
+			// Skip variables with null names to avoid NullPointerException
+			if (id == null) {
+				return;
+			}
+
+			VariableHistory variableSerialized = (!deserializeValues) ? variable : variablesSerialized.stream()
+				.filter(v -> v.getId() != null && v.getId().equals(id))
+				.findFirst()
+				.orElse(null);
+			if (variableSerialized != null) {
+				variable.setValueSerialized(variableSerialized.getValue());
+			}
+
+			VariableHistory variableDeserialized = (deserializeValues) ? variable : variablesDeserialized.stream()
+				.filter(v -> v.getId() != null && v.getId().equals(id))
+				.findFirst()
+				.orElse(null);
+			if (variableDeserialized != null) {
+				variable.setValueDeserialized(variableDeserialized.getValue());
+			}
+		});
+	}
 
 }

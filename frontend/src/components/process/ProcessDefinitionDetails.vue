@@ -55,7 +55,8 @@
       <button @click="copyValueToClipboard(version.deploymentId)" class="btn btn-sm mdi mdi-content-copy float-end border-0"
         :title="$t('process.details.copyValue')"></button>
     </span>
-    <router-link class="col-12" :to="'/seven/auth/deployments/' + version.deploymentId">{{ version.deploymentId }}</router-link>
+    <router-link v-if="selectedDeployment" class="col-12" :to="'/seven/auth/deployments/' + version.deploymentId">{{ version.deploymentId }}</router-link>
+    <span v-else class="col-12">{{ version.deploymentId }}</span>
   </div>
   <template v-if="selectedDeployment">
     <hr class="my-2">
@@ -151,11 +152,12 @@ import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import { ProcessService } from '@/services.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { SuccessAlert } from '@cib/common-frontend'
+import { permissionsMixin } from '@/permissions.js'
 
 export default {
   name: 'ProcessDefinitionDetails',
   components: { SuccessAlert },
-  mixins: [ copyToClipboardMixin ],
+  mixins: [ copyToClipboardMixin, permissionsMixin ],
   props: {
     instances: Array,
     version: Object,
@@ -171,15 +173,18 @@ export default {
   },
   emits: ['onUpdateHistoryTimeToLive'],
   watch: {
-    versionIndex() {
-      if (this.isVersionSelected) {
-        ProcessService.findDeployment(this.version.deploymentId).then(deployment => {
-          this.selectedDeployment = deployment
-        })
-      }
-      else {
-        this.selectedDeployment = null
-      }
+    versionIndex: {
+      handler() {
+        if (this.isVersionSelected && this.hasDeploymentReadPermission) {
+          ProcessService.findDeployment(this.version.deploymentId).then(deployment => {
+            this.selectedDeployment = deployment
+          })
+        }
+        else {
+          this.selectedDeployment = null
+        }
+      },
+      immediate: true
     }
   },
   computed: {
@@ -198,15 +203,13 @@ export default {
     maxTimestamp() {
       if (this.timestamps.length === 0) return null
       return Math.max(...this.timestamps)
+    },
+    hasDeploymentReadPermission() {
+      return this.canReadDeployment(this.version.deploymentId)
     }
   },
   mounted() {
     this.historyTimeToLive = this.version.historyTimeToLive
-    if (this.isVersionSelected) {
-      ProcessService.findDeployment(this.version.deploymentId).then(deployment => {
-        this.selectedDeployment = deployment
-      })
-    }
   },
   methods: {
     formatDate,

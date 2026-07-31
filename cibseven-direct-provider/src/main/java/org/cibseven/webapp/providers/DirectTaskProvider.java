@@ -62,6 +62,7 @@ import org.cibseven.bpm.engine.rest.dto.task.CompleteTaskDto;
 import org.cibseven.bpm.engine.rest.dto.task.FormDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskBpmnErrorDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskCountByCandidateGroupResultDto;
+import org.cibseven.bpm.engine.rest.dto.task.TaskEscalationDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskQueryDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskWithAttachmentAndCommentDto;
@@ -501,6 +502,17 @@ private List<VariableInstanceDto> queryVariableInstances(VariableInstanceQueryDt
 	}
 
 	@Override
+	public void handleBpmnEscalation(String taskId, Map<String, Object> data, CIBUser user) throws SystemException {
+		TaskEscalationDto dto = directProviderUtil.getObjectMapper(user).convertValue(data, TaskEscalationDto.class);
+		try {
+			directProviderUtil.getProcessEngine(user).getTaskService().handleEscalation(taskId, dto.getEscalationCode(),
+					VariableValueDto.toMap(dto.getVariables(), directProviderUtil.getProcessEngine(user), directProviderUtil.getObjectMapper(user)));
+		} catch (NotFoundException e) {
+			throw new SystemException(e.getMessage(), e);
+		}
+	}
+
+	@Override
 	public Collection<TaskHistory> findTasksByTaskIdHistory(String taskId, CIBUser user) {
 		List<TaskHistory> taskHistoryList = new ArrayList<>();
 		List<HistoricTaskInstance> results = directProviderUtil.getProcessEngine(user).getHistoryService().createHistoricTaskInstanceQuery().taskId(taskId).unlimitedList();
@@ -537,6 +549,24 @@ private List<VariableInstanceDto> queryVariableInstances(VariableInstanceQueryDt
 
 		long count = query.count();
 		return (int) count;
+	}
+
+	@Override
+	public Collection<TaskHistory> findHistoryTasks(Map<String, Object> filters,
+			Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) {
+		HistoricTaskInstanceQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(filters, HistoricTaskInstanceQueryDto.class);
+		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
+		HistoricTaskInstanceQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
+
+		List<HistoricTaskInstance> results = (firstResult.isPresent() || maxResults.isPresent())
+				? query.listPage(firstResult.orElse(0), maxResults.orElse(Integer.MAX_VALUE))
+				: query.unlimitedList();
+
+		List<TaskHistory> taskHistoryList = new ArrayList<>();
+		for (HistoricTaskInstance result : results) {
+			taskHistoryList.add(directProviderUtil.convertValue(HistoricTaskInstanceDto.fromHistoricTaskInstance(result), TaskHistory.class, user));
+		}
+		return taskHistoryList;
 	}
 
 	@Override

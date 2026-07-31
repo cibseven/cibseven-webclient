@@ -133,7 +133,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 			return Collections.emptyList();
 		}
 
-		mergeVariablesValues(
+		mergeVariablesValuesRuntime(
 			variablesDeserialized,
 			variablesSerialized,
 			deserializeValues);
@@ -189,17 +189,17 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		}
 
 		// Get list of variables and merge them
-		final ArrayList<Variable> variablesDeserializedTyped = new ArrayList<>();
+		final ArrayList<VariableHistory> variablesDeserializedTyped = new ArrayList<>();
 		if (variablesDeserialized.size() > 0) {
 			variablesDeserializedTyped.addAll(variablesDeserialized);
 		}
 
-		final ArrayList<Variable> variablesSerializedTyped = new ArrayList<>();
+		final ArrayList<VariableHistory> variablesSerializedTyped = new ArrayList<>();
 		if (variablesSerialized.size() > 0) {
 			variablesSerializedTyped.addAll(variablesSerialized);
 		}
 
-		mergeVariablesValues(
+		mergeVariablesValuesHistory(
 			variablesDeserializedTyped,
 			variablesSerializedTyped,
 			deserializeValues);

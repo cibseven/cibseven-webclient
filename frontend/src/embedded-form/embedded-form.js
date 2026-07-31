@@ -294,7 +294,7 @@ function handleDateInputClick(e) {
     }
 }
 
-function loadEmbeddedForm(
+export function loadEmbeddedForm(
     isStartForm,
     isGeneratedForm,
     referenceId,
@@ -329,6 +329,9 @@ function loadEmbeddedForm(
         headers['X-Process-Engine'] = engineName;
     }
     
+    // bpm-sdk binds one baseUrl per client and shares resource objects across clients, so a
+    // single client is used, pointed at the middleware. Every resource the sdk calls at runtime
+    // (group, user, history/task, form loading, submit-form) is served by the middleware.
     const client = new CamSDK.Client({
         mock: false,
         apiUri: apiUri,
@@ -391,9 +394,9 @@ function loadEmbeddedForm(
                 try {
                     const resource = await new Promise((resolveForm, rejectForm) => {
                         client.http.get('task/form-proxy', {
-                            data: { 
+                            data: {
                                 referenceId: referenceId,
-                                isStartForm: isStartForm 
+                                isStartForm: isStartForm
                             },
                             headers: {
                                 ...client.http.config.headers,

@@ -524,10 +524,19 @@ public class TaskService extends BaseService implements InitializingBean {
 	  }
 	  
 	  @RequestMapping(value = "/task/{taskId}/bpmnError", method = RequestMethod.POST)
-	  public ResponseEntity<Void> handleBpmnError(@PathVariable String taskId, @RequestBody Map<String, Object> data, 
+	  public ResponseEntity<Void> handleBpmnError(@PathVariable String taskId, @RequestBody Map<String, Object> data,
 	      @RequestParam Optional<String> locale, CIBUser user) throws Exception {
 		checkPermission(user, SevenResourceType.TASK, PermissionConstants.UPDATE_ALL);
 	    bpmProvider.handleBpmnError(taskId, data, user);
+      // return 204 No Content, no body
+      return ResponseEntity.noContent().build();
+	  }
+
+	  @RequestMapping(value = "/task/{taskId}/bpmnEscalation", method = RequestMethod.POST)
+	  public ResponseEntity<Void> handleBpmnEscalation(@PathVariable String taskId, @RequestBody Map<String, Object> data,
+	      @RequestParam Optional<String> locale, CIBUser user) throws Exception {
+		checkPermission(user, SevenResourceType.TASK, PermissionConstants.UPDATE_ALL);
+	    bpmProvider.handleBpmnEscalation(taskId, data, user);
       // return 204 No Content, no body
       return ResponseEntity.noContent().build();
 	  }

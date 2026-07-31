@@ -110,7 +110,7 @@ export function handleAxiosError(router, root, error) {
       const exceptions = ['NoObjectFoundException', 'InvalidAttributeValueException', 'SubmitDeniedException',
         'UnsupportedTypeException', 'ExpressionEvaluationException', 'ExistingUserRequestException',
         'ExistingGroupRequestException', 'AccessDeniedException', 'SystemException', 'InvalidUserIdException', 'InvalidValueHistoryTimeToLive',
-        'VariableModificationException', 'WrongDeploymenIdException', 'NoRessourcesFoundException', 'DmnTransformationException']
+        'VariableModificationException', 'WrongDeploymenIdException', 'NoRessourcesFoundException', 'DmnTransformationException', 'InvalidGroupIdException']
       if (!isDeployedForm && res.data.type && exceptions.includes(res.data.type))
         root.$refs.error.show(res.data)
       //root.$refs.report.show(res.data)

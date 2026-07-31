@@ -48,9 +48,12 @@
 		     ============================================================================ -->
 		<version.spring.boot4>4.0.7</version.spring.boot4>
 		<version.openapi-starter-webmvc-ui4>3.0.2</version.openapi-starter-webmvc-ui4>
-		<!-- SB4 no longer bundles Jackson 2, but the shared core compiles against
-		     com.fasterxml.jackson.* (Jackson 2); the SB4 module pulls it back in explicitly. -->
-		<version.jackson2>2.21.4</version.jackson2>
+		<!-- SB4's own BOM still manages Jackson 2 (it imports com.fasterxml.jackson:jackson-bom
+		     and ships spring-boot-jackson2), but its starters default to Jackson 3 (tools.jackson.*)
+		     for the wire layer and don't pull Jackson 2 in transitively. The shared core compiles
+		     against com.fasterxml.jackson.* (Jackson 2) directly, so the SB4 module overrides SB4's
+		     own Jackson 2 BOM version explicitly to this patched release. -->
+		<version.jackson2>2.21.5</version.jackson2>
 
 		<!-- ============================================================================
 		     CVE overrides. This project imports spring-boot-dependencies as a BOM (not as the
@@ -332,7 +335,20 @@ You may obtain a copy of the License at
 
 	<dependencyManagement>
 		<dependencies>
-		
+
+			<!-- Import the Jackson 2 BOM before spring-boot-dependencies so it wins for every
+			     com.fasterxml.jackson.* artifact pulled in transitively by the SB3 modules
+			     (cibseven-webclient-web, -core, cibseven-direct-provider) via spring-boot-starter-web,
+			     jjwt-jackson and the cibseven-engine REST client — otherwise those would stay on
+			     whatever Jackson 2 version spring-boot-dependencies bundles. -->
+			<dependency>
+				<groupId>com.fasterxml.jackson</groupId>
+				<artifactId>jackson-bom</artifactId>
+				<version>${version.jackson2}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-dependencies</artifactId>
@@ -340,7 +356,7 @@ You may obtain a copy of the License at
 				<type>pom</type>
 				<version>${version.spring.boot}</version>
 			</dependency>
-		
+
 			<!-- Override log4j versions to fix security vulnerabilities -->
 			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>

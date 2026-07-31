@@ -312,6 +312,12 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	}
 
 	@Override
+	public void handleBpmnEscalation(String taskId, Map<String, Object> data, CIBUser user) throws SystemException {
+		String url = getEngineRestUrl(user) + "/task/" + taskId + "/bpmnEscalation";
+		doPost(url, data, null, user);
+	}
+
+	@Override
 	public Collection<TaskHistory> findTasksByTaskIdHistory(String taskId, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/history/task?taskId=" + taskId;
 		return Arrays.asList(((ResponseEntity<TaskHistory[]>) doGet(url, TaskHistory[].class, user, false)).getBody());
@@ -337,6 +343,16 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 			throw new NullPointerException();
 		}
 		return body.get("count").asInt();
+	}
+
+	@Override
+	public Collection<TaskHistory> findHistoryTasks(Map<String, Object> filters,
+			Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) {
+		Map<String, Object> pagination = new HashMap<>();
+		firstResult.ifPresent(value -> pagination.put("firstResult", value));
+		maxResults.ifPresent(value -> pagination.put("maxResults", value));
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/history/task", pagination);
+		return Arrays.asList(((ResponseEntity<TaskHistory[]>) doPost(url, filters, TaskHistory[].class, user)).getBody());
 	}
 
 	@Override
