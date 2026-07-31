@@ -644,7 +644,7 @@
 		"groups": {
 			"title": "Gruppen",
 			"tooltip": "Gruppenverwaltung",
-			"id": "Gruppe-ID",
+			"id": "Gruppen-ID",
 			"name": "Name",
 			"type": "Typ",
 			"add": "Gruppe hinzufügen",
@@ -1084,6 +1084,7 @@
 		"invalidEmail": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
 		"InvalidValueHistoryTimeToLive": "Nullwerte für die Lebensdauer des Verlaufs sind nicht erlaubt.",
 		"DmnTransformationException": "Die Ressource konnte nicht aktualisiert werden. DMN-Ressource kann nicht transformiert werden.",
+		"InvalidGroupIdException": "Die Gruppen-ID ist ungültig. Sie darf nur alphanumerische Zeichen (a-z, A-Z, 0-9) enthalten oder camunda-admin sein. Bitte korrigieren Sie Ihre Eingabe.",
 		"unknown": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
 	},
 	"searches": {
