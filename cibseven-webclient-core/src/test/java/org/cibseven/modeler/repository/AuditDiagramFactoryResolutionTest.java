@@ -21,6 +21,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.cibseven.modeler.config.ModelerJpa;
 import org.cibseven.modeler.model.ProcessDiagramEntity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.BeanFactoryAnnotationUtils;
@@ -44,85 +45,84 @@ import jakarta.persistence.EntityManagerFactory;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * The modeler resolves its entity manager factory and transaction manager by bean name, so it has
- * to work both in a standalone deployment, where Spring Boot auto-configures a single one of each,
- * and in an application that embeds the webclient next to its own JPA setup, where there are two of
- * each and neither is marked {@code @Primary}.
+ * The modeler runs on its own persistence unit, named after {@link ModelerJpa}, and must never
+ * attach itself to the host application's beans — in an embedding application those are the ones
+ * called {@code entityManagerFactory} and {@code transactionManager}, and they may well point at a
+ * different database (CIB7-1776).
  *
  * <p>The transaction manager assertions go through {@code BeanFactoryAnnotationUtils.qualifiedBeanOfType},
  * which is the lookup {@code TransactionAspectSupport.determineQualifiedTransactionManager} performs
- * for a {@code @Transactional("transactionManager")} qualifier.
+ * for a {@code @Transactional(ModelerJpa.TRANSACTION_MANAGER)} qualifier.</p>
  */
 class AuditDiagramFactoryResolutionTest {
 
-	private final ApplicationContextRunner twoUnits =
-			new ApplicationContextRunner().withUserConfiguration(TwoPersistenceUnitsConfig.class);
+	/** An embedding application: it owns the default names, the modeler owns its own. */
+	private final ApplicationContextRunner embedded =
+			new ApplicationContextRunner().withUserConfiguration(HostAndModelerUnitsConfig.class);
 
-	private final ApplicationContextRunner singleUnit =
-			new ApplicationContextRunner().withUserConfiguration(SinglePersistenceUnitConfig.class);
-
-	// --- Embedded in a host application: two factories, two transaction managers, no primary ---
+	/** A host that named its beans differently, so no bean is called {@code entityManagerFactory}. */
+	private final ApplicationContextRunner noDefaultNames =
+			new ApplicationContextRunner().withUserConfiguration(ModelerUnitOnlyConfig.class);
 
 	@Test
-	void startsWithTwoFactoriesAndNoPrimary() {
-		twoUnits.run(context -> {
+	void auditDiagramResolvesTheModelersFactoryNotTheHosts() {
+		embedded.run(context -> {
 			assertThat(context).hasNotFailed();
-			assertThat(context.getBeanNamesForType(EntityManagerFactory.class))
-					.containsExactlyInAnyOrder("entityManagerFactory", "appEntityManagerFactory");
-			assertThat(context.getBeanNamesForType(PlatformTransactionManager.class))
-					.containsExactlyInAnyOrder("transactionManager", "appTransactionManager");
-			assertThat(context).hasSingleBean(AuditDiagram.class);
+			EntityManager entityManager = entityManagerOf(context.getBean(AuditDiagram.class));
+
+			assertThat(entityManager.getEntityManagerFactory())
+					.isSameAs(context.getBean(ModelerJpa.ENTITY_MANAGER_FACTORY, EntityManagerFactory.class))
+					.isNotSameAs(context.getBean("entityManagerFactory", EntityManagerFactory.class));
 		});
 	}
 
 	@Test
-	void auditDiagramResolvesTheFactoryNamedEntityManagerFactory() {
-		twoUnits.run(context -> {
-			EntityManager entityManager = entityManagerOf(context.getBean(AuditDiagram.class));
-
-			assertThat(entityManager.getEntityManagerFactory())
-					.isSameAs(context.getBean("entityManagerFactory", EntityManagerFactory.class));
-
-			// The modeler entities are reachable through that factory and not through the host's,
-			// so the assertion above cannot hold by accident.
-			assertThat(entityManager.getMetamodel().getEntities())
+	void modelerEntitiesLiveInTheModelersUnitOnly() {
+		embedded.run(context -> {
+			assertThat(context.getBean(ModelerJpa.ENTITY_MANAGER_FACTORY, EntityManagerFactory.class)
+					.getMetamodel().getEntities())
 					.anyMatch(entity -> ProcessDiagramEntity.class.equals(entity.getJavaType()));
-			assertThat(context.getBean("appEntityManagerFactory", EntityManagerFactory.class)
+			assertThat(context.getBean("entityManagerFactory", EntityManagerFactory.class)
 					.getMetamodel().getEntities())
 					.noneMatch(entity -> ProcessDiagramEntity.class.equals(entity.getJavaType()));
 		});
 	}
 
 	@Test
-	void transactionalQualifierResolvesToTheModelerTransactionManager() {
-		twoUnits.run(context -> {
-			TransactionManager resolved = BeanFactoryAnnotationUtils
-					.qualifiedBeanOfType(context.getBeanFactory(), TransactionManager.class, "transactionManager");
+	void transactionalQualifierResolvesToTheModelersTransactionManager() {
+		embedded.run(context -> {
+			TransactionManager resolved = BeanFactoryAnnotationUtils.qualifiedBeanOfType(
+					context.getBeanFactory(), TransactionManager.class, ModelerJpa.TRANSACTION_MANAGER);
 
-			assertThat(resolved).isSameAs(context.getBean("transactionManager", PlatformTransactionManager.class));
-			// It transacts against the modeler datasource, not the host's.
 			assertThat(((JpaTransactionManager) resolved).getEntityManagerFactory())
-					.isSameAs(context.getBean("entityManagerFactory", EntityManagerFactory.class))
-					.isNotSameAs(context.getBean("appEntityManagerFactory", EntityManagerFactory.class));
+					.isSameAs(context.getBean(ModelerJpa.ENTITY_MANAGER_FACTORY, EntityManagerFactory.class))
+					.isNotSameAs(context.getBean("entityManagerFactory", EntityManagerFactory.class));
 		});
 	}
 
-	// --- Standalone deployment: a single factory and transaction manager, as Boot configures them ---
-
+	/** The host's own beans keep working: the modeler claims nothing of theirs. */
 	@Test
-	void standaloneDeploymentResolvesTheSingleFactoryAndTransactionManager() {
-		singleUnit.run(context -> {
-			assertThat(context).hasNotFailed();
+	void hostBeansAreUntouched() {
+		embedded.run(context -> {
 			assertThat(context.getBeanNamesForType(EntityManagerFactory.class))
-					.containsExactly("entityManagerFactory");
+					.containsExactlyInAnyOrder("entityManagerFactory", ModelerJpa.ENTITY_MANAGER_FACTORY);
+			assertThat(context.getBeanNamesForType(PlatformTransactionManager.class))
+					.containsExactlyInAnyOrder("transactionManager", ModelerJpa.TRANSACTION_MANAGER);
+		});
+	}
 
-			EntityManagerFactory factory = context.getBean("entityManagerFactory", EntityManagerFactory.class);
+	/** A host with no bean called {@code entityManagerFactory} at all must still work. */
+	@Test
+	void worksWithoutAnyDefaultlyNamedBeans() {
+		noDefaultNames.run(context -> {
+			assertThat(context).hasNotFailed();
 			assertThat(entityManagerOf(context.getBean(AuditDiagram.class)).getEntityManagerFactory())
-					.isSameAs(factory);
+					.isSameAs(context.getBean(ModelerJpa.ENTITY_MANAGER_FACTORY, EntityManagerFactory.class));
 
-			TransactionManager resolved = BeanFactoryAnnotationUtils
-					.qualifiedBeanOfType(context.getBeanFactory(), TransactionManager.class, "transactionManager");
-			assertThat(((JpaTransactionManager) resolved).getEntityManagerFactory()).isSameAs(factory);
+			TransactionManager resolved = BeanFactoryAnnotationUtils.qualifiedBeanOfType(
+					context.getBeanFactory(), TransactionManager.class, ModelerJpa.TRANSACTION_MANAGER);
+			assertThat(((JpaTransactionManager) resolved).getEntityManagerFactory())
+					.isSameAs(context.getBean(ModelerJpa.ENTITY_MANAGER_FACTORY, EntityManagerFactory.class));
 		});
 	}
 
@@ -132,7 +132,7 @@ class AuditDiagramFactoryResolutionTest {
 
 	@Configuration(proxyBeanMethods = false)
 	@Import(AuditDiagram.class)
-	static class TwoPersistenceUnitsConfig {
+	static class HostAndModelerUnitsConfig {
 
 		@Bean
 		DataSource modelerDataSource() {
@@ -144,17 +144,23 @@ class AuditDiagramFactoryResolutionTest {
 			return embeddedDatabase();
 		}
 
-		@Bean
-		LocalContainerEntityManagerFactoryBean entityManagerFactory(
+		@Bean(ModelerJpa.ENTITY_MANAGER_FACTORY)
+		LocalContainerEntityManagerFactoryBean modelerEntityManagerFactory(
 				@Qualifier("modelerDataSource") DataSource dataSource) {
-			return factoryFor(dataSource, "org.cibseven.modeler.model");
+			return factoryFor(dataSource, ModelerJpa.ENTITY_PACKAGE);
 		}
 
-		/** Stands in for the host application's own factory; deliberately has no modeler entities. */
+		/** Stands in for the host application's factory; deliberately has no modeler entities. */
 		@Bean
-		LocalContainerEntityManagerFactoryBean appEntityManagerFactory(
+		LocalContainerEntityManagerFactoryBean entityManagerFactory(
 				@Qualifier("appDataSource") DataSource dataSource) {
-			return factoryFor(dataSource, "org.cibseven.modeler.repository");
+			return factoryFor(dataSource, ModelerJpa.REPOSITORY_PACKAGE);
+		}
+
+		@Bean(ModelerJpa.TRANSACTION_MANAGER)
+		PlatformTransactionManager modelerTransactionManager(
+				@Qualifier(ModelerJpa.ENTITY_MANAGER_FACTORY) EntityManagerFactory entityManagerFactory) {
+			return new JpaTransactionManager(entityManagerFactory);
 		}
 
 		@Bean
@@ -162,30 +168,25 @@ class AuditDiagramFactoryResolutionTest {
 				@Qualifier("entityManagerFactory") EntityManagerFactory entityManagerFactory) {
 			return new JpaTransactionManager(entityManagerFactory);
 		}
-
-		@Bean
-		PlatformTransactionManager appTransactionManager(
-				@Qualifier("appEntityManagerFactory") EntityManagerFactory entityManagerFactory) {
-			return new JpaTransactionManager(entityManagerFactory);
-		}
 	}
 
 	@Configuration(proxyBeanMethods = false)
 	@Import(AuditDiagram.class)
-	static class SinglePersistenceUnitConfig {
+	static class ModelerUnitOnlyConfig {
 
 		@Bean
 		DataSource dataSource() {
 			return embeddedDatabase();
 		}
 
-		@Bean
-		LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
-			return factoryFor(dataSource, "org.cibseven.modeler.model");
+		@Bean(ModelerJpa.ENTITY_MANAGER_FACTORY)
+		LocalContainerEntityManagerFactoryBean modelerEntityManagerFactory(DataSource dataSource) {
+			return factoryFor(dataSource, ModelerJpa.ENTITY_PACKAGE);
 		}
 
-		@Bean
-		PlatformTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
+		@Bean(ModelerJpa.TRANSACTION_MANAGER)
+		PlatformTransactionManager modelerTransactionManager(
+				@Qualifier(ModelerJpa.ENTITY_MANAGER_FACTORY) EntityManagerFactory entityManagerFactory) {
 			return new JpaTransactionManager(entityManagerFactory);
 		}
 	}

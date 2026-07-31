@@ -16,6 +16,7 @@
  */
 package org.cibseven.modeler.repository;
 
+import org.cibseven.modeler.config.ModelerJpa;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
@@ -38,8 +39,8 @@ public class AuditDiagram {
 
 	private final int historicMaxResults;
 
-	// Resolved by name so the factory need not be @Primary.
-	public AuditDiagram(@Qualifier("entityManagerFactory") EntityManagerFactory entityManagerFactory,
+	// The modeler's own factory, never the host application's: see ModelerJpa.
+	public AuditDiagram(@Qualifier(ModelerJpa.ENTITY_MANAGER_FACTORY) EntityManagerFactory entityManagerFactory,
 			@Value("${cibseven.modeler.historicMaxResults:30}") int historicMaxResults) {
 		this.entityManager = SharedEntityManagerCreator.createSharedEntityManager(entityManagerFactory);
 		this.historicMaxResults = historicMaxResults;
