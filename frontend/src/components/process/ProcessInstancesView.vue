@@ -232,7 +232,7 @@ export default {
       handler: async function(newId, oldId) {
         if (newId && newId !== oldId) {
           this.clearHistoricActivityStatistics()
-          if ((this.$route.query.tab || this.defaultTab) !== 'instances') {
+          if (!this.isInstancesView) {
             this.syncStatisticsWithInstances(this.computedFilter)
           }
           await this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
