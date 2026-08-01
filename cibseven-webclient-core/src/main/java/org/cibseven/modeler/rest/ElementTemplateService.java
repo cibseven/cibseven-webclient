@@ -62,11 +62,10 @@ import java.util.stream.Collectors;
  * import/export capabilities, and statistics reporting.
  * </p>
  * <p>
- * All endpoints require authentication when enabled via the configuration property
- * {@code cibseven.webclient.modeler.authentication.enabled}, and the application ACCESS
- * permission for the modeler on top of it — except for the plain listing, which the cockpit
- * diagram viewer uses to render element template icons. The service integrates with the
- * ElementTemplateProvider for data persistence operations.
+ * All endpoints require an authenticated caller holding the application ACCESS permission for the
+ * modeler — except for the plain listing, which the cockpit diagram viewer uses to render element
+ * template icons. The service integrates with the ElementTemplateProvider for data persistence
+ * operations.
  * </p>
  * 
  * @author CIB Seven Modeler Team
@@ -228,7 +227,7 @@ public class ElementTemplateService extends ModelerBaseService {
     	entity.setDescription(element.getDescription());
     	entity.setContent(element.getContent());
     	entity.setOrigin(element.getOrigin() != null ? element.getOrigin() : ElementTemplateOrigin.MANUAL);
-    	entity.setCreatedBy(user != null ? user.getUserID() : "anonymous");
+    	entity.setCreatedBy(user.getUserID());
     	
     	ElementTemplate savedTemplate = templateProvider.addTemplate(entity);
     	log.info("Successfully created element template: {} with ID: {}", savedTemplate.getName(), savedTemplate.getId());
@@ -283,7 +282,7 @@ public class ElementTemplateService extends ModelerBaseService {
     	final ElementTemplate template = ensureIdExists(id);
     	
     	// Set updated_by field if any modifications will be made
-    	template.setUpdatedBy(user != null ? user.getUserID() : "anonymous");
+    	template.setUpdatedBy(user.getUserID());
     	
     	final Optional<ElementTemplate> updatedTemplate = templateProvider.partialUpdate(template, properties);
 
@@ -349,7 +348,7 @@ public class ElementTemplateService extends ModelerBaseService {
     	existingTemplate.setTemplateId(element.getTemplateId());
     	existingTemplate.setDescription(element.getDescription());
     	existingTemplate.setContent(element.getContent());
-    	existingTemplate.setUpdatedBy(user != null ? user.getUserID() : "anonymous");
+    	existingTemplate.setUpdatedBy(user.getUserID());
     	// Note: origin and createdBy are not updated as they are read-only
     	
     	ElementTemplate updatedTemplate = templateProvider.updateTemplate(id, existingTemplate);
@@ -441,7 +440,7 @@ public class ElementTemplateService extends ModelerBaseService {
         duplicatedTemplate.setDescription(originalTemplate.getDescription());
         duplicatedTemplate.setContent(originalTemplate.getContent());
         duplicatedTemplate.setOrigin(originalTemplate.getOrigin());
-        duplicatedTemplate.setCreatedBy(user != null ? user.getUserID() : "anonymous");
+        duplicatedTemplate.setCreatedBy(user.getUserID());
         
         ElementTemplate savedTemplate = templateProvider.addTemplate(duplicatedTemplate);
         log.info("Successfully duplicated template: {} -> {} (ID: {})", originalTemplate.getName(), savedTemplate.getName(), savedTemplate.getId());
@@ -564,7 +563,7 @@ public class ElementTemplateService extends ModelerBaseService {
                 Optional<ElementTemplate> template = templateProvider.findById(id);
                 if (template.isPresent()) {
                     // Set updated_by field for audit trail
-                    template.get().setUpdatedBy(user != null ? user.getUserID() : "anonymous");
+                    template.get().setUpdatedBy(user.getUserID());
                     Map<String, Object> updateProps = Map.of("active", active);
                     templateProvider.partialUpdate(template.get(), updateProps);
                     updatedIds.add(id);
@@ -819,8 +818,8 @@ public class ElementTemplateService extends ModelerBaseService {
                 template.setDescription(request.getDescription());
                 template.setContent(request.getContent());
                 template.setOrigin(request.getOrigin() != null ? request.getOrigin() : ElementTemplateOrigin.MANUAL);
-                template.setCreatedBy(user != null ? user.getUserID() : "anonymous");
-                template.setUpdatedBy(user != null ? user.getUserID() : "anonymous");
+                template.setCreatedBy(user.getUserID());
+                template.setUpdatedBy(user.getUserID());
                 
                 ElementTemplate savedTemplate = templateProvider.addTemplate(template);
                 importedTemplates.add(savedTemplate);

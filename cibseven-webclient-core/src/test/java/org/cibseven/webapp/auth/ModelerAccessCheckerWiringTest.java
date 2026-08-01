@@ -16,10 +16,10 @@
  */
 package org.cibseven.webapp.auth;
 
-import org.cibseven.modeler.rest.ModelerBaseService;
+import java.util.Map;
+
 import org.cibseven.webapp.providers.BpmProvider;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -28,9 +28,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.env.MapPropertySource;
-import org.springframework.stereotype.Component;
-
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -42,9 +39,6 @@ import static org.mockito.Mockito.mock;
  * It lives in {@code org.cibseven.webapp.auth} because that package is scanned unconditionally by
  * {@code SevenWebclientContext} in every packaging — the modeler packages are scanned only when
  * the modeler is enabled, and the chat can be enabled without it.
- *
- * <p>Also pins the property expression behind modeler authentication, whose nested default keeps
- * the enterprise property name {@code cibsevenmodeler.authentication.enabled} working.</p>
  */
 class ModelerAccessCheckerWiringTest {
 
@@ -57,29 +51,6 @@ class ModelerAccessCheckerWiringTest {
 
 		try (AnnotationConfigApplicationContext context = context(Map.of())) {
 			assertNotNull(context.getBean(ModelerAccessChecker.class));
-		}
-	}
-
-	@Test
-	void modelerAuthenticationIsEnabledByDefault() {
-		assertEquals(true, authenticationEnabled(Map.of()));
-	}
-
-	@Test
-	void modelerAuthenticationHonoursTheEnterprisePropertyName() {
-		assertEquals(false, authenticationEnabled(Map.of("cibsevenmodeler.authentication.enabled", "false")));
-	}
-
-	@Test
-	void communityPropertyWinsOverTheEnterpriseOne() {
-		assertEquals(true, authenticationEnabled(Map.of(
-			"cibseven.webclient.modeler.authentication.enabled", "true",
-			"cibsevenmodeler.authentication.enabled", "false")));
-	}
-
-	private boolean authenticationEnabled(Map<String, Object> properties) {
-		try (AnnotationConfigApplicationContext context = context(properties)) {
-			return context.getBean(AuthenticationEnabledProbe.class).authenticationEnabled;
 		}
 	}
 
@@ -106,18 +77,5 @@ class ModelerAccessCheckerWiringTest {
 		BpmProvider bpmProvider() {
 			return mock(BpmProvider.class);
 		}
-
-		@Bean
-		AuthenticationEnabledProbe authenticationEnabledProbe() {
-			return new AuthenticationEnabledProbe();
-		}
-	}
-
-	/** Carries the very expression the modeler controllers use, so the test cannot drift from it. */
-	@Component
-	static class AuthenticationEnabledProbe {
-
-		@Value(ModelerBaseService.AUTHENTICATION_ENABLED_PROPERTY)
-		boolean authenticationEnabled;
 	}
 }

@@ -19,9 +19,9 @@ package org.cibseven.modeler.rest;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.ModelerAccessChecker;
 import org.cibseven.webapp.exception.AccessDeniedException;
+import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.rest.BaseService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -31,35 +31,19 @@ import jakarta.servlet.http.HttpServletRequest;
  */
 public abstract class ModelerBaseService extends BaseService {
 
-	/**
-	 * Whether callers have to be authenticated at all. With authentication disabled the modeler
-	 * runs anonymously (local and demo setups): there is no user, so there is nothing to authorize
-	 * either and both checks are skipped.
-	 *
-	 * <p>The enterprise edition configured this under {@code cibsevenmodeler.authentication.enabled};
-	 * that name is still honoured as a fallback.</p>
-	 */
-	public static final String AUTHENTICATION_ENABLED_PROPERTY =
-		"${cibseven.webclient.modeler.authentication.enabled:${cibsevenmodeler.authentication.enabled:true}}";
-
-	@Value(AUTHENTICATION_ENABLED_PROPERTY)
-	protected boolean authenticationEnabled;
-
 	@Autowired
 	protected ModelerAccessChecker modelerAccessChecker;
 
 	/**
 	 * Authenticates the caller and verifies that it may use the modeler.
 	 *
-	 * @return the calling user, or {@code null} when modeler authentication is disabled
+	 * @return the calling user, never {@code null}
 	 * @throws AccessDeniedException if the user lacks the application ACCESS permission for the
 	 *         modeler, i.e. the permission that also decides whether the modeler UI is shown
 	 */
 	protected CIBUser checkModelerAccess(HttpServletRequest rq) {
 		CIBUser user = checkModelerAuthentication(rq);
-		if (user != null) {
-			checkModelerAccess(user);
-		}
+		checkModelerAccess(user);
 		return user;
 	}
 
@@ -77,9 +61,16 @@ public abstract class ModelerBaseService extends BaseService {
 	 * that are also consumed outside the modeler; everything else has to use
 	 * {@link #checkModelerAccess(HttpServletRequest)}.
 	 *
-	 * @return the calling user, or {@code null} when modeler authentication is disabled
+	 * @return the calling user, never {@code null}
+	 * @throws AuthenticationException if the caller could not be authenticated
 	 */
 	protected CIBUser checkModelerAuthentication(HttpServletRequest rq) {
-		return authenticationEnabled ? checkAuthorization(rq, true) : null;
+		CIBUser user = checkAuthorization(rq, true);
+		if (user == null) {
+			// The providers throw on bad credentials, but the contract does not promise a user:
+			// fail with 401 rather than dereferencing null further down.
+			throw new AuthenticationException("Authentication required");
+		}
+		return user;
 	}
 }

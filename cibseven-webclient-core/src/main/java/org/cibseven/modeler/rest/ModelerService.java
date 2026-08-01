@@ -178,13 +178,13 @@ public class ModelerService extends ModelerBaseService {
 				if(artifactExists != null && overwrite) {
 					entity.setId(artifactExists.getId());
 					artifactExists.setDiagram(fileContent);
-					artifactExists.setUpdatedBy(userIdFrom(user));
+					artifactExists.setUpdatedBy(user.getUserID());
 					return dbProcessDiagramProvider.updateDiagram(artifactExists);
 				}
 				
 	        } catch (IOException e) {}
 		}
-		entity.setUpdatedBy(userIdFrom(user));
+		entity.setUpdatedBy(user.getUserID());
 		return dbProcessDiagramProvider.createDiagram(entity);			
 	}
 
@@ -247,7 +247,7 @@ public class ModelerService extends ModelerBaseService {
 		} catch (IOException e) {
 			entity.setDiagram(null);
 		}
-		entity.setUpdatedBy(userIdFrom(user));
+		entity.setUpdatedBy(user.getUserID());
 		return dbProcessDiagramProvider.createDiagram(entity);
 	}
 
@@ -259,14 +259,14 @@ public class ModelerService extends ModelerBaseService {
 		
 		try {
 			UserSessionEntity sessionEntity = new UserSessionEntity();
-			sessionEntity.setUserId(user != null ? user.getUserID() : "anonymous");
+			sessionEntity.setUserId(user.getUserID());
 
 			UserSessionEntity newSession = userSessionProvider.createSession(sessionEntity);
 			
 			 String type = data.getFirst("type"); 
 		        if ("form".equalsIgnoreCase(type)) {
 		            FormUsageEntity newFormUsageEntity = new FormUsageEntity();
-		            newFormUsageEntity.setUserId(user != null ? user.getUserID() : "anonymous");
+		            newFormUsageEntity.setUserId(user.getUserID());
 		            if (data.containsKey("id")) {
 		                String formId = data.get("id").get(0);
 		                FormEntity formEntity = formProvider.findById(formId)
@@ -277,7 +277,7 @@ public class ModelerService extends ModelerBaseService {
 		            return formUsageProvider.createFormUsage(newFormUsageEntity);
 		        } else {
 		            DiagramUsageEntity newDiagramUsageEntity = new DiagramUsageEntity();
-		            newDiagramUsageEntity.setUserId(user != null ? user.getUserID() : "anonymous");
+		            newDiagramUsageEntity.setUserId(user.getUserID());
 		            if (data.containsKey("id")) {
 		                String diagramId = data.get("id").get(0);
 		                ProcessDiagramEntity diagramEntity = dbProcessDiagramProvider.findById(diagramId)
@@ -323,12 +323,9 @@ public class ModelerService extends ModelerBaseService {
 		return ResponseEntity.ok().build();
 	}
 
-	/**
-	 * A modeler session (edit lock) may only be released by the user that owns it. When
-	 * authentication is disabled (user == null, e.g. local/dev) any caller may close it.
-	 */
+	/** A modeler session (edit lock) may only be released by the user that owns it. */
 	private boolean canReleaseSession(CIBUser user, String ownerUserId) {
-		return user == null || (ownerUserId != null && ownerUserId.equals(user.getUserID()));
+		return ownerUserId != null && ownerUserId.equals(user.getUserID());
 	}
 
 	@RequestMapping(value = "/process/session/check/{id}", method = RequestMethod.GET)
@@ -346,7 +343,7 @@ public class ModelerService extends ModelerBaseService {
 		response.put("userId", newDiagramUsageEntity.getUserId());
 		response.put("openedAt", newDiagramUsageEntity.getOpenedAt().toString());
 
-		if (user != null && user.getUserID().equals(newDiagramUsageEntity.getUserId())) {
+		if (user.getUserID().equals(newDiagramUsageEntity.getUserId())) {
 			// Only the owner receives the sessionId — it is the token used to release the lock.
 			response.put("sessionId", newDiagramUsageEntity.getSessionId());
 			response.put("message", "SAME_USER");
@@ -372,7 +369,7 @@ public class ModelerService extends ModelerBaseService {
 		response.put("userId", newFormUsageEntity.getUserId());
 		response.put("openedAt", newFormUsageEntity.getOpenedAt().toString());
 
-		if (user != null && user.getUserID().equals(newFormUsageEntity.getUserId())) {
+		if (user.getUserID().equals(newFormUsageEntity.getUserId())) {
 			// Only the owner receives the sessionId — it is the token used to release the lock.
 			response.put("sessionId", newFormUsageEntity.getSessionId());
 			response.put("message", "SAME_USER");
@@ -385,7 +382,7 @@ public class ModelerService extends ModelerBaseService {
 	@RequestMapping(value = "/process/save/object", method = RequestMethod.POST)
 	public ProcessDiagramEntity saveProject(@RequestBody ProcessDiagramEntity data, HttpServletRequest rq) {
 		CIBUser user = checkModelerAccess(rq);
-		String updatedBy = userIdFrom(user);
+		String updatedBy = user.getUserID();
 		Optional<ProcessDiagramEntity> entity = dbProcessDiagramProvider.findById(data.getId());
 		
 		if (entity.isEmpty()) {
@@ -427,11 +424,11 @@ public class ModelerService extends ModelerBaseService {
 		} catch (IOException e) {
 			entity.setDiagram(null);
 		}
-		entity.setUpdatedBy(userIdFrom(user));
+		entity.setUpdatedBy(user.getUserID());
 
 		ProcessDiagramEntity updatedDiagram = dbProcessDiagramProvider.updateDiagram(entity);
 		
-		if (data.containsKey("id") && updatedDiagram != null && user != null) { //renew session
+		if (data.containsKey("id") && updatedDiagram != null) { //renew session
 			DiagramUsageEntity diagramUsage = diagramUsageProvider.checkSessionUser(data.get("id").get(0).toString());
 			if (diagramUsage != null && diagramUsage.getUserId().equals(user.getUserID())) {
 				diagramUsageProvider.createDiagramUsage(diagramUsage);
@@ -516,7 +513,7 @@ public class ModelerService extends ModelerBaseService {
 	    } catch (IOException e) {
 	        entity.setFormSchema(null);
 	    }
-	    entity.setUpdatedBy(userIdFrom(user));
+	    entity.setUpdatedBy(user.getUserID());
 	    return formProvider.createForm(entity);
 	}
 	
@@ -540,11 +537,11 @@ public class ModelerService extends ModelerBaseService {
 	    } catch (IOException e) {
 	        entity.setFormSchema(null);
 	    }
-	    entity.setUpdatedBy(userIdFrom(user));
+	    entity.setUpdatedBy(user.getUserID());
 
 	    FormEntity updatedForm = formProvider.updateForm(entity);
 	    
-	    if (updatedForm != null && user != null) { //renew session
+	    if (updatedForm != null) { //renew session
 			FormUsageEntity formUsage = formUsageProvider.checkSessionUser(id);
 			if (formUsage != null && formUsage.getUserId().equals(user.getUserID())) {
 				formUsageProvider.createFormUsage(formUsage);
@@ -582,10 +579,6 @@ public class ModelerService extends ModelerBaseService {
 			return ResponseEntity.notFound().build();
 		}
 		return ResponseEntity.ok(form);
-	}
-
-	private static String userIdFrom(CIBUser user) {
-		return user != null ? user.getUserID() : null;
 	}
 
 	/**

@@ -38,6 +38,7 @@ import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.ModelerAccessChecker;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.AccessDeniedException;
+import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.rest.model.Authorization;
 import org.cibseven.webapp.rest.model.Authorizations;
@@ -99,7 +100,6 @@ class ModelerServiceAuthorizationTest {
 		ReflectionTestUtils.setField(modelerService, "formUsageProvider", mock(FormUsageProvider.class));
 		ReflectionTestUtils.setField(modelerService, "userSessionProvider", mock(UserSessionProvider.class));
 		ReflectionTestUtils.setField(modelerService, "unifiedDiagramProvider", mock(UnifiedDiagramProvider.class));
-		ReflectionTestUtils.setField(modelerService, "authenticationEnabled", true);
 		ReflectionTestUtils.setField(modelerService, "modelerAccessChecker", new ModelerAccessChecker(bpmProvider, true, false));
 
 		when(baseUserProvider.checkAuthorization(any(), anyBoolean())).thenReturn(USER);
@@ -147,6 +147,18 @@ class ModelerServiceAuthorizationTest {
 
 		assertThrows(AccessDeniedException.class, () -> modelerService.deleteForm("form-1", request));
 		verify(formProvider, never()).delete(any());
+	}
+
+	/**
+	 * Modeler endpoints always authenticate: there is no anonymous mode to fall back to, so an
+	 * unresolvable caller is a 401 rather than a null user reaching the persistence layer.
+	 */
+	@Test
+	void unauthenticatedCallersAreRejected() {
+		when(baseUserProvider.checkAuthorization(any(), anyBoolean())).thenReturn(null);
+
+		assertThrows(AuthenticationException.class, () -> modelerService.getDiagrams(request, 0, 10, null, null));
+		verify(bpmProvider, never()).getUserAuthorization(any(), any());
 	}
 
 	@Test
@@ -209,19 +221,6 @@ class ModelerServiceAuthorizationTest {
 		userAuthorizations(auth(1, "tasklist", "ACCESS"));
 
 		assertThrows(AccessDeniedException.class, () -> modelerService.getDiagrams(request, 0, 10, null, null));
-	}
-
-	/**
-	 * Anonymous mode: no user to authenticate, hence nothing to authorize.
-	 */
-	@Test
-	void skipsCheckWhenModelerAuthenticationIsDisabled() {
-		ReflectionTestUtils.setField(modelerService, "authenticationEnabled", false);
-
-		modelerService.getDiagrams(request, 0, 10, null, null);
-
-		verify(baseUserProvider, never()).checkAuthorization(any(), anyBoolean());
-		verify(bpmProvider, never()).getUserAuthorization(any(), any());
 	}
 
 	@Test

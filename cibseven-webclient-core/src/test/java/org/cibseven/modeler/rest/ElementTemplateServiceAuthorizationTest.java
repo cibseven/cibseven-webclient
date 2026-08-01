@@ -86,7 +86,6 @@ class ElementTemplateServiceAuthorizationTest {
 		ReflectionTestUtils.setField(elementTemplateService, "bpmProvider", bpmProvider);
 		ReflectionTestUtils.setField(elementTemplateService, "baseUserProvider", baseUserProvider);
 		ReflectionTestUtils.setField(elementTemplateService, "templateProvider", templateProvider);
-		ReflectionTestUtils.setField(elementTemplateService, "authenticationEnabled", true);
 		ReflectionTestUtils.setField(elementTemplateService, "modelerAccessChecker", new ModelerAccessChecker(bpmProvider, true, false));
 
 		when(baseUserProvider.checkAuthorization(any(), anyBoolean())).thenReturn(USER);
