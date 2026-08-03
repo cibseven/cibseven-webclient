@@ -185,6 +185,10 @@ cibseven:
 #        jackson:
 #          parser:
 #            max-size: 25000000
+#          # CIB7-1789: dates are serialized as ISO-8601 by default. Set to true only for
+#          # consumers that adapted to the previous epoch-millis behaviour.
+#          serialization:
+#            write-dates-as-timestamps: true
 
 springdoc:
   swagger-ui:
