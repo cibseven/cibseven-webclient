@@ -16,17 +16,13 @@
  */
 package org.cibseven.webapp.rest;
 
-import java.util.List;
 import java.util.Optional;
 
 import org.cibseven.webapp.auth.AuthorizationChecker;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.UnknownResourceTypeException;
 import org.cibseven.webapp.providers.BpmProvider;
-import org.cibseven.webapp.rest.model.Authorization;
 import org.cibseven.webapp.rest.model.AuthorizationCheckResult;
-import org.cibseven.webapp.rest.model.Authorizations;
-import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -39,9 +35,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * The middleware's own answer to "may I do this?", for the authenticated caller. The engine offers
- * the same operation but only for callers it authenticated itself, which a middleware talking to an
- * engine-rest without an authentication filter cannot rely on.
+ * The middleware's own answer to "may I do this?", for the authenticated caller. The decision is
+ * delegated to the engine, which can evaluate it without the caller needing READ on the
+ * authorization resource.
  */
 class AuthorizationCheckServiceTest {
 
@@ -58,13 +54,12 @@ class AuthorizationCheckServiceTest {
 		bpmProvider = mock(BpmProvider.class);
 		ReflectionTestUtils.setField(service, "bpmProvider", bpmProvider);
 		ReflectionTestUtils.setField(service, "authorizationChecker",
-			new AuthorizationChecker(bpmProvider, true, false));
-		engineAuthorization(true);
+			new AuthorizationChecker(bpmProvider));
 	}
 
 	@Test
 	void reportsTrueForAGrantedPermission() {
-		userAuthorizations(auth(1, "modeler", "ACCESS"));
+		engineAnswers(APPLICATION, "modeler", "ACCESS", true);
 
 		AuthorizationCheckResult result = check("ACCESS", APPLICATION, "modeler");
 
@@ -75,32 +70,26 @@ class AuthorizationCheckServiceTest {
 	}
 
 	@Test
-	void reportsFalseForAnotherResource() {
-		userAuthorizations(auth(1, "tasklist", "ACCESS"));
+	void reportsFalseWhenTheEngineDenies() {
+		engineAnswers(APPLICATION, "modeler", "ACCESS", false);
 
 		assertFalse(check("ACCESS", APPLICATION, "modeler").isAuthorized());
 	}
 
+	/**
+	 * With authorization disabled the engine answers true for everything, and we pass that on
+	 * rather than second-guessing it.
+	 */
 	@Test
-	void reportsFalseWhenRevoked() {
-		userAuthorizations(auth(1, "modeler", "ACCESS"), auth(2, "*", "ALL"));
-
-		assertFalse(check("ACCESS", APPLICATION, "modeler").isAuthorized());
-	}
-
-	/** Nothing is enforced without engine authorization, so the answer must not claim otherwise. */
-	@Test
-	void reportsTrueWhenEngineAuthorizationIsDisabled() {
-		engineAuthorization(false);
+	void passesOnTheEngineAnswerWhenAuthorizationIsDisabled() {
+		engineAnswers(APPLICATION, "modeler", "ACCESS", true);
 
 		assertTrue(check("ACCESS", APPLICATION, "modeler").isAuthorized());
 	}
 
 	@Test
 	void resolvesResourceTypesOtherThanApplication() {
-		Authorizations authorizations = new Authorizations();
-		authorizations.setProcessDefinition(List.of(auth(1, "invoice", "CREATE_INSTANCE")));
-		when(bpmProvider.getUserAuthorization(USER.getId(), USER)).thenReturn(authorizations);
+		engineAnswers(PROCESS_DEFINITION, "invoice", "CREATE_INSTANCE", true);
 
 		AuthorizationCheckResult result = check("CREATE_INSTANCE", PROCESS_DEFINITION, "invoice");
 
@@ -110,7 +99,7 @@ class AuthorizationCheckServiceTest {
 
 	@Test
 	void anExplicitResourceNameIsEchoedBack() {
-		userAuthorizations(auth(1, "modeler", "ACCESS"));
+		engineAnswers(APPLICATION, "modeler", "ACCESS", true);
 
 		AuthorizationCheckResult result = service.isUserAuthorized("ACCESS", APPLICATION,
 			Optional.of("modeler"), Optional.of("application"), USER);
@@ -128,23 +117,9 @@ class AuthorizationCheckServiceTest {
 			Optional.empty(), USER);
 	}
 
-	private void engineAuthorization(boolean enabled) {
-		EngineConfiguration configuration = new EngineConfiguration();
-		configuration.setAuthorizationEnabled(enabled);
-		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(configuration);
+
+	private void engineAnswers(int resourceType, String resourceId, String permission, boolean authorized) {
+		when(bpmProvider.isUserAuthorized(USER, resourceType, resourceId, permission)).thenReturn(authorized);
 	}
 
-	private void userAuthorizations(Authorization... authorizations) {
-		Authorizations result = new Authorizations();
-		result.setApplication(List.of(authorizations));
-		when(bpmProvider.getUserAuthorization(USER.getId(), USER)).thenReturn(result);
-	}
-
-	private static Authorization auth(int type, String resourceId, String... permissions) {
-		Authorization authorization = new Authorization();
-		authorization.setType(type);
-		authorization.setResourceId(resourceId);
-		authorization.setPermissions(permissions);
-		return authorization;
-	}
 }

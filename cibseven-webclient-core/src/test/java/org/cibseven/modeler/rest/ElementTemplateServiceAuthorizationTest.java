@@ -30,12 +30,10 @@ import org.cibseven.modeler.rest.dto.ElementTemplateRequest;
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.AuthorizationChecker;
 import org.cibseven.webapp.auth.ModelerAccessChecker;
+import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.providers.BpmProvider;
-import org.cibseven.webapp.rest.model.Authorization;
-import org.cibseven.webapp.rest.model.Authorizations;
-import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -87,17 +85,14 @@ class ElementTemplateServiceAuthorizationTest {
 		ReflectionTestUtils.setField(elementTemplateService, "bpmProvider", bpmProvider);
 		ReflectionTestUtils.setField(elementTemplateService, "baseUserProvider", baseUserProvider);
 		ReflectionTestUtils.setField(elementTemplateService, "templateProvider", templateProvider);
-		ReflectionTestUtils.setField(elementTemplateService, "modelerAccessChecker", new ModelerAccessChecker(new AuthorizationChecker(bpmProvider, true, false)));
+		ReflectionTestUtils.setField(elementTemplateService, "modelerAccessChecker", new ModelerAccessChecker(new AuthorizationChecker(bpmProvider)));
 
 		when(baseUserProvider.checkAuthorization(any(), anyBoolean())).thenReturn(USER);
-		EngineConfiguration configuration = new EngineConfiguration();
-		configuration.setAuthorizationEnabled(true);
-		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(configuration);
 	}
 
 	@Test
 	void creatingTemplatesRequiresModelerAccess() {
-		userAuthorizations(auth(1, "tasklist", "ACCESS"));
+		modelerAccess(false);
 
 		assertThrows(AccessDeniedException.class,
 			() -> elementTemplateService.add(request, new ElementTemplateRequest()));
@@ -106,7 +101,7 @@ class ElementTemplateServiceAuthorizationTest {
 
 	@Test
 	void deletingTemplatesRequiresModelerAccess() {
-		userAuthorizations(auth(1, "tasklist", "ACCESS"));
+		modelerAccess(false);
 
 		assertThrows(AccessDeniedException.class, () -> elementTemplateService.delete(request, "template-1"));
 		verify(templateProvider, never()).deleteTemplateById(any());
@@ -114,7 +109,7 @@ class ElementTemplateServiceAuthorizationTest {
 
 	@Test
 	void bulkDeletingTemplatesRequiresModelerAccess() {
-		userAuthorizations(auth(1, "tasklist", "ACCESS"));
+		modelerAccess(false);
 
 		assertThrows(AccessDeniedException.class,
 			() -> elementTemplateService.bulkDelete(request, List.of("template-1")));
@@ -123,7 +118,7 @@ class ElementTemplateServiceAuthorizationTest {
 
 	@Test
 	void exportingTemplatesRequiresModelerAccess() {
-		userAuthorizations(auth(1, "tasklist", "ACCESS"));
+		modelerAccess(false);
 
 		assertThrows(AccessDeniedException.class, () -> elementTemplateService.exportTemplates(request, null, false));
 		verify(templateProvider, never()).getElementTemplates();
@@ -131,7 +126,7 @@ class ElementTemplateServiceAuthorizationTest {
 
 	@Test
 	void listingTemplatesOnlyRequiresAuthentication() {
-		userAuthorizations(auth(1, "tasklist", "ACCESS"));
+		modelerAccess(false);
 		List<ElementTemplate> templates = List.of();
 		when(templateProvider.getElementTemplates()).thenReturn(templates);
 
@@ -141,7 +136,7 @@ class ElementTemplateServiceAuthorizationTest {
 
 	@Test
 	void userWithModelerAccessMayWrite() {
-		userAuthorizations(auth(1, "modeler", "ACCESS"));
+		modelerAccess(true);
 		ElementTemplate created = new ElementTemplate();
 		when(templateProvider.addTemplate(any())).thenReturn(created);
 
@@ -154,7 +149,7 @@ class ElementTemplateServiceAuthorizationTest {
 	 */
 	@Test
 	void everyWritingEndpointRejectsUsersWithoutModelerAccess() {
-		userAuthorizations(auth(1, "tasklist", "ACCESS"));
+		modelerAccess(false);
 		List<String> unprotected = new ArrayList<>();
 		int checked = 0;
 
@@ -219,17 +214,9 @@ class ElementTemplateServiceAuthorizationTest {
 		return mock(type, RETURNS_DEEP_STUBS);
 	}
 
-	private void userAuthorizations(Authorization... authorizations) {
-		Authorizations result = new Authorizations();
-		result.setApplication(List.of(authorizations));
-		when(bpmProvider.getUserAuthorization(USER.getId(), USER)).thenReturn(result);
+	private void modelerAccess(boolean granted) {
+		when(bpmProvider.isUserAuthorized(USER, SevenResourceType.APPLICATION.getType(),
+			ModelerAccessChecker.MODELER_RESOURCE_ID, ModelerAccessChecker.MODELER_PERMISSION)).thenReturn(granted);
 	}
 
-	private static Authorization auth(int type, String resourceId, String... permissions) {
-		Authorization authorization = new Authorization();
-		authorization.setType(type);
-		authorization.setResourceId(resourceId);
-		authorization.setPermissions(permissions);
-		return authorization;
-	}
 }

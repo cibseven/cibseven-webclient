@@ -16,6 +16,7 @@
  */
 package org.cibseven.webapp.rest.model;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -34,6 +35,11 @@ public class AuthorizationCheckResult {
 	private String resourceName;
 	private String resourceId;
 
+	/**
+	 * Serialized as {@code isAuthorized}, as the engine REST reference documents it. Engine 2.2.0
+	 * answers with {@code authorized}, so both spellings are accepted when reading a response.
+	 */
 	@JsonProperty("isAuthorized")
+	@JsonAlias("authorized")
 	private boolean authorized;
 }

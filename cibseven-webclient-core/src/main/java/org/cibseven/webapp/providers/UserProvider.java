@@ -30,6 +30,8 @@ import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
+import org.cibseven.webapp.exception.UnknownResourceTypeException;
+import org.cibseven.webapp.rest.model.AuthorizationCheckResult;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.SystemException;
@@ -60,6 +62,33 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 	@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") String userProvider;
 	@Value("${cibseven.webclient.users.search.wildcard:}") String wildcard;
 	private final ObjectMapper objectMapper = new ObjectMapper();
+
+	@Override
+	public boolean isUserAuthorized(CIBUser user, int resourceType, String resourceId, String permission) {
+		UriComponentsBuilder builder = UriComponentsBuilder
+			.fromUriString(getEngineRestUrl(user) + "/authorization/check")
+			.queryParam("permissionName", permission)
+			.queryParam("resourceName", resourceName(resourceType))
+			.queryParam("resourceType", resourceType);
+		if (resourceId != null) {
+			builder.queryParam("resourceId", resourceId);
+		}
+		AuthorizationCheckResult result =
+			((ResponseEntity<AuthorizationCheckResult>) doGet(builder, AuthorizationCheckResult.class, user)).getBody();
+		return result != null && result.isAuthorized();
+	}
+
+	/**
+	 * The engine requires a resource name next to the numeric type. It decides on the type, so the
+	 * name only has to be present; deriving it from the type keeps them consistent.
+	 */
+	private String resourceName(int resourceType) {
+		return Arrays.stream(SevenResourceType.values())
+			.filter(candidate -> candidate.getType() == resourceType)
+			.findFirst()
+			.map(candidate -> candidate.name().toLowerCase())
+			.orElseThrow(() -> new UnknownResourceTypeException(resourceType));
+	}
 
 	@Override
 	public Authorizations getUserAuthorization(String userId, CIBUser user) {

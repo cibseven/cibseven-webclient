@@ -18,53 +18,27 @@ package org.cibseven.webapp.auth;
 
 import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.providers.BpmProvider;
-import org.cibseven.webapp.rest.model.Authorizations;
-import org.cibseven.webapp.rest.model.EngineConfiguration;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Answers whether a user holds a permission on a resource, for resources the engine cannot decide
- * about itself.
+ * about itself — modeler diagrams, forms, element templates and chat messages live in the
+ * webclient's own database, so nothing in the engine enforces them.
  *
- * <p>The webclient stores data of its own — modeler diagrams, forms, element templates, chat
- * messages — so for those no engine call can enforce anything and the check has to happen here. The
- * data comes from the engine all the same ({@link BpmProvider#getUserAuthorization}, which works
- * against a remote engine-rest as well as an embedded engine), and {@link AuthorizationCheck}
- * applies the engine's own grant/revoke rules to it.</p>
- *
- * <p>When the engine has authorization switched off, nothing is enforced: everything is authorized,
- * matching what the engine would answer and what the frontend was told through {@code InfoService}.</p>
+ * <p>The decision itself is the engine's: {@link BpmProvider#isUserAuthorized} asks it, over REST
+ * or in-process depending on the provider. Evaluating the authorizations here instead was tried and
+ * does not work — with authorization enabled a user needs READ on the authorization resource to see
+ * its own authorizations, so an ordinary user's authorization list comes back empty and every check
+ * would fail. The engine has no such problem, and it also answers true when authorization is
+ * disabled, which is the behaviour the frontend was told about through {@code InfoService}.</p>
  */
-@Slf4j
 @Component
 public class AuthorizationChecker {
 
 	private final BpmProvider bpmProvider;
 
-	/**
-	 * Legacy fallback used only with engine-rest versions prior to 2.2.0, which do not expose the
-	 * engine configuration endpoint. Mirrors the resolution done in {@code InfoService} so that the
-	 * backend enforces exactly what the frontend was told about authorization.
-	 */
-	private final boolean legacyEngineAuthorizationEnabled;
-
-	private final boolean legacyAuthorizationEnabled;
-
-	/**
-	 * Resolved once: whether the engine has authorization enabled is fixed at engine startup, and
-	 * resolving it costs an engine round-trip that would otherwise be paid on every request.
-	 */
-	private volatile Boolean authorizationEnabled;
-
-	public AuthorizationChecker(BpmProvider bpmProvider,
-			@Value("${camunda.bpm.authorization.enabled:true}") boolean legacyEngineAuthorizationEnabled,
-			@Value("${cibseven.webclient.legacy.authorization.enabled:false}") boolean legacyAuthorizationEnabled) {
+	public AuthorizationChecker(BpmProvider bpmProvider) {
 		this.bpmProvider = bpmProvider;
-		this.legacyEngineAuthorizationEnabled = legacyEngineAuthorizationEnabled;
-		this.legacyAuthorizationEnabled = legacyAuthorizationEnabled;
 	}
 
 	/**
@@ -72,11 +46,7 @@ public class AuthorizationChecker {
 	 *         authorization disabled
 	 */
 	public boolean isAuthorized(CIBUser user, SevenResourceType resourceType, String resourceId, String permission) {
-		if (!isAuthorizationEnabled()) {
-			return true;
-		}
-		Authorizations authorizations = bpmProvider.getUserAuthorization(user.getId(), user);
-		return AuthorizationCheck.isAuthorized(authorizations, resourceType, resourceId, permission);
+		return bpmProvider.isUserAuthorized(user, resourceType.getType(), resourceId, permission);
 	}
 
 	/**
@@ -86,27 +56,7 @@ public class AuthorizationChecker {
 		if (!isAuthorized(user, resourceType, resourceId, permission)) {
 			throw new AccessDeniedException("Access denied: Missing required permissions for "
 				+ resourceType.name().toLowerCase() + " resource '" + resourceId + "'. Required: "
-				+ AuthorizationCheck.PERMISSION_ALL + " or " + permission + " permission for '" + resourceId
-				+ "' or '" + AuthorizationCheck.ANY_RESOURCE_ID + "'");
+				+ permission + " permission for '" + resourceId + "'");
 		}
-	}
-
-	/** Whether authorization is enforced at all, i.e. whether the engine has it enabled. */
-	public boolean isAuthorizationEnabled() {
-		Boolean resolved = authorizationEnabled;
-		if (resolved == null) {
-			// Not synchronized on purpose: concurrent callers may resolve the same value twice,
-			// which is harmless, and the alternative would serialize every request.
-			EngineConfiguration engineConfig = bpmProvider.getEffectiveDefaultEngineConfiguration();
-			if (engineConfig == null) {
-				log.warn("engine-rest does not support the configuration endpoint, "
-					+ "falling back to legacy configuration for the authorization check");
-			}
-			resolved = (engineConfig == null ? legacyEngineAuthorizationEnabled : engineConfig.isAuthorizationEnabled())
-				|| legacyAuthorizationEnabled;
-			authorizationEnabled = resolved;
-			log.info("Webclient authorization checks are {}", resolved ? "enabled" : "disabled");
-		}
-		return resolved;
 	}
 }

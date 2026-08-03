@@ -51,6 +51,12 @@ import org.cibseven.webapp.rest.model.SevenUser;
 import org.cibseven.webapp.rest.model.SevenVerifyUser;
 import org.cibseven.webapp.rest.model.User;
 import org.cibseven.webapp.rest.model.UserGroup;
+import org.cibseven.bpm.engine.ProcessEngine;
+import org.cibseven.bpm.engine.authorization.Permission;
+import org.cibseven.bpm.engine.authorization.Resource;
+import org.cibseven.bpm.engine.impl.util.ResourceTypeUtil;
+import org.cibseven.webapp.exception.UnknownResourceTypeException;
+import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
 
 public class DirectUserProvider implements IUserProvider {
@@ -594,4 +600,27 @@ public class DirectUserProvider implements IUserProvider {
 		return query.count();
 	}
 
+
+	/**
+	 * Decided by the engine in-process: {@code isUserAuthorized} takes the identity as arguments, so
+	 * unlike the REST resource it needs no authenticated session, and unlike reading the
+	 * authorizations it does not require the user to hold READ on the authorization resource.
+	 */
+	@Override
+	public boolean isUserAuthorized(CIBUser user, int resourceType, String resourceId, String permission) {
+		ProcessEngine engine = directProviderUtil.getProcessEngine(user);
+		if (!engine.getProcessEngineConfiguration().isAuthorizationEnabled()) {
+			return true;
+		}
+		Resource resource = ResourceTypeUtil.getResourceByType(resourceType);
+		Permission required = ResourceTypeUtil.getPermissionByNameAndResourceType(permission, resourceType);
+		if (resource == null || required == null) {
+			throw new UnknownResourceTypeException(resourceType);
+		}
+		List<String> groupIds = engine.getIdentityService().createGroupQuery()
+			.groupMember(user.getId()).unlimitedList().stream()
+			.map(Group::getId)
+			.collect(Collectors.toList());
+		return engine.getAuthorizationService().isUserAuthorized(user.getId(), groupIds, required, resource, resourceId);
+	}
 }

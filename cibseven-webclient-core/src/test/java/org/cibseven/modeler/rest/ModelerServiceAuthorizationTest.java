@@ -37,13 +37,11 @@ import org.cibseven.modeler.provider.UserSessionProvider;
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.AuthorizationChecker;
 import org.cibseven.webapp.auth.ModelerAccessChecker;
+import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.providers.BpmProvider;
-import org.cibseven.webapp.rest.model.Authorization;
-import org.cibseven.webapp.rest.model.Authorizations;
-import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -64,7 +62,6 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -101,15 +98,14 @@ class ModelerServiceAuthorizationTest {
 		ReflectionTestUtils.setField(modelerService, "formUsageProvider", mock(FormUsageProvider.class));
 		ReflectionTestUtils.setField(modelerService, "userSessionProvider", mock(UserSessionProvider.class));
 		ReflectionTestUtils.setField(modelerService, "unifiedDiagramProvider", mock(UnifiedDiagramProvider.class));
-		ReflectionTestUtils.setField(modelerService, "modelerAccessChecker", new ModelerAccessChecker(new AuthorizationChecker(bpmProvider, true, false)));
+		ReflectionTestUtils.setField(modelerService, "modelerAccessChecker", new ModelerAccessChecker(new AuthorizationChecker(bpmProvider)));
 
 		when(baseUserProvider.checkAuthorization(any(), anyBoolean())).thenReturn(USER);
-		engineAuthorization(true);
 	}
 
 	@Test
 	void readingDiagramsRequiresModelerAccess() {
-		userAuthorizations(auth(1, "tasklist", "ACCESS"));
+		modelerAccess(false);
 
 		assertThrows(AccessDeniedException.class, () -> modelerService.getDiagrams(request, 0, 10, null, null));
 		verify(dbProcessDiagramProvider, never()).getDiagrams(any(), any(), anyInt(), anyInt());
@@ -117,7 +113,7 @@ class ModelerServiceAuthorizationTest {
 
 	@Test
 	void readingDiagramDataRequiresModelerAccess() {
-		userAuthorizations(auth(1, "tasklist", "ACCESS"));
+		modelerAccess(false);
 
 		assertThrows(AccessDeniedException.class, () -> modelerService.findByIdData("diagram-1", request));
 		verify(dbProcessDiagramProvider, never()).findById(any());
@@ -125,7 +121,7 @@ class ModelerServiceAuthorizationTest {
 
 	@Test
 	void writingDiagramsRequiresModelerAccess() {
-		userAuthorizations(auth(1, "tasklist", "ACCESS"));
+		modelerAccess(false);
 		ProcessDiagramEntity data = new ProcessDiagramEntity();
 		data.setId("diagram-1");
 
@@ -136,7 +132,7 @@ class ModelerServiceAuthorizationTest {
 
 	@Test
 	void deletingDiagramsRequiresModelerAccess() {
-		userAuthorizations(auth(1, "tasklist", "ACCESS"));
+		modelerAccess(false);
 
 		assertThrows(AccessDeniedException.class, () -> modelerService.delete("diagram-1", request));
 		verify(dbProcessDiagramProvider, never()).delete(any());
@@ -144,10 +140,25 @@ class ModelerServiceAuthorizationTest {
 
 	@Test
 	void deletingFormsRequiresModelerAccess() {
-		userAuthorizations(auth(1, "tasklist", "ACCESS"));
+		modelerAccess(false);
 
 		assertThrows(AccessDeniedException.class, () -> modelerService.deleteForm("form-1", request));
 		verify(formProvider, never()).delete(any());
+	}
+
+	/**
+	 * The decision is the engine's: it can evaluate group and global grants without the caller
+	 * needing READ on the authorization resource, which reading the authorizations cannot.
+	 */
+	@Test
+	void theCheckIsDelegatedToTheEngine() {
+		modelerAccess(true);
+
+		modelerService.getDiagrams(request, 0, 10, null, null);
+
+		verify(bpmProvider).isUserAuthorized(USER, SevenResourceType.APPLICATION.getType(),
+			ModelerAccessChecker.MODELER_RESOURCE_ID, ModelerAccessChecker.MODELER_PERMISSION);
+		verify(bpmProvider, never()).getUserAuthorization(any(), any());
 	}
 
 	/**
@@ -159,19 +170,12 @@ class ModelerServiceAuthorizationTest {
 		when(baseUserProvider.checkAuthorization(any(), anyBoolean())).thenReturn(null);
 
 		assertThrows(AuthenticationException.class, () -> modelerService.getDiagrams(request, 0, 10, null, null));
-		verify(bpmProvider, never()).getUserAuthorization(any(), any());
-	}
-
-	@Test
-	void revokedModelerAccessIsRejectedDespiteGrant() {
-		userAuthorizations(auth(1, "modeler", "ACCESS"), auth(2, "*", "ALL"));
-
-		assertThrows(AccessDeniedException.class, () -> modelerService.getDiagrams(request, 0, 10, null, null));
+		verify(bpmProvider, never()).isUserAuthorized(any(), anyInt(), any(), any());
 	}
 
 	@Test
 	void userWithModelerAccessIsServed() {
-		userAuthorizations(auth(1, "modeler", "ACCESS"));
+		modelerAccess(true);
 		List<ProcessDiagramReduce> diagrams = new ArrayList<>();
 		when(dbProcessDiagramProvider.getDiagrams(null, null, 0, 10)).thenReturn(diagrams);
 
@@ -180,7 +184,7 @@ class ModelerServiceAuthorizationTest {
 
 	@Test
 	void writingDiagramsRecordsTheAuthorizedUser() {
-		userAuthorizations(auth(1, "modeler", "ACCESS"));
+		modelerAccess(true);
 		ProcessDiagramEntity data = new ProcessDiagramEntity();
 		data.setId("diagram-1");
 		when(dbProcessDiagramProvider.findById("diagram-1")).thenReturn(Optional.empty());
@@ -193,7 +197,7 @@ class ModelerServiceAuthorizationTest {
 
 	@Test
 	void readingFormsIsServedForUserWithModelerAccess() {
-		userAuthorizations(auth(1, "modeler", "ACCESS"));
+		modelerAccess(true);
 		FormEntity form = new FormEntity();
 		form.setFormSchema(new byte[] { 1 });
 		when(formProvider.findById("form-1")).thenReturn(Optional.of(form));
@@ -202,45 +206,12 @@ class ModelerServiceAuthorizationTest {
 	}
 
 	/**
-	 * With authorization switched off in the engine there are no authorizations to evaluate, and
-	 * the frontend shows the modeler to everybody — the backend must not disagree.
-	 */
-	@Test
-	void skipsCheckWhenEngineAuthorizationIsDisabled() {
-		engineAuthorization(false);
-
-		modelerService.getDiagrams(request, 0, 10, null, null);
-
-		verify(bpmProvider, never()).getUserAuthorization(any(), any());
-	}
-
-	@Test
-	void enforcesCheckWhenLegacyAuthorizationIsEnabledForAnEngineWithoutConfigurationEndpoint() {
-		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(null);
-		ReflectionTestUtils.setField(modelerService, "modelerAccessChecker",
-			new ModelerAccessChecker(new AuthorizationChecker(bpmProvider, false, true)));
-		userAuthorizations(auth(1, "tasklist", "ACCESS"));
-
-		assertThrows(AccessDeniedException.class, () -> modelerService.getDiagrams(request, 0, 10, null, null));
-	}
-
-	@Test
-	void resolvesEngineAuthorizationOnlyOnce() {
-		userAuthorizations(auth(1, "modeler", "ACCESS"));
-
-		modelerService.getDiagrams(request, 0, 10, null, null);
-		modelerService.getDiagrams(request, 0, 10, null, null);
-
-		verify(bpmProvider, times(1)).getEffectiveDefaultEngineConfiguration();
-	}
-
-	/**
 	 * Guards the whole controller rather than the handful of endpoints spelled out above: any
 	 * endpoint added later that forgets the access check fails here.
 	 */
 	@Test
 	void everyEndpointRejectsUsersWithoutModelerAccess() throws Exception {
-		userAuthorizations(auth(1, "tasklist", "ACCESS"));
+		modelerAccess(false);
 		List<String> unprotected = new ArrayList<>();
 		int checked = 0;
 
@@ -265,7 +236,7 @@ class ModelerServiceAuthorizationTest {
 
 	@Test
 	void deniedAccessNamesTheMissingPermission() {
-		userAuthorizations(auth(1, "tasklist", "ACCESS"));
+		modelerAccess(false);
 
 		AccessDeniedException exception = assertThrows(AccessDeniedException.class,
 			() -> modelerService.getDiagrams(request, 0, 10, null, null));
@@ -311,23 +282,10 @@ class ModelerServiceAuthorizationTest {
 		return mock(type, RETURNS_DEEP_STUBS);
 	}
 
-	private void engineAuthorization(boolean enabled) {
-		EngineConfiguration configuration = new EngineConfiguration();
-		configuration.setAuthorizationEnabled(enabled);
-		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(configuration);
+
+	private void modelerAccess(boolean granted) {
+		when(bpmProvider.isUserAuthorized(USER, SevenResourceType.APPLICATION.getType(),
+			ModelerAccessChecker.MODELER_RESOURCE_ID, ModelerAccessChecker.MODELER_PERMISSION)).thenReturn(granted);
 	}
 
-	private void userAuthorizations(Authorization... authorizations) {
-		Authorizations result = new Authorizations();
-		result.setApplication(List.of(authorizations));
-		when(bpmProvider.getUserAuthorization(USER.getId(), USER)).thenReturn(result);
-	}
-
-	private static Authorization auth(int type, String resourceId, String... permissions) {
-		Authorization authorization = new Authorization();
-		authorization.setType(type);
-		authorization.setResourceId(resourceId);
-		authorization.setPermissions(permissions);
-		return authorization;
-	}
 }
