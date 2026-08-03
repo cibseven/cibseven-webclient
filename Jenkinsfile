@@ -206,7 +206,7 @@ pipeline {
 
                                     sh """
                                         cd ./frontend
-                                        npm install --global @cyclonedx/cyclonedx-npm@4.1.0 --ignore-scripts
+                                        npm install --global @cyclonedx/cyclonedx-npm@6.0.0 --ignore-scripts
                                         cyclonedx-npm --output-file bom.xml --output-format XML
                                     """
 

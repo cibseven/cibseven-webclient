@@ -242,7 +242,7 @@ You may obtain a copy of the License at
 								</goals>
 								<phase>prepare-package</phase>
 								<configuration>
-									<arguments>exec --yes -- @cyclonedx/cyclonedx-npm@4.1.0 --output-file target/frontend-bom.json --output-format json --omit dev</arguments>
+									<arguments>exec --yes -- @cyclonedx/cyclonedx-npm@6.0.0 --output-file target/frontend-bom.json --output-format json --omit dev</arguments>
 								</configuration>
 							</execution>
 							<execution>
@@ -252,7 +252,7 @@ You may obtain a copy of the License at
 								</goals>
 								<phase>prepare-package</phase>
 								<configuration>
-									<arguments>exec --yes -- @cyclonedx/cyclonedx-npm@4.1.0 --output-file target/frontend-bom.xml --output-format xml --omit dev</arguments>
+									<arguments>exec --yes -- @cyclonedx/cyclonedx-npm@6.0.0 --output-file target/frontend-bom.xml --output-format xml --omit dev</arguments>
 								</configuration>
 							</execution>
 						</executions>
