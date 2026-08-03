@@ -374,7 +374,10 @@ pipeline {
 
                     withMaven(options: []) {
                         def skipTestsFlag = params.VERIFY ? "-DskipTests" : ""
-                        sh "mvn -T4 -U clean deploy ${skipTestsFlag} ${deployment}"
+                        sh "mvn -T4 -U clean \
+                        org.cyclonedx:cyclonedx-maven-plugin:makeBom \
+                        org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom \
+                        deploy ${skipTestsFlag} ${deployment}"
                     }
 
                     if (!params.VERIFY) {
@@ -410,7 +413,10 @@ pipeline {
                                 mvn -T4 -U \
                                     -Dgpg.keyname="${GPG_KEYNAME}" \
                                     -Dgpg.passphrase="${GPG_KEY_PASS}" \
-                                    clean deploy \
+                                    clean \
+                                    org.cyclonedx:cyclonedx-maven-plugin:makeBom \
+                                    org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom \
+                                    deploy \
                                     -Psonatype-oss-release \
                                     -Dskip.cibseven.release="${!params.DEPLOY_TO_ARTIFACTS}"
                             """
