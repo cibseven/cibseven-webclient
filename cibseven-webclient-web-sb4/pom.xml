@@ -139,6 +139,13 @@
 			<scope>provided</scope>
 		</dependency>
 
+		<!-- JPA and H2 already come from cibseven-webclient-core; re-declaring them here would narrow their scope to test. -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>
