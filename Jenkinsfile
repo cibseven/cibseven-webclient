@@ -377,6 +377,7 @@ pipeline {
                         sh "mvn -T4 -U clean \
                         org.cyclonedx:cyclonedx-maven-plugin:makeBom \
                         org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom \
+                        -Dgenerate-frontend-sbom=true \
                         deploy ${skipTestsFlag} ${deployment}"
                     }
 
@@ -416,6 +417,7 @@ pipeline {
                                     clean \
                                     org.cyclonedx:cyclonedx-maven-plugin:makeBom \
                                     org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom \
+                                    -Dgenerate-frontend-sbom=true \
                                     deploy \
                                     -Psonatype-oss-release \
                                     -Dskip.cibseven.release="${!params.DEPLOY_TO_ARTIFACTS}"
