@@ -28,6 +28,7 @@ import org.cibseven.modeler.model.ElementTemplate;
 import org.cibseven.modeler.provider.ElementTemplateProvider;
 import org.cibseven.modeler.rest.dto.ElementTemplateRequest;
 import org.cibseven.webapp.auth.BaseUserProvider;
+import org.cibseven.webapp.auth.AuthorizationChecker;
 import org.cibseven.webapp.auth.ModelerAccessChecker;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.AccessDeniedException;
@@ -86,7 +87,7 @@ class ElementTemplateServiceAuthorizationTest {
 		ReflectionTestUtils.setField(elementTemplateService, "bpmProvider", bpmProvider);
 		ReflectionTestUtils.setField(elementTemplateService, "baseUserProvider", baseUserProvider);
 		ReflectionTestUtils.setField(elementTemplateService, "templateProvider", templateProvider);
-		ReflectionTestUtils.setField(elementTemplateService, "modelerAccessChecker", new ModelerAccessChecker(bpmProvider, true, false));
+		ReflectionTestUtils.setField(elementTemplateService, "modelerAccessChecker", new ModelerAccessChecker(new AuthorizationChecker(bpmProvider, true, false)));
 
 		when(baseUserProvider.checkAuthorization(any(), anyBoolean())).thenReturn(USER);
 		EngineConfiguration configuration = new EngineConfiguration();

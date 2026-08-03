@@ -46,10 +46,13 @@ class ModelerAccessCheckerWiringTest {
 
 	@Test
 	void checkerIsAComponentOfTheScannedPackage() {
+		assertEquals(SCANNED_PACKAGE, AuthorizationChecker.class.getPackageName(),
+			"must stay in the package scanned by SevenWebclientContext");
 		assertEquals(SCANNED_PACKAGE, ModelerAccessChecker.class.getPackageName(),
 			"must stay in the package scanned by SevenWebclientContext");
 
 		try (AnnotationConfigApplicationContext context = context(Map.of())) {
+			assertNotNull(context.getBean(AuthorizationChecker.class));
 			assertNotNull(context.getBean(ModelerAccessChecker.class));
 		}
 	}
@@ -65,7 +68,8 @@ class ModelerAccessCheckerWiringTest {
 
 	@Configuration
 	@ComponentScan(basePackages = SCANNED_PACKAGE, useDefaultFilters = false,
-		includeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE, classes = ModelerAccessChecker.class))
+		includeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE,
+			classes = { AuthorizationChecker.class, ModelerAccessChecker.class }))
 	static class TestConfiguration {
 
 		@Bean

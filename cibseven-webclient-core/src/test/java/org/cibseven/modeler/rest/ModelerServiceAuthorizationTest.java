@@ -35,6 +35,7 @@ import org.cibseven.modeler.provider.FormUsageProvider;
 import org.cibseven.modeler.provider.UnifiedDiagramProvider;
 import org.cibseven.modeler.provider.UserSessionProvider;
 import org.cibseven.webapp.auth.BaseUserProvider;
+import org.cibseven.webapp.auth.AuthorizationChecker;
 import org.cibseven.webapp.auth.ModelerAccessChecker;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.AccessDeniedException;
@@ -100,7 +101,7 @@ class ModelerServiceAuthorizationTest {
 		ReflectionTestUtils.setField(modelerService, "formUsageProvider", mock(FormUsageProvider.class));
 		ReflectionTestUtils.setField(modelerService, "userSessionProvider", mock(UserSessionProvider.class));
 		ReflectionTestUtils.setField(modelerService, "unifiedDiagramProvider", mock(UnifiedDiagramProvider.class));
-		ReflectionTestUtils.setField(modelerService, "modelerAccessChecker", new ModelerAccessChecker(bpmProvider, true, false));
+		ReflectionTestUtils.setField(modelerService, "modelerAccessChecker", new ModelerAccessChecker(new AuthorizationChecker(bpmProvider, true, false)));
 
 		when(baseUserProvider.checkAuthorization(any(), anyBoolean())).thenReturn(USER);
 		engineAuthorization(true);
@@ -217,7 +218,7 @@ class ModelerServiceAuthorizationTest {
 	void enforcesCheckWhenLegacyAuthorizationIsEnabledForAnEngineWithoutConfigurationEndpoint() {
 		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(null);
 		ReflectionTestUtils.setField(modelerService, "modelerAccessChecker",
-			new ModelerAccessChecker(bpmProvider, false, true));
+			new ModelerAccessChecker(new AuthorizationChecker(bpmProvider, false, true)));
 		userAuthorizations(auth(1, "tasklist", "ACCESS"));
 
 		assertThrows(AccessDeniedException.class, () -> modelerService.getDiagrams(request, 0, 10, null, null));
