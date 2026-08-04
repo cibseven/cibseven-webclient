@@ -78,6 +78,12 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 	@Value("${cibseven.webclient.custom.spring.jackson.parser.max-size:20000000}")
 	int jacksonParserMaxSize;
 
+	/**
+	 * Deprecated interim opt-out: serializes dates as epoch millis again. Kept only so
+	 * consumers that adapted to the pre-fix output have a migration window. Jackson 3
+	 * disables timestamp output by default, so this flag loses its purpose once the wire
+	 * layer moves to Jackson 3 - remove it together with that migration.
+	 */
 	@Value("${cibseven.webclient.custom.spring.jackson.serialization.write-dates-as-timestamps:false}")
 	boolean writeDatesAsTimestamps;
 

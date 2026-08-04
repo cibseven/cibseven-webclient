@@ -1,0 +1,14 @@
+{
+  "properties": [
+    {
+      "name": "cibseven.webclient.custom.spring.jackson.serialization.write-dates-as-timestamps",
+      "type": "java.lang.Boolean",
+      "defaultValue": false,
+      "description": "Serializes dates as epoch millis instead of ISO-8601. Legacy opt-out for consumers that adapted to the output the webclient produced before the date-format fix. Applies to java.util.Date and java.sql.Timestamp (epoch millis) as well as java.time types (numeric arrays or fractional seconds).",
+      "deprecation": {
+        "level": "warning",
+        "reason": "Interim opt-out while consumers migrate to ISO-8601. Jackson 3 disables timestamp output by default, so this flag loses its purpose once the wire layer moves to Jackson 3; prefer adapting the consumer or annotating the affected field with @JsonFormat."
+      }
+    }
+  ]
+}
