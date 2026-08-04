@@ -19,6 +19,8 @@ package org.cibseven.webapp;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Duration;
+import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -45,9 +47,11 @@ class SevenWebclientContextJacksonTest {
 
 	@Test
 	void writesDatesAsIso8601ByDefault() throws JsonProcessingException {
-		// Jackson serializes in UTC by default, so epoch 0 is deterministic here.
-		assertThat(objectMapper(false).writeValueAsString(new Date(0)))
-				.startsWith("\"1970-01-01T00:00:00.000");
+		// A quoted, parseable ISO-8601 instant; a bare number would mean epoch millis.
+		// Asserted semantically so a future setTimeZone(...) cannot break this test.
+		String json = objectMapper(false).writeValueAsString(new Date(0));
+		assertThat(json).startsWith("\"").endsWith("\"");
+		assertThat(OffsetDateTime.parse(json.replace("\"", "")).toInstant()).isEqualTo(Instant.EPOCH);
 	}
 
 	@Test
