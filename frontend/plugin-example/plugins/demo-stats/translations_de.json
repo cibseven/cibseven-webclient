@@ -1,0 +1,9 @@
+{
+	"title": "Demo-Plugin",
+	"instance": "Prozessinstanz",
+	"definition": "Prozessdefinitionsschlüssel",
+	"theme": "Theme aus der Anwendungskonfiguration",
+	"apiVersion": "Plugin-API-Version",
+	"processes": "Für Sie sichtbare Prozesse",
+	"failed": "Prozessabfrage fehlgeschlagen mit"
+}

@@ -1,0 +1,8 @@
+{
+	"entry": "index.js",
+	"apiVersion": "1",
+	"slots": ["process-instance-tab"],
+	"translations": {
+		"en": "translations_en.json"
+	}
+}

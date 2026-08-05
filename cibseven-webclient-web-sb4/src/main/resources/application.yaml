@@ -47,6 +47,10 @@ cibseven:
       # process definition has no start form defined.
       # Disabled by default to preserve existing "instant start" behavior.
       defaultFormEnabled: false
+    plugins:
+      # Load frontend plugins from the classpath below META-INF/cibseven-plugins/,
+      # one folder per plugin. Plugin code runs inside the webclient page.
+      enabled: false
     # Engine rest
     engineRest:
       url: http://localhost:8080

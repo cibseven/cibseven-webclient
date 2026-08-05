@@ -22,6 +22,7 @@
 
 <script>
 import { GenericTabs } from '@cib/common-frontend'
+import { getPlugin } from '@/plugins/pluginsConfig.js'
 
 export default {
   name: 'ProcessInstanceTabs',
@@ -32,7 +33,7 @@ export default {
   emits: ['update:modelValue', 'tab-click'],
   data: function () {
     return {
-      tabs: [
+      builtinTabs: [
         { id: 'variables', text: 'process.variables' },
         { id: 'incidents', text: 'process.incidents' },
         { id: 'usertasks', text: 'process.usertasks' },
@@ -40,6 +41,17 @@ export default {
         { id: 'calledProcessInstances', text: 'process.calledProcessInstances' },
         { id: 'externalTasks', text: 'process.externalTasks' }
       ]
+    }
+  },
+  computed: {
+    tabs: function() {
+      // Tabs contributed by plugins are appended, so the order of the built-in
+      // tabs never depends on what is deployed. Their content is rendered by the
+      // PluginSlot in ProcessInstanceView.
+      const contributed = getPlugin('process-instance-tab').value
+        .filter(contribution => contribution.id && contribution.text)
+        .map(({ id, text }) => ({ id, text }))
+      return [...this.builtinTabs, ...contributed]
     }
   }
 }

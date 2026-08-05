@@ -1,0 +1,14 @@
+{
+	"plugins": [
+		{
+			"id": "demo-stats",
+			"entry": "index.js",
+			"apiVersion": "1",
+			"slots": ["demo"],
+			"translations": {
+				"en": "translations_en.json",
+				"de": "translations_de.json"
+			}
+		}
+	]
+}

@@ -53,6 +53,15 @@ export { getEnabledShortcuts, getShortcutsForModal,
   getGlobalNavigationShortcuts, getTaskEventShortcuts, checkKeyMatch } from './utils/shortcuts.js'
 export { createProvideObject } from '@/utils/provide.js'
 
+// plugins — the mechanism is shared with cibseven-webclient-ee and
+// flow-webclient-frontend; each application supplies its own plugin-runtime
+// entry, since module instances only exist within one build
+export { registerPlugin, getPlugin, resetPlugins, PLUGIN_API_VERSION } from '@/plugins/pluginsConfig.js'
+export { setPluginContext, getPluginContext } from '@/plugins/pluginContext.js'
+export { initPlugins, loadPlugins, fetchPluginManifests } from '@/plugins/pluginLoader.js'
+export { default as PluginSlot } from '@/components/common/PluginSlot.vue'
+export { default as PluginBoundary } from '@/components/common/PluginBoundary.vue'
+
 // mixins
 export { default as processesVariablesMixin } from '@/components/process/mixins/processesVariablesMixin.js'
 export { default as resizerMixin } from '@/components/process/mixins/resizerMixin.js'

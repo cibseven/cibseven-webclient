@@ -35,6 +35,8 @@ import { hasHeader, checkExternalReturn,
 import { applyConfigDefaults } from './utils/config.js'
 import { i18n, switchLanguage } from './i18n'
 import { createProvideObject } from './utils/provide.js'
+import { setPluginContext } from './plugins/pluginContext.js'
+import { initPlugins } from './plugins/pluginLoader.js'
 
 // check for token inside hash
 // if it exists => redirect to new uri
@@ -65,7 +67,13 @@ Promise.all([
   const theme = getTheme(config)
   loadTheme(theme).then(() => {
     applyTheme(theme)
-    switchLanguage(config, i18n.global.locale).then(() => {
+    switchLanguage(config, i18n.global.locale).then(async () => {
+      // Plugins are given their context before they are loaded, and are loaded
+      // before the first render, so a slot never renders twice on startup.
+      // Without plugins present this resolves immediately.
+      setPluginContext({ config, store })
+      await initPlugins(i18n.global.locale)
+
       const app = createApp({ /*jshint nonew:false */
         name: 'CIB7App',
         el: '#app',
