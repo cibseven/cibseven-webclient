@@ -16,6 +16,8 @@
  */
 package org.cibseven.webapp.providers;
 
+import java.util.List;
+
 import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.ProcessEngineConfiguration;
 import org.cibseven.bpm.engine.authorization.Authorization;
@@ -62,6 +64,7 @@ class DirectUserProviderAuthorizationTest {
 
 	@AfterEach
 	void tearDown() {
+		engine.getIdentityService().clearAuthentication();
 		engine.close();
 	}
 
@@ -113,6 +116,52 @@ class DirectUserProviderAuthorizationTest {
 		assertTrue(provider.isUserAuthorized(TESTER, APPLICATION, MODELER, ACCESS));
 	}
 
+	/**
+	 * How the check actually runs in production: {@link AuthorizingProviderProxy} authenticates the user
+	 * before the call, so a membership query inside would be filtered by READ on the group resource and
+	 * the group grant would be missed.
+	 */
+	@Test
+	void aGroupGrantAuthorizesWhileTheUserIsAuthenticated() {
+		Group group = engine.getIdentityService().newGroup("modelers");
+		engine.getIdentityService().saveGroup(group);
+		engine.getIdentityService().createMembership("tester", "modelers");
+		grant(authorization -> {
+			authorization.setGroupId("modelers");
+			authorization.setResource(Resources.APPLICATION);
+			authorization.setResourceId(MODELER);
+			authorization.addPermission(Permissions.ACCESS);
+		});
+		authenticateTester(List.of("modelers"));
+
+		assertTrue(provider.isUserAuthorized(TESTER, APPLICATION, MODELER, ACCESS));
+	}
+
+	/** Authenticated without memberships in the context: they have to be resolved, unfiltered. */
+	@Test
+	void aGroupGrantAuthorizesWhenTheAuthenticationCarriesNoGroups() {
+		Group group = engine.getIdentityService().newGroup("modelers");
+		engine.getIdentityService().saveGroup(group);
+		engine.getIdentityService().createMembership("tester", "modelers");
+		grant(authorization -> {
+			authorization.setGroupId("modelers");
+			authorization.setResource(Resources.APPLICATION);
+			authorization.setResourceId(MODELER);
+			authorization.addPermission(Permissions.ACCESS);
+		});
+		authenticateTester(null);
+
+		assertTrue(provider.isUserAuthorized(TESTER, APPLICATION, MODELER, ACCESS));
+	}
+
+	/** An authenticated user without the grant stays unauthorized. */
+	@Test
+	void nothingIsAuthorizedForAnAuthenticatedUserWithoutAGrant() {
+		authenticateTester(List.of("modelers"));
+
+		assertFalse(provider.isUserAuthorized(TESTER, APPLICATION, MODELER, ACCESS));
+	}
+
 	// Revoke authorizations are deliberately not covered here. Whether they are evaluated depends on
 	// the engine's authorizationCheckRevokes setting, whose default (AUTO) decides once per engine
 	// whether any revoke exists and caches it, and an in-memory engine did not honour a revoke even
@@ -133,6 +182,11 @@ class DirectUserProviderAuthorizationTest {
 	void anUnknownResourceTypeIsRejected() {
 		assertThrows(UnknownResourceTypeException.class,
 			() -> provider.isUserAuthorized(TESTER, 9999, MODELER, ACCESS));
+	}
+
+	/** Leaves the engine authenticated as the proxy does before delegating to a provider. */
+	private void authenticateTester(List<String> groupIds) {
+		engine.getIdentityService().setAuthentication("tester", groupIds);
 	}
 
 	private void grant(java.util.function.Consumer<Authorization> configurer) {

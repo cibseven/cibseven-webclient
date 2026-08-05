@@ -32,6 +32,7 @@ import org.cibseven.bpm.engine.identity.Group;
 import org.cibseven.bpm.engine.identity.GroupQuery;
 import org.cibseven.bpm.engine.identity.UserQuery;
 import org.cibseven.bpm.engine.impl.identity.Authentication;
+import org.cibseven.bpm.engine.impl.identity.Authentication;
 import org.cibseven.bpm.engine.impl.util.PermissionConverter;
 import org.cibseven.bpm.engine.rest.dto.authorization.AuthorizationDto;
 import org.cibseven.bpm.engine.rest.dto.authorization.AuthorizationQueryDto;
@@ -617,10 +618,24 @@ public class DirectUserProvider implements IUserProvider {
 		if (resource == null || required == null) {
 			throw new UnknownResourceTypeException(resourceType);
 		}
-		List<String> groupIds = engine.getIdentityService().createGroupQuery()
+		return engine.getAuthorizationService()
+			.isUserAuthorized(user.getId(), groupIdsOf(user, engine), required, resource, resourceId);
+	}
+
+	/**
+	 * Taken from the authentication {@link AuthorizingProviderProxy} already established, because
+	 * querying memberships as that user is filtered by READ on the group resource and would miss a
+	 * permission granted through a group. Resolved outside the authentication for non-proxied callers.
+	 */
+	private List<String> groupIdsOf(CIBUser user, ProcessEngine engine) {
+		Authentication authentication = engine.getIdentityService().getCurrentAuthentication();
+		if (authentication != null && user.getId().equals(authentication.getUserId())
+				&& authentication.getGroupIds() != null) {
+			return authentication.getGroupIds();
+		}
+		return directProviderUtil.runWithoutAuthorization(() -> engine.getIdentityService().createGroupQuery()
 			.groupMember(user.getId()).unlimitedList().stream()
 			.map(Group::getId)
-			.collect(Collectors.toList());
-		return engine.getAuthorizationService().isUserAuthorized(user.getId(), groupIds, required, resource, resourceId);
+			.collect(Collectors.toList()), user);
 	}
 }
