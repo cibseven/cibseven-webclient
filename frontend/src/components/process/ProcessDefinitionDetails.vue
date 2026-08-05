@@ -147,9 +147,8 @@
 </template>
 
 <script>
-import { moment } from '@/globals.js'
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
-import { ProcessService } from '@/services.js'
+import { ProcessService, HistoryService } from '@/services.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { SuccessAlert } from '@cib/common-frontend'
 import { permissionsMixin } from '@/permissions.js'
@@ -159,20 +158,39 @@ export default {
   components: { SuccessAlert },
   mixins: [ copyToClipboardMixin, permissionsMixin ],
   props: {
-    instances: Array,
     version: Object,
     selectedInstance: { type: Object, default: null },
-    versionIndex: { type: String, default: '' }
+    versionIndex: { type: String, default: '' },
+    shown: { type: Boolean, default: false }
   },
   data: function() {
     return {
       selectedDeployment: null,
       historyTimeToLive: null,
-      historyTimeToLiveChanged: null
+      historyTimeToLiveChanged: null,
+      minTimestamp: null,
+      maxTimestamp: null,
+      timestampsLoaded: false
     }
   },
   emits: ['onUpdateHistoryTimeToLive'],
   watch: {
+    shown(val) {
+      if (val) this.getTimestamps()
+    },
+    'version.id': function() {
+      this.resetTimestampsCache()
+      if (this.shown) {
+        this.getTimestamps()
+      }
+    },
+    'version.allInstances': function(newVal, oldVal) {
+      if (newVal === oldVal) return
+      this.resetTimestampsCache()
+      if (this.shown) {
+        this.getTimestamps()
+      }
+    },
     versionIndex: {
       handler() {
         if (this.isVersionSelected && this.hasDeploymentReadPermission) {
@@ -191,19 +209,6 @@ export default {
     isVersionSelected() {
       return this.version.version === this.versionIndex
     },
-    timestamps() {
-      return this.instances
-        .filter(i => i.processDefinitionVersion === this.version.version)
-        .map(i => moment(i.startTime).valueOf())
-    },
-    minTimestamp() {
-      if (this.timestamps.length === 0) return null
-      return Math.min(...this.timestamps)
-    },
-    maxTimestamp() {
-      if (this.timestamps.length === 0) return null
-      return Math.max(...this.timestamps)
-    },
     hasDeploymentReadPermission() {
       return this.canReadDeployment(this.version.deploymentId)
     }
@@ -212,6 +217,33 @@ export default {
     this.historyTimeToLive = this.version.historyTimeToLive
   },
   methods: {
+    resetTimestampsCache() {
+      this.timestampsLoaded = false
+      this.minTimestamp = null
+      this.maxTimestamp = null
+    },
+    async getTimestamps() {
+      if (this.$root.config.camundaHistoryLevel === 'none') return
+      if (this.timestampsLoaded) return
+      this.timestampsLoaded = true
+      const requestedVersionId = this.version.id
+      try {
+        const [first, last] = await Promise.all([
+          HistoryService.findProcessesInstancesHistory({ processDefinitionId: requestedVersionId, sorting: [{ sortBy: 'startTime', sortOrder: 'asc' }] }, 0, 1),
+          HistoryService.findProcessesInstancesHistory({ processDefinitionId: requestedVersionId, sorting: [{ sortBy: 'startTime', sortOrder: 'desc' }] }, 0, 1)
+        ])
+
+        if (this.version.id !== requestedVersionId) return
+        this.minTimestamp = first?.[0]?.startTime ?? null
+        this.maxTimestamp = last?.[0]?.startTime ?? null
+      }
+      catch {
+        if (this.version.id !== requestedVersionId) return
+        this.minTimestamp = null
+        this.maxTimestamp = null
+        this.timestampsLoaded = false
+      }
+    },
     formatDate,
     formatDateForTooltips,
     editHistoryTimeToLive: function() {

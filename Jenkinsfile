@@ -206,7 +206,7 @@ pipeline {
 
                                     sh """
                                         cd ./frontend
-                                        npm install --global @cyclonedx/cyclonedx-npm@4.1.0 --ignore-scripts
+                                        npm install --global @cyclonedx/cyclonedx-npm@6.0.0 --ignore-scripts
                                         cyclonedx-npm --output-file bom.xml --output-format XML
                                     """
 
@@ -374,7 +374,11 @@ pipeline {
 
                     withMaven(options: []) {
                         def skipTestsFlag = params.VERIFY ? "-DskipTests" : ""
-                        sh "mvn -T4 -U clean deploy ${skipTestsFlag} ${deployment}"
+                        sh "mvn -T4 -U clean \
+                        org.cyclonedx:cyclonedx-maven-plugin:makeBom \
+                        org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom \
+                        -Dgenerate-frontend-sbom=true \
+                        deploy ${skipTestsFlag} ${deployment}"
                     }
 
                     if (!params.VERIFY) {
@@ -410,7 +414,11 @@ pipeline {
                                 mvn -T4 -U \
                                     -Dgpg.keyname="${GPG_KEYNAME}" \
                                     -Dgpg.passphrase="${GPG_KEY_PASS}" \
-                                    clean deploy \
+                                    clean \
+                                    org.cyclonedx:cyclonedx-maven-plugin:makeBom \
+                                    org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom \
+                                    -Dgenerate-frontend-sbom=true \
+                                    deploy \
                                     -Psonatype-oss-release \
                                     -Dskip.cibseven.release="${!params.DEPLOY_TO_ARTIFACTS}"
                             """

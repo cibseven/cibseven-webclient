@@ -42,6 +42,11 @@ cibseven:
       # e.g. - "file:/opt/cibseven/element-templates/*.json"
       templates:
         paths: []
+    startProcess:
+      # Show a default start form (business key + manual variable creation) when the
+      # process definition has no start form defined.
+      # Disabled by default to preserve existing "instant start" behavior.
+      defaultFormEnabled: false
     # Engine rest
     engineRest:
       url: http://localhost:8080

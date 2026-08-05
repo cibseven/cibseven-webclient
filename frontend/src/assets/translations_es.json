@@ -978,6 +978,12 @@
 	},
 	"start": {
 		"close": "Cerrar",
+		"defaultStartForm": {
+			"introduction": "Si lo deseas, puedes indicar una clave de negocio y añadir variables antes de iniciarlo.",
+			"businessKey": "Business Key",
+			"businessKeyPlaceholder": "Introduzca un Business Key (opcional)",
+			"start": "Iniciar proceso"
+		},
 		"startProcess": {
 			"title": "@:process.startProcess",
 			"tooltip": "Abrir vista de inicio del proceso con opción de búsqueda"
@@ -1084,6 +1090,7 @@
 		"invalidEmail": "Introduce una dirección de correo electrónico válida.",
 		"InvalidValueHistoryTimeToLive": "No están permitidos valores nulos para el tiempo de vida del histórico.",
 		"DmnTransformationException": "El recurso no pudo ser actualizado. No se puede transformar el recurso DMN.",
+		"InvalidGroupIdException": "El ID del grupo contiene caracteres no válidos. Sólo se permiten caracteres alfanuméricos (a-z, A-Z, 0-9) o camunda-admin. Por favor, corrija su entrada.",
 		"unknown": "Se produjo un error inesperado. Por favor, inténtelo de nuevo."
 	},
 	"searches": {

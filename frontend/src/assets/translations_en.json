@@ -978,6 +978,12 @@
 	},
 	"start": {
 		"close": "Close",
+		"defaultStartForm": {
+			"introduction": "If you'd like, you can set a business key and add variables before starting it.",
+			"businessKey": "Business Key",
+			"businessKeyPlaceholder": "Enter a business key (optional)",
+			"start": "Start process"
+		},
 		"startProcess": {
 			"title": "@:process.startProcess",
 			"tooltip": "Open Start Process view with search possibility"
@@ -1084,6 +1090,7 @@
 		"invalidEmail": "Please enter a valid email address.",
 		"InvalidValueHistoryTimeToLive": "Null values are not allowed for history time to live.",
 		"DmnTransformationException": "The resource could not be updated. Unable to transform DMN resource.",
+		"InvalidGroupIdException": "The group ID is invalid. It may only contain alphanumeric characters (a-z, A-Z, 0-9) or camunda-admin. Please correct your entry.",
 		"unknown": "An unexpected error occurred. Please try again."
 		
 	},

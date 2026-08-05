@@ -50,6 +50,7 @@ import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnsupportedTypeException;
 import org.cibseven.webapp.exception.VariableModificationException;
 import org.cibseven.webapp.exception.WrongDeploymenIdException;
+import org.cibseven.webapp.exception.InvalidGroupIdException;
 import org.cibseven.webapp.rest.model.Authorization;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
@@ -458,6 +459,8 @@ public abstract class SevenProviderBase {
 			wrapperException = new ExistingUserRequestException(cause);
 		} else if (technicalErrorMsg.matches(".*The group already exists.*")) {
 			wrapperException = new ExistingGroupRequestException(cause);
+		} else if (technicalErrorMsg.matches(".*Group has an invalid id.*")) {
+			wrapperException = new InvalidGroupIdException(cause);
 		} else if (technicalErrorMsg.matches(".*The given authenticated user password is not valid.*")) {
 			wrapperException = new SystemException(cause); // TODO? Create a specific exception this error.
 		} else if (technicalErrorMsg.matches(".*Cannot modify variables for execution.*execution.*doesn't exist: execution is null.*")) {
