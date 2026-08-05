@@ -76,6 +76,42 @@ ENGINE_REST_PATH=/different-path npm run dev
 npm run dev
 ```
 
+#### Date and Time Serialization
+
+Date and time values in REST responses are serialized as ISO-8601 strings, matching the Spring Boot default:
+
+| Type | Output |
+|------|--------|
+| `java.util.Date`, `java.sql.Timestamp` | `"2026-08-04T13:20:00.000+00:00"` |
+| `Instant` | `"2026-08-04T13:20:00Z"` |
+| `OffsetDateTime` | `"2026-08-04T12:00:00+02:00"` |
+| `LocalDateTime` | `"2026-08-04T12:00:00"` |
+| `LocalDate` | `"2026-08-04"` |
+| `Duration` | `"PT1H"` |
+
+Up to and including 2.2.1, the webclient's own `ObjectMapper` overrode the Spring Boot defaults and wrote epoch
+millis instead (`1785849600000`), and numeric arrays or fractional seconds for `java.time` types. Consumers built
+against that output have to parse ISO-8601 strings now.
+
+As a temporary migration aid, the previous output can be restored:
+
+```yaml
+cibseven:
+  webclient:
+    custom:
+      spring:
+        jackson:
+          serialization:
+            write-dates-as-timestamps: true   # deprecated, default: false
+```
+
+**This property is deprecated and will be removed.** It exists only to give consumers that adapted to the earlier
+output a migration window. Jackson 3 disables timestamp output by default, so the flag loses its purpose once the
+wire layer moves to Jackson 3 and will be removed together with that migration.
+
+Prefer adapting the consumer, or annotating the individual field with `@JsonFormat`, over switching the whole
+application back. Note that the flag is global: it affects every date and duration in every REST response.
+
 ### Documentation
 
 - [CIB seven Manual](https://docs.cibseven.org/manual/latest/)
