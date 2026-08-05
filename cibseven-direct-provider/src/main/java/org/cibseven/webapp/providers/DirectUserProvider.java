@@ -603,9 +603,9 @@ public class DirectUserProvider implements IUserProvider {
 
 
 	/**
-	 * Decided by the engine in-process: {@code isUserAuthorized} takes the identity as arguments, so
-	 * unlike the REST resource it needs no authenticated session, and unlike reading the
-	 * authorizations it does not require the user to hold READ on the authorization resource.
+	 * Decided by the engine in-process. The call runs with the user authenticated (see
+	 * {@link AuthorizingProviderProxy}), but the engine evaluates the check internally rather than
+	 * through a query the caller must be allowed to make, so a grant the user may not read still counts.
 	 */
 	@Override
 	public boolean isUserAuthorized(CIBUser user, int resourceType, String resourceId, String permission) {

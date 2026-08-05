@@ -31,6 +31,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -151,6 +152,28 @@ class DirectUserProviderAuthorizationTest {
 		});
 		authenticateTester(null);
 
+		assertTrue(provider.isUserAuthorized(TESTER, APPLICATION, MODELER, ACCESS));
+	}
+
+	/**
+	 * Separates the two things the user context does affect. Reading authorizations is filtered - the
+	 * user holds no READ on them and sees none - while the engine's own check still finds the group grant,
+	 * because it is evaluated internally rather than through a query the caller is allowed to make.
+	 */
+	@Test
+	void theCheckFindsAGrantTheUserIsNotAllowedToRead() {
+		Group group = engine.getIdentityService().newGroup("modelers");
+		engine.getIdentityService().saveGroup(group);
+		engine.getIdentityService().createMembership("tester", "modelers");
+		grant(authorization -> {
+			authorization.setGroupId("modelers");
+			authorization.setResource(Resources.APPLICATION);
+			authorization.setResourceId(MODELER);
+			authorization.addPermission(Permissions.ACCESS);
+		});
+		authenticateTester(List.of("modelers"));
+
+		assertEquals(0, engine.getAuthorizationService().createAuthorizationQuery().count());
 		assertTrue(provider.isUserAuthorized(TESTER, APPLICATION, MODELER, ACCESS));
 	}
 
