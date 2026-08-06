@@ -119,7 +119,7 @@ class TaskBpmnEscalationRoutingTest {
 		ReflectionTestUtils.setField(taskService, "authorizationEnabled", true);
 		Authorizations noRights = new Authorizations();
 		noRights.setTask(List.of());
-		when(bpmProvider.getUserAuthorization(USER.getId(), USER)).thenReturn(noRights);
+		when(bpmProvider.getUserAuthorization(USER)).thenReturn(noRights);
 
 		assertThrows(AccessDeniedException.class, () -> taskService.handleBpmnEscalation("task-1",
 			Map.<String, Object>of("escalationCode", "esc-1"), Optional.<String>empty(), USER));
