@@ -154,6 +154,23 @@ public class PluginRegistryTest {
 	}
 
 	@Test
+	public void keepsOnlyTheFirstOfTwoPluginsSharingAnId() throws IOException {
+		ResourcePatternResolver resolver = mock(ResourcePatternResolver.class);
+		when(resolver.getResources(MANIFESTS)).thenReturn(new Resource[] {
+			manifest("/app/a.jar!/META-INF/cibseven-plugins/demo/plugin.json",
+				"{\"entry\":\"first.js\",\"apiVersion\":\"1\"}"),
+			manifest("/app/b.jar!/META-INF/cibseven-plugins/demo/plugin.json",
+				"{\"entry\":\"second.js\",\"apiVersion\":\"1\"}")
+		});
+
+		List<ObjectNode> manifests = new PluginRegistry(true, resolver).getManifests();
+
+		// Files are served from one classpath root only, so the second would get the first one's
+		assertEquals(1, manifests.size());
+		assertEquals("first.js", manifests.get(0).get("entry").asText());
+	}
+
+	@Test
 	public void keepsGoingWhenTheClasspathCannotBeScanned() throws IOException {
 		ResourcePatternResolver resolver = mock(ResourcePatternResolver.class);
 		when(resolver.getResources(MANIFESTS)).thenThrow(new IOException("broken classpath"));

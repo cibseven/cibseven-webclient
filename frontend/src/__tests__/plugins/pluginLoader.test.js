@@ -16,6 +16,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { fetchPluginManifests, loadPlugins, initPlugins } from '@/plugins/pluginLoader.js'
+import { setPluginContext } from '@/plugins/pluginContext.js'
 import { axios } from '@/globals.js'
 import { i18n } from '@/i18n'
 
@@ -43,6 +44,7 @@ function mockHttp(responses) {
 describe('pluginLoader', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    setPluginContext({ config: null })
     vi.spyOn(console, 'warn').mockImplementation(() => {})
     vi.spyOn(console, 'error').mockImplementation(() => {})
     vi.spyOn(console, 'debug').mockImplementation(() => {})
@@ -175,6 +177,24 @@ describe('pluginLoader', () => {
   })
 
   describe('initPlugins', () => {
+    it('asks for nothing when the backend reports plugins as disabled', async () => {
+      const get = mockHttp({ 'info/plugins': { plugins: [validManifest] } })
+      setPluginContext({ config: { pluginsEnabled: false } })
+      const importer = vi.fn()
+
+      await expect(initPlugins('en', importer)).resolves.toEqual([])
+      expect(get).not.toHaveBeenCalled()
+      expect(importer).not.toHaveBeenCalled()
+    })
+
+    it('asks when the backend does not report the flag at all', async () => {
+      mockHttp({ 'info/plugins': { plugins: [validManifest] } })
+      setPluginContext({ config: {} })
+
+      await expect(initPlugins('en', () => Promise.resolve({ register: vi.fn() })))
+        .resolves.toEqual(['demo'])
+    })
+
     it('loads the plugins the backend reports', async () => {
       mockHttp({ 'info/plugins': { plugins: [validManifest] } })
       const register = vi.fn()

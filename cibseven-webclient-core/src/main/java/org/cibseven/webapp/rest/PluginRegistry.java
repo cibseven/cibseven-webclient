@@ -20,7 +20,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,10 +111,18 @@ public class PluginRegistry {
 
 	private List<ObjectNode> scan() {
 		List<ObjectNode> found = new ArrayList<>();
+		Set<String> ids = new HashSet<>();
 		try {
 			for (Resource resource : resolver.getResources(MANIFESTS_PATTERN)) {
 				ObjectNode manifest = read(resource);
-				if (manifest != null) found.add(manifest);
+				if (manifest == null) continue;
+				// Only one folder per id can be served, so a second one would get the first one's files
+				if (!ids.add(manifest.get("id").asText())) {
+					log.warn("Ignoring a second plugin with id \"{}\" found at {}",
+						manifest.get("id").asText(), resource);
+					continue;
+				}
+				found.add(manifest);
 			}
 		} catch (IOException e) {
 			log.warn("Could not scan for plugins below {}", PLUGINS_ROOT, e);

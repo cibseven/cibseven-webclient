@@ -16,6 +16,7 @@
  */
 import { axios } from '@/globals.js'
 import { i18n } from '@/i18n'
+import { getPluginContext } from './pluginContext.js'
 import { PLUGIN_API_VERSION } from './pluginsConfig.js'
 
 // Plugins are discovered by the backend on its classpath and served by it
@@ -153,6 +154,9 @@ export async function loadPlugins(manifests, lang, importer = importModule) {
  * @returns {Promise<Array<string>>} ids of the plugins that were loaded
  */
 export async function initPlugins(lang, importer = importModule) {
+  // Only an explicit false skips the request; a backend not reporting the flag is asked
+  if (getPluginContext().config?.pluginsEnabled === false) return []
+
   const manifests = await fetchPluginManifests()
   if (manifests.length === 0) return []
   return loadPlugins(manifests, lang, importer)

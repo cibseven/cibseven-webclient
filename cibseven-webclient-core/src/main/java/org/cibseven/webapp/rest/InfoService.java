@@ -89,6 +89,7 @@ public class InfoService extends BaseService {
 	@Value("${camunda.bpm.authorization.enabled:true}") private boolean authorizationEnabled;
 	@Value("${cibseven.webclient.legacy.authorization.enabled:false}") private boolean legacyAuthorizationEnabled;
 	@Value("${cibseven.webclient.modeler.enabled:false}") private boolean modelerEnabled;
+	@Value("${cibseven.webclient.plugins.enabled:false}") private boolean pluginsEnabled;
 	@Value("${cibseven.webclient.startProcess.defaultFormEnabled:false}") private boolean startProcessDefaultFormEnabled;
 	
 	@Autowired
@@ -170,6 +171,7 @@ public class InfoService extends BaseService {
 		configJson.put("engineRestUrl", engineRestUrl);
 		configJson.put("authorizationEnabled", engineConfig.isAuthorizationEnabled() || legacyAuthorizationEnabled);
 		configJson.put("modelerEnabled", modelerEnabled);
+		configJson.put("pluginsEnabled", pluginsEnabled);
 		configJson.put("startProcessDefaultFormEnabled", startProcessDefaultFormEnabled);
 		
         try {
