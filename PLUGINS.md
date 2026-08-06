@@ -96,6 +96,52 @@ import map resolve them; a bundled copy is a second instance, across which
 reactivity, `provide`/`inject` and the slot registry do not work. A plugin
 without a build step can use `template:` strings, which the browser compiles.
 
+## Building a plugin
+
+A plugin can be written either way:
+
+- **Without a build**, as a plain ES module using `template:` strings, which the
+  browser compiles because the webclient ships the full Vue build. Good for small
+  contributions; see the example.
+- **With a build**, from real `.vue` single-file components. The deployed `entry`
+  is then the *compiled* output: a `.vue` file cannot be deployed as such, since
+  the browser cannot parse it and the runtime compiler handles `template:`
+  strings only.
+
+For the second case, keep the shared libraries external:
+
+```js
+// the plugin's own vite.config.js
+export default defineConfig({
+  plugins: [vue()],
+  build: {
+    lib: { entry: 'src/index.js', formats: ['es'], fileName: () => 'index.js' },
+    rollupOptions: { external: ['vue', 'axios', 'bootstrap', '@cibseven/plugin-runtime'] }
+  }
+})
+```
+
+A compiled single-file component imports its helpers from `vue`
+(`createElementBlock`, `toDisplayString`, ...), and the import map resolves that
+to the webclient's own instance. Bundling Vue instead produces a second runtime
+across which reactivity, `provide`/`inject` and the slot registry do not work,
+usually without any error.
+
+Another framework can be used - a slot renders a Vue component, so a React
+plugin needs a small Vue wrapper mounting it in `mounted()` - but it has to bring
+its own runtime, which only the webclient's own libraries are exempt from.
+
+## When changes take effect
+
+Discovery happens once: the classpath is scanned on the first request and the
+served locations are resolved while the application context starts.
+
+| Change | What is needed |
+|---|---|
+| a plugin added or removed | restart the backend, then reload the page |
+| `plugin.json` changed, or `plugins.enabled` toggled | restart the backend, then reload the page |
+| a deployed plugin's own files edited in place | reload the page; plugin files are served without caching |
+
 ## Slots
 
 | Slot | Contributes | Props handed to the contribution |
