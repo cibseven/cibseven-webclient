@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.cibseven.webapp.rest;
+package org.cibseven.webapp.plugin;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,7 +32,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
  * Tells the frontend which plugins are deployed.
  *
  * Deliberately a controller of its own instead of another method on
- * {@link InfoService}: the endpoint has to stay available in products that
+ * {@code InfoService}: the endpoint has to stay available in products that
  * replace that service, and it needs neither the engine nor a user.
  *
  * The response is readable without authentication, like the rest of {@code /info}
@@ -40,7 +40,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
  * exist, nothing more; plugin data is fetched through the regular authenticated
  * endpoints.
  *
- * Unlike the other controllers this one does not extend {@link BaseService}: it
+ * Unlike the other controllers this one does not extend {@code BaseService}: it
  * neither talks to the engine nor checks permissions, and inheriting would make
  * it depend on beans it never uses.
  */

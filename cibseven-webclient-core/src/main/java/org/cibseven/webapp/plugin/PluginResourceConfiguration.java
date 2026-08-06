@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.cibseven.webapp.rest;
+package org.cibseven.webapp.plugin;
 
 import java.util.List;
 
@@ -30,13 +30,8 @@ import lombok.extern.slf4j.Slf4j;
  * Serves plugin files from the classpath under {@code /plugins/**}, so the
  * frontend can import them at runtime.
  *
- * Lives in this package on purpose. Every product component-scans
- * {@code org.cibseven.webapp.rest}, while {@code org.cibseven.webapp.config} is
- * not scanned by all of them, and the per-product {@code WebMvcConfigurer}
- * classes cannot be extended from here - the enterprise webclient ships its own
- * class under the very same name. Registering an additional configurer in a
- * package everybody scans is what makes this work in every product without
- * touching any of them.
+ * Registered through {@link PluginAutoConfiguration} rather than component
+ * scanning, which every product configures differently.
  */
 @Configuration @Slf4j
 public class PluginResourceConfiguration implements WebMvcConfigurer {
