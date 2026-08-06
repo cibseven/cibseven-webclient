@@ -43,6 +43,7 @@ import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
 
 @SpringBootTest
 @ContextConfiguration(classes = {UserProvider.class, TestRestTemplateConfiguration.class, MockUserProviderTestConfiguration.class})
@@ -92,6 +93,53 @@ public class UserProviderIT extends BaseHelper {
         SevenUser firstUser = users.iterator().next();
         assertThat(firstUser.getId()).isEqualTo("user-1");
         assertThat(firstUser.getFirstName()).isEqualTo("John");
+    }
+
+    @Test
+    void testGetUserAuthorizationFallsBackWhenSelfEndpointIsResolvedAsAuthorizationId() throws Exception {
+        CIBUser user = getCibUser();
+
+        mockWebServer.enqueue(new MockResponse()
+                .setResponseCode(404)
+                .setBody("Authorization with id self does not exist."));
+        mockWebServer.enqueue(new MockResponse()
+                .setBody("[]")
+                .addHeader("Content-Type", "application/json"));
+        mockWebServer.enqueue(new MockResponse()
+                .setBody("[]")
+                .addHeader("Content-Type", "application/json"));
+        mockWebServer.enqueue(new MockResponse()
+                .setBody("[]")
+                .addHeader("Content-Type", "application/json"));
+
+        assertThat(userProvider.getUserAuthorization(user)).isNotNull();
+        assertThat(mockWebServer.getRequestCount()).isEqualTo(4);
+
+        RecordedRequest selfRequest = mockWebServer.takeRequest();
+        RecordedRequest userRequest = mockWebServer.takeRequest();
+        RecordedRequest groupRequest = mockWebServer.takeRequest();
+        RecordedRequest globalRequest = mockWebServer.takeRequest();
+
+        assertThat(selfRequest.getPath()).isEqualTo("/engine-rest/authorization/self");
+        assertThat(userRequest.getPath()).isEqualTo("/engine-rest/authorization?userIdIn=demo");
+        assertThat(groupRequest.getPath()).isEqualTo("/engine-rest/group?member=demo");
+        assertThat(globalRequest.getPath()).isEqualTo("/engine-rest/authorization?type=0");
+    }
+
+    @Test
+    void testGetUserAuthorizationFallsBackWhenSelfEndpointReturns405() throws Exception {
+        testGetUserAuthorizationFallsBackForStatus(405);
+    }
+
+    @Test
+    void testGetUserAuthorizationDoesNotFallBackWhenSelfEndpointReturns401() {
+        CIBUser user = getCibUser();
+
+        mockWebServer.enqueue(new MockResponse().setResponseCode(401));
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> userProvider.getUserAuthorization(user))
+                .isInstanceOf(RuntimeException.class);
+        assertThat(mockWebServer.getRequestCount()).isEqualTo(1);
     }
 
     @Test
@@ -245,6 +293,34 @@ public class UserProviderIT extends BaseHelper {
         } finally {
             executorService.shutdown();
         }
+    }
+
+    private void testGetUserAuthorizationFallsBackForStatus(int statusCode) throws Exception {
+        CIBUser user = getCibUser();
+
+        mockWebServer.enqueue(new MockResponse().setResponseCode(statusCode));
+        mockWebServer.enqueue(new MockResponse()
+                .setBody("[]")
+                .addHeader("Content-Type", "application/json"));
+        mockWebServer.enqueue(new MockResponse()
+                .setBody("[]")
+                .addHeader("Content-Type", "application/json"));
+        mockWebServer.enqueue(new MockResponse()
+                .setBody("[]")
+                .addHeader("Content-Type", "application/json"));
+
+        assertThat(userProvider.getUserAuthorization(user)).isNotNull();
+        assertThat(mockWebServer.getRequestCount()).isEqualTo(4);
+
+        RecordedRequest selfRequest = mockWebServer.takeRequest();
+        RecordedRequest userRequest = mockWebServer.takeRequest();
+        RecordedRequest groupRequest = mockWebServer.takeRequest();
+        RecordedRequest globalRequest = mockWebServer.takeRequest();
+
+        assertThat(selfRequest.getPath()).isEqualTo("/engine-rest/authorization/self");
+        assertThat(userRequest.getPath()).isEqualTo("/engine-rest/authorization?userIdIn=demo");
+        assertThat(groupRequest.getPath()).isEqualTo("/engine-rest/group?member=demo");
+        assertThat(globalRequest.getPath()).isEqualTo("/engine-rest/authorization?type=0");
     }
 
 }

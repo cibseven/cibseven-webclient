@@ -64,7 +64,7 @@ public class AuthenticationService extends BaseService {
 	
 	@RequestMapping(value = "/authorizations", method = RequestMethod.GET)
 	public Authorizations getUserAuthorizations(@NotNull CIBUser user) {
-		return bpmProvider.getUserAuthorization(user.getId(), user);
+		return bpmProvider.getUserAuthorization(user);
 	}
 
 }

@@ -36,7 +36,7 @@ import org.springframework.http.ResponseEntity;
 public interface IUserProvider {
 
 	public long countUsers(Map<String, Object> filters, CIBUser user) throws SystemException;
-	public Authorizations getUserAuthorization(String userId, CIBUser user);	
+	public Authorizations getUserAuthorization(CIBUser user);
 	public Collection<SevenUser> fetchUsers(CIBUser user) throws SystemException;
 	public SevenVerifyUser verifyUser(StandardLogin login, CIBUser user) throws SystemException;
 	public Collection<User> findUsers(Optional<String> id, Optional<String> firstName, Optional<String> firstNameLike, Optional<String> lastName, Optional<String> lastNameLike,
