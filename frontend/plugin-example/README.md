@@ -1,7 +1,7 @@
 # Example webclient plugin
 
 Proof of concept for runtime-loaded frontend plugins. The plugin in
-`plugins/demo-stats/` is a plain ES module with **no build step**: it is fetched
+`demo-stats/` is a plain ES module with **no build step**: it is fetched
 and evaluated after the webclient has been compiled and deployed, which is the
 constraint that rules out Camunda's "drop a JS file into a folder" approach.
 
@@ -61,27 +61,16 @@ META-INF/cibseven-plugins/demo-stats/translations_en.json
 is ignored: the folder is where the files are served from, so it decides the
 identity.
 
-Note the two manifest formats, one per discovery source:
-
-- `plugins/demo-stats/plugin.json` - one file per plugin, read by the backend
-  from the classpath. No `id`, it comes from the folder.
-- `plugins.json` - the whole list in one file, only used as the fallback for a
-  frontend running without the backend. Here each entry needs its `id`. `GET /info/plugins` lists what was found, and the files are served under
+`GET /info/plugins` lists what was found, and the files are served under
 `/plugins/<id>/…`. Several plugin jars can be deployed together; each contributes
 its own folder. Nothing here depends on a filesystem layout, so a war and a Spring
 Boot jar behave the same.
 
 ## Trying it locally
 
-1. Either package the example as described above, or - without a backend - copy it
-   next to the application's static files, which the loader falls back to:
-
-   ```sh
-   # development
-   cp -r plugin-example/plugins.json plugin-example/plugins public/
-   # or, against a build
-   cp -r plugin-example/plugins.json plugin-example/plugins dist/
-   ```
+1. Copy `demo-stats/` onto the classpath of the webclient you run, for example
+   into `cibseven-webclient-web/src/main/resources/META-INF/cibseven-plugins/`,
+   and switch the property above on.
 
 2. Start the webclient, log in and open any process instance. The console logs
    `Plugin "demo-stats" loaded`, a **Demo plugin** tab appears after the built-in
@@ -94,8 +83,9 @@ Boot jar behave the same.
 3. The tab is deep-linkable like any built-in one, because `tabUrlMixin` keeps
    the active tab in the URL: append `?tab=demo-stats` to a process instance URL.
 
-Without `plugins.json` deployed, nothing of this runs: the manifest request 404s,
-the loader stays silent and the application behaves exactly as before.
+With the property off or no plugin on the classpath, nothing of this runs: the
+endpoint reports an empty list, the loader stays silent and the application
+behaves exactly as before.
 
 ## Writing a plugin
 

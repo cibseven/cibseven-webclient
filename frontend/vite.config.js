@@ -18,7 +18,6 @@
 
 import { fileURLToPath, URL } from 'node:url'
 import path from 'node:path'
-import fs from 'node:fs'
 
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
@@ -130,19 +129,11 @@ export default defineConfig({
           })
         },
       },
-      // Plugin files are served by the backend from its classpath. The pattern is
-      // a regex on purpose: a plain '/plugins' prefix would also catch
-      // '/plugins.json', the manifest of a locally deployed plugin.
-      '^/plugins/': {
+      // Plugin files are served by the backend from its classpath
+      '/plugins': {
         target: backendUrl,
         changeOrigin: true,
         secure: false,
-        // A plugin copied into public/ wins, so plugins can be tried out without
-        // packaging them for the backend.
-        bypass: (req) => {
-          const filePath = path.join(__dirname, 'public', req.url.split('?')[0])
-          return fs.existsSync(filePath) ? req.url : undefined
-        },
       },
     },
   },

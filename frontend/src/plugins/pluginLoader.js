@@ -18,10 +18,8 @@ import { axios } from '@/globals.js'
 import { i18n } from '@/i18n'
 import { PLUGIN_API_VERSION } from './pluginsConfig.js'
 
-// Plugins are discovered on the backend's classpath; the static file is a
-// fallback for setups without that backend, e.g. the plain dev server.
+// Plugins are discovered by the backend on its classpath and served by it
 const PLUGINS_ENDPOINT = 'info/plugins'
-const PLUGINS_MANIFEST_FILE = 'plugins.json'
 const PLUGINS_BASE_PATH = 'plugins/'
 
 /**
@@ -36,45 +34,25 @@ function resolveUrl(relativePath) {
 }
 
 /**
- * Reads a list of manifests from one source, treating absence as "no plugins".
- *
- * @param {string} path
- * @returns {Promise<Array<object>|null>} null when the source is unavailable
- */
-async function readManifestsFrom(path) {
-  try {
-    const res = await axios.create().get(resolveUrl(path))
-    const plugins = res.data?.plugins
-    if (!Array.isArray(plugins)) {
-      console.warn(`${path} does not contain a "plugins" array, ignoring it`)
-      return []
-    }
-    return plugins
-  } catch {
-    return null
-  }
-}
-
-/**
- * Reads the list of plugin manifests. Absence is a normal state - the webclient
- * ships without plugins - so an unavailable source yields an empty list rather
- * than an error, mirroring how optional translation files are handled in
- * 'i18n.js'.
+ * Reads the list of plugin manifests from the backend. Having none is a normal
+ * state - the webclient ships without plugins and they are disabled by default -
+ * so an unavailable endpoint yields an empty list rather than an error.
  *
  * @returns {Promise<Array<object>>}
  */
 export async function fetchPluginManifests() {
-  const fromBackend = await readManifestsFrom(PLUGINS_ENDPOINT)
-  if (fromBackend !== null) return fromBackend
-
-  // No plugin endpoint: either plugins are switched off or the frontend runs
-  // without the webclient backend, where a deployed file is the only source.
-  const fromFile = await readManifestsFrom(PLUGINS_MANIFEST_FILE)
-  if (fromFile === null) {
-    console.debug('No plugin manifest available, continuing without plugins')
+  try {
+    const res = await axios.create().get(resolveUrl(PLUGINS_ENDPOINT))
+    const plugins = res.data?.plugins
+    if (!Array.isArray(plugins)) {
+      console.warn('The plugin endpoint returned no "plugins" array, ignoring it')
+      return []
+    }
+    return plugins
+  } catch {
+    console.debug('No plugin endpoint available, continuing without plugins')
     return []
   }
-  return fromFile
 }
 
 /**

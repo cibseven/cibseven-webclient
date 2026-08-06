@@ -50,35 +50,26 @@ describe('pluginLoader', () => {
   })
 
   describe('fetchPluginManifests', () => {
-    it('reads the plugins discovered on the backend classpath', async () => {
+    it('reads the plugins the backend discovered on its classpath', async () => {
       const get = mockHttp({ 'info/plugins': { plugins: [validManifest] } })
 
       await expect(fetchPluginManifests()).resolves.toEqual([validManifest])
       expect(get).toHaveBeenCalledWith(expect.stringContaining('info/plugins'))
     })
 
-    it('trusts an empty backend response instead of falling back to a file', async () => {
-      // Plugins switched off on the backend must stay off, even if a leftover
-      // plugins.json is lying around in the static folder
-      const get = mockHttp({ 'info/plugins': { plugins: [] }, 'plugins.json': { plugins: [validManifest] } })
+    it('returns an empty list when the backend reports no plugins', async () => {
+      mockHttp({ 'info/plugins': { plugins: [] } })
 
       await expect(fetchPluginManifests()).resolves.toEqual([])
-      expect(get).not.toHaveBeenCalledWith(expect.stringContaining('plugins.json'))
     })
 
-    it('falls back to a deployed file when the backend has no plugin endpoint', async () => {
-      mockHttp({ 'plugins.json': { plugins: [validManifest] } })
-
-      await expect(fetchPluginManifests()).resolves.toEqual([validManifest])
-    })
-
-    it('returns an empty list when neither source is available', async () => {
+    it('returns an empty list when the endpoint is unavailable', async () => {
       mockHttp({})
 
       await expect(fetchPluginManifests()).resolves.toEqual([])
     })
 
-    it('returns an empty list when a source has no plugins array', async () => {
+    it('returns an empty list when the response has no plugins array', async () => {
       mockHttp({ 'info/plugins': { plugins: 'not-an-array' } })
 
       await expect(fetchPluginManifests()).resolves.toEqual([])
@@ -184,8 +175,8 @@ describe('pluginLoader', () => {
   })
 
   describe('initPlugins', () => {
-    it('loads the plugins listed in the manifest file', async () => {
-      mockHttp({ 'plugins.json': { plugins: [validManifest] } })
+    it('loads the plugins the backend reports', async () => {
+      mockHttp({ 'info/plugins': { plugins: [validManifest] } })
       const register = vi.fn()
 
       await expect(initPlugins('en', () => Promise.resolve({ register }))).resolves.toEqual(['demo'])
