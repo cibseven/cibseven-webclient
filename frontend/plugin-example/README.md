@@ -33,3 +33,5 @@ application behaves exactly as before.
 - `index.js` — `register()` putting one component into `process-instance-tab`,
   using `vue`, `services` and `getContext` from `@cibseven/plugin-runtime`
 - `translations_*.json` — merged under `plugins.demo-stats.*`
+- `styles.css` — listed in the manifest and added to the page; every selector is
+  prefixed with the plugin name, since nothing scopes them

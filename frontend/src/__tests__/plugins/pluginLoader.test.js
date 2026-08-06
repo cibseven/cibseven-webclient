@@ -45,6 +45,7 @@ describe('pluginLoader', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     setPluginContext({ config: null })
+    document.head.querySelectorAll('link[data-plugin]').forEach(link => link.remove())
     vi.spyOn(console, 'warn').mockImplementation(() => {})
     vi.spyOn(console, 'error').mockImplementation(() => {})
     vi.spyOn(console, 'debug').mockImplementation(() => {})
@@ -153,6 +154,39 @@ describe('pluginLoader', () => {
         : Promise.resolve({ register: vi.fn() }))
 
       await expect(loadPlugins([validManifest, other], 'en', importer)).resolves.toEqual(['other'])
+    })
+
+    it('adds the stylesheets a plugin ships', async () => {
+      mockHttp({})
+      const manifest = { ...validManifest, styles: ['styles.css', 'extra.css'] }
+
+      await loadPlugins([manifest], 'en', () => Promise.resolve({ register: vi.fn() }))
+
+      const links = [...document.head.querySelectorAll('link[data-plugin="demo"]')]
+      expect(links.map(link => link.getAttribute('rel'))).toEqual(['stylesheet', 'stylesheet'])
+      expect(links[0].href).toContain('plugins/demo/styles.css')
+      expect(links[1].href).toContain('plugins/demo/extra.css')
+    })
+
+    it('adds no stylesheet when the plugin ships none', async () => {
+      mockHttp({})
+
+      await loadPlugins([validManifest], 'en', () => Promise.resolve({ register: vi.fn() }))
+
+      expect(document.head.querySelector('link[data-plugin="demo"]')).toBeNull()
+    })
+
+    it('adds the stylesheets before the plugin registers anything', async () => {
+      mockHttp({})
+      const manifest = { ...validManifest, styles: ['styles.css'] }
+      let stylesWhenRegistering = 0
+      const register = vi.fn(() => {
+        stylesWhenRegistering = document.head.querySelectorAll('link[data-plugin="demo"]').length
+      })
+
+      await loadPlugins([manifest], 'en', () => Promise.resolve({ register }))
+
+      expect(stylesWhenRegistering).toBe(1)
     })
 
     it('merges plugin translations under the plugins namespace', async () => {

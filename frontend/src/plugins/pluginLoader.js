@@ -74,6 +74,23 @@ async function loadPluginTranslations(manifest, lang) {
   }
 }
 
+/**
+ * Adds the stylesheets a plugin ships. Nothing scopes them: a plugin styling
+ * shared elements affects the whole page, which is part of trusting it.
+ *
+ * @param {object} manifest
+ */
+function loadPluginStyles(manifest) {
+  const files = Array.isArray(manifest.styles) ? manifest.styles : []
+  files.forEach(file => {
+    const link = document.createElement('link')
+    link.rel = 'stylesheet'
+    link.href = resolveUrl(`${PLUGINS_BASE_PATH}${manifest.id}/${file}`)
+    link.dataset.plugin = manifest.id
+    document.head.appendChild(link)
+  })
+}
+
 function isUsable(manifest) {
   if (!manifest?.id || !manifest?.entry) {
     console.warn('Ignoring plugin manifest without "id" or "entry":', manifest)
@@ -118,6 +135,7 @@ async function loadPlugin(manifest, lang, importer) {
       return false
     }
     await loadPluginTranslations(manifest, lang)
+    loadPluginStyles(manifest)
     await register({ id: manifest.id, baseUrl: resolveUrl(`${PLUGINS_BASE_PATH}${manifest.id}/`) })
     console.info(`Plugin "${manifest.id}" loaded`)
     return true

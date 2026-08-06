@@ -26,8 +26,8 @@ const DemoStats = vue.defineComponent({
     process: { type: Object, default: null }
   },
   template: `
-    <div class="container-fluid px-4 p-4">
-      <h5>{{ $t('plugins.demo-stats.title') }}</h5>
+    <div class="container-fluid px-4 p-4 demo-stats">
+      <h5 class="demo-stats-title">{{ $t('plugins.demo-stats.title') }}</h5>
       <p class="mb-1">{{ $t('plugins.demo-stats.instance') }}: {{ instance?.id ?? '-' }}</p>
       <p class="mb-1">{{ $t('plugins.demo-stats.definition') }}: {{ process?.key ?? '-' }}</p>
       <p class="mb-1">{{ $t('plugins.demo-stats.theme') }}: {{ theme }}</p>
@@ -36,7 +36,8 @@ const DemoStats = vue.defineComponent({
         {{ $t('plugins.demo-stats.failed') }}: {{ error }}
       </p>
       <p v-else class="mb-0">
-        {{ $t('plugins.demo-stats.processes') }}: {{ processCount ?? '…' }}
+        {{ $t('plugins.demo-stats.processes') }}:
+        <span class="demo-stats-value">{{ processCount ?? '…' }}</span>
       </p>
     </div>
   `,

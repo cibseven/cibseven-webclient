@@ -65,6 +65,7 @@ same.
 | `apiVersion` | must match the webclient's `PLUGIN_API_VERSION`, otherwise the plugin is refused |
 | `slots` | documentation only; what is rendered is decided by `registerPlugin` |
 | `translations` | per language, merged under `plugins.<id>.*` |
+| `styles` | stylesheets of the plugin, added to the page before it registers |
 
 The entry module exports `register`, called once during startup:
 
@@ -96,40 +97,18 @@ import map resolve them; a bundled copy is a second instance, across which
 reactivity, `provide`/`inject` and the slot registry do not work. A plugin
 without a build step can use `template:` strings, which the browser compiles.
 
-## Building a plugin
+## Styling
 
-A plugin can be written either way:
+Plugin components can use the application's Bootstrap and theme classes, which
+are already loaded. A plugin that brings its own CSS lists the files in its
+manifest, and they are added to the page before the plugin registers anything:
 
-- **Without a build**, as a plain ES module using `template:` strings, which the
-  browser compiles because the webclient ships the full Vue build. Good for small
-  contributions; see the example.
-- **With a build**, from real `.vue` single-file components. The deployed `entry`
-  is then the *compiled* output: a `.vue` file cannot be deployed as such, since
-  the browser cannot parse it and the runtime compiler handles `template:`
-  strings only.
-
-For the second case, keep the shared libraries external:
-
-```js
-// the plugin's own vite.config.js
-export default defineConfig({
-  plugins: [vue()],
-  build: {
-    lib: { entry: 'src/index.js', formats: ['es'], fileName: () => 'index.js' },
-    rollupOptions: { external: ['vue', 'axios', 'bootstrap', '@cibseven/plugin-runtime'] }
-  }
-})
+```json
+{ "entry": "index.js", "apiVersion": "1", "styles": ["styles.css"] }
 ```
 
-A compiled single-file component imports its helpers from `vue`
-(`createElementBlock`, `toDisplayString`, ...), and the import map resolves that
-to the webclient's own instance. Bundling Vue instead produces a second runtime
-across which reactivity, `provide`/`inject` and the slot registry do not work,
-usually without any error.
-
-Another framework can be used - a slot renders a Vue component, so a React
-plugin needs a small Vue wrapper mounting it in `mounted()` - but it has to bring
-its own runtime, which only the webclient's own libraries are exempt from.
+Nothing scopes those styles, so prefix your selectors with something belonging to
+the plugin rather than styling shared elements.
 
 ## When changes take effect
 
