@@ -105,7 +105,7 @@
           </div>
         </div>
       </b-popover>
-      <div class="overflow-auto flex-fill border-bottom" @scroll="handleScrollTasks">
+      <div class="overflow-auto flex-fill border-bottom" @scroll="handleScrollTasks" v-scroll-on-mobile>
         <div v-if="tasksFiltered.length > 0">
           <b-list-group class="mx-3">
             <b-list-group-item @click="selectedTask(task)" v-for="task of tasksFiltered" :key="task.id" :ref="'taskItem-' + task.id"

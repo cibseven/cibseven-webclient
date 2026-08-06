@@ -27,6 +27,8 @@ import store from './store'
 import { createAppRouter, appRoutes } from './router.js'
 import registerComponents from './register.js'
 import { permissionsMixin }  from './permissions.js'
+import scrollOnMobile from './directives/scrollOnMobile.js'
+import hideHeader from './directives/hideHeader.js'
 
 import { InfoService, setServicesBasePath } from './services.js'
 import { hasHeader, checkExternalReturn,
@@ -127,6 +129,9 @@ Promise.all([
           }
         }
       })
+
+      app.directive('scroll-on-mobile', scrollOnMobile)
+      app.directive('hide-header', hideHeader)
 
       registerComponents(app)
 

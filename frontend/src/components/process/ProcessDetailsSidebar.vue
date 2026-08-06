@@ -18,7 +18,7 @@
 -->
 <template>
   <div class="h-100 d-flex flex-column bg-light">
-    <div class="overflow-auto h-100">
+    <div class="overflow-auto h-100" v-scroll-on-mobile>
       <b-button style="top: 2px; right: 60px" class="border-0 position-absolute"
         variant="btn-outline-primary" size="sm" :title="$t('process.loadVersions')"
         @click="onRefreshProcessDefinitions(false)">
