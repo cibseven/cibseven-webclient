@@ -42,8 +42,11 @@ import org.cibseven.webapp.rest.model.SevenVerifyUser;
 import org.cibseven.webapp.rest.model.User;
 import org.cibseven.webapp.rest.model.UserGroup;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -62,69 +65,97 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	@Override
-	public Authorizations getUserAuthorization(String userId, CIBUser user) {
+	public Authorizations getUserAuthorization(CIBUser user) {
 		Authorizations auths = new Authorizations();
+
+		String urlUsers = getEngineRestUrl(user) + "/authorization/self";
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(urlUsers);
+		Collection<Authorization> userAuthorizations;
 		try {
-			String urlUsers = getEngineRestUrl(user) + "/authorization";
-			UriComponentsBuilder builder;
-			
-			builder = UriComponentsBuilder.fromUriString(urlUsers).queryParam("userIdIn", URLEncoder.encode(userId, StandardCharsets.UTF_8.toString()));
-	
-			Collection<Authorization> userAuthorizations = new ArrayList<Authorization>(Arrays.asList(((ResponseEntity<Authorization[]>) doGet(builder, Authorization[].class, user)).getBody()));
-			
-			String urlGroup = getEngineRestUrl(user) + "/group";
-			builder = UriComponentsBuilder.fromUriString(urlGroup).queryParam("member", URLEncoder.encode(userId, StandardCharsets.UTF_8.toString()));
-			Collection<UserGroup> userGroups = Arrays.asList(((ResponseEntity<UserGroup[]>) doGet(builder, UserGroup[].class, user)).getBody());
-			
-			String listGroups = "";
-			
-			for (UserGroup userGroup : userGroups) {
-				listGroups += userGroup.getId() + ",";
+			userAuthorizations = new ArrayList<Authorization>(Arrays.asList(((ResponseEntity<Authorization[]>) doGet(builder, Authorization[].class, user)).getBody()));
+		} catch (RuntimeException ex) {
+			if (!shouldUseLegacyAuthorizationFallback(ex)) {
+				throw ex;
 			}
-			
-			if (userGroups.size() > 0) {
-				String urlGroupAuthorizations = getEngineRestUrl(user) + "/authorization";
-				builder = UriComponentsBuilder.fromUriString(urlGroupAuthorizations).queryParam("groupIdIn", URLEncoder.encode(listGroups, StandardCharsets.UTF_8.toString()));
-				Collection<Authorization> groupsAuthorizations = Arrays.asList(((ResponseEntity<Authorization[]>) doGet(builder, Authorization[].class, user)).getBody());
-				userAuthorizations.addAll(groupsAuthorizations);
-			}
-
-			builder = UriComponentsBuilder.fromUriString(urlUsers).queryParam("type", 0);
-			Collection<Authorization> globalAuthorizations = Arrays.asList(((ResponseEntity<Authorization[]>) doGet(builder, Authorization[].class, user)).getBody());
-			userAuthorizations.addAll(globalAuthorizations);
-
-			auths.setApplication(filterResources(userAuthorizations, resourceType(SevenResourceType.APPLICATION)));
-			auths.setFilter(filterResources(userAuthorizations, resourceType(SevenResourceType.FILTER)));
-			auths.setProcessDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.PROCESS_DEFINITION)));
-			auths.setProcessInstance(filterResources(userAuthorizations, resourceType(SevenResourceType.PROCESS_INSTANCE)));
-			auths.setTask(filterResources(userAuthorizations, resourceType(SevenResourceType.TASK)));
-			auths.setAuthorization(filterResources(userAuthorizations, resourceType(SevenResourceType.AUTHORIZATION)));
-			auths.setUser(filterResources(userAuthorizations, resourceType(SevenResourceType.USER)));
-			auths.setGroup(filterResources(userAuthorizations, resourceType(SevenResourceType.GROUP)));
-			auths.setDecisionDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.DECISION_DEFINITION)));
-			auths.setDecisionRequirementsDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.DECISION_REQUIREMENTS_DEFINITION)));
-			auths.setDeployment(filterResources(userAuthorizations, resourceType(SevenResourceType.DEPLOYMENT)));
-			//auths.setCaseDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.CASE_DEFINITION)));
-			//auths.setCaseInstance(filterResources(userAuthorizations, resourceType(SevenResourceType.CASE_INSTANCE)));
-			//auths.setJobDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.JOB_DEFINITION)));
-			auths.setBatch(filterResources(userAuthorizations, resourceType(SevenResourceType.BATCH)));
-			auths.setGroupMembership(filterResources(userAuthorizations, resourceType(SevenResourceType.GROUP_MEMBERSHIP)));
-			auths.setHistoricTask(filterResources(userAuthorizations, resourceType(SevenResourceType.HISTORIC_TASK)));
-			auths.setHistoricProcessInstance(filterResources(userAuthorizations, resourceType(SevenResourceType.HISTORIC_PROCESS_INSTANCE)));
-			auths.setTenant(filterResources(userAuthorizations, resourceType(SevenResourceType.TENANT)));
-			auths.setTenantMembership(filterResources(userAuthorizations, resourceType(SevenResourceType.TENANT_MEMBERSHIP)));
-			auths.setReport(filterResources(userAuthorizations, resourceType(SevenResourceType.REPORT)));
-			auths.setDashboard(filterResources(userAuthorizations, resourceType(SevenResourceType.DASHBOARD)));
-			auths.setUserOperationLogCategory(filterResources(userAuthorizations, resourceType(SevenResourceType.USER_OPERATION_LOG_CATEGORY)));
-			auths.setSystem(filterResources(userAuthorizations, resourceType(SevenResourceType.SYSTEM)));
-			//auths.setMessage(filterResources(userAuthorizations, resourceType(SevenResourceType.MESSAGE)));
-			//auths.setEventSubscription(filterResources(userAuthorizations, resourceType(SevenResourceType.EVENT_SUBSCRIPTION)));
-			
-		} catch (UnsupportedEncodingException e) {
-			throw new SystemException(e);
+			userAuthorizations = getLegacyAuthorizations(user);
 		}
 
+		auths.setApplication(filterResources(userAuthorizations, resourceType(SevenResourceType.APPLICATION)));
+		auths.setFilter(filterResources(userAuthorizations, resourceType(SevenResourceType.FILTER)));
+		auths.setProcessDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.PROCESS_DEFINITION)));
+		auths.setProcessInstance(filterResources(userAuthorizations, resourceType(SevenResourceType.PROCESS_INSTANCE)));
+		auths.setTask(filterResources(userAuthorizations, resourceType(SevenResourceType.TASK)));
+		auths.setAuthorization(filterResources(userAuthorizations, resourceType(SevenResourceType.AUTHORIZATION)));
+		auths.setUser(filterResources(userAuthorizations, resourceType(SevenResourceType.USER)));
+		auths.setGroup(filterResources(userAuthorizations, resourceType(SevenResourceType.GROUP)));
+		auths.setDecisionDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.DECISION_DEFINITION)));
+		auths.setDecisionRequirementsDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.DECISION_REQUIREMENTS_DEFINITION)));
+		auths.setDeployment(filterResources(userAuthorizations, resourceType(SevenResourceType.DEPLOYMENT)));
+		//auths.setCaseDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.CASE_DEFINITION)));
+		//auths.setCaseInstance(filterResources(userAuthorizations, resourceType(SevenResourceType.CASE_INSTANCE)));
+		//auths.setJobDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.JOB_DEFINITION)));
+		auths.setBatch(filterResources(userAuthorizations, resourceType(SevenResourceType.BATCH)));
+		auths.setGroupMembership(filterResources(userAuthorizations, resourceType(SevenResourceType.GROUP_MEMBERSHIP)));
+		auths.setHistoricTask(filterResources(userAuthorizations, resourceType(SevenResourceType.HISTORIC_TASK)));
+		auths.setHistoricProcessInstance(filterResources(userAuthorizations, resourceType(SevenResourceType.HISTORIC_PROCESS_INSTANCE)));
+		auths.setTenant(filterResources(userAuthorizations, resourceType(SevenResourceType.TENANT)));
+		auths.setTenantMembership(filterResources(userAuthorizations, resourceType(SevenResourceType.TENANT_MEMBERSHIP)));
+		auths.setReport(filterResources(userAuthorizations, resourceType(SevenResourceType.REPORT)));
+		auths.setDashboard(filterResources(userAuthorizations, resourceType(SevenResourceType.DASHBOARD)));
+		auths.setUserOperationLogCategory(filterResources(userAuthorizations, resourceType(SevenResourceType.USER_OPERATION_LOG_CATEGORY)));
+		auths.setSystem(filterResources(userAuthorizations, resourceType(SevenResourceType.SYSTEM)));
+		//auths.setMessage(filterResources(userAuthorizations, resourceType(SevenResourceType.MESSAGE)));
+		//auths.setEventSubscription(filterResources(userAuthorizations, resourceType(SevenResourceType.EVENT_SUBSCRIPTION)));
+
 		return auths;
+	}
+
+	private Collection<Authorization> getLegacyAuthorizations(CIBUser user) {
+		String urlUsers = getEngineRestUrl(user) + "/authorization";
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(urlUsers)
+			.queryParam("userIdIn", URLEncoder.encode(user.getId(), StandardCharsets.UTF_8));
+
+		Collection<Authorization> userAuthorizations = new ArrayList<Authorization>(Arrays.asList(((ResponseEntity<Authorization[]>) doGet(builder, Authorization[].class, user)).getBody()));
+
+		String urlGroup = getEngineRestUrl(user) + "/group";
+		builder = UriComponentsBuilder.fromUriString(urlGroup)
+			.queryParam("member", URLEncoder.encode(user.getId(), StandardCharsets.UTF_8));
+		Collection<UserGroup> userGroups = Arrays.asList(((ResponseEntity<UserGroup[]>) doGet(builder, UserGroup[].class, user)).getBody());
+
+		String listGroups = "";
+
+		for (UserGroup userGroup : userGroups) {
+			listGroups += userGroup.getId() + ",";
+		}
+
+		if (!userGroups.isEmpty()) {
+			String urlGroupAuthorizations = getEngineRestUrl(user) + "/authorization";
+			builder = UriComponentsBuilder.fromUriString(urlGroupAuthorizations)
+				.queryParam("groupIdIn", URLEncoder.encode(listGroups, StandardCharsets.UTF_8));
+			Collection<Authorization> groupsAuthorizations = Arrays.asList(((ResponseEntity<Authorization[]>) doGet(builder, Authorization[].class, user)).getBody());
+			userAuthorizations.addAll(groupsAuthorizations);
+		}
+
+		builder = UriComponentsBuilder.fromUriString(urlUsers).queryParam("type", 0);
+		Collection<Authorization> globalAuthorizations = Arrays.asList(((ResponseEntity<Authorization[]>) doGet(builder, Authorization[].class, user)).getBody());
+		userAuthorizations.addAll(globalAuthorizations);
+
+		return userAuthorizations;
+	}
+
+	private boolean shouldUseLegacyAuthorizationFallback(RuntimeException ex) {
+		Throwable cause = ex.getCause();
+		if (!(cause instanceof HttpStatusCodeException httpStatusCodeException)) {
+			return false;
+		}
+
+		HttpStatusCode statusCode = httpStatusCodeException.getStatusCode();
+		// Older engine-rest versions may not support the self-authorization endpoint.
+		// Treat 404/405/401 as compatibility failures and fall back to legacy authorization queries.
+		if (statusCode == HttpStatus.METHOD_NOT_ALLOWED || statusCode == HttpStatus.NOT_FOUND || statusCode == HttpStatus.UNAUTHORIZED) {
+			return true;
+		}
+		return false;
 	}
 	
 	/**

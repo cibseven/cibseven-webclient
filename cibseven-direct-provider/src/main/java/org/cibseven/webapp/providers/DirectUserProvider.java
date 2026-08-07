@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.cibseven.bpm.engine.IdentityService;
 import org.cibseven.bpm.engine.ProcessEngineException;
 import org.cibseven.bpm.engine.authorization.AuthorizationQuery;
 import org.cibseven.bpm.engine.authorization.Permissions;
@@ -81,38 +82,40 @@ public class DirectUserProvider implements IUserProvider {
 	}
 
 	@Override
-	public Authorizations getUserAuthorization(String userId, CIBUser user) {
+	public Authorizations getUserAuthorization(CIBUser user) {
+		IdentityService identityService = directProviderUtil.getProcessEngine(user).getIdentityService();
+    	Authentication currentAuthentication = identityService.getCurrentAuthentication();
 		AuthorizationQueryDto queryDto = new AuthorizationQueryDto();
-		queryDto.setUserIdIn(new String[] { userId });
+		queryDto.setUserIdIn(new String[] { user.getId() });
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
 		AuthorizationQuery userQuery = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
-
-		List<org.cibseven.bpm.engine.authorization.Authorization> userAuthorizationList = QueryUtil.list(userQuery, null,
-				null);
-		GroupQuery groupQuery = directProviderUtil.getProcessEngine(user).getIdentityService().createGroupQuery();
-		List<Group> userGroups = groupQuery.groupMember(userId).orderByGroupName().asc().unlimitedList();
-
+		List<org.cibseven.bpm.engine.authorization.Authorization> userAuthorizationList;
 		Collection<Authorization> groupsAuthorizations;
-		if (!userGroups.isEmpty()) {
-			String[] listGroups = userGroups.stream().map(Group::getId).toArray(String[]::new);
-			AuthorizationQueryDto groupIdQueryDto = new AuthorizationQueryDto();
-			groupIdQueryDto.setGroupIdIn(listGroups);
-			groupIdQueryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
-			AuthorizationQuery groupIdQuery = groupIdQueryDto.toQuery(directProviderUtil.getProcessEngine(user));
-			List<org.cibseven.bpm.engine.authorization.Authorization> groupIdResultList = QueryUtil.list(groupIdQuery, null, null);
-			groupsAuthorizations = createAuthorizationCollection(groupIdResultList);
-		} else {
-			groupsAuthorizations = Collections.emptyList();
+		Collection<Authorization> globalAuthorizations;
+		try {
+			directProviderUtil.getProcessEngine(user).getIdentityService().clearAuthentication();
+			userAuthorizationList = QueryUtil.list(userQuery, null, null);
+				queryDto.setUserIdIn(null);
+			if (currentAuthentication.getGroupIds() != null && !currentAuthentication.getGroupIds().isEmpty()) {
+				queryDto.setGroupIdIn(currentAuthentication.getGroupIds().toArray(new String[currentAuthentication.getGroupIds().size()]));
+				AuthorizationQuery groupIdQuery = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
+				List<org.cibseven.bpm.engine.authorization.Authorization> groupIdResultList = QueryUtil.list(groupIdQuery, null, null);
+				groupsAuthorizations = createAuthorizationCollection(groupIdResultList);
+			} else {
+				groupsAuthorizations = Collections.emptyList();
+			}
+
+			queryDto.setGroupIdIn(null);
+			queryDto.setType(0);
+			AuthorizationQuery globalIdQuery = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
+			List<org.cibseven.bpm.engine.authorization.Authorization> globalIdResultList = QueryUtil.list(globalIdQuery, null, null);
+			globalAuthorizations = createAuthorizationCollection(globalIdResultList);
+			
+		} catch (ProcessEngineException e) {
+			throw new SystemException("Failed to set authentication for user " + user.getId(), e);
+		} finally {
+			identityService.setAuthentication(currentAuthentication);
 		}
-
-		AuthorizationQueryDto globalIdQueryDto = new AuthorizationQueryDto();
-		globalIdQueryDto.setType(0);
-		globalIdQueryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
-		AuthorizationQuery globalIdQuery = globalIdQueryDto.toQuery(directProviderUtil.getProcessEngine(user));
-		List<org.cibseven.bpm.engine.authorization.Authorization> globalIdResultList = QueryUtil.list(globalIdQuery, null,
-				null);
-		Collection<Authorization> globalAuthorizations = createAuthorizationCollection(globalIdResultList);
-
 		Authorizations auths = new Authorizations();
 		Collection<Authorization> userAuthorizations = createAuthorizationCollection(userAuthorizationList);
 		userAuthorizations.addAll(groupsAuthorizations);
