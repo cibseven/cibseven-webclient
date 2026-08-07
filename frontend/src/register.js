@@ -16,8 +16,12 @@
  */
 import { registerComponents as registerCommonComponents } from '@cib/common-frontend'
 import { GlobalEvents } from 'vue-global-events'
+import scrollOnMobile from './directives/scrollOnMobile.js'
+import hideHeader from './directives/hideHeader.js'
 
 const registerComponents = function(app) {
+  app.directive('scroll-on-mobile', scrollOnMobile)
+  app.directive('hide-header', hideHeader)
   registerCommonComponents(app)
   app.component('GlobalEvents', GlobalEvents)
 }

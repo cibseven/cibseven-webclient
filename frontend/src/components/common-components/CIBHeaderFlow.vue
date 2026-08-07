@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <header style="height: 55px"> <!-- Empty container with height of navbar -->
+  <header style="height: 55px;" v-hide-header> <!-- Empty container with height of navbar -->
     <b-navbar toggleable="md" fixed="top" type="light" class="border-bottom bg-white px-3">
       <slot></slot>
       <button 
