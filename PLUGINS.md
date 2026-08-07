@@ -41,6 +41,16 @@ Several plugin jars can be deployed together, each contributing its own folder.
 Nothing depends on a filesystem layout, so a war and a Spring Boot jar behave the
 same.
 
+Installing a plugin is therefore the same gesture as installing a JDBC driver or
+an engine plugin - putting a jar where the distribution already looks:
+
+| Distribution | Where the plugin jar goes |
+|---|---|
+| CIB seven Run | `configuration/userlib` |
+| Tomcat, WildFly | the webapp's `WEB-INF/lib` |
+| Docker, Kubernetes | into `configuration/userlib` of the image, by deriving an image or mounting a volume |
+| Webclient embedded in an application | a dependency of that application |
+
 | Endpoint | Purpose |
 |---|---|
 | `GET /info/plugins` | manifests of the plugins found on the classpath |
