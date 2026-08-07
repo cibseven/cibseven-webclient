@@ -132,8 +132,8 @@ public class UserProviderIT extends BaseHelper {
     }
 
     @Test
-        void testGetUserAuthorizationFallsBackWhenSelfEndpointReturns401() throws Exception {
-            testGetUserAuthorizationFallsBackForStatus(401);
+    void testGetUserAuthorizationFallsBackWhenSelfEndpointReturns401() throws Exception {
+        testGetUserAuthorizationFallsBackForStatus(401);
     }
 
     @Test
