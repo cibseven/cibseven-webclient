@@ -144,6 +144,29 @@ import map resolve them; a bundled copy is a second instance, across which
 reactivity, `provide`/`inject` and the slot registry do not work. A plugin
 without a build step can use `template:` strings, which the browser compiles.
 
+## Single-file components
+
+A plugin with more than a little markup is better written as `.vue` components and
+built. The build is the plugin author's, not ours: `frontend/plugin-example/demo-report`
+is a working starter to copy - `package.json`, an eight-line `vite.config.js`, one
+component - and its build writes straight into the layout a jar needs.
+
+```js
+rollupOptions: {
+  external: ['vue', 'axios', 'bootstrap', '@cibseven/plugin-runtime']
+}
+```
+
+Keeping those external is the one thing that matters. A compiled component imports
+its helpers from `vue` by name, and the import map resolves them to the webclient's
+instance; bundling Vue instead gives the plugin a second runtime, across which
+reactivity, `provide`/`inject` and the slot registry silently stop working. Use the
+same Vue version as the webclient, since compiled output and runtime belong together.
+
+Styles from `<style>` blocks are emitted as a separate file, which the manifest
+lists under `styles`. A `.vue` file itself is never deployed: the browser cannot
+parse it, so what ships is always the built output.
+
 ## Styling
 
 Plugin components can use the application's Bootstrap and theme classes, which
