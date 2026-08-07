@@ -32,9 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.NoObjectException;
-import org.cibseven.webapp.rest.BaseService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -64,9 +62,10 @@ import java.util.stream.Collectors;
  * import/export capabilities, and statistics reporting.
  * </p>
  * <p>
- * All endpoints require authentication when enabled via the configuration property
- * {@code cibseven.webclient.modeler.authentication.enabled}. The service integrates with the
- * ElementTemplateProvider for data persistence operations.
+ * All endpoints require an authenticated caller holding the application ACCESS permission for the
+ * modeler — except for the plain listing, which the cockpit diagram viewer uses to render element
+ * template icons. The service integrates with the ElementTemplateProvider for data persistence
+ * operations.
  * </p>
  * 
  * @author CIB Seven Modeler Team
@@ -83,13 +82,10 @@ import java.util.stream.Collectors;
 		content = @Content(schema = @Schema(implementation = String.class)))
 })
 @RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}/modeler/element-templates")
-public class ElementTemplateService extends BaseService {
+public class ElementTemplateService extends ModelerBaseService {
 
     @Autowired
     private ElementTemplateProvider templateProvider;
-
-    @Value("${cibseven.webclient.modeler.authentication.enabled:true}")
-    private boolean authenticationEnabled;
 
     /**
      * Ensures that an Element Template exists with the given ID.
@@ -138,9 +134,8 @@ public class ElementTemplateService extends BaseService {
     @GetMapping
     public List<ElementTemplate> getAllElementTemplates(HttpServletRequest rq) {
     	log.debug("Retrieving all element templates");
-		if (authenticationEnabled) {
-			checkAuthorization(rq, true);
-		}
+		// Authentication-only: the cockpit diagram viewer loads templates for icon rendering.
+		checkModelerAuthentication(rq);
 		List<ElementTemplate> templates = templateProvider.getElementTemplates();
 		log.debug("Retrieved {} element templates", templates.size());
 		return templates;
@@ -181,9 +176,7 @@ public class ElementTemplateService extends BaseService {
     	@PathVariable String id
     ) throws NoObjectException {
     	log.info("Retrieving element template with ID: {}", id);
-    	if (authenticationEnabled) {
-			checkAuthorization(rq, true);
-		}
+    	checkModelerAccess(rq);
     	
     	ElementTemplate template = ensureIdExists(id);
     	log.info("Successfully retrieved element template: {} (ID: {})", template.getName(), id);
@@ -225,10 +218,7 @@ public class ElementTemplateService extends BaseService {
     	@RequestBody ElementTemplateRequest element
     ) {
     	log.info("Creating new element template: {}", element.getName());
-    	CIBUser user = null;
-		if (authenticationEnabled) {
-			user = checkAuthorization(rq, true);
-		}
+    	CIBUser user = checkModelerAccess(rq);
     	
     	ElementTemplate entity = new ElementTemplate();
     	
@@ -237,7 +227,7 @@ public class ElementTemplateService extends BaseService {
     	entity.setDescription(element.getDescription());
     	entity.setContent(element.getContent());
     	entity.setOrigin(element.getOrigin() != null ? element.getOrigin() : ElementTemplateOrigin.MANUAL);
-    	entity.setCreatedBy(user != null ? user.getUserID() : "anonymous");
+    	entity.setCreatedBy(user.getUserID());
     	
     	ElementTemplate savedTemplate = templateProvider.addTemplate(entity);
     	log.info("Successfully created element template: {} with ID: {}", savedTemplate.getName(), savedTemplate.getId());
@@ -287,15 +277,12 @@ public class ElementTemplateService extends BaseService {
         @RequestBody Map<String, Object> properties
     ) throws NoObjectException {
     	log.info("Performing partial update on template with ID: {}", id);
-    	CIBUser user = null;
-    	if (authenticationEnabled) {
-			user = checkAuthorization(rq, true);
-		}
+    	CIBUser user = checkModelerAccess(rq);
     	
     	final ElementTemplate template = ensureIdExists(id);
     	
     	// Set updated_by field if any modifications will be made
-    	template.setUpdatedBy(user != null ? user.getUserID() : "anonymous");
+    	template.setUpdatedBy(user.getUserID());
     	
     	final Optional<ElementTemplate> updatedTemplate = templateProvider.partialUpdate(template, properties);
 
@@ -352,10 +339,7 @@ public class ElementTemplateService extends BaseService {
         @RequestBody ElementTemplateRequest element
     ) throws NoObjectException {
     	log.info("Performing full update on template with ID: {}", id);
-    	CIBUser user = null;
-        if (authenticationEnabled) {
-			user = checkAuthorization(rq, true);
-		}
+    	CIBUser user = checkModelerAccess(rq);
     	
     	ElementTemplate existingTemplate = ensureIdExists(id);
     	
@@ -364,7 +348,7 @@ public class ElementTemplateService extends BaseService {
     	existingTemplate.setTemplateId(element.getTemplateId());
     	existingTemplate.setDescription(element.getDescription());
     	existingTemplate.setContent(element.getContent());
-    	existingTemplate.setUpdatedBy(user != null ? user.getUserID() : "anonymous");
+    	existingTemplate.setUpdatedBy(user.getUserID());
     	// Note: origin and createdBy are not updated as they are read-only
     	
     	ElementTemplate updatedTemplate = templateProvider.updateTemplate(id, existingTemplate);
@@ -404,9 +388,7 @@ public class ElementTemplateService extends BaseService {
     	@PathVariable String id
     ) {
     	log.info("Deleting template with ID: {}", id);
-    	if (authenticationEnabled) {
-			checkAuthorization(rq, true);
-		}
+    	checkModelerAccess(rq);
     	templateProvider.deleteTemplateById(id);
     	log.info("Successfully deleted template with ID: {}", id);
     }
@@ -447,10 +429,7 @@ public class ElementTemplateService extends BaseService {
         @PathVariable String id
     ) throws NoObjectException {
         log.info("Duplicating template with ID: {}", id);
-        CIBUser user = null;
-        if (authenticationEnabled) {
-            user = checkAuthorization(rq, true);
-        }
+        CIBUser user = checkModelerAccess(rq);
         
         ElementTemplate originalTemplate = ensureIdExists(id);
         
@@ -461,7 +440,7 @@ public class ElementTemplateService extends BaseService {
         duplicatedTemplate.setDescription(originalTemplate.getDescription());
         duplicatedTemplate.setContent(originalTemplate.getContent());
         duplicatedTemplate.setOrigin(originalTemplate.getOrigin());
-        duplicatedTemplate.setCreatedBy(user != null ? user.getUserID() : "anonymous");
+        duplicatedTemplate.setCreatedBy(user.getUserID());
         
         ElementTemplate savedTemplate = templateProvider.addTemplate(duplicatedTemplate);
         log.info("Successfully duplicated template: {} -> {} (ID: {})", originalTemplate.getName(), savedTemplate.getName(), savedTemplate.getId());
@@ -503,9 +482,7 @@ public class ElementTemplateService extends BaseService {
         @RequestBody List<String> templateIds
     ) {
         log.info("Performing bulk delete for {} templates", templateIds.size());
-        if (authenticationEnabled) {
-            checkAuthorization(rq, true);
-        }
+        checkModelerAccess(rq);
         
         List<String> deletedIds = new ArrayList<>();
         List<String> failedIds = new ArrayList<>();
@@ -566,10 +543,7 @@ public class ElementTemplateService extends BaseService {
         @Parameter(description = "Bulk update request containing templateIds array and active boolean", required = true)
         @RequestBody Map<String, Object> bulkRequest
     ) {
-        CIBUser user = null;
-        if (authenticationEnabled) {
-            user = checkAuthorization(rq, true);
-        }
+        CIBUser user = checkModelerAccess(rq);
         
         @SuppressWarnings("unchecked")
         List<String> templateIds = (List<String>) bulkRequest.get("templateIds");
@@ -589,7 +563,7 @@ public class ElementTemplateService extends BaseService {
                 Optional<ElementTemplate> template = templateProvider.findById(id);
                 if (template.isPresent()) {
                     // Set updated_by field for audit trail
-                    template.get().setUpdatedBy(user != null ? user.getUserID() : "anonymous");
+                    template.get().setUpdatedBy(user.getUserID());
                     Map<String, Object> updateProps = Map.of("active", active);
                     templateProvider.partialUpdate(template.get(), updateProps);
                     updatedIds.add(id);
@@ -658,9 +632,7 @@ public class ElementTemplateService extends BaseService {
     ) {
         log.info("Searching templates with criteria - name: {}, creator: {}, active: {}, templateId: {}, description: {}", 
                  name, creator, active, templateId, description);
-        if (authenticationEnabled) {
-            checkAuthorization(rq, true);
-        }
+        checkModelerAccess(rq);
         
         List<ElementTemplate> allTemplates = templateProvider.getElementTemplates();
         
@@ -708,9 +680,7 @@ public class ElementTemplateService extends BaseService {
         @RequestParam(required = false) String createdBy
     ) {
         log.info("Filtering templates with activeOnly: {}, createdBy: {}", activeOnly, createdBy);
-        if (authenticationEnabled) {
-            checkAuthorization(rq, true);
-        }
+        checkModelerAccess(rq);
         
         List<ElementTemplate> templates = templateProvider.getElementTemplates();
         
@@ -760,9 +730,7 @@ public class ElementTemplateService extends BaseService {
         @RequestBody ElementTemplateRequest templateRequest
     ) {
         log.info("Validating template: {}", templateRequest.getName());
-        if (authenticationEnabled) {
-            checkAuthorization(rq, true);
-        }
+        checkModelerAccess(rq);
         
         List<String> errors = new ArrayList<>();
         
@@ -837,10 +805,7 @@ public class ElementTemplateService extends BaseService {
         @RequestBody List<ElementTemplateRequest> templateRequests
     ) {
         log.info("Importing {} templates", templateRequests.size());
-        CIBUser user = null;
-        if (authenticationEnabled) {
-            user = checkAuthorization(rq, true);
-        }
+        CIBUser user = checkModelerAccess(rq);
         
         List<ElementTemplate> importedTemplates = new ArrayList<>();
         List<String> failedTemplates = new ArrayList<>();
@@ -853,8 +818,8 @@ public class ElementTemplateService extends BaseService {
                 template.setDescription(request.getDescription());
                 template.setContent(request.getContent());
                 template.setOrigin(request.getOrigin() != null ? request.getOrigin() : ElementTemplateOrigin.MANUAL);
-                template.setCreatedBy(user != null ? user.getUserID() : "anonymous");
-                template.setUpdatedBy(user != null ? user.getUserID() : "anonymous");
+                template.setCreatedBy(user.getUserID());
+                template.setUpdatedBy(user.getUserID());
                 
                 ElementTemplate savedTemplate = templateProvider.addTemplate(template);
                 importedTemplates.add(savedTemplate);
@@ -911,9 +876,7 @@ public class ElementTemplateService extends BaseService {
     ) {
         log.info("Exporting templates with filters - templateIds: {}, activeOnly: {}", 
                  templateIds != null ? templateIds.size() : "all", activeOnly);
-        if (authenticationEnabled) {
-            checkAuthorization(rq, true);
-        }
+        checkModelerAccess(rq);
         
         List<ElementTemplate> templates = templateProvider.getElementTemplates();
         
@@ -964,9 +927,7 @@ public class ElementTemplateService extends BaseService {
         HttpServletRequest rq
     ) {
         log.info("Retrieving template statistics");
-        if (authenticationEnabled) {
-            checkAuthorization(rq, true);
-        }
+        checkModelerAccess(rq);
         
         List<ElementTemplate> allTemplates = templateProvider.getElementTemplates();
         
