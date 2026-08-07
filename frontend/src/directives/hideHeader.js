@@ -25,7 +25,15 @@ const hideHeader = {
       el.style.overflow = shouldHide ? 'hidden' : ''
       el.style.height = shouldHide ? '0px' : (originalHeight || '')
       el.style.opacity = shouldHide ? '0' : '1'
-      el.style.pointerEvents = shouldHide ? 'none' : ''    
+      el.style.pointerEvents = shouldHide ? 'none' : ''
+      if (shouldHide) {
+        el.setAttribute('aria-hidden', 'true')
+      } else {
+        el.removeAttribute('aria-hidden')
+      }
+      if ('inert' in el) {
+        el.inert = shouldHide
+      }
     }
 
     el.style.transition = 'height 0.3s ease, opacity 0.3s ease'
@@ -58,9 +66,14 @@ const hideHeader = {
     el[STATE_KEY] = { handleScroll, originalHeight }
   },
   unmounted(el, binding) {
-    el.style.height = el[STATE_KEY].originalHeight
+    const state = el[STATE_KEY]
+    if (!state) return
+    el.style.height = state.originalHeight
     el.style.overflow = ''
-    binding.instance.$eventBus.off('scrollOnMobile', el[STATE_KEY].handleScroll)
+    el.style.opacity = ''
+    el.style.pointerEvents = ''
+    el.style.transition = ''
+    binding.instance?.$eventBus?.off('scrollOnMobile', state.handleScroll)
     delete el[STATE_KEY]
   }
 }

@@ -44,10 +44,7 @@ const scrollOnMobile = {
     }
     el.addEventListener('scroll', onScroll, { passive: true })
 
-    el[STATE_KEY] = {
-      onScroll,
-      eventName: 'scrollOnMobile'
-    }
+    el[STATE_KEY] = { onScroll}
 },
 
   beforeUnmount(el) {
