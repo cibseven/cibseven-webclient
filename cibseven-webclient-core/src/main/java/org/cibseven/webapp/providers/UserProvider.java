@@ -150,7 +150,9 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		}
 
 		HttpStatusCode statusCode = httpStatusCodeException.getStatusCode();
-		if (statusCode == HttpStatus.METHOD_NOT_ALLOWED || statusCode == HttpStatus.NOT_FOUND) {
+		// Older engine-rest versions may not support the self-authorization endpoint.
+		// Treat 404/405/401 as compatibility failures and fall back to legacy authorization queries.
+		if (statusCode == HttpStatus.METHOD_NOT_ALLOWED || statusCode == HttpStatus.NOT_FOUND || statusCode == HttpStatus.UNAUTHORIZED) {
 			return true;
 		}
 		return false;

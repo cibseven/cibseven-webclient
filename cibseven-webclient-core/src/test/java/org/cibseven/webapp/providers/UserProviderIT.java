@@ -132,14 +132,8 @@ public class UserProviderIT extends BaseHelper {
     }
 
     @Test
-    void testGetUserAuthorizationDoesNotFallBackWhenSelfEndpointReturns401() {
-        CIBUser user = getCibUser();
-
-        mockWebServer.enqueue(new MockResponse().setResponseCode(401));
-
-        org.assertj.core.api.Assertions.assertThatThrownBy(() -> userProvider.getUserAuthorization(user))
-                .isInstanceOf(RuntimeException.class);
-        assertThat(mockWebServer.getRequestCount()).isEqualTo(1);
+        void testGetUserAuthorizationFallsBackWhenSelfEndpointReturns401() throws Exception {
+            testGetUserAuthorizationFallsBackForStatus(401);
     }
 
     @Test
