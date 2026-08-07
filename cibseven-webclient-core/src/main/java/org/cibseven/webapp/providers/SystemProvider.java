@@ -16,17 +16,8 @@
  */
 package org.cibseven.webapp.providers;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.Metric;
@@ -43,12 +34,7 @@ public class SystemProvider extends SevenProviderBase implements ISystemProvider
 	@Override
 	public int getSum(String metric, Map<String, Object> queryParams, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/metrics/" + metric + "/sum";
-		String params = "";
-		for (Map.Entry<String, Object> entry : queryParams.entrySet()) {
-			Optional<String> value = Optional.ofNullable(entry.getValue()).map(Object::toString);
-			params += addQueryParameter(params, entry.getKey(), value, true);
-	    }
-		url += params;
+		url += encodeQueryParams(queryParams);
 		JsonNode body =  ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, true)).getBody();
 		if (body == null) {
 			throw new NullPointerException();
