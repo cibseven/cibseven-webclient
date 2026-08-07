@@ -68,6 +68,14 @@ public class PluginResourceServingTest {
 			.andExpect(content().string(org.hamcrest.Matchers.containsString("\"apiVersion\"")));
 	}
 
+	/** Both plugins of one artifact are served, each under its own id. */
+	@Test
+	public void servesEveryPluginOfOneClasspathEntry() throws Exception {
+		mockMvc(true).perform(get("/plugins/second-plugin/main.js"))
+			.andExpect(status().isOk())
+			.andExpect(content().string(org.hamcrest.Matchers.containsString("export function register")));
+	}
+
 	@Test
 	public void answersNotFoundForAnUnknownPlugin() throws Exception {
 		mockMvc(true).perform(get("/plugins/does-not-exist/index.js"))

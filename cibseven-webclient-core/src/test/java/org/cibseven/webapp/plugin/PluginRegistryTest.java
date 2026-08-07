@@ -55,17 +55,32 @@ public class PluginRegistryTest {
 
 	@Test
 	public void findsPluginOnTheClasspath() {
-		// Reads the fixture below src/test/resources, i.e. a real classpath scan
+		// Reads the fixtures below src/test/resources, i.e. a real classpath scan
+		PluginRegistry registry = new PluginRegistry(true);
+
+		ObjectNode manifest = manifestOf(registry, "test-plugin");
+
+		assertEquals("index.js", manifest.get("entry").asText());
+		assertEquals("1", manifest.get("apiVersion").asText());
+		assertEquals("translations_en.json", manifest.get("translations").get("en").asText());
+	}
+
+	/** Several plugins may share one artifact, each in its own folder. */
+	@Test
+	public void findsEveryPluginOfOneClasspathEntry() {
 		PluginRegistry registry = new PluginRegistry(true);
 
 		List<ObjectNode> manifests = registry.getManifests();
 
-		assertEquals(1, manifests.size());
-		ObjectNode manifest = manifests.get(0);
-		assertEquals("test-plugin", manifest.get("id").asText());
-		assertEquals("index.js", manifest.get("entry").asText());
-		assertEquals("1", manifest.get("apiVersion").asText());
-		assertEquals("translations_en.json", manifest.get("translations").get("en").asText());
+		assertEquals(2, manifests.size());
+		assertEquals("main.js", manifestOf(registry, "second-plugin").get("entry").asText());
+	}
+
+	private ObjectNode manifestOf(PluginRegistry registry, String id) {
+		return registry.getManifests().stream()
+			.filter(manifest -> id.equals(manifest.get("id").asText()))
+			.findFirst()
+			.orElseThrow(() -> new AssertionError("no plugin \"" + id + "\" was found"));
 	}
 
 	@Test
