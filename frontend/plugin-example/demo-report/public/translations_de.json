@@ -1,0 +1,11 @@
+{
+	"title": "Demo-Bericht",
+	"instance": "Prozessinstanz",
+	"total": "Prozesse",
+	"definition": "Definition",
+	"name": "Name",
+	"key": "Schlüssel",
+	"version": "Version",
+	"empty": "Kein für Sie sichtbarer Prozess",
+	"failed": "Prozessabfrage fehlgeschlagen mit"
+}

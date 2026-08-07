@@ -4,6 +4,7 @@
 	"slots": ["process-instance-tab"],
 	"styles": ["styles.css"],
 	"translations": {
-		"en": "translations_en.json"
+		"en": "translations_en.json",
+		"de": "translations_de.json"
 	}
 }

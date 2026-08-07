@@ -1,8 +1,23 @@
 # Example webclient plugin
 
 `demo-report/` is a working plugin and the starter to copy. It contributes a tab
-to the process instance view, listing processes the logged-in user may see, and
-brings its own component, translations and styles.
+to the process instance view listing the processes the logged-in user may see,
+and shows the pieces a real plugin has: several components, English and German
+translations, and its own styles.
+
+```
+src/index.js          exports register(), imports the shared stylesheet
+src/DemoReport.vue    the component registered into the slot
+src/ProcessTable.vue  ordinary child components, imported as usual
+src/SummaryCard.vue
+src/styles.css        styles shared by the components
+public/plugin.json    manifest, copied into the build
+public/translations_{en,de}.json
+```
+
+Only the component handed to `registerPlugin` is special; the rest is a normal
+Vue project. The build produces one `index.js` and one `styles.css`, the latter
+holding every `<style>` block and imported stylesheet.
 
 See [PLUGINS.md](../../PLUGINS.md) for the manifest format, the runtime API, the
 available slots and the trust model.

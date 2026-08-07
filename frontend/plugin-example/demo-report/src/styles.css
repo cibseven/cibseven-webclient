@@ -1,0 +1,25 @@
+/*
+ * Styles shared by the plugin's components. Imported from index.js, so Vite
+ * bundles it together with the <style> blocks into a single styles.css.
+ *
+ * Nothing scopes plugin styles, so every selector is prefixed with the plugin
+ * name instead of styling shared elements.
+ */
+.demo-report {
+	border-left: 3px solid var(--bs-primary, #0d6efd);
+}
+
+.demo-report-title {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.demo-report-title::before {
+	content: "";
+	display: inline-block;
+	width: 0.6rem;
+	height: 0.6rem;
+	border-radius: 50%;
+	background-color: var(--bs-primary, #0d6efd);
+}

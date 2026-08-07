@@ -1,7 +1,11 @@
 {
 	"title": "Demo report",
 	"instance": "Process instance",
-	"name": "Process",
-	"count": "Version",
-	"empty": "No process visible to you"
+	"total": "Processes",
+	"definition": "Definition",
+	"name": "Name",
+	"key": "Key",
+	"version": "Version",
+	"empty": "No process visible to you",
+	"failed": "Process request failed with"
 }

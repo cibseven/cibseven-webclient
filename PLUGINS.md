@@ -87,13 +87,22 @@ starter: copy the folder, rename it, write your components.
 ```
 demo-report/
 ├── package.json
-├── vite.config.js          # keep as it is, see below
-├── public/plugin.json      # the manifest, copied into the build
-├── public/translations_en.json
+├── vite.config.js              # keep as it is, see below
+├── public/
+│   ├── plugin.json             # the manifest, copied into the build
+│   ├── translations_en.json
+│   └── translations_de.json
 └── src/
-    ├── index.js            # exports register()
-    └── DemoReport.vue
+    ├── index.js                # exports register()
+    ├── styles.css              # styles shared by the components
+    ├── DemoReport.vue          # registered into the slot
+    ├── ProcessTable.vue        # ordinary child components
+    └── SummaryCard.vue
 ```
+
+Components are split as in any Vue project - only the one passed to
+`registerPlugin` is special. Everything is bundled into a single `index.js`, and
+all `<style>` blocks plus any imported CSS into a single `styles.css`.
 
 `npm install`, then `npm run package`, and the jar is ready to deploy. The build
 writes into `dist/META-INF/cibseven-plugins/<id>/`, which is exactly the layout
