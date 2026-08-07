@@ -61,6 +61,8 @@ public class PluginRegistry {
 	/** Ids end up in URLs, so anything that could leave the plugin folder is rejected */
 	private static final Pattern VALID_ID = Pattern.compile("[A-Za-z0-9][A-Za-z0-9._-]*");
 
+	private static final List<String> OPTIONAL_FIELDS = List.of("slots", "styles", "translations");
+
 	private final boolean enabled;
 	private final ResourcePatternResolver resolver;
 	private final ObjectMapper mapper = new ObjectMapper();
@@ -152,8 +154,11 @@ public class PluginRegistry {
 			manifest.put("id", id);
 			manifest.put("entry", entry);
 			manifest.put("apiVersion", json.path("apiVersion").asText(""));
-			if (json.has("slots")) manifest.set("slots", json.get("slots"));
-			if (json.has("translations")) manifest.set("translations", json.get("translations"));
+			// every optional field of the documented manifest has to be passed on;
+			// one left out here is silently missing in the frontend
+			for (String field : OPTIONAL_FIELDS) {
+				if (json.has(field)) manifest.set(field, json.get(field));
+			}
 			return manifest;
 		} catch (IOException e) {
 			log.warn("Ignoring plugin \"{}\": its manifest could not be read", id, e);

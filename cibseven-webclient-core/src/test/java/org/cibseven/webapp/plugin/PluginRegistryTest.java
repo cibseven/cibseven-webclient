@@ -65,6 +65,19 @@ public class PluginRegistryTest {
 		assertEquals("translations_en.json", manifest.get("translations").get("en").asText());
 	}
 
+	/**
+	 * The frontend acts on these, so a field dropped here is a feature that silently
+	 * does nothing - which is how stylesheets went missing once.
+	 */
+	@Test
+	public void reportsEveryDocumentedFieldOfTheManifest() {
+		ObjectNode manifest = manifestOf(new PluginRegistry(true), "test-plugin");
+
+		assertEquals("process-instance-tab", manifest.get("slots").get(0).asText());
+		assertEquals("styles.css", manifest.get("styles").get(0).asText());
+		assertEquals("translations_en.json", manifest.get("translations").get("en").asText());
+	}
+
 	/** Several plugins may share one artifact, each in its own folder. */
 	@Test
 	public void findsEveryPluginOfOneClasspathEntry() {
