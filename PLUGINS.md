@@ -27,9 +27,10 @@ A plugin is a folder below `META-INF/cibseven-plugins/` on the classpath,
 normally shipped inside a jar:
 
 ```
-META-INF/cibseven-plugins/demo-stats/plugin.json
-META-INF/cibseven-plugins/demo-stats/index.js
-META-INF/cibseven-plugins/demo-stats/translations_en.json
+META-INF/cibseven-plugins/demo-report/plugin.json
+META-INF/cibseven-plugins/demo-report/index.js
+META-INF/cibseven-plugins/demo-report/styles.css
+META-INF/cibseven-plugins/demo-report/translations_en.json
 ```
 
 The **folder name is the plugin id**. An `id` inside the manifest is ignored,
@@ -50,31 +51,15 @@ A jar in the right place without that folder loads and does nothing.
 
 ### Packaging
 
-The jar carries no code and no dependencies, so no build tooling is needed.
-Arrange the files with `META-INF` at the root of the archive and pack them:
+Building the plugin produces that layout already, so packaging is one command:
 
-```
-build/META-INF/cibseven-plugins/demo-stats/plugin.json
-build/META-INF/cibseven-plugins/demo-stats/index.js
-build/META-INF/cibseven-plugins/demo-stats/styles.css
-
-jar --create --file demo-stats-plugin.jar -C build META-INF
+```sh
+npm run package     # builds, then jars dist/META-INF into <name>.jar
 ```
 
-A jar is a zip, so any archiving tool does as well - pack the `META-INF` folder
-and name the result `.jar`. This matters because a distribution only requires a
-Java runtime, which does not ship the `jar` command.
-
-Teams already building with Maven can put the same files under
-`src/main/resources/` and run `mvn package`; the pom needs nothing beyond
-coordinates and `<packaging>jar</packaging>`. The artifact is the same either way,
-and its name and version are the plugin author's business - only the folder name
-identifies the plugin. If the plugin's JavaScript is built, build it first and
-copy the output into this layout.
-
-Several plugins can be shipped either way: one jar each, which lets them be
-installed and versioned separately, or one jar holding several folders when they
-always belong together. Ids have to be unique across all of them.
+**One jar per plugin.** Its name and version are the plugin author's business;
+only the folder name identifies the plugin, and it has to be unique across
+everything on the classpath.
 
 ### Where the jar goes
 
@@ -95,6 +80,25 @@ plugin - putting a jar where the distribution already looks:
 
 ## Writing a plugin
 
+A plugin is a small Vite project of single-file components.
+[frontend/plugin-example/demo-report](frontend/plugin-example/demo-report) is the
+starter: copy the folder, rename it, write your components.
+
+```
+demo-report/
+├── package.json
+├── vite.config.js          # keep as it is, see below
+├── public/plugin.json      # the manifest, copied into the build
+├── public/translations_en.json
+└── src/
+    ├── index.js            # exports register()
+    └── DemoReport.vue
+```
+
+`npm install`, then `npm run package`, and the jar is ready to deploy. The build
+writes into `dist/META-INF/cibseven-plugins/<id>/`, which is exactly the layout
+described above.
+
 `plugin.json`:
 
 ```json
@@ -114,19 +118,22 @@ plugin - putting a jar where the distribution already looks:
 | `translations` | per language, merged under `plugins.<id>.*` |
 | `styles` | stylesheets of the plugin, added to the page before it registers |
 
-The entry module exports `register`, called once during startup:
+`src/index.js` exports `register`, called once during startup:
 
 ```js
-import { vue, services, registerPlugin, getContext } from '@cibseven/plugin-runtime'
+import { registerPlugin } from '@cibseven/plugin-runtime'
+import DemoReport from './DemoReport.vue'
 
-export function register({ id, baseUrl }) {
-  registerPlugin('process-instance-tab', vue.defineComponent({ /* ... */ }), {
+export function register({ id }) {
+  registerPlugin('process-instance-tab', DemoReport, {
     pluginId: id,
-    id: 'demo-stats',                 // becomes ?tab=demo-stats
+    id: 'demo-report',                // becomes ?tab=demo-report
     text: `plugins.${id}.title`       // translation key
   })
 }
 ```
+
+The components themselves import what they need from the same module:
 
 `@cibseven/plugin-runtime` hands over the application's own instances:
 
@@ -139,43 +146,30 @@ export function register({ id, baseUrl }) {
 | `registerPlugin`, `getPlugin` | the slot registry |
 | `i18n`, `mergeTranslations` | translations, namespaced per plugin |
 
-**Never bundle `vue`, `axios` or `bootstrap`.** Declare them external and let the
-import map resolve them; a bundled copy is a second instance, across which
-reactivity, `provide`/`inject` and the slot registry do not work. A plugin
-without a build step can use `template:` strings, which the browser compiles.
-
-## Single-file components
-
-A plugin with more than a little markup is better written as `.vue` components and
-built. The build is the plugin author's, not ours: `frontend/plugin-example/demo-report`
-is a working starter to copy - `package.json`, an eight-line `vite.config.js`, one
-component - and its build writes straight into the layout a jar needs.
+### The one line that must not change
 
 ```js
+// vite.config.js
 rollupOptions: {
   external: ['vue', 'axios', 'bootstrap', '@cibseven/plugin-runtime']
 }
 ```
 
-Keeping those external is the one thing that matters. A compiled component imports
-its helpers from `vue` by name, and the import map resolves them to the webclient's
-instance; bundling Vue instead gives the plugin a second runtime, across which
-reactivity, `provide`/`inject` and the slot registry silently stop working. Use the
-same Vue version as the webclient, since compiled output and runtime belong together.
+A compiled component imports its helpers from `vue` by name, and the import map
+resolves them to the webclient's instance. Bundling Vue instead gives the plugin a
+second runtime, across which reactivity, `provide`/`inject` and the slot registry
+silently stop working. Use the same Vue version as the webclient, since compiled
+output and runtime belong together.
 
-Styles from `<style>` blocks are emitted as a separate file, which the manifest
-lists under `styles`. A `.vue` file itself is never deployed: the browser cannot
-parse it, so what ships is always the built output.
+A `.vue` file is never deployed: the browser cannot parse it, so what ships is
+always the built output.
 
 ## Styling
 
-Plugin components can use the application's Bootstrap and theme classes, which
-are already loaded. A plugin that brings its own CSS lists the files in its
-manifest, and they are added to the page before the plugin registers anything:
-
-```json
-{ "entry": "index.js", "apiVersion": "1", "styles": ["styles.css"] }
-```
+Components can use the application's Bootstrap and theme classes, which are
+already loaded. Styles from `<style>` blocks are built into one file that the
+manifest lists under `styles`, and it is added to the page before the plugin
+registers anything - the starter is already set up that way.
 
 Nothing scopes those styles, so prefix your selectors with something belonging to
 the plugin rather than styling shared elements.

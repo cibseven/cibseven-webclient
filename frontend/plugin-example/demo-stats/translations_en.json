@@ -1,9 +1,0 @@
-{
-	"title": "Demo plugin",
-	"instance": "Process instance",
-	"definition": "Process definition key",
-	"theme": "Theme from application config",
-	"apiVersion": "Plugin API version",
-	"processes": "Processes visible to you",
-	"failed": "Process request failed with"
-}
