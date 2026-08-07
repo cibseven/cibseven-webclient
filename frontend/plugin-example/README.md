@@ -13,7 +13,10 @@ available slots and the trust model.
 
 1. Copy `demo-stats/` onto the classpath of the webclient you run, for example
    into `cibseven-webclient-web/src/main/resources/META-INF/cibseven-plugins/`,
-   and set `cibseven.webclient.plugins.enabled: true`.
+   and set `cibseven.webclient.plugins.enabled: true`. That is a shortcut for
+   development - it makes the files part of the webclient's own artifact. A
+   plugin is normally shipped as a jar of its own, see
+   [PLUGINS.md](../../PLUGINS.md).
 
 2. Start the webclient, log in and open any process instance. The console logs
    `Plugin "demo-stats" loaded` and a **Demo plugin** tab appears after the

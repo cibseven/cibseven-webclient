@@ -37,12 +37,49 @@ because the folder decides where the files are served from. Two folders with the
 same name are a conflict: only the first is loaded and the second is logged and
 skipped, since both would be served from one location.
 
-Several plugin jars can be deployed together, each contributing its own folder.
-Nothing depends on a filesystem layout, so a war and a Spring Boot jar behave the
-same.
+Two separate things decide that a plugin is picked up, and both are needed:
 
-Installing a plugin is therefore the same gesture as installing a JDBC driver or
-an engine plugin - putting a jar where the distribution already looks:
+- **where the jar is put** - that is what places it on the application's
+  classpath, and it is the distribution's mechanism, the same one used for JDBC
+  drivers and engine plugins
+- **the path inside the jar** - that is what marks it as a plugin, and it is ours:
+  the classpath is searched for `META-INF/cibseven-plugins/*/plugin.json`, and the
+  same location is what the files are then served from
+
+A jar in the right place without that folder loads and does nothing.
+
+### Packaging
+
+The jar carries no code and no dependencies, so no build tooling is needed.
+Arrange the files with `META-INF` at the root of the archive and pack them:
+
+```
+build/META-INF/cibseven-plugins/demo-stats/plugin.json
+build/META-INF/cibseven-plugins/demo-stats/index.js
+build/META-INF/cibseven-plugins/demo-stats/styles.css
+
+jar --create --file demo-stats-plugin.jar -C build META-INF
+```
+
+A jar is a zip, so any archiving tool does as well - pack the `META-INF` folder
+and name the result `.jar`. This matters because a distribution only requires a
+Java runtime, which does not ship the `jar` command.
+
+Teams already building with Maven can put the same files under
+`src/main/resources/` and run `mvn package`; the pom needs nothing beyond
+coordinates and `<packaging>jar</packaging>`. The artifact is the same either way,
+and its name and version are the plugin author's business - only the folder name
+identifies the plugin. If the plugin's JavaScript is built, build it first and
+copy the output into this layout.
+
+Several plugins can be shipped either way: one jar each, which lets them be
+installed and versioned separately, or one jar holding several folders when they
+always belong together. Ids have to be unique across all of them.
+
+### Where the jar goes
+
+Installing a plugin is the same gesture as installing a JDBC driver or an engine
+plugin - putting a jar where the distribution already looks:
 
 | Distribution | Where the plugin jar goes |
 |---|---|
