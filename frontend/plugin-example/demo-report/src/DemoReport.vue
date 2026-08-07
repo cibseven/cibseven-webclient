@@ -2,7 +2,9 @@
   <div class="container-fluid px-4 p-4 demo-report">
     <h5 class="demo-report-title">{{ $t('plugins.demo-report.title') }}</h5>
 
-    <p class="mb-3">{{ $t('plugins.demo-report.instance') }}: {{ instance?.id ?? '-' }}</p>
+    <p class="mb-3 demo-report-instance">
+      {{ $t('plugins.demo-report.instance') }}: {{ instance?.id ?? '-' }}
+    </p>
 
     <div v-if="error" class="alert alert-warning py-2">
       {{ $t('plugins.demo-report.failed') }}: {{ error }}
@@ -55,7 +57,8 @@ export default {
 </script>
 
 <style>
-.demo-report p:last-child {
-	margin-bottom: 0;
+.demo-report-instance {
+	font-size: 0.9rem;
+	opacity: 0.8;
 }
 </style>

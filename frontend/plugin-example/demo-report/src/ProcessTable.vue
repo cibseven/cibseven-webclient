@@ -28,10 +28,3 @@ export default {
   }
 }
 </script>
-
-<style>
-.demo-report-value {
-	font-variant-numeric: tabular-nums;
-	font-weight: 600;
-}
-</style>

@@ -15,6 +15,12 @@
 	gap: 0.5rem;
 }
 
+/* used by more than one component, which is what this file is for */
+.demo-report-value {
+	font-variant-numeric: tabular-nums;
+	font-weight: 600;
+}
+
 .demo-report-title::before {
 	content: "";
 	display: inline-block;
