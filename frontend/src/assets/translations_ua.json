@@ -988,6 +988,10 @@
 			"title": "@:process.startProcess",
 			"tooltip": "Відкрити сторінку запуску процесу з можливістю пошуку"
 		},
+		"tasks": {
+			"title": "Завдання",
+			"tooltip": "Відкрити завдання"
+		},
 		"taskList": {
 			"title": "Список завдань",
 			"tooltip": "Відкрити Tasklist"
@@ -995,6 +999,10 @@
 		"cockpit": {
 			"title": "Cockpit",
 			"tooltip": "Відкрити Cockpit",
+			"dashboard": {
+				"title": "Панель",
+				"tooltip": "Відкрити панель Cockpit"
+			},
 			"processes": {
 				"title": "Процеси",
 				"tooltip": "Переглянути доступні визначення процесів"
@@ -1031,6 +1039,18 @@
 		"admin": {
 			"title": "Адмін",
 			"tooltip": "Відкрити Адмін панель"
+		},
+		"builder": {
+			"title": "Builder",
+			"tooltip": "Відкрити Builder"
+		},
+		"data": {
+			"title": "Data",
+			"tooltip": "Відкрити Data"
+		},
+		"ins7ght": {
+			"title": "Ins7ght",
+			"tooltip": "Відкрити Ins7ght"
 		},
 		"modeler": {
 			"title": "Modeler",

@@ -26,28 +26,57 @@ vi.mock('@/services.js', () => ({
 
 describe('CibSeven.vue', () => {
   describe('Methods', () => {
-    it('should filter menu items based on show property', () => {
+    it('should filter toolbar menus based on show and drop empty tools', () => {
       const items = [
-        { show: true, groupTitle: 'Group 1', items: [] },
-        { show: false, groupTitle: 'Group 2', items: [] },
-        { show: true, groupTitle: 'Group 3', items: [] }
+        { id: 'tasks', show: true, items: [{ title: 'a', to: '/a' }] },
+        { id: 'data', show: false, items: [] },
+        { id: 'admin', show: true, items: [{ title: 'b', to: '/b', show: false }] },
+        { id: 'builder', show: true, items: [{ divider: true }, { title: 'c', to: '/c' }, { divider: true }] }
       ]
-      
+
       const result = CibSeven.methods.getVisibleMenuItems(items)
-      expect(result.length).toBe(2)
-      expect(result[0].groupTitle).toBe('Group 1')
-      expect(result[1].groupTitle).toBe('Group 3')
+      expect(result.map(t => t.id)).toEqual(['tasks', 'builder'])
+      expect(result[1].items).toEqual([{ title: 'c', to: '/c' }])
+    })
+
+    it('should collapse consecutive and trailing dividers', () => {
+      const items = [{
+        id: 'cockpit',
+        show: true,
+        items: [
+          { divider: true },
+          { title: 'a', to: '/a' },
+          { divider: true },
+          { divider: true },
+          { title: 'b', to: '/b' },
+          { divider: true }
+        ]
+      }]
+      const result = CibSeven.methods.getVisibleMenuItems(items)
+      expect(result[0].items).toEqual([
+        { title: 'a', to: '/a' },
+        { divider: true },
+        { title: 'b', to: '/b' }
+      ])
+    })
+
+    it('should resolve tool default route from defaultTo or first item', () => {
+      expect(CibSeven.methods.getToolDefaultTo({ defaultTo: '/seven/auth/tasks', items: [] }))
+        .toBe('/seven/auth/tasks')
+      expect(CibSeven.methods.getToolDefaultTo({
+        items: [{ divider: true }, { to: '/seven/auth/admin/users' }]
+      })).toBe('/seven/auth/admin/users')
     })
 
     it('should check if menu item is active based on route path', () => {
       const mockThis = {
         $route: { path: '/seven/auth/tasks/123' }
       }
-      
+
       const activeItem = { active: ['seven/auth/tasks'], to: '/seven/auth/tasks' }
       const inactiveItem = { active: ['seven/auth/processes'], to: '/seven/auth/processes' }
       const noActiveItem = { to: '/seven/auth/admin' }
-      
+
       expect(CibSeven.methods.isMenuItemActive.call(mockThis, activeItem)).toBe(true)
       expect(CibSeven.methods.isMenuItemActive.call(mockThis, inactiveItem)).toBe(false)
       expect(CibSeven.methods.isMenuItemActive.call(mockThis, noActiveItem)).toBe(false)
@@ -57,10 +86,10 @@ describe('CibSeven.vue', () => {
       const mockThis = {
         $route: { path: '/seven/auth/admin' }
       }
-      
+
       const exactItem = { active: ['seven/auth/admin'], activeExact: true }
       expect(CibSeven.methods.isMenuItemActive.call(mockThis, exactItem)).toBe(true)
-      
+
       mockThis.$route.path = '/seven/auth/admin/users'
       expect(CibSeven.methods.isMenuItemActive.call(mockThis, exactItem)).toBe(false)
     })
@@ -97,10 +126,30 @@ describe('CibSeven.vue', () => {
           }
         }
       }
-      
+
       const items = CibSeven.computed.helpMenuItems.call(mockThis)
       expect(items.length).toBeGreaterThan(0)
       expect(items.some(item => item.href === 'https://help.example.com')).toBe(true)
+    })
+
+    it('should expose id-keyed toolbar menus including empty data shell', () => {
+      const mockThis = {
+        permissionsTaskList: true,
+        permissionsCockpit: true,
+        permissionsModeler: true,
+        permissionsUsers: true,
+        permissionsUsersManagement: true,
+        permissionsGroupsManagement: false,
+        permissionsTenantsManagement: false,
+        permissionsAuthorizationsManagement: false,
+        permissionsSystemManagement: true,
+        startableProcesses: true
+      }
+      const menus = CibSeven.computed.menuItems.call(mockThis)
+      expect(menus.map(m => m.id)).toEqual(['tasks', 'cockpit', 'builder', 'data', 'admin'])
+      expect(menus.find(m => m.id === 'data')).toMatchObject({ show: false, items: [] })
+      expect(menus.find(m => m.id === 'builder').title).toBe('start.builder.title')
+      expect(menus.find(m => m.id === 'cockpit').items.some(i => i.divider)).toBe(true)
     })
   })
 })

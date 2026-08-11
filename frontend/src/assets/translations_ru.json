@@ -988,6 +988,10 @@
 			"title": "@:process.startProcess",
 			"tooltip": "Открыть страницу запуска процесса с возможностью поиска"
 		},
+		"tasks": {
+			"title": "Задачи",
+			"tooltip": "Открыть задачи"
+		},
 		"taskList": {
 			"title": "Tasklist",
 			"tooltip": "Открыть Tasklist"
@@ -995,6 +999,10 @@
 		"cockpit": {
 			"title": "Cockpit",
 			"tooltip": "Открыть Cockpit",
+			"dashboard": {
+				"title": "Панель",
+				"tooltip": "Открыть панель Cockpit"
+			},
 			"processes": {
 				"title": "Процессы",
 				"tooltip": "Просмотреть доступные определения процессов"
@@ -1031,6 +1039,18 @@
 		"admin": {
 			"title": "Admin",
 			"tooltip": "Открыть Admin"
+		},
+		"builder": {
+			"title": "Builder",
+			"tooltip": "Открыть Builder"
+		},
+		"data": {
+			"title": "Data",
+			"tooltip": "Открыть Data"
+		},
+		"ins7ght": {
+			"title": "Ins7ght",
+			"tooltip": "Открыть Ins7ght"
 		},
 		"modeler": {
 			"title": "Modeler",

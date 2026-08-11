@@ -33,49 +33,91 @@
         <h1 v-else-if="$route.name === 'start'" class="visually-hidden">{{ $t('navigation.home') + ' - ' + $t('navigation.menu') }}</h1>
       </div>
 
-      <b-button v-if="$root.user && startableProcesses && $route.name === 'tasklist'" class="d-none d-sm-block py-0 me-3" variant="light"
-        :title="$t('start.startProcess.title')"
-        :aria-label="$t('start.startProcess.title')" aria-haspopup="dialog" @click="openStartProcess()">
-        <span class="mdi mdi-18px mdi-rocket" aria-hidden="true"></span>
-        <span class="d-none d-lg-inline ms-2">{{ $t('start.startProcess.title') }}</span>
-      </b-button>
-
-      <!-- Desktop: Show menus as icons outside collapse -->
-      <div class="d-none d-md-flex">
-        <b-button v-if="$root.config.layout.showFeedbackButton" variant="outline-secondary" @click="$refs.report.show()" class="border-0 py-0 me-2" :title="$t('seven.feedback')" :label="$t('seven.feedback')">
-          <span class="mdi mdi-24px mdi-message-alert"></span>
-        </b-button>
-
-        <b-navbar-nav v-if="computedMenuItems.length > 0">
-          <b-nav-item-dropdown extra-toggle-classes="py-1" right :title="$t('navigation.menu')" :label="$t('navigation.navigation')">
-            <template v-slot:button-content>
-              <span class="visually-hidden">{{ $t('navigation.menu') }}</span>
-              <span class="mdi mdi-24px mdi-menu align-middle"></span>
-            </template>
-            <template v-for="(group, gIdx) in computedMenuItems" :key="gIdx">
-              <b-dropdown-divider v-if="group.divider"></b-dropdown-divider>
-              <b-dropdown-group v-else-if="group.items && group.items.length > 0" :header="$t(group.groupTitle)">
+      <!-- Desktop: toolbar tools | utilities -->
+      <div class="d-none d-md-flex align-items-center cib-navbar-tools">
+        <b-navbar-nav v-if="computedMenuItems.length > 0" class="flex-row align-items-center">
+          <li
+            v-for="tool in computedMenuItems"
+            :key="tool.id"
+            class="nav-item d-flex align-items-center cib-toolbar-tool"
+            :class="{ 'cib-toolbar-tool-active': isToolActive(tool) }"
+          >
+            <router-link
+              class="cib-toolbar-icon-btn"
+              :class="{ 'cib-toolbar-control-active': isToolActive(tool) }"
+              :to="getToolDefaultTo(tool)"
+              :title="$t(tool.title)"
+              :aria-label="$t(tool.title)"
+            >
+              <span :class="['mdi', 'mdi-24px', tool.icon]" aria-hidden="true"></span>
+            </router-link>
+            <b-nav-item-dropdown
+              class="cib-toolbar-chevron-dropdown"
+              :class="{ 'cib-toolbar-control-active': isToolActive(tool) }"
+              no-caret
+              right
+              :title="$t(tool.title)"
+              :label="$t(tool.title)"
+            >
+              <template v-slot:button-content>
+                <span class="visually-hidden">{{ $t(tool.title) }}</span>
+                <span class="mdi mdi-18px mdi-chevron-down align-middle" aria-hidden="true"></span>
+              </template>
+              <b-dropdown-item
+                class="cib-dropdown-title"
+                :to="getToolDefaultTo(tool)"
+                :title="$t(tool.title)"
+              ><span class="fw-semibold">{{ $t(tool.title) }}</span></b-dropdown-item>
+              <b-dropdown-divider></b-dropdown-divider>
+              <template v-for="(item, idx) in tool.items" :key="tool.id + '-' + idx">
+                <b-dropdown-divider v-if="item.divider"></b-dropdown-divider>
                 <b-dropdown-item
-                  v-for="(item, idx) in group.items"
-                  :key="'ext-' + idx"
+                  v-else
                   :to="item.to"
                   :href="item.href"
-                  :title="$t(item.tooltip)"
+                  :title="item.tooltip ? $t(item.tooltip) : $t(item.title)"
                   :active="isMenuItemActive(item)"
                   :target="item.external ? '_blank' : undefined"
-                ><span :class="item.group ? 'fw-semibold' : ''">{{ $t(item.title) }}</span></b-dropdown-item>
-              </b-dropdown-group>
-            </template>
-          </b-nav-item-dropdown>
+                >{{ $t(item.title) }}</b-dropdown-item>
+              </template>
+            </b-nav-item-dropdown>
+          </li>
         </b-navbar-nav>
-        
+
+        <span
+          v-if="computedMenuItems.length > 0 || $root.config.layout.showFeedbackButton || $root.config.layout.showInfoAndHelp"
+          class="cib-navbar-divider mx-2"
+          aria-hidden="true"
+        ></span>
+
+        <b-button
+          v-if="$root.config.layout.showFeedbackButton"
+          variant="outline-secondary"
+          @click="$refs.report.show()"
+          class="border-0 cib-toolbar-icon-btn me-1"
+          :title="$t('seven.feedback')"
+          :aria-label="$t('seven.feedback')"
+        >
+          <span class="mdi mdi-24px mdi-message-alert" aria-hidden="true"></span>
+        </b-button>
+
         <b-navbar-nav v-if="$root.config.layout.showInfoAndHelp">
-          <b-nav-item-dropdown extra-toggle-classes="py-1" right :title="$t('navigation.infoAndHelp')" :label="$t('navigation.infoAndHelp')">
+          <b-nav-item-dropdown
+            class="cib-toolbar-utility-dropdown"
+            extra-toggle-classes="cib-toolbar-icon-btn"
+            no-caret
+            right
+            :title="$t('navigation.infoAndHelp')"
+            :label="$t('navigation.infoAndHelp')"
+          >
             <template v-slot:button-content>
               <span class="visually-hidden">{{ $t('navigation.infoAndHelp') }}</span>
-              <span class="mdi mdi-24px mdi-help-circle align-middle"></span>
+              <span class="mdi mdi-24px mdi-help-circle align-middle" aria-hidden="true"></span>
+              <span class="mdi mdi-18px mdi-chevron-down align-middle" aria-hidden="true"></span>
             </template>
-            <template v-for="(item, idx) in helpMenuItems" :key="idx">
+            <li class="cib-dropdown-title px-3 pt-2 pb-1" role="presentation">{{ $t('navigation.infoAndHelp') }}</li>
+            <b-dropdown-divider></b-dropdown-divider>
+            <template v-for="(item, idx) in helpMenuItems" :key="'help-' + idx">
               <b-dropdown-item v-if="item.type === 'link'" :href="item.href" :title="$t(item.tooltip)" target="_blank">{{ $t(item.title) }}</b-dropdown-item>
               <b-dropdown-item-button v-else :title="$t(item.tooltip)" @click="$refs[item.ref].show()">{{ $t(item.title) }}</b-dropdown-item-button>
             </template>
@@ -83,38 +125,60 @@
         </b-navbar-nav>
       </div>
 
-      <!-- Mobile: Show menus as list items inside CIBHeaderFlow's collapse (via customNavItems slot) -->
+      <!-- Mobile: tools + feedback + help inside collapse -->
       <template v-if="$root.user || ($root.config.layout.showInfoAndHelp && helpMenuItems.length > 0)" #customNavItems>
+        <template v-for="tool in computedMenuItems" :key="'mob-' + tool.id">
+          <b-nav-item-dropdown
+            class="d-md-none cib-toolbar-utility-dropdown"
+            extra-toggle-classes="py-1"
+            right
+            :title="$t(tool.title)"
+            :label="$t(tool.title)"
+          >
+            <template v-slot:button-content>
+              <span :class="['mdi', 'mdi-24px', tool.icon, 'align-middle', 'me-2']" aria-hidden="true"></span>
+              <span>{{ $t(tool.title) }}</span>
+              <span class="mdi mdi-18px mdi-chevron-down align-middle ms-1" aria-hidden="true"></span>
+            </template>
+            <b-dropdown-item
+              class="cib-dropdown-title"
+              :to="getToolDefaultTo(tool)"
+              :title="$t(tool.title)"
+            ><span class="fw-semibold">{{ $t(tool.title) }}</span></b-dropdown-item>
+            <b-dropdown-divider></b-dropdown-divider>
+            <template v-for="(item, idx) in tool.items" :key="'mob-' + tool.id + '-' + idx">
+              <b-dropdown-divider v-if="item.divider"></b-dropdown-divider>
+              <b-dropdown-item
+                v-else
+                :to="item.to"
+                :href="item.href"
+                :title="item.tooltip ? $t(item.tooltip) : $t(item.title)"
+                :active="isMenuItemActive(item)"
+                :target="item.external ? '_blank' : undefined"
+              >{{ $t(item.title) }}</b-dropdown-item>
+            </template>
+          </b-nav-item-dropdown>
+        </template>
         <b-nav-item-dropdown v-if="$root.config.layout.showFeedbackButton" class="d-md-none" no-caret :title="$t('seven.feedback')" :label="$t('seven.feedback')">
           <template v-slot:button-content>
             <span class="mdi mdi-24px mdi-message-alert align-middle me-2"></span>{{ $t('seven.feedback') }}
           </template>
           <b-dropdown-item-button @click="closeMenuAndShow('report')">{{ $t('seven.feedback') }}</b-dropdown-item-button>
         </b-nav-item-dropdown>
-        <b-nav-item-dropdown v-if="computedMenuItems.length > 0" class="d-md-none" extra-toggle-classes="py-1" right :title="$t('navigation.menu')" :label="$t('navigation.navigation')">
-          <template v-slot:button-content>
-            <span class="mdi mdi-24px mdi-menu align-middle me-2"></span>{{ $t('navigation.menu') }}
-          </template>
-          <template v-for="(group, gIdx) in computedMenuItems" :key="gIdx">
-            <b-dropdown-divider v-if="group.divider"></b-dropdown-divider>
-            <b-dropdown-group v-else-if="group.items && group.items.length > 0" :header="$t(group.groupTitle)">
-              <b-dropdown-item
-                v-for="(item, idx) in group.items"
-                :key="'mob-' + idx"
-                :to="item.to"
-                :href="item.href"
-                :title="$t(item.tooltip)"
-                :active="isMenuItemActive(item)"
-                :target="item.external ? '_blank' : undefined"
-              ><span :class="item.group ? 'fw-semibold' : ''">{{ $t(item.title) }}</span></b-dropdown-item>
-            </b-dropdown-group>
-          </template>
-        </b-nav-item-dropdown>
-        <b-nav-item-dropdown class="d-md-none" extra-toggle-classes="py-1" right :title="$t('navigation.infoAndHelp')" :label="$t('navigation.infoAndHelp')">
+        <b-nav-item-dropdown
+          v-if="$root.config.layout.showInfoAndHelp"
+          class="d-md-none cib-toolbar-utility-dropdown"
+          extra-toggle-classes="py-1"
+          right
+          :title="$t('navigation.infoAndHelp')"
+          :label="$t('navigation.infoAndHelp')"
+        >
           <template v-slot:button-content>
             <span class="mdi mdi-24px mdi-help-circle align-middle me-2"></span>{{ $t('navigation.infoAndHelp') }}
           </template>
-          <template v-for="(item, idx) in helpMenuItems" :key="idx">
+          <li class="cib-dropdown-title px-3 pt-2 pb-1" role="presentation">{{ $t('navigation.infoAndHelp') }}</li>
+          <b-dropdown-divider></b-dropdown-divider>
+          <template v-for="(item, idx) in helpMenuItems" :key="'mob-help-' + idx">
             <b-dropdown-item v-if="item.type === 'link'" :href="item.href" :title="$t(item.tooltip)" target="_blank">{{ $t(item.title) }}</b-dropdown-item>
             <b-dropdown-item-button v-else :title="$t(item.tooltip)" @click="closeMenuAndShow(item.ref)">{{ $t(item.title) }}</b-dropdown-item-button>
           </template>
@@ -196,66 +260,77 @@ export default {
     },
     menuItems: function() {
       return [{
-          show: this.permissionsTaskList && this.startableProcesses,
-          groupTitle: 'start.taskList.title',
+          id: 'tasks',
+          icon: 'mdi-clipboard-text-outline',
+          title: 'start.tasks.title',
+          defaultTo: '/seven/auth/tasks',
+          show: this.permissionsTaskList,
           items: [{
-              to: '/seven/auth/start-process',
-              active: ['seven/auth/start-process'],
-              tooltip: 'start.startProcess.tooltip',
-              title: 'start.startProcess.title'
-            }, {
               to: '/seven/auth/tasks',
               active: ['seven/auth/tasks'],
               tooltip: 'start.taskList.tooltip',
               title: 'start.taskList.title'
+            }, {
+              show: !!this.startableProcesses,
+              to: '/seven/auth/start-process',
+              active: ['seven/auth/start-process'],
+              tooltip: 'start.startProcess.tooltip',
+              title: 'start.startProcess.title'
             }
           ]
         }, {
-          show: this.permissionsTaskList && this.permissionsCockpit && this.startableProcesses,
-          divider: true,
-        }, {
+          id: 'cockpit',
+          icon: 'mdi-chart-donut-variant',
+          title: 'start.cockpit.title',
+          defaultTo: '/seven/auth/processes',
           show: this.permissionsCockpit,
-          groupTitle: 'start.cockpit.title',
           items: [{
-              group: true,
               to: '/seven/auth/processes',
               active: ['seven/auth/processes/dashboard'],
               tooltip: 'start.cockpit.tooltip',
-              title: 'start.cockpit.title'
+              title: 'start.cockpit.dashboard.title'
             }, {
               to: '/seven/auth/processes/list',
               active: ['seven/auth/process/', 'seven/auth/processes/list'],
               tooltip: 'start.cockpit.processes.tooltip',
               title: 'start.cockpit.processes.title'
             }, {
+              divider: true
+            }, {
               to: '/seven/auth/decisions/list',
               active: ['seven/auth/decision/', 'seven/auth/decisions/list'],
               tooltip: 'start.cockpit.decisions.tooltip',
-              title: 'start.cockpit.decisions.title',
+              title: 'start.cockpit.decisions.title'
+            }, {
+              divider: true
             }, {
               to: '/seven/auth/human-tasks',
               active: ['seven/auth/human-tasks'],
               tooltip: 'start.cockpit.humanTasks.tooltip',
               title: 'start.cockpit.humanTasks.title'
             }, {
+              divider: true
+            }, {
               to: '/seven/auth/deployments',
               active: ['seven/auth/deployments'],
               tooltip: 'start.cockpit.deployments.tooltip',
               title: 'start.cockpit.deployments.title'
             }, {
+              divider: true
+            }, {
               to: '/seven/auth/batches',
               active: ['seven/auth/batches'],
               tooltip: 'start.cockpit.batches.tooltip',
               title: 'start.cockpit.batches.title',
-              activeExact: true,
+              activeExact: true
             }
           ]
         }, {
-          show: this.permissionsModeler && (this.permissionsTaskList || this.permissionsCockpit),
-          divider: true,
-        }, {
+          id: 'builder',
+          icon: 'mdi-hammer-wrench',
+          title: 'start.builder.title',
+          defaultTo: '/seven/auth/modeler',
           show: this.permissionsModeler,
-          groupTitle: 'start.modeler.title',
           items: [{
               to: '/seven/auth/modeler',
               active: ['seven/auth/modeler'],
@@ -264,19 +339,17 @@ export default {
             }
           ]
         }, {
-          show: this.permissionsUsers && (this.permissionsTaskList || this.permissionsCockpit || this.permissionsModeler),
-          divider: true,
+          id: 'data',
+          icon: 'mdi-database-outline',
+          title: 'start.data.title',
+          show: false,
+          items: []
         }, {
+          id: 'admin',
+          icon: 'mdi-shield-account-variant-outline',
+          title: 'start.admin.title',
           show: this.permissionsUsers,
-          groupTitle: 'start.admin.title',
           items: [{
-              group: true,
-              to: '/seven/auth/admin',
-              active: ['seven/auth/admin'],
-              activeExact: true,
-              tooltip: 'start.admin.tooltip',
-              title: 'start.admin.title'
-            }, {
               show: this.permissionsUsersManagement,
               to: '/seven/auth/admin/users',
               active: ['seven/auth/admin/user', 'seven/auth/admin/create-user'],
@@ -302,10 +375,19 @@ export default {
               title: 'admin.authorizations.title'
             }, {
               show: this.permissionsSystemManagement,
-              to: '/seven/auth/admin/system',
-              active: ['seven/auth/admin/system'],
-              tooltip: 'admin.system.tooltip',
-              title: 'admin.system.title'
+              divider: true
+            }, {
+              show: this.permissionsSystemManagement,
+              to: '/seven/auth/admin/system/system-diagnostics',
+              active: ['seven/auth/admin/system/system-diagnostics'],
+              tooltip: 'admin.system.system-diagnostics.title',
+              title: 'admin.system.system-diagnostics.title'
+            }, {
+              show: this.permissionsSystemManagement,
+              to: '/seven/auth/admin/system/execution-metrics',
+              active: ['seven/auth/admin/system/execution-metrics'],
+              tooltip: 'admin.system.execution-metrics.title',
+              title: 'admin.system.execution-metrics.title'
             }
           ]
         }
@@ -338,11 +420,11 @@ export default {
     // when route is changed => let's change title of the view inside top toolbar
     pageTitle: function() {
       let title = ''
-      this.computedMenuItems.some(group => {
-        if (!group.items) {
+      this.computedMenuItems.some(tool => {
+        if (!tool.items) {
            return false
         }
-        const item = group.items.find(i => this.isMenuItemActive(i))
+        const item = tool.items.find(i => !i.divider && this.isMenuItemActive(i))
         if (item) {
           // exceptional case with 'Processes' menu item
           if (this.$route.name === 'process') {
@@ -414,11 +496,34 @@ export default {
     // override this method to add/remove menu items
     getVisibleMenuItems: function(items) {
       return items
-        .filter(group => group.show)
-        .map(group => ({
-          ...group,
-          items: group.items ? group.items.filter(item => item.show !== false) : group.items
-        }))
+        .filter(tool => tool.show)
+        .map(tool => {
+          const filtered = (tool.items || []).filter(item => item.show !== false)
+          const cleaned = []
+          for (const item of filtered) {
+            if (item.divider) {
+              if (cleaned.length === 0 || cleaned[cleaned.length - 1].divider) continue
+              cleaned.push(item)
+            } else {
+              cleaned.push(item)
+            }
+          }
+          while (cleaned.length && cleaned[cleaned.length - 1].divider) cleaned.pop()
+          return {
+            ...tool,
+            items: cleaned
+          }
+        })
+        .filter(tool => tool.items.some(item => !item.divider))
+    },
+    getToolDefaultTo: function(tool) {
+      if (tool.defaultTo) return tool.defaultTo
+      const first = (tool.items || []).find(item => !item.divider && item.to)
+      return first?.to || '/seven/auth/start'
+    },
+    isToolActive: function(tool) {
+      if (!tool?.items) return false
+      return tool.items.some(item => !item.divider && this.isMenuItemActive(item))
     },
     isMenuItemActive: function(item) {
       if (!item.active) {
@@ -498,9 +603,112 @@ export default {
 </script>
 
 <style lang="css" scoped>
-/* Customizing the separator to reduce gap */
 .dropdown-divider {
-  margin-top: 0.15rem; /* Reduce top gap */
-  margin-bottom: 0.15rem; /* Reduce bottom gap */
+  margin-top: 0.15rem;
+  margin-bottom: 0.15rem;
+}
+
+.cib-navbar-divider {
+  display: inline-block;
+  width: 1px;
+  height: 28px;
+  background-color: var(--bs-border-color, #dee2e6);
+  flex-shrink: 0;
+}
+
+.cib-toolbar-tool {
+  margin-right: 0.15rem;
+  gap: 0;
+}
+
+.cib-toolbar-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  /* Round only the outer (left) edge so it joins the chevron as one background */
+  border-radius: 0.35rem 0 0 0.35rem;
+  color: var(--bs-secondary-color, #495057);
+  text-decoration: none;
+}
+
+.cib-toolbar-icon-btn:hover,
+.cib-toolbar-icon-btn:focus,
+.cib-toolbar-icon-btn.cib-toolbar-control-active,
+.cib-toolbar-tool .cib-toolbar-chevron-dropdown:deep(.nav-link:hover),
+.cib-toolbar-tool .cib-toolbar-chevron-dropdown:deep(.nav-link:focus),
+.cib-toolbar-tool .cib-toolbar-chevron-dropdown:deep(.nav-link.show),
+.cib-toolbar-tool .cib-toolbar-chevron-dropdown.cib-toolbar-control-active:deep(.nav-link),
+:deep(.cib-toolbar-utility-dropdown .nav-link:hover),
+:deep(.cib-toolbar-utility-dropdown .nav-link:focus),
+:deep(.cib-toolbar-utility-dropdown .nav-link.show) {
+  background-color: rgba(13, 110, 253, 0.12);
+  color: var(--bs-secondary-color, #495057);
+}
+
+/* Match icon hit-area exactly; target button via parent scope (toggle classes are not applied) */
+.cib-toolbar-tool .cib-toolbar-chevron-dropdown:deep(.nav-link) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0 !important;
+  margin: 0;
+  border: 0;
+  /* Round only the outer (right) edge so it joins the icon as one background */
+  border-radius: 0 0.35rem 0.35rem 0;
+  color: var(--bs-secondary-color, #495057);
+}
+
+:deep(.cib-toolbar-utility-dropdown .nav-link) {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem;
+  min-height: 36px;
+  border-radius: 0.35rem;
+  color: var(--bs-secondary-color, #495057);
+}
+
+.cib-toolbar-tool .cib-toolbar-chevron-dropdown:deep(.dropdown-toggle::after),
+:deep(.cib-toolbar-utility-dropdown .dropdown-toggle::after) {
+  display: none;
+}
+
+.cib-dropdown-title {
+  font-weight: 600;
+  font-size: 1.015rem;
+  color: var(--bs-body-color, #212529);
+  list-style: none;
+}
+
+/* Class lands on the <li> wrapper; keep title weight on the inner dropdown link */
+:deep(li.cib-dropdown-title > .dropdown-item),
+:deep(li.cib-dropdown-title > .dropdown-item:hover),
+:deep(li.cib-dropdown-title > .dropdown-item:focus),
+:deep(li.cib-dropdown-title > .dropdown-item.active) {
+  font-weight: 600;
+  font-size: 1.015rem;
+  color: var(--bs-body-color, #212529);
+  cursor: pointer;
+}
+
+:deep(li.cib-dropdown-title > .dropdown-item .fw-semibold) {
+  font-weight: 600;
+  font-size: inherit;
+}
+
+:deep(.dropdown-menu) {
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
+  min-width: 14rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.5rem;
 }
 </style>
