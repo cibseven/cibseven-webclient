@@ -299,13 +299,19 @@ export default {
 .dropdown-item:hover .lang-label-active {
   background-color: var(--bs-gray-500) !important;
 }
+</style>
+
+<!-- Unscoped: BNavItemDropdown hardcodes dropdown-toggle; EE/extends must still see these rules -->
+<style>
+.cib-navbar-bar {
+  background-color: var(--bs-white, #fff);
+}
 
 .cib-navbar-utility {
   margin-left: 0.15rem;
 }
 
-:deep(.cib-navbar-utility .nav-link),
-:deep(.cib-navbar-utility-toggle) {
+.cib-navbar-utility > .nav-link {
   display: inline-flex;
   align-items: center;
   gap: 0.1rem;
@@ -315,20 +321,21 @@ export default {
   color: var(--bs-secondary-color, #495057);
 }
 
-:deep(.cib-navbar-utility .nav-link:hover),
-:deep(.cib-navbar-utility .nav-link:focus),
-:deep(.cib-navbar-utility .nav-link.show),
-:deep(.cib-navbar-utility-toggle:hover),
-:deep(.cib-navbar-utility-toggle:focus) {
+.cib-navbar-utility > .nav-link:hover,
+.cib-navbar-utility > .nav-link:focus,
+.cib-navbar-utility > .nav-link.show {
   background-color: rgba(13, 110, 253, 0.12);
   color: var(--bs-secondary-color, #495057);
 }
 
-:deep(.cib-navbar-utility .dropdown-toggle::after) {
-  display: none;
+.cib-navbar-utility > .dropdown-toggle::after {
+  display: none !important;
+  content: none !important;
+  margin: 0 !important;
+  border: 0 !important;
 }
 
-:deep(.cib-navbar-utility .dropdown-menu) {
+.cib-navbar-utility > .dropdown-menu {
   border: 1px solid var(--bs-border-color, #dee2e6);
   box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
   min-width: 12rem;
@@ -336,8 +343,8 @@ export default {
   padding-bottom: 0.5rem;
 }
 
-.cib-dropdown-title {
-  font-weight: 700;
+.cib-navbar .cib-dropdown-title {
+  font-weight: 600;
   color: var(--bs-body-color, #212529);
   list-style: none;
 }

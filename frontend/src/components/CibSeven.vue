@@ -607,7 +607,14 @@ export default {
   margin-top: 0.15rem;
   margin-bottom: 0.15rem;
 }
+</style>
 
+<!--
+  Unscoped on purpose: CibSevenEE extends this component, and BNavItemDropdown
+  hardcodes Bootstrap's dropdown-toggle caret. Scoped/data-v selectors often miss
+  the child roots in EE, which drops the divider/active styles and leaves 2 carets.
+-->
+<style lang="css">
 .cib-navbar-divider {
   display: inline-block;
   width: 1px;
@@ -629,7 +636,6 @@ export default {
   width: 36px;
   height: 36px;
   padding: 0;
-  /* Round only the outer (left) edge so it joins the chevron as one background */
   border-radius: 0.35rem 0 0 0.35rem;
   color: var(--bs-secondary-color, #495057);
   text-decoration: none;
@@ -638,19 +644,18 @@ export default {
 .cib-toolbar-icon-btn:hover,
 .cib-toolbar-icon-btn:focus,
 .cib-toolbar-icon-btn.cib-toolbar-control-active,
-.cib-toolbar-tool .cib-toolbar-chevron-dropdown:deep(.nav-link:hover),
-.cib-toolbar-tool .cib-toolbar-chevron-dropdown:deep(.nav-link:focus),
-.cib-toolbar-tool .cib-toolbar-chevron-dropdown:deep(.nav-link.show),
-.cib-toolbar-tool .cib-toolbar-chevron-dropdown.cib-toolbar-control-active:deep(.nav-link),
-:deep(.cib-toolbar-utility-dropdown .nav-link:hover),
-:deep(.cib-toolbar-utility-dropdown .nav-link:focus),
-:deep(.cib-toolbar-utility-dropdown .nav-link.show) {
+.cib-toolbar-tool .cib-toolbar-chevron-dropdown > .nav-link:hover,
+.cib-toolbar-tool .cib-toolbar-chevron-dropdown > .nav-link:focus,
+.cib-toolbar-tool .cib-toolbar-chevron-dropdown > .nav-link.show,
+.cib-toolbar-tool .cib-toolbar-chevron-dropdown.cib-toolbar-control-active > .nav-link,
+.cib-toolbar-utility-dropdown > .nav-link:hover,
+.cib-toolbar-utility-dropdown > .nav-link:focus,
+.cib-toolbar-utility-dropdown > .nav-link.show {
   background-color: rgba(13, 110, 253, 0.12);
   color: var(--bs-secondary-color, #495057);
 }
 
-/* Match icon hit-area exactly; target button via parent scope (toggle classes are not applied) */
-.cib-toolbar-tool .cib-toolbar-chevron-dropdown:deep(.nav-link) {
+.cib-toolbar-tool .cib-toolbar-chevron-dropdown > .nav-link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -662,23 +667,27 @@ export default {
   padding: 0 !important;
   margin: 0;
   border: 0;
-  /* Round only the outer (right) edge so it joins the icon as one background */
   border-radius: 0 0.35rem 0.35rem 0;
   color: var(--bs-secondary-color, #495057);
 }
 
-:deep(.cib-toolbar-utility-dropdown .nav-link) {
+/* BNavItemDropdown always adds dropdown-toggle; hide Bootstrap's caret (keep MDI chevron) */
+.cib-toolbar-chevron-dropdown > .dropdown-toggle::after,
+.cib-toolbar-utility-dropdown > .dropdown-toggle::after,
+.cib-navbar-utility > .dropdown-toggle::after {
+  display: none !important;
+  content: none !important;
+  margin: 0 !important;
+  border: 0 !important;
+}
+
+.cib-toolbar-utility-dropdown > .nav-link {
   display: inline-flex;
   align-items: center;
   padding: 0.25rem;
   min-height: 36px;
   border-radius: 0.35rem;
   color: var(--bs-secondary-color, #495057);
-}
-
-.cib-toolbar-tool .cib-toolbar-chevron-dropdown:deep(.dropdown-toggle::after),
-:deep(.cib-toolbar-utility-dropdown .dropdown-toggle::after) {
-  display: none;
 }
 
 .cib-dropdown-title {
@@ -688,23 +697,23 @@ export default {
   list-style: none;
 }
 
-/* Class lands on the <li> wrapper; keep title weight on the inner dropdown link */
-:deep(li.cib-dropdown-title > .dropdown-item),
-:deep(li.cib-dropdown-title > .dropdown-item:hover),
-:deep(li.cib-dropdown-title > .dropdown-item:focus),
-:deep(li.cib-dropdown-title > .dropdown-item.active) {
+li.cib-dropdown-title > .dropdown-item,
+li.cib-dropdown-title > .dropdown-item:hover,
+li.cib-dropdown-title > .dropdown-item:focus,
+li.cib-dropdown-title > .dropdown-item.active {
   font-weight: 600;
   font-size: 1.015rem;
   color: var(--bs-body-color, #212529);
   cursor: pointer;
 }
 
-:deep(li.cib-dropdown-title > .dropdown-item .fw-semibold) {
+li.cib-dropdown-title > .dropdown-item .fw-semibold {
   font-weight: 600;
   font-size: inherit;
 }
 
-:deep(.dropdown-menu) {
+.cib-toolbar-chevron-dropdown > .dropdown-menu,
+.cib-toolbar-utility-dropdown > .dropdown-menu {
   border: 1px solid var(--bs-border-color, #dee2e6);
   box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
   min-width: 14rem;
