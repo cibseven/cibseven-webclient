@@ -63,6 +63,20 @@ export { default as usersMixin } from '@/mixins/usersMixin.js'
 export { default as copyToClipboardMixin } from '@/mixins/copyToClipboardMixin.js'
 export { default as assigneeMixin } from '@/mixins/assigneeMixin.js'
 export { default as navigationPermissionsMixin } from '@/mixins/navigationPermissionsMixin.js'
+export { default as startTileOptionsMixin } from '@/mixins/startTileOptionsMixin.js'
+export {
+  SURFACES,
+  COLLAPSE_TARGETS,
+  buildNavGroups,
+  filterVisibleNavGroups,
+  projectGroupsForToolbar,
+  projectStartHoverOptions,
+  navItemsToTileOptions,
+  cockpitItemsToTileOptions,
+  adminItemsToTileOptions,
+  accessManagementCatalogItems,
+  navContextFromVm
+} from '@/navigation/navGroups.js'
 
 // components
 export { default as CibSeven } from '@/components/CibSeven.vue'
@@ -162,6 +176,11 @@ export { default as DmnViewer } from '@/components/decision/DmnViewer.vue'
 export { default as TemplateBase } from '@/components/forms/TemplateBase.vue'
 export { default as StartView } from '@/components/start/StartView.vue'
 export { default as StartViewItem } from '@/components/start/StartViewItem.vue'
+export { default as StartHubView } from '@/components/start/StartHubView.vue'
+export { default as TasksStartView } from '@/components/start/TasksStartView.vue'
+export { default as BuilderStartView } from '@/components/start/BuilderStartView.vue'
+export { default as DataStartView } from '@/components/start/DataStartView.vue'
+export { default as AccessManagement } from '@/components/admin/AccessManagement.vue'
 export { default as LoginView } from '@/components/login/LoginView.vue'
 export { default as InitialSetup } from '@/components/setup/InitialSetup.vue'
 export { default as ModelerView } from '@/components/modeler/ModelerView.vue'

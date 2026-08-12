@@ -23,6 +23,10 @@ import { AuthService, SetupService } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
 import CibSeven from '@/components/CibSeven.vue'
 import StartView from '@/components/start/StartView.vue'
+import TasksStartView from '@/components/start/TasksStartView.vue'
+import BuilderStartView from '@/components/start/BuilderStartView.vue'
+import DataStartView from '@/components/start/DataStartView.vue'
+import AccessManagement from '@/components/admin/AccessManagement.vue'
 import StartProcessView from '@/components/start-process/StartProcessView.vue'
 import ProcessView from '@/components/process/ProcessView.vue'
 import ProcessListView from '@/components/processes/list/ProcessListView.vue'
@@ -162,6 +166,9 @@ const appRoutes = [
         },
 
         { path: 'start', name: 'start', component: StartView },
+        { path: 'tasks-home', name: 'tasksHome', component: TasksStartView, meta: { title: 'start.tasks.title' } },
+        { path: 'builder', name: 'builderHome', component: BuilderStartView, meta: { title: 'start.builder.title' } },
+        { path: 'data-home', name: 'dataHome', component: DataStartView, meta: { title: 'start.data.title' } },
 
         // Modeler
         { path: 'modeler/:diagramId?', name: 'modeler', beforeEnter: modelerGuard, component: ModelerView, meta: { title: 'start.modeler.title' } },
@@ -276,7 +283,8 @@ const appRoutes = [
             template: '<router-view></router-view>'
           },
           children: [
-            { path: '', name: 'usersManagement', component: UsersManagement },
+            { path: '', name: 'usersManagement', component: UsersManagement, meta: { title: 'start.admin.title' } },
+            { path: 'access-management', name: 'accessManagement', component: AccessManagement, meta: { title: 'start.accessManagement.title' } },
             { path: 'users', name: 'adminUsers',
               beforeEnter: permissionsGuardUserAdmin('usersManagement', 'user'), component: AdminUsers },
             { path: 'user/:userId', name: 'adminUser',

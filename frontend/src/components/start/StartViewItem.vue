@@ -59,7 +59,7 @@ export default {
   name: "StartViewItem",
   props: {
     to: {
-      type: Object,
+      type: [Object, String],
       required: true,
     },
     title: {

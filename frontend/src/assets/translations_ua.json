@@ -1040,6 +1040,10 @@
 			"title": "Адмін",
 			"tooltip": "Відкрити Адмін панель"
 		},
+		"accessManagement": {
+			"title": "Управління доступом",
+			"tooltip": "Відкрити Управління доступом"
+		},
 		"builder": {
 			"title": "Builder",
 			"tooltip": "Відкрити Builder"

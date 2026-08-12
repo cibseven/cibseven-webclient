@@ -1040,6 +1040,10 @@
 			"title": "Admin",
 			"tooltip": "Open Admin"
 		},
+		"accessManagement": {
+			"title": "Access management",
+			"tooltip": "Open Access management"
+		},
 		"builder": {
 			"title": "Builder",
 			"tooltip": "Open Builder"

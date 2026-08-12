@@ -345,6 +345,7 @@ export default {
 
 .cib-navbar .cib-dropdown-title {
   font-weight: 600;
+  font-size: 1.015rem;
   color: var(--bs-body-color, #212529);
   list-style: none;
 }

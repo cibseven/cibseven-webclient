@@ -33,6 +33,13 @@
         <h1 v-else-if="$route.name === 'start'" class="visually-hidden">{{ $t('navigation.home') + ' - ' + $t('navigation.menu') }}</h1>
       </div>
 
+      <b-button v-if="$root.user && startableProcesses && $route.name === 'tasklist'" class="d-none d-sm-block py-0 me-3" variant="light"
+        :title="$t('start.startProcess.title')"
+        :aria-label="$t('start.startProcess.title')" aria-haspopup="dialog" @click="openStartProcess()">
+        <span class="mdi mdi-18px mdi-rocket" aria-hidden="true"></span>
+        <span class="d-none d-lg-inline ms-2">{{ $t('start.startProcess.title') }}</span>
+      </b-button>
+
       <!-- Desktop: toolbar tools | utilities -->
       <div class="d-none d-md-flex align-items-center cib-navbar-tools">
         <b-navbar-nav v-if="computedMenuItems.length > 0" class="flex-row align-items-center">
@@ -236,6 +243,7 @@ import SupportModal from '@/components/modals/SupportModal.vue'
 import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
 import FeedbackModal from '@/components/modals/FeedbackModal.vue'
 import { updateAppTitle } from '@/utils/init'
+import { buildNavGroups, projectGroupsForToolbar, navContextFromVm } from '@/navigation/navGroups.js'
 
 export default {
   name: 'CibSeven',
@@ -259,139 +267,7 @@ export default {
       return this.$root.config.productNamePageTitle || this.$t('login.productName')
     },
     menuItems: function() {
-      return [{
-          id: 'tasks',
-          icon: 'mdi-clipboard-text-outline',
-          title: 'start.tasks.title',
-          defaultTo: '/seven/auth/tasks',
-          show: this.permissionsTaskList,
-          items: [{
-              to: '/seven/auth/tasks',
-              active: ['seven/auth/tasks'],
-              tooltip: 'start.taskList.tooltip',
-              title: 'start.taskList.title'
-            }, {
-              show: !!this.startableProcesses,
-              to: '/seven/auth/start-process',
-              active: ['seven/auth/start-process'],
-              tooltip: 'start.startProcess.tooltip',
-              title: 'start.startProcess.title'
-            }
-          ]
-        }, {
-          id: 'cockpit',
-          icon: 'mdi-chart-donut-variant',
-          title: 'start.cockpit.title',
-          defaultTo: '/seven/auth/processes',
-          show: this.permissionsCockpit,
-          items: [{
-              to: '/seven/auth/processes',
-              active: ['seven/auth/processes/dashboard'],
-              tooltip: 'start.cockpit.tooltip',
-              title: 'start.cockpit.dashboard.title'
-            }, {
-              to: '/seven/auth/processes/list',
-              active: ['seven/auth/process/', 'seven/auth/processes/list'],
-              tooltip: 'start.cockpit.processes.tooltip',
-              title: 'start.cockpit.processes.title'
-            }, {
-              divider: true
-            }, {
-              to: '/seven/auth/decisions/list',
-              active: ['seven/auth/decision/', 'seven/auth/decisions/list'],
-              tooltip: 'start.cockpit.decisions.tooltip',
-              title: 'start.cockpit.decisions.title'
-            }, {
-              divider: true
-            }, {
-              to: '/seven/auth/human-tasks',
-              active: ['seven/auth/human-tasks'],
-              tooltip: 'start.cockpit.humanTasks.tooltip',
-              title: 'start.cockpit.humanTasks.title'
-            }, {
-              divider: true
-            }, {
-              to: '/seven/auth/deployments',
-              active: ['seven/auth/deployments'],
-              tooltip: 'start.cockpit.deployments.tooltip',
-              title: 'start.cockpit.deployments.title'
-            }, {
-              divider: true
-            }, {
-              to: '/seven/auth/batches',
-              active: ['seven/auth/batches'],
-              tooltip: 'start.cockpit.batches.tooltip',
-              title: 'start.cockpit.batches.title',
-              activeExact: true
-            }
-          ]
-        }, {
-          id: 'builder',
-          icon: 'mdi-hammer-wrench',
-          title: 'start.builder.title',
-          defaultTo: '/seven/auth/modeler',
-          show: this.permissionsModeler,
-          items: [{
-              to: '/seven/auth/modeler',
-              active: ['seven/auth/modeler'],
-              tooltip: 'start.modeler.tooltip',
-              title: 'start.modeler.title'
-            }
-          ]
-        }, {
-          id: 'data',
-          icon: 'mdi-database-outline',
-          title: 'start.data.title',
-          show: false,
-          items: []
-        }, {
-          id: 'admin',
-          icon: 'mdi-shield-account-variant-outline',
-          title: 'start.admin.title',
-          show: this.permissionsUsers,
-          items: [{
-              show: this.permissionsUsersManagement,
-              to: '/seven/auth/admin/users',
-              active: ['seven/auth/admin/user', 'seven/auth/admin/create-user'],
-              tooltip: 'admin.users.tooltip',
-              title: 'admin.users.title'
-            }, {
-              show: this.permissionsGroupsManagement,
-              to: '/seven/auth/admin/groups',
-              active: ['seven/auth/admin/group', 'seven/auth/admin/create-group'],
-              tooltip: 'admin.groups.tooltip',
-              title: 'admin.groups.title'
-            }, {
-              show: this.permissionsTenantsManagement,
-              to: '/seven/auth/admin/tenants',
-              active: ['seven/auth/admin/tenant', 'seven/auth/admin/create-tenant'],
-              tooltip: 'admin.tenants.tooltip',
-              title: 'admin.tenants.title'
-            }, {
-              show: this.permissionsAuthorizationsManagement,
-              to: '/seven/auth/admin/authorizations',
-              active: ['seven/auth/admin/authorizations'],
-              tooltip: 'admin.authorizations.tooltip',
-              title: 'admin.authorizations.title'
-            }, {
-              show: this.permissionsSystemManagement,
-              divider: true
-            }, {
-              show: this.permissionsSystemManagement,
-              to: '/seven/auth/admin/system/system-diagnostics',
-              active: ['seven/auth/admin/system/system-diagnostics'],
-              tooltip: 'admin.system.system-diagnostics.title',
-              title: 'admin.system.system-diagnostics.title'
-            }, {
-              show: this.permissionsSystemManagement,
-              to: '/seven/auth/admin/system/execution-metrics',
-              active: ['seven/auth/admin/system/execution-metrics'],
-              tooltip: 'admin.system.execution-metrics.title',
-              title: 'admin.system.execution-metrics.title'
-            }
-          ]
-        }
-      ]
+      return buildNavGroups(navContextFromVm(this))
     },
     computedMenuItems: function() {
       return this.getVisibleMenuItems(this.menuItems)
@@ -419,6 +295,9 @@ export default {
     },
     // when route is changed => let's change title of the view inside top toolbar
     pageTitle: function() {
+      if (this.$route.meta?.title) {
+        return this.$t(this.$route.meta.title)
+      }
       let title = ''
       this.computedMenuItems.some(tool => {
         if (!tool.items) {
@@ -469,11 +348,6 @@ export default {
         }
         return true
       })
-    },
-    isUsersManagementActive: function() {
-      return this.$route.path.includes('seven/auth/admin/user') ||
-        this.$route.path.includes('seven/auth/admin/group') ||
-        this.$route.path.includes('seven/auth/admin/authorizations')
     }
   },
   mounted: function () {
@@ -495,26 +369,7 @@ export default {
   methods: {
     // override this method to add/remove menu items
     getVisibleMenuItems: function(items) {
-      return items
-        .filter(tool => tool.show)
-        .map(tool => {
-          const filtered = (tool.items || []).filter(item => item.show !== false)
-          const cleaned = []
-          for (const item of filtered) {
-            if (item.divider) {
-              if (cleaned.length === 0 || cleaned[cleaned.length - 1].divider) continue
-              cleaned.push(item)
-            } else {
-              cleaned.push(item)
-            }
-          }
-          while (cleaned.length && cleaned[cleaned.length - 1].divider) cleaned.pop()
-          return {
-            ...tool,
-            items: cleaned
-          }
-        })
-        .filter(tool => tool.items.some(item => !item.divider))
+      return projectGroupsForToolbar(items)
     },
     getToolDefaultTo: function(tool) {
       if (tool.defaultTo) return tool.defaultTo
@@ -522,6 +377,7 @@ export default {
       return first?.to || '/seven/auth/start'
     },
     isToolActive: function(tool) {
+      if (tool?.startTo?.name && this.$route.name === tool.startTo.name) return true
       if (!tool?.items) return false
       return tool.items.some(item => !item.divider && this.isMenuItemActive(item))
     },
@@ -532,7 +388,15 @@ export default {
       if (item.activeExact) {
         return item.active.some(a => this.$route.path.endsWith(a))
       } else {
-        return item.active.some(a => this.$route.path.includes(a))
+        // Boundary-aware match: 'a' must be followed by end-of-path or '/', so a
+        // sibling route whose path merely starts with the same text (e.g. the
+        // 'tasks-home' hub route vs. the 'seven/auth/tasks' pattern) isn't matched.
+        return item.active.some(a => {
+          const idx = this.$route.path.indexOf(a)
+          if (idx === -1) return false
+          const nextChar = this.$route.path[idx + a.length]
+          return nextChar === undefined || nextChar === '/'
+        })
       }
     },
     logout: function() {
