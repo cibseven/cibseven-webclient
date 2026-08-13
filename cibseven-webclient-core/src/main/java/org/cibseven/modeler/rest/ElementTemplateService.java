@@ -237,6 +237,9 @@ public class ElementTemplateService extends BaseService {
     	entity.setDescription(element.getDescription());
     	entity.setContent(element.getContent());
     	entity.setOrigin(element.getOrigin() != null ? element.getOrigin() : ElementTemplateOrigin.MANUAL);
+    	if (element.getActive() != null) {
+    		entity.setActive(element.getActive());
+    	}
     	entity.setCreatedBy(user != null ? user.getUserID() : "anonymous");
     	
     	ElementTemplate savedTemplate = templateProvider.addTemplate(entity);
@@ -364,6 +367,9 @@ public class ElementTemplateService extends BaseService {
     	existingTemplate.setTemplateId(element.getTemplateId());
     	existingTemplate.setDescription(element.getDescription());
     	existingTemplate.setContent(element.getContent());
+    	if (element.getActive() != null) {
+    		existingTemplate.setActive(element.getActive());
+    	}
     	existingTemplate.setUpdatedBy(user != null ? user.getUserID() : "anonymous");
     	// Note: origin and createdBy are not updated as they are read-only
     	
