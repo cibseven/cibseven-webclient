@@ -781,13 +781,13 @@ public class DirectProcessProvider implements IProcessProvider {
 	}
 
 	@Override
-	public Collection<ProcessInstance> findCurrentProcessesInstances(Map<String, Object> data, CIBUser user)
+	public Collection<ProcessInstance> findCurrentProcessesInstances(Map<String, Object> data, Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user)
 			throws SystemException {
 		ProcessInstanceQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(data, ProcessInstanceQueryDto.class);
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
 		ProcessInstanceQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 
-		List<org.cibseven.bpm.engine.runtime.ProcessInstance> matchingInstances = QueryUtil.list(query, null, null);
+		List<org.cibseven.bpm.engine.runtime.ProcessInstance> matchingInstances = QueryUtil.list(query, firstResult.orElse(null), maxResults.orElse(null));
 
 		List<ProcessInstance> instanceResults = new ArrayList<>();
 		for (org.cibseven.bpm.engine.runtime.ProcessInstance instance : matchingInstances) {

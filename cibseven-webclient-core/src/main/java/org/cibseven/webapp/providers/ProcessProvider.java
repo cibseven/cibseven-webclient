@@ -30,6 +30,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.Comparator;
+import java.util.function.Function;
 
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
@@ -232,13 +233,64 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	@Override
 	public Collection<ProcessInstance> findProcessesInstances(String key, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/process-instance?processDefinitionKey=" + key;
-		return Arrays.asList(((ResponseEntity<ProcessInstance[]>) doGet(url, ProcessInstance[].class, user, false)).getBody());	
+		Collection<ProcessInstance> result = Arrays.asList(((ResponseEntity<ProcessInstance[]>) doGet(url, ProcessInstance[].class, user, false)).getBody());	
+		addWithIncidentsInfo(result, false, user);
+		return result;
 	}
 
 	@Override
-	public Collection<ProcessInstance> findCurrentProcessesInstances(Map<String, Object> data, CIBUser user) {
-		String url = getEngineRestUrl(user) + "/process-instance";
-		return Arrays.asList(((ResponseEntity<ProcessInstance[]>) doPost(url, data, ProcessInstance[].class, user)).getBody());
+	public Collection<ProcessInstance> findCurrentProcessesInstances(Map<String, Object> data, Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) {
+		// 1. Build Query Parameters safely
+		Map<String, Object> queryParams = new HashMap<String, Object>();
+		if (firstResult.isPresent()) queryParams.put("firstResult", firstResult.get());
+		if (maxResults.isPresent()) queryParams.put("maxResults", maxResults.get());
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/process-instance", queryParams);
+
+		// 2. Fetch initial results
+		Collection<ProcessInstance> result = Arrays.asList(((ResponseEntity<ProcessInstance[]>) doPost(url, data, ProcessInstance[].class, user)).getBody());
+		boolean alreadyAllWithIncident = Boolean.TRUE.equals(data.get("withIncident"));
+
+		// 3. Update 'withIncident' flag for each instance in result
+		addWithIncidentsInfo(result, alreadyAllWithIncident, user);
+		return result;
+	}
+
+	private void addWithIncidentsInfo(Collection<ProcessInstance> result, boolean alreadyAllWithIncident, CIBUser user) {
+		if (result.isEmpty()) {
+			return;
+		}
+
+		if (!alreadyAllWithIncident) {
+			result.forEach(i -> 
+				i.setWithIncident(Boolean.FALSE)
+			);
+
+			// 1. Create an O(1) Lookup Map to eliminate the nested stream loop
+			Map<String, ProcessInstance> resultMap = result.stream().collect(Collectors.toMap(ProcessInstance::getId, Function.identity()));
+
+			// 2. Request only instances with incidents
+			// fetch all instances once again by their ID but now with withIncident = true, let's check which have incidents
+			Map<String, Object> dataWithIncident = new HashMap<String, Object>();
+			dataWithIncident.put("withIncident", Boolean.TRUE);
+			dataWithIncident.put("processInstanceIds", result.stream().map(i -> i.getId()).toList());
+
+			String urlWithIncident = getEngineRestUrl(user) + "/process-instance";
+			Collection<ProcessInstance> instancesWithIncident = Arrays.asList(((ResponseEntity<ProcessInstance[]>) doPost(urlWithIncident, dataWithIncident, ProcessInstance[].class, user)).getBody());
+
+			// 3. Update 'withIncident' flag for each instance in result
+			instancesWithIncident.forEach(incidentInstance -> {
+				// 5. Instantly match using the Map
+				ProcessInstance originalInstance = resultMap.get(incidentInstance.getId());
+				if (originalInstance != null) {
+					originalInstance.setWithIncident(Boolean.TRUE);
+				}
+			});
+		}
+		else {
+			result.forEach(i -> 
+				i.setWithIncident(Boolean.TRUE)
+			);
+		}
 	}
 
 	@Override
@@ -518,7 +570,14 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	@Override
 	public ProcessInstance findProcessInstance(String processInstanceId, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId;
-		return ((ResponseEntity<ProcessInstance>) doGet(url, ProcessInstance.class, user, false)).getBody();
+		ProcessInstance instance = ((ResponseEntity<ProcessInstance>) doGet(url, ProcessInstance.class, user, false)).getBody();
+
+		if (instance != null) {
+			Collection<ProcessInstance> asList = List.of(instance);
+			addWithIncidentsInfo(asList, false, user);
+		}
+
+		return instance;
 	}
 
 	private Variable fetchProcessInstanceVariableImpl(String processInstanceId, String variableName, boolean deserializeValue, CIBUser user) throws SystemException  {

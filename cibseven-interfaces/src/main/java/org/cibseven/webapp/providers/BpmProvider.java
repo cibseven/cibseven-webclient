@@ -1690,9 +1690,9 @@ public interface BpmProvider {
      * @return Fetched processes instances.
      * @throws SystemException in case of an error.
      */
-	default Collection<ProcessInstance> findCurrentProcessesInstances(Map<String, Object> data, CIBUser user)
+	default Collection<ProcessInstance> findCurrentProcessesInstances(Map<String, Object> data, Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user)
 			throws SystemException {
-		return getProcessProvider().findCurrentProcessesInstances(data, user);
+		return getProcessProvider().findCurrentProcessesInstances(data, firstResult, maxResults, user);
 	}
 
 
