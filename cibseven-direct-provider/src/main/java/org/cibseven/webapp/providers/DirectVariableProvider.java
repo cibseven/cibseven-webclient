@@ -38,6 +38,7 @@ import org.cibseven.bpm.engine.rest.dto.PatchVariablesDto;
 import org.cibseven.bpm.engine.rest.dto.VariableValueDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricVariableInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricVariableInstanceQueryDto;
+import org.cibseven.bpm.engine.rest.dto.history.batch.HistoricBatchQueryDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.ProcessInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.VariableInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.exception.RestException;
@@ -158,7 +159,7 @@ public class DirectVariableProvider implements IVariableProvider {
 		if (data != null && data.containsKey("deserializeValues"))
 			data.remove("deserializeValues");
 
-		VariableInstanceQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(data, VariableInstanceQueryDto.class);
+		VariableInstanceQueryDto queryDto = directProviderUtil.parseQueryDto(data, VariableInstanceQueryDto.class, user);
 
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
 
@@ -751,14 +752,8 @@ public class DirectVariableProvider implements IVariableProvider {
 			query.disableCustomObjectDeserialization();
 		}
 
-		List<HistoricVariableInstance> matchingHistoricVariableInstances = QueryUtil.list(query, firstResult, maxResults);
-		List<VariableHistory> historicVariableInstanceDtoResults = new ArrayList<>();
-		for (HistoricVariableInstance historicVariableInstance : matchingHistoricVariableInstances) {
-			HistoricVariableInstanceDto resultHistoricVariableInstance = HistoricVariableInstanceDto
-					.fromHistoricVariableInstance(historicVariableInstance);
-			historicVariableInstanceDtoResults.add(directProviderUtil.convertValue(resultHistoricVariableInstance, VariableHistory.class, user));
-		}
-		return historicVariableInstanceDtoResults;
+		return directProviderUtil.listAndConvert(query, firstResult, maxResults, 
+				HistoricVariableInstanceDto::fromHistoricVariableInstance, VariableHistory.class, user);
 	}
 
 	private Variable fetchTaskVariableImpl(String taskId, String variableName, boolean deserializeValue, CIBUser user)
@@ -816,15 +811,8 @@ public class DirectVariableProvider implements IVariableProvider {
 			query.disableCustomObjectDeserialization();
 		}
 
-		List<HistoricVariableInstance> matchingInstances = QueryUtil.list(query, firstResult, maxResults);
-
-		List<VariableHistory> instanceResults = new ArrayList<>();
-		for (HistoricVariableInstance instance : matchingInstances) {
-			HistoricVariableInstanceDto resultInstanceDto = HistoricVariableInstanceDto.fromHistoricVariableInstance(instance);
-			VariableHistory resultInstance = directProviderUtil.convertValue(resultInstanceDto, VariableHistory.class, user);
-			instanceResults.add(resultInstance);
-		}
-		return instanceResults;
+		return directProviderUtil.listAndConvert(query, firstResult, maxResults, 
+				HistoricVariableInstanceDto::fromHistoricVariableInstance, VariableHistory.class, user);
 	}
 
 	@Override

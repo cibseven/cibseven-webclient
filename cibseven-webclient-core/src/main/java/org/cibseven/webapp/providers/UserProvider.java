@@ -16,8 +16,6 @@
  */
 package org.cibseven.webapp.providers;
 
-import static org.cibseven.webapp.auth.SevenAuthorizationUtils.resourceType;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -29,7 +27,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.SystemException;
@@ -63,7 +60,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 
 	@Override
 	public Authorizations getUserAuthorization(String userId, CIBUser user) {
-		Authorizations auths = new Authorizations();
+		Authorizations auths;
 		try {
 			String urlUsers = getEngineRestUrl(user) + "/authorization";
 			UriComponentsBuilder builder;
@@ -93,32 +90,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 			Collection<Authorization> globalAuthorizations = Arrays.asList(((ResponseEntity<Authorization[]>) doGet(builder, Authorization[].class, user)).getBody());
 			userAuthorizations.addAll(globalAuthorizations);
 
-			auths.setApplication(filterResources(userAuthorizations, resourceType(SevenResourceType.APPLICATION)));
-			auths.setFilter(filterResources(userAuthorizations, resourceType(SevenResourceType.FILTER)));
-			auths.setProcessDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.PROCESS_DEFINITION)));
-			auths.setProcessInstance(filterResources(userAuthorizations, resourceType(SevenResourceType.PROCESS_INSTANCE)));
-			auths.setTask(filterResources(userAuthorizations, resourceType(SevenResourceType.TASK)));
-			auths.setAuthorization(filterResources(userAuthorizations, resourceType(SevenResourceType.AUTHORIZATION)));
-			auths.setUser(filterResources(userAuthorizations, resourceType(SevenResourceType.USER)));
-			auths.setGroup(filterResources(userAuthorizations, resourceType(SevenResourceType.GROUP)));
-			auths.setDecisionDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.DECISION_DEFINITION)));
-			auths.setDecisionRequirementsDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.DECISION_REQUIREMENTS_DEFINITION)));
-			auths.setDeployment(filterResources(userAuthorizations, resourceType(SevenResourceType.DEPLOYMENT)));
-			//auths.setCaseDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.CASE_DEFINITION)));
-			//auths.setCaseInstance(filterResources(userAuthorizations, resourceType(SevenResourceType.CASE_INSTANCE)));
-			//auths.setJobDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.JOB_DEFINITION)));
-			auths.setBatch(filterResources(userAuthorizations, resourceType(SevenResourceType.BATCH)));
-			auths.setGroupMembership(filterResources(userAuthorizations, resourceType(SevenResourceType.GROUP_MEMBERSHIP)));
-			auths.setHistoricTask(filterResources(userAuthorizations, resourceType(SevenResourceType.HISTORIC_TASK)));
-			auths.setHistoricProcessInstance(filterResources(userAuthorizations, resourceType(SevenResourceType.HISTORIC_PROCESS_INSTANCE)));
-			auths.setTenant(filterResources(userAuthorizations, resourceType(SevenResourceType.TENANT)));
-			auths.setTenantMembership(filterResources(userAuthorizations, resourceType(SevenResourceType.TENANT_MEMBERSHIP)));
-			auths.setReport(filterResources(userAuthorizations, resourceType(SevenResourceType.REPORT)));
-			auths.setDashboard(filterResources(userAuthorizations, resourceType(SevenResourceType.DASHBOARD)));
-			auths.setUserOperationLogCategory(filterResources(userAuthorizations, resourceType(SevenResourceType.USER_OPERATION_LOG_CATEGORY)));
-			auths.setSystem(filterResources(userAuthorizations, resourceType(SevenResourceType.SYSTEM)));
-			//auths.setMessage(filterResources(userAuthorizations, resourceType(SevenResourceType.MESSAGE)));
-			//auths.setEventSubscription(filterResources(userAuthorizations, resourceType(SevenResourceType.EVENT_SUBSCRIPTION)));
+			auths = buildAuthorizations(userAuthorizations);
 			
 		} catch (UnsupportedEncodingException e) {
 			throw new SystemException(e);
