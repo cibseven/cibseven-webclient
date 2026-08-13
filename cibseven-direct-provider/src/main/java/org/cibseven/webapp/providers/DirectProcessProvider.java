@@ -367,6 +367,9 @@ public class DirectProcessProvider implements IProcessProvider {
 			ProcessInstance webClientDto = directProviderUtil.convertValue(backendDto, ProcessInstance.class, user);
 			result.add(webClientDto);
 		}
+
+		addWithIncidentsInfo(result, false, user);
+
 		return result;
 	}
 
@@ -675,7 +678,11 @@ public class DirectProcessProvider implements IProcessProvider {
 		}
 
 		ProcessInstanceDto result = ProcessInstanceDto.fromProcessInstance(instance);
-		return directProviderUtil.convertValue(result, ProcessInstance.class, user);
+		ProcessInstance webClientDto = directProviderUtil.convertValue(result, ProcessInstance.class, user);
+
+		addWithIncidentsInfo(List.of(webClientDto), false, user);
+
+		return webClientDto;
 	}
 
 	@Override
@@ -794,7 +801,39 @@ public class DirectProcessProvider implements IProcessProvider {
 			ProcessInstanceDto resultInstance = ProcessInstanceDto.fromProcessInstance(instance);
 			instanceResults.add(directProviderUtil.convertValue(resultInstance, ProcessInstance.class, user));
 		}
+
+		boolean alreadyAllWithIncident = Boolean.TRUE.equals(data.get("withIncident"));
+		addWithIncidentsInfo(instanceResults, alreadyAllWithIncident, user);
+
 		return instanceResults;
+	}
+
+	private void addWithIncidentsInfo(Collection<ProcessInstance> result, boolean alreadyAllWithIncident, CIBUser user) {
+		if (result.isEmpty()) {
+			return;
+		}
+
+		if (alreadyAllWithIncident) {
+			result.forEach(i -> i.setWithIncident(Boolean.TRUE));
+			return;
+		}
+
+		result.forEach(i -> i.setWithIncident(Boolean.FALSE));
+
+		Set<String> processInstanceIds = result.stream().map(ProcessInstance::getId).collect(Collectors.toSet());
+		List<org.cibseven.bpm.engine.runtime.ProcessInstance> instancesWithIncident = directProviderUtil.getProcessEngine(user).getRuntimeService()
+				.createProcessInstanceQuery()
+				.processInstanceIds(processInstanceIds)
+				.withIncident()
+				.list();
+
+		Set<String> idsWithIncident = instancesWithIncident.stream()
+				.map(org.cibseven.bpm.engine.runtime.ProcessInstance::getId).collect(Collectors.toSet());
+		result.forEach(i -> {
+			if (idsWithIncident.contains(i.getId())) {
+				i.setWithIncident(Boolean.TRUE);
+			}
+		});
 	}
 
 	@Override
