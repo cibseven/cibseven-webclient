@@ -47,7 +47,7 @@ import {
   buildNavGroups,
   filterVisibleNavGroups,
   accessManagementCatalogItems,
-  navContextFromVm
+  permissionContextFromVm
 } from '@/navigation/navGroups.js'
 
 import accessManagementImage from '@/assets/images/start/admin.svg'
@@ -70,7 +70,7 @@ export default {
     // Reuses the shared nav catalog so admin-tile visibility can't drift from
     // the start page / toolbar (see StartView.vue, AccessManagement.vue).
     adminGroup() {
-      return filterVisibleNavGroups(buildNavGroups(navContextFromVm(this))).find(g => g.id === 'admin')
+      return filterVisibleNavGroups(buildNavGroups(permissionContextFromVm(this))).find(g => g.id === 'admin')
     },
     showAccessManagement() {
       return accessManagementCatalogItems(this.adminGroup?.items).length > 0

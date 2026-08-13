@@ -26,8 +26,9 @@ import navigationPermissionsMixin from '@/mixins/navigationPermissionsMixin.js'
 import StartHubView from '@/components/start/StartHubView.vue'
 import {
   buildNavGroups,
+  filterVisibleNavGroups,
   accessManagementCatalogItems,
-  navContextFromVm
+  permissionContextFromVm
 } from '@/navigation/navGroups.js'
 
 import adminUsersImage from '@/assets/images/admin/users_admin.svg'
@@ -48,7 +49,9 @@ export default {
   components: { StartHubView },
   computed: {
     items() {
-      const admin = buildNavGroups(navContextFromVm(this)).find(g => g.id === 'admin')
+      // Filter through the group-level `show` flag too, not just each item's own
+      // show flag, so this can't drift from UsersManagement.vue's admin-tile gate.
+      const admin = filterVisibleNavGroups(buildNavGroups(permissionContextFromVm(this))).find(g => g.id === 'admin')
       return accessManagementCatalogItems(admin?.items).map(item => ({
         title: this.$t(item.title),
         src: HUB_IMAGES[item.hub],

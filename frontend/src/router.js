@@ -25,7 +25,6 @@ import CibSeven from '@/components/CibSeven.vue'
 import StartView from '@/components/start/StartView.vue'
 import TasksStartView from '@/components/start/TasksStartView.vue'
 import BuilderStartView from '@/components/start/BuilderStartView.vue'
-import DataStartView from '@/components/start/DataStartView.vue'
 import AccessManagement from '@/components/admin/AccessManagement.vue'
 import StartProcessView from '@/components/start-process/StartProcessView.vue'
 import ProcessView from '@/components/process/ProcessView.vue'
@@ -168,7 +167,6 @@ const appRoutes = [
         { path: 'start', name: 'start', component: StartView },
         { path: 'tasks-home', name: 'tasksHome', component: TasksStartView, meta: { title: 'start.tasks.title' } },
         { path: 'builder', name: 'builderHome', component: BuilderStartView, meta: { title: 'start.builder.title' } },
-        { path: 'data-home', name: 'dataHome', component: DataStartView, meta: { title: 'start.data.title' } },
 
         // Modeler
         { path: 'modeler/:diagramId?', name: 'modeler', beforeEnter: modelerGuard, component: ModelerView, meta: { title: 'start.modeler.title' } },

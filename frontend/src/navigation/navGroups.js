@@ -18,8 +18,12 @@
 /**
  * Navigation catalog vs surface projections
  * ----------------------------------------
- * `buildNavGroups` is the shared IA catalog (Tasks / Cockpit / Builder / Data / Admin).
- * Surfaces project that catalog — they are not independent menus:
+ * `buildNavGroups` is the shared IA catalog for CE's four groups (Tasks /
+ * Cockpit / Builder / Admin). There is no CE "Data" group — EE (Ins7ght) and
+ * Flow (dataflow) inject their own `data` group entirely, via the same
+ * NavGroupsExtender hook StartView.vue already calls; see that component's
+ * `navGroups` computed. Surfaces project the catalog — they are not
+ * independent menus:
  *
  * - toolbar    — dense power-user dropdown (all secondary destinations)
  * - startHover — short orientation list on start tiles (tile click covers group default)
@@ -49,7 +53,8 @@ export const COLLAPSE_TARGETS = {
 }
 
 /**
- * Builds the five CE navigation groups (Tasks / Cockpit / Builder / Data / Admin).
+ * Builds CE's four navigation groups (Tasks / Cockpit / Builder / Admin).
+ * EE/Flow inject their own `data` group on top of this via NavGroupsExtender.
  *
  * @param {object} ctx permission flags and startableProcesses boolean
  * @returns {Array<object>}
@@ -145,13 +150,6 @@ export function buildNavGroups(ctx) {
       tooltip: 'start.modeler.tooltip',
       title: 'start.modeler.title'
     }]
-  }, {
-    id: 'data',
-    icon: 'mdi-database-outline',
-    title: 'start.data.title',
-    startTo: { name: 'dataHome' },
-    show: false,
-    items: []
   }, {
     id: 'admin',
     icon: 'mdi-shield-account-variant-outline',
@@ -319,6 +317,32 @@ export function projectStartHoverOptions(items, t) {
   return options
 }
 
+/**
+ * When a group's start-hover options resolve to exactly one destination, the
+ * start tile can represent that destination directly instead of showing a
+ * generic hub tile — e.g. Builder's tile becomes "Modeler" when Modeler is
+ * the only builder option; a Data tile becomes "Ins7ght" once that's its
+ * only option. Returns null when the tile should keep its own hub identity
+ * (zero, or more than one, option).
+ */
+export function singleOptionTile(options) {
+  if (!options || options.length !== 1) return null
+  const [only] = options
+  return { to: only.to, title: only.title }
+}
+
+/**
+ * When Tasks is the only tile a user has, the start page itself has nothing
+ * left to offer — go straight into Tasks instead. Resolves to the tasklist
+ * directly if that's the only tasks option, otherwise to the tasks hub
+ * (tasklist + start process). Returns null when Tasks isn't the sole tile.
+ */
+export function tasksOnlyRedirectTarget(tiles, tasksOptions) {
+  if (!tiles || tiles.length !== 1 || tiles[0] !== 'tasks') return null
+  const single = singleOptionTile(tasksOptions)
+  return single ? single.to : { name: 'tasksHome' }
+}
+
 /** @deprecated Use projectStartHoverOptions */
 export function cockpitItemsToTileOptions(items, t) {
   return projectStartHoverOptions(items, t)
@@ -342,9 +366,11 @@ export function accessManagementCatalogItems(adminItems) {
 }
 
 /**
- * Permission context for buildNavGroups from a Vue component instance.
+ * Permission context for buildNavGroups from a Vue component instance. Used
+ * across the toolbar, the start-page tiles, and the admin pages — not
+ * navbar-specific despite the shared "vm" naming pattern in this module.
  */
-export function navContextFromVm(vm) {
+export function permissionContextFromVm(vm) {
   return {
     permissionsTaskList: !!vm.permissionsTaskList,
     startableProcesses: !!vm.startableProcesses,

@@ -26,11 +26,11 @@
         <StartViewItem v-if="tiles.includes('cockpit')" :to="{ name: 'cockpit' }" :title="$t('start.cockpit.title')" :src="images.management"
           :options="cockpitOptions"
         ></StartViewItem>
-        <StartViewItem v-if="tiles.includes('builder')" :to="{ name: 'builderHome' }" :title="$t('start.builder.title')" :src="images.modeler"
-          :options="builderOptions"
+        <StartViewItem v-if="tiles.includes('builder')" :to="builderTile.to" :title="builderTile.title" :src="images.modeler"
+          :options="builderTile.options"
         ></StartViewItem>
-        <StartViewItem v-if="tiles.includes('data')" :to="{ name: 'dataHome' }" :title="$t('start.data.title')" :src="images.data"
-          :options="dataOptions"
+        <StartViewItem v-if="tiles.includes('data')" :to="dataTile.to" :title="dataTile.title" :src="dataTile.src"
+          :options="dataTile.options"
         ></StartViewItem>
         <StartViewItem v-if="tiles.includes('admin')" :to="{ name: 'usersManagement' }" :title="$t('start.admin.title')" :src="images.admin"
           :options="adminOptions"
@@ -55,14 +55,15 @@ import {
   buildNavGroups,
   filterVisibleNavGroups,
   projectStartHoverOptions,
-  navContextFromVm
+  singleOptionTile,
+  tasksOnlyRedirectTarget,
+  permissionContextFromVm
 } from '@/navigation/navGroups.js'
 
 import taskImage from '@/assets/images/start/task.svg'
 import managementImage from '@/assets/images/start/management.svg'
 import adminImage from '@/assets/images/start/admin.svg'
 import modelerImage from '@/assets/images/start/modeler.svg'
-import dataImage from '@/assets/images/start/data.svg'
 
 export default {
   name: 'StartView',
@@ -76,8 +77,7 @@ export default {
         task: taskImage,
         modeler: modelerImage,
         management: managementImage,
-        admin: adminImage,
-        data: dataImage
+        admin: adminImage
       }
     }
   },
@@ -90,7 +90,7 @@ export default {
       return this.$store.state.process.list.some(process => !process.revoked && process.startableInTasklist)
     },
     navGroups() {
-      let groups = buildNavGroups(navContextFromVm(this))
+      let groups = buildNavGroups(permissionContextFromVm(this))
       const extender = this.$options.components?.NavGroupsExtender
       const methods = extender?.methods || extender?.__vccOpts?.methods
       if (methods?.extend) {
@@ -114,7 +114,8 @@ export default {
       return this.mergeOptions(this.builtInBuilderOptions, 'BuilderTileOptionsPlugin')
     },
     dataOptions() {
-      // IA from catalog/extender only; DataTileOptionsPlugin supplies hub illustrations on DataStartView
+      // CE has no 'data' group of its own — EE (Ins7ght) / Flow (dataflow) inject
+      // the whole group via NavGroupsExtender, so this is empty unless one did.
       return projectStartHoverOptions(this.groupById.data?.items, this.$t.bind(this))
     },
     cockpitOptions() {
@@ -123,12 +124,32 @@ export default {
     adminOptions() {
       return projectStartHoverOptions(this.groupById.admin?.items, this.$t.bind(this))
     },
+    // Builder collapses to its one remaining destination instead of linking
+    // to an otherwise-empty hub page (e.g. CE/EE's Builder tile becomes
+    // "Modeler"). Tasks/Cockpit/Admin keep their hub identity regardless of
+    // option count.
+    builderTile() {
+      const single = singleOptionTile(this.builderOptions)
+      return single
+        ? { to: single.to, title: single.title, options: null }
+        : { to: { name: 'builderHome' }, title: this.$t('start.builder.title'), options: this.builderOptions }
+    },
+    // Data has no CE-native content at all: it only appears, and only in its
+    // single-option collapsed form (e.g. EE's Ins7ght), when EE/Flow inject a
+    // 'data' group with exactly one destination. There's no CE hub page/route
+    // for it, so — unlike builderTile — this has no multi-option fallback.
+    // The injected group supplies its own tile illustration via `tileImage`.
+    dataTile() {
+      const single = singleOptionTile(this.dataOptions)
+      if (!single) return null
+      return { to: single.to, title: single.title, src: this.groupById.data?.tileImage, options: null }
+    },
     tiles() {
       const tiles = []
       if (this.tasksOptions.length > 0) tiles.push('tasks')
       if (this.groupById.cockpit) tiles.push('cockpit')
       if (this.builderOptions.length > 0) tiles.push('builder')
-      if (this.dataOptions.length > 0) tiles.push('data')
+      if (this.dataTile) tiles.push('data')
       if (this.groupById.admin) tiles.push('admin')
       return tiles
     },
@@ -141,7 +162,30 @@ export default {
       if (this.$refs.startContainer) {
         this.items = Array.from(this.$refs.startContainer.children)
       }
+    },
+    // If Tasks is the only tile, the start page has nothing else to show —
+    // skip it and go straight into Tasks. The destination (tasklist vs. the
+    // tasks hub) depends on startableProcesses, which comes from the process
+    // list; wait for it to load rather than guess and redirect too early.
+    redirectIfTasksOnly() {
+      const apply = () => {
+        const target = tasksOnlyRedirectTarget(this.tiles, this.tasksOptions)
+        if (target) this.$router.replace(target)
+      }
+      if (this.$store.state.process.list) {
+        apply()
+        return
+      }
+      const unwatch = this.$watch(() => this.$store.state.process.list, (list) => {
+        if (list) {
+          unwatch()
+          apply()
+        }
+      })
     }
+  },
+  created() {
+    this.redirectIfTasksOnly()
   },
   mounted() {
     this.updateItems()

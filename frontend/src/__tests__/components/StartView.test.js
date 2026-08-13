@@ -75,11 +75,25 @@ function evaluateStartView(overrides = {}) {
   Object.defineProperty(vm, 'tiles', {
     get: () => StartView.computed.tiles.call(vm)
   })
+  Object.defineProperty(vm, 'builderTile', {
+    get: () => StartView.computed.builderTile.call(vm)
+  })
+  Object.defineProperty(vm, 'dataTile', {
+    get: () => StartView.computed.dataTile.call(vm)
+  })
+  vm.$router = { replace: vi.fn() }
+  vm.redirectIfTasksOnly = StartView.methods.redirectIfTasksOnly.bind(vm)
   return vm
 }
 
+const TASKS_ONLY_PERMISSIONS = {
+  permissionsCockpit: false,
+  permissionsModeler: false,
+  permissionsUsers: false
+}
+
 describe('StartView.vue nav tiles', () => {
-  it('exposes CE tile ids without data when catalog data group is empty', () => {
+  it('exposes CE tile ids with no data tile, since CE has no data group of its own', () => {
     const vm = evaluateStartView()
     expect(vm.tiles).toEqual(['tasks', 'cockpit', 'builder', 'admin'])
   })
@@ -127,19 +141,22 @@ describe('StartView.vue nav tiles', () => {
     ])
   })
 
-  it('shows data tile from extender-filled catalog (not DataTileOptionsPlugin)', () => {
+  it('shows a data tile only once an extender injects a whole data group (not DataTileOptionsPlugin)', () => {
     const extender = {
       methods: {
         extend(groups) {
-          const clone = groups.map(g => ({ ...g, items: g.items ? [...g.items] : g.items }))
-          const data = clone.find(g => g.id === 'data')
-          data.show = true
-          data.items = [{
-            to: '/seven/auth/ins7ght',
-            title: 'start.ins7ght.title',
-            tooltip: 'start.ins7ght.tooltip',
-            icon: 'mdi-chart-box-outline'
-          }]
+          const clone = [...groups]
+          clone.push({
+            id: 'data',
+            title: 'start.data.title',
+            show: true,
+            items: [{
+              to: '/seven/auth/ins7ght',
+              title: 'start.ins7ght.title',
+              tooltip: 'start.ins7ght.tooltip',
+              icon: 'mdi-chart-box-outline'
+            }]
+          })
           return clone
         }
       }
@@ -164,5 +181,97 @@ describe('StartView.vue nav tiles', () => {
     })
     expect(vm.dataOptions).toEqual([])
     expect(vm.tiles).not.toContain('data')
+  })
+})
+
+describe('StartView.vue single-option tile collapsing', () => {
+  it('collapses the builder tile to Modeler when it is the only builder option', () => {
+    const vm = evaluateStartView()
+    expect(vm.builderOptions).toHaveLength(1)
+    expect(vm.builderTile).toEqual({ to: '/seven/auth/modeler', title: 'start.modeler.title', options: null })
+  })
+
+  it('collapses the data tile to Ins7ght when the extender injects a single-item data group', () => {
+    const extender = {
+      methods: {
+        extend(groups) {
+          const clone = [...groups]
+          clone.push({
+            id: 'data',
+            title: 'start.data.title',
+            show: true,
+            tileImage: 'ins7ght.svg',
+            items: [{
+              to: '/seven/auth/ins7ght',
+              title: 'start.ins7ght.title',
+              tooltip: 'start.ins7ght.tooltip',
+              icon: 'mdi-chart-box-outline'
+            }]
+          })
+          return clone
+        }
+      }
+    }
+    const vm = evaluateStartView({
+      $options: { components: { NavGroupsExtender: extender } }
+    })
+    expect(vm.dataTile).toEqual({ to: '/seven/auth/ins7ght', title: 'start.ins7ght.title', src: 'ins7ght.svg', options: null })
+  })
+
+  it('shows no data tile when there is no injected data group at all', () => {
+    const vm = evaluateStartView()
+    expect(vm.dataTile).toBeNull()
+  })
+})
+
+describe('StartView.vue tasks-only redirect', () => {
+  it('does not redirect when other tiles are also available', () => {
+    const vm = evaluateStartView()
+    vm.redirectIfTasksOnly()
+    expect(vm.$router.replace).not.toHaveBeenCalled()
+  })
+
+  it('redirects straight to the tasklist when it is the only tasks option and process list is already loaded', () => {
+    const vm = evaluateStartView({
+      ...TASKS_ONLY_PERMISSIONS,
+      $store: { state: { process: { list: [] } } }
+    })
+    expect(vm.tiles).toEqual(['tasks'])
+    vm.redirectIfTasksOnly()
+    expect(vm.$router.replace).toHaveBeenCalledWith('/seven/auth/tasks')
+  })
+
+  it('redirects to the tasks hub when start-process is also available and process list is already loaded', () => {
+    const vm = evaluateStartView({
+      ...TASKS_ONLY_PERMISSIONS,
+      $store: { state: { process: { list: [{ revoked: false, startableInTasklist: true }] } } }
+    })
+    expect(vm.tiles).toEqual(['tasks'])
+    vm.redirectIfTasksOnly()
+    expect(vm.$router.replace).toHaveBeenCalledWith({ name: 'tasksHome' })
+  })
+
+  it('waits for the process list to load before choosing a destination', () => {
+    let watchedCallback = null
+    const unwatch = vi.fn()
+    const vm = evaluateStartView({
+      ...TASKS_ONLY_PERMISSIONS,
+      $store: { state: { process: { list: null } } }
+    })
+    vm.$watch = vi.fn((getter, callback) => {
+      watchedCallback = callback
+      return unwatch
+    })
+
+    vm.redirectIfTasksOnly()
+    expect(vm.$router.replace).not.toHaveBeenCalled()
+    expect(vm.$watch).toHaveBeenCalledTimes(1)
+
+    // Process list finishes loading with a startable process
+    vm.$store.state.process.list = [{ revoked: false, startableInTasklist: true }]
+    watchedCallback(vm.$store.state.process.list)
+
+    expect(unwatch).toHaveBeenCalledTimes(1)
+    expect(vm.$router.replace).toHaveBeenCalledWith({ name: 'tasksHome' })
   })
 })

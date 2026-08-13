@@ -82,6 +82,34 @@ describe('CibSeven.vue', () => {
       expect(CibSeven.methods.isMenuItemActive.call(mockThis, noActiveItem)).toBe(false)
     })
 
+    it('should not match a hyphenated sibling route sharing the same prefix', () => {
+      const mockThis = {
+        $route: { path: '/seven/auth/tasks-home' }
+      }
+      const tasklistItem = { active: ['seven/auth/tasks'] }
+      expect(CibSeven.methods.isMenuItemActive.call(mockThis, tasklistItem)).toBe(false)
+    })
+
+    it('should match plural resource list pages sharing a singular active prefix', () => {
+      const mockThis = {
+        $route: { path: '/seven/auth/admin/users' }
+      }
+      const usersItem = { active: ['seven/auth/admin/user', 'seven/auth/admin/create-user'] }
+      expect(CibSeven.methods.isMenuItemActive.call(mockThis, usersItem)).toBe(true)
+
+      mockThis.$route.path = '/seven/auth/admin/groups'
+      const groupsItem = { active: ['seven/auth/admin/group', 'seven/auth/admin/create-group'] }
+      expect(CibSeven.methods.isMenuItemActive.call(mockThis, groupsItem)).toBe(true)
+    })
+
+    it('should match nested detail pages under a trailing-slash active pattern', () => {
+      const mockThis = {
+        $route: { path: '/seven/auth/process/myKey/1/inst1' }
+      }
+      const processItem = { active: ['seven/auth/process/'] }
+      expect(CibSeven.methods.isMenuItemActive.call(mockThis, processItem)).toBe(true)
+    })
+
     it('should check exact match when activeExact is true', () => {
       const mockThis = {
         $route: { path: '/seven/auth/admin' }
@@ -132,7 +160,7 @@ describe('CibSeven.vue', () => {
       expect(items.some(item => item.href === 'https://help.example.com')).toBe(true)
     })
 
-    it('should expose id-keyed toolbar menus including empty data shell', () => {
+    it('should expose id-keyed toolbar menus with no CE-native data group', () => {
       const mockThis = {
         permissionsTaskList: true,
         permissionsCockpit: true,
@@ -146,8 +174,7 @@ describe('CibSeven.vue', () => {
         startableProcesses: true
       }
       const menus = CibSeven.computed.menuItems.call(mockThis)
-      expect(menus.map(m => m.id)).toEqual(['tasks', 'cockpit', 'builder', 'data', 'admin'])
-      expect(menus.find(m => m.id === 'data')).toMatchObject({ show: false, items: [] })
+      expect(menus.map(m => m.id)).toEqual(['tasks', 'cockpit', 'builder', 'admin'])
       expect(menus.find(m => m.id === 'builder').title).toBe('start.builder.title')
       expect(menus.find(m => m.id === 'cockpit').items.some(i => i.divider)).toBe(true)
     })

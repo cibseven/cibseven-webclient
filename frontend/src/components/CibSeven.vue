@@ -46,11 +46,10 @@
           <li
             v-for="tool in computedMenuItems"
             :key="tool.id"
-            class="nav-item d-flex align-items-center cib-toolbar-tool"
-            :class="{ 'cib-toolbar-tool-active': isToolActive(tool) }"
+            class="nav-item d-flex align-items-center gap-0 cib-toolbar-tool"
           >
             <router-link
-              class="cib-toolbar-icon-btn"
+              class="cib-toolbar-icon-btn d-inline-flex align-items-center justify-content-center p-0 text-decoration-none text-body-secondary"
               :class="{ 'cib-toolbar-control-active': isToolActive(tool) }"
               :to="getToolDefaultTo(tool)"
               :title="$t(tool.title)"
@@ -93,7 +92,7 @@
 
         <span
           v-if="computedMenuItems.length > 0 || $root.config.layout.showFeedbackButton || $root.config.layout.showInfoAndHelp"
-          class="cib-navbar-divider mx-2"
+          class="cib-navbar-divider d-inline-block flex-shrink-0 mx-2"
           aria-hidden="true"
         ></span>
 
@@ -101,7 +100,7 @@
           v-if="$root.config.layout.showFeedbackButton"
           variant="outline-secondary"
           @click="$refs.report.show()"
-          class="border-0 cib-toolbar-icon-btn me-1"
+          class="border-0 cib-toolbar-icon-btn cib-toolbar-icon-btn-standalone d-inline-flex align-items-center justify-content-center p-0 text-decoration-none text-body-secondary me-1"
           :title="$t('seven.feedback')"
           :aria-label="$t('seven.feedback')"
         >
@@ -243,7 +242,7 @@ import SupportModal from '@/components/modals/SupportModal.vue'
 import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
 import FeedbackModal from '@/components/modals/FeedbackModal.vue'
 import { updateAppTitle } from '@/utils/init'
-import { buildNavGroups, projectGroupsForToolbar, navContextFromVm } from '@/navigation/navGroups.js'
+import { buildNavGroups, projectGroupsForToolbar, permissionContextFromVm } from '@/navigation/navGroups.js'
 
 export default {
   name: 'CibSeven',
@@ -267,7 +266,7 @@ export default {
       return this.$root.config.productNamePageTitle || this.$t('login.productName')
     },
     menuItems: function() {
-      return buildNavGroups(navContextFromVm(this))
+      return buildNavGroups(permissionContextFromVm(this))
     },
     computedMenuItems: function() {
       return this.getVisibleMenuItems(this.menuItems)
@@ -388,14 +387,16 @@ export default {
       if (item.activeExact) {
         return item.active.some(a => this.$route.path.endsWith(a))
       } else {
-        // Boundary-aware match: 'a' must be followed by end-of-path or '/', so a
-        // sibling route whose path merely starts with the same text (e.g. the
-        // 'tasks-home' hub route vs. the 'seven/auth/tasks' pattern) isn't matched.
+        // Boundary-aware match: reject only when 'a' is immediately followed by
+        // '-', meaning the path continues into an unrelated hyphenated sibling
+        // route (e.g. the 'tasks-home' hub vs. the 'seven/auth/tasks' pattern).
+        // Any other continuation is a legitimate match many patterns rely on:
+        // end-of-path, '/' (nested detail pages, e.g. 'admin/user' + '/123'),
+        // or a plain suffix (e.g. the 's' in 'admin/user' + 'sers').
         return item.active.some(a => {
           const idx = this.$route.path.indexOf(a)
           if (idx === -1) return false
-          const nextChar = this.$route.path[idx + a.length]
-          return nextChar === undefined || nextChar === '/'
+          return this.$route.path[idx + a.length] !== '-'
         })
       }
     },
@@ -480,29 +481,24 @@ export default {
 -->
 <style lang="css">
 .cib-navbar-divider {
-  display: inline-block;
   width: 1px;
   height: 28px;
   background-color: var(--bs-border-color, #dee2e6);
-  flex-shrink: 0;
 }
 
 .cib-toolbar-tool {
   margin-right: 0.15rem;
-  gap: 0;
 }
 
 .cib-toolbar-icon-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
   width: 36px;
   height: 36px;
-  padding: 0;
   border-radius: 0.35rem 0 0 0.35rem;
-  color: var(--bs-secondary-color, #495057);
-  text-decoration: none;
+}
+
+/* Standalone icon buttons (no adjacent chevron to complete the pill) need all four corners rounded. */
+.cib-toolbar-icon-btn-standalone {
+  border-radius: 0.35rem;
 }
 
 .cib-toolbar-icon-btn:hover,
@@ -523,13 +519,11 @@ export default {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-sizing: border-box;
   width: 36px;
   height: 36px;
   min-width: 36px;
   min-height: 36px;
   padding: 0 !important;
-  margin: 0;
   border: 0;
   border-radius: 0 0.35rem 0.35rem 0;
   color: var(--bs-secondary-color, #495057);
@@ -556,9 +550,8 @@ export default {
 
 .cib-dropdown-title {
   font-weight: 600;
-  font-size: 1.015rem;
+  font-size: 1rem;
   color: var(--bs-body-color, #212529);
-  list-style: none;
 }
 
 li.cib-dropdown-title > .dropdown-item,
@@ -566,14 +559,9 @@ li.cib-dropdown-title > .dropdown-item:hover,
 li.cib-dropdown-title > .dropdown-item:focus,
 li.cib-dropdown-title > .dropdown-item.active {
   font-weight: 600;
-  font-size: 1.015rem;
+  font-size: 1rem;
   color: var(--bs-body-color, #212529);
   cursor: pointer;
-}
-
-li.cib-dropdown-title > .dropdown-item .fw-semibold {
-  font-weight: 600;
-  font-size: inherit;
 }
 
 .cib-toolbar-chevron-dropdown > .dropdown-menu,

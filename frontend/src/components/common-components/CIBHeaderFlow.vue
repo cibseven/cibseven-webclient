@@ -18,10 +18,10 @@
 -->
 <template>
   <header class="cib-navbar" style="height: 55px"> <!-- Empty container with height of navbar -->
-    <b-navbar toggleable="md" fixed="top" type="light" class="border-bottom bg-white px-3 cib-navbar-bar">
+    <b-navbar toggleable="md" fixed="top" type="light" class="border-bottom bg-white px-3">
       <slot></slot>
-      <button 
-        class="navbar-toggler" 
+      <button
+        class="navbar-toggler position-relative"
         type="button" 
         @click.stop="isCollapsed = !isCollapsed"
         :aria-expanded="isCollapsed"
@@ -38,7 +38,6 @@
           <b-nav-item-dropdown 
             v-if="$slots.helpItems" 
             class="cib-navbar-utility"
-            extra-toggle-classes="cib-navbar-utility-toggle"
             no-caret
             right
             :label="$t('cib-header.helpMenu')">
@@ -47,14 +46,13 @@
               <span class="mdi mdi-18px mdi-chevron-down align-middle" aria-hidden="true"></span>
               <span class="d-md-none ms-2">{{ $t('cib-header.helpMenu') }}</span>
             </template>
-            <li class="cib-dropdown-title px-3 pt-2 pb-1" role="presentation">{{ $t('cib-header.helpMenu') }}</li>
+            <li class="cib-dropdown-title fw-semibold text-body px-3 pt-2 pb-1" role="presentation">{{ $t('cib-header.helpMenu') }}</li>
             <b-dropdown-divider></b-dropdown-divider>
             <slot name="helpItems"></slot>
           </b-nav-item-dropdown>
 
           <b-nav-item-dropdown 
             class="cib-navbar-utility"
-            extra-toggle-classes="cib-navbar-utility-toggle"
             no-caret
             right 
             :title="$t('cib-header.languages')"
@@ -64,11 +62,11 @@
               <span class="mdi mdi-18px mdi-chevron-down align-middle" aria-hidden="true"></span>
               <span class="d-md-none ms-2">{{ $t('cib-header.languages') }}</span>
             </template>
-            <li class="cib-dropdown-title px-3 pt-2 pb-1" role="presentation">{{ $t('cib-header.languages') }}</li>
+            <li class="cib-dropdown-title fw-semibold text-body px-3 pt-2 pb-1" role="presentation">{{ $t('cib-header.languages') }}</li>
             <b-dropdown-divider></b-dropdown-divider>
             <b-dropdown-item-button v-for="lang in languages" :key="lang" :active="lang === currentLanguage()" @click="setCurrentLanguage(lang)" :title="$t('cib-header.languages') + ': ' + $t('cib-header.' + lang)">
               <div class="d-flex align-items-baseline">
-                <span class="lang-label text-center text-uppercase text-dark rounded me-2" :class="{ 'lang-label-active': lang === currentLanguage() }">
+                <span class="lang-label d-inline-block text-center text-uppercase text-dark rounded me-2" :class="{ 'lang-label-active': lang === currentLanguage() }">
                   {{ lang }}
                 </span>
                 <span class="flex-grow-1">
@@ -82,7 +80,6 @@
           <b-nav-item-dropdown 
             v-if="normalizedEngines.length > 1" 
             class="cib-navbar-utility"
-            extra-toggle-classes="cib-navbar-utility-toggle"
             no-caret
             right 
             :title="$t('cib-header.engineMenu')"
@@ -92,7 +89,7 @@
               <span class="mdi mdi-18px mdi-chevron-down align-middle" aria-hidden="true"></span>
               <span class="d-md-none ms-2">{{ $t('cib-header.engine') }}</span>
             </template>
-            <li class="cib-dropdown-title px-3 pt-2 pb-1" role="presentation">{{ $t('cib-header.engine') }}</li>
+            <li class="cib-dropdown-title fw-semibold text-body px-3 pt-2 pb-1" role="presentation">{{ $t('cib-header.engine') }}</li>
             <b-dropdown-divider></b-dropdown-divider>
             <b-dropdown-item-button
               v-for="engine in normalizedEngines" 
@@ -112,17 +109,16 @@
             v-if="user" 
             class="cib-navbar-utility"
             :title="$t('start.account.tooltip')" 
-            extra-toggle-classes="cib-navbar-utility-toggle"
             no-caret
             right
             :label="$t('admin.users.account')">
             <template v-slot:button-content>
-              <span class="cib-user-avatar" aria-hidden="true">{{ userInitials }}</span>
+              <span class="cib-user-avatar d-inline-flex align-items-center justify-content-center rounded-circle fw-bold lh-1" aria-hidden="true">{{ userInitials }}</span>
               <span class="mdi mdi-18px mdi-chevron-down align-middle" aria-hidden="true"></span>
               <span class="visually-hidden">{{ user.displayName || user.id }}</span>
               <span class="d-md-none ms-2">{{ user.displayName || user.id }}</span>
             </template>
-            <li class="cib-dropdown-title px-3 pt-2 pb-1" role="presentation">{{ $t('admin.users.account') }}</li>
+            <li class="cib-dropdown-title fw-semibold text-body px-3 pt-2 pb-1" role="presentation">{{ $t('admin.users.account') }}</li>
             <b-dropdown-divider></b-dropdown-divider>
             <slot name="userItems"></slot>
             <b-dropdown-item-button @click="logout" :title="$t('start.account.logout.tooltip', { productName })">{{ $t('start.account.logout.title') }}</b-dropdown-item-button>
@@ -278,7 +274,6 @@ export default {
 <style scoped>
 /* Ensure hamburger toggle is always on top */
 :deep(.navbar-toggler) {
-  position: relative;
   z-index: 1050;
 }
 
@@ -289,7 +284,6 @@ export default {
 
 .lang-label {
   min-width: 36px;
-  display: inline-block;
   background-color: var(--bs-gray-200) !important;
 }
 .dropdown-item:hover .lang-label {
@@ -303,10 +297,6 @@ export default {
 
 <!-- Unscoped: BNavItemDropdown hardcodes dropdown-toggle; EE/extends must still see these rules -->
 <style>
-.cib-navbar-bar {
-  background-color: var(--bs-white, #fff);
-}
-
 .cib-navbar-utility {
   margin-left: 0.15rem;
 }
@@ -344,23 +334,14 @@ export default {
 }
 
 .cib-navbar .cib-dropdown-title {
-  font-weight: 600;
-  font-size: 1.015rem;
-  color: var(--bs-body-color, #212529);
-  list-style: none;
+  font-size: 1rem;
 }
 
 .cib-user-avatar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 50%;
   background-color: #cfe2ff;
   color: #084298;
   font-size: 0.75rem;
-  font-weight: 700;
-  line-height: 1;
 }
 </style>
