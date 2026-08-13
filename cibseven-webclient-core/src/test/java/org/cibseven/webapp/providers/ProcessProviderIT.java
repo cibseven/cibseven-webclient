@@ -210,10 +210,11 @@ public class ProcessProviderIT extends BaseHelper {
         CIBUser user = getCibUser();
 
         mockWebServer.enqueue(new MockResponse()
-                .setBody(loadMockResponse("mocks/process_instances_two_mock.json"))
+                .setBody("[{\"id\":\"instance-1\",\"definitionId\":\"process-1\",\"businessKey\":\"businessKey1\",\"ended\":false,\"suspended\":false},"
+                        + "{\"id\":\"instance-2\",\"definitionId\":\"process-1\",\"businessKey\":\"businessKey2\",\"ended\":false,\"suspended\":false}]")
                 .addHeader("Content-Type", "application/json"));
         mockWebServer.enqueue(new MockResponse()
-                .setBody(loadMockResponse("mocks/process_instance_1_with_incident_mock.json"))
+                .setBody("[{\"id\":\"instance-1\",\"definitionId\":\"process-1\",\"businessKey\":\"businessKey1\",\"ended\":false,\"suspended\":false}]")
                 .addHeader("Content-Type", "application/json"));
 
         // Act
@@ -242,10 +243,11 @@ public class ProcessProviderIT extends BaseHelper {
         Map<String, Object> data = Map.of("processDefinitionKey", "processKey1");
 
         mockWebServer.enqueue(new MockResponse()
-                .setBody(loadMockResponse("mocks/process_instances_two_mock.json"))
+                .setBody("[{\"id\":\"instance-1\",\"definitionId\":\"process-1\",\"businessKey\":\"businessKey1\",\"ended\":false,\"suspended\":false},"
+                        + "{\"id\":\"instance-2\",\"definitionId\":\"process-1\",\"businessKey\":\"businessKey2\",\"ended\":false,\"suspended\":false}]")
                 .addHeader("Content-Type", "application/json"));
         mockWebServer.enqueue(new MockResponse()
-                .setBody(loadMockResponse("mocks/process_instance_1_with_incident_mock.json"))
+                .setBody("[{\"id\":\"instance-1\",\"definitionId\":\"process-1\",\"businessKey\":\"businessKey1\",\"ended\":false,\"suspended\":false}]")
                 .addHeader("Content-Type", "application/json"));
 
         // Act
@@ -265,13 +267,14 @@ public class ProcessProviderIT extends BaseHelper {
     }
 
     @Test
-    void testFindCurrentProcessesInstancesSkipsFollowUpCallWhenAlreadyFilteredByIncident() throws Exception {
+    void testFindCurrentProcessesInstancesSkipsFollowUpCallWhenAlreadyFilteredByIncident() {
         // Arrange
         CIBUser user = getCibUser();
         Map<String, Object> data = Map.of("withIncident", Boolean.TRUE);
 
         mockWebServer.enqueue(new MockResponse()
-                .setBody(loadMockResponse("mocks/process_instances_two_mock.json"))
+                .setBody("[{\"id\":\"instance-1\",\"definitionId\":\"process-1\",\"businessKey\":\"businessKey1\",\"ended\":false,\"suspended\":false},"
+                        + "{\"id\":\"instance-2\",\"definitionId\":\"process-1\",\"businessKey\":\"businessKey2\",\"ended\":false,\"suspended\":false}]")
                 .addHeader("Content-Type", "application/json"));
 
         // Act
@@ -295,7 +298,7 @@ public class ProcessProviderIT extends BaseHelper {
                 .setBody(loadMockResponse("mocks/process_instance_mock.json"))
                 .addHeader("Content-Type", "application/json"));
         mockWebServer.enqueue(new MockResponse()
-                .setBody(loadMockResponse("mocks/process_instance_1_with_incident_mock.json"))
+                .setBody("[{\"id\":\"instance-1\",\"definitionId\":\"process-1\",\"businessKey\":\"businessKey1\",\"ended\":false,\"suspended\":false}]")
                 .addHeader("Content-Type", "application/json"));
 
         // Act
@@ -325,7 +328,7 @@ public class ProcessProviderIT extends BaseHelper {
                 .setBody(loadMockResponse("mocks/process_instance_mock.json"))
                 .addHeader("Content-Type", "application/json"));
         mockWebServer.enqueue(new MockResponse()
-                .setBody(loadMockResponse("mocks/process_instances_empty_mock.json"))
+                .setBody("[]")
                 .addHeader("Content-Type", "application/json"));
 
         // Act
