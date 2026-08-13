@@ -14,30 +14,17 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.cibseven.webapp.rest.model;
+package org.cibseven.webapp.exception;
 
-import java.util.Collection;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+/**
+ * The template id is unique, so importing or saving one that is already stored is reported as a
+ * request error naming the id, instead of surfacing the database constraint violation.
+ */
+public class ExistingElementTemplateException extends ApplicationException {
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+	private static final long serialVersionUID = 1L;
 
-@Getter @Setter @AllArgsConstructor @NoArgsConstructor @ToString
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class ProcessInstance {
-	
-	private String id;
-    private String definitionId;
-    private String businessKey;
-    private String caseInstanceId;
-    private Boolean ended;
-    private Boolean suspended;
-    private String tenantId;
-    private Collection<Object> links;
-
-    // middleware extension
-    private Boolean withIncident;
+	public ExistingElementTemplateException(String templateId) {
+		super(templateId);
+	}
 }

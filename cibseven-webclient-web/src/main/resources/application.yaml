@@ -190,6 +190,13 @@ cibseven:
 #        jackson:
 #          parser:
 #            max-size: 25000000
+#          # DEPRECATED - interim opt-out, will be removed with the Jackson 3 migration.
+#          # Dates are serialized as ISO-8601 by default. Setting this to true restores the
+#          # legacy Jackson output: epoch millis for java.util.Date, numeric arrays for
+#          # java.time types. Prefer adapting the consumer, or annotate the affected field
+#          # with @JsonFormat, instead of switching the whole application back.
+#          serialization:
+#            write-dates-as-timestamps: false
 
 springdoc:
   swagger-ui:

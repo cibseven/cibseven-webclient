@@ -1088,7 +1088,7 @@
 		"PasswordPolicyException": "La contraseña no coincide con los parámetros de política de contraseña",
 		"InvalidUserIdException": "El ID de usuario contiene caracteres no válidos. Sólo se permiten caracteres alfanuméricos (a-z, A-Z, 0-9). Por favor, corrija su entrada.",
 		"invalidEmail": "Introduce una dirección de correo electrónico válida.",
-		"InvalidValueHistoryTimeToLive": "No están permitidos valores nulos para el tiempo de vida del histórico.",
+		"InvalidValueHistoryTimeToLive": "Se requiere un tiempo de vida del histórico. Defínalo en el modelo o configure un valor por defecto en el motor.",
 		"DmnTransformationException": "El recurso no pudo ser actualizado. No se puede transformar el recurso DMN.",
 		"InvalidGroupIdException": "El ID del grupo contiene caracteres no válidos. Sólo se permiten caracteres alfanuméricos (a-z, A-Z, 0-9) o camunda-admin. Por favor, corrija su entrada.",
 		"unknown": "Se produjo un error inesperado. Por favor, inténtelo de nuevo."
