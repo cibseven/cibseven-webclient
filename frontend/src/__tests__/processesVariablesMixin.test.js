@@ -94,16 +94,19 @@ describe('processesVariablesMixin', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    // mockClear keeps implementations, so reset them explicitly to keep the tests order-independent
+    ProcessService.fetchProcessInstanceVariables.mockResolvedValue([])
+    HistoryService.fetchProcessInstanceVariablesHistory.mockResolvedValue([])
   })
 
   describe('loadSelectedInstanceVariables endpoint selection', () => {
 
-    it.each(['full', 'audit'])('uses the history endpoint for ACTIVE instances at history level %s (CIB7-1203)', async (historyLevel) => {
+    it.each(['full', 'audit'])('queries runtime AND history for ACTIVE instances at history level %s (CIB7-1203)', async (historyLevel) => {
       const wrapper = createWrapper({ state: 'ACTIVE', historyLevel })
       wrapper.vm.loadSelectedInstanceVariables()
       await flushPromises()
+      expect(ProcessService.fetchProcessInstanceVariables).toHaveBeenCalledWith('pi1', expect.any(Object))
       expect(HistoryService.fetchProcessInstanceVariablesHistory).toHaveBeenCalledWith('pi1', expect.any(Object))
-      expect(ProcessService.fetchProcessInstanceVariables).not.toHaveBeenCalled()
     })
 
     it.each(['activity', 'none'])('falls back to the runtime endpoint for ACTIVE instances at history level %s', async (historyLevel) => {
@@ -130,6 +133,96 @@ describe('processesVariablesMixin', () => {
       expect(HistoryService.fetchProcessInstanceVariablesHistory).not.toHaveBeenCalled()
       expect(wrapper.vm.variables).toEqual([])
       expect(wrapper.vm.loading).toBe(false)
+    })
+  })
+
+  describe('running instances are independent of the configured history level (CIB7-1203)', () => {
+
+    const runtimeVariables = () => [
+      { id: 'v1', name: 'globalVar', type: 'String', value: 'a', activityInstanceId: 'pi1', executionId: 'pi1' },
+      { id: 'v2', name: 'liveLocalVar', type: 'String', value: 'b', activityInstanceId: 'userTask1:inst', executionId: 'ex2' }
+    ]
+
+    it('adds finished-scope variables from history to the runtime variables, without duplicates', async () => {
+      ProcessService.fetchProcessInstanceVariables.mockResolvedValue(runtimeVariables())
+      HistoryService.fetchProcessInstanceVariablesHistory.mockResolvedValue(historyVariables())
+      const wrapper = createWrapper({ activityInstance: runtimeTree, activityInstanceHistory: historicActivities })
+      wrapper.vm.loadSelectedInstanceVariables()
+      await flushPromises()
+
+      expect(wrapper.vm.variables.map(v => v.name))
+        .toEqual(['finishedScopeVar', 'globalVar', 'liveLocalVar', 'transitionVar'])
+      const byName = Object.fromEntries(wrapper.vm.variables.map(v => [v.name, v]))
+      expect(byName.globalVar.variableSource).toBe('runtime')
+      expect(byName.globalVar.isLive).toBe(true)
+      expect(byName.finishedScopeVar.variableSource).toBe('history')
+      expect(byName.finishedScopeVar.isLive).toBe(false)
+    })
+
+    it('keeps the runtime variables when history is empty because the engine level is lower than configured', async () => {
+      ProcessService.fetchProcessInstanceVariables.mockResolvedValue(runtimeVariables())
+      HistoryService.fetchProcessInstanceVariablesHistory.mockResolvedValue([])
+      const wrapper = createWrapper({ historyLevel: 'full', activityInstance: runtimeTree })
+      wrapper.vm.loadSelectedInstanceVariables()
+      await flushPromises()
+
+      expect(wrapper.vm.variables.map(v => v.name)).toEqual(['globalVar', 'liveLocalVar'])
+      expect(wrapper.vm.variables.every(v => v.isLive)).toBe(true)
+    })
+
+    it('keeps the runtime variables when the history query fails', async () => {
+      ProcessService.fetchProcessInstanceVariables.mockResolvedValue(runtimeVariables())
+      HistoryService.fetchProcessInstanceVariablesHistory.mockRejectedValue(new Error('history level too low'))
+      const wrapper = createWrapper({ historyLevel: 'full', activityInstance: runtimeTree })
+      wrapper.vm.loadSelectedInstanceVariables()
+      await flushPromises()
+
+      expect(wrapper.vm.variables.map(v => v.name)).toEqual(['globalVar', 'liveLocalVar'])
+      expect(wrapper.vm.loading).toBe(false)
+      expect(wrapper.vm.fetching).toBe(false)
+    })
+
+    it.each(['activity', 'none'])('does not call the history endpoint at history level %s', async (historyLevel) => {
+      ProcessService.fetchProcessInstanceVariables.mockResolvedValue(runtimeVariables())
+      const wrapper = createWrapper({ historyLevel, activityInstance: runtimeTree })
+      wrapper.vm.loadSelectedInstanceVariables()
+      await flushPromises()
+
+      expect(HistoryService.fetchProcessInstanceVariablesHistory).not.toHaveBeenCalled()
+      expect(wrapper.vm.variables.map(v => v.name)).toEqual(['globalVar', 'liveLocalVar'])
+    })
+
+    it('prefers the runtime row when a variable is returned by both queries', async () => {
+      ProcessService.fetchProcessInstanceVariables.mockResolvedValue([
+        { id: 'v1', name: 'globalVar', type: 'String', value: 'new', activityInstanceId: 'pi1', executionId: 'pi1' }
+      ])
+      HistoryService.fetchProcessInstanceVariablesHistory.mockResolvedValue([
+        { id: 'v1', name: 'globalVar', type: 'String', value: 'stale', activityInstanceId: 'pi1', executionId: 'pi1' }
+      ])
+      const wrapper = createWrapper({ activityInstance: runtimeTree })
+      wrapper.vm.loadSelectedInstanceVariables()
+      await flushPromises()
+
+      expect(wrapper.vm.variables).toHaveLength(1)
+      expect(wrapper.vm.variables[0].value).toBe('new')
+      expect(wrapper.vm.variables[0].variableSource).toBe('runtime')
+    })
+
+    it('applies a variableValues filter to the finished-scope variables, which the history endpoint ignores', async () => {
+      ProcessService.fetchProcessInstanceVariables.mockResolvedValue([])
+      HistoryService.fetchProcessInstanceVariablesHistory.mockResolvedValue([
+        { id: 'v3', name: 'finishedScopeVar', type: 'String', value: 'c', activityInstanceId: 'extTask1:inst' },
+        { id: 'v5', name: 'otherVar', type: 'String', value: 'x', activityInstanceId: 'extTask1:inst' }
+      ])
+      const wrapper = createWrapper({ activityInstance: runtimeTree, activityInstanceHistory: historicActivities })
+      wrapper.vm.filter = {
+        deserializeValues: false,
+        variableValues: [{ name: 'finishedScopeVar', operator: 'eq', value: 'c' }]
+      }
+      wrapper.vm.loadSelectedInstanceVariables()
+      await flushPromises()
+
+      expect(wrapper.vm.variables.map(v => v.name)).toEqual(['finishedScopeVar'])
     })
   })
 

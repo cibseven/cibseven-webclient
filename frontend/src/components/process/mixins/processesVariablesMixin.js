@@ -132,16 +132,16 @@ export default {
 		loadSelectedInstanceVariables: function() {
 			if (this.fetching) return // Prevent concurrent requests
 			if (this.selectedInstance && this.activityInstancesGrouped) {
-				if (this.historyAvailable) {
-					// the history query is a superset of the runtime query (same ids, current values)
-					// and also contains variables whose scope has already finished
+				if (this.isActiveInstance) {
+					// runtime stays the source of truth for a running instance; history only ADDS
+					// variables whose scope (e.g. a finished external task) is already gone from
+					// ACT_RU_VARIABLE (CIB7-1203)
+					this.fetchActiveInstanceVariables()
+				} else if (this.historyAvailable) {
 					this.fetchInstanceVariables('HistoryService', 'fetchProcessInstanceVariablesHistory')
-				} else if (this.isActiveInstance) {
-					this.fetchInstanceVariables('ProcessService', 'fetchProcessInstanceVariables')
 				} else {
 					// no variables available for finished process instances if history level is 'activity' or 'none'
-					this.variables = []
-					this.filteredVariables = []
+					this.setLoadedVariables([])
 					this.loading = false
 					this.fetching = false
 				}
@@ -169,23 +169,78 @@ export default {
 		isVariableScopeLive: function (v) {
 			if (!this.isActiveInstance) return false
 			// runtime rows are live by definition
-			if (this.variablesSource === 'runtime') return true
+			if (v.variableSource === 'runtime' || this.variablesSource === 'runtime') return true
 			if (this.activityInstance) return this.liveActivityInstanceIds.has(v.activityInstanceId)
 			// no runtime tree available (e.g. suspended instances, external embedders)
 			return true
+		},
+		/**
+		 * Variables of a running instance: the runtime query is authoritative, the history query
+		 * only contributes the variables of scopes that have already finished. Loading both makes
+		 * the tab independent of the configured history level - if history is unavailable or
+		 * incomplete (level 'activity'/'none', 'cibseven.webclient.historyLevel' out of sync with
+		 * the engine, variables written before the level was raised), the runtime variables are
+		 * still shown exactly as before.
+		 */
+		fetchActiveInstanceVariables: async function () {
+			this.fetching = true
+			this.loading = true
+			this.variablesSource = null
+			try {
+				const runtime = (await ProcessService.fetchProcessInstanceVariables(this.selectedInstance.id, this.restFilter))
+					.map(v => ({ ...v, variableSource: 'runtime' }))
+				const finishedScope = this.historyAvailable
+					? await this.fetchFinishedScopeVariables(runtime)
+					: []
+				this.setLoadedVariables([...runtime, ...finishedScope])
+			} finally {
+				this.loading = false
+				this.fetching = false
+			}
+		},
+		/**
+		 * History rows that the runtime query did not return, i.e. variables of finished scopes.
+		 * A failing history query must not hide the runtime variables, so it degrades to [].
+		 */
+		fetchFinishedScopeVariables: async function (runtimeVariables) {
+			const runtimeIds = new Set(runtimeVariables.map(v => v.id))
+			let historic = []
+			try {
+				historic = await HistoryService.fetchProcessInstanceVariablesHistory(this.selectedInstance.id, this.restFilter)
+			} catch (error) {
+				console.warn('CIB7-1203: could not load historic variables, showing runtime variables only', error)
+				return []
+			}
+			return historic
+				.filter(v => !runtimeIds.has(v.id))
+				// the history endpoint ignores 'variableValues', so apply that filter here to keep
+				// the search results of running instances consistent with the runtime query
+				.filter(v => this.matchesVariableValuesFilter(v))
+				.map(v => ({ ...v, variableSource: 'history' }))
+		},
+		matchesVariableValuesFilter: function (variable) {
+			const conditions = this.filter?.variableValues
+			if (!conditions?.length) return true
+			const options = {
+				namesIgnoreCase: this.filter.variableNamesIgnoreCase === true,
+				valuesIgnoreCase: this.filter.variableValuesIgnoreCase === true
+			}
+			return conditions.every(c => variableUtils.matchesValueCondition(variable, c, options))
 		},
 		fetchInstanceVariables: async function (service, method) {
 			this.fetching = true
 			this.loading = true
 			this.variablesSource = service === 'ProcessService' ? 'runtime' : 'history'
 			const variables = await serviceMap[service][method](this.selectedInstance.id, this.restFilter)
-			this.annotateVariables(variables)
-			variables.sort((a, b) => a.name.localeCompare(b.name))
-
-			this.variables = variables
-			this.filteredVariables = [...variables]
+			this.setLoadedVariables(variables)
 			this.loading = false
 			this.fetching = false
+		},
+		setLoadedVariables: function (variables) {
+			this.annotateVariables(variables)
+			variables.sort((a, b) => a.name.localeCompare(b.name))
+			this.variables = variables
+			this.filteredVariables = [...variables]
 		},
     displayValue(variable) {
 	  return variableUtils.displayValue(variable)
