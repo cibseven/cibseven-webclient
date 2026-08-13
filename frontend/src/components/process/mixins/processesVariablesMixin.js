@@ -231,10 +231,18 @@ export default {
 			this.fetching = true
 			this.loading = true
 			this.variablesSource = service === 'ProcessService' ? 'runtime' : 'history'
-			const variables = await serviceMap[service][method](this.selectedInstance.id, this.restFilter)
-			this.setLoadedVariables(variables)
-			this.loading = false
-			this.fetching = false
+			try {
+				let variables = await serviceMap[service][method](this.selectedInstance.id, this.restFilter)
+				if (this.variablesSource === 'history') {
+					// the history endpoint ignores 'variableValues', so apply that filter here as well
+					variables = variables.filter(v => this.matchesVariableValuesFilter(v))
+				}
+				this.setLoadedVariables(variables)
+			} finally {
+				// a rejected query must not leave 'fetching' set, that would block every later reload
+				this.loading = false
+				this.fetching = false
+			}
 		},
 		setLoadedVariables: function (variables) {
 			this.annotateVariables(variables)

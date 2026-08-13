@@ -224,6 +224,38 @@ describe('processesVariablesMixin', () => {
 
       expect(wrapper.vm.variables.map(v => v.name)).toEqual(['finishedScopeVar'])
     })
+
+    it('applies a variableValues filter to the history variables of a finished instance as well', async () => {
+      HistoryService.fetchProcessInstanceVariablesHistory.mockResolvedValue([
+        { id: 'v1', name: 'globalVar', type: 'String', value: 'a', activityInstanceId: 'pi1' },
+        { id: 'v3', name: 'finishedScopeVar', type: 'String', value: 'c', activityInstanceId: 'extTask1:inst' }
+      ])
+      const wrapper = createWrapper({ state: 'COMPLETED', activityInstanceHistory: historicActivities })
+      wrapper.vm.filter = {
+        deserializeValues: false,
+        variableValues: [{ name: 'globalVar', operator: 'eq', value: 'a' }]
+      }
+      wrapper.vm.loadSelectedInstanceVariables()
+      await flushPromises()
+
+      expect(wrapper.vm.variables.map(v => v.name)).toEqual(['globalVar'])
+    })
+
+    it('resets the loading flags when a query fails, so a later reload is not blocked', async () => {
+      HistoryService.fetchProcessInstanceVariablesHistory.mockRejectedValueOnce(new Error('boom'))
+      const wrapper = createWrapper({ state: 'COMPLETED', activityInstanceHistory: historicActivities })
+
+      await expect(wrapper.vm.fetchInstanceVariables('HistoryService', 'fetchProcessInstanceVariablesHistory'))
+        .rejects.toThrow('boom')
+      expect(wrapper.vm.fetching).toBe(false)
+      expect(wrapper.vm.loading).toBe(false)
+
+      // the failed attempt must not block the next one
+      HistoryService.fetchProcessInstanceVariablesHistory.mockResolvedValue(historyVariables())
+      wrapper.vm.loadSelectedInstanceVariables()
+      await flushPromises()
+      expect(wrapper.vm.variables).toHaveLength(4)
+    })
   })
 
   describe('per-variable liveness (isLive)', () => {
