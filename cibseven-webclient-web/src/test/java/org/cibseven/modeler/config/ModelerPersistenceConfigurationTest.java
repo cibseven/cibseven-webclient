@@ -22,19 +22,27 @@ import javax.sql.DataSource;
 
 import org.cibseven.modeler.config.contributed.ContributedEntity;
 import org.cibseven.modeler.model.ProcessDiagramEntity;
+import org.cibseven.modeler.util.ElementTemplateLoader;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.BeanFactoryAnnotationUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
+import org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.persistence.EntityManagerFactory;
 
@@ -160,6 +168,46 @@ class ModelerPersistenceConfigurationTest {
 				.getProperties().get("jakarta.persistence.nonJtaDataSource"))
 				.isSameAs(context.getBean(ModelerJpa.DATA_SOURCE, DataSource.class));
 		});
+	}
+
+	/**
+	 * Startup work must run on the modeler's transaction manager too. An unqualified
+	 * {@code TransactionTemplate} is built on the primary manager, which in an embedding application
+	 * is the host's: a JDBC transaction there binds a connection to the thread and the modeler's JPA
+	 * work then fails with "Pre-bound JDBC Connection found".
+	 */
+	@Test
+	void theElementTemplateLoaderRunsOnTheModelersTransactionManager() {
+		standalone
+			.withPropertyValues("cibseven.webclient.modeler.enabled=true")
+			.withConfiguration(org.springframework.boot.autoconfigure.AutoConfigurations
+				.of(TransactionAutoConfiguration.class))
+			.withUserConfiguration(HostDrivingItsOwnDataSourceTransactions.class)
+			.withBean(ElementTemplateProperties.class)
+			.withBean(ObjectMapper.class)
+			.withBean(ElementTemplateLoader.class)
+			.run(context -> {
+				assertThat(context).hasNotFailed();
+				TransactionTemplate template = (TransactionTemplate) ReflectionTestUtils
+					.getField(context.getBean(ElementTemplateLoader.class), "transactionTemplate");
+
+				assertThat(template.getTransactionManager())
+					.isSameAs(context.getBean(ModelerJpa.TRANSACTION_MANAGER, PlatformTransactionManager.class));
+			});
+	}
+
+	/**
+	 * A host whose primary transaction manager is JDBC-based on the shared data source — the shape of
+	 * an application embedding the modeler next to the process engine.
+	 */
+	@Configuration(proxyBeanMethods = false)
+	static class HostDrivingItsOwnDataSourceTransactions {
+
+		@Bean
+		@Primary
+		PlatformTransactionManager hostTransactionManager(DataSource dataSource) {
+			return new DataSourceTransactionManager(dataSource);
+		}
 	}
 
 	@Configuration(proxyBeanMethods = false)
