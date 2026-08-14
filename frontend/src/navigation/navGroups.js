@@ -162,7 +162,7 @@ export function buildNavGroups(ctx) {
       show: !!ctx.permissionsUsersManagement,
       to: '/seven/auth/admin/users',
       routeName: 'adminUsers',
-      active: ['seven/auth/admin/user', 'seven/auth/admin/create-user'],
+      active: ['seven/auth/admin/users', 'seven/auth/admin/user/', 'seven/auth/admin/create-user'],
       icon: 'mdi-account-search-outline',
       tooltip: 'admin.users.tooltip',
       title: 'admin.users.title'
@@ -171,7 +171,7 @@ export function buildNavGroups(ctx) {
       show: !!ctx.permissionsGroupsManagement,
       to: '/seven/auth/admin/groups',
       routeName: 'adminGroups',
-      active: ['seven/auth/admin/group', 'seven/auth/admin/create-group'],
+      active: ['seven/auth/admin/groups', 'seven/auth/admin/group/', 'seven/auth/admin/create-group'],
       icon: 'mdi-account-group-outline',
       tooltip: 'admin.groups.tooltip',
       title: 'admin.groups.title'
@@ -180,7 +180,7 @@ export function buildNavGroups(ctx) {
       show: !!ctx.permissionsTenantsManagement,
       to: '/seven/auth/admin/tenants',
       routeName: 'adminTenants',
-      active: ['seven/auth/admin/tenant', 'seven/auth/admin/create-tenant'],
+      active: ['seven/auth/admin/tenants', 'seven/auth/admin/tenant/', 'seven/auth/admin/create-tenant'],
       icon: 'mdi-domain',
       tooltip: 'admin.tenants.tooltip',
       title: 'admin.tenants.title'
@@ -326,7 +326,7 @@ export function projectStartHoverOptions(items, t) {
  * (zero, or more than one, option).
  */
 export function singleOptionTile(options) {
-  if (!options || options.length !== 1) return null
+  if (options?.length !== 1) return null
   const [only] = options
   return { to: only.to, title: only.title }
 }
@@ -338,19 +338,9 @@ export function singleOptionTile(options) {
  * (tasklist + start process). Returns null when Tasks isn't the sole tile.
  */
 export function tasksOnlyRedirectTarget(tiles, tasksOptions) {
-  if (!tiles || tiles.length !== 1 || tiles[0] !== 'tasks') return null
+  if (tiles?.length !== 1 || tiles[0] !== 'tasks') return null
   const single = singleOptionTile(tasksOptions)
   return single ? single.to : { name: 'tasksHome' }
-}
-
-/** @deprecated Use projectStartHoverOptions */
-export function cockpitItemsToTileOptions(items, t) {
-  return projectStartHoverOptions(items, t)
-}
-
-/** @deprecated Use projectStartHoverOptions */
-export function adminItemsToTileOptions(items, t) {
-  return projectStartHoverOptions(items, t)
 }
 
 /**

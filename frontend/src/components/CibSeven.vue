@@ -371,34 +371,23 @@ export default {
       return projectGroupsForToolbar(items)
     },
     getToolDefaultTo: function(tool) {
-      if (tool.defaultTo) return tool.defaultTo
-      const first = (tool.items || []).find(item => !item.divider && item.to)
-      return first?.to || '/seven/auth/start'
+      return tool.defaultTo || tool.items.find(item => item.to)?.to || '/seven/auth/start'
     },
     isToolActive: function(tool) {
-      if (tool?.startTo?.name && this.$route.name === tool.startTo.name) return true
-      if (!tool?.items) return false
-      return tool.items.some(item => !item.divider && this.isMenuItemActive(item))
+      if (tool.startTo?.name && this.$route.name === tool.startTo.name) return true
+      return tool.items.some(item => this.isMenuItemActive(item))
     },
     isMenuItemActive: function(item) {
       if (!item.active) {
         return false
       }
+      const path = this.$route.path
       if (item.activeExact) {
-        return item.active.some(a => this.$route.path.endsWith(a))
-      } else {
-        // Boundary-aware match: reject only when 'a' is immediately followed by
-        // '-', meaning the path continues into an unrelated hyphenated sibling
-        // route (e.g. the 'tasks-home' hub vs. the 'seven/auth/tasks' pattern).
-        // Any other continuation is a legitimate match many patterns rely on:
-        // end-of-path, '/' (nested detail pages, e.g. 'admin/user' + '/123'),
-        // or a plain suffix (e.g. the 's' in 'admin/user' + 'sers').
-        return item.active.some(a => {
-          const idx = this.$route.path.indexOf(a)
-          if (idx === -1) return false
-          return this.$route.path[idx + a.length] !== '-'
-        })
+        return item.active.some(a => path.endsWith(a))
       }
+      return item.active.some(a => a.endsWith('/')
+        ? path.includes('/' + a)
+        : path.endsWith('/' + a) || path.includes('/' + a + '/'))
     },
     logout: function() {
       //Remove some storage variables when logout

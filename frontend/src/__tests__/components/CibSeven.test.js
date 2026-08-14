@@ -90,16 +90,32 @@ describe('CibSeven.vue', () => {
       expect(CibSeven.methods.isMenuItemActive.call(mockThis, tasklistItem)).toBe(false)
     })
 
-    it('should match plural resource list pages sharing a singular active prefix', () => {
+    it('should match plural resource list pages via their explicit active pattern', () => {
       const mockThis = {
         $route: { path: '/seven/auth/admin/users' }
       }
-      const usersItem = { active: ['seven/auth/admin/user', 'seven/auth/admin/create-user'] }
+      const usersItem = { active: ['seven/auth/admin/users', 'seven/auth/admin/user/', 'seven/auth/admin/create-user'] }
       expect(CibSeven.methods.isMenuItemActive.call(mockThis, usersItem)).toBe(true)
 
       mockThis.$route.path = '/seven/auth/admin/groups'
-      const groupsItem = { active: ['seven/auth/admin/group', 'seven/auth/admin/create-group'] }
+      const groupsItem = { active: ['seven/auth/admin/groups', 'seven/auth/admin/group/', 'seven/auth/admin/create-group'] }
       expect(CibSeven.methods.isMenuItemActive.call(mockThis, groupsItem)).toBe(true)
+    })
+
+    it('should not match a plural list page from its singular prefix alone', () => {
+      const mockThis = {
+        $route: { path: '/seven/auth/admin/tenants' }
+      }
+      const tenantItem = { active: ['seven/auth/admin/tenant'] }
+      expect(CibSeven.methods.isMenuItemActive.call(mockThis, tenantItem)).toBe(false)
+    })
+
+    it('should match a singular detail page via a trailing-slash active pattern', () => {
+      const mockThis = {
+        $route: { path: '/seven/auth/admin/user/42' }
+      }
+      const userItem = { active: ['seven/auth/admin/users', 'seven/auth/admin/user/', 'seven/auth/admin/create-user'] }
+      expect(CibSeven.methods.isMenuItemActive.call(mockThis, userItem)).toBe(true)
     })
 
     it('should match nested detail pages under a trailing-slash active pattern', () => {

@@ -16,17 +16,8 @@
  */
 
 export function getUserInitials(user) {
-  if (!user) return ''
-  const first = (user.firstName || '').trim()
-  const last = (user.lastName || '').trim()
-  if (first || last) {
-    return ((first.charAt(0) || '') + (last.charAt(0) || '')).toUpperCase() || '?'
-  }
-  const name = (user.displayName || user.id || '').trim()
-  if (!name) return '?'
-  const parts = name.split(/\s+/).filter(Boolean)
-  if (parts.length >= 2) {
-    return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase()
-  }
-  return name.slice(0, 2).toUpperCase()
+  const name = user?.displayName?.trim()
+  if (!name) return ''
+  const [first, second] = name.split(/\s+/)
+  return (second ? first[0] + second[0] : first.slice(0, 2)).toUpperCase()
 }

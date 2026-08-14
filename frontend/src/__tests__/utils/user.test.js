@@ -18,16 +18,16 @@ import { describe, it, expect } from 'vitest'
 import { getUserInitials } from '@/utils/user.js'
 
 describe('getUserInitials', () => {
-  it('uses first and last name when available', () => {
-    expect(getUserInitials({ firstName: 'Ada', lastName: 'Morris' })).toBe('AM')
-  })
-
-  it('falls back to displayName parts or id characters', () => {
+  it('returns initials from the first two words of displayName', () => {
     expect(getUserInitials({ displayName: 'Ada Morris' })).toBe('AM')
-    expect(getUserInitials({ id: 'admin' })).toBe('AD')
   })
 
-  it('returns empty string for missing user', () => {
+  it('returns the first two characters when displayName is a single word', () => {
+    expect(getUserInitials({ displayName: 'admin' })).toBe('AD')
+  })
+
+  it('returns empty string when displayName is missing', () => {
+    expect(getUserInitials({})).toBe('')
     expect(getUserInitials(null)).toBe('')
   })
 })

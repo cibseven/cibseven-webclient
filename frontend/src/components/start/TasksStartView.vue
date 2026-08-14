@@ -35,8 +35,7 @@ export default {
   components: { StartHubView },
   computed: {
     startableProcesses() {
-      if (!this.$store.state.process.list) return false
-      return this.$store.state.process.list.some(process => !process.revoked && process.startableInTasklist)
+      return this.$store.state.process.list?.some(process => !process.revoked && process.startableInTasklist) ?? false
     },
     builtInItems() {
       const items = []
