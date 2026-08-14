@@ -656,6 +656,15 @@ public interface BpmProvider {
 		return getUserProvider().getUserAuthorization(userId, user);
 	}
 
+	/**
+	 * Whether the user holds a permission on a resource, decided by the engine.
+	 * See {@link IUserProvider#isUserAuthorized}.
+	 */
+	default boolean isUserAuthorized(CIBUser user, int resourceType, String resourceId, String permission)
+			throws SystemException {
+		return getUserProvider().isUserAuthorized(user, resourceType, resourceId, permission);
+	}
+
 	default Collection<SevenUser> fetchUsers(CIBUser user) throws SystemException {
 		return getUserProvider().fetchUsers(user);
 	}
