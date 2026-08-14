@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
+import org.cibseven.modeler.config.ModelerJpa;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.cibseven.webapp.exception.SystemException;
@@ -88,7 +89,7 @@ public class DBProcessDiagramProvider implements IProcessDiagramProvider {
 		return processDiagramDao.save(processDiagramEntity);
 	}
 	
-	@Transactional
+	@Transactional(ModelerJpa.TRANSACTION_MANAGER)
 	@Override
 	public void delete(String id) throws SystemException {
 		processDiagramDao.deleteById(id);
