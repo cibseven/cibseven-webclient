@@ -35,9 +35,10 @@ function evaluateStartView(overrides = {}) {
     permissionsAuthorizationsManagement: true,
     permissionsSystemManagement: true,
     $t: (key) => key,
-    $store: { state: { process: { list: [{ revoked: false, startableInTasklist: true }] } } },
+    $store: { state: { process: { list: [{ revoked: false, startableInTasklist: true }], loaded: true } } },
     $root: { config: { productNamePageTitle: 'Test', permissions: {} } },
     $options: { components: {} },
+    images: { task: 'task.svg', modeler: 'modeler.svg', management: 'management.svg', admin: 'admin.svg' },
     ...overrides
   }
   vm.getPluginOptions = startTileOptionsMixin.methods.getPluginOptions.bind(vm)
@@ -71,6 +72,9 @@ function evaluateStartView(overrides = {}) {
   })
   Object.defineProperty(vm, 'adminOptions', {
     get: () => StartView.computed.adminOptions.call(vm)
+  })
+  Object.defineProperty(vm, 'visibleTiles', {
+    get: () => StartView.computed.visibleTiles.call(vm)
   })
   Object.defineProperty(vm, 'tiles', {
     get: () => StartView.computed.tiles.call(vm)
@@ -234,7 +238,7 @@ describe('StartView.vue tasks-only redirect', () => {
   it('redirects straight to the tasklist when it is the only tasks option and process list is already loaded', () => {
     const vm = evaluateStartView({
       ...TASKS_ONLY_PERMISSIONS,
-      $store: { state: { process: { list: [] } } }
+      $store: { state: { process: { list: [], loaded: true } } }
     })
     expect(vm.tiles).toEqual(['tasks'])
     vm.redirectIfTasksOnly()
@@ -244,7 +248,7 @@ describe('StartView.vue tasks-only redirect', () => {
   it('redirects to the tasks hub when start-process is also available and process list is already loaded', () => {
     const vm = evaluateStartView({
       ...TASKS_ONLY_PERMISSIONS,
-      $store: { state: { process: { list: [{ revoked: false, startableInTasklist: true }] } } }
+      $store: { state: { process: { list: [{ revoked: false, startableInTasklist: true }], loaded: true } } }
     })
     expect(vm.tiles).toEqual(['tasks'])
     vm.redirectIfTasksOnly()
@@ -256,7 +260,7 @@ describe('StartView.vue tasks-only redirect', () => {
     const unwatch = vi.fn()
     const vm = evaluateStartView({
       ...TASKS_ONLY_PERMISSIONS,
-      $store: { state: { process: { list: null } } }
+      $store: { state: { process: { list: [], loaded: false } } }
     })
     vm.$watch = vi.fn((getter, callback) => {
       watchedCallback = callback
@@ -269,7 +273,8 @@ describe('StartView.vue tasks-only redirect', () => {
 
     // Process list finishes loading with a startable process
     vm.$store.state.process.list = [{ revoked: false, startableInTasklist: true }]
-    watchedCallback(vm.$store.state.process.list)
+    vm.$store.state.process.loaded = true
+    watchedCallback(vm.$store.state.process.loaded)
 
     expect(unwatch).toHaveBeenCalledTimes(1)
     expect(vm.$router.replace).toHaveBeenCalledWith({ name: 'tasksHome' })

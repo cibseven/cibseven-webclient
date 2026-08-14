@@ -74,8 +74,6 @@ export {
   singleOptionTile,
   tasksOnlyRedirectTarget,
   navItemsToTileOptions,
-  cockpitItemsToTileOptions,
-  adminItemsToTileOptions,
   accessManagementCatalogItems,
   permissionContextFromVm,
   itemSurfaces,

@@ -243,6 +243,7 @@ import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
 import FeedbackModal from '@/components/modals/FeedbackModal.vue'
 import { updateAppTitle } from '@/utils/init'
 import { buildNavGroups, projectGroupsForToolbar, permissionContextFromVm } from '@/navigation/navGroups.js'
+import { hasStartableProcess } from '@/utils/processes.js'
 
 export default {
   name: 'CibSeven',
@@ -284,13 +285,7 @@ export default {
       return items
     },
     startableProcesses: function() {
-      return this.processesFilteredUnsorted.find(p => { return p.startableInTasklist })
-    },
-    processesFilteredUnsorted: function() {
-      if (!this.$store.state.process.list) return []
-      return this.$store.state.process.list.filter(process => {
-        return ((!process.revoked))
-      })
+      return hasStartableProcess(this.$store.state.process.list)
     },
     // when route is changed => let's change title of the view inside top toolbar
     pageTitle: function() {
@@ -378,6 +373,9 @@ export default {
       return tool.items.some(item => this.isMenuItemActive(item))
     },
     isMenuItemActive: function(item) {
+      if (item.activeRouteNames) {
+        return item.activeRouteNames.includes(this.$route.name)
+      }
       if (!item.active) {
         return false
       }

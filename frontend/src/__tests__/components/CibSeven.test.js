@@ -118,6 +118,17 @@ describe('CibSeven.vue', () => {
       expect(CibSeven.methods.isMenuItemActive.call(mockThis, userItem)).toBe(true)
     })
 
+    it('should match via activeRouteNames when present, ignoring path entirely', () => {
+      const mockThis = {
+        $route: { name: 'adminUser', path: '/seven/auth/admin/user/42' }
+      }
+      const usersItem = { activeRouteNames: ['adminUsers', 'adminUser', 'createUser'], active: ['seven/auth/admin/does-not-matter'] }
+      expect(CibSeven.methods.isMenuItemActive.call(mockThis, usersItem)).toBe(true)
+
+      mockThis.$route.name = 'adminGroups'
+      expect(CibSeven.methods.isMenuItemActive.call(mockThis, usersItem)).toBe(false)
+    })
+
     it('should match nested detail pages under a trailing-slash active pattern', () => {
       const mockThis = {
         $route: { path: '/seven/auth/process/myKey/1/inst1' }

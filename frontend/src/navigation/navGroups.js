@@ -42,7 +42,13 @@ export const SURFACES = {
 
 const DEFAULT_SURFACES = [SURFACES.TOOLBAR, SURFACES.START_HOVER]
 
-/** Collapsed startHover entries for toolbar-only leaf groups. */
+/**
+ * Collapsed startHover entries for toolbar-only leaf groups, keyed by
+ * `collapseGroup`. Each entry stands in for its whole leaf group on the
+ * startHover surface, so its to/icon/title are deliberately the group-level
+ * "System" identity, not any single leaf's — kept in sync by hand with the
+ * `collapseGroup: 'system'` items inside buildNavGroups's admin group below.
+ */
 export const COLLAPSE_TARGETS = {
   system: {
     to: '/seven/auth/admin/system',
@@ -158,38 +164,34 @@ export function buildNavGroups(ctx) {
     startTo: { name: 'usersManagement' },
     show: !!ctx.permissionsUsers,
     items: [{
-      hub: 'users',
       show: !!ctx.permissionsUsersManagement,
       to: '/seven/auth/admin/users',
       routeName: 'adminUsers',
-      active: ['seven/auth/admin/users', 'seven/auth/admin/user/', 'seven/auth/admin/create-user'],
+      activeRouteNames: ['adminUsers', 'adminUser', 'createUser'],
       icon: 'mdi-account-search-outline',
       tooltip: 'admin.users.tooltip',
       title: 'admin.users.title'
     }, {
-      hub: 'groups',
       show: !!ctx.permissionsGroupsManagement,
       to: '/seven/auth/admin/groups',
       routeName: 'adminGroups',
-      active: ['seven/auth/admin/groups', 'seven/auth/admin/group/', 'seven/auth/admin/create-group'],
+      activeRouteNames: ['adminGroups', 'adminGroup', 'createGroup'],
       icon: 'mdi-account-group-outline',
       tooltip: 'admin.groups.tooltip',
       title: 'admin.groups.title'
     }, {
-      hub: 'tenants',
       show: !!ctx.permissionsTenantsManagement,
       to: '/seven/auth/admin/tenants',
       routeName: 'adminTenants',
-      active: ['seven/auth/admin/tenants', 'seven/auth/admin/tenant/', 'seven/auth/admin/create-tenant'],
+      activeRouteNames: ['adminTenants', 'adminTenant', 'createTenant'],
       icon: 'mdi-domain',
       tooltip: 'admin.tenants.tooltip',
       title: 'admin.tenants.title'
     }, {
-      hub: 'authorizations',
       show: !!ctx.permissionsAuthorizationsManagement,
       to: '/seven/auth/admin/authorizations',
       routeName: 'authorizations',
-      active: ['seven/auth/admin/authorizations'],
+      activeRouteNames: ['authorizations', 'authorizationType'],
       icon: 'mdi-account-key-outline',
       tooltip: 'admin.authorizations.tooltip',
       title: 'admin.authorizations.title'
@@ -197,6 +199,9 @@ export function buildNavGroups(ctx) {
       show: !!ctx.permissionsSystemManagement,
       divider: true
     }, {
+      // Both 'system' leaves below collapse to the single COLLAPSE_TARGETS.system
+      // entry on startHover — keep that entry's to/icon/title in sync by hand
+      // if this leaf's identity changes.
       show: !!ctx.permissionsSystemManagement,
       surfaces: [SURFACES.TOOLBAR],
       collapseGroup: 'system',
@@ -347,12 +352,7 @@ export function tasksOnlyRedirectTarget(tiles, tasksOptions) {
  * Access-management hub: identity catalog items only (no system / collapse groups).
  */
 export function accessManagementCatalogItems(adminItems) {
-  return (adminItems || []).filter(item =>
-    !item.divider
-    && item.show !== false
-    && item.hub
-    && !item.collapseGroup
-  )
+  return (adminItems || []).filter(item => item.show !== false && item.routeName)
 }
 
 /**

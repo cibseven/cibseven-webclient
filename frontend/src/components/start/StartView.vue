@@ -20,20 +20,8 @@
   <div :style="{ 'height': 'calc(100% - 55px)' }" class="d-flex flex-column bg-light overflow-auto">
     <div class="h-100 container" :style="countStartItems === 4 ? 'max-width: 960px' : ''">
       <div ref="startContainer" class="row justify-content-center">
-        <StartViewItem v-if="tiles.includes('tasks')" :to="{ name: 'tasksHome' }" :title="$t('start.tasks.title')" :src="images.task"
-          :options="tasksOptions"
-        ></StartViewItem>
-        <StartViewItem v-if="tiles.includes('cockpit')" :to="{ name: 'cockpit' }" :title="$t('start.cockpit.title')" :src="images.management"
-          :options="cockpitOptions"
-        ></StartViewItem>
-        <StartViewItem v-if="tiles.includes('builder')" :to="builderTile.to" :title="builderTile.title" :src="images.modeler"
-          :options="builderTile.options"
-        ></StartViewItem>
-        <StartViewItem v-if="tiles.includes('data')" :to="dataTile.to" :title="dataTile.title" :src="dataTile.src"
-          :options="dataTile.options"
-        ></StartViewItem>
-        <StartViewItem v-if="tiles.includes('admin')" :to="{ name: 'usersManagement' }" :title="$t('start.admin.title')" :src="images.admin"
-          :options="adminOptions"
+        <StartViewItem v-for="tile in visibleTiles" :key="tile.key" :to="tile.to" :title="tile.title" :src="tile.src"
+          :options="tile.options"
         ></StartViewItem>
       </div>
       <div v-if="tiles.length === 0">
@@ -59,6 +47,7 @@ import {
   tasksOnlyRedirectTarget,
   permissionContextFromVm
 } from '@/navigation/navGroups.js'
+import { hasStartableProcess } from '@/utils/processes.js'
 
 import taskImage from '@/assets/images/start/task.svg'
 import managementImage from '@/assets/images/start/management.svg'
@@ -86,7 +75,7 @@ export default {
       return this.$root.config.productNamePageTitle || this.$t('login.productName')
     },
     startableProcesses() {
-      return this.$store.state.process.list?.some(process => !process.revoked && process.startableInTasklist) ?? false
+      return hasStartableProcess(this.$store.state.process.list)
     },
     navGroups() {
       let groups = buildNavGroups(permissionContextFromVm(this))
@@ -143,14 +132,20 @@ export default {
       if (!single) return null
       return { to: single.to, title: single.title, src: this.groupById.data?.tileImage, options: null }
     },
+    // Single source for what the start page's tile row renders, so adding a
+    // tile is one entry here (plus its image import) instead of a separate
+    // computed and template block per tile.
+    visibleTiles() {
+      return [
+        { key: 'tasks', to: { name: 'tasksHome' }, title: this.$t('start.tasks.title'), src: this.images.task, options: this.tasksOptions, show: this.tasksOptions.length > 0 },
+        { key: 'cockpit', to: { name: 'cockpit' }, title: this.$t('start.cockpit.title'), src: this.images.management, options: this.cockpitOptions, show: !!this.groupById.cockpit },
+        { key: 'builder', to: this.builderTile.to, title: this.builderTile.title, src: this.images.modeler, options: this.builderTile.options, show: this.builderOptions.length > 0 },
+        { key: 'data', to: this.dataTile?.to, title: this.dataTile?.title, src: this.dataTile?.src, options: this.dataTile?.options, show: !!this.dataTile },
+        { key: 'admin', to: { name: 'usersManagement' }, title: this.$t('start.admin.title'), src: this.images.admin, options: this.adminOptions, show: !!this.groupById.admin }
+      ].filter(tile => tile.show)
+    },
     tiles() {
-      const tiles = []
-      if (this.tasksOptions.length > 0) tiles.push('tasks')
-      if (this.groupById.cockpit) tiles.push('cockpit')
-      if (this.builderOptions.length > 0) tiles.push('builder')
-      if (this.dataTile) tiles.push('data')
-      if (this.groupById.admin) tiles.push('admin')
-      return tiles
+      return this.visibleTiles.map(tile => tile.key)
     },
     countStartItems() {
       return this.items.length
@@ -171,12 +166,12 @@ export default {
         const target = tasksOnlyRedirectTarget(this.tiles, this.tasksOptions)
         if (target) this.$router.replace(target)
       }
-      if (this.$store.state.process.list) {
+      if (this.$store.state.process.loaded) {
         apply()
         return
       }
-      const unwatch = this.$watch(() => this.$store.state.process.list, (list) => {
-        if (list) {
+      const unwatch = this.$watch(() => this.$store.state.process.loaded, (loaded) => {
+        if (loaded) {
           unwatch()
           apply()
         }

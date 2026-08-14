@@ -25,35 +25,34 @@ import { permissionsMixin } from '@/permissions.js'
 import navigationPermissionsMixin from '@/mixins/navigationPermissionsMixin.js'
 import startTileOptionsMixin from '@/mixins/startTileOptionsMixin.js'
 import StartHubView from '@/components/start/StartHubView.vue'
+import { buildNavGroups, filterVisibleNavGroups, projectStartHoverOptions, permissionContextFromVm } from '@/navigation/navGroups.js'
+import { hasStartableProcess } from '@/utils/processes.js'
 
 import processImage from '@/assets/images/start/process.svg'
 import taskImage from '@/assets/images/start/task.svg'
+
+const TASK_IMAGES = {
+  '/seven/auth/tasks': taskImage,
+  '/seven/auth/start-process': processImage
+}
 
 export default {
   name: 'TasksStartView',
   mixins: [permissionsMixin, navigationPermissionsMixin, startTileOptionsMixin],
   components: { StartHubView },
+  emits: [],
   computed: {
     startableProcesses() {
-      return this.$store.state.process.list?.some(process => !process.revoked && process.startableInTasklist) ?? false
+      return hasStartableProcess(this.$store.state.process.list)
     },
+    // Reuses navGroups.js's own 'tasks' group instead of re-encoding the same
+    // permission/startableProcesses-gated item list here, so this hub page
+    // can't silently diverge from the toolbar's Tasks dropdown.
     builtInItems() {
-      const items = []
-      if (this.permissionsTaskList) {
-        items.push({
-          to: { name: 'tasks' },
-          title: this.$t('start.taskList.title'),
-          src: taskImage
-        })
-      }
-      if (this.permissionsTaskList && this.startableProcesses) {
-        items.push({
-          to: { name: 'start-process' },
-          title: this.$t('start.startProcess.title'),
-          src: processImage
-        })
-      }
-      return items
+      const groups = filterVisibleNavGroups(buildNavGroups(permissionContextFromVm(this)))
+      const tasks = groups.find(g => g.id === 'tasks')
+      return projectStartHoverOptions(tasks?.items, this.$t.bind(this))
+        .map(item => ({ to: item.to, title: item.title, src: TASK_IMAGES[item.to] }))
     },
     items() {
       return this.mergeOptions(this.builtInItems, 'TasksTileOptionsPlugin')

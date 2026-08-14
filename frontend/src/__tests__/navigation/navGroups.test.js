@@ -112,7 +112,7 @@ describe('navGroups factory', () => {
   it('accessManagementCatalogItems returns identity hubs only', () => {
     const admin = buildNavGroups(fullCtx).find(g => g.id === 'admin')
     const hubs = accessManagementCatalogItems(admin.items)
-    expect(hubs.map(i => i.hub)).toEqual(['users', 'groups', 'tenants', 'authorizations'])
+    expect(hubs.map(i => i.routeName)).toEqual(['adminUsers', 'adminGroups', 'adminTenants', 'authorizations'])
     expect(hubs.every(i => i.routeName && itemVisibleOnSurface(i, SURFACES.START_HOVER))).toBe(true)
   })
 

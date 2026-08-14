@@ -37,9 +37,9 @@ import tenantsAdminImage from '@/assets/images/admin/tenants_admin.svg'
 import authorizationsAdminImage from '@/assets/images/admin/authorizations_admin.svg'
 
 const HUB_IMAGES = {
-  users: adminUsersImage,
-  groups: groupsAdminImage,
-  tenants: tenantsAdminImage,
+  adminUsers: adminUsersImage,
+  adminGroups: groupsAdminImage,
+  adminTenants: tenantsAdminImage,
   authorizations: authorizationsAdminImage
 }
 
@@ -54,7 +54,7 @@ export default {
       const admin = filterVisibleNavGroups(buildNavGroups(permissionContextFromVm(this))).find(g => g.id === 'admin')
       return accessManagementCatalogItems(admin?.items).map(item => ({
         title: this.$t(item.title),
-        src: HUB_IMAGES[item.hub],
+        src: HUB_IMAGES[item.routeName],
         to: { name: item.routeName }
       })).filter(item => item.src && item.to?.name)
     }
