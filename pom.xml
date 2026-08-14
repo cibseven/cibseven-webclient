@@ -219,6 +219,77 @@ You may obtain a copy of the License at
 			</build>
 		</profile>
 		<profile>
+			<!-- Generate and attache a CycloneDX SBOM for the frontend's npm dependencies -->
+			<id>generate-frontend-sbom</id>
+			<activation>
+				<property>
+					<name>generate-frontend-sbom</name>
+					<value>true</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.github.eirslett</groupId>
+						<artifactId>frontend-maven-plugin</artifactId>
+						<version>${version.eirslett.frontend.maven.plugin}</version>
+						<inherited>false</inherited>
+						<executions>
+							<execution>
+								<id>generate-frontend-sbom-json</id>
+								<goals>
+									<goal>npm</goal>
+								</goals>
+								<phase>prepare-package</phase>
+								<configuration>
+									<arguments>exec --yes -- @cyclonedx/cyclonedx-npm@6.0.0 --output-file target/frontend-bom.json --output-format json --omit dev</arguments>
+								</configuration>
+							</execution>
+							<execution>
+								<id>generate-frontend-sbom-xml</id>
+								<goals>
+									<goal>npm</goal>
+								</goals>
+								<phase>prepare-package</phase>
+								<configuration>
+									<arguments>exec --yes -- @cyclonedx/cyclonedx-npm@6.0.0 --output-file target/frontend-bom.xml --output-format xml --omit dev</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>build-helper-maven-plugin</artifactId>
+						<inherited>false</inherited>
+						<executions>
+							<execution>
+								<!-- Distinct classifier since "cyclonedx" is already used by the Java backend's aggregate SBOM -->
+								<id>attach-frontend-sbom</id>
+								<phase>package</phase>
+								<goals>
+									<goal>attach-artifact</goal>
+								</goals>
+								<configuration>
+									<artifacts>
+										<artifact>
+											<file>${project.basedir}/frontend/target/frontend-bom.json</file>
+											<type>json</type>
+											<classifier>frontend-cyclonedx</classifier>
+										</artifact>
+										<artifact>
+											<file>${project.basedir}/frontend/target/frontend-bom.xml</file>
+											<type>xml</type>
+											<classifier>frontend-cyclonedx</classifier>
+										</artifact>
+									</artifacts>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
 			<id>release-npm-library</id>
 			<activation>
 				<property>

@@ -45,17 +45,6 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-
-			<!--
-				Force convergence between the version brought by common-auth
-				(2.2.36) and the one brought by springdoc 3.0.2 (2.2.43).
-				The SB4 BOM doesn't pin swagger-annotations-jakarta itself.
-			-->
-			<dependency>
-				<groupId>io.swagger.core.v3</groupId>
-				<artifactId>swagger-annotations-jakarta</artifactId>
-				<version>2.2.43</version>
-			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
