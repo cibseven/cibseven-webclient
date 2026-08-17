@@ -113,7 +113,7 @@
             right
             :label="$t('admin.users.account')">
             <template v-slot:button-content>
-              <span class="cib-user-avatar d-inline-flex align-items-center justify-content-center rounded-circle fw-bold lh-1" aria-hidden="true">{{ userInitials }}</span>
+              <b-avatar size="sm" class="cib-user-avatar" :text="userInitials" aria-hidden="true"></b-avatar>
               <span class="mdi mdi-18px mdi-chevron-down align-middle" aria-hidden="true"></span>
               <span class="visually-hidden">{{ user.displayName || user.id }}</span>
               <span class="d-md-none ms-2">{{ user.displayName || user.id }}</span>
@@ -337,11 +337,14 @@ export default {
   font-size: 1rem;
 }
 
-.cib-user-avatar {
-  width: 28px;
-  height: 28px;
-  background-color: #cfe2ff;
-  color: #084298;
-  font-size: 0.75rem;
+/* BAvatar's variant defaults to bg-primary (the brand red); override back to
+   the account avatar's original blue, which isn't one of the theme's variants.
+   Bootstrap's bg-primary utility is itself !important with the same (single-class)
+   specificity, so this needs a higher-specificity selector to reliably win
+   regardless of CSS load order — a bare `.cib-user-avatar { ... !important }`
+   is not guaranteed to. */
+.cib-navbar-utility .cib-user-avatar {
+  background-color: #cfe2ff !important;
+  color: #084298 !important;
 }
 </style>

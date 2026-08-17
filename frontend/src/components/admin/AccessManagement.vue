@@ -24,37 +24,22 @@
 import { permissionsMixin } from '@/permissions.js'
 import navigationPermissionsMixin from '@/mixins/navigationPermissionsMixin.js'
 import StartHubView from '@/components/start/StartHubView.vue'
-import {
-  buildNavGroups,
-  filterVisibleNavGroups,
-  accessManagementCatalogItems,
-  permissionContextFromVm
-} from '@/navigation/navGroups.js'
-
-import adminUsersImage from '@/assets/images/admin/users_admin.svg'
-import groupsAdminImage from '@/assets/images/admin/groups_admin.svg'
-import tenantsAdminImage from '@/assets/images/admin/tenants_admin.svg'
-import authorizationsAdminImage from '@/assets/images/admin/authorizations_admin.svg'
-
-const HUB_IMAGES = {
-  adminUsers: adminUsersImage,
-  adminGroups: groupsAdminImage,
-  adminTenants: tenantsAdminImage,
-  authorizations: authorizationsAdminImage
-}
+import { getVisibleGroup, accessManagementCatalogItems } from '@/navigation/navGroups.js'
 
 export default {
   name: 'AccessManagement',
   mixins: [permissionsMixin, navigationPermissionsMixin],
   components: { StartHubView },
+  emits: [],
   computed: {
     items() {
-      // Filter through the group-level `show` flag too, not just each item's own
-      // show flag, so this can't drift from UsersManagement.vue's admin-tile gate.
-      const admin = filterVisibleNavGroups(buildNavGroups(permissionContextFromVm(this))).find(g => g.id === 'admin')
+      // getVisibleGroup filters through the group-level `show` flag too, not
+      // just each item's own show flag, so this can't drift from
+      // UsersManagement.vue's admin-tile gate.
+      const admin = getVisibleGroup(this, 'admin')
       return accessManagementCatalogItems(admin?.items).map(item => ({
         title: this.$t(item.title),
-        src: HUB_IMAGES[item.routeName],
+        src: item.tileImage,
         to: { name: item.routeName }
       })).filter(item => item.src && item.to?.name)
     }

@@ -134,15 +134,27 @@ export default {
     },
     // Single source for what the start page's tile row renders, so adding a
     // tile is one entry here (plus its image import) instead of a separate
-    // computed and template block per tile.
+    // computed and template block per tile. Tiles are only constructed once
+    // their condition holds, so a hidden tile never pays for $t()/title
+    // resolution.
     visibleTiles() {
-      return [
-        { key: 'tasks', to: { name: 'tasksHome' }, title: this.$t('start.tasks.title'), src: this.images.task, options: this.tasksOptions, show: this.tasksOptions.length > 0 },
-        { key: 'cockpit', to: { name: 'cockpit' }, title: this.$t('start.cockpit.title'), src: this.images.management, options: this.cockpitOptions, show: !!this.groupById.cockpit },
-        { key: 'builder', to: this.builderTile.to, title: this.builderTile.title, src: this.images.modeler, options: this.builderTile.options, show: this.builderOptions.length > 0 },
-        { key: 'data', to: this.dataTile?.to, title: this.dataTile?.title, src: this.dataTile?.src, options: this.dataTile?.options, show: !!this.dataTile },
-        { key: 'admin', to: { name: 'usersManagement' }, title: this.$t('start.admin.title'), src: this.images.admin, options: this.adminOptions, show: !!this.groupById.admin }
-      ].filter(tile => tile.show)
+      const tiles = []
+      if (this.tasksOptions.length > 0) {
+        tiles.push({ key: 'tasks', to: { name: 'tasksHome' }, title: this.$t('start.tasks.title'), src: this.images.task, options: this.tasksOptions })
+      }
+      if (this.groupById.cockpit) {
+        tiles.push({ key: 'cockpit', to: { name: 'cockpit' }, title: this.$t('start.cockpit.title'), src: this.images.management, options: this.cockpitOptions })
+      }
+      if (this.builderOptions.length > 0) {
+        tiles.push({ key: 'builder', to: this.builderTile.to, title: this.builderTile.title, src: this.images.modeler, options: this.builderTile.options })
+      }
+      if (this.dataTile) {
+        tiles.push({ key: 'data', to: this.dataTile.to, title: this.dataTile.title, src: this.dataTile.src, options: this.dataTile.options })
+      }
+      if (this.groupById.admin) {
+        tiles.push({ key: 'admin', to: { name: 'usersManagement' }, title: this.$t('start.admin.title'), src: this.images.admin, options: this.adminOptions })
+      }
+      return tiles
     },
     tiles() {
       return this.visibleTiles.map(tile => tile.key)
@@ -160,22 +172,17 @@ export default {
     // If Tasks is the only tile, the start page has nothing else to show —
     // skip it and go straight into Tasks. The destination (tasklist vs. the
     // tasks hub) depends on startableProcesses, which comes from the process
-    // list; wait for it to load rather than guess and redirect too early.
+    // list; decide immediately with whatever's loaded so far (defaulting to
+    // "no startable process" until it arrives) rather than block the
+    // redirect on that fetch — on a system with a lot of processes it can
+    // take a while, and there's no reason to make the user wait for it.
+    // Skip entirely when an error dialog needs to explain a prior redirect
+    // (e.g. a permission/not-found bounce), so this doesn't navigate the
+    // user away before they see it.
     redirectIfTasksOnly() {
-      const apply = () => {
-        const target = tasksOnlyRedirectTarget(this.tiles, this.tasksOptions)
-        if (target) this.$router.replace(target)
-      }
-      if (this.$store.state.process.loaded) {
-        apply()
-        return
-      }
-      const unwatch = this.$watch(() => this.$store.state.process.loaded, (loaded) => {
-        if (loaded) {
-          unwatch()
-          apply()
-        }
-      })
+      if (this.$route.query.errorType) return
+      const target = tasksOnlyRedirectTarget(this.tiles, this.tasksOptions)
+      if (target) this.$router.replace(target)
     }
   },
   created() {

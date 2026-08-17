@@ -25,7 +25,8 @@ import {
   tasksOnlyRedirectTarget,
   navItemsToTileOptions,
   accessManagementCatalogItems,
-  itemVisibleOnSurface
+  itemVisibleOnSurface,
+  getVisibleGroup
 } from '@/navigation/navGroups.js'
 
 const fullCtx = {
@@ -114,6 +115,18 @@ describe('navGroups factory', () => {
     const hubs = accessManagementCatalogItems(admin.items)
     expect(hubs.map(i => i.routeName)).toEqual(['adminUsers', 'adminGroups', 'adminTenants', 'authorizations'])
     expect(hubs.every(i => i.routeName && itemVisibleOnSurface(i, SURFACES.START_HOVER))).toBe(true)
+    expect(hubs.every(i => i.tileImage)).toBe(true)
+  })
+
+  it('admin group lists accessManagement as an extra active-hub route name', () => {
+    const admin = buildNavGroups(fullCtx).find(g => g.id === 'admin')
+    expect(admin.hubRouteNames).toEqual(['accessManagement'])
+  })
+
+  it('getVisibleGroup resolves a single group by id from a vm-shaped ctx, or undefined when hidden', () => {
+    const vm = { ...fullCtx, startableProcesses: fullCtx.startableProcesses }
+    expect(getVisibleGroup(vm, 'tasks').id).toBe('tasks')
+    expect(getVisibleGroup({ ...vm, permissionsModeler: false }, 'builder')).toBeUndefined()
   })
 
   it('singleOptionTile returns null for zero or multiple options', () => {

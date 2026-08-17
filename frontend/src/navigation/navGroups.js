@@ -35,6 +35,14 @@
  * while the toolbar keeps the leaf destinations.
  */
 
+import taskImage from '@/assets/images/start/task.svg'
+import processImage from '@/assets/images/start/process.svg'
+import modelerImage from '@/assets/images/start/modeler.svg'
+import adminUsersImage from '@/assets/images/admin/users_admin.svg'
+import groupsAdminImage from '@/assets/images/admin/groups_admin.svg'
+import tenantsAdminImage from '@/assets/images/admin/tenants_admin.svg'
+import authorizationsAdminImage from '@/assets/images/admin/authorizations_admin.svg'
+
 export const SURFACES = {
   TOOLBAR: 'toolbar',
   START_HOVER: 'startHover'
@@ -77,6 +85,7 @@ export function buildNavGroups(ctx) {
       to: '/seven/auth/tasks',
       active: ['seven/auth/tasks'],
       icon: 'mdi-clipboard-text-outline',
+      tileImage: taskImage,
       tooltip: 'start.taskList.tooltip',
       title: 'start.taskList.title'
     }, {
@@ -84,6 +93,7 @@ export function buildNavGroups(ctx) {
       to: '/seven/auth/start-process',
       active: ['seven/auth/start-process'],
       icon: 'mdi-play-circle-outline',
+      tileImage: processImage,
       tooltip: 'start.startProcess.tooltip',
       title: 'start.startProcess.title'
     }]
@@ -153,6 +163,7 @@ export function buildNavGroups(ctx) {
       to: '/seven/auth/modeler',
       active: ['seven/auth/modeler'],
       icon: 'mdi-drawing-box',
+      tileImage: modelerImage,
       tooltip: 'start.modeler.tooltip',
       title: 'start.modeler.title'
     }]
@@ -162,37 +173,45 @@ export function buildNavGroups(ctx) {
     title: 'start.admin.title',
     defaultTo: '/seven/auth/admin',
     startTo: { name: 'usersManagement' },
+    // Access Management (a separate identity-only hub page, not a toolbar
+    // leaf) doesn't correspond to any single item below, so it can't be
+    // covered by an item's routeName/activeRouteNames — list it here instead.
+    hubRouteNames: ['accessManagement'],
     show: !!ctx.permissionsUsers,
     items: [{
       show: !!ctx.permissionsUsersManagement,
       to: '/seven/auth/admin/users',
       routeName: 'adminUsers',
-      activeRouteNames: ['adminUsers', 'adminUser', 'createUser'],
+      activeRouteNames: ['adminUser', 'createUser'],
       icon: 'mdi-account-search-outline',
+      tileImage: adminUsersImage,
       tooltip: 'admin.users.tooltip',
       title: 'admin.users.title'
     }, {
       show: !!ctx.permissionsGroupsManagement,
       to: '/seven/auth/admin/groups',
       routeName: 'adminGroups',
-      activeRouteNames: ['adminGroups', 'adminGroup', 'createGroup'],
+      activeRouteNames: ['adminGroup', 'createGroup'],
       icon: 'mdi-account-group-outline',
+      tileImage: groupsAdminImage,
       tooltip: 'admin.groups.tooltip',
       title: 'admin.groups.title'
     }, {
       show: !!ctx.permissionsTenantsManagement,
       to: '/seven/auth/admin/tenants',
       routeName: 'adminTenants',
-      activeRouteNames: ['adminTenants', 'adminTenant', 'createTenant'],
+      activeRouteNames: ['adminTenant', 'createTenant'],
       icon: 'mdi-domain',
+      tileImage: tenantsAdminImage,
       tooltip: 'admin.tenants.tooltip',
       title: 'admin.tenants.title'
     }, {
       show: !!ctx.permissionsAuthorizationsManagement,
       to: '/seven/auth/admin/authorizations',
       routeName: 'authorizations',
-      activeRouteNames: ['authorizations', 'authorizationType'],
+      activeRouteNames: ['authorizationType'],
       icon: 'mdi-account-key-outline',
+      tileImage: authorizationsAdminImage,
       tooltip: 'admin.authorizations.tooltip',
       title: 'admin.authorizations.title'
     }, {
@@ -314,6 +333,7 @@ export function projectStartHoverOptions(items, t) {
     options.push({
       to: item.to,
       icon: item.icon,
+      src: item.tileImage,
       title: t(item.title),
       tooltip: t(item.tooltip || item.title)
     })
@@ -346,6 +366,16 @@ export function tasksOnlyRedirectTarget(tiles, tasksOptions) {
   if (tiles?.length !== 1 || tiles[0] !== 'tasks') return null
   const single = singleOptionTile(tasksOptions)
   return single ? single.to : { name: 'tasksHome' }
+}
+
+/**
+ * Resolves a single visible group from a Vue component instance — the
+ * shared "build the catalog, filter by permission, pick one group" chain
+ * used by single-group hub pages (Tasks/Builder/Access-management hubs).
+ */
+export function getVisibleGroup(vm, id) {
+  const groups = filterVisibleNavGroups(buildNavGroups(permissionContextFromVm(vm)))
+  return groups.find(g => g.id === id)
 }
 
 /**

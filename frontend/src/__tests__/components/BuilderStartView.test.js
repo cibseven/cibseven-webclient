@@ -45,7 +45,7 @@ describe('BuilderStartView.vue', () => {
   it('shows Modeler when the modeler permission is granted', () => {
     const vm = evaluateBuilderStartView({ permissionsModeler: true })
     expect(vm.items.map(i => i.title)).toEqual(['start.modeler.title'])
-    expect(vm.items[0].to).toEqual({ name: 'modeler' })
+    expect(vm.items[0].to).toBe('/seven/auth/modeler')
   })
 
   it('merges in options from a registered BuilderTileOptionsPlugin', () => {

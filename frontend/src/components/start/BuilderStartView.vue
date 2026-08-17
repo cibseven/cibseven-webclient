@@ -25,24 +25,20 @@ import { permissionsMixin } from '@/permissions.js'
 import navigationPermissionsMixin from '@/mixins/navigationPermissionsMixin.js'
 import startTileOptionsMixin from '@/mixins/startTileOptionsMixin.js'
 import StartHubView from '@/components/start/StartHubView.vue'
-
-import modelerImage from '@/assets/images/start/modeler.svg'
+import { getVisibleGroup, projectStartHoverOptions } from '@/navigation/navGroups.js'
 
 export default {
   name: 'BuilderStartView',
   mixins: [permissionsMixin, navigationPermissionsMixin, startTileOptionsMixin],
   components: { StartHubView },
+  emits: [],
   computed: {
+    // Reuses navGroups.js's own 'builder' group instead of re-encoding its
+    // single Modeler destination here, so this hub page can't silently
+    // diverge from the toolbar's Builder dropdown.
     builtInItems() {
-      const items = []
-      if (this.permissionsModeler) {
-        items.push({
-          to: { name: 'modeler' },
-          title: this.$t('start.modeler.title'),
-          src: modelerImage
-        })
-      }
-      return items
+      const builder = getVisibleGroup(this, 'builder')
+      return projectStartHoverOptions(builder?.items, this.$t.bind(this))
     },
     items() {
       return this.mergeOptions(this.builtInItems, 'BuilderTileOptionsPlugin')

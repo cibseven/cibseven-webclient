@@ -35,8 +35,9 @@ function evaluateStartView(overrides = {}) {
     permissionsAuthorizationsManagement: true,
     permissionsSystemManagement: true,
     $t: (key) => key,
-    $store: { state: { process: { list: [{ revoked: false, startableInTasklist: true }], loaded: true } } },
+    $store: { state: { process: { list: [{ revoked: false, startableInTasklist: true }] } } },
     $root: { config: { productNamePageTitle: 'Test', permissions: {} } },
+    $route: { query: {} },
     $options: { components: {} },
     images: { task: 'task.svg', modeler: 'modeler.svg', management: 'management.svg', admin: 'admin.svg' },
     ...overrides
@@ -235,48 +236,32 @@ describe('StartView.vue tasks-only redirect', () => {
     expect(vm.$router.replace).not.toHaveBeenCalled()
   })
 
-  it('redirects straight to the tasklist when it is the only tasks option and process list is already loaded', () => {
+  it('redirects straight to the tasklist when it is the only tasks option, without waiting for the process list', () => {
     const vm = evaluateStartView({
       ...TASKS_ONLY_PERMISSIONS,
-      $store: { state: { process: { list: [], loaded: true } } }
+      $store: { state: { process: { list: [] } } }
     })
     expect(vm.tiles).toEqual(['tasks'])
     vm.redirectIfTasksOnly()
     expect(vm.$router.replace).toHaveBeenCalledWith('/seven/auth/tasks')
   })
 
-  it('redirects to the tasks hub when start-process is also available and process list is already loaded', () => {
+  it('redirects to the tasks hub when a startable process is already loaded', () => {
     const vm = evaluateStartView({
       ...TASKS_ONLY_PERMISSIONS,
-      $store: { state: { process: { list: [{ revoked: false, startableInTasklist: true }], loaded: true } } }
+      $store: { state: { process: { list: [{ revoked: false, startableInTasklist: true }] } } }
     })
     expect(vm.tiles).toEqual(['tasks'])
     vm.redirectIfTasksOnly()
     expect(vm.$router.replace).toHaveBeenCalledWith({ name: 'tasksHome' })
   })
 
-  it('waits for the process list to load before choosing a destination', () => {
-    let watchedCallback = null
-    const unwatch = vi.fn()
+  it('does not redirect while an error dialog needs to explain a prior redirect', () => {
     const vm = evaluateStartView({
       ...TASKS_ONLY_PERMISSIONS,
-      $store: { state: { process: { list: [], loaded: false } } }
+      $route: { query: { errorType: 'NoPermission' } }
     })
-    vm.$watch = vi.fn((getter, callback) => {
-      watchedCallback = callback
-      return unwatch
-    })
-
     vm.redirectIfTasksOnly()
     expect(vm.$router.replace).not.toHaveBeenCalled()
-    expect(vm.$watch).toHaveBeenCalledTimes(1)
-
-    // Process list finishes loading with a startable process
-    vm.$store.state.process.list = [{ revoked: false, startableInTasklist: true }]
-    vm.$store.state.process.loaded = true
-    watchedCallback(vm.$store.state.process.loaded)
-
-    expect(unwatch).toHaveBeenCalledTimes(1)
-    expect(vm.$router.replace).toHaveBeenCalledWith({ name: 'tasksHome' })
   })
 })

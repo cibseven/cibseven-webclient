@@ -67,7 +67,8 @@ const createWrapper = (props = {}) => {
         'b-nav-item-dropdown': { template: '<div class="nav-item-dropdown"><slot name="button-content"></slot><slot></slot></div>' },
         'b-dropdown-item-button': { template: '<div class="dropdown-item-button"><slot></slot></div>' },
         'b-dropdown-item': { template: '<div class="dropdown-item"><slot></slot></div>' },
-        'b-dropdown-divider': { template: '<hr class="dropdown-divider" />' }
+        'b-dropdown-divider': { template: '<hr class="dropdown-divider" />' },
+        'b-avatar': { template: '<div class="b-avatar">{{ text }}</div>', props: ['text', 'size', 'src', 'alt', 'variant', 'rounded'] }
       }
     }
   })
@@ -91,6 +92,13 @@ describe('CIBHeaderFlow.vue', () => {
   })
 
   let wrapper
+
+  describe('User avatar', () => {
+    it('renders a b-avatar with the user\'s initials as text', () => {
+      wrapper = createWrapper({ user: { id: '1', displayName: 'Ada Morris' } })
+      expect(wrapper.find('.b-avatar').text()).toBe('AM')
+    })
+  })
 
   describe('Hamburger Menu Toggle', () => {
     it('should toggle isCollapsed when clicking hamburger button', async () => {

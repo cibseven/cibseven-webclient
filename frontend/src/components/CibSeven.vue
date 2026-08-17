@@ -370,11 +370,12 @@ export default {
     },
     isToolActive: function(tool) {
       if (tool.startTo?.name && this.$route.name === tool.startTo.name) return true
+      if (tool.hubRouteNames?.includes(this.$route.name)) return true
       return tool.items.some(item => this.isMenuItemActive(item))
     },
     isMenuItemActive: function(item) {
-      if (item.activeRouteNames) {
-        return item.activeRouteNames.includes(this.$route.name)
+      if (item.routeName || item.activeRouteNames) {
+        return this.$route.name === item.routeName || !!item.activeRouteNames?.includes(this.$route.name)
       }
       if (!item.active) {
         return false
@@ -474,7 +475,7 @@ export default {
 }
 
 .cib-toolbar-tool {
-  margin-right: 0.15rem;
+  margin-right: 1rem;
 }
 
 .cib-toolbar-icon-btn {
@@ -506,11 +507,11 @@ export default {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
+  width: 15px;
   height: 36px;
-  min-width: 36px;
+  min-width: 15px;
   min-height: 36px;
-  padding: 0 !important;
+  padding: 0 10px 0 9px !important;
   border: 0;
   border-radius: 0 0.35rem 0.35rem 0;
   color: var(--bs-secondary-color, #495057);

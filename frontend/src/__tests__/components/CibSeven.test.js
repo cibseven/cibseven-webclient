@@ -68,6 +68,14 @@ describe('CibSeven.vue', () => {
       })).toBe('/seven/auth/admin/users')
     })
 
+    it('should treat a tool as active when the route matches one of its hubRouteNames', () => {
+      const tool = { startTo: { name: 'usersManagement' }, hubRouteNames: ['accessManagement'], items: [] }
+
+      expect(CibSeven.methods.isToolActive.call({ $route: { name: 'accessManagement' } }, tool)).toBe(true)
+      expect(CibSeven.methods.isToolActive.call({ $route: { name: 'usersManagement' } }, tool)).toBe(true)
+      expect(CibSeven.methods.isToolActive.call({ $route: { name: 'adminUsers' } }, tool)).toBe(false)
+    })
+
     it('should check if menu item is active based on route path', () => {
       const mockThis = {
         $route: { path: '/seven/auth/tasks/123' }
@@ -118,15 +126,15 @@ describe('CibSeven.vue', () => {
       expect(CibSeven.methods.isMenuItemActive.call(mockThis, userItem)).toBe(true)
     })
 
-    it('should match via activeRouteNames when present, ignoring path entirely', () => {
-      const mockThis = {
-        $route: { name: 'adminUser', path: '/seven/auth/admin/user/42' }
-      }
-      const usersItem = { activeRouteNames: ['adminUsers', 'adminUser', 'createUser'], active: ['seven/auth/admin/does-not-matter'] }
-      expect(CibSeven.methods.isMenuItemActive.call(mockThis, usersItem)).toBe(true)
+    it('should match via routeName/activeRouteNames when present, ignoring path entirely', () => {
+      const usersItem = { routeName: 'adminUsers', activeRouteNames: ['adminUser', 'createUser'], active: ['seven/auth/admin/does-not-matter'] }
 
-      mockThis.$route.name = 'adminGroups'
-      expect(CibSeven.methods.isMenuItemActive.call(mockThis, usersItem)).toBe(false)
+      // Matches its own list-page routeName directly, with no duplicate entry needed in activeRouteNames
+      expect(CibSeven.methods.isMenuItemActive.call({ $route: { name: 'adminUsers', path: '/seven/auth/admin/users' } }, usersItem)).toBe(true)
+      // Matches sibling detail/create routes via activeRouteNames
+      expect(CibSeven.methods.isMenuItemActive.call({ $route: { name: 'adminUser', path: '/seven/auth/admin/user/42' } }, usersItem)).toBe(true)
+      // A different item's route name matches neither
+      expect(CibSeven.methods.isMenuItemActive.call({ $route: { name: 'adminGroups', path: '/seven/auth/admin/groups' } }, usersItem)).toBe(false)
     })
 
     it('should match nested detail pages under a trailing-slash active pattern', () => {

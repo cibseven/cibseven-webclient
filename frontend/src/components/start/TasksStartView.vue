@@ -25,16 +25,8 @@ import { permissionsMixin } from '@/permissions.js'
 import navigationPermissionsMixin from '@/mixins/navigationPermissionsMixin.js'
 import startTileOptionsMixin from '@/mixins/startTileOptionsMixin.js'
 import StartHubView from '@/components/start/StartHubView.vue'
-import { buildNavGroups, filterVisibleNavGroups, projectStartHoverOptions, permissionContextFromVm } from '@/navigation/navGroups.js'
+import { getVisibleGroup, projectStartHoverOptions } from '@/navigation/navGroups.js'
 import { hasStartableProcess } from '@/utils/processes.js'
-
-import processImage from '@/assets/images/start/process.svg'
-import taskImage from '@/assets/images/start/task.svg'
-
-const TASK_IMAGES = {
-  '/seven/auth/tasks': taskImage,
-  '/seven/auth/start-process': processImage
-}
 
 export default {
   name: 'TasksStartView',
@@ -45,14 +37,13 @@ export default {
     startableProcesses() {
       return hasStartableProcess(this.$store.state.process.list)
     },
-    // Reuses navGroups.js's own 'tasks' group instead of re-encoding the same
-    // permission/startableProcesses-gated item list here, so this hub page
-    // can't silently diverge from the toolbar's Tasks dropdown.
+    // Reuses navGroups.js's own 'tasks' group (including each item's tileImage)
+    // instead of re-encoding the same permission/startableProcesses-gated item
+    // list here, so this hub page can't silently diverge from the toolbar's
+    // Tasks dropdown.
     builtInItems() {
-      const groups = filterVisibleNavGroups(buildNavGroups(permissionContextFromVm(this)))
-      const tasks = groups.find(g => g.id === 'tasks')
+      const tasks = getVisibleGroup(this, 'tasks')
       return projectStartHoverOptions(tasks?.items, this.$t.bind(this))
-        .map(item => ({ to: item.to, title: item.title, src: TASK_IMAGES[item.to] }))
     },
     items() {
       return this.mergeOptions(this.builtInItems, 'TasksTileOptionsPlugin')

@@ -18,14 +18,13 @@
 import { ProcessService, HistoryService } from '@/services.js'
 
 const ProcessStore = {
-  state: { list: [], loaded: false, historicActivityStatistics: {} },
+  state: { list: [], historicActivityStatistics: {} },
   getters: {
     getHistoricActivityStatistics: (state) => (key) => state.historicActivityStatistics[key] || []
   },
   mutations: {
     setProcesses: function (state, param) {
       state.list = param.processes
-      state.loaded = true
     },
     setFavorite: function (state, params) {
       params.process.favorite = params.value
