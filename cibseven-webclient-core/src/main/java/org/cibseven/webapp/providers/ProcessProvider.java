@@ -37,6 +37,7 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.ExpressionEvaluationException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnsupportedTypeException;
+import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.HistoryStatistics;
 import org.cibseven.webapp.rest.model.Incident;
@@ -68,9 +69,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class ProcessProvider extends SevenProviderBase implements IProcessProvider{
 
 	 @Autowired private IIncidentProvider incidentProvider;
+	 @Autowired private IEngineProvider engineProvider;
 
 	@Value("${cibseven.webclient.fetchInstances:true}") boolean fetchInstances;
 	@Value("${cibseven.webclient.fetchIncidents:true}") boolean fetchIncidents;
+	/**
+	 * Legacy fallback used only with engine-rest versions prior to 2.2.0, where the
+	 * engine configuration endpoint (which exposes the history level dynamically) is not available.
+	 */
+	@Value("${cibseven.webclient.historyLevel:full}") String legacyHistoryLevel;
 
 	@Override
 	public Collection<Process> findProcesses(CIBUser user) {
@@ -304,6 +311,58 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		if (maxResults.isPresent()) queryParams.put("maxResults", maxResults.get());
 		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/process-instance", queryParams);
 		Collection<ProcessInstance> processes = Arrays.asList(((ResponseEntity<ProcessInstance[]>) doPost(url, data, ProcessInstance[].class, user)).getBody());
+
+		EngineConfiguration engineConfig = IEngineProvider.isEngineUnspecified(user.getEngine())
+				? engineProvider.getEffectiveDefaultEngineConfiguration()
+				: engineProvider.getEngineConfiguration(user.getEngine());
+		String historyLevel = engineConfig != null ? engineConfig.getHistoryLevel() : legacyHistoryLevel;
+		boolean historyLevelNone = "none".equals(historyLevel);
+
+		if (historyLevelNone) {
+			Collection<HistoryProcessInstance> historicInstances = processes.stream().map(i -> {
+				HistoryProcessInstance hi = new HistoryProcessInstance();
+				hi.setId(i.getId());
+				hi.setProcessDefinitionId(i.getDefinitionId());
+				hi.setBusinessKey(i.getBusinessKey());
+				hi.setCaseInstanceId(i.getCaseInstanceId());
+				hi.setTenantId(i.getTenantId());
+
+				if (Boolean.TRUE.equals(i.getEnded())) {
+					hi.setState("COMPLETED");
+				}
+				else if (Boolean.TRUE.equals(i.getSuspended())) {
+					hi.setState("SUSPENDED");
+				}
+				else {
+					hi.setState("ACTIVE");
+				}
+
+				return hi;
+			}).toList();
+
+			// get definition ids of runtime instances
+			List<String> processDefinitionIds = processes.stream().map(ProcessInstance::getDefinitionId).distinct().toList();
+			if (!processDefinitionIds.isEmpty()) {
+				// enrich with definition info
+				Map<String, Object> definitionParams = new HashMap<>();
+				definitionParams.put("processDefinitionIdIn", String.join(",", processDefinitionIds));
+				String definitionsUrl = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/process-definition", definitionParams);
+				Collection<Process> processDefinitions = Arrays.asList(
+						((ResponseEntity<Process[]>) doGet(definitionsUrl, Process[].class, user, false)).getBody());
+
+				processDefinitions.forEach(definition -> {
+					historicInstances.forEach(i -> {
+						if (i.getProcessDefinitionId().equals(definition.getId())) {
+							i.setProcessDefinitionKey(definition.getKey());
+							i.setProcessDefinitionName(definition.getName());
+							i.setProcessDefinitionVersion(definition.getVersion());
+						}
+					});
+				});
+			}
+
+			return historicInstances;
+		}
 
 		// get ids of runtime instances
 		List<String> processInstanceIds = processes.stream().map(ProcessInstance::getId).collect(Collectors.toList());
