@@ -79,6 +79,13 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	 */
 	@Value("${cibseven.webclient.historyLevel:full}") String legacyHistoryLevel;
 
+	private String getHistoryLevel(CIBUser user) {
+		EngineConfiguration engineConfig = IEngineProvider.isEngineUnspecified(user.getEngine())
+				? engineProvider.getEffectiveDefaultEngineConfiguration()
+				: engineProvider.getEngineConfiguration(user.getEngine());
+		return engineConfig != null ? engineConfig.getHistoryLevel() : legacyHistoryLevel;
+	}
+
 	@Override
 	public Collection<Process> findProcesses(CIBUser user) {
 		String url = getEngineRestUrl(user) + "/process-definition?latestVersion=true&sortBy=name&sortOrder=desc";
@@ -312,10 +319,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/process-instance", queryParams);
 		Collection<ProcessInstance> processes = Arrays.asList(((ResponseEntity<ProcessInstance[]>) doPost(url, data, ProcessInstance[].class, user)).getBody());
 
-		EngineConfiguration engineConfig = IEngineProvider.isEngineUnspecified(user.getEngine())
-				? engineProvider.getEffectiveDefaultEngineConfiguration()
-				: engineProvider.getEngineConfiguration(user.getEngine());
-		String historyLevel = engineConfig != null ? engineConfig.getHistoryLevel() : legacyHistoryLevel;
+		String historyLevel = getHistoryLevel(user);
 		boolean historyLevelNone = "none".equals(historyLevel);
 
 		if (historyLevelNone) {
