@@ -169,11 +169,13 @@ public class ProcessService extends BaseService implements InitializingBean {
 	})
 	@RequestMapping(value = "/instances", method = RequestMethod.POST)
 	public Collection<ProcessInstance> findCurrentProcessesInstances(
+			@Parameter(description = "Index of the first result to return") @RequestParam Optional<Integer> firstResult,
+			@Parameter(description = "Maximum number of results to return") @RequestParam Optional<Integer> maxResults,
 			@RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
-		return bpmProvider.findCurrentProcessesInstances(data, user);
+		return bpmProvider.findCurrentProcessesInstances(data, firstResult, maxResults, user);
 	}
 	
 	@Operation(

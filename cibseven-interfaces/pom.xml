@@ -27,23 +27,25 @@
 		    <artifactId>slf4j-api</artifactId>
 		</dependency>
 
-
-		<dependency>
-			<groupId>io.swagger.core.v3</groupId>
-        	<artifactId>swagger-annotations-jakarta</artifactId>
-			<version>${swagger-annotations.version}</version>				
-		</dependency>
-
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>${commons-io.version}</version>
-		</dependency>	
+		</dependency>
 
 		<dependency>
 			<groupId>org.cibseven.webapp.auth</groupId>
 			<artifactId>common-auth</artifactId>
 			<version>${common-auth.version}</version>
+			<exclusions>
+				<!-- common-auth is an external release that declares swagger-annotations-jakarta
+				     non-optionally at ${swagger-annotations.version}; excluding it here keeps
+				     springdoc the single source. See cibseven-webclient-core/pom.xml. -->
+				<exclusion>
+					<groupId>io.swagger.core.v3</groupId>
+					<artifactId>swagger-annotations-jakarta</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>

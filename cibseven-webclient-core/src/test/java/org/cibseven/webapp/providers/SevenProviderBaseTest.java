@@ -20,9 +20,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.nio.charset.StandardCharsets;
+
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.exception.InvalidValueHistoryTimeToLive;
+import org.cibseven.webapp.exception.SystemException;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.client.HttpServerErrorException;
 
 /**
  * Test class for SevenProviderBase to verify configurable engine REST path functionality
@@ -34,6 +41,46 @@ public class SevenProviderBaseTest {
      */
     private static class TestProvider extends SevenProviderBase {
         // Empty implementation for testing
+    }
+
+    /**
+     * The engine refuses a deployment whose model has no history time to live. Without this
+     * mapping it arrives as a SystemException, which the frontend reports as an unexpected
+     * technical error and offers to send a bug report for.
+     */
+    @Test
+    public void wrapException_missingHistoryTimeToLiveOnDeployment() {
+        String engineMessage = "History Time To Live (TTL) cannot be null. "
+            + "TTL is necessary for the History Cleanup to work. The following options are possible:\n"
+            + "* Set historyTimeToLive in the model\n"
+            + "* Set a default historyTimeToLive as a global process engine configuration\n"
+            + "* (Not recommended) Deactivate the enforceTTL config to disable this check";
+
+        RuntimeException wrapped = SevenProviderBase.wrapException(serverError(engineMessage), null);
+
+        assertEquals(InvalidValueHistoryTimeToLive.class, wrapped.getClass());
+    }
+
+    /** The other way the same value is refused, when it is set to null on an existing definition. */
+    @Test
+    public void wrapException_nullHistoryTimeToLiveOnUpdate() {
+        RuntimeException wrapped = SevenProviderBase.wrapException(
+            serverError("Null historyTimeToLive values are not allowed"), null);
+
+        assertEquals(InvalidValueHistoryTimeToLive.class, wrapped.getClass());
+    }
+
+    /** Anything unmapped stays a SystemException, which is what the frontend treats as unexpected. */
+    @Test
+    public void wrapException_unknownEngineError() {
+        RuntimeException wrapped = SevenProviderBase.wrapException(serverError("Something else broke"), null);
+
+        assertEquals(SystemException.class, wrapped.getClass());
+    }
+
+    private static HttpServerErrorException serverError(String body) {
+        return HttpServerErrorException.create(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error",
+            HttpHeaders.EMPTY, body.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
     }
 
     @Test

@@ -56,6 +56,15 @@
 			<scope>provided</scope>
 		</dependency>
 
+		<!-- The JPA wiring of the modeler lives in this module, so it is tested here. JPA itself and
+		     the H2 driver already come from cibseven-webclient-core; re-declaring them here would
+		     narrow their scope to test and drop them from the war. -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>

@@ -106,22 +106,45 @@
 		    <version>${jjwt.version}</version>
 		</dependency>
 
+		<!--
+			OpenAPI annotations used by the REST controllers in this module.
+
+			Declared <optional>: it stays on our own compile classpath but is NOT
+			exported to consumers. The version we would export (${swagger-annotations.version},
+		    from release-parent) may differ from the one springdoc drags in via swagger-core-jakarta,
+			used as dep in webclient-web/webclient-web-sb4 (sb3 and sb4 flavours).
+			So no single pinned version can satisfy both flavours.
+
+			Let these annotations arrive with springdoc (webclient-web), 
+			which manages the version consistently via its own parent pom at any graph depth.
+			The CE modules apply the same rule at their end,
+			so no exclusions are needed on the CE dependencies below.
+		-->
 		<dependency>
 			<groupId>io.swagger.core.v3</groupId>
         	<artifactId>swagger-annotations-jakarta</artifactId>
-			<version>${swagger-annotations.version}</version>				
+			<version>${swagger-annotations.version}</version>
+			<optional>true</optional>
 		</dependency>
 
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>${commons-io.version}</version>
-		</dependency>	
+		</dependency>
 
 		<dependency>
 			<groupId>org.cibseven.webapp.auth</groupId>
 			<artifactId>common-auth</artifactId>
 			<version>${common-auth.version}</version>
+			<exclusions>
+				<!-- Exclude common-auth's swagger-annotations;
+				 let springdoc (webclient-web/webclient-web-sb4) be the single source -->
+				<exclusion>
+					<groupId>io.swagger.core.v3</groupId>
+					<artifactId>swagger-annotations-jakarta</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- ==================== CIB seven Modeler dependencies ==================== -->

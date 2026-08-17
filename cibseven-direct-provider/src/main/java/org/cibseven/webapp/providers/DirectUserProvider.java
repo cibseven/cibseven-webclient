@@ -51,6 +51,12 @@ import org.cibseven.webapp.rest.model.SevenUser;
 import org.cibseven.webapp.rest.model.SevenVerifyUser;
 import org.cibseven.webapp.rest.model.User;
 import org.cibseven.webapp.rest.model.UserGroup;
+import org.cibseven.bpm.engine.ProcessEngine;
+import org.cibseven.bpm.engine.authorization.Permission;
+import org.cibseven.bpm.engine.authorization.Resource;
+import org.cibseven.bpm.engine.impl.util.ResourceTypeUtil;
+import org.cibseven.webapp.exception.UnknownResourceTypeException;
+import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
 
 public class DirectUserProvider implements IUserProvider {
@@ -594,4 +600,41 @@ public class DirectUserProvider implements IUserProvider {
 		return query.count();
 	}
 
+
+	/**
+	 * Decided by the engine in-process. The call runs with the user authenticated (see
+	 * {@link AuthorizingProviderProxy}), but the engine evaluates the check internally rather than
+	 * through a query the caller must be allowed to make, so a grant the user may not read still counts.
+	 */
+	@Override
+	public boolean isUserAuthorized(CIBUser user, int resourceType, String resourceId, String permission) {
+		ProcessEngine engine = directProviderUtil.getProcessEngine(user);
+		if (!engine.getProcessEngineConfiguration().isAuthorizationEnabled()) {
+			return true;
+		}
+		Resource resource = ResourceTypeUtil.getResourceByType(resourceType);
+		Permission required = ResourceTypeUtil.getPermissionByNameAndResourceType(permission, resourceType);
+		if (resource == null || required == null) {
+			throw new UnknownResourceTypeException(resourceType);
+		}
+		return engine.getAuthorizationService()
+			.isUserAuthorized(user.getId(), groupIdsOf(user, engine), required, resource, resourceId);
+	}
+
+	/**
+	 * Taken from the authentication {@link AuthorizingProviderProxy} already established, because
+	 * querying memberships as that user is filtered by READ on the group resource and would miss a
+	 * permission granted through a group. Resolved outside the authentication for non-proxied callers.
+	 */
+	private List<String> groupIdsOf(CIBUser user, ProcessEngine engine) {
+		Authentication authentication = engine.getIdentityService().getCurrentAuthentication();
+		if (authentication != null && user.getId().equals(authentication.getUserId())
+				&& authentication.getGroupIds() != null) {
+			return authentication.getGroupIds();
+		}
+		return directProviderUtil.runWithoutAuthorization(() -> engine.getIdentityService().createGroupQuery()
+			.groupMember(user.getId()).unlimitedList().stream()
+			.map(Group::getId)
+			.collect(Collectors.toList()), user);
+	}
 }
