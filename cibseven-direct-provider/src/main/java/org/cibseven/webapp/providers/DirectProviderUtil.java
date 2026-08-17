@@ -131,11 +131,10 @@ public class DirectProviderUtil {
 	 * write the user operation log and to resolve {@code ${currentUser()}} in filter expressions.
 	 */
 	protected <V extends Object> V runAsUser(CIBUser user, Supplier<V> action) {
-		ProcessEngine processEngine = getProcessEngine(user);
 		if (user == null || user.getId() == null) {
 			return action.get();
 		}
-		IdentityService identityService = processEngine.getIdentityService();
+		IdentityService identityService = getProcessEngine(user).getIdentityService();
 		Authentication previousAuthentication = identityService.getCurrentAuthentication();
 		try {
 			identityService.setAuthentication(user.getId(), getGroupsOfUser(user), getTenantsOfUser(user));

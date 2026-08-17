@@ -34,6 +34,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -130,7 +131,17 @@ class DirectProviderUtilAuthenticationTest {
 		assertEquals("someoneElse", restored.getUserId());
 	}
 
-	// The user-less branch needs the injected IEngineProvider this fixture does without.
+	/** Without a user there is nobody to authenticate, and no engine is resolved either. */
+	@Test
+	void noAuthenticationIsSetWithoutAUser() {
+		startEngine(false);
+		DirectProviderUtil withoutEngineProvider = new DirectProviderUtil();
+
+		Authentication authenticated = withoutEngineProvider.runAsUser(null,
+			() -> engine.getIdentityService().getCurrentAuthentication());
+
+		assertNull(authenticated);
+	}
 
 	// --- fixture ---------------------------------------------------------------------------------
 
@@ -164,9 +175,10 @@ class DirectProviderUtilAuthenticationTest {
 
 	/** Own database per engine: the assertions read the operation log, so state must not leak. */
 	private void startEngine(boolean authorizationEnabled) {
+		String name = "runAsUser" + DB_SEQUENCE.incrementAndGet();
 		engine = ProcessEngineConfiguration.createStandaloneInMemProcessEngineConfiguration()
-			.setJdbcUrl("jdbc:h2:mem:runAsUser" + DB_SEQUENCE.incrementAndGet() + ";DB_CLOSE_DELAY=1000")
-			.setProcessEngineName("runAsUser" + DB_SEQUENCE.get())
+			.setJdbcUrl("jdbc:h2:mem:" + name + ";DB_CLOSE_DELAY=1000")
+			.setProcessEngineName(name)
 			.setAuthorizationEnabled(authorizationEnabled)
 			.setHistory(ProcessEngineConfiguration.HISTORY_FULL)
 			.setJobExecutorActivate(false)
