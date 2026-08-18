@@ -199,6 +199,7 @@ served locations are resolved while the application context starts.
 | Slot | Contributes | Props handed to the contribution |
 |---|---|---|
 | `process-instance-tab` | one tab of a process instance; the registered `id` becomes `?tab=<id>` | `instance`, `process`, `tenantId` |
+| `decision-definition-tab` | one tab of a decision definition version | `decision`, `tenantId` |
 
 One registration carries both the tab label and its content: the tab bar reads
 `id` and `text`, and the view renders whichever contribution matches the active
