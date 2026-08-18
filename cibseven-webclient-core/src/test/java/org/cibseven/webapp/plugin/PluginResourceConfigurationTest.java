@@ -60,13 +60,30 @@ public class PluginResourceConfigurationTest {
 	@Test
 	public void servesPluginFilesWhenPluginsAreDeployed() {
 		when(pluginRegistry.isEnabled()).thenReturn(true);
-		when(pluginRegistry.getPluginRoots()).thenReturn(List.<Resource>of(new ByteArrayResource(new byte[0])));
+		when(pluginRegistry.getPluginLocations()).thenReturn(
+			Map.of("demo-report", new ByteArrayResource(new byte[0])));
 		ResourceHandlerRegistry registry = registry();
 
 		new PluginResourceConfiguration(pluginRegistry).addResourceHandlers(registry);
 
 		assertEquals(1, handlers(registry).size());
-		assertTrue(handlers(registry).containsKey("/plugins/**"));
+		assertTrue(handlers(registry).containsKey("/plugins/demo-report/**"));
+	}
+
+	/** A rejected manifest means no files: the registry only reports accepted plugins. */
+	@Test
+	public void servesOnePathPerAcceptedPlugin() {
+		when(pluginRegistry.isEnabled()).thenReturn(true);
+		when(pluginRegistry.getPluginLocations()).thenReturn(Map.of(
+			"demo-report", new ByteArrayResource(new byte[0]),
+			"other", new ByteArrayResource(new byte[0])));
+		ResourceHandlerRegistry registry = registry();
+
+		new PluginResourceConfiguration(pluginRegistry).addResourceHandlers(registry);
+
+		assertEquals(2, handlers(registry).size());
+		assertTrue(handlers(registry).keySet().containsAll(
+			java.util.List.of("/plugins/demo-report/**", "/plugins/other/**")));
 	}
 
 	@Test
@@ -82,7 +99,7 @@ public class PluginResourceConfigurationTest {
 	@Test
 	public void registersNothingWhenNoPluginFolderExists() {
 		when(pluginRegistry.isEnabled()).thenReturn(true);
-		when(pluginRegistry.getPluginRoots()).thenReturn(List.of());
+		when(pluginRegistry.getPluginLocations()).thenReturn(Map.of());
 		ResourceHandlerRegistry registry = registry();
 
 		new PluginResourceConfiguration(pluginRegistry).addResourceHandlers(registry);

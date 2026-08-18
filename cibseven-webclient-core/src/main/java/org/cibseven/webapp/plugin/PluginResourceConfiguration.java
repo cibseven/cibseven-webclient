@@ -16,7 +16,7 @@
  */
 package org.cibseven.webapp.plugin;
 
-import java.util.List;
+import java.util.Map;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
@@ -46,18 +46,20 @@ public class PluginResourceConfiguration implements WebMvcConfigurer {
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
 		if (!pluginRegistry.isEnabled()) return;
 
-		List<Resource> roots = pluginRegistry.getPluginRoots();
-		if (roots.isEmpty()) {
+		Map<String, Resource> locations = pluginRegistry.getPluginLocations();
+		if (locations.isEmpty()) {
 			log.debug("Plugins are enabled but no plugin folder was found on the classpath");
 			return;
 		}
 
-		// One location per contributing jar, so several plugin jars can coexist.
-		// Spring resolves requests against these locations only, which keeps a
-		// crafted path from reaching anything outside a plugin folder.
-		registry.addResourceHandler("/plugins/**")
-			.addResourceLocations(roots.toArray(new Resource[0]))
-			.setCacheControl(CacheControl.noCache());
-		log.info("Serving frontend plugins from {} classpath location(s)", roots.size());
+		// One handler per accepted plugin, bound to its own folder: a plugin whose
+		// manifest was rejected serves nothing, and only its own files are reachable
+		// under its id. Spring resolves requests against that location only, which
+		// keeps a crafted path from leaving the folder.
+		locations.forEach((id, folder) ->
+			registry.addResourceHandler("/plugins/" + id + "/**")
+				.addResourceLocations(folder)
+				.setCacheControl(CacheControl.noCache()));
+		log.info("Serving frontend plugins {}", locations.keySet());
 	}
 }

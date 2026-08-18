@@ -30,6 +30,7 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ByteArrayResource;
@@ -43,12 +44,21 @@ public class PluginRegistryTest {
 	private static final String MANIFESTS = "classpath*:/META-INF/cibseven-plugins/*/plugin.json";
 	private static final String ROOTS = "classpath*:/META-INF/cibseven-plugins/";
 
-	/** Resource that reports a path, like the classpath resources being replaced */
+	/**
+	 * Resource that reports a path and resolves its folder, like the classpath
+	 * resources being replaced - the registry needs both.
+	 */
 	private static Resource manifest(String path, String json) {
 		return new ByteArrayResource(json.getBytes(StandardCharsets.UTF_8)) {
 			@Override
 			public java.net.URL getURL() throws IOException {
 				return new java.net.URL("file:" + path);
+			}
+
+			@Override
+			public Resource createRelative(String relative) {
+				String folder = path.substring(0, path.lastIndexOf('/') + 1);
+				return manifest(folder + relative, json);
 			}
 		};
 	}
@@ -96,11 +106,15 @@ public class PluginRegistryTest {
 			.orElseThrow(() -> new AssertionError("no plugin \"" + id + "\" was found"));
 	}
 
+	/** The folders serve the files, so every accepted plugin needs exactly its own. */
 	@Test
-	public void findsPluginFolderToServeFilesFrom() {
+	public void findsAFolderForEveryAcceptedPlugin() {
 		PluginRegistry registry = new PluginRegistry(true);
 
-		assertFalse(registry.getPluginRoots().isEmpty());
+		Map<String, Resource> locations = registry.getPluginLocations();
+		assertEquals(registry.getManifests().size(), locations.size());
+		assertTrue(locations.keySet().containsAll(List.of("test-plugin", "second-plugin")));
+		assertTrue(locations.get("test-plugin").getDescription().contains("test-plugin"));
 	}
 
 	@Test
@@ -109,7 +123,7 @@ public class PluginRegistryTest {
 
 		assertFalse(registry.isEnabled());
 		assertTrue(registry.getManifests().isEmpty());
-		assertTrue(registry.getPluginRoots().isEmpty());
+		assertTrue(registry.getPluginLocations().isEmpty());
 	}
 
 	@Test
@@ -207,7 +221,7 @@ public class PluginRegistryTest {
 
 		assertNotNull(registry.getManifests());
 		assertTrue(registry.getManifests().isEmpty());
-		assertTrue(registry.getPluginRoots().isEmpty());
+		assertTrue(registry.getPluginLocations().isEmpty());
 	}
 
 	@Test

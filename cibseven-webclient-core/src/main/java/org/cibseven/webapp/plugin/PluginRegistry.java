@@ -21,6 +21,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -56,7 +58,6 @@ public class PluginRegistry {
 
 	private static final String PLUGINS_ROOT = "META-INF/cibseven-plugins/";
 	private static final String MANIFESTS_PATTERN = "classpath*:/" + PLUGINS_ROOT + "*/plugin.json";
-	private static final String ROOTS_PATTERN = "classpath*:/" + PLUGINS_ROOT;
 
 	/** Ids end up in URLs, so anything that could leave the plugin folder is rejected */
 	private static final Pattern VALID_ID = Pattern.compile("[A-Za-z0-9][A-Za-z0-9._-]*");
@@ -68,6 +69,7 @@ public class PluginRegistry {
 	private final ObjectMapper mapper = new ObjectMapper();
 
 	private List<ObjectNode> manifests;
+	private Map<String, Resource> locations = Collections.emptyMap();
 
 	// Annotated because this class has a second constructor for tests: Spring only
 	// picks a constructor on its own when there is exactly one.
@@ -98,39 +100,55 @@ public class PluginRegistry {
 	}
 
 	/**
-	 * The plugin folders themselves, used to serve plugin files. There is one per
-	 * jar contributing plugins, so several plugin jars can be deployed together.
+	 * Folder of every accepted plugin, by id, used to serve its files. Keyed by id
+	 * and taken from the manifest that was accepted, so a plugin whose manifest was
+	 * rejected serves nothing, and a second folder of the same id cannot serve its
+	 * files under the accepted plugin's id.
 	 */
-	public List<Resource> getPluginRoots() {
-		if (!enabled) return Collections.emptyList();
-		try {
-			return List.of(resolver.getResources(ROOTS_PATTERN));
-		} catch (IOException e) {
-			log.warn("Could not resolve plugin locations below {}", PLUGINS_ROOT, e);
-			return Collections.emptyList();
-		}
+	public synchronized Map<String, Resource> getPluginLocations() {
+		getManifests();
+		return locations;
 	}
 
 	private List<ObjectNode> scan() {
 		List<ObjectNode> found = new ArrayList<>();
 		Set<String> ids = new HashSet<>();
+		Map<String, Resource> folders = new LinkedHashMap<>();
 		try {
 			for (Resource resource : resolver.getResources(MANIFESTS_PATTERN)) {
 				ObjectNode manifest = read(resource);
 				if (manifest == null) continue;
+				String id = manifest.get("id").asText();
 				// Only one folder per id can be served, so a second one would get the first one's files
-				if (!ids.add(manifest.get("id").asText())) {
-					log.warn("Ignoring a second plugin with id \"{}\" found at {}",
-						manifest.get("id").asText(), resource);
+				if (!ids.add(id)) {
+					log.warn("Ignoring a second plugin with id \"{}\" found at {}", id, resource);
 					continue;
 				}
+				Resource folder = folderOf(resource, id);
+				if (folder == null) continue;
+				folders.put(id, folder);
 				found.add(manifest);
 			}
 		} catch (IOException e) {
 			log.warn("Could not scan for plugins below {}", PLUGINS_ROOT, e);
 		}
+		locations = Collections.unmodifiableMap(folders);
 		log.info("Found {} frontend plugin(s) on the classpath", found.size());
 		return Collections.unmodifiableList(found);
+	}
+
+	/**
+	 * The folder a manifest was found in, so the plugin's files are served from the
+	 * jar its manifest came from rather than from whichever jar happens to be first
+	 * on the classpath.
+	 */
+	private Resource folderOf(Resource manifest, String id) {
+		try {
+			return manifest.createRelative("");
+		} catch (IOException e) {
+			log.warn("Ignoring plugin \"{}\": its folder could not be resolved", id, e);
+			return null;
+		}
 	}
 
 	private ObjectNode read(Resource resource) {
