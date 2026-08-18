@@ -45,7 +45,14 @@
           primary-key="index"
           :fields="yearlyFields"
         >
+          <template v-slot:cell(actions)="table">
+            <button type="button" :title="$t('commons.copyValue')"
+              @click.stop="copyAnnualValueToClipboard(table.item)"
+              class="mdi mdi-18px mdi-content-copy px-2 btn btn-sm btn-link"
+            ></button>
+          </template>
         </FlowTable>
+        <SuccessAlert ref="messageCopy"> {{ $t('decision.copySuccess') }} </SuccessAlert>
       </div>
     </template>
     <div v-else class="py-3 text-center w-100">
@@ -59,14 +66,17 @@
 import { SystemService } from '@/services.js'
 import { moment } from '@/globals.js'
 import VueApexCharts from 'vue3-apexcharts'
-import { FlowTable, BWaitingBox } from '@cib/common-frontend'
+import { FlowTable, BWaitingBox, SuccessAlert } from '@cib/common-frontend'
 import { i18n } from '@/i18n.js'
+import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 
 export default {
   name: 'ExecutionMetrics',
-  components: { apexchart: VueApexCharts, FlowTable, BWaitingBox },
+  components: { apexchart: VueApexCharts, FlowTable, BWaitingBox, SuccessAlert },
+  mixins: [copyToClipboardMixin],
   data() {
     return {
+      diagnostics: null,
       metrics: {
         annual: [],
         monthly: [],
@@ -257,7 +267,7 @@ export default {
         {
           label: '',
           key: 'year',
-          class: 'col-6',
+          class: 'col-5',
           sortable: false,
           tdClass: 'py-1',
         },
@@ -281,7 +291,14 @@ export default {
           class: 'col-2',
           sortable: false,
           tdClass: 'py-1',
-        }
+        },
+        {
+          label: 'admin.system.execution-metrics.actions',
+          key: 'actions',
+          class: 'col-1',
+          sortable: false,
+          tdClass: 'py-1',
+        },
       ]
     }
   },
@@ -340,6 +357,22 @@ export default {
         )
         this.selectedMonthIndex = dataPointIndex
       }
+    },
+    async copyAnnualValueToClipboard(item) {
+      if (!this.diagnostics) {
+        this.diagnostics = await SystemService.getTelemetryData()
+      }
+
+      const val = [
+        item.year,
+        '- PI: ' + item['process-instances'],
+        '- DI: ' + item['decision-instances'],
+        '- TU: ' + item['task-users'],
+        '',
+        this.diagnostics ? JSON.stringify(this.diagnostics, null, 2) : '',
+      ].join('\n')
+
+      this.copyValueToClipboard(val)
     }
   },
 }
