@@ -22,6 +22,7 @@ import path from 'node:path'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
+import { pluginRuntimeImportMap } from './src/plugins/pluginImportMap.js'
 
 const backendUrl = 'http://localhost:8080/webapp'
 
@@ -35,40 +36,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 console.log('isLibrary', isLibrary)
-
-// Plugins are loaded at runtime and are therefore not part of this build. They
-// import the application's Vue, axios and services from 'plugin-runtime.js', and
-// resolve that bare specifier through an import map. The map has to be injected
-// here rather than written into index.html, because the runtime lives at a
-// different URL while developing (served from src) than after a build.
+// Plugins are loaded at runtime and are therefore not part of this build: they
+// resolve the application's Vue and services through the import map below.
 const pluginRuntimeUrl = isLibrary ? null : './plugin-runtime.js'
-
-function pluginRuntimeImportMap() {
-  return {
-    name: 'cibseven-plugin-runtime-import-map',
-    transformIndexHtml(html, ctx) {
-      if (!ctx.path.endsWith('/index.html')) return
-      const url = ctx.server ? '/src/plugin-runtime.js' : pluginRuntimeUrl
-      const importMap = {
-        imports: {
-          '@cibseven/plugin-runtime': url,
-          // A plugin built from single-file components imports 'vue'; it must
-          // resolve to our instance, never to a second Vue runtime.
-          vue: url
-        }
-      }
-      return {
-        html,
-        tags: [{
-          tag: 'script',
-          attrs: { type: 'importmap' },
-          children: JSON.stringify(importMap, null, 2),
-          injectTo: 'head-prepend'
-        }]
-      }
-    }
-  }
-}
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -76,7 +46,7 @@ export default defineConfig({
   plugins: [
     vue(),
     vueDevTools(),
-    pluginRuntimeImportMap()
+    pluginRuntimeImportMap(pluginRuntimeUrl)
   ],
   resolve: {
     dedupe: ['bootstrap'],
