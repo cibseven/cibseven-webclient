@@ -415,7 +415,7 @@ export default {
   /* Indent item text only — the divider <hr>s are siblings of these items,
      so they're untouched and still span the full row width. */
   .cib-navbar-utility > .dropdown-menu .dropdown-item {
-    padding-left: 2rem;
+    padding-left: 2.75rem !important;
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
   }
