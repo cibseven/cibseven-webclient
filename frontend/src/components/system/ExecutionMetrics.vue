@@ -119,7 +119,7 @@ export default {
         },
         dataLabels: {
           formatter: function (val) {
-            return val === 0 ? '' : val
+            return val === 0 ? '' : i18n.global.n(val)
           },
           offsetY: -18,
           style: {
@@ -128,6 +128,16 @@ export default {
         },
         xaxis: {
           categories: this.labels
+        },
+        yaxis: {
+          labels: {
+            formatter: (val) => i18n.global.n(val)
+          }
+        },
+        tooltip: {
+          y: {
+            formatter: (val) => i18n.global.n(val)
+          }
         },
         legend: {
           position: 'top',
