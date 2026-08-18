@@ -21,20 +21,38 @@
  *
  * A plugin gets the context through 'plugin-runtime.js' rather than importing
  * application internals, which keeps the supported surface explicit.
+ *
+ * Note that this is a compatibility contract, not a security boundary: plugin
+ * code runs in the page and could reach application internals by other means.
+ * Handing over a copy keeps honest plugins from corrupting the application by
+ * accident.
  */
 let context = {
-  config: null,
-  store: null
+  config: null
 }
 
 /**
- * @param {object} next - { config, store }
+ * The config is handed over as a frozen deep copy: a plugin reads how the
+ * application is configured without being able to reconfigure it, or to change
+ * what another plugin then reads. The store is deliberately not exposed - a
+ * plugin uses the services, so product state stays ours to change.
+ *
+ * @param {object} next - { config }
  */
 export function setPluginContext(next) {
-  context = { ...context, ...next }
+  const config = 'config' in next ? freezeDeep(structuredClone(next.config)) : context.config
+  context = { config }
 }
 
-/** @returns {{ config: object|null, store: object|null }} */
+/** @returns {{ config: object|null }} */
 export function getPluginContext() {
   return context
+}
+
+function freezeDeep(value) {
+  if (value && typeof value === 'object' && !Object.isFrozen(value)) {
+    Object.freeze(value)
+    Object.values(value).forEach(freezeDeep)
+  }
+  return value
 }

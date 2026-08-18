@@ -151,7 +151,7 @@ The components themselves import what they need from the same module:
 | `vue`, and the bare `vue` exports | the application's Vue runtime |
 | `services` | the webclient service objects (`ProcessService`, `TaskService`, …) |
 | `axios` | the configured instance, carrying the user's authentication |
-| `getContext()` | `config` and the Vuex store |
+| `getContext()` | `config`, a frozen copy of how the application is configured |
 | `registerPlugin`, `getPlugin` | the slot registry |
 | `i18n`, `mergeTranslations` | translations, namespaced per plugin |
 
@@ -221,9 +221,12 @@ than failing somewhere unpredictable later.
 
 **Plugin code is not sandboxed.** It is imported into the webclient page and has
 everything the application has: the session, the DOM, the configured axios
-instance, the services and the store. A plugin can do anything the logged-in user
-can do. The slot registry and the API version are a compatibility contract, not a
-security boundary.
+instance and the services. A plugin can do anything the logged-in user can do.
+What the runtime hands over is the supported surface, not a limit on what plugin
+code could reach - the store is not handed over, and a copy of the config rather
+than the config itself, so that an honest plugin cannot break the application by
+accident. The slot registry and the API version are a compatibility contract, not
+a security boundary.
 
 **The control is deployment.** Plugins are only found on the backend classpath,
 so installing one means adding a jar to the deployment - the same level of trust

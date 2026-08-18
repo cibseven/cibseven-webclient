@@ -71,7 +71,7 @@ Promise.all([
       // Plugins are given their context before they are loaded, and are loaded
       // before the first render, so a slot never renders twice on startup.
       // Without plugins present this resolves immediately.
-      setPluginContext({ config, store })
+      setPluginContext({ config })
       await initPlugins(i18n.global.locale)
 
       const app = createApp({ /*jshint nonew:false */

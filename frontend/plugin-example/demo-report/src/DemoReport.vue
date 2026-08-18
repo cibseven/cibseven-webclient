@@ -39,8 +39,8 @@ export default {
     process: { type: Object, default: null }
   },
   data() {
-    // the application's own config, the same object the webclient itself reads, so a
-    // deployment can configure a plugin by adding to config.json
+    // a read-only copy of how the application is configured, so a deployment can
+    // configure a plugin by adding to config.json
     return { rows: [], error: null, basePath: getContext().config?.servicesBasePath ?? '-' }
   },
   async mounted() {

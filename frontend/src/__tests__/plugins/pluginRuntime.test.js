@@ -88,11 +88,30 @@ describe('plugin-runtime', () => {
   })
 
   describe('context', () => {
-    it('hands the application context to plugins', () => {
-      const config = { theme: 'cib' }
+    it('hands the application config to plugins', () => {
+      setPluginContext({ config: { theme: 'cib' } })
+
+      expect(runtime.getContext().config).toEqual({ theme: 'cib' })
+    })
+
+    /** A plugin reads how the application is configured; it does not reconfigure it. */
+    it('hands over a copy, so a plugin cannot change the application config', () => {
+      const config = { theme: 'cib', nested: { pluginsEnabled: true } }
       setPluginContext({ config })
 
-      expect(runtime.getContext().config).toBe(config)
+      const handed = runtime.getContext().config
+      expect(handed).not.toBe(config)
+      expect(handed.nested).not.toBe(config.nested)
+      expect(() => { handed.theme = 'other' }).toThrow()
+      expect(() => { handed.nested.pluginsEnabled = false }).toThrow()
+      expect(config).toEqual({ theme: 'cib', nested: { pluginsEnabled: true } })
+    })
+
+    /** The store is product state: plugins go through the services instead. */
+    it('does not expose the store', () => {
+      setPluginContext({ config: {}, store: { commit: () => {} } })
+
+      expect(runtime.getContext().store).toBeUndefined()
     })
   })
 
