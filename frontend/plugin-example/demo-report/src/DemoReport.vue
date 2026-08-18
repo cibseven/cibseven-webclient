@@ -1,5 +1,7 @@
 <template>
-  <div class="container-fluid px-4 p-4 demo-report">
+  <!-- h-100 overflow-auto: the slot renders this straight into the tab area, which clips.
+       Scrolling is the contribution's own, exactly as for the built-in tabs. -->
+  <div class="container-fluid px-4 p-4 h-100 overflow-auto demo-report">
     <h5 class="demo-report-title">{{ $t('plugins.demo-report.title') }}</h5>
 
     <p class="mb-3 demo-report-instance">
