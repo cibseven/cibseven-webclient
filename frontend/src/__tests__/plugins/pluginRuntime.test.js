@@ -22,6 +22,7 @@ import { axios } from '@/globals.js'
 import { ProcessService } from '@/services.js'
 import { getPlugin, resetPlugins } from '@/plugins/pluginsConfig.js'
 import { setPluginContext } from '@/plugins/pluginContext.js'
+import { setPluginRouter } from '@/plugins/pluginNavigation.js'
 import { i18n } from '@/i18n'
 
 describe('plugin-runtime', () => {
@@ -112,6 +113,54 @@ describe('plugin-runtime', () => {
       setPluginContext({ config: {}, store: { commit: () => {} } })
 
       expect(runtime.getContext().store).toBeUndefined()
+    })
+  })
+
+  describe('navigation', () => {
+    function routerStub() {
+      return {
+        push: vi.fn(() => Promise.resolve()),
+        replace: vi.fn(() => Promise.resolve()),
+        currentRoute: { value: { name: 'process', path: '/seven/auth/process', params: { id: '1' }, query: {}, hash: '' } }
+      }
+    }
+
+    it('sends the user somewhere through the application router', async () => {
+      const router = routerStub()
+      setPluginRouter(router)
+
+      await runtime.navigation.push({ name: 'process', params: { id: '1' } })
+      await runtime.navigation.replace('/seven/auth/tasks')
+
+      expect(router.push).toHaveBeenCalledWith({ name: 'process', params: { id: '1' } })
+      expect(router.replace).toHaveBeenCalledWith('/seven/auth/tasks')
+    })
+
+    /** A snapshot to read: mutating it must not reach the live route. */
+    it('reports the current route as a copy', () => {
+      const router = routerStub()
+      setPluginRouter(router)
+
+      const route = runtime.navigation.currentRoute()
+      expect(route).toEqual({ name: 'process', path: '/seven/auth/process', params: { id: '1' }, query: {}, hash: '' })
+      route.params.id = 'tampered'
+      expect(router.currentRoute.value.params.id).toBe('1')
+    })
+
+    /** Plugins register before the router exists, so the methods resolve it lazily. */
+    it('warns instead of failing when used before the router exists', () => {
+      setPluginRouter(null)
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+      expect(runtime.navigation.push('/somewhere')).toBeUndefined()
+      expect(runtime.navigation.currentRoute()).toBeNull()
+      expect(warn).toHaveBeenCalled()
+      warn.mockRestore()
+    })
+
+    it('does not hand over the router itself', () => {
+      expect(runtime.navigation.router).toBeUndefined()
+      expect(Object.keys(runtime.navigation)).toEqual(['push', 'replace', 'currentRoute'])
     })
   })
 

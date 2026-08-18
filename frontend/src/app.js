@@ -36,6 +36,7 @@ import { applyConfigDefaults } from './utils/config.js'
 import { i18n, switchLanguage } from './i18n'
 import { createProvideObject } from './utils/provide.js'
 import { setPluginContext } from './plugins/pluginContext.js'
+import { setPluginRouter } from './plugins/pluginNavigation.js'
 import { initPlugins } from './plugins/pluginLoader.js'
 
 // check for token inside hash
@@ -139,6 +140,9 @@ Promise.all([
       registerComponents(app)
 
       const router = createAppRouter(appRoutes)
+      // Plugins already registered by now, so their navigation resolves the
+      // router lazily rather than being handed it up front.
+      setPluginRouter(router)
       app.use(router)
       app.use(store)
       app.use(i18n)

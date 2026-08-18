@@ -152,8 +152,20 @@ The components themselves import what they need from the same module:
 | `services` | the webclient service objects (`ProcessService`, `TaskService`, …) |
 | `axios` | the configured instance, carrying the user's authentication |
 | `getContext()` | `config`, a frozen copy of how the application is configured |
+| `navigation` | `push`, `replace` and `currentRoute()`, to send the user to another view |
 | `registerPlugin`, `getPlugin` | the slot registry |
 | `i18n`, `mergeTranslations` | translations, namespaced per plugin |
+
+Navigating is a capability rather than the router itself, so defining routes and
+guards stays with the application and the contract does not depend on a
+`vue-router` version:
+
+```js
+import { navigation } from '@cibseven/plugin-runtime'
+
+navigation.push({ name: 'process', params: { processKey } })
+navigation.currentRoute()   // a snapshot: { name, path, params, query, hash }
+```
 
 ### The one line that must not change
 

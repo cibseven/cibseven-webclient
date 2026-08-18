@@ -41,6 +41,7 @@ export { axios } from './globals.js'
 export { i18n }
 export { registerPlugin, getPlugin, PLUGIN_API_VERSION } from './plugins/pluginsConfig.js'
 export { getPluginContext as getContext } from './plugins/pluginContext.js'
+export { navigation } from './plugins/pluginNavigation.js'
 
 /**
  * Merges translations of a plugin under the 'plugins.<id>' namespace, so plugin

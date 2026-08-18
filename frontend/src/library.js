@@ -60,6 +60,7 @@ export { registerPlugin, getPlugin, resetPlugins, PLUGIN_API_VERSION } from '@/p
 // as one object, so a downstream plugin runtime can hand it over without listing every service
 export * as services from '@/services.js'
 export { setPluginContext, getPluginContext } from '@/plugins/pluginContext.js'
+export { setPluginRouter, navigation } from '@/plugins/pluginNavigation.js'
 export { initPlugins, loadPlugins, fetchPluginManifests } from '@/plugins/pluginLoader.js'
 export { default as PluginSlot } from '@/components/common/PluginSlot.vue'
 export { default as PluginBoundary } from '@/components/common/PluginBoundary.vue'
