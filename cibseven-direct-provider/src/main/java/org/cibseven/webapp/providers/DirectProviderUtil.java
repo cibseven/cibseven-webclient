@@ -123,9 +123,9 @@ public class DirectProviderUtil {
 	}
 
 	/**
-	 * Executes {@code action} with the given user authenticated on the engine, so that the engine
-	 * enforces its authorizations for the operation. The user's groups and tenants are resolved from
-	 * the engine's identity service.
+	 * Executes {@code action} with the given user authenticated on the engine, resolving the user's
+	 * groups and tenants from the identity service. Where authorization is enabled, this is what lets
+	 * the engine enforce its authorizations for the operation.
 	 *
 	 * <p>Set regardless of whether authorization is enabled: the engine also needs the acting user to
 	 * write the user operation log and to resolve {@code ${currentUser()}} in filter expressions.
