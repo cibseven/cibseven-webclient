@@ -185,6 +185,28 @@ output and runtime belong together.
 A `.vue` file is never deployed: the browser cannot parse it, so what ships is
 always the built output.
 
+The list is the set the application provides, and nothing else is shared. `axios`
+and `bootstrap` are on it so that they can never be bundled: take the configured
+axios from the runtime, since a bundled one would carry neither the user's
+authentication nor the engine header. Importing either by name instead fails while
+the plugin loads, which is the intended outcome - it is a mistake to be told about,
+not to debug through missing headers.
+
+### Other libraries
+
+Anything else a plugin needs is its own dependency: add it to the plugin's
+`package.json` and it is bundled into `index.js`.
+
+```sh
+npm i dmn-js         # in the plugin project
+```
+
+That is the supported way, including for `bpmn-js` and `dmn-js`. Those two carry no
+shared state - a viewer is constructed against the plugin's own element - so a
+second copy alongside the webclient's is correct, only larger. Do not add them to
+the externals list: they are not provided through the import map, and the plugin
+would fail to load.
+
 ## Styling
 
 Components can use the application's Bootstrap and theme classes, which are
