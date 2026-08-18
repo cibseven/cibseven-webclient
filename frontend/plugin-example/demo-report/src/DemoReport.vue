@@ -5,7 +5,8 @@
     <h5 class="demo-report-title">{{ $t('plugins.demo-report.title') }}</h5>
 
     <p class="mb-3 demo-report-instance">
-      {{ $t('plugins.demo-report.instance') }}: {{ instance?.id ?? '-' }}
+      {{ $t('plugins.demo-report.instance') }}: {{ instance?.id ?? '-' }}<br>
+      {{ $t('plugins.demo-report.basePath') }}: {{ basePath }}
     </p>
 
     <div v-if="error" class="alert alert-warning py-2">
@@ -24,7 +25,7 @@
 </template>
 
 <script>
-import { services } from '@cibseven/plugin-runtime'
+import { services, getContext } from '@cibseven/plugin-runtime'
 import ProcessTable from './ProcessTable.vue'
 import SummaryCard from './SummaryCard.vue'
 
@@ -38,7 +39,9 @@ export default {
     process: { type: Object, default: null }
   },
   data() {
-    return { rows: [], error: null }
+    // the application's own config, the same object the webclient itself reads, so a
+    // deployment can configure a plugin by adding to config.json
+    return { rows: [], error: null, basePath: getContext().config?.servicesBasePath ?? '-' }
   },
   async mounted() {
     try {
