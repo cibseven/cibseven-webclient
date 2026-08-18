@@ -43,6 +43,8 @@ export default mergeConfig(
           'dist/**',
           'target/**',
           'node_modules/**',
+          // built on its own, against the import map: its imports do not resolve here
+          'plugin-example/**',
 
           // Exclude test files
           'src/__tests__/**',
