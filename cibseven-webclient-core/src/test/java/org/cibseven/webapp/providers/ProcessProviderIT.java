@@ -17,6 +17,7 @@
 package org.cibseven.webapp.providers;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -34,6 +35,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.rest.model.EngineConfiguration;
+import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.HistoryStatistics;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
@@ -62,6 +65,9 @@ public class ProcessProviderIT extends BaseHelper {
     @MockitoBean
     private IIncidentProvider incidentProvider;
 
+    @MockitoBean
+    private IEngineProvider engineProvider;
+
     @BeforeEach
     void setUp() throws Exception {
         mockWebServer = new MockWebServer();
@@ -74,6 +80,16 @@ public class ProcessProviderIT extends BaseHelper {
 
         // Inject mock in ProcessProvider
         ReflectionTestUtils.setField(processProvider, "incidentProvider", incidentProvider);
+
+        // Configure Mock IEngineProvider with a "full" history level by default
+        engineProvider = mock(IEngineProvider.class);
+        EngineConfiguration engineConfiguration = new EngineConfiguration();
+        engineConfiguration.setHistoryLevel("full");
+        when(engineProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(engineConfiguration);
+        when(engineProvider.getEngineConfiguration(anyString())).thenReturn(engineConfiguration);
+
+        // Inject mock in ProcessProvider
+        ReflectionTestUtils.setField(processProvider, "engineProvider", engineProvider);
 
 
         // Configure the base URL for the ProcessProvider to point to the MockWebServer
@@ -337,6 +353,75 @@ public class ProcessProviderIT extends BaseHelper {
         // Assert
         assertThat(instance).isNotNull();
         assertThat(instance.getWithIncident()).isFalse();
+    }
+
+    @Test
+    void testFindProcessesInstancesRuntimeWithFullHistoryLevel() throws Exception {
+        // Arrange
+        CIBUser user = getCibUser();
+        Map<String, Object> data = Map.of("processDefinitionKey", "processKey1");
+
+        mockWebServer.enqueue(new MockResponse()
+                .setBody("[{\"id\":\"instance-1\",\"definitionId\":\"process-1\",\"businessKey\":\"businessKey1\",\"ended\":false,\"suspended\":false}]")
+                .addHeader("Content-Type", "application/json"));
+        mockWebServer.enqueue(new MockResponse()
+                .setBody("[{\"id\":\"instance-1\",\"processDefinitionId\":\"process-1\",\"businessKey\":\"businessKey1\"}]")
+                .addHeader("Content-Type", "application/json"));
+
+        // Act
+        Collection<HistoryProcessInstance> result = processProvider.findProcessesInstancesRuntime(data, Optional.empty(), Optional.empty(), user);
+
+        // Assert
+        assertThat(result).hasSize(1);
+        HistoryProcessInstance historyInstance = result.iterator().next();
+        assertThat(historyInstance.getId()).isEqualTo("instance-1");
+
+        RecordedRequest firstRequest = mockWebServer.takeRequest();
+        assertThat(firstRequest.getMethod()).isEqualTo("POST");
+        assertThat(firstRequest.getPath()).isEqualTo("/engine-rest/process-instance");
+
+        RecordedRequest secondRequest = mockWebServer.takeRequest();
+        assertThat(secondRequest.getMethod()).isEqualTo("POST");
+        assertThat(secondRequest.getPath()).contains("/engine-rest/history/process-instance");
+    }
+
+    @Test
+    void testFindProcessesInstancesRuntimeWithHistoryLevelNoneEnrichesFromDefinitions() throws Exception {
+        // Arrange
+        CIBUser user = getCibUser();
+        Map<String, Object> data = Map.of("processDefinitionKey", "processKey1");
+
+        EngineConfiguration noneHistoryLevelConfig = new EngineConfiguration();
+        noneHistoryLevelConfig.setHistoryLevel("none");
+        when(engineProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(noneHistoryLevelConfig);
+
+        mockWebServer.enqueue(new MockResponse()
+                .setBody("[{\"id\":\"instance-1\",\"definitionId\":\"process-1\",\"businessKey\":\"businessKey1\","
+                        + "\"caseInstanceId\":\"case-1\",\"tenantId\":\"tenant-1\",\"ended\":false,\"suspended\":false}]")
+                .addHeader("Content-Type", "application/json"));
+        mockWebServer.enqueue(new MockResponse()
+                .setBody("[{\"id\":\"process-1\",\"key\":\"processKey1\",\"name\":\"Process One\",\"version\":\"3\"}]")
+                .addHeader("Content-Type", "application/json"));
+
+        // Act
+        Collection<HistoryProcessInstance> result = processProvider.findProcessesInstancesRuntime(data, Optional.empty(), Optional.empty(), user);
+
+        // Assert
+        assertThat(result).hasSize(1);
+        HistoryProcessInstance historyInstance = result.iterator().next();
+        assertThat(historyInstance.getId()).isEqualTo("instance-1");
+        assertThat(historyInstance.getProcessDefinitionId()).isEqualTo("process-1");
+        assertThat(historyInstance.getProcessDefinitionKey()).isEqualTo("processKey1");
+        assertThat(historyInstance.getProcessDefinitionName()).isEqualTo("Process One");
+        assertThat(historyInstance.getProcessDefinitionVersion()).isEqualTo("3");
+
+        RecordedRequest firstRequest = mockWebServer.takeRequest();
+        assertThat(firstRequest.getMethod()).isEqualTo("POST");
+        assertThat(firstRequest.getPath()).isEqualTo("/engine-rest/process-instance");
+
+        RecordedRequest secondRequest = mockWebServer.takeRequest();
+        assertThat(secondRequest.getMethod()).isEqualTo("GET");
+        assertThat(secondRequest.getPath()).contains("/engine-rest/process-definition?processDefinitionIdIn=process-1");
     }
 
     @Test
