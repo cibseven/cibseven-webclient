@@ -89,6 +89,15 @@ export default {
 .btn-link * {
   text-decoration: none !important;
 }
+/* The theme's global .btn-link:hover swaps the text to the secondary color;
+   keep the tile's text color fixed and show a bigger shadow instead. The
+   tile's base "shadow-sm" utility class is itself !important, so this needs
+   to be too, or it's silently ignored. */
+.btn-link:hover,
+.btn-link:focus-visible {
+  color: var(--bs-dark) !important;
+  box-shadow: var(--bs-box-shadow, 0 0.5rem 1rem rgba(0, 0, 0, 0.15)) !important;
+}
 .btn:focus {
   outline: 2px solid var(--bs-dark);
   outline-offset: -2px;

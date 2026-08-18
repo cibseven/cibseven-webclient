@@ -58,9 +58,11 @@
             :title="$t('cib-header.languages')"
             :label="$t('cib-header.languagesMenu')">
             <template v-slot:button-content>
-              <span class="mdi mdi-24px mdi-web align-middle" aria-hidden="true"></span>
+              <span class="d-flex align-items-center">
+                <span class="mdi mdi-24px mdi-web align-middle" aria-hidden="true"></span>
+                <span class="d-md-none ms-2">{{ $t('cib-header.languages') }}</span>
+              </span>
               <span class="mdi mdi-18px mdi-chevron-down align-middle" aria-hidden="true"></span>
-              <span class="d-md-none ms-2">{{ $t('cib-header.languages') }}</span>
             </template>
             <li class="cib-dropdown-title fw-semibold text-body px-3 pt-2 pb-1" role="presentation">{{ $t('cib-header.languages') }}</li>
             <b-dropdown-divider></b-dropdown-divider>
@@ -85,9 +87,11 @@
             :title="$t('cib-header.engineMenu')"
             :label="$t('cib-header.engineMenu')">
             <template v-slot:button-content>
-              <span class="mdi mdi-24px mdi-engine align-middle" aria-hidden="true"></span>
+              <span class="d-flex align-items-center">
+                <span class="mdi mdi-24px mdi-engine align-middle" aria-hidden="true"></span>
+                <span class="d-md-none ms-2">{{ $t('cib-header.engine') }}</span>
+              </span>
               <span class="mdi mdi-18px mdi-chevron-down align-middle" aria-hidden="true"></span>
-              <span class="d-md-none ms-2">{{ $t('cib-header.engine') }}</span>
             </template>
             <li class="cib-dropdown-title fw-semibold text-body px-3 pt-2 pb-1" role="presentation">{{ $t('cib-header.engine') }}</li>
             <b-dropdown-divider></b-dropdown-divider>
@@ -113,10 +117,12 @@
             right
             :label="$t('admin.users.account')">
             <template v-slot:button-content>
-              <b-avatar size="sm" class="cib-user-avatar" :text="userInitials" aria-hidden="true"></b-avatar>
+              <span class="d-flex align-items-center">
+                <b-avatar size="sm" class="cib-user-avatar" :text="userInitials" aria-hidden="true"></b-avatar>
+                <span class="visually-hidden">{{ user.displayName || user.id }}</span>
+                <span class="d-md-none ms-2">{{ user.displayName || user.id }}</span>
+              </span>
               <span class="mdi mdi-18px mdi-chevron-down align-middle" aria-hidden="true"></span>
-              <span class="visually-hidden">{{ user.displayName || user.id }}</span>
-              <span class="d-md-none ms-2">{{ user.displayName || user.id }}</span>
             </template>
             <li class="cib-dropdown-title fw-semibold text-body px-3 pt-2 pb-1" role="presentation">{{ $t('admin.users.account') }}</li>
             <b-dropdown-divider></b-dropdown-divider>
@@ -346,5 +352,78 @@ export default {
 .cib-navbar-utility .cib-user-avatar {
   background-color: #cfe2ff !important;
   color: #084298 !important;
+}
+
+/* Mobile drawer rows: flat accordion look — a divider above each row, chevron
+   pinned to the far right (points right when collapsed, down when expanded),
+   no highlight color, and sub-items appear as plain inline rows (instead of a
+   floating card that repeats the row's own title) once expanded. Matches the
+   CIB Navigation mockup. */
+@media (max-width: 767.98px) {
+  /* The navbar carries px-3 (1rem) side padding, which insets these rows too —
+     bleed the row (and its divider) back out to the full width, then restore
+     the same 1rem via the nav-link's own padding so the icon/label still line
+     up with the header above. */
+  .cib-navbar-utility {
+    border-top: 1px solid var(--bs-border-color, #dee2e6);
+    margin-left: -1rem;
+    margin-right: -1rem;
+  }
+
+  .cib-navbar-utility > .nav-link {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    padding: 0.625rem 1rem;
+  }
+
+  /* Icon/chevron: always the muted secondary color/weight, never dark or
+     bold, regardless of hover/focus/expanded state on the row. */
+  .cib-navbar-utility > .nav-link .mdi {
+    font-weight: 400 !important;
+    color: var(--bs-secondary-color, #495057) !important;
+  }
+
+  .cib-navbar-utility > .nav-link:hover,
+  .cib-navbar-utility > .nav-link:focus,
+  .cib-navbar-utility > .nav-link.show {
+    background-color: transparent;
+    color: var(--bs-secondary-color, #495057);
+  }
+
+  .cib-navbar-utility > .nav-link .mdi-chevron-down {
+    transition: transform 0.15s ease;
+    transform: rotate(-90deg);
+  }
+
+  .cib-navbar-utility > .nav-link.show .mdi-chevron-down {
+    transform: rotate(0deg);
+  }
+
+  .cib-navbar-utility > .dropdown-menu {
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-top: 1px solid var(--bs-border-color-translucent, rgba(0, 0, 0, 0.08));
+    box-shadow: none;
+  }
+
+  /* Indent item text only — the divider <hr>s are siblings of these items,
+     so they're untouched and still span the full row width. */
+  .cib-navbar-utility > .dropdown-menu .dropdown-item {
+    padding-left: 2rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  /* The toggle row already shows the title — don't repeat it inside */
+  .cib-navbar-utility > .dropdown-menu > li.cib-dropdown-title,
+  .cib-navbar-utility > .dropdown-menu > li.cib-dropdown-title + hr.dropdown-divider {
+    display: none;
+  }
 }
 </style>

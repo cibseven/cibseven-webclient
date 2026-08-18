@@ -142,8 +142,10 @@
             :label="$t(tool.title)"
           >
             <template v-slot:button-content>
-              <span :class="['mdi', 'mdi-24px', tool.icon, 'align-middle', 'me-2']" aria-hidden="true"></span>
-              <span>{{ $t(tool.title) }}</span>
+              <span class="d-flex align-items-center">
+                <span :class="['mdi', 'mdi-24px', tool.icon, 'align-middle', 'me-2']" aria-hidden="true"></span>
+                <span class="cib-mobile-row-title">{{ $t(tool.title) }}</span>
+              </span>
               <span class="mdi mdi-18px mdi-chevron-down align-middle ms-1" aria-hidden="true"></span>
             </template>
             <b-dropdown-item
@@ -180,7 +182,10 @@
           :label="$t('navigation.infoAndHelp')"
         >
           <template v-slot:button-content>
-            <span class="mdi mdi-24px mdi-help-circle align-middle me-2"></span>{{ $t('navigation.infoAndHelp') }}
+            <span class="d-flex align-items-center">
+              <span class="mdi mdi-24px mdi-help-circle align-middle me-2"></span>{{ $t('navigation.infoAndHelp') }}
+            </span>
+            <span class="mdi mdi-18px mdi-chevron-down align-middle ms-1" aria-hidden="true"></span>
           </template>
           <li class="cib-dropdown-title px-3 pt-2 pb-1" role="presentation">{{ $t('navigation.infoAndHelp') }}</li>
           <b-dropdown-divider></b-dropdown-divider>
@@ -559,5 +564,85 @@ li.cib-dropdown-title > .dropdown-item.active {
   min-width: 14rem;
   padding-top: 0.25rem;
   padding-bottom: 0.5rem;
+}
+
+/* Mobile drawer rows: flat accordion look — a divider above each row, chevron
+   pinned to the far right (points right when collapsed, down when expanded),
+   no highlight color, and sub-items appear as plain inline rows (instead of a
+   floating card that repeats the row's own title) once expanded. Matches the
+   CIB Navigation mockup. */
+@media (max-width: 767.98px) {
+  /* The navbar carries px-3 (1rem) side padding, which insets these rows too —
+     bleed the row (and its divider) back out to the full width, then restore
+     the same 1rem via the nav-link's own padding so the icon/label still line
+     up with the header above. */
+  .cib-toolbar-utility-dropdown {
+    border-top: 1px solid var(--bs-border-color, #dee2e6);
+    margin-left: -1rem;
+    margin-right: -1rem;
+  }
+
+  .cib-toolbar-utility-dropdown > .nav-link {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    padding: 0.625rem 1rem;
+  }
+
+  /* Title: always bold + dark, regardless of hover/focus/expanded state.
+     Icon and chevron: always the muted secondary color/weight, never dark or
+     bold — set directly on each element (not on .nav-link) so no hover/focus/
+     show state on the row can change them via inheritance. */
+  .cib-toolbar-utility-dropdown > .nav-link .cib-mobile-row-title {
+    font-weight: 600 !important;
+    color: var(--bs-body-color, #212529) !important;
+  }
+
+  .cib-toolbar-utility-dropdown > .nav-link .mdi {
+    font-weight: 400 !important;
+    color: var(--bs-secondary-color, #495057) !important;
+  }
+
+  .cib-toolbar-utility-dropdown > .nav-link:hover,
+  .cib-toolbar-utility-dropdown > .nav-link:focus,
+  .cib-toolbar-utility-dropdown > .nav-link.show {
+    background-color: transparent;
+    color: var(--bs-secondary-color, #495057);
+  }
+
+  .cib-toolbar-utility-dropdown > .nav-link .mdi-chevron-down {
+    transition: transform 0.15s ease;
+    transform: rotate(-90deg);
+  }
+
+  .cib-toolbar-utility-dropdown > .nav-link.show .mdi-chevron-down {
+    transform: rotate(0deg);
+  }
+
+  .cib-toolbar-utility-dropdown > .dropdown-menu {
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-top: 1px solid var(--bs-border-color-translucent, rgba(0, 0, 0, 0.08));
+    box-shadow: none;
+  }
+
+  /* Indent item text only — the divider <hr>s are siblings of these items,
+     so they're untouched and still span the full row width. */
+  .cib-toolbar-utility-dropdown > .dropdown-menu .dropdown-item {
+    padding-left: 2.75rem !important;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  /* The toggle row already shows the title — don't repeat it inside */
+  .cib-toolbar-utility-dropdown > .dropdown-menu > li.cib-dropdown-title,
+  .cib-toolbar-utility-dropdown > .dropdown-menu > li.cib-dropdown-title + hr.dropdown-divider {
+    display: none;
+  }
 }
 </style>
