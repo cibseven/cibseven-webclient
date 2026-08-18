@@ -43,6 +43,12 @@ function ensureSlot(slotName) {
  */
 export function registerPlugin(slotName, component, meta = {}) {
   const slot = ensureSlot(slotName)
+  // Ids reach the UI (a tab id becomes ?tab=<id>), so a second registration under
+  // the same id would render twice and select ambiguously.
+  if (meta.id && slot.value.some(contribution => contribution.id === meta.id)) {
+    console.warn(`Ignoring a second contribution with id "${meta.id}" in slot "${slotName}"`)
+    return
+  }
   // shallowRef: replace the array so consumers re-render
   slot.value = [...slot.value, { component, ...meta }]
 }

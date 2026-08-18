@@ -54,6 +54,34 @@ describe('pluginsConfig', () => {
     expect(slot.value).not.toBe(before)
   })
 
+  /**
+   * A tab id becomes ?tab=<id>, so two contributions under one id would render
+   * twice and select ambiguously.
+   */
+  it('ignores a second contribution with an id already taken in that slot', () => {
+    registerPlugin('tab', { name: 'First' }, { id: 'report', text: 'first' })
+    registerPlugin('tab', { name: 'Second' }, { id: 'report', text: 'second' })
+
+    expect(getPlugin('tab').value).toHaveLength(1)
+    expect(getPlugin('tab').value[0].component.name).toBe('First')
+  })
+
+  it('allows the same id in a different slot', () => {
+    registerPlugin('tab', { name: 'First' }, { id: 'report' })
+    registerPlugin('other-slot', { name: 'Second' }, { id: 'report' })
+
+    expect(getPlugin('tab').value).toHaveLength(1)
+    expect(getPlugin('other-slot').value).toHaveLength(1)
+  })
+
+  /** Contributions without an id are not addressable, so they are not deduped. */
+  it('keeps several contributions that declare no id', () => {
+    registerPlugin('overlay', { name: 'A' })
+    registerPlugin('overlay', { name: 'B' })
+
+    expect(getPlugin('overlay').value).toHaveLength(2)
+  })
+
   it('keeps slots isolated from each other', () => {
     registerPlugin('slot-a', { name: 'A' })
 
