@@ -23,6 +23,19 @@ import { PLUGIN_API_VERSION } from './pluginsConfig.js'
 const PLUGINS_ENDPOINT = 'info/plugins'
 const PLUGINS_BASE_PATH = 'plugins/'
 
+// Loading happens before the first render, so every step is bounded: a slow or
+// unresponsive plugin must delay the application, not replace it with a blank page.
+const REQUEST_TIMEOUT_MS = 5000
+const IMPORT_TIMEOUT_MS = 10000
+
+function withTimeout(promise, ms, description) {
+  let timer
+  const expired = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`${description} timed out after ${ms}ms`)), ms)
+  })
+  return Promise.race([promise, expired]).finally(() => clearTimeout(timer))
+}
+
 /**
  * Resolves a path relative to the document base, so plugin assets are found
  * both under a context path (/webapp/) and at the root.
@@ -43,7 +56,7 @@ function resolveUrl(relativePath) {
  */
 export async function fetchPluginManifests() {
   try {
-    const res = await axios.create().get(resolveUrl(PLUGINS_ENDPOINT))
+    const res = await axios.create({ timeout: REQUEST_TIMEOUT_MS }).get(resolveUrl(PLUGINS_ENDPOINT))
     const plugins = res.data?.plugins
     if (!Array.isArray(plugins)) {
       console.warn('The plugin endpoint returned no "plugins" array, ignoring it')
@@ -67,7 +80,7 @@ async function loadPluginTranslations(manifest, lang) {
   const file = manifest.translations?.[lang]
   if (!file) return
   try {
-    const res = await axios.create().get(resolveUrl(`${PLUGINS_BASE_PATH}${manifest.id}/${file}`))
+    const res = await axios.create({ timeout: REQUEST_TIMEOUT_MS }).get(resolveUrl(`${PLUGINS_BASE_PATH}${manifest.id}/${file}`))
     i18n.global.mergeLocaleMessage(lang, { plugins: { [manifest.id]: res.data } })
   } catch {
     console.debug(`Optional plugin translations not found for "${manifest.id}":`, file)
@@ -128,7 +141,7 @@ function importModule(url) {
 async function loadPlugin(manifest, lang, importer) {
   const url = resolveUrl(`${PLUGINS_BASE_PATH}${manifest.id}/${manifest.entry}`)
   try {
-    const module = await importer(url)
+    const module = await withTimeout(importer(url), IMPORT_TIMEOUT_MS, `Loading plugin "${manifest.id}"`)
     const register = module.register ?? module.default
     if (typeof register !== 'function') {
       console.warn(`Plugin "${manifest.id}" exports no register function, ignoring it`)

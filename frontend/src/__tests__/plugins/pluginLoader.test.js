@@ -94,6 +94,22 @@ describe('pluginLoader', () => {
       })
     })
 
+    /**
+     * Loading happens before the first render, so a plugin whose file never
+     * arrives would otherwise leave the application on a blank page for good.
+     */
+    it('gives up on a plugin whose import never settles', async () => {
+      vi.useFakeTimers()
+      mockHttp({})
+      const importer = vi.fn(() => new Promise(() => {}))
+
+      const loading = loadPlugins([validManifest], 'en', importer)
+      await vi.advanceTimersByTimeAsync(11000)
+
+      await expect(loading).resolves.toEqual([])
+      vi.useRealTimers()
+    })
+
     it('accepts a default export as register function', async () => {
       mockHttp({})
       const register = vi.fn()
