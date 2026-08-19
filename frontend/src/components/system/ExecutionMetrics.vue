@@ -28,7 +28,7 @@
           striped
           resizable
           thead-class="sticky-header"
-          :items="monthlyItems"
+          :items="monthlyItemsWithTotal"
           primary-key="index"
           :fields="monthlyFields"
           @click="onMonthlyRowClick"
@@ -45,7 +45,14 @@
           primary-key="index"
           :fields="yearlyFields"
         >
+          <template v-slot:cell(actions)="table">
+            <CellActionButton
+              @click="copyAnnualValueToClipboard(table.item)"
+              icon="mdi-content-copy"
+              :title="$t('commons.copyValue')"/>
+          </template>
         </FlowTable>
+        <SuccessAlert ref="messageCopy"> {{ $t('decision.copySuccess') }} </SuccessAlert>
       </div>
     </template>
     <div v-else class="py-3 text-center w-100">
@@ -59,14 +66,18 @@
 import { SystemService } from '@/services.js'
 import { moment } from '@/globals.js'
 import VueApexCharts from 'vue3-apexcharts'
-import { FlowTable, BWaitingBox } from '@cib/common-frontend'
+import { FlowTable, BWaitingBox, SuccessAlert } from '@cib/common-frontend'
 import { i18n } from '@/i18n.js'
+import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 
 export default {
   name: 'ExecutionMetrics',
-  components: { apexchart: VueApexCharts, FlowTable, BWaitingBox },
+  components: { apexchart: VueApexCharts, FlowTable, BWaitingBox, SuccessAlert, CellActionButton },
+  mixins: [copyToClipboardMixin],
   data() {
     return {
+      diagnostics: null,
       metrics: {
         annual: [],
         monthly: [],
@@ -190,6 +201,19 @@ export default {
         .sort((a, b) => moment(b.month, 'MMMM YYYY') - moment(a.month, 'MMMM YYYY'))
         .map((entry, i) => ({ index: i + 1, ...entry }))
     },
+    monthlyItemsWithTotal() {
+      if (!this.monthlyItems.length) return []
+
+      const total = this.metrics.monthly.reduce((acc, item) => {
+        acc[item.metric] = (acc[item.metric] || 0) + (item.sum || 0)
+        return acc
+      }, { month: this.$t('admin.system.execution-metrics.total'), index: 14 })
+
+      return [
+        ...this.monthlyItems,
+        total,
+      ]
+    },
     yearlyItems() {
       const grouped = {}
       this.metrics.annual.forEach((item) => {
@@ -261,7 +285,7 @@ export default {
         {
           label: '',
           key: 'year',
-          class: 'col-6',
+          class: 'col-5',
           sortable: false,
           tdClass: 'py-1',
         },
@@ -285,7 +309,14 @@ export default {
           class: 'col-2',
           sortable: false,
           tdClass: 'py-1',
-        }
+        },
+        {
+          label: 'admin.system.execution-metrics.actions',
+          key: 'actions',
+          class: 'col-1',
+          sortable: false,
+          tdClass: 'py-1',
+        },
       ]
     }
   },
@@ -344,6 +375,22 @@ export default {
         )
         this.selectedMonthIndex = dataPointIndex
       }
+    },
+    async copyAnnualValueToClipboard(item) {
+      if (!this.diagnostics) {
+        this.diagnostics = await SystemService.getTelemetryData()
+      }
+
+      const val = [
+        item.year,
+        '- PI: ' + item['process-instances'],
+        '- DI: ' + item['decision-instances'],
+        '- TU: ' + item['task-users'],
+        '',
+        this.diagnostics ? JSON.stringify(this.diagnostics, null, 2) : '',
+      ].join('\n')
+
+      this.copyValueToClipboard(val)
     }
   },
 }
