@@ -77,25 +77,29 @@ export default {
     }
   },
   computed: {
-    labels() {
+    monthKeys() {
       return [
         ...new Set(
           this.metrics.monthly.map((d) =>
-            moment(`${d.subscriptionYear}-${d.subscriptionMonth}`, 'YYYY-M').format('MMMM YYYY')
+            moment(`${d.subscriptionYear}-${d.subscriptionMonth}`, 'YYYY-M').format('YYYY-MM')
           )
         )
-      ].sort((a, b) => moment(a, 'MMMM YYYY') - moment(b, 'MMMM YYYY'))
+      ].sort()
+    },
+    labels() {
+      const locale = i18n.global.locale
+      return this.monthKeys.map((key) => moment(key, 'YYYY-MM').locale(locale).format('MMMM YYYY'))
     },
     series() {
       return this.metricNames.map((metric) => ({
         name: this.$t('admin.system.execution-metrics.' + metric),
-        data: this.labels.map((label) => {
+        data: this.monthKeys.map((key) => {
           const match = this.metrics.monthly.find(
             (d) =>
               d.metric === metric &&
               moment(`${d.subscriptionYear}-${d.subscriptionMonth}`, 'YYYY-M').format(
-                'MMMM YYYY'
-              ) === label
+                'YYYY-MM'
+              ) === key
           )
           return match ? match.sum : 0
         })

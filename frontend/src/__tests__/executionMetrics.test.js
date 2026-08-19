@@ -15,8 +15,9 @@
  *  limitations under the License.
  */
 import { flushPromises, mount } from '@vue/test-utils'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { i18n } from '@/i18n'
+import { moment } from '@/globals'
 import { SystemService } from '@/services.js'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 
@@ -27,14 +28,23 @@ vi.mock('@/services.js', () => ({
 }))
 
 describe('ExecutionMetrics', () => {
+  let wrapper
+
   beforeEach(() => {
     SystemService.getMetricsData.mockResolvedValue([
       { subscriptionYear: 2026, subscriptionMonth: 7, metric: 'process-instances', sum: 34022 },
     ])
   })
 
-  it('delegates chart data label, y-axis label and tooltip formatting to i18n.global.n so any locale is respected', async () => {
-    const wrapper = mount(ExecutionMetrics, {
+  afterEach(() => {
+    wrapper?.unmount()
+    moment.locale('en')
+  })
+
+  it('formats chart data labels, y-axis labels and tooltip values using the active locale', async () => {
+    i18n.global.locale = 'en'
+
+    wrapper = mount(ExecutionMetrics, {
       global: {
         stubs: {
           'apexchart': true,
@@ -48,16 +58,59 @@ describe('ExecutionMetrics', () => {
     await flushPromises()
 
     const { options } = wrapper.vm
-    const nSpy = vi.spyOn(i18n.global, 'n')
 
     expect(options.dataLabels.formatter(0)).toBe('')
-    expect(nSpy).not.toHaveBeenCalled()
+    expect(options.dataLabels.formatter(34022)).toBe('34,022')
+    expect(options.yaxis.labels.formatter(34022)).toBe('34,022')
+    expect(options.tooltip.y.formatter(34022)).toBe('34,022')
+  })
 
-    options.dataLabels.formatter(34022)
-    options.yaxis.labels.formatter(34022)
-    options.tooltip.y.formatter(34022)
+  it('recomputes chart options when the active locale changes, so vue3-apexcharts redraws it', async () => {
+    i18n.global.locale = 'en'
 
-    expect(nSpy).toHaveBeenCalledTimes(3)
-    nSpy.mock.calls.forEach((call) => expect(call).toEqual([34022]))
+    wrapper = mount(ExecutionMetrics, {
+      global: {
+        stubs: {
+          'apexchart': true,
+          'FlowTable': true,
+          'BWaitingBox': true,
+        },
+        plugins: [i18n],
+      },
+    })
+
+    await flushPromises()
+
+    const optionsBefore = wrapper.vm.options
+    i18n.global.locale = 'de'
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.vm.options).not.toBe(optionsBefore)
+  })
+
+  it('keeps chart series matched to their months when moment.locale() changes independently of Vue', async () => {
+    i18n.global.locale = 'en'
+    moment.locale('en')
+
+    wrapper = mount(ExecutionMetrics, {
+      global: {
+        stubs: {
+          'apexchart': true,
+          'FlowTable': true,
+          'BWaitingBox': true,
+        },
+        plugins: [i18n],
+      },
+    })
+
+    await flushPromises()
+
+    expect(wrapper.vm.series[0].data).toContain(34022)
+
+    i18n.global.locale = 'de'
+    moment.locale('de')
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.vm.series[0].data).toContain(34022)
   })
 })
