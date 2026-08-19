@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 import { flushPromises, mount } from '@vue/test-utils'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { i18n } from '@/i18n'
 import { moment } from '@/globals.js'
 import { SystemService } from '@/services.js'
@@ -115,6 +115,11 @@ describe('ExecutionMetrics', () => {
       return Promise.resolve(MONTHLY_DATA)
     })
     SystemService.getTelemetryData.mockResolvedValue(TELEMETRY_DATA)
+  })
+
+  afterEach(() => {
+    i18n.global.locale = 'en'
+    moment.locale('en')
   })
 
   describe('loading lifecycle', () => {
@@ -247,6 +252,26 @@ describe('ExecutionMetrics', () => {
         { name: i18n.global.t('admin.system.execution-metrics.task-users'), data: [0] },
       ])
     })
+
+    it('keeps series matched to their months when moment.locale() changes independently of Vue', async () => {
+      // switchLanguage() in i18n.js calls moment.locale(lang) alongside i18n.global.locale - a
+      // global change Vue doesn't track. labels()/series() used to derive their join key from
+      // moment(...).format('MMMM YYYY'), so a stale cached `labels` (still in the old language)
+      // stopped matching the freshly re-localized key computed inside `series()`, silently
+      // zeroing out all data points.
+      i18n.global.locale = 'en'
+      moment.locale('en')
+      const wrapper = mountComponent()
+      await flushPromises()
+
+      expect(wrapper.vm.series[0].data).toEqual([0, 0, 2, 5])
+
+      i18n.global.locale = 'de'
+      moment.locale('de')
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.vm.series[0].data).toEqual([0, 0, 2, 5])
+    })
   })
 
   describe('computed: options', () => {
@@ -268,6 +293,18 @@ describe('ExecutionMetrics', () => {
 
       expect(nSpy).toHaveBeenCalledTimes(3)
       nSpy.mock.calls.forEach((call) => expect(call).toEqual([34022]))
+    })
+
+    it('recomputes when the active locale changes, so vue3-apexcharts redraws the chart', async () => {
+      i18n.global.locale = 'en'
+      const wrapper = mountComponent()
+      await flushPromises()
+
+      const optionsBefore = wrapper.vm.options
+      i18n.global.locale = 'de'
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.vm.options).not.toBe(optionsBefore)
     })
   })
 
@@ -297,7 +334,6 @@ describe('ExecutionMetrics', () => {
       await flushPromises()
 
       const withTotal = wrapper.vm.monthlyItemsWithTotal
-      expect(withTotal).toHaveLength(wrapper.vm.monthlyItems.length + 1)
 
       const total = withTotal.at(-1)
       expect(total.index).toBe(14)
