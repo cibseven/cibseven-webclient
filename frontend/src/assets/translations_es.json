@@ -774,6 +774,8 @@
 				"process-instances": "Instancias de proceso",
 				"decision-instances": "Instancias de decisión",
 				"task-users": "Usuarios de tareas",
+				"total": "Total",
+				"actions": "Acciones",
 				"usageLast12MonthsByMonth": "Uso en los últimos 12 meses por mes",
 				"annualUsageBySubscriptionTerm": "Métricas de uso anual por período de suscripción",
 				"fromUpToToday": "{from} hasta hoy",
