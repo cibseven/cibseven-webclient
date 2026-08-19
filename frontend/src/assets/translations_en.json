@@ -989,8 +989,7 @@
 			"tooltip": "Open Start Process view with search possibility"
 		},
 		"tasks": {
-			"title": "Tasks",
-			"tooltip": "Open Tasks"
+			"title": "Tasks"
 		},
 		"taskList": {
 			"title": "Tasklist",
@@ -1000,8 +999,7 @@
 			"title": "Cockpit",
 			"tooltip": "Open Cockpit",
 			"dashboard": {
-				"title": "Dashboard",
-				"tooltip": "Open Cockpit Dashboard"
+				"title": "Dashboard"
 			},
 			"processes": {
 				"title": "Processes",
@@ -1037,20 +1035,16 @@
 			}
 		},
 		"admin": {
-			"title": "Admin",
-			"tooltip": "Open Admin"
+			"title": "Admin"
 		},
 		"accessManagement": {
-			"title": "Access management",
-			"tooltip": "Open Access management"
+			"title": "Access management"
 		},
 		"builder": {
-			"title": "Builder",
-			"tooltip": "Open Builder"
+			"title": "Builder"
 		},
 		"data": {
-			"title": "Data",
-			"tooltip": "Open Data"
+			"title": "Data"
 		},
 		"ins7ght": {
 			"title": "Ins7ght",
@@ -1164,7 +1158,6 @@
 	},
 	"navigation": {
 		"home": "Home",
-		"navigation": "Navigation",
 		"menu": "Navigation menu",
 		"infoAndHelp": "Info & help"
 	},

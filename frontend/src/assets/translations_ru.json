@@ -989,8 +989,7 @@
 			"tooltip": "Открыть страницу запуска процесса с возможностью поиска"
 		},
 		"tasks": {
-			"title": "Задачи",
-			"tooltip": "Открыть задачи"
+			"title": "Задачи"
 		},
 		"taskList": {
 			"title": "Tasklist",
@@ -1000,8 +999,7 @@
 			"title": "Cockpit",
 			"tooltip": "Открыть Cockpit",
 			"dashboard": {
-				"title": "Панель",
-				"tooltip": "Открыть панель Cockpit"
+				"title": "Панель"
 			},
 			"processes": {
 				"title": "Процессы",
@@ -1037,20 +1035,16 @@
 			}
 		},
 		"admin": {
-			"title": "Admin",
-			"tooltip": "Открыть Admin"
+			"title": "Admin"
 		},
 		"accessManagement": {
-			"title": "Управление доступом",
-			"tooltip": "Открыть Управление доступом"
+			"title": "Управление доступом"
 		},
 		"builder": {
-			"title": "Builder",
-			"tooltip": "Открыть Builder"
+			"title": "Builder"
 		},
 		"data": {
-			"title": "Data",
-			"tooltip": "Открыть Data"
+			"title": "Data"
 		},
 		"ins7ght": {
 			"title": "Ins7ght",
@@ -1163,7 +1157,6 @@
 	},
 	"navigation": {
 		"home": "Домашняя страница",
-		"navigation": "Навигация",
 		"menu": "Меню навигации",
 		"infoAndHelp": "Информация и помощь"
 	},

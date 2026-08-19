@@ -989,8 +989,7 @@
 			"tooltip": "Abrir vista de inicio del proceso con opción de búsqueda"
 		},
 		"tasks": {
-			"title": "Tareas",
-			"tooltip": "Abrir Tareas"
+			"title": "Tareas"
 		},
 		"taskList": {
 			"title": "Tasklist",
@@ -1000,8 +999,7 @@
 			"title": "Cockpit",
 			"tooltip": "Abrir Cockpit",
 			"dashboard": {
-				"title": "Dashboard",
-				"tooltip": "Abrir el Dashboard de Cockpit"
+				"title": "Dashboard"
 			},
 			"processes": {
 				"title": "Procesos",
@@ -1037,20 +1035,16 @@
 			}
 		},
 		"admin": {
-			"title": "Admin",
-			"tooltip": "Abrir Admin"
+			"title": "Admin"
 		},
 		"accessManagement": {
-			"title": "Gestión de acceso",
-			"tooltip": "Abrir Gestión de acceso"
+			"title": "Gestión de acceso"
 		},
 		"builder": {
-			"title": "Builder",
-			"tooltip": "Abrir Builder"
+			"title": "Builder"
 		},
 		"data": {
-			"title": "Data",
-			"tooltip": "Abrir Data"
+			"title": "Data"
 		},
 		"ins7ght": {
 			"title": "Ins7ght",
@@ -1163,7 +1157,6 @@
 	},
 	"navigation": {
 		"home": "Inicio",
-		"navigation": "Navegación",
 		"menu": "Menú de Navegación",
 		"infoAndHelp": "Información y ayuda"
 	},
