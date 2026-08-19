@@ -28,7 +28,7 @@
           striped
           resizable
           thead-class="sticky-header"
-          :items="monthlyItems"
+          :items="monthlyItemsWithTotal"
           primary-key="index"
           :fields="monthlyFields"
           @click="onMonthlyRowClick"
@@ -196,6 +196,19 @@ export default {
       return Object.values(grouped)
         .sort((a, b) => moment(b.month, 'MMMM YYYY') - moment(a.month, 'MMMM YYYY'))
         .map((entry, i) => ({ index: i + 1, ...entry }))
+    },
+    monthlyItemsWithTotal() {
+      if (!this.monthlyItems.length) return []
+
+      const total = this.metrics.monthly.reduce((acc, item) => {
+        acc[item.metric] = (acc[item.metric] || 0) + (item.sum || 0)
+        return acc
+      }, { month: this.$t('admin.system.execution-metrics.total'), index: 14 })
+
+      return [
+        ...this.monthlyItems,
+        total,
+      ]
     },
     yearlyItems() {
       const grouped = {}

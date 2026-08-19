@@ -774,6 +774,7 @@
 				"process-instances": "Prozessinstanzen",
 				"decision-instances": "Entscheidungsinstanzen",
 				"task-users": "Aufgabenbenutzer",
+				"total": "Gesamt",
 				"actions": "Aktionen",
 				"usageLast12MonthsByMonth": "Nutzung der letzten 12 Monate nach Monat",
 				"annualUsageBySubscriptionTerm": "Jährliche Nutzungsmetriken nach Abonnementlaufzeit",

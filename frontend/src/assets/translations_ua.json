@@ -774,6 +774,7 @@
 					"process-instances": "Екземпляри процесів",
 					"decision-instances": "Екземпляри рішень",
 					"task-users": "Користувачі завдань",
+					"total": "Всього",
 					"actions": "Дії",
 					"usageLast12MonthsByMonth": "Використання по місяцях за останні 12 місяців",
 					"annualUsageBySubscriptionTerm": "Річні метрики використання за терміном підписки",
