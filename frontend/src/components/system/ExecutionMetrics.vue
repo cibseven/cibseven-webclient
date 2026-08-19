@@ -46,10 +46,10 @@
           :fields="yearlyFields"
         >
           <template v-slot:cell(actions)="table">
-            <button type="button" :title="$t('commons.copyValue')"
-              @click.stop="copyAnnualValueToClipboard(table.item)"
-              class="mdi mdi-18px mdi-content-copy px-2 btn btn-sm btn-link"
-            ></button>
+            <CellActionButton
+              @click="copyAnnualValueToClipboard(table.item)"
+              icon="mdi-content-copy"
+              :title="$t('commons.copyValue')"/>
           </template>
         </FlowTable>
         <SuccessAlert ref="messageCopy"> {{ $t('decision.copySuccess') }} </SuccessAlert>
@@ -69,10 +69,11 @@ import VueApexCharts from 'vue3-apexcharts'
 import { FlowTable, BWaitingBox, SuccessAlert } from '@cib/common-frontend'
 import { i18n } from '@/i18n.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 
 export default {
   name: 'ExecutionMetrics',
-  components: { apexchart: VueApexCharts, FlowTable, BWaitingBox, SuccessAlert },
+  components: { apexchart: VueApexCharts, FlowTable, BWaitingBox, SuccessAlert, CellActionButton },
   mixins: [copyToClipboardMixin],
   data() {
     return {
