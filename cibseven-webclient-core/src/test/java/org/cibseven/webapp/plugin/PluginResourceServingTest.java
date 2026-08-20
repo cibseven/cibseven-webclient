@@ -18,9 +18,14 @@ package org.cibseven.webapp.plugin;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import org.cibseven.webapp.auth.BaseUserProvider;
+import org.cibseven.webapp.providers.BpmProvider;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.test.context.support.TestPropertySourceUtils;
@@ -31,7 +36,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 /**
  * Serves the plugin fixture below {@code src/test/resources/META-INF/cibseven-plugins}
- * through the real resource handler, which the other tests only check the registration of.
+ * through the real controller, which the other tests only check the registration of.
  */
 public class PluginResourceServingTest {
 
@@ -39,8 +44,15 @@ public class PluginResourceServingTest {
 	@EnableWebMvc
 	static class WebConfig {
 
-		PluginRegistry pluginRegistry(boolean enabled) {
-			return new PluginRegistry(enabled);
+		// PluginService extends BaseService, which autowires these
+		@Bean
+		BpmProvider bpmProvider() {
+			return Mockito.mock(BpmProvider.class);
+		}
+
+		@Bean
+		BaseUserProvider<?> baseUserProvider() {
+			return Mockito.mock(BaseUserProvider.class);
 		}
 	}
 
@@ -49,7 +61,7 @@ public class PluginResourceServingTest {
 		context.setServletContext(new MockServletContext());
 		TestPropertySourceUtils.addInlinedPropertiesToEnvironment(context,
 			"cibseven.webclient.plugins.enabled=" + pluginsEnabled);
-		context.register(WebConfig.class, PluginRegistry.class, PluginResourceConfiguration.class);
+		context.register(WebConfig.class, PluginRegistry.class, PluginService.class);
 		context.refresh();
 		return MockMvcBuilders.webAppContextSetup(context).build();
 	}
@@ -68,6 +80,26 @@ public class PluginResourceServingTest {
 			.andExpect(content().string(org.hamcrest.Matchers.containsString("\"apiVersion\"")));
 	}
 
+	/** The browser imports the entry as a module, so it has to arrive as JavaScript. */
+	@Test
+	public void servesAPluginFileWithItsOwnContentType() throws Exception {
+		mockMvc(true).perform(get("/plugins/test-plugin/index.js"))
+			.andExpect(header().string("Content-Type", org.hamcrest.Matchers.containsString("javascript")));
+		mockMvc(true).perform(get("/plugins/test-plugin/plugin.json"))
+			.andExpect(header().string("Content-Type", org.hamcrest.Matchers.containsString("json")));
+	}
+
+	/**
+	 * A distribution can mount the webclient below an application path, and the
+	 * frontend then asks for the files there.
+	 */
+	@Test
+	public void servesAPluginFileBelowAnApplicationPath() throws Exception {
+		mockMvc(true).perform(get("/webapp/plugins/test-plugin/index.js").servletPath("/webapp"))
+			.andExpect(status().isOk())
+			.andExpect(content().string(org.hamcrest.Matchers.containsString("export function register")));
+	}
+
 	/** Both plugins of one artifact are served, each under its own id. */
 	@Test
 	public void servesEveryPluginOfOneClasspathEntry() throws Exception {
@@ -82,10 +114,30 @@ public class PluginResourceServingTest {
 			.andExpect(status().isNotFound());
 	}
 
+	@Test
+	public void answersNotFoundForAFileThePluginDoesNotShip() throws Exception {
+		mockMvc(true).perform(get("/plugins/test-plugin/missing.js"))
+			.andExpect(status().isNotFound());
+	}
+
 	/** The served location is the plugin folder, so a crafted path must not reach beyond it. */
 	@Test
 	public void doesNotServeAnythingOutsideThePluginFolders() throws Exception {
 		mockMvc(true).perform(get("/plugins/test-plugin/../../../application.yml"))
+			.andExpect(status().isNotFound());
+	}
+
+	/** Encoding the traversal must not get past the check either. */
+	@Test
+	public void doesNotServeAnEncodedPathOutsideThePluginFolders() throws Exception {
+		mockMvc(true).perform(get("/plugins/test-plugin/%2e%2e/%2e%2e/application.yml"))
+			.andExpect(status().isNotFound());
+	}
+
+	/** One plugin's id must not serve another plugin's files. */
+	@Test
+	public void doesNotServeAnotherPluginsFiles() throws Exception {
+		mockMvc(true).perform(get("/plugins/test-plugin/../second-plugin/main.js"))
 			.andExpect(status().isNotFound());
 	}
 

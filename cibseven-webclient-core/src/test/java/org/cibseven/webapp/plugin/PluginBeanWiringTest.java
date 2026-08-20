@@ -20,7 +20,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.cibseven.webapp.auth.BaseUserProvider;
+import org.cibseven.webapp.providers.BpmProvider;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.test.context.support.TestPropertySourceUtils;
 
@@ -35,7 +38,10 @@ public class PluginBeanWiringTest {
 	private AnnotationConfigApplicationContext context(String... properties) {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 		TestPropertySourceUtils.addInlinedPropertiesToEnvironment(context, properties);
-		context.register(PluginRegistry.class, PluginService.class, PluginResourceConfiguration.class);
+		// The controller extends BaseService, which autowires these
+		context.registerBean(BpmProvider.class, () -> Mockito.mock(BpmProvider.class));
+		context.registerBean(BaseUserProvider.class, () -> Mockito.mock(BaseUserProvider.class));
+		context.register(PluginRegistry.class, PluginService.class);
 		context.refresh();
 		return context;
 	}
@@ -48,7 +54,6 @@ public class PluginBeanWiringTest {
 			assertNotNull(registry);
 			assertFalse(registry.isEnabled());
 			assertNotNull(context.getBean(PluginService.class));
-			assertNotNull(context.getBean(PluginResourceConfiguration.class));
 		}
 	}
 

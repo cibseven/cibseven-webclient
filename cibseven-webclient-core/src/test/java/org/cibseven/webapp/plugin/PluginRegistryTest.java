@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -239,5 +240,32 @@ public class PluginRegistryTest {
 		assertEquals(2, manifests.size());
 		assertEquals("first", manifests.get(0).get("id").asText());
 		assertEquals("second", manifests.get(1).get("id").asText());
+	}
+
+	/** An operator who installed a plugin jar has to learn at boot whether it was picked up. */
+	@Test
+	public void scansAtStartupSoTheResultIsLoggedBeforeTheFirstRequest() throws IOException {
+		ResourcePatternResolver resolver = mock(ResourcePatternResolver.class);
+		when(resolver.getResources(MANIFESTS)).thenReturn(new Resource[] {
+			manifest("/app/a.jar!/META-INF/cibseven-plugins/first/plugin.json",
+				"{\"entry\":\"index.js\",\"apiVersion\":\"1\"}")
+		});
+		PluginRegistry registry = new PluginRegistry(true, resolver);
+
+		registry.scanAtStartup();
+
+		verify(resolver, times(1)).getResources(MANIFESTS);
+		// And the result is kept, so the first request does not scan again
+		assertEquals(1, registry.getManifests().size());
+		verify(resolver, times(1)).getResources(MANIFESTS);
+	}
+
+	@Test
+	public void doesNotScanAtStartupWhenPluginsAreDisabled() throws IOException {
+		ResourcePatternResolver resolver = mock(ResourcePatternResolver.class);
+
+		new PluginRegistry(false, resolver).scanAtStartup();
+
+		verify(resolver, never()).getResources(anyString());
 	}
 }

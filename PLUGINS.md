@@ -78,6 +78,11 @@ plugin - putting a jar where the distribution already looks:
 | `GET /info/plugins` | manifests of the plugins found on the classpath |
 | `GET /plugins/<id>/…` | the plugin's own files |
 
+Both sit next to the rest of the webclient's API, below the application path the
+distribution mounts it under - `/webapp/info/plugins` in CIB seven Run, no prefix
+in a standalone webclient. The frontend resolves them relative to its own
+location, so this needs no configuration.
+
 ## Writing a plugin
 
 A plugin is a small Vite project of single-file components.

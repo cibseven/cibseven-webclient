@@ -20,7 +20,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.charset.StandardCharsets;
 
+import org.cibseven.webapp.auth.BaseUserProvider;
+import org.cibseven.webapp.providers.BpmProvider;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.core.io.ClassPathResource;
@@ -35,15 +38,17 @@ public class PluginAutoConfigurationTest {
 	private static final String IMPORTS =
 		"META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports";
 
+	// The controller extends BaseService, which every product wires these into
 	private final ApplicationContextRunner runner = new ApplicationContextRunner()
+		.withBean(BpmProvider.class, () -> Mockito.mock(BpmProvider.class))
+		.withBean(BaseUserProvider.class, () -> Mockito.mock(BaseUserProvider.class))
 		.withConfiguration(AutoConfigurations.of(PluginAutoConfiguration.class));
 
 	@Test
 	public void contributesThePluginBeans() {
 		runner.run(context -> assertThat(context)
 			.hasSingleBean(PluginRegistry.class)
-			.hasSingleBean(PluginService.class)
-			.hasSingleBean(PluginResourceConfiguration.class));
+			.hasSingleBean(PluginService.class));
 	}
 
 	@Test

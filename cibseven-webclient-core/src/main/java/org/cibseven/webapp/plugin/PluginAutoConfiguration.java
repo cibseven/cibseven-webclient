@@ -29,6 +29,6 @@ import org.springframework.context.annotation.Import;
  * {@code cibseven.webclient.plugins.enabled}.
  */
 @AutoConfiguration
-@Import({PluginRegistry.class, PluginService.class, PluginResourceConfiguration.class})
+@Import({PluginRegistry.class, PluginService.class})
 public class PluginAutoConfiguration {
 }

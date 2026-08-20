@@ -39,6 +39,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -88,6 +89,17 @@ public class PluginRegistry {
 	}
 
 	/**
+	 * Scans at startup rather than on the first request, so an operator who dropped a
+	 * plugin jar in sees at boot whether it was picked up.
+	 */
+	@PostConstruct
+	void scanAtStartup() {
+		if (enabled) {
+			getManifests();
+		}
+	}
+
+	/**
 	 * Manifests of all deployed plugins, empty when plugins are disabled. The
 	 * classpath cannot change while the application runs, so the scan result is
 	 * kept.
@@ -133,7 +145,12 @@ public class PluginRegistry {
 			log.warn("Could not scan for plugins below {}", PLUGINS_ROOT, e);
 		}
 		locations = Collections.unmodifiableMap(folders);
-		log.info("Found {} frontend plugin(s) on the classpath", found.size());
+		if (folders.isEmpty()) {
+			log.info("No frontend plugin found on the classpath");
+		} else {
+			// The ids are what the frontend then asks for, so they are worth naming
+			log.info("Found {} frontend plugin(s) on the classpath: {}", folders.size(), folders.keySet());
+		}
 		return Collections.unmodifiableList(found);
 	}
 
