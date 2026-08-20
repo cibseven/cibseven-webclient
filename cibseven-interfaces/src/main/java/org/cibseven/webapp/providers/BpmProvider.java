@@ -647,13 +647,12 @@ public interface BpmProvider {
 
 	/**
 	 * Get authorizations, filtered by userId and groups in which user belongs.
-	 * @param userId filter user identification (username).
 	 * @param user the user performing the search
 	 * @return Fetched bpmn
      * @throws SystemException in case of an error.
 	 */
-	default Authorizations getUserAuthorization(String userId, CIBUser user) throws SystemException {
-		return getUserProvider().getUserAuthorization(userId, user);
+	default Authorizations getUserAuthorization(CIBUser user) throws SystemException {
+		return getUserProvider().getUserAuthorization(user);
 	}
 
 	/**
