@@ -1,3 +1,6 @@
 node_modules/
 dist/
 *.jar
+# The starter is copied and installed by whoever writes a plugin, and a lockfile
+# committed here would pin our registry hosts into it
+package-lock.json
