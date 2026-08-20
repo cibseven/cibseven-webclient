@@ -224,8 +224,12 @@ the plugin rather than styling shared elements.
 
 ## When changes take effect
 
-Discovery happens once: the classpath is scanned on the first request and the
-served locations are resolved while the application context starts.
+Discovery happens once, while the backend starts, and the result is logged - which
+is where an operator checks that a jar was picked up:
+
+```
+INFO o.cibseven.webapp.plugin.PluginRegistry : Found 1 frontend plugin(s) on the classpath: [demo-report]
+```
 
 | Change | What is needed |
 |---|---|
@@ -243,6 +247,22 @@ served locations are resolved while the application context starts.
 One registration carries both the tab label and its content: the tab bar reads
 `id` and `text`, and the view renders whichever contribution matches the active
 tab. Slots are added on demand rather than up front.
+
+### Several contributions in one slot
+
+A slot holds a list, so any number of plugins can contribute to it and each
+contribution becomes its own tab, appended after the built-in ones. One plugin may
+just as well register several times, in one slot or across slots.
+
+Two things follow from the list being shared:
+
+- **Registered ids have to be unique across all plugins**, not only within one:
+  the id becomes `?tab=<id>`, so a second contribution registering an id that is
+  already taken is dropped with a console warning. Prefixing it with the plugin
+  name is the simplest way to be safe.
+- **The order of contributed tabs is not defined.** Plugins are loaded
+  concurrently and register when their module has arrived, so with two plugins
+  their tabs can appear in either order. The built-in tabs always come first.
 
 In the enterprise webclient the tab bar is replaced by
 `ProcessInstanceTabsPlugin.vue`, an older build-time extension point, so plugin
