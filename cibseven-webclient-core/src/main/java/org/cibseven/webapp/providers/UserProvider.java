@@ -27,6 +27,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
@@ -63,22 +65,14 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 	@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") String userProvider;
 	@Value("${cibseven.webclient.users.search.wildcard:}") String wildcard;
 	private final ObjectMapper objectMapper = new ObjectMapper();
+	/** engine-rest URLs known not to offer {@code GET /authorization/self}, keyed per engine. */
+	private final Set<String> selfAuthorizationEndpointUnsupported = ConcurrentHashMap.newKeySet();
 
 	@Override
 	public Authorizations getUserAuthorization(CIBUser user) {
 		Authorizations auths = new Authorizations();
 
-		String urlUsers = getEngineRestUrl(user) + "/authorization/self";
-		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(urlUsers);
-		Collection<Authorization> userAuthorizations;
-		try {
-			userAuthorizations = new ArrayList<Authorization>(Arrays.asList(((ResponseEntity<Authorization[]>) doGet(builder, Authorization[].class, user)).getBody()));
-		} catch (RuntimeException ex) {
-			if (!shouldUseLegacyAuthorizationFallback(ex)) {
-				throw ex;
-			}
-			userAuthorizations = getLegacyAuthorizations(user);
-		}
+		Collection<Authorization> userAuthorizations = fetchOwnAuthorizations(user);
 
 		auths.setApplication(filterResources(userAuthorizations, resourceType(SevenResourceType.APPLICATION)));
 		auths.setFilter(filterResources(userAuthorizations, resourceType(SevenResourceType.FILTER)));
@@ -108,6 +102,41 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		//auths.setEventSubscription(filterResources(userAuthorizations, resourceType(SevenResourceType.EVENT_SUBSCRIPTION)));
 
 		return auths;
+	}
+
+	/**
+	 * Fetches the authorizations that apply to {@code user} from {@code GET /authorization/self}, which
+	 * needs no READ permission on the Authorization resource, and falls back to the legacy queries when
+	 * the engine does not offer that endpoint.
+	 */
+	private Collection<Authorization> fetchOwnAuthorizations(CIBUser user) {
+		String engineRestUrl = getEngineRestUrl(user);
+		if (selfAuthorizationEndpointUnsupported.contains(engineRestUrl)) {
+			return getLegacyAuthorizations(user);
+		}
+
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(engineRestUrl + "/authorization/self");
+		try {
+			return new ArrayList<Authorization>(Arrays.asList(((ResponseEntity<Authorization[]>) doGet(builder, Authorization[].class, user)).getBody()));
+		} catch (RuntimeException ex) {
+			if (!(ex.getCause() instanceof HttpStatusCodeException httpStatusCodeException)) {
+				throw ex;
+			}
+
+			HttpStatusCode statusCode = httpStatusCodeException.getStatusCode();
+			// 404/405 mean the engine has no such endpoint, which cannot change while it is running, so
+			// it is remembered. A 401 also falls back - the endpoint resolves the caller from the engine
+			// authentication and cannot serve a deployment whose engine-rest does not authenticate - but
+			// is not remembered, because an expired credential looks the same and the legacy path would
+			// then outlive the renewed credential.
+			if (statusCode == HttpStatus.NOT_FOUND || statusCode == HttpStatus.METHOD_NOT_ALLOWED) {
+				log.info("Engine {} does not support GET /authorization/self, falling back to legacy queries", engineRestUrl);
+				selfAuthorizationEndpointUnsupported.add(engineRestUrl);
+			} else if (statusCode != HttpStatus.UNAUTHORIZED) {
+				throw ex;
+			}
+			return getLegacyAuthorizations(user);
+		}
 	}
 
 	private Collection<Authorization> getLegacyAuthorizations(CIBUser user) {
@@ -143,20 +172,6 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		return userAuthorizations;
 	}
 
-	private boolean shouldUseLegacyAuthorizationFallback(RuntimeException ex) {
-		Throwable cause = ex.getCause();
-		if (!(cause instanceof HttpStatusCodeException httpStatusCodeException)) {
-			return false;
-		}
-
-		HttpStatusCode statusCode = httpStatusCodeException.getStatusCode();
-		// Older engine-rest versions may not support the self-authorization endpoint.
-		// Treat 404/405/401 as compatibility failures and fall back to legacy authorization queries.
-		if (statusCode == HttpStatus.METHOD_NOT_ALLOWED || statusCode == HttpStatus.NOT_FOUND || statusCode == HttpStatus.UNAUTHORIZED) {
-			return true;
-		}
-		return false;
-	}
 	
 	/**
 	 * Get the count of users in the system with optional filters.

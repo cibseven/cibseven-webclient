@@ -20,12 +20,12 @@ import static org.cibseven.webapp.auth.SevenAuthorizationUtils.resourceType;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
-import org.cibseven.bpm.engine.IdentityService;
+import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.ProcessEngineException;
 import org.cibseven.bpm.engine.authorization.AuthorizationQuery;
 import org.cibseven.bpm.engine.authorization.Permissions;
@@ -83,44 +83,14 @@ public class DirectUserProvider implements IUserProvider {
 
 	@Override
 	public Authorizations getUserAuthorization(CIBUser user) {
-		IdentityService identityService = directProviderUtil.getProcessEngine(user).getIdentityService();
-    	Authentication currentAuthentication = identityService.getCurrentAuthentication();
-		AuthorizationQueryDto queryDto = new AuthorizationQueryDto();
-		queryDto.setUserIdIn(new String[] { user.getId() });
-		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
-		AuthorizationQuery userQuery = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
-		List<org.cibseven.bpm.engine.authorization.Authorization> userAuthorizationList;
-		Collection<Authorization> groupsAuthorizations;
-		Collection<Authorization> globalAuthorizations;
-		try {
-			directProviderUtil.getProcessEngine(user).getIdentityService().clearAuthentication();
-			userAuthorizationList = QueryUtil.list(userQuery, null, null);
-				queryDto.setUserIdIn(null);
-			if (currentAuthentication.getGroupIds() != null && !currentAuthentication.getGroupIds().isEmpty()) {
-				queryDto.setGroupIdIn(currentAuthentication.getGroupIds().toArray(new String[currentAuthentication.getGroupIds().size()]));
-				AuthorizationQuery groupIdQuery = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
-				List<org.cibseven.bpm.engine.authorization.Authorization> groupIdResultList = QueryUtil.list(groupIdQuery, null, null);
-				groupsAuthorizations = createAuthorizationCollection(groupIdResultList);
-			} else {
-				groupsAuthorizations = Collections.emptyList();
-			}
+		Authentication currentAuthentication = directProviderUtil.getProcessEngine(user).getIdentityService()
+				.getCurrentAuthentication();
+		List<String> authenticatedGroupIds = currentAuthentication != null ? currentAuthentication.getGroupIds() : null;
 
-			queryDto.setGroupIdIn(null);
-			queryDto.setType(0);
-			AuthorizationQuery globalIdQuery = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
-			List<org.cibseven.bpm.engine.authorization.Authorization> globalIdResultList = QueryUtil.list(globalIdQuery, null, null);
-			globalAuthorizations = createAuthorizationCollection(globalIdResultList);
-			
-		} catch (ProcessEngineException e) {
-			throw new SystemException("Failed to set authentication for user " + user.getId(), e);
-		} finally {
-			identityService.setAuthentication(currentAuthentication);
-		}
+		Collection<Authorization> userAuthorizations = directProviderUtil
+				.runWithoutAuthorization(() -> fetchOwnAuthorizations(user, authenticatedGroupIds), user);
+
 		Authorizations auths = new Authorizations();
-		Collection<Authorization> userAuthorizations = createAuthorizationCollection(userAuthorizationList);
-		userAuthorizations.addAll(groupsAuthorizations);
-		userAuthorizations.addAll(globalAuthorizations);
-
 		auths.setApplication(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.APPLICATION)));
 		auths.setFilter(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.FILTER)));
 		auths.setProcessDefinition(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.PROCESS_DEFINITION)));
@@ -152,6 +122,40 @@ public class DirectUserProvider implements IUserProvider {
 		// auths.setEventSubscription(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.EVENT_SUBSCRIPTION)));
 
 		return auths;
+	}
+
+	/**
+	 * Collects the authorizations that apply to {@code user}: the ones granted to the user itself, the
+	 * ones granted to a group it belongs to, and the global ones.
+	 *
+	 * @param authenticatedGroupIds the memberships carried by the engine authentication, or {@code null}
+	 *        when the engine did not authenticate the user; they are then queried instead.
+	 */
+	private Collection<Authorization> fetchOwnAuthorizations(CIBUser user, List<String> authenticatedGroupIds) {
+		ProcessEngine processEngine = directProviderUtil.getProcessEngine(user);
+		List<String> groupIds = authenticatedGroupIds != null ? authenticatedGroupIds
+				: directProviderUtil.getGroupsOfUser(user);
+
+		Collection<Authorization> authorizations = queryAuthorizations(processEngine, user,
+				queryDto -> queryDto.setUserIdIn(new String[] { user.getId() }));
+
+		if (groupIds != null && !groupIds.isEmpty()) {
+			authorizations.addAll(queryAuthorizations(processEngine, user,
+					queryDto -> queryDto.setGroupIdIn(groupIds.toArray(new String[0]))));
+		}
+
+		authorizations.addAll(queryAuthorizations(processEngine, user, queryDto -> queryDto.setType(0)));
+
+		return authorizations;
+	}
+
+	private Collection<Authorization> queryAuthorizations(ProcessEngine processEngine, CIBUser user,
+			Consumer<AuthorizationQueryDto> filter) {
+		AuthorizationQueryDto queryDto = new AuthorizationQueryDto();
+		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
+		filter.accept(queryDto);
+		AuthorizationQuery query = queryDto.toQuery(processEngine);
+		return createAuthorizationCollection(QueryUtil.list(query, null, null));
 	}
 
 	@Override

@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -77,6 +78,15 @@ public class ProcessProviderIT extends BaseHelper {
         // Configure the base URL for the ProcessProvider to point to the MockWebServer
         String mockBaseUrl = mockWebServer.url("/").toString();
         ReflectionTestUtils.setField(processProvider, "cibsevenUrl", mockBaseUrl);
+
+        // The provider is a context-scoped singleton: without this, what one test remembered about the
+        // historic activity statistics query would decide which path the next one takes.
+        historicActivityStatisticsQueryUnsupported().clear();
+    }
+
+    @SuppressWarnings("unchecked")
+    private Set<String> historicActivityStatisticsQueryUnsupported() {
+        return (Set<String>) ReflectionTestUtils.getField(processProvider, "historicActivityStatisticsQueryUnsupported");
     }
 
     @AfterEach
@@ -259,5 +269,38 @@ public class ProcessProviderIT extends BaseHelper {
         RecordedRequest getRequest = mockWebServer.takeRequest();
         assertThat(getRequest.getMethod()).isEqualTo("GET");
         assertThat(getRequest.getPath()).contains("/engine-rest/history/process-definition/process-1/statistics?");
+    }
+
+    /**
+     * Whether the engine offers the query cannot change while it is running, so the rejected POST is
+     * made once and not on every call.
+     */
+    @Test
+    void testFindHistoricActivityStatisticsRemembersThatThePostQueryIsUnsupported() throws Exception {
+        String processDefinitionId = "process-1";
+        CIBUser user = getCibUser();
+        Map<String, Object> filters = Map.of("canceled", true);
+
+        String mockResponseBody = loadMockResponse("mocks/history_statistics_mock.json");
+
+        mockWebServer.enqueue(new MockResponse()
+                .setResponseCode(405)
+                .setBody("Method Not Allowed")
+                .addHeader("Content-Type", "text/plain"));
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(mockResponseBody)
+                .addHeader("Content-Type", "application/json"));
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(mockResponseBody)
+                .addHeader("Content-Type", "application/json"));
+
+        assertThat(processProvider.findHistoricActivityStatistics(processDefinitionId, filters, user)).hasSize(2);
+        assertThat(processProvider.findHistoricActivityStatistics(processDefinitionId, filters, user)).hasSize(2);
+
+        assertThat(mockWebServer.getRequestCount()).isEqualTo(3);
+        assertThat(mockWebServer.takeRequest().getMethod()).isEqualTo("POST");
+        assertThat(mockWebServer.takeRequest().getMethod()).isEqualTo("GET");
+        // The second call goes straight to the legacy variant instead of being rejected again.
+        assertThat(mockWebServer.takeRequest().getMethod()).isEqualTo("GET");
     }
 }

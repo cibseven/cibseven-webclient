@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.Comparator;
 
@@ -63,6 +64,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Component
 public class ProcessProvider extends SevenProviderBase implements IProcessProvider{
 
@@ -70,6 +74,8 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 
 	@Value("${cibseven.webclient.fetchInstances:true}") boolean fetchInstances;
 	@Value("${cibseven.webclient.fetchIncidents:true}") boolean fetchIncidents;
+	/** engine-rest URLs known not to offer the filtered historic activity statistics query, keyed per engine. */
+	private final Set<String> historicActivityStatisticsQueryUnsupported = ConcurrentHashMap.newKeySet();
 
 	@Override
 	public Collection<Process> findProcesses(CIBUser user) {
@@ -609,16 +615,36 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
     	if (processDefinitionId == null || processDefinitionId.isEmpty()) {
         	throw new SystemException("processDefinitionId is required");
 		}
-		String url = getEngineRestUrl(user) + "/history/process-definition/" + processDefinitionId + "/statistics";
+		String engineRestUrl = getEngineRestUrl(user);
+		if (historicActivityStatisticsQueryUnsupported.contains(engineRestUrl)) {
+			return fetchLegacyHistoricActivityStatistics(processDefinitionId, user);
+		}
+
+		String url = engineRestUrl + "/history/process-definition/" + processDefinitionId + "/statistics";
 		try {
 			return Arrays.asList(((ResponseEntity<HistoryStatistics[]>) doPost(url, filters, HistoryStatistics[].class, user)).getBody());
 		} catch (SystemException e) {
-			// Backwards compatibility: this call is only supported for Engine version 2.2.0 and over
+			// Backwards compatibility: this call is only supported for Engine version 2.2.0 and over.
+			// Whether the engine offers it cannot change while it is running, so remember the answer and
+			// spare every later call the rejected request and the error SevenProviderBase logs for it.
 			if (e.getCause() instanceof HttpClientErrorException.MethodNotAllowed) {
-				return fetchHistoricActivityStatistics(processDefinitionId, Map.of("canceled", true, "completedScoped", true, "finished", true, "incidents", true), user);
+				if (historicActivityStatisticsQueryUnsupported.add(engineRestUrl)) {
+					log.info("Engine {} does not support the historic activity statistics query (POST), "
+							+ "falling back to the unfiltered GET variant", engineRestUrl);
+				}
+				return fetchLegacyHistoricActivityStatistics(processDefinitionId, user);
 			}
 			throw e;
 		}
     }
+
+	/**
+	 * The variant offered by engines before 2.2.0, which cannot filter: it always reports the statistics
+	 * of every instance of the process definition.
+	 */
+	private Collection<HistoryStatistics> fetchLegacyHistoricActivityStatistics(String processDefinitionId, CIBUser user) {
+		return fetchHistoricActivityStatistics(processDefinitionId,
+				Map.of("canceled", true, "completedScoped", true, "finished", true, "incidents", true), user);
+	}
 	
 }

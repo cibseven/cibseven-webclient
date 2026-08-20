@@ -17,10 +17,13 @@
 package org.cibseven.webapp.providers;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -36,6 +39,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.rest.StandardLogin;
+import org.cibseven.webapp.rest.model.Authorization;
+import org.cibseven.webapp.rest.model.Authorizations;
 import org.cibseven.webapp.rest.model.SevenUser;
 import org.cibseven.webapp.rest.model.SevenVerifyUser;
 import org.cibseven.webapp.rest.model.User;
@@ -65,6 +70,15 @@ public class UserProviderIT extends BaseHelper {
 
         String mockBaseUrl = mockWebServer.url("/").toString();
         ReflectionTestUtils.setField(userProvider, "cibsevenUrl", mockBaseUrl);
+
+        // The provider is a context-scoped singleton: without this, what one test remembered about the
+        // self endpoint would decide which path the next one takes.
+        selfAuthorizationEndpointUnsupported().clear();
+    }
+
+    @SuppressWarnings("unchecked")
+    private Set<String> selfAuthorizationEndpointUnsupported() {
+        return (Set<String>) ReflectionTestUtils.getField(userProvider, "selfAuthorizationEndpointUnsupported");
     }
 
     @AfterEach
@@ -93,6 +107,100 @@ public class UserProviderIT extends BaseHelper {
         SevenUser firstUser = users.iterator().next();
         assertThat(firstUser.getId()).isEqualTo("user-1");
         assertThat(firstUser.getFirstName()).isEqualTo("John");
+    }
+
+    @Test
+    void testGetUserAuthorizationUsesTheSelfEndpoint() throws Exception {
+        CIBUser user = getCibUser();
+
+        mockWebServer.enqueue(new MockResponse()
+                .setBody("[{\"id\":\"application-grant\",\"type\":1,\"permissions\":[\"ACCESS\"],\"userId\":\"demo\","
+                        + "\"resourceType\":0,\"resourceId\":\"*\"},"
+                        + "{\"id\":\"group-grant\",\"type\":1,\"permissions\":[\"READ\"],\"groupId\":\"sales\","
+                        + "\"resourceType\":6,\"resourceId\":\"invoice\"},"
+                        + "{\"id\":\"global-grant\",\"type\":0,\"permissions\":[\"READ\"],\"userId\":\"*\","
+                        + "\"resourceType\":7,\"resourceId\":\"*\"}]")
+                .addHeader("Content-Type", "application/json"));
+
+        Authorizations authorizations = userProvider.getUserAuthorization(user);
+
+        // A single request replaces the three of the legacy path: /self already answers with the
+        // authorizations of the user, of its groups and the global ones.
+        assertThat(mockWebServer.getRequestCount()).isEqualTo(1);
+        assertThat(mockWebServer.takeRequest().getPath()).isEqualTo("/engine-rest/authorization/self");
+
+        assertThat(authorizations.getApplication()).extracting(Authorization::getId).containsExactly("application-grant");
+        assertThat(authorizations.getProcessDefinition()).extracting(Authorization::getId).containsExactly("group-grant");
+        assertThat(authorizations.getTask()).extracting(Authorization::getId).containsExactly("global-grant");
+        assertThat(authorizations.getFilter()).isEmpty();
+    }
+
+    /**
+     * A denied request is the engine's answer, not a missing endpoint: it has to reach the caller
+     * instead of being retried against the legacy queries.
+     */
+    @Test
+    void testGetUserAuthorizationDoesNotFallBackWhenSelfEndpointReturns403() {
+        CIBUser user = getCibUser();
+
+        mockWebServer.enqueue(new MockResponse().setResponseCode(403));
+
+        assertThatThrownBy(() -> userProvider.getUserAuthorization(user)).isInstanceOf(RuntimeException.class);
+        assertThat(mockWebServer.getRequestCount()).isEqualTo(1);
+    }
+
+    /**
+     * Whether the engine offers the endpoint cannot change while it is running, so the rejected request
+     * is made once and not on every authorization fetch.
+     */
+    @Test
+    void testGetUserAuthorizationRemembersThatTheSelfEndpointIsUnsupported() throws Exception {
+        CIBUser user = getCibUser();
+
+        mockWebServer.enqueue(new MockResponse().setResponseCode(404));
+        enqueueLegacyAuthorizationResponses();
+        enqueueLegacyAuthorizationResponses();
+
+        assertThat(userProvider.getUserAuthorization(user)).isNotNull();
+        assertThat(userProvider.getUserAuthorization(user)).isNotNull();
+
+        assertThat(mockWebServer.getRequestCount()).isEqualTo(7);
+        assertThat(recordedPaths(7)).containsExactly(
+                "/engine-rest/authorization/self",
+                "/engine-rest/authorization?userIdIn=demo",
+                "/engine-rest/group?member=demo",
+                "/engine-rest/authorization?type=0",
+                "/engine-rest/authorization?userIdIn=demo",
+                "/engine-rest/group?member=demo",
+                "/engine-rest/authorization?type=0");
+    }
+
+    /**
+     * The 401 counterpart: it is also raised when the credential is simply not valid (any more), so
+     * remembering it would keep the legacy path after the credential is renewed.
+     */
+    @Test
+    void testGetUserAuthorizationRetriesTheSelfEndpointAfterUnauthorized() throws Exception {
+        CIBUser user = getCibUser();
+
+        mockWebServer.enqueue(new MockResponse().setResponseCode(401));
+        enqueueLegacyAuthorizationResponses();
+        mockWebServer.enqueue(new MockResponse().setResponseCode(401));
+        enqueueLegacyAuthorizationResponses();
+
+        assertThat(userProvider.getUserAuthorization(user)).isNotNull();
+        assertThat(userProvider.getUserAuthorization(user)).isNotNull();
+
+        assertThat(mockWebServer.getRequestCount()).isEqualTo(8);
+        assertThat(recordedPaths(8)).containsExactly(
+                "/engine-rest/authorization/self",
+                "/engine-rest/authorization?userIdIn=demo",
+                "/engine-rest/group?member=demo",
+                "/engine-rest/authorization?type=0",
+                "/engine-rest/authorization/self",
+                "/engine-rest/authorization?userIdIn=demo",
+                "/engine-rest/group?member=demo",
+                "/engine-rest/authorization?type=0");
     }
 
     @Test
@@ -287,6 +395,23 @@ public class UserProviderIT extends BaseHelper {
         } finally {
             executorService.shutdown();
         }
+    }
+
+    /** The three responses the legacy path expects: user authorizations, group memberships, global ones. */
+    private void enqueueLegacyAuthorizationResponses() {
+        for (int i = 0; i < 3; i++) {
+            mockWebServer.enqueue(new MockResponse()
+                    .setBody("[]")
+                    .addHeader("Content-Type", "application/json"));
+        }
+    }
+
+    private List<String> recordedPaths(int count) throws Exception {
+        List<String> paths = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            paths.add(mockWebServer.takeRequest().getPath());
+        }
+        return paths;
     }
 
     private void testGetUserAuthorizationFallsBackForStatus(int statusCode) throws Exception {
