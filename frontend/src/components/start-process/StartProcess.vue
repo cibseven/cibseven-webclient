@@ -66,6 +66,7 @@ import StartProcessDefaultForm from '@/components/start-process/StartProcessDefa
 import { BWaitingBox, HighlightedText } from '@cib/common-frontend'
 import { permissionsMixin } from '@/permissions.js'
 import SearchInput from '@/components/common-components/SearchInput.vue';
+import { isStartableProcess } from '@/utils/processes.js'
 
 export default {
   name: 'StartProcess',
@@ -86,7 +87,7 @@ export default {
   computed: {
     startableProcesses: function() {
       return this.$store.state.process.list.filter(process => {
-        return process.startableInTasklist === true && !process.revoked && process.suspended !== 'true' &&
+        return isStartableProcess(process) &&
           (process.name ? process.name.toLowerCase().includes(this.processesFilter.toLowerCase()) :
           process.key.toLowerCase().includes(this.processesFilter.toLowerCase()))
       }).sort((objA, objB) => {

@@ -20,24 +20,11 @@
   <div :style="{ 'height': 'calc(100% - 55px)' }" class="d-flex flex-column bg-light overflow-auto">
     <div class="h-100 container" :style="countStartItems === 4 ? 'max-width: 960px' : ''">
       <div ref="startContainer" class="row justify-content-center">
-        <StartViewItem v-if="tiles.includes('startProcess')" :to="{ name: 'start-process' }" :title="$t('start.startProcess.title')" :src="images.process"></StartViewItem>
-        <StartViewItem v-if="tiles.includes('tasklist')" :to="{ name: 'tasks' }" :title="$t('start.taskList.title')" :src="images.task"></StartViewItem>
-        <StartViewItem v-if="tiles.includes('cockpit')" :to="{ name: 'cockpit' }" :title="$t('start.cockpit.title')" :src="images.management"
-          :options="[
-            { to: '/seven/auth/processes/list', icon: 'mdi-map-legend', title: $t('start.cockpit.processes.title'), tooltip: $t('start.cockpit.processes.tooltip') },
-            { to: '/seven/auth/decisions', icon: 'mdi-wall-sconce-flat-outline', title: $t('start.cockpit.decisions.title'), tooltip: $t('start.cockpit.decisions.tooltip') },
-            { to: '/seven/auth/human-tasks', icon: 'mdi-account-file-text-outline', title: $t('start.cockpit.humanTasks.title'), tooltip: $t('start.cockpit.humanTasks.tooltip') },
-            { to: '/seven/auth/deployments', icon: 'mdi-upload-box-outline', title: $t('start.cockpit.deployments.title'), tooltip: $t('start.cockpit.deployments.tooltip') },
-            { to: '/seven/auth/batches', icon: 'mdi-repeat', title: $t('start.cockpit.batches.title'), tooltip: $t('start.cockpit.batches.tooltip') }
-          ]"
+        <StartViewItem v-for="tile in visibleTiles" :key="tile.key" :to="tile.to" :title="tile.title" :src="tile.src"
+          :options="tile.options"
         ></StartViewItem>
-        <StartViewItem v-if="tiles.includes('modeler')" :to="{ name: 'modeler' }" :title="$t('start.modeler.title')" :src="images.modeler"></StartViewItem>
-        <StartViewItem v-if="tiles.includes('admin')" :to="{ name: 'usersManagement' }" :title="$t('start.admin.title')" :src="images.admin"
-          :options="adminOptions"
-        ></StartViewItem>
-        <component :is="StartViewPlugin" v-if="StartViewPlugin"></component>
       </div>
-      <div v-if="!permissionsTaskList && !permissionsCockpit && !permissionsUsers">
+      <div v-if="tiles.length === 0">
         <img alt="" src="@/assets/images/start/empty_start_page.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px">
         <div class="h5 text-secondary text-center">{{ $t('start.emptyStart', { productName }) }}</div>
       </div>
@@ -49,103 +36,164 @@
 <script>
 import { permissionsMixin } from '@/permissions.js'
 import navigationPermissionsMixin from '@/mixins/navigationPermissionsMixin.js'
+import startTileOptionsMixin from '@/mixins/startTileOptionsMixin.js'
 import { ErrorDialog } from '@cib/common-frontend'
 import StartViewItem from '@/components/start/StartViewItem.vue'
+import {
+  buildNavGroups,
+  filterVisibleNavGroups,
+  projectStartHoverOptions,
+  singleOptionTile,
+  tasksOnlyRedirectTarget,
+  permissionContextFromVm
+} from '@/navigation/navGroups.js'
+import { hasStartableProcess } from '@/utils/processes.js'
 
-// images
-import processImage from '@/assets/images/start/process.svg'
 import taskImage from '@/assets/images/start/task.svg'
 import managementImage from '@/assets/images/start/management.svg'
 import adminImage from '@/assets/images/start/admin.svg'
 import modelerImage from '@/assets/images/start/modeler.svg'
 
 export default {
-  name: "StartView",
+  name: 'StartView',
   components: { ErrorDialog, StartViewItem },
-  mixins: [permissionsMixin, navigationPermissionsMixin],
-  data: function() {
+  mixins: [permissionsMixin, navigationPermissionsMixin, startTileOptionsMixin],
+  data() {
     return {
-      showAdminOptions: false,
-      showCockpitOptions: false,
       items: [],
       mutationObserver: null,
       images: {
-        process: processImage,
         task: taskImage,
         modeler: modelerImage,
         management: managementImage,
         admin: adminImage
       }
     }
-  },  
+  },
   computed: {
     productName() {
       return this.$root.config.productNamePageTitle || this.$t('login.productName')
     },
-    StartViewPlugin: function() {
-      return this.$options.components && this.$options.components.StartViewPlugin
-        ? this.$options.components.StartViewPlugin
-        : null
+    startableProcesses() {
+      return hasStartableProcess(this.$store.state.process.list)
+    },
+    navGroups() {
+      let groups = buildNavGroups(permissionContextFromVm(this))
+      const extender = this.$options.components?.NavGroupsExtender
+      const methods = extender?.methods || extender?.__vccOpts?.methods
+      if (methods?.extend) {
+        groups = methods.extend.call(this, groups)
+      }
+      return filterVisibleNavGroups(groups)
+    },
+    groupById() {
+      return Object.fromEntries(this.navGroups.map(g => [g.id, g]))
+    },
+    builtInTasksOptions() {
+      return projectStartHoverOptions(this.groupById.tasks?.items, this.$t.bind(this))
+    },
+    builtInBuilderOptions() {
+      return projectStartHoverOptions(this.groupById.builder?.items, this.$t.bind(this))
+    },
+    tasksOptions() {
+      return this.mergeOptions(this.builtInTasksOptions, 'TasksTileOptionsPlugin')
+    },
+    builderOptions() {
+      return this.mergeOptions(this.builtInBuilderOptions, 'BuilderTileOptionsPlugin')
+    },
+    dataOptions() {
+      // CE has no 'data' group of its own — EE (Ins7ght) / Flow (dataflow) inject
+      // the whole group via NavGroupsExtender, so this is empty unless one did.
+      return projectStartHoverOptions(this.groupById.data?.items, this.$t.bind(this))
+    },
+    cockpitOptions() {
+      return projectStartHoverOptions(this.groupById.cockpit?.items, this.$t.bind(this))
     },
     adminOptions() {
-      const options = []
-      if (this.permissionsUsersManagement)
-        options.push({ to: '/seven/auth/admin/users', icon: 'mdi-account-search-outline', title: this.$t('admin.users.title'), tooltip: this.$t('admin.users.title') })
-      if (this.permissionsGroupsManagement)
-        options.push({ to: '/seven/auth/admin/groups', icon: 'mdi-account-group-outline', title: this.$t('admin.groups.title'), tooltip: this.$t('admin.groups.title') })
-      if (this.permissionsTenantsManagement)
-        options.push({ to: '/seven/auth/admin/tenants', icon: 'mdi-domain', title: this.$t('admin.tenants.title'), tooltip: this.$t('admin.tenants.tooltip') })
-      if (this.permissionsAuthorizationsManagement)
-        options.push({ to: '/seven/auth/admin/authorizations', icon: 'mdi-account-key-outline', title: this.$t('admin.authorizations.title'), tooltip: this.$t('admin.authorizations.title') })
-      if (this.permissionsSystemManagement)
-        options.push({ to: '/seven/auth/admin/system', icon: 'mdi-cog-outline', title: this.$t('admin.system.title'), tooltip: this.$t('admin.system.tooltip') })
-      return options
+      return projectStartHoverOptions(this.groupById.admin?.items, this.$t.bind(this))
     },
-    tiles() {
+    // Builder collapses to its one remaining destination instead of linking
+    // to an otherwise-empty hub page (e.g. CE/EE's Builder tile becomes
+    // "Modeler"). Tasks/Cockpit/Admin keep their hub identity regardless of
+    // option count.
+    builderTile() {
+      const single = singleOptionTile(this.builderOptions)
+      return single
+        ? { to: single.to, title: single.title, options: null }
+        : { to: { name: 'builderHome' }, title: this.$t('start.builder.title'), options: this.builderOptions }
+    },
+    // Data has no CE-native content at all: it only appears, and only in its
+    // single-option collapsed form (e.g. EE's Ins7ght), when EE/Flow inject a
+    // 'data' group with exactly one destination. There's no CE hub page/route
+    // for it, so — unlike builderTile — this has no multi-option fallback.
+    // The injected group supplies its own tile illustration via `tileImage`.
+    dataTile() {
+      const single = singleOptionTile(this.dataOptions)
+      if (!single) return null
+      return { to: single.to, title: single.title, src: this.groupById.data?.tileImage, options: null }
+    },
+    // Single source for what the start page's tile row renders, so adding a
+    // tile is one entry here (plus its image import) instead of a separate
+    // computed and template block per tile. Tiles are only constructed once
+    // their condition holds, so a hidden tile never pays for $t()/title
+    // resolution.
+    visibleTiles() {
       const tiles = []
-      if (this.permissionsTaskList && this.startableProcesses) {
-        tiles.push('startProcess')
+      if (this.tasksOptions.length > 0) {
+        tiles.push({ key: 'tasks', to: { name: 'tasksHome' }, title: this.$t('start.tasks.title'), src: this.images.task, options: this.tasksOptions })
       }
-      if (this.permissionsTaskList) {
-        tiles.push('tasklist')
+      if (this.groupById.cockpit) {
+        tiles.push({ key: 'cockpit', to: { name: 'cockpit' }, title: this.$t('start.cockpit.title'), src: this.images.management, options: this.cockpitOptions })
       }
-      if (this.permissionsCockpit) {
-        tiles.push('cockpit')
+      if (this.builderOptions.length > 0) {
+        tiles.push({ key: 'builder', to: this.builderTile.to, title: this.builderTile.title, src: this.images.modeler, options: this.builderTile.options })
       }
-      if (this.permissionsUsers) {
-        tiles.push('admin')
+      if (this.dataTile) {
+        tiles.push({ key: 'data', to: this.dataTile.to, title: this.dataTile.title, src: this.dataTile.src, options: this.dataTile.options })
       }
-      if (this.permissionsModeler) {
-        tiles.push('modeler')
+      if (this.groupById.admin) {
+        tiles.push({ key: 'admin', to: { name: 'usersManagement' }, title: this.$t('start.admin.title'), src: this.images.admin, options: this.adminOptions })
       }
       return tiles
     },
-    startableProcesses: function() {
-      return this.processesFilteredUnsorted.find(p => { return p.startableInTasklist })
+    tiles() {
+      return this.visibleTiles.map(tile => tile.key)
     },
-    processesFilteredUnsorted: function() {
-      if (!this.$store.state.process.list) return []
-      return this.$store.state.process.list.filter(process => {
-        return ((!process.revoked))
-      })
-    },
-    countStartItems: function () {
+    countStartItems() {
       return this.items.length
-    },
+    }
   },
   methods: {
     updateItems() {
       if (this.$refs.startContainer) {
         this.items = Array.from(this.$refs.startContainer.children)
       }
+    },
+    // If Tasks is the only tile, the start page has nothing else to show —
+    // skip it and go straight into Tasks. The destination (tasklist vs. the
+    // tasks hub) depends on startableProcesses, which comes from the process
+    // list; decide immediately with whatever's loaded so far (defaulting to
+    // "no startable process" until it arrives) rather than block the
+    // redirect on that fetch — on a system with a lot of processes it can
+    // take a while, and there's no reason to make the user wait for it.
+    // Skip entirely when an error dialog needs to explain a prior redirect
+    // (e.g. a permission/not-found bounce), so this doesn't navigate the
+    // user away before they see it.
+    redirectIfTasksOnly() {
+      if (this.$route.query.errorType) return
+      const target = tasksOnlyRedirectTarget(this.tiles, this.tasksOptions)
+      if (target) this.$router.replace(target)
     }
+  },
+  created() {
+    this.redirectIfTasksOnly()
   },
   mounted() {
     this.updateItems()
     if (this.$refs.startContainer) {
       this.mutationObserver = new MutationObserver(() => {
         this.updateItems()
-      })      
+      })
       this.mutationObserver.observe(this.$refs.startContainer, {
         childList: true,
         subtree: false
