@@ -21,12 +21,16 @@
 // definition and instance views), so resizing/collapsing in one is reflected
 // in the other - resizerMixin itself (shared with the decision views) stays
 // untouched since only components including this mixin persist anything.
+// The storage key defaults to 'viewer-frame-size:process'; a host component
+// can opt into its own group of components by overriding the
+// `viewerFrameStorageKey` method (e.g. decision views return
+// 'viewer-frame-size:decision').
 const DEBOUNCE_MS = 300
 const MIN_VIEWER_HEIGHT = 100
 // Space to always keep visible below the viewer (tabs/table area), so a height
 // saved on a taller window never pushes content off-screen on a shorter one.
 const MIN_BOTTOM_VISIBLE = 120
-const STORAGE_KEY = 'viewer-frame-size:process'
+const DEFAULT_STORAGE_KEY = 'viewer-frame-size:process'
 
 export default {
   data: function() {
@@ -53,6 +57,9 @@ export default {
     window.removeEventListener('resize', this.clampViewerFrameHeight)
   },
   methods: {
+    viewerFrameStorageKey: function() {
+      return DEFAULT_STORAGE_KEY
+    },
     maxViewerFrameHeight: function() {
       return window.innerHeight - (this.topBarHeight || 0) - MIN_BOTTOM_VISIBLE
     },
@@ -64,7 +71,7 @@ export default {
     },
     restoreViewerFrameSize: function() {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY)
+        const raw = localStorage.getItem(this.viewerFrameStorageKey())
         if (!raw) return
         const saved = JSON.parse(raw)
         if (typeof saved.height === 'number') {
@@ -77,7 +84,7 @@ export default {
     },
     saveViewerFrameSize: function() {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        localStorage.setItem(this.viewerFrameStorageKey(), JSON.stringify({
           height: this.bpmnViewerHeight,
           icon: this.toggleIcon
         }))

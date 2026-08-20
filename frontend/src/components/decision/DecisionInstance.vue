@@ -28,7 +28,7 @@
     </router-link>
 
     <ViewerFrame :resizerMixin="this">
-      <DmnViewer ref="diagram" class="h-100" @view-changed="onViewChanged" />
+      <DmnViewer ref="diagram" class="h-100" @view-changed="onViewChanged" @viewbox-changed="onViewboxChanged" />
     </ViewerFrame>
 
     <div class="position-absolute w-100" style="left: 0; z-index: 1" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight + 1) + 'px; ' + toggleTransition">
@@ -67,6 +67,8 @@ import { permissionsMixin } from '@/permissions.js'
 import { DecisionService } from '@/services.js'
 import DmnViewer from '@/components/decision/DmnViewer.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
+import bpmnViewportPersistenceMixin from '@/components/process/mixins/bpmnViewportPersistenceMixin.js'
+import viewerFrameSizePersistenceMixin from '@/components/process/mixins/viewerFrameSizePersistenceMixin.js'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
 import { FlowTable, GenericTabs } from '@cib/common-frontend'
@@ -75,7 +77,7 @@ import { mapActions, mapGetters } from 'vuex'
 export default {
   name: 'DecisionInstance',
   components: { DmnViewer, FlowTable, GenericTabs, ScrollableTabsContainer, ViewerFrame },
-  mixins: [permissionsMixin, resizerMixin],
+  mixins: [permissionsMixin, resizerMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
   props: {
     versionIndex: String,
     instanceId: String,
@@ -127,12 +129,18 @@ export default {
     loadDiagram() {
       this.getXmlById(this.instance.decisionDefinitionId).then(response => {
         setTimeout(() => {
-          this.$refs.diagram.showDiagram(response.dmnXml)
+          this.$refs.diagram.showDiagram(response.dmnXml).then(() => this.restoreViewboxIfSaved())
         }, 100)
       })
       .catch(error => {
         console.error("Error loading diagram:", error)
       })
+    },
+    viewboxStorageKey() {
+      return `dmn-viewbox:${this.instance.decisionDefinitionId}`
+    },
+    viewerFrameStorageKey() {
+      return 'viewer-frame-size:decision'
     },
     onViewChanged() {
       this.applyInstanceValues()

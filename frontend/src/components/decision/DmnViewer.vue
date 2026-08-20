@@ -66,13 +66,15 @@ import moveCanvasModule from 'diagram-js/lib/navigation/movecanvas'
 export default {
   name: 'DmnViewer',
   components: { BWaitingBox },
-  emits: ['view-changed'],
+  emits: ['view-changed', 'viewbox-changed'],
   data() {
     return {
       viewer: null,
       loader: true,
       isDrdView: true,
-      overlayList: []
+      overlayList: [],
+      viewboxChangeTimer: null,
+      viewboxListenerViewer: null
     }
   },
   mounted() {
@@ -88,6 +90,7 @@ export default {
     this.viewer.on('views.changed', data => {
       if (data?.activeView?.type === 'drd') {
         this.isDrdView = true
+        this.attachViewboxListener()
       } else {
         this.isDrdView = false
       }
@@ -103,7 +106,7 @@ export default {
     showDiagram(xml) {
       this.setDiagramReady(false)
       this.loader = true
-      this.viewer.importXML(xml).then(() => {
+      return this.viewer.importXML(xml).then(() => {
         // Open the first decision if available
         const decisions =
           this.viewer.getDefinitions()?.drgElement?.filter(el => el.$type === 'dmn:Decision') || []
@@ -117,17 +120,37 @@ export default {
         if (activeViewer && activeViewer.get('canvas')) {
           activeViewer.get('canvas').zoom('fit-viewport')
         }
-        this.loader = false
-        // Use store instead of emitting
-        setTimeout(() => {
-          this.setDiagramReady(true)
-        }, 500)
+        return new Promise(resolve => {
+          setTimeout(() => {
+            this.loader = false
+            this.setDiagramReady(true)
+            resolve()
+          }, 500)
+        })
       }).catch(err => {
         console.error('Error loading DMN diagram:', err)
         // Use store instead of emitting
         this.setDiagramReady(false)
         this.loader = false
       })
+    },
+    // The drd sub-viewer only exists once its view is opened, so we attach lazily
+    // here rather than in mounted(); the guard below keeps it a no-op afterwards.
+    attachViewboxListener() {
+      const activeViewer = this.viewer.getActiveViewer()
+      if (!activeViewer || this.viewboxListenerViewer === activeViewer) return
+      this.viewboxListenerViewer = activeViewer
+      activeViewer.get('eventBus').on('canvas.viewbox.changed', () => {
+        clearTimeout(this.viewboxChangeTimer)
+        this.viewboxChangeTimer = setTimeout(() => {
+          this.$emit('viewbox-changed', activeViewer.get('canvas').viewbox())
+        }, 300)
+      })
+    },
+    setViewbox(viewbox) {
+      const activeViewer = this.viewer?.getActiveViewer()
+      if (!activeViewer) return
+      activeViewer.get('canvas').viewbox(viewbox)
     },
     // Method to add HTML overlays to DMN elements
     setHtmlOnDiagram(elementId, html, position) {
@@ -191,6 +214,7 @@ export default {
   },
   beforeUnmount() {
     this.setDiagramReady(false)
+    clearTimeout(this.viewboxChangeTimer)
     if (this.viewer) {
       this.viewer.destroy()
     }
