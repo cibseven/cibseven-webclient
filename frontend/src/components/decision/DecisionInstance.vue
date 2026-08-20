@@ -137,10 +137,10 @@ export default {
       })
     },
     viewboxStorageKey() {
-      return `dmn-viewbox:${this.instance.decisionDefinitionId}`
+      return `cibseven:dmn-viewbox:${this.instance.decisionDefinitionId}`
     },
     viewerFrameStorageKey() {
-      return 'viewer-frame-size:decision'
+      return 'cibseven:viewer-frame-size:decision'
     },
     onViewChanged() {
       this.applyInstanceValues()

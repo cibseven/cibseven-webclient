@@ -21,13 +21,13 @@ describe('DecisionDefinitionVersion', () => {
   describe('viewboxStorageKey', () => {
     it('scopes the persisted viewbox by the decision id', () => {
       const key = DecisionDefinitionVersion.methods.viewboxStorageKey.call({ decision: { id: 'dec-42' } })
-      expect(key).toBe('dmn-viewbox:dec-42')
+      expect(key).toBe('cibseven:dmn-viewbox:dec-42')
     })
   })
 
   describe('viewerFrameStorageKey', () => {
     it('uses a decision-scoped storage key shared with DecisionInstance', () => {
-      expect(DecisionDefinitionVersion.methods.viewerFrameStorageKey.call({})).toBe('viewer-frame-size:decision')
+      expect(DecisionDefinitionVersion.methods.viewerFrameStorageKey.call({})).toBe('cibseven:viewer-frame-size:decision')
     })
   })
 })

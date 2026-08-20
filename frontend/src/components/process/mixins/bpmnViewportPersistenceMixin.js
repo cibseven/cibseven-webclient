@@ -21,7 +21,7 @@
 export default {
   methods: {
     viewboxStorageKey: function() {
-      return `bpmn-viewbox:${this.process.id}`
+      return `cibseven:bpmn-viewbox:${this.process.id}`
     },
     onViewboxChanged: function(viewbox) {
       try {

@@ -144,10 +144,10 @@ export default {
         })
     },
     viewboxStorageKey() {
-      return `dmn-viewbox:${this.decision.id}`
+      return `cibseven:dmn-viewbox:${this.decision.id}`
     },
     viewerFrameStorageKey() {
-      return 'viewer-frame-size:decision'
+      return 'cibseven:viewer-frame-size:decision'
     },
     handleScrollDecisions: function(el) {
       // TODO: Check method

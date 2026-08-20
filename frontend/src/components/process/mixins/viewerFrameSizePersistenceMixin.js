@@ -21,16 +21,16 @@
 // definition and instance views), so resizing/collapsing in one is reflected
 // in the other - resizerMixin itself (shared with the decision views) stays
 // untouched since only components including this mixin persist anything.
-// The storage key defaults to 'viewer-frame-size:process'; a host component
-// can opt into its own group of components by overriding the
+// The storage key defaults to 'cibseven:viewer-frame-size:process'; a host
+// component can opt into its own group of components by overriding the
 // `viewerFrameStorageKey` method (e.g. decision views return
-// 'viewer-frame-size:decision').
+// 'cibseven:viewer-frame-size:decision').
 const DEBOUNCE_MS = 300
 const MIN_VIEWER_HEIGHT = 100
 // Space to always keep visible below the viewer (tabs/table area), so a height
 // saved on a taller window never pushes content off-screen on a shorter one.
 const MIN_BOTTOM_VISIBLE = 120
-const DEFAULT_STORAGE_KEY = 'viewer-frame-size:process'
+const DEFAULT_STORAGE_KEY = 'cibseven:viewer-frame-size:process'
 
 export default {
   data: function() {

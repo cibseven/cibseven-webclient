@@ -15,14 +15,14 @@
  *  limitations under the License.
  */
 // Persists a SidebarsFlow "left-open" boolean in localStorage under
-// `sidebar-left-open:{scope}`. The host component owns its own `leftOpen`
+// `cibseven:sidebar-left-open:{scope}`. The host component owns its own `leftOpen`
 // data and decides what scope(s) to use (a single static scope, or several
 // scopes it switches between), calling getSavedLeftOpen/saveLeftOpen directly.
 export default {
   methods: {
     getSavedLeftOpen: function(scope) {
       try {
-        const saved = localStorage.getItem(`sidebar-left-open:${scope}`)
+        const saved = localStorage.getItem(`cibseven:sidebar-left-open:${scope}`)
         return saved === null ? true : saved === 'true'
       } catch {
         return true
@@ -30,7 +30,7 @@ export default {
     },
     saveLeftOpen: function(scope, isOpen) {
       try {
-        localStorage.setItem(`sidebar-left-open:${scope}`, isOpen)
+        localStorage.setItem(`cibseven:sidebar-left-open:${scope}`, isOpen)
       } catch {
         // localStorage unavailable or quota exceeded - ignore
       }

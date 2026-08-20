@@ -25,18 +25,18 @@ describe('bpmnViewportPersistenceMixin', () => {
   beforeEach(() => sessionStorage.clear())
 
   it('defaults the storage key to the BPMN process id', () => {
-    expect(viewboxStorageKey.call({ process: { id: 'proc-1' } })).toBe('bpmn-viewbox:proc-1')
+    expect(viewboxStorageKey.call({ process: { id: 'proc-1' } })).toBe('cibseven:bpmn-viewbox:proc-1')
   })
 
   it('persists and restores a viewbox using a host-overridden key (e.g. a DMN decision id)', () => {
     const setViewbox = vi.fn()
     const ctx = {
-      viewboxStorageKey: () => 'dmn-viewbox:dec-1',
+      viewboxStorageKey: () => 'cibseven:dmn-viewbox:dec-1',
       $refs: { diagram: { setViewbox } }
     }
     const viewbox = { x: 1, y: 2, width: 100, height: 50 }
     onViewboxChanged.call(ctx, viewbox)
-    expect(sessionStorage.getItem('dmn-viewbox:dec-1')).toBe(JSON.stringify(viewbox))
+    expect(sessionStorage.getItem('cibseven:dmn-viewbox:dec-1')).toBe(JSON.stringify(viewbox))
 
     restoreViewboxIfSaved.call(ctx)
     expect(setViewbox).toHaveBeenCalledWith(viewbox)
@@ -44,7 +44,7 @@ describe('bpmnViewportPersistenceMixin', () => {
 
   it('does not call setViewbox when nothing was saved for that key', () => {
     const setViewbox = vi.fn()
-    restoreViewboxIfSaved.call({ viewboxStorageKey: () => 'dmn-viewbox:none', $refs: { diagram: { setViewbox } } })
+    restoreViewboxIfSaved.call({ viewboxStorageKey: () => 'cibseven:dmn-viewbox:none', $refs: { diagram: { setViewbox } } })
     expect(setViewbox).not.toHaveBeenCalled()
   })
 })
@@ -55,7 +55,7 @@ describe('viewerFrameSizePersistenceMixin', () => {
   beforeEach(() => localStorage.clear())
 
   it('defaults to the process storage key', () => {
-    expect(viewerFrameStorageKey.call({})).toBe('viewer-frame-size:process')
+    expect(viewerFrameStorageKey.call({})).toBe('cibseven:viewer-frame-size:process')
   })
 
   it('saves and restores height/icon under the resolved key', () => {
@@ -69,10 +69,10 @@ describe('viewerFrameSizePersistenceMixin', () => {
   })
 
   it('keeps a host-overridden storage key independent from the default one', () => {
-    const ctx = { viewerFrameStorageKey: () => 'viewer-frame-size:decision', bpmnViewerHeight: 200, toggleIcon: 'mdi-chevron-down' }
+    const ctx = { viewerFrameStorageKey: () => 'cibseven:viewer-frame-size:decision', bpmnViewerHeight: 200, toggleIcon: 'mdi-chevron-down' }
     saveViewerFrameSize.call(ctx)
-    expect(localStorage.getItem('viewer-frame-size:process')).toBeNull()
-    expect(localStorage.getItem('viewer-frame-size:decision')).toContain('200')
+    expect(localStorage.getItem('cibseven:viewer-frame-size:process')).toBeNull()
+    expect(localStorage.getItem('cibseven:viewer-frame-size:decision')).toContain('200')
   })
 })
 
