@@ -81,6 +81,7 @@ npm run dev
 - [CIB seven Manual](https://docs.cibseven.org/manual/latest/)
 - [Migration Guide](https://github.com/cibseven/cibseven-migration)
 - [Docker Setup](https://github.com/cibseven/cibseven-docker)
+- [Webclient plugins](PLUGINS.md)
 
 ## Contributing
 
