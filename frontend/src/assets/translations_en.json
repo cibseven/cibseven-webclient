@@ -774,6 +774,8 @@
 				"process-instances": "Process instances",
 				"decision-instances": "Decision instances",
 				"task-users": "Task users",
+				"total": "Total",
+				"actions": "Actions",
 				"usageLast12MonthsByMonth": "Usage last 12 months by month",
 				"annualUsageBySubscriptionTerm": "Annual usage metrics by subscription term",
 				"fromUpToToday": "{from} up to today",
@@ -1088,7 +1090,7 @@
 		"PasswordPolicyException": "Password does not match policy",
 		"InvalidUserIdException": "The user ID contains invalid characters. Only alphanumeric characters (a-z, A-Z, 0-9) are allowed. Please correct your entry.",
 		"invalidEmail": "Please enter a valid email address.",
-		"InvalidValueHistoryTimeToLive": "Null values are not allowed for history time to live.",
+		"InvalidValueHistoryTimeToLive": "A history time to live is required. Set it in the model or configure a default in the engine.",
 		"DmnTransformationException": "The resource could not be updated. Unable to transform DMN resource.",
 		"InvalidGroupIdException": "The group ID is invalid. It may only contain alphanumeric characters (a-z, A-Z, 0-9) or camunda-admin. Please correct your entry.",
 		"unknown": "An unexpected error occurred. Please try again."

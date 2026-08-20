@@ -37,6 +37,19 @@ public interface IUserProvider {
 
 	public long countUsers(Map<String, Object> filters, CIBUser user) throws SystemException;
 	public Authorizations getUserAuthorization(CIBUser user);
+
+	/**
+	 * Whether the user holds a permission on a resource, as decided by the engine.
+	 *
+	 * <p>Asked of the engine rather than evaluated here on purpose: the engine evaluates with its own
+	 * privileges, applies group and global grants, revokes, and answers true when authorization is
+	 * disabled altogether.</p>
+	 *
+	 * @param resourceType numeric resource type, e.g. 0 for the application resource
+	 * @param resourceId id of the resource, e.g. modeler
+	 * @param permission permission to check, e.g. ACCESS
+	 */
+	public boolean isUserAuthorized(CIBUser user, int resourceType, String resourceId, String permission);
 	public Collection<SevenUser> fetchUsers(CIBUser user) throws SystemException;
 	public SevenVerifyUser verifyUser(StandardLogin login, CIBUser user) throws SystemException;
 	public Collection<User> findUsers(Optional<String> id, Optional<String> firstName, Optional<String> firstNameLike, Optional<String> lastName, Optional<String> lastNameLike,

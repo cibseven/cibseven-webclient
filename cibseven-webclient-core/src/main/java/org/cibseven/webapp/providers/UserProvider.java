@@ -32,6 +32,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
+import org.cibseven.webapp.exception.UnknownResourceTypeException;
+import org.cibseven.webapp.rest.model.AuthorizationCheckResult;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.SystemException;
@@ -67,6 +69,33 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	/** engine-rest URLs known not to offer {@code GET /authorization/self}, keyed per engine. */
 	private final Set<String> selfAuthorizationEndpointUnsupported = ConcurrentHashMap.newKeySet();
+
+	@Override
+	public boolean isUserAuthorized(CIBUser user, int resourceType, String resourceId, String permission) {
+		UriComponentsBuilder builder = UriComponentsBuilder
+			.fromUriString(getEngineRestUrl(user) + "/authorization/check")
+			.queryParam("permissionName", permission)
+			.queryParam("resourceName", resourceName(resourceType))
+			.queryParam("resourceType", resourceType);
+		if (resourceId != null) {
+			builder.queryParam("resourceId", resourceId);
+		}
+		AuthorizationCheckResult result =
+			((ResponseEntity<AuthorizationCheckResult>) doGet(builder, AuthorizationCheckResult.class, user)).getBody();
+		return result != null && result.isAuthorized();
+	}
+
+	/**
+	 * The engine requires a resource name next to the numeric type. It decides on the type, so the
+	 * name only has to be present; deriving it from the type keeps them consistent.
+	 */
+	private String resourceName(int resourceType) {
+		return Arrays.stream(SevenResourceType.values())
+			.filter(candidate -> candidate.getType() == resourceType)
+			.findFirst()
+			.map(candidate -> candidate.name().toLowerCase())
+			.orElseThrow(() -> new UnknownResourceTypeException(resourceType));
+	}
 
 	@Override
 	public Authorizations getUserAuthorization(CIBUser user) {

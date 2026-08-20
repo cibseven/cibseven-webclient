@@ -655,6 +655,15 @@ public interface BpmProvider {
 		return getUserProvider().getUserAuthorization(user);
 	}
 
+	/**
+	 * Whether the user holds a permission on a resource, decided by the engine.
+	 * See {@link IUserProvider#isUserAuthorized}.
+	 */
+	default boolean isUserAuthorized(CIBUser user, int resourceType, String resourceId, String permission)
+			throws SystemException {
+		return getUserProvider().isUserAuthorized(user, resourceType, resourceId, permission);
+	}
+
 	default Collection<SevenUser> fetchUsers(CIBUser user) throws SystemException {
 		return getUserProvider().fetchUsers(user);
 	}
@@ -1689,9 +1698,9 @@ public interface BpmProvider {
      * @return Fetched processes instances.
      * @throws SystemException in case of an error.
      */
-	default Collection<ProcessInstance> findCurrentProcessesInstances(Map<String, Object> data, CIBUser user)
+	default Collection<ProcessInstance> findCurrentProcessesInstances(Map<String, Object> data, Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user)
 			throws SystemException {
-		return getProcessProvider().findCurrentProcessesInstances(data, user);
+		return getProcessProvider().findCurrentProcessesInstances(data, firstResult, maxResults, user);
 	}
 
 

@@ -485,7 +485,8 @@ public abstract class SevenProviderBase {
 			wrapperException = new PasswordPolicyException(cause);
 		} else if (technicalErrorMsg.matches(".*User has an invalid id.*")) {
 			wrapperException = new InvalidUserIdException(cause);
-		} else if (technicalErrorMsg.matches(".*Null historyTimeToLive values are not allowed.*")) {
+		} else if (technicalErrorMsg.matches(".*Null historyTimeToLive values are not allowed.*")
+				|| technicalErrorMsg.matches("(?s).*History Time To Live \\(TTL\\) cannot be null.*")) {
 			wrapperException = new InvalidValueHistoryTimeToLive(cause);
 		} else if (technicalErrorMsg.matches(".*processInstanceIds is empty.*")) {
 			wrapperException = new BatchOperationException(cause);
