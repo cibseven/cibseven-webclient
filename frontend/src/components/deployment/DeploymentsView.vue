@@ -456,7 +456,7 @@ export default {
         d.isSelected = false
         d.name = d.name || d.id
 
-        let group = '-'
+        let group
         let name
         if (this.sortBy === 'name') {
           group = (d.name || '-')[0].toUpperCase() || '-'

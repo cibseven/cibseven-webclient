@@ -169,12 +169,9 @@ export default {
       }
     },
     findUsers: debounce(800, function(filter) {
-      let firstNameLike = null
-      let lastNameLike = null
-      let id = null
-      firstNameLike = ({ firstNameLike: '*' + filter + '*' })
-      lastNameLike = ({ lastNameLike: '*' + filter + '*' })
-      id = ({ id: filter })
+      const firstNameLike = ({ firstNameLike: '*' + filter + '*' })
+      const lastNameLike = ({ lastNameLike: '*' + filter + '*' })
+      const id = ({ id: filter })
       Promise.all([AdminService.findUsers(firstNameLike),
         AdminService.findUsers(lastNameLike), AdminService.findUsers(id)])
       .then(users => {
