@@ -620,7 +620,7 @@ export default {
       const MAX_SCROLL_RETRIES = 5
 	    const taskId = this.$route.params.taskId
 	    const ref = this.$refs['taskItem-' + taskId]
-	    let el = null
+	    let el
 	    if (Array.isArray(ref)) {
 	      el = ref[0]?.$el || ref[0]
 	    } else if (ref && ref.$el) {

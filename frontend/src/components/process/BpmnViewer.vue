@@ -292,7 +292,7 @@ export default {
       document.addEventListener('click', this.overlayClickHandler)
     },
     highlightElement: function(item) {
-      let activityId = ''
+      let activityId
       if (typeof item === 'string') {
         activityId = item
       } else if (item && item.activityId) {
