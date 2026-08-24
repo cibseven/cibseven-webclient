@@ -95,7 +95,6 @@ import StartProcess from '@/components/start-process/StartProcess.vue'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 import { SuccessAlert } from '@cib/common-frontend'
 import { ProcessService } from '@/services.js'
-import { isStartableProcess } from '@/utils/processes.js'
 
 export default {
   name: 'StartProcessList',
@@ -176,7 +175,7 @@ export default {
       })
     },
     allFilter: function(processes) {
-      return processes.filter(isStartableProcess)
+      return processes.filter(process => process.startableInTasklist === true && !process.revoked && process.suspended !== 'true')
     },
     favoriteHandler: function(process) {
       process.favorite = !process.favorite

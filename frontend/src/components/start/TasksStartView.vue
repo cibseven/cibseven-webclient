@@ -26,7 +26,6 @@ import navigationPermissionsMixin from '@/mixins/navigationPermissionsMixin.js'
 import startTileOptionsMixin from '@/mixins/startTileOptionsMixin.js'
 import StartHubView from '@/components/start/StartHubView.vue'
 import { getVisibleGroup, projectStartHoverOptions } from '@/navigation/navGroups.js'
-import { hasStartableProcess } from '@/utils/processes.js'
 
 export default {
   name: 'TasksStartView',
@@ -35,7 +34,7 @@ export default {
   emits: [],
   computed: {
     startableProcesses() {
-      return hasStartableProcess(this.$store.state.process.list)
+      return (this.$store.state.process.list || []).some(process => process.startableInTasklist === true && !process.revoked && process.suspended !== 'true')
     },
     // Reuses navGroups.js's own 'tasks' group (including each item's tileImage)
     // instead of re-encoding the same permission/startableProcesses-gated item

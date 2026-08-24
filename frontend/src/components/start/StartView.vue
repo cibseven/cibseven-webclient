@@ -47,7 +47,6 @@ import {
   tasksOnlyRedirectTarget,
   permissionFlagsFromVm
 } from '@/navigation/navGroups.js'
-import { hasStartableProcess } from '@/utils/processes.js'
 
 import taskImage from '@/assets/images/start/task.svg'
 import managementImage from '@/assets/images/start/management.svg'
@@ -75,7 +74,7 @@ export default {
       return this.$root.config.productNamePageTitle || this.$t('login.productName')
     },
     startableProcesses() {
-      return hasStartableProcess(this.$store.state.process.list)
+      return (this.$store.state.process.list || []).some(process => process.startableInTasklist === true && !process.revoked && process.suspended !== 'true')
     },
     navGroups() {
       let groups = buildNavGroups(permissionFlagsFromVm(this))
