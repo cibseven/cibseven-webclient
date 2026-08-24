@@ -37,12 +37,7 @@
 <script>
 import StartViewItem from '@/components/start/StartViewItem.vue'
 
-/**
- * Shared shell for the Tasks/Builder/Data/Access-management hub pages:
- * a tile grid, or an empty-start illustration when there are no tiles.
- * Hosts pass pre-resolved items ({ title, src, to }); permission/plugin
- * filtering stays in each hub's own component.
- */
+/** Shared shell for the Tasks/Builder/Data/Access-management hub pages: a tile grid or empty state. */
 export default {
   name: 'StartHubView',
   components: { StartViewItem },

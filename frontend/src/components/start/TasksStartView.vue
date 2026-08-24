@@ -36,10 +36,7 @@ export default {
     startableProcesses() {
       return (this.$store.state.process.list || []).some(process => process.startableInTasklist === true && !process.revoked && process.suspended !== 'true')
     },
-    // Reuses navGroups.js's own 'tasks' group (including each item's tileImage)
-    // instead of re-encoding the same permission/startableProcesses-gated item
-    // list here, so this hub page can't silently diverge from the navbar's
-    // Tasks dropdown.
+    // Reuses navGroups.js's 'tasks' group, so this can't diverge from the navbar's Tasks dropdown.
     builtInItems() {
       const tasks = getVisibleGroup(this, 'tasks')
       return projectStartHoverOptions(tasks?.items, this.$t.bind(this))

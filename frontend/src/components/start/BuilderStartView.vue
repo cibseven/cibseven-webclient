@@ -33,9 +33,7 @@ export default {
   components: { StartHubView },
   emits: [],
   computed: {
-    // Reuses navGroups.js's own 'builder' group instead of re-encoding its
-    // single Modeler destination here, so this hub page can't silently
-    // diverge from the navbar's Builder dropdown.
+    // Reuses navGroups.js's 'builder' group, so this can't diverge from the navbar's Builder dropdown.
     builtInItems() {
       const builder = getVisibleGroup(this, 'builder')
       return projectStartHoverOptions(builder?.items, this.$t.bind(this))

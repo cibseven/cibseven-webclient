@@ -67,8 +67,7 @@ export default {
     productName() {
       return this.$root.config.productNamePageTitle || this.$t('login.productName')
     },
-    // Reuses the shared nav catalog so admin-tile visibility can't drift from
-    // the start page / navbar (see StartView.vue, AccessManagement.vue).
+    // Shared nav catalog, so this matches the start page / navbar (see StartView.vue).
     adminGroup() {
       return filterVisibleNavGroups(buildNavGroups(permissionFlagsFromVm(this))).find(g => g.id === 'admin')
     },

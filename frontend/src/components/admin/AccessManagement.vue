@@ -33,9 +33,7 @@ export default {
   emits: [],
   computed: {
     items() {
-      // getVisibleGroup filters through the group-level `show` flag too, not
-      // just each item's own show flag, so this can't drift from
-      // UsersManagement.vue's admin-tile gate.
+      // getVisibleGroup also applies the group's own show flag, matching UsersManagement.vue's gate.
       const admin = getVisibleGroup(this, 'admin')
       return accessManagementCatalogItems(admin?.items).map(item => ({
         title: this.$t(item.title),

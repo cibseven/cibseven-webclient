@@ -101,8 +101,7 @@ export default {
       return this.mergeOptions(this.builtInBuilderOptions, 'BuilderTileOptionsPlugin')
     },
     dataOptions() {
-      // CE has no 'data' group of its own — EE (Ins7ght) / Flow (dataflow) inject
-      // the whole group via NavGroupsExtender, so this is empty unless one did.
+      // CE has no 'data' group; EE/Flow inject it via NavGroupsExtender.
       return projectStartHoverOptions(this.groupById.data?.items, this.$t.bind(this))
     },
     cockpitOptions() {
@@ -111,31 +110,20 @@ export default {
     adminOptions() {
       return projectStartHoverOptions(this.groupById.admin?.items, this.$t.bind(this))
     },
-    // Builder collapses to its one remaining destination instead of linking
-    // to an otherwise-empty hub page (e.g. CE/EE's Builder tile becomes
-    // "Modeler"). Tasks/Cockpit/Admin keep their hub identity regardless of
-    // option count.
+    // Collapses to its one destination (e.g. "Modeler") instead of an empty hub tile.
     builderTile() {
       const single = singleOptionTile(this.builderOptions)
       return single
         ? { to: single.to, title: single.title, options: null }
         : { to: { name: 'builderHome' }, title: this.$t('start.builder.title'), options: this.builderOptions }
     },
-    // Data has no CE-native content at all: it only appears, and only in its
-    // single-option collapsed form (e.g. EE's Ins7ght), when EE/Flow inject a
-    // 'data' group with exactly one destination. There's no CE hub page/route
-    // for it, so — unlike builderTile — this has no multi-option fallback.
-    // The injected group supplies its own tile illustration via `tileImage`.
+    // Only appears when EE/Flow inject a single-option 'data' group; no CE hub page to fall back to.
     dataTile() {
       const single = singleOptionTile(this.dataOptions)
       if (!single) return null
       return { to: single.to, title: single.title, src: this.groupById.data?.tileImage, options: null }
     },
-    // Single source for what the start page's tile row renders, so adding a
-    // tile is one entry here (plus its image import) instead of a separate
-    // computed and template block per tile. Tiles are only constructed once
-    // their condition holds, so a hidden tile never pays for $t()/title
-    // resolution.
+    // Single source for the tile row; adding a tile is one entry here.
     visibleTiles() {
       const tiles = []
       if (this.tasksOptions.length > 0) {
@@ -168,16 +156,8 @@ export default {
         this.items = Array.from(this.$refs.startContainer.children)
       }
     },
-    // If Tasks is the only tile, the start page has nothing else to show —
-    // skip it and go straight into Tasks. The destination (tasklist vs. the
-    // tasks hub) depends on startableProcesses, which comes from the process
-    // list; decide immediately with whatever's loaded so far (defaulting to
-    // "no startable process" until it arrives) rather than block the
-    // redirect on that fetch — on a system with a lot of processes it can
-    // take a while, and there's no reason to make the user wait for it.
-    // Skip entirely when an error dialog needs to explain a prior redirect
-    // (e.g. a permission/not-found bounce), so this doesn't navigate the
-    // user away before they see it.
+    // If Tasks is the only tile, skip the start page and go straight there.
+    // Skip when an error dialog still needs to explain a prior redirect.
     redirectIfTasksOnly() {
       if (this.$route.query.errorType) return
       const target = tasksOnlyRedirectTarget(this.tiles, this.tasksOptions)

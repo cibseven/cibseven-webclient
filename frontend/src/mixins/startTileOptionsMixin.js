@@ -15,10 +15,7 @@
  *  limitations under the License.
  */
 
-/**
- * Merges built-in start-tile options with contributions from registered plugin components.
- * Plugins expose getOptions() and are invoked with the host component as `this`.
- */
+/** Merges built-in tile options with a registered plugin's getOptions(), called with the host as `this`. */
 export default {
   methods: {
     getPluginOptions(pluginName) {

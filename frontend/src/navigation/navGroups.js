@@ -16,23 +16,11 @@
  */
 
 /**
- * Navigation catalog vs surface projections
- * ----------------------------------------
- * `buildNavGroups` is the shared IA catalog for CE's four groups (Tasks /
- * Cockpit / Builder / Admin). There is no CE "Data" group — EE (Ins7ght) and
- * Flow (dataflow) inject their own `data` group entirely, via the same
- * NavGroupsExtender hook StartView.vue already calls; see that component's
- * `navGroups` computed. Surfaces project the catalog — they are not
- * independent menus:
- *
- * - navbar     — dense power-user dropdown (all secondary destinations)
- * - startHover — short orientation list on start tiles (tile click covers group default)
- * - hub pages  — same subset as startHover (or identity-only for Access management)
- *
- * Item membership uses a single `surfaces` allowlist (default: both).
- * Do not add parallel booleans (navbarOnly / omitFromStartHover).
- * Admin system leaves use `collapseGroup: 'system'` so startHover shows one System entry
- * while the navbar keeps the leaf destinations.
+ * `buildNavGroups` is CE's shared catalog (Tasks/Cockpit/Builder/Admin); EE/Flow
+ * add a `data` group via NavGroupsExtender (see StartView.vue). Surfaces
+ * (`navbar`, `startHover`, hub pages) project this same catalog — use the
+ * `surfaces` allowlist per item instead of parallel booleans. Admin system
+ * leaves collapse into one startHover entry via `collapseGroup: 'system'`.
  */
 
 import taskImage from '@/assets/images/start/task.svg'
@@ -50,13 +38,7 @@ export const SURFACES = {
 
 const DEFAULT_SURFACES = [SURFACES.NAVBAR, SURFACES.START_HOVER]
 
-/**
- * Collapsed startHover entries for navbar-only leaf groups, keyed by
- * `collapseGroup`. Each entry stands in for its whole leaf group on the
- * startHover surface, so its to/icon/title are deliberately the group-level
- * "System" identity, not any single leaf's — kept in sync by hand with the
- * `collapseGroup: 'system'` items inside buildNavGroups's admin group below.
- */
+// startHover stand-in for collapsed navbar-only leaves, keyed by collapseGroup.
 export const COLLAPSE_TARGETS = {
   system: {
     to: '/seven/auth/admin/system',
@@ -68,10 +50,7 @@ export const COLLAPSE_TARGETS = {
 
 /**
  * Builds CE's four navigation groups (Tasks / Cockpit / Builder / Admin).
- * EE/Flow inject their own `data` group on top of this via NavGroupsExtender.
- *
  * @param {object} ctx permission flags and startableProcesses boolean
- * @returns {Array<object>}
  */
 export function buildNavGroups(ctx) {
   return [{
@@ -173,9 +152,7 @@ export function buildNavGroups(ctx) {
     title: 'start.admin.title',
     defaultTo: '/seven/auth/admin',
     startTo: { name: 'usersManagement' },
-    // Access Management (a separate identity-only hub page, not a navbar
-    // leaf) doesn't correspond to any single item below, so it can't be
-    // covered by an item's routeName/activeRouteNames — list it here instead.
+    // Access Management is a hub page, not a leaf, so it can't use routeName — list it here.
     hubRouteNames: ['accessManagement'],
     show: !!ctx.permissionsUsers,
     items: [{
@@ -218,9 +195,7 @@ export function buildNavGroups(ctx) {
       show: !!ctx.permissionsSystemManagement,
       divider: true
     }, {
-      // Both 'system' leaves below collapse to the single COLLAPSE_TARGETS.system
-      // entry on startHover — keep that entry's to/icon/title in sync by hand
-      // if this leaf's identity changes.
+      // Collapses to COLLAPSE_TARGETS.system on startHover — keep that entry in sync by hand.
       show: !!ctx.permissionsSystemManagement,
       surfaces: [SURFACES.NAVBAR],
       collapseGroup: 'system',
@@ -299,10 +274,7 @@ export function navItemsToTileOptions(items, t) {
     }))
 }
 
-/**
- * Start-hover projection: surfaces includes startHover, plus collapsed groups
- * for navbar-only leaves that declare collapseGroup.
- */
+/** Start-hover projection: startHover-visible items, plus collapsed navbar-only leaves. */
 export function projectStartHoverOptions(items, t) {
   const options = []
   const collapsed = new Set()
@@ -342,37 +314,21 @@ export function projectStartHoverOptions(items, t) {
   return options
 }
 
-/**
- * When a group's start-hover options resolve to exactly one destination, the
- * start tile can represent that destination directly instead of showing a
- * generic hub tile — e.g. Builder's tile becomes "Modeler" when Modeler is
- * the only builder option; a Data tile becomes "Ins7ght" once that's its
- * only option. Returns null when the tile should keep its own hub identity
- * (zero, or more than one, option).
- */
+/** Collapses a group's options to its one destination (e.g. Builder → "Modeler"); null otherwise. */
 export function singleOptionTile(options) {
   if (options?.length !== 1) return null
   const [only] = options
   return { to: only.to, title: only.title }
 }
 
-/**
- * When Tasks is the only tile a user has, the start page itself has nothing
- * left to offer — go straight into Tasks instead. Resolves to the tasklist
- * directly if that's the only tasks option, otherwise to the tasks hub
- * (tasklist + start process). Returns null when Tasks isn't the sole tile.
- */
+/** Where to send the user when Tasks is the only tile: its sole option, or the tasks hub. */
 export function tasksOnlyRedirectTarget(tiles, tasksOptions) {
   if (tiles?.length !== 1 || tiles[0] !== 'tasks') return null
   const single = singleOptionTile(tasksOptions)
   return single ? single.to : { name: 'tasksHome' }
 }
 
-/**
- * Resolves a single visible group from a Vue component instance — the
- * shared "build the catalog, filter by permission, pick one group" chain
- * used by single-group hub pages (Tasks/Builder/Access-management hubs).
- */
+/** Builds + filters the catalog, returns one group by id (used by single-group hub pages). */
 export function getVisibleGroup(vm, id) {
   const groups = filterVisibleNavGroups(buildNavGroups(permissionFlagsFromVm(vm)))
   return groups.find(g => g.id === id)
@@ -385,12 +341,7 @@ export function accessManagementCatalogItems(adminItems) {
   return (adminItems || []).filter(item => item.show !== false && item.routeName)
 }
 
-/**
- * Reads the permission flags navigationPermissionsMixin computes on a Vue
- * component instance into the plain object buildNavGroups expects. Used
- * across the navbar, the start-page tiles, and the admin pages — it's a
- * dumb bridge, not a second source of permission logic.
- */
+/** Reads navigationPermissionsMixin's flags off a vm into the plain object buildNavGroups expects. */
 export function permissionFlagsFromVm(vm) {
   return {
     permissionsTaskList: !!vm.permissionsTaskList,
