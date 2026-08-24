@@ -39,7 +39,7 @@ export default {
     },
     // Reuses navGroups.js's own 'tasks' group (including each item's tileImage)
     // instead of re-encoding the same permission/startableProcesses-gated item
-    // list here, so this hub page can't silently diverge from the toolbar's
+    // list here, so this hub page can't silently diverge from the navbar's
     // Tasks dropdown.
     builtInItems() {
       const tasks = getVisibleGroup(this, 'tasks')

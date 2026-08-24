@@ -35,7 +35,7 @@ export default {
   computed: {
     // Reuses navGroups.js's own 'builder' group instead of re-encoding its
     // single Modeler destination here, so this hub page can't silently
-    // diverge from the toolbar's Builder dropdown.
+    // diverge from the navbar's Builder dropdown.
     builtInItems() {
       const builder = getVisibleGroup(this, 'builder')
       return projectStartHoverOptions(builder?.items, this.$t.bind(this))

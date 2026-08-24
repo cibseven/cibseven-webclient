@@ -45,7 +45,7 @@ import {
   projectStartHoverOptions,
   singleOptionTile,
   tasksOnlyRedirectTarget,
-  permissionContextFromVm
+  permissionFlagsFromVm
 } from '@/navigation/navGroups.js'
 import { hasStartableProcess } from '@/utils/processes.js'
 
@@ -78,7 +78,7 @@ export default {
       return hasStartableProcess(this.$store.state.process.list)
     },
     navGroups() {
-      let groups = buildNavGroups(permissionContextFromVm(this))
+      let groups = buildNavGroups(permissionFlagsFromVm(this))
       const extender = this.$options.components?.NavGroupsExtender
       const methods = extender?.methods || extender?.__vccOpts?.methods
       if (methods?.extend) {

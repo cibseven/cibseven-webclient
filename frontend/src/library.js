@@ -69,13 +69,13 @@ export {
   COLLAPSE_TARGETS,
   buildNavGroups,
   filterVisibleNavGroups,
-  projectGroupsForToolbar,
+  projectGroupsForNavbar,
   projectStartHoverOptions,
   singleOptionTile,
   tasksOnlyRedirectTarget,
   navItemsToTileOptions,
   accessManagementCatalogItems,
-  permissionContextFromVm,
+  permissionFlagsFromVm,
   itemSurfaces,
   itemVisibleOnSurface
 } from '@/navigation/navGroups.js'

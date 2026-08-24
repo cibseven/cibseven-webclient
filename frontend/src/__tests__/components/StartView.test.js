@@ -117,14 +117,14 @@ describe('StartView.vue nav tiles', () => {
     expect(vm.adminOptions.some(o => o.to === '/seven/auth/admin/system/execution-metrics')).toBe(false)
   })
 
-  it('keeps cockpit tile hover CE-shaped when NavGroupsExtender adds toolbar-only EE items', () => {
+  it('keeps cockpit tile hover CE-shaped when NavGroupsExtender adds navbar-only EE items', () => {
     const extender = {
       methods: {
         extend(groups) {
           const clone = groups.map(g => ({ ...g, items: g.items ? [...g.items] : g.items }))
           const cockpit = clone.find(g => g.id === 'cockpit')
           cockpit.items.push({
-            surfaces: [SURFACES.TOOLBAR],
+            surfaces: [SURFACES.NAVBAR],
             to: '/seven/auth/operation-log',
             title: 'operation-log.title',
             tooltip: 'operation-log.description'

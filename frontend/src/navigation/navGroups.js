@@ -25,14 +25,14 @@
  * `navGroups` computed. Surfaces project the catalog — they are not
  * independent menus:
  *
- * - toolbar    — dense power-user dropdown (all secondary destinations)
+ * - navbar     — dense power-user dropdown (all secondary destinations)
  * - startHover — short orientation list on start tiles (tile click covers group default)
  * - hub pages  — same subset as startHover (or identity-only for Access management)
  *
  * Item membership uses a single `surfaces` allowlist (default: both).
- * Do not add parallel booleans (toolbarOnly / omitFromStartHover).
+ * Do not add parallel booleans (navbarOnly / omitFromStartHover).
  * Admin system leaves use `collapseGroup: 'system'` so startHover shows one System entry
- * while the toolbar keeps the leaf destinations.
+ * while the navbar keeps the leaf destinations.
  */
 
 import taskImage from '@/assets/images/start/task.svg'
@@ -44,14 +44,14 @@ import tenantsAdminImage from '@/assets/images/admin/tenants_admin.svg'
 import authorizationsAdminImage from '@/assets/images/admin/authorizations_admin.svg'
 
 export const SURFACES = {
-  TOOLBAR: 'toolbar',
+  NAVBAR: 'navbar',
   START_HOVER: 'startHover'
 }
 
-const DEFAULT_SURFACES = [SURFACES.TOOLBAR, SURFACES.START_HOVER]
+const DEFAULT_SURFACES = [SURFACES.NAVBAR, SURFACES.START_HOVER]
 
 /**
- * Collapsed startHover entries for toolbar-only leaf groups, keyed by
+ * Collapsed startHover entries for navbar-only leaf groups, keyed by
  * `collapseGroup`. Each entry stands in for its whole leaf group on the
  * startHover surface, so its to/icon/title are deliberately the group-level
  * "System" identity, not any single leaf's — kept in sync by hand with the
@@ -106,7 +106,7 @@ export function buildNavGroups(ctx) {
     show: !!ctx.permissionsCockpit,
     items: [{
       // Tile click already goes to dashboard via defaultTo / cockpit redirect
-      surfaces: [SURFACES.TOOLBAR],
+      surfaces: [SURFACES.NAVBAR],
       to: '/seven/auth/processes',
       active: ['seven/auth/processes/dashboard'],
       icon: 'mdi-view-dashboard-outline',
@@ -173,7 +173,7 @@ export function buildNavGroups(ctx) {
     title: 'start.admin.title',
     defaultTo: '/seven/auth/admin',
     startTo: { name: 'usersManagement' },
-    // Access Management (a separate identity-only hub page, not a toolbar
+    // Access Management (a separate identity-only hub page, not a navbar
     // leaf) doesn't correspond to any single item below, so it can't be
     // covered by an item's routeName/activeRouteNames — list it here instead.
     hubRouteNames: ['accessManagement'],
@@ -222,7 +222,7 @@ export function buildNavGroups(ctx) {
       // entry on startHover — keep that entry's to/icon/title in sync by hand
       // if this leaf's identity changes.
       show: !!ctx.permissionsSystemManagement,
-      surfaces: [SURFACES.TOOLBAR],
+      surfaces: [SURFACES.NAVBAR],
       collapseGroup: 'system',
       to: '/seven/auth/admin/system/system-diagnostics',
       active: ['seven/auth/admin/system/system-diagnostics'],
@@ -231,7 +231,7 @@ export function buildNavGroups(ctx) {
       title: 'admin.system.system-diagnostics.title'
     }, {
       show: !!ctx.permissionsSystemManagement,
-      surfaces: [SURFACES.TOOLBAR],
+      surfaces: [SURFACES.NAVBAR],
       collapseGroup: 'system',
       to: '/seven/auth/admin/system/execution-metrics',
       active: ['seven/auth/admin/system/execution-metrics'],
@@ -280,9 +280,9 @@ export function filterVisibleNavGroups(groups, surface = null) {
     .filter(Boolean)
 }
 
-/** Toolbar projection of the catalog. */
-export function projectGroupsForToolbar(groups) {
-  return filterVisibleNavGroups(groups, SURFACES.TOOLBAR)
+/** Navbar projection of the catalog. */
+export function projectGroupsForNavbar(groups) {
+  return filterVisibleNavGroups(groups, SURFACES.NAVBAR)
 }
 
 /**
@@ -301,7 +301,7 @@ export function navItemsToTileOptions(items, t) {
 
 /**
  * Start-hover projection: surfaces includes startHover, plus collapsed groups
- * for toolbar-only leaves that declare collapseGroup.
+ * for navbar-only leaves that declare collapseGroup.
  */
 export function projectStartHoverOptions(items, t) {
   const options = []
@@ -374,7 +374,7 @@ export function tasksOnlyRedirectTarget(tiles, tasksOptions) {
  * used by single-group hub pages (Tasks/Builder/Access-management hubs).
  */
 export function getVisibleGroup(vm, id) {
-  const groups = filterVisibleNavGroups(buildNavGroups(permissionContextFromVm(vm)))
+  const groups = filterVisibleNavGroups(buildNavGroups(permissionFlagsFromVm(vm)))
   return groups.find(g => g.id === id)
 }
 
@@ -386,11 +386,12 @@ export function accessManagementCatalogItems(adminItems) {
 }
 
 /**
- * Permission context for buildNavGroups from a Vue component instance. Used
- * across the toolbar, the start-page tiles, and the admin pages — not
- * navbar-specific despite the shared "vm" naming pattern in this module.
+ * Reads the permission flags navigationPermissionsMixin computes on a Vue
+ * component instance into the plain object buildNavGroups expects. Used
+ * across the navbar, the start-page tiles, and the admin pages — it's a
+ * dumb bridge, not a second source of permission logic.
  */
-export function permissionContextFromVm(vm) {
+export function permissionFlagsFromVm(vm) {
   return {
     permissionsTaskList: !!vm.permissionsTaskList,
     startableProcesses: !!vm.startableProcesses,

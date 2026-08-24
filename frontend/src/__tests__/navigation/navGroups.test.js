@@ -19,7 +19,7 @@ import {
   SURFACES,
   buildNavGroups,
   filterVisibleNavGroups,
-  projectGroupsForToolbar,
+  projectGroupsForNavbar,
   projectStartHoverOptions,
   singleOptionTile,
   tasksOnlyRedirectTarget,
@@ -43,7 +43,7 @@ const fullCtx = {
 }
 
 describe('navGroups factory', () => {
-  it('returns four groups in toolbar order, with no CE-native data group', () => {
+  it('returns four groups in navbar order, with no CE-native data group', () => {
     const groups = buildNavGroups(fullCtx)
     expect(groups.map(g => g.id)).toEqual(['tasks', 'cockpit', 'builder', 'admin'])
     expect(groups.find(g => g.id === 'data')).toBeUndefined()
@@ -78,9 +78,9 @@ describe('navGroups factory', () => {
     expect(visible.map(g => g.id)).toEqual(['tasks', 'cockpit', 'builder', 'admin', 'data'])
   })
 
-  it('projectGroupsForToolbar keeps dashboard and system leaves', () => {
-    const cockpit = projectGroupsForToolbar(buildNavGroups(fullCtx)).find(g => g.id === 'cockpit')
-    const admin = projectGroupsForToolbar(buildNavGroups(fullCtx)).find(g => g.id === 'admin')
+  it('projectGroupsForNavbar keeps dashboard and system leaves', () => {
+    const cockpit = projectGroupsForNavbar(buildNavGroups(fullCtx)).find(g => g.id === 'cockpit')
+    const admin = projectGroupsForNavbar(buildNavGroups(fullCtx)).find(g => g.id === 'admin')
     expect(cockpit.items.some(i => i.to === '/seven/auth/processes')).toBe(true)
     expect(admin.items.some(i => i.to === '/seven/auth/admin/system/system-diagnostics')).toBe(true)
   })
@@ -93,7 +93,7 @@ describe('navGroups factory', () => {
     expect(options.length).toBe(cockpit.items.filter(i => !i.divider).length)
   })
 
-  it('projectStartHoverOptions omits toolbar-only dashboard and collapses system', () => {
+  it('projectStartHoverOptions omits navbar-only dashboard and collapses system', () => {
     const cockpit = buildNavGroups(fullCtx).find(g => g.id === 'cockpit')
     const admin = buildNavGroups(fullCtx).find(g => g.id === 'admin')
     const cockpitOptions = projectStartHoverOptions(cockpit.items, key => key)

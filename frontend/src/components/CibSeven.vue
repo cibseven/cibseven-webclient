@@ -40,17 +40,17 @@
         <span class="d-none d-lg-inline ms-2">{{ $t('start.startProcess.title') }}</span>
       </b-button>
 
-      <!-- Desktop: toolbar tools | utilities -->
+      <!-- Desktop: navbar tools | utilities -->
       <div class="d-none d-md-flex align-items-center cib-navbar-tools">
         <b-navbar-nav v-if="computedMenuItems.length > 0" class="flex-row align-items-center">
           <li
             v-for="tool in computedMenuItems"
             :key="tool.id"
-            class="nav-item d-flex align-items-center gap-0 cib-toolbar-tool"
+            class="nav-item d-flex align-items-center gap-0 cib-navbar-tool"
           >
             <router-link
-              class="cib-toolbar-icon-btn d-inline-flex align-items-center justify-content-center p-0 text-decoration-none text-body-secondary"
-              :class="{ 'cib-toolbar-control-active': isToolActive(tool) }"
+              class="cib-navbar-icon-btn d-inline-flex align-items-center justify-content-center p-0 text-decoration-none text-body-secondary"
+              :class="{ 'cib-navbar-control-active': isToolActive(tool) }"
               :to="getToolDefaultTo(tool)"
               :title="$t(tool.title)"
               :aria-label="$t(tool.title)"
@@ -58,8 +58,8 @@
               <span :class="['mdi', 'mdi-24px', tool.icon]" aria-hidden="true"></span>
             </router-link>
             <b-nav-item-dropdown
-              class="cib-toolbar-chevron-dropdown"
-              :class="{ 'cib-toolbar-control-active': isToolActive(tool) }"
+              class="cib-navbar-chevron-dropdown"
+              :class="{ 'cib-navbar-control-active': isToolActive(tool) }"
               no-caret
               right
               :title="$t(tool.title)"
@@ -100,7 +100,7 @@
           v-if="$root.config.layout.showFeedbackButton"
           variant="outline-secondary"
           @click="$refs.report.show()"
-          class="border-0 cib-toolbar-icon-btn cib-toolbar-icon-btn-standalone d-inline-flex align-items-center justify-content-center p-0 text-decoration-none text-body-secondary me-1"
+          class="border-0 cib-navbar-icon-btn cib-navbar-icon-btn-standalone d-inline-flex align-items-center justify-content-center p-0 text-decoration-none text-body-secondary me-1"
           :title="$t('seven.feedback')"
           :aria-label="$t('seven.feedback')"
         >
@@ -109,8 +109,8 @@
 
         <b-navbar-nav v-if="$root.config.layout.showInfoAndHelp">
           <b-nav-item-dropdown
-            class="cib-toolbar-utility-dropdown"
-            extra-toggle-classes="cib-toolbar-icon-btn"
+            class="cib-navbar-utility-dropdown"
+            extra-toggle-classes="cib-navbar-icon-btn"
             no-caret
             right
             :title="$t('navigation.infoAndHelp')"
@@ -135,7 +135,7 @@
       <template v-if="$root.user || ($root.config.layout.showInfoAndHelp && helpMenuItems.length > 0)" #customNavItems>
         <template v-for="tool in computedMenuItems" :key="'mob-' + tool.id">
           <b-nav-item-dropdown
-            class="d-md-none cib-toolbar-utility-dropdown"
+            class="d-md-none cib-navbar-utility-dropdown"
             extra-toggle-classes="py-1"
             right
             :title="$t(tool.title)"
@@ -175,7 +175,7 @@
         </b-nav-item-dropdown>
         <b-nav-item-dropdown
           v-if="$root.config.layout.showInfoAndHelp"
-          class="d-md-none cib-toolbar-utility-dropdown"
+          class="d-md-none cib-navbar-utility-dropdown"
           extra-toggle-classes="py-1"
           right
           :title="$t('navigation.infoAndHelp')"
@@ -247,7 +247,7 @@ import SupportModal from '@/components/modals/SupportModal.vue'
 import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
 import FeedbackModal from '@/components/modals/FeedbackModal.vue'
 import { updateAppTitle } from '@/utils/init'
-import { buildNavGroups, projectGroupsForToolbar, permissionContextFromVm } from '@/navigation/navGroups.js'
+import { buildNavGroups, projectGroupsForNavbar, permissionFlagsFromVm } from '@/navigation/navGroups.js'
 import { hasStartableProcess } from '@/utils/processes.js'
 
 export default {
@@ -261,7 +261,7 @@ export default {
     }
   },
   watch: {
-    // when the title of the view inside top toolbar is changed
+    // when the title of the view inside top navbar is changed
     // => let's change title of the whole web-page in browser
     pageTitle: function(title) {
       this.refreshAppTitle(title)
@@ -272,7 +272,7 @@ export default {
       return this.$root.config.productNamePageTitle || this.$t('login.productName')
     },
     menuItems: function() {
-      return buildNavGroups(permissionContextFromVm(this))
+      return buildNavGroups(permissionFlagsFromVm(this))
     },
     computedMenuItems: function() {
       return this.getVisibleMenuItems(this.menuItems)
@@ -292,7 +292,7 @@ export default {
     startableProcesses: function() {
       return hasStartableProcess(this.$store.state.process.list)
     },
-    // when route is changed => let's change title of the view inside top toolbar
+    // when route is changed => let's change title of the view inside top navbar
     pageTitle: function() {
       if (this.$route.meta?.title) {
         return this.$t(this.$route.meta.title)
@@ -368,7 +368,7 @@ export default {
   methods: {
     // override this method to add/remove menu items
     getVisibleMenuItems: function(items) {
-      return projectGroupsForToolbar(items)
+      return projectGroupsForNavbar(items)
     },
     getToolDefaultTo: function(tool) {
       return tool.defaultTo || tool.items.find(item => item.to)?.to || '/seven/auth/start'
@@ -468,181 +468,10 @@ export default {
 </style>
 
 <!--
-  Unscoped on purpose: CibSevenEE extends this component, and BNavItemDropdown
-  hardcodes Bootstrap's dropdown-toggle caret. Scoped/data-v selectors often miss
-  the child roots in EE, which drops the divider/active styles and leaves 2 carets.
+  .cib-navbar-divider / .cib-navbar-* / .cib-dropdown-title / .cib-navbar-utility
+  chrome styling now lives in @cib/bootstrap-theme (src/scss/_utilities.scss) —
+  CibSevenEE extends this component, and BNavItemDropdown hardcodes Bootstrap's
+  dropdown-toggle caret, so neither scoped nor :deep() selectors here can reach
+  it reliably. See that file's comment for the full explanation.
 -->
-<style lang="css">
-.cib-navbar-divider {
-  width: 1px;
-  height: 28px;
-  background-color: var(--bs-border-color, #dee2e6);
-}
 
-.cib-toolbar-tool {
-  margin-right: 1rem;
-}
-
-.cib-toolbar-icon-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 0.35rem 0 0 0.35rem;
-}
-
-/* Standalone icon buttons (no adjacent chevron to complete the pill) need all four corners rounded. */
-.cib-toolbar-icon-btn-standalone {
-  border-radius: 0.35rem;
-}
-
-.cib-toolbar-icon-btn:hover,
-.cib-toolbar-icon-btn:focus,
-.cib-toolbar-icon-btn.cib-toolbar-control-active,
-.cib-toolbar-tool .cib-toolbar-chevron-dropdown > .nav-link:hover,
-.cib-toolbar-tool .cib-toolbar-chevron-dropdown > .nav-link:focus,
-.cib-toolbar-tool .cib-toolbar-chevron-dropdown > .nav-link.show,
-.cib-toolbar-tool .cib-toolbar-chevron-dropdown.cib-toolbar-control-active > .nav-link,
-.cib-toolbar-utility-dropdown > .nav-link:hover,
-.cib-toolbar-utility-dropdown > .nav-link:focus,
-.cib-toolbar-utility-dropdown > .nav-link.show {
-  background-color: rgba(13, 110, 253, 0.12);
-  color: var(--bs-secondary-color, #495057);
-}
-
-.cib-toolbar-tool .cib-toolbar-chevron-dropdown > .nav-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 15px;
-  height: 36px;
-  min-width: 15px;
-  min-height: 36px;
-  padding: 0 10px 0 9px !important;
-  border: 0;
-  border-radius: 0 0.35rem 0.35rem 0;
-  color: var(--bs-secondary-color, #495057);
-}
-
-/* BNavItemDropdown always adds dropdown-toggle; hide Bootstrap's caret (keep MDI chevron) */
-.cib-toolbar-chevron-dropdown > .dropdown-toggle::after,
-.cib-toolbar-utility-dropdown > .dropdown-toggle::after,
-.cib-navbar-utility > .dropdown-toggle::after {
-  display: none !important;
-  content: none !important;
-  margin: 0 !important;
-  border: 0 !important;
-}
-
-.cib-toolbar-utility-dropdown > .nav-link {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.25rem;
-  min-height: 36px;
-  border-radius: 0.35rem;
-  color: var(--bs-secondary-color, #495057);
-}
-
-.cib-dropdown-title {
-  font-weight: 600;
-  font-size: 1rem;
-  color: var(--bs-body-color, #212529);
-}
-
-li.cib-dropdown-title > .dropdown-item,
-li.cib-dropdown-title > .dropdown-item:hover,
-li.cib-dropdown-title > .dropdown-item:focus,
-li.cib-dropdown-title > .dropdown-item.active {
-  font-weight: 600;
-  font-size: 1rem;
-  color: var(--bs-body-color, #212529);
-  cursor: pointer;
-}
-
-.cib-toolbar-chevron-dropdown > .dropdown-menu,
-.cib-toolbar-utility-dropdown > .dropdown-menu {
-  border: 1px solid var(--bs-border-color, #dee2e6);
-  box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
-  min-width: 14rem;
-  padding-top: 0.25rem;
-  padding-bottom: 0.5rem;
-}
-
-/* Mobile drawer rows: flat accordion look — a divider above each row, chevron
-   pinned to the far right (points right when collapsed, down when expanded),
-   no highlight color, and sub-items appear as plain inline rows (instead of a
-   floating card that repeats the row's own title) once expanded. Matches the
-   CIB Navigation mockup. */
-@media (max-width: 767.98px) {
-  /* The navbar carries px-3 (1rem) side padding, which insets these rows too —
-     bleed the row (and its divider) back out to the full width, then restore
-     the same 1rem via the nav-link's own padding so the icon/label still line
-     up with the header above. */
-  .cib-toolbar-utility-dropdown {
-    border-top: 1px solid var(--bs-border-color, #dee2e6);
-    margin-left: -1rem;
-    margin-right: -1rem;
-  }
-
-  .cib-toolbar-utility-dropdown > .nav-link {
-    display: flex;
-    width: 100%;
-    justify-content: space-between;
-    padding: 0.625rem 1rem;
-  }
-
-  /* Title: always bold + dark, regardless of hover/focus/expanded state.
-     Icon and chevron: always the muted secondary color/weight, never dark or
-     bold — set directly on each element (not on .nav-link) so no hover/focus/
-     show state on the row can change them via inheritance. */
-  .cib-toolbar-utility-dropdown > .nav-link .cib-mobile-row-title {
-    font-weight: 600 !important;
-    color: var(--bs-body-color, #212529) !important;
-  }
-
-  .cib-toolbar-utility-dropdown > .nav-link .mdi {
-    font-weight: 400 !important;
-    color: var(--bs-secondary-color, #495057) !important;
-  }
-
-  .cib-toolbar-utility-dropdown > .nav-link:hover,
-  .cib-toolbar-utility-dropdown > .nav-link:focus,
-  .cib-toolbar-utility-dropdown > .nav-link.show {
-    background-color: transparent;
-    color: var(--bs-secondary-color, #495057);
-  }
-
-  .cib-toolbar-utility-dropdown > .nav-link .mdi-chevron-down {
-    transition: transform 0.15s ease;
-    transform: rotate(-90deg);
-  }
-
-  .cib-toolbar-utility-dropdown > .nav-link.show .mdi-chevron-down {
-    transform: rotate(0deg);
-  }
-
-  .cib-toolbar-utility-dropdown > .dropdown-menu {
-    position: static !important;
-    inset: auto !important;
-    transform: none !important;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    border-top: 1px solid var(--bs-border-color-translucent, rgba(0, 0, 0, 0.08));
-    box-shadow: none;
-  }
-
-  /* Indent item text only — the divider <hr>s are siblings of these items,
-     so they're untouched and still span the full row width. */
-  .cib-toolbar-utility-dropdown > .dropdown-menu .dropdown-item {
-    padding-left: 2.75rem !important;
-    padding-top: 0.75rem;
-    padding-bottom: 0.75rem;
-  }
-
-  /* The toggle row already shows the title — don't repeat it inside */
-  .cib-toolbar-utility-dropdown > .dropdown-menu > li.cib-dropdown-title,
-  .cib-toolbar-utility-dropdown > .dropdown-menu > li.cib-dropdown-title + hr.dropdown-divider {
-    display: none;
-  }
-}
-</style>

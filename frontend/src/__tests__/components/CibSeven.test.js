@@ -26,7 +26,7 @@ vi.mock('@/services.js', () => ({
 
 describe('CibSeven.vue', () => {
   describe('Methods', () => {
-    it('should filter toolbar menus based on show and drop empty tools', () => {
+    it('should filter navbar menus based on show and drop empty tools', () => {
       const items = [
         { id: 'tasks', show: true, items: [{ title: 'a', to: '/a' }] },
         { id: 'data', show: false, items: [] },
@@ -195,7 +195,7 @@ describe('CibSeven.vue', () => {
       expect(items.some(item => item.href === 'https://help.example.com')).toBe(true)
     })
 
-    it('should expose id-keyed toolbar menus with no CE-native data group', () => {
+    it('should expose id-keyed navbar menus with no CE-native data group', () => {
       const mockThis = {
         permissionsTaskList: true,
         permissionsCockpit: true,
