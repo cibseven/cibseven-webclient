@@ -55,7 +55,7 @@ public class BaseService {
 	@Deprecated(since = "2.2.0")
 	public void checkPermission(CIBUser user, SevenResourceType type, List<String> permissions) {
 		if (!authorizationEnabled) return;	
-		Authorizations authorizations = bpmProvider.getUserAuthorization(user.getId(), user);
+		Authorizations authorizations = bpmProvider.getUserAuthorization(user);
 		// SevenAuthorizationUtils.checkPermission now throws detailed AccessDeniedException when permission check fails
 		SevenAuthorizationUtils.checkPermission(authorizations, type, permissions);
 	}

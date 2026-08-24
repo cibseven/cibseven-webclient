@@ -28,7 +28,7 @@
           striped
           resizable
           thead-class="sticky-header"
-          :items="monthlyItems"
+          :items="monthlyItemsWithTotal"
           primary-key="index"
           :fields="monthlyFields"
           @click="onMonthlyRowClick"
@@ -45,7 +45,14 @@
           primary-key="index"
           :fields="yearlyFields"
         >
+          <template v-slot:cell(actions)="table">
+            <CellActionButton
+              @click="copyAnnualValueToClipboard(table.item)"
+              icon="mdi-content-copy"
+              :title="$t('commons.copyValue')"/>
+          </template>
         </FlowTable>
+        <SuccessAlert ref="messageCopy"> {{ $t('decision.copySuccess') }} </SuccessAlert>
       </div>
     </template>
     <div v-else class="py-3 text-center w-100">
@@ -59,14 +66,18 @@
 import { SystemService } from '@/services.js'
 import { moment } from '@/globals.js'
 import VueApexCharts from 'vue3-apexcharts'
-import { FlowTable, BWaitingBox } from '@cib/common-frontend'
+import { FlowTable, BWaitingBox, SuccessAlert } from '@cib/common-frontend'
 import { i18n } from '@/i18n.js'
+import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
+import CellActionButton from '@/components/common-components/CellActionButton.vue'
 
 export default {
   name: 'ExecutionMetrics',
-  components: { apexchart: VueApexCharts, FlowTable, BWaitingBox },
+  components: { apexchart: VueApexCharts, FlowTable, BWaitingBox, SuccessAlert, CellActionButton },
+  mixins: [copyToClipboardMixin],
   data() {
     return {
+      diagnostics: null,
       metrics: {
         annual: [],
         monthly: [],
@@ -77,25 +88,29 @@ export default {
     }
   },
   computed: {
-    labels() {
+    monthKeys() {
       return [
         ...new Set(
           this.metrics.monthly.map((d) =>
-            moment(`${d.subscriptionYear}-${d.subscriptionMonth}`, 'YYYY-M').format('MMMM YYYY')
+            moment(`${d.subscriptionYear}-${d.subscriptionMonth}`, 'YYYY-M').format('YYYY-MM')
           )
         )
-      ].sort((a, b) => moment(a, 'MMMM YYYY') - moment(b, 'MMMM YYYY'))
+      ].sort()
+    },
+    labels() {
+      const locale = i18n.global.locale
+      return this.monthKeys.map((key) => moment(key, 'YYYY-MM').locale(locale).format('MMMM YYYY'))
     },
     series() {
       return this.metricNames.map((metric) => ({
         name: this.$t('admin.system.execution-metrics.' + metric),
-        data: this.labels.map((label) => {
+        data: this.monthKeys.map((key) => {
           const match = this.metrics.monthly.find(
             (d) =>
               d.metric === metric &&
               moment(`${d.subscriptionYear}-${d.subscriptionMonth}`, 'YYYY-M').format(
-                'MMMM YYYY'
-              ) === label
+                'YYYY-MM'
+              ) === key
           )
           return match ? match.sum : 0
         })
@@ -119,7 +134,7 @@ export default {
         },
         dataLabels: {
           formatter: function (val) {
-            return val === 0 ? '' : val
+            return val === 0 ? '' : i18n.global.n(val)
           },
           offsetY: -18,
           style: {
@@ -128,6 +143,16 @@ export default {
         },
         xaxis: {
           categories: this.labels
+        },
+        yaxis: {
+          labels: {
+            formatter: (val) => i18n.global.n(val)
+          }
+        },
+        tooltip: {
+          y: {
+            formatter: (val) => i18n.global.n(val)
+          }
         },
         legend: {
           position: 'top',
@@ -175,6 +200,19 @@ export default {
       return Object.values(grouped)
         .sort((a, b) => moment(b.month, 'MMMM YYYY') - moment(a.month, 'MMMM YYYY'))
         .map((entry, i) => ({ index: i + 1, ...entry }))
+    },
+    monthlyItemsWithTotal() {
+      if (!this.monthlyItems.length) return []
+
+      const total = this.metrics.monthly.reduce((acc, item) => {
+        acc[item.metric] = (acc[item.metric] || 0) + (item.sum || 0)
+        return acc
+      }, { month: this.$t('admin.system.execution-metrics.total'), index: 14 })
+
+      return [
+        ...this.monthlyItems,
+        total,
+      ]
     },
     yearlyItems() {
       const grouped = {}
@@ -247,7 +285,7 @@ export default {
         {
           label: '',
           key: 'year',
-          class: 'col-6',
+          class: 'col-5',
           sortable: false,
           tdClass: 'py-1',
         },
@@ -271,7 +309,14 @@ export default {
           class: 'col-2',
           sortable: false,
           tdClass: 'py-1',
-        }
+        },
+        {
+          label: 'admin.system.execution-metrics.actions',
+          key: 'actions',
+          class: 'col-1',
+          sortable: false,
+          tdClass: 'py-1',
+        },
       ]
     }
   },
@@ -330,6 +375,22 @@ export default {
         )
         this.selectedMonthIndex = dataPointIndex
       }
+    },
+    async copyAnnualValueToClipboard(item) {
+      if (!this.diagnostics) {
+        this.diagnostics = await SystemService.getTelemetryData()
+      }
+
+      const val = [
+        item.year,
+        '- PI: ' + item['process-instances'],
+        '- DI: ' + item['decision-instances'],
+        '- TU: ' + item['task-users'],
+        '',
+        this.diagnostics ? JSON.stringify(this.diagnostics, null, 2) : '',
+      ].join('\n')
+
+      this.copyValueToClipboard(val)
     }
   },
 }

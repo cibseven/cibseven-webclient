@@ -14,28 +14,25 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-// Persists a diagram viewer's pan/zoom viewport in sessionStorage. Expects
-// `ref="diagram"` to expose `setViewbox()` and a promise-returning `showDiagram()`,
-// and to emit `viewbox-changed`. Override `viewboxStorageKey` to scope by entity
-// (defaults to the process id).
+// Persists a SidebarsFlow "left-open" boolean in localStorage under
+// `cibseven:sidebar-left-open:{scope}`. The host component owns its own `leftOpen`
+// data and decides what scope(s) to use (a single static scope, or several
+// scopes it switches between), calling getSavedLeftOpen/saveLeftOpen directly.
 export default {
   methods: {
-    viewboxStorageKey: function() {
-      return `cibseven:bpmn-viewbox:${this.process.id}`
-    },
-    onViewboxChanged: function(viewbox) {
+    getSavedLeftOpen: function(scope) {
       try {
-        sessionStorage.setItem(this.viewboxStorageKey(), JSON.stringify(viewbox))
+        const saved = localStorage.getItem(`cibseven:sidebar-left-open:${scope}`)
+        return saved === null ? true : saved === 'true'
       } catch {
-        // sessionStorage unavailable or quota exceeded - ignore
+        return true
       }
     },
-    restoreViewboxIfSaved: function() {
+    saveLeftOpen: function(scope, isOpen) {
       try {
-        const raw = sessionStorage.getItem(this.viewboxStorageKey())
-        if (raw) this.$refs.diagram.setViewbox(JSON.parse(raw))
+        localStorage.setItem(`cibseven:sidebar-left-open:${scope}`, isOpen)
       } catch {
-        // ignore malformed/unavailable storage
+        // localStorage unavailable or quota exceeded - ignore
       }
     }
   }

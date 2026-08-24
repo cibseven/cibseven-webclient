@@ -22,7 +22,7 @@
       <b-button :title="$t('start.cockpit.decisions.title')" variant="outline-secondary" :to="{ name: 'decision-list' }" class="mdi mdi-18px mdi-arrow-left border-0"></b-button>
       <h4 class="ps-1 m-0 align-items-center d-flex" style="border-width: 3px !important">{{ decisionName }}</h4>
     </div>
-    <SidebarsFlow ref="sidebars" class="border-top overflow-auto" v-model:left-open="leftOpen" :left-caption="shortendLeftCaption">
+    <SidebarsFlow ref="sidebars" class="border-top overflow-auto" :left-open="leftOpen" @update:left-open="onLeftOpenChanged" :left-caption="shortendLeftCaption">
       <template v-slot:left>
         <DecisionVersionListSidebar v-if="versions.length > 0" ref="navbar"
           :versions="versions" @refresh-decision-versions="loadDecisionVersionsByKey(decisionKey, versionIndex, $event)"></DecisionVersionListSidebar>
@@ -42,17 +42,21 @@ import { DecisionService } from '@/services.js'
 import DecisionVersionListSidebar from '@/components/decision/DecisionVersionListSidebar.vue'
 import { SidebarsFlow } from '@cib/common-frontend'
 import { mapGetters, mapActions, mapMutations } from 'vuex'
+import sidebarOpenPersistenceMixin from '@/mixins/sidebarOpenPersistenceMixin.js'
+
+const SIDEBAR_SCOPE = 'decision'
 
 export default {
   name: 'DecisionView',
   components: { DecisionVersionListSidebar, SidebarsFlow },
+  mixins: [sidebarOpenPersistenceMixin],
   props: {
     decisionKey: String,
     versionIndex: { type: String, default: '' }
   },
   data() {
     return {
-      leftOpen: true,
+      leftOpen: this.getSavedLeftOpen(SIDEBAR_SCOPE),
       rightOpen: false,
       filter: '',
       loading: false,
@@ -94,6 +98,10 @@ export default {
   methods: {
     ...mapActions(['getDecisionVersionsByKey']),
     ...mapMutations(['setSelectedDecisionVersion', 'updateVersion']),
+    onLeftOpenChanged(isOpen) {
+      this.leftOpen = isOpen
+      this.saveLeftOpen(SIDEBAR_SCOPE, isOpen)
+    },
     loadDecisionVersionsByKey(decisionKey, versionIndex, lazyLoad) {
       this.versionLoaded = false
       this.getDecisionVersionsByKey({ key: decisionKey, lazyLoad: lazyLoad })

@@ -19,7 +19,7 @@
 <template>
   <div v-if="decision" class="h-100">
     <ViewerFrame :resizerMixin="this">
-      <DmnViewer ref="diagram" class="h-100" />
+      <DmnViewer ref="diagram" class="h-100" @viewbox-changed="onViewboxChanged" />
     </ViewerFrame>
 
     <div class="position-absolute w-100" style="left: 0; z-index: 1" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight + 1) + 'px; ' + toggleTransition">
@@ -82,6 +82,8 @@ import { permissionsMixin } from '@/permissions.js'
 import DmnViewer from '@/components/decision/DmnViewer.vue'
 import DecisionInstancesTable from '@/components/decision/DecisionInstancesTable.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
+import bpmnViewportPersistenceMixin from '@/components/process/mixins/bpmnViewportPersistenceMixin.js'
+import viewerFrameSizePersistenceMixin from '@/components/process/mixins/viewerFrameSizePersistenceMixin.js'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
 import { BWaitingBox, GenericTabs } from '@cib/common-frontend'
@@ -93,7 +95,7 @@ import PluginSlot from '@/components/common/PluginSlot.vue'
 export default {
   name: 'DecisionDefinitionVersion',
   components: { DmnViewer, DecisionInstancesTable, ViewerFrame, BWaitingBox, GenericTabs, ScrollableTabsContainer, PluginSlot },
-  mixins: [permissionsMixin, resizerMixin],
+  mixins: [permissionsMixin, resizerMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
   props: {
     versionIndex: String,
     loading: Boolean,
@@ -147,12 +149,18 @@ export default {
       this.getXmlById(this.decision.id)
         .then(response => {
           setTimeout(() => {
-            this.$refs.diagram.showDiagram(response.dmnXml)
+            this.$refs.diagram.showDiagram(response.dmnXml).then(() => this.restoreViewboxIfSaved())
           }, 100)
         })
         .catch(error => {
           console.error("Error loading diagram:", error)
         })
+    },
+    viewboxStorageKey() {
+      return `cibseven:dmn-viewbox:${this.decision.id}`
+    },
+    viewerFrameStorageKey() {
+      return 'cibseven:viewer-frame-size:decision'
     },
     handleScrollDecisions: function(el) {
       // TODO: Check method

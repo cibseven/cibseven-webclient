@@ -158,7 +158,7 @@ class ModelerServiceAuthorizationTest {
 
 		verify(bpmProvider).isUserAuthorized(USER, SevenResourceType.APPLICATION.getType(),
 			ModelerAccessChecker.MODELER_RESOURCE_ID, ModelerAccessChecker.MODELER_PERMISSION);
-		verify(bpmProvider, never()).getUserAuthorization(any(), any());
+		verify(bpmProvider, never()).getUserAuthorization(any());
 	}
 
 	/**
