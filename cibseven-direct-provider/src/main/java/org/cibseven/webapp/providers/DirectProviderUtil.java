@@ -123,21 +123,18 @@ public class DirectProviderUtil {
 	}
 
 	/**
-	 * Executes {@code action} with the given user authenticated on the engine, so that the engine
-	 * enforces its authorizations for the operation. The user's groups and tenants are resolved from
-	 * the engine's identity service.
+	 * Executes {@code action} with the given user authenticated on the engine, resolving the user's
+	 * groups and tenants from the identity service. Where authorization is enabled, this is what lets
+	 * the engine enforce its authorizations for the operation.
 	 *
-	 * <p>If the engine has authorization disabled, the action runs unchanged: the engine performs
-	 * no authorization checks, so setting the authentication (and the group/tenant identity queries it
-	 * requires) would be pure overhead.
+	 * <p>Set regardless of whether authorization is enabled: the engine also needs the acting user to
+	 * write the user operation log and to resolve {@code ${currentUser()}} in filter expressions.
 	 */
 	protected <V extends Object> V runAsUser(CIBUser user, Supplier<V> action) {
-		ProcessEngine processEngine = getProcessEngine(user);
-		if (user == null || user.getId() == null
-				|| !processEngine.getProcessEngineConfiguration().isAuthorizationEnabled()) {
+		if (user == null || user.getId() == null) {
 			return action.get();
 		}
-		IdentityService identityService = processEngine.getIdentityService();
+		IdentityService identityService = getProcessEngine(user).getIdentityService();
 		Authentication previousAuthentication = identityService.getCurrentAuthentication();
 		try {
 			identityService.setAuthentication(user.getId(), getGroupsOfUser(user), getTenantsOfUser(user));
