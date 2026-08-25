@@ -46,7 +46,7 @@
 		     cibseven-parent (~/cibseven/cibseven/parent/pom.xml) so these can be consolidated
 		     there later: version.spring-boot4, version.tomcat (11.x) vs version.tomcat10.
 		     ============================================================================ -->
-		<version.spring.boot4>4.1.1</version.spring.boot4>
+		<version.spring.boot4>4.0.7</version.spring.boot4>
 		<version.openapi-starter-webmvc-ui4>3.0.2</version.openapi-starter-webmvc-ui4>
 		<!-- SB4's own BOM still manages Jackson 2 (it imports com.fasterxml.jackson:jackson-bom
 		     and ships spring-boot-jackson2), but its starters default to Jackson 3 (tools.jackson.*)
