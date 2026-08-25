@@ -28,7 +28,7 @@
     </router-link>
 
     <ViewerFrame :resizerMixin="this">
-      <DmnViewer ref="diagram" class="h-100" @view-changed="onViewChanged" @viewbox-changed="onViewboxChanged" />
+      <DmnViewer ref="diagram" class="h-100" @view-changed="onViewChanged" @viewbox-changed="onViewboxChanged" :sidebar-left-open="leftOpen" />
     </ViewerFrame>
 
     <div class="position-absolute w-100" style="left: 0; z-index: 1" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight + 1) + 'px; ' + toggleTransition">
@@ -81,7 +81,8 @@ export default {
   props: {
     versionIndex: String,
     instanceId: String,
-    loading: Boolean
+    loading: Boolean,
+    leftOpen: { type: Boolean, default: true }
   },
   data() {
     return {
