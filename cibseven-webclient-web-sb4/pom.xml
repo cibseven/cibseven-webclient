@@ -45,6 +45,24 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
+
+			<!-- Temporary override: keep HttpComponents on CVE-fixed versions for SB4.
+			     Remove once spring-boot-dependencies manages fixed HttpComponents versions. -->
+			<dependency>
+				<groupId>org.apache.httpcomponents.client5</groupId>
+				<artifactId>httpclient5</artifactId>
+				<version>${version.httpclient5}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.httpcomponents.core5</groupId>
+				<artifactId>httpcore5</artifactId>
+				<version>${version.httpcore5}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.httpcomponents.core5</groupId>
+				<artifactId>httpcore5-h2</artifactId>
+				<version>${version.httpcore5}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
