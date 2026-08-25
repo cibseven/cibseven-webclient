@@ -31,6 +31,7 @@
         v-if="decision && versionLoaded"
         :key="$route.fullPath"
         :loading="loading"
+        :left-open="leftOpen"
       />
     </SidebarsFlow>
   </div>
