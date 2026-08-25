@@ -160,12 +160,6 @@
 			<artifactId>jakarta.persistence-api</artifactId>
 		</dependency>
 
-		<!-- Hibernate Envers for audit / revision history -->
-		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-envers</artifactId>
-		</dependency>
-
 		<!-- Validation support for modeler REST controllers -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

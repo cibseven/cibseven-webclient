@@ -50,11 +50,6 @@ application:
         ddl-auto: none
         naming:
           physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-      properties:
-        hibernate:
-          integration:
-            envers:
-              enabled: false
   cibseven:
     webclient:
       modeler:

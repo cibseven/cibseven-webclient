@@ -15,11 +15,6 @@ spring:
       ddl-auto: none
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-    properties:
-      hibernate:
-        integration:
-          envers:
-            enabled: false
   servlet:
     register-default-servlet: true
     multipart:
