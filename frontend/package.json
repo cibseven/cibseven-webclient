@@ -1,6 +1,6 @@
 {
   "name": "cibseven-components",
-  "version": "2.3.0-dev.13",
+  "version": "2.3.0-dev.14",
   "type": "module",
   "license": "",
   "main": "./src/main.js",
@@ -48,7 +48,7 @@
     "bootstrap": "5.3.8",
     "bpm-sdk": "2.1.3",
     "bpmn-js": "18.14.0",
-    "cibseven-modeler": "1.3.0-dev.0",
+    "cibseven-modeler": "1.3.0-dev.1",
     "dmn-js": "17.7.0",
     "js-abbreviation-number": "1.4.0",
     "js-sha256": "0.11.1",
@@ -69,7 +69,7 @@
     "vue-router": "^5.0.6"
   },
   "devDependencies": {
-    "@eslint/js": "9.39.4",
+    "@eslint/js": "10.0.1",
     "@playwright/test": "^1.57.0",
     "@vitejs/plugin-vue": "6.0.6",
     "@vitest/coverage-istanbul": "3.2.7",
@@ -78,9 +78,9 @@
     "@vue/server-renderer": "3.5.33",
     "@vue/test-utils": "2.4.9",
     "cross-env": "7.0.3",
-    "eslint": "9.39.4",
-    "eslint-plugin-vue": "9.32.0",
-    "eslint-plugin-vuejs-accessibility": "2.5.0",
+    "eslint": "10.8.1",
+    "eslint-plugin-vue": "10.10.0",
+    "eslint-plugin-vuejs-accessibility": "2.6.0",
     "jsdom": "29.1.0",
     "sass": "1.89.0",
     "start-server-and-test": "2.0.11",
