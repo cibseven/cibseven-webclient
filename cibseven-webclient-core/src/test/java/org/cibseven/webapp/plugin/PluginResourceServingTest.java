@@ -63,6 +63,17 @@ public class PluginResourceServingTest {
 		return MockMvcBuilders.webAppContextSetup(context).build();
 	}
 
+	/**
+	 * The list and the files share one namespace, so nothing about plugins depends on
+	 * a path another controller owns.
+	 */
+	@Test
+	public void listsTheDeployedPluginsBelowItsOwnPath() throws Exception {
+		mockMvc().perform(get("/plugins"))
+			.andExpect(status().isOk())
+			.andExpect(content().string(org.hamcrest.Matchers.containsString("\"test-plugin\"")));
+	}
+
 	@Test
 	public void servesAPluginFileFromTheClasspath() throws Exception {
 		mockMvc().perform(get("/plugins/test-plugin/index.js"))

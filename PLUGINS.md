@@ -75,12 +75,12 @@ plugin - putting a jar where the distribution already looks:
 
 | Endpoint | Purpose |
 |---|---|
-| `GET /info/plugins` | manifests of the plugins found on the classpath |
+| `GET /plugins` | manifests of the plugins found on the classpath |
 | `GET /plugins/<id>/…` | the plugin's own files |
 
 Both sit next to the rest of the webclient's API, below the application path the
-distribution mounts it under - `/webapp/info/plugins` in CIB seven Run, no prefix
-in a standalone webclient. The frontend resolves them relative to its own
+distribution mounts it under - `/webapp/plugins` in CIB seven Run, no prefix in a
+standalone webclient. The frontend resolves them relative to its own
 location, so this needs no configuration.
 
 ## Writing a plugin
@@ -311,7 +311,7 @@ What this does **not** change:
 - **Data access.** Plugins reach data through the same authenticated endpoints,
   with the user's own permissions: a request the user is not allowed to make
   still returns 403. There is no direct database access.
-- **Authentication.** Plugin files under `/plugins/**` are served without
+- **Authentication.** Everything under `/plugins/**` is served without
   authentication on purpose - the code is not the secret, the data is - and the
   manifest list is readable before login, exposing plugin ids and file names only.
 - **Availability.** A plugin that fails to load, exports no `register`, or throws

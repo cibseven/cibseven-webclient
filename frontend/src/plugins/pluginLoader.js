@@ -21,8 +21,8 @@ import { getPluginContext } from './pluginContext.js'
 import { PLUGIN_API_VERSION } from './pluginsConfig.js'
 
 // Plugins are discovered by the backend on its classpath and served by it
-const PLUGINS_ENDPOINT = 'info/plugins'
 const PLUGINS_BASE_PATH = 'plugins/'
+const PLUGINS_ENDPOINT = 'plugins'
 
 /** Manifests of the plugins in the page, and the languages already merged for them. */
 const loaded = []

@@ -34,7 +34,7 @@ const validManifest = { id: 'demo', entry: 'index.js', apiVersion: PLUGIN_API_VE
 // Serves the manifest file and, optionally, plugin translation files
 function mockHttp(responses) {
   const get = vi.fn(url => {
-    const match = Object.keys(responses).find(key => url.includes(key))
+    const match = Object.keys(responses).find(key => url.endsWith(key))
     if (!match) return Promise.reject(new Error('404'))
     return Promise.resolve({ data: responses[match] })
   })
@@ -55,14 +55,14 @@ describe('pluginLoader', () => {
 
   describe('fetchPluginManifests', () => {
     it('reads the plugins the backend discovered on its classpath', async () => {
-      const get = mockHttp({ 'info/plugins': { plugins: [validManifest] } })
+      const get = mockHttp({ plugins: { plugins: [validManifest] } })
 
       await expect(fetchPluginManifests()).resolves.toEqual([validManifest])
-      expect(get).toHaveBeenCalledWith(expect.stringContaining('info/plugins'))
+      expect(get).toHaveBeenCalledWith(expect.stringMatching(/\/plugins$/))
     })
 
     it('returns an empty list when the backend reports no plugins', async () => {
-      mockHttp({ 'info/plugins': { plugins: [] } })
+      mockHttp({ plugins: { plugins: [] } })
 
       await expect(fetchPluginManifests()).resolves.toEqual([])
     })
@@ -74,7 +74,7 @@ describe('pluginLoader', () => {
     })
 
     it('returns an empty list when the response has no plugins array', async () => {
-      mockHttp({ 'info/plugins': { plugins: 'not-an-array' } })
+      mockHttp({ plugins: { plugins: 'not-an-array' } })
 
       await expect(fetchPluginManifests()).resolves.toEqual([])
       expect(console.warn).toHaveBeenCalled()
@@ -287,7 +287,7 @@ describe('pluginLoader', () => {
 
   describe('initPlugins', () => {
     it('asks for nothing when the backend reports plugins as disabled', async () => {
-      const get = mockHttp({ 'info/plugins': { plugins: [validManifest] } })
+      const get = mockHttp({ plugins: { plugins: [validManifest] } })
       setPluginContext({ config: { pluginsEnabled: false } })
       const importer = vi.fn()
 
@@ -297,7 +297,7 @@ describe('pluginLoader', () => {
     })
 
     it('asks when the backend does not report the flag at all', async () => {
-      mockHttp({ 'info/plugins': { plugins: [validManifest] } })
+      mockHttp({ plugins: { plugins: [validManifest] } })
       setPluginContext({ config: {} })
 
       await expect(initPlugins('en', () => Promise.resolve({ register: vi.fn() })))
@@ -305,7 +305,7 @@ describe('pluginLoader', () => {
     })
 
     it('loads the plugins the backend reports', async () => {
-      mockHttp({ 'info/plugins': { plugins: [validManifest] } })
+      mockHttp({ plugins: { plugins: [validManifest] } })
       const register = vi.fn()
 
       await expect(initPlugins('en', () => Promise.resolve({ register }))).resolves.toEqual(['demo'])

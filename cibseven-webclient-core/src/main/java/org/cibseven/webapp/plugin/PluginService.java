@@ -26,6 +26,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -43,15 +44,15 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Tells the frontend which plugins are deployed and serves their files.
  *
- * Deliberately a controller of its own instead of another method on
- * {@code InfoService}: the endpoints have to stay available in products that
- * replace that service.
+ * Deliberately a controller of its own with a namespace of its own instead of
+ * another method on {@code InfoService}: the endpoints have to stay available in
+ * products that replace that service, and nothing about plugins reaches into a
+ * path another controller owns.
  *
- * <p>Both responses are readable without authentication, like the rest of
- * {@code /info} - the frontend needs them before anybody has logged in. A plugin
- * is code the operator installed on the classpath, so its files are no more
- * secret than the webclient's own bundle; plugin <em>data</em> is fetched through
- * the regular authenticated endpoints.
+ * <p>Both responses are readable without authentication - the frontend needs them
+ * before anybody has logged in. A plugin is code the operator installed on the
+ * classpath, so its files are no more secret than the webclient's own bundle;
+ * plugin <em>data</em> is fetched through the regular authenticated endpoints.
  *
  * <p>It extends {@code BaseService} although it needs neither the engine nor a
  * user, because distributions mount the whole webclient below an application path
@@ -62,7 +63,7 @@ import lombok.extern.slf4j.Slf4j;
  * through a resource handler, as resource handlers get no such prefix.
  */
 @ApiResponses({ @ApiResponse(responseCode = "500", description = "An unexpected system error occured") })
-@RestController @Slf4j
+@RestController @RequestMapping("/plugins") @Slf4j
 public class PluginService extends BaseService {
 
 	private final PluginRegistry pluginRegistry;
@@ -74,7 +75,7 @@ public class PluginService extends BaseService {
 	@Operation(
 			summary = "Get the frontend plugins deployed on the classpath",
 			description = "<strong>Return: JSON object with a \"plugins\" array of manifests")
-	@GetMapping("/info/plugins")
+	@GetMapping
 	public ObjectNode getPlugins() {
 		ArrayNode plugins = JsonNodeFactory.instance.arrayNode();
 		pluginRegistry.getManifests().forEach(plugins::add);
@@ -87,7 +88,7 @@ public class PluginService extends BaseService {
 	@Operation(
 			summary = "Get a file of a deployed frontend plugin",
 			description = "<strong>Return: the file, or 404 when the plugin or the file does not exist")
-	@GetMapping("/plugins/{pluginId}/**")
+	@GetMapping("/{pluginId}/**")
 	public ResponseEntity<Resource> getPluginFile(@PathVariable String pluginId, HttpServletRequest rq) {
 		// Only accepted plugins have a folder, so a rejected manifest serves nothing and
 		// no id can reach another plugin's files.
