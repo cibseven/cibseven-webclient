@@ -90,10 +90,12 @@ describe('pluginsConfig', () => {
     expect(getPlugin('slot-b').value).toHaveLength(0)
   })
 
-  // Plugins name it in their manifest, so it has to be the release and not a nightly
-  it('exposes the release plugins are validated against, without a pre-release suffix', () => {
-    expect(PLUGIN_API_VERSION).toBe(packageJson.version.replace(/-.*$/, ''))
-    expect(PLUGIN_API_VERSION).not.toContain('-')
+  // Plugins name it in their manifest, so a patch release must not change it
+  it('exposes the webclient line plugins are validated against', () => {
+    const [major, minor] = packageJson.version.split('.')
+
+    expect(PLUGIN_API_VERSION).toBe(`${major}.${minor}`)
+    expect(PLUGIN_API_VERSION).toMatch(/^\d+\.\d+$/)
   })
 
   it('clears all slots on reset', () => {

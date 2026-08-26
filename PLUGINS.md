@@ -118,7 +118,7 @@ described above.
 ```json
 {
   "entry": "index.js",
-  "apiVersion": ["2.3.0"],
+  "apiVersion": ["2.3"],
   "slots": ["process-instance-tab"],
   "translations": { "en": "translations_en.json" }
 }
@@ -127,7 +127,7 @@ described above.
 | Field | Meaning |
 |---|---|
 | `entry` | module to import, relative to the plugin folder |
-| `apiVersion` | the plugin API versions this build was tested against; one of them has to be the webclient's `PLUGIN_API_VERSION`, otherwise the plugin is refused. A single string is accepted as well |
+| `apiVersion` | webclient lines this build was tested against, as `major.minor` - one of them has to be the webclient's own, otherwise the plugin is refused. A single string is accepted as well |
 | `slots` | documentation only; what is rendered is decided by `registerPlugin` |
 | `translations` | per language, merged under `plugins.<id>.*` |
 | `styles` | stylesheets of the plugin, added to the page before it registers |
@@ -270,16 +270,19 @@ tabs appear in CE today and EE needs the same few lines in that component.
 
 ## Compatibility
 
-`PLUGIN_API_VERSION` is the contract between a plugin and the webclient. What
-this document describes - the runtime exports, the slot names and their props,
-the manifest fields - may not change incompatibly without raising it. It counts
-the plugin API and not the product: a release that changes nothing here leaves
-published plugins alone.
+`PLUGIN_API_VERSION` is the contract between a plugin and the webclient: the
+webclient's own line, as `major.minor`, taken from the frontend it is built from -
+that is the artifact a plugin binds to, since the runtime exports, the slot names
+and their props and the manifest fields all live there.
 
-A plugin lists the versions it was built and tested against, so one published
-build can serve several webclient versions. A manifest naming none of the
-versions the webclient provides is refused at load time with a log entry, rather
-than failing somewhere unpredictable later.
+A plugin lists the lines it was built and tested against, so one published build
+can serve several webclient versions, and a patch release invalidates nothing. A
+manifest naming none of the lines the webclient provides is refused at load time
+with a log entry, rather than failing somewhere unpredictable later.
+
+What this document describes may not change incompatibly within a line. A plugin
+should therefore be retested when the minor version rises, and can be published
+for several lines at once once it has been.
 
 ## Trust model and limits
 

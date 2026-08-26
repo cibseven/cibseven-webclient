@@ -18,11 +18,12 @@ import { shallowRef } from 'vue'
 import { version } from '../../package.json'
 
 /**
- * The webclient release plugins are built against, pre-release suffixes aside. A plugin
- * lists the versions it was tested with, and the loader rejects a manifest that does not
- * name this one instead of loading it and failing unpredictably later.
+ * The webclient line plugins are built against, as major.minor: a patch release changes
+ * nothing a plugin binds to, so it must not invalidate a published one. A plugin lists the
+ * lines it was tested with, and the loader rejects a manifest naming none of them rather
+ * than loading it and failing unpredictably later.
  */
-export const PLUGIN_API_VERSION = version.replace(/-.*$/, '')
+export const PLUGIN_API_VERSION = version.split('.').slice(0, 2).join('.')
 
 /** @type {Record<string, import('vue').ShallowRef<Array<object>>>} */
 const pluginSlots = {}
