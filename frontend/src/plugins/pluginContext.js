@@ -38,10 +38,10 @@ let context = Object.freeze({
  * deliberately not exposed - a plugin uses the services, so product state stays
  * ours to change.
  *
- * @param {object} next - { config }
+ * @param {object} update - { config }
  */
-export function setPluginContext(next) {
-  const config = 'config' in next ? freezeDeep(structuredClone(next.config)) : context.config
+export function setPluginContext(update) {
+  const config = 'config' in update ? freezeDeep(structuredClone(update.config)) : context.config
   context = Object.freeze({ config })
 }
 

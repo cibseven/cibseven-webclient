@@ -25,8 +25,9 @@
  */
 let router = null
 
-export function setPluginRouter(next) {
-  router = next
+/** @param {object} appRouter - The application's vue-router instance */
+export function setPluginRouter(appRouter) {
+  router = appRouter
 }
 
 function requireRouter(action) {

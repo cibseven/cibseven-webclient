@@ -224,6 +224,6 @@ export async function initPlugins(lang, importer = importModule) {
   const ids = await loadPlugins(manifests, lang, importer)
 
   // A plugin's labels come from its own files, so a language switch has to fetch them
-  watch(() => i18n.global.locale, next => syncPluginTranslations(next))
+  watch(() => i18n.global.locale, lang => syncPluginTranslations(lang))
   return ids
 }
