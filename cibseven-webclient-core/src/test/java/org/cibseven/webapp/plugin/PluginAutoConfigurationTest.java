@@ -45,22 +45,25 @@ public class PluginAutoConfigurationTest {
 		.withConfiguration(AutoConfigurations.of(PluginAutoConfiguration.class));
 
 	@Test
-	public void contributesThePluginBeans() {
-		runner.run(context -> assertThat(context)
-			.hasSingleBean(PluginRegistry.class)
-			.hasSingleBean(PluginService.class));
-	}
-
-	@Test
-	public void contributesThemWithPluginsDisabled() {
-		// Disabled is the default: the beans exist, they just discover and serve nothing
-		runner.run(context -> assertThat(context.getBean(PluginRegistry.class).isEnabled()).isFalse());
-	}
-
-	@Test
-	public void readsTheEnabledFlagFromConfiguration() {
+	public void contributesThePluginBeansWhenPluginsAreEnabled() {
 		runner.withPropertyValues("cibseven.webclient.plugins.enabled=true")
-			.run(context -> assertThat(context.getBean(PluginRegistry.class).isEnabled()).isTrue());
+			.run(context -> assertThat(context)
+				.hasSingleBean(PluginRegistry.class)
+				.hasSingleBean(PluginService.class));
+	}
+
+	/** Off is the default, and then there is no registry, no scan and no endpoint. */
+	@Test
+	public void contributesNothingWhenPluginsAreDisabled() {
+		runner.run(context -> assertThat(context)
+			.doesNotHaveBean(PluginRegistry.class)
+			.doesNotHaveBean(PluginService.class));
+	}
+
+	@Test
+	public void contributesNothingWhenPluginsAreTurnedOffExplicitly() {
+		runner.withPropertyValues("cibseven.webclient.plugins.enabled=false")
+			.run(context -> assertThat(context).doesNotHaveBean(PluginRegistry.class));
 	}
 
 	@Test

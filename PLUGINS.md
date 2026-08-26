@@ -18,8 +18,8 @@ cibseven:
       enabled: true
 ```
 
-With the property off the frontend does not even ask for plugins, and no plugin
-file is served.
+With the property off the backend wires no plugin beans at all: nothing is
+scanned, the endpoints below do not exist, and the frontend does not even ask.
 
 ## Deploying a plugin
 
@@ -118,7 +118,7 @@ described above.
 ```json
 {
   "entry": "index.js",
-  "apiVersion": "1",
+  "apiVersion": ["1"],
   "slots": ["process-instance-tab"],
   "translations": { "en": "translations_en.json" }
 }
@@ -127,7 +127,7 @@ described above.
 | Field | Meaning |
 |---|---|
 | `entry` | module to import, relative to the plugin folder |
-| `apiVersion` | must match the webclient's `PLUGIN_API_VERSION`, otherwise the plugin is refused |
+| `apiVersion` | the plugin API versions this build was tested against; one of them has to be the webclient's `PLUGIN_API_VERSION`, otherwise the plugin is refused. A single string is accepted as well |
 | `slots` | documentation only; what is rendered is decided by `registerPlugin` |
 | `translations` | per language, merged under `plugins.<id>.*` |
 | `styles` | stylesheets of the plugin, added to the page before it registers |
@@ -272,8 +272,13 @@ tabs appear in CE today and EE needs the same few lines in that component.
 
 `PLUGIN_API_VERSION` is the contract between a plugin and the webclient. What
 this document describes - the runtime exports, the slot names and their props,
-the manifest fields - may not change incompatibly without raising it. A plugin
-declaring a different version is refused at load time with a log entry, rather
+the manifest fields - may not change incompatibly without raising it. It counts
+the plugin API and not the product: a release that changes nothing here leaves
+published plugins alone.
+
+A plugin lists the versions it was built and tested against, so one published
+build can serve several webclient versions. A manifest naming none of the
+versions the webclient provides is refused at load time with a log entry, rather
 than failing somewhere unpredictable later.
 
 ## Trust model and limits

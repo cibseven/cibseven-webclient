@@ -17,13 +17,10 @@
 package org.cibseven.webapp.plugin;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -67,7 +64,7 @@ public class PluginRegistryTest {
 	@Test
 	public void findsPluginOnTheClasspath() {
 		// Reads the fixtures below src/test/resources, i.e. a real classpath scan
-		PluginRegistry registry = new PluginRegistry(true);
+		PluginRegistry registry = new PluginRegistry();
 
 		ObjectNode manifest = manifestOf(registry, "test-plugin");
 
@@ -82,7 +79,7 @@ public class PluginRegistryTest {
 	 */
 	@Test
 	public void reportsEveryDocumentedFieldOfTheManifest() {
-		ObjectNode manifest = manifestOf(new PluginRegistry(true), "test-plugin");
+		ObjectNode manifest = manifestOf(new PluginRegistry(), "test-plugin");
 
 		assertEquals("process-instance-tab", manifest.get("slots").get(0).asText());
 		assertEquals("styles.css", manifest.get("styles").get(0).asText());
@@ -92,7 +89,7 @@ public class PluginRegistryTest {
 	/** Several plugins may share one artifact, each in its own folder. */
 	@Test
 	public void findsEveryPluginOfOneClasspathEntry() {
-		PluginRegistry registry = new PluginRegistry(true);
+		PluginRegistry registry = new PluginRegistry();
 
 		List<ObjectNode> manifests = registry.getManifests();
 
@@ -110,7 +107,7 @@ public class PluginRegistryTest {
 	/** The folders serve the files, so every accepted plugin needs exactly its own. */
 	@Test
 	public void findsAFolderForEveryAcceptedPlugin() {
-		PluginRegistry registry = new PluginRegistry(true);
+		PluginRegistry registry = new PluginRegistry();
 
 		Map<String, Resource> locations = registry.getPluginLocations();
 		assertEquals(registry.getManifests().size(), locations.size());
@@ -119,37 +116,47 @@ public class PluginRegistryTest {
 	}
 
 	@Test
-	public void reportsNothingWhenDisabled() {
-		PluginRegistry registry = new PluginRegistry(false);
-
-		assertFalse(registry.isEnabled());
-		assertTrue(registry.getManifests().isEmpty());
-		assertTrue(registry.getPluginLocations().isEmpty());
-	}
-
-	@Test
-	public void doesNotScanWhenDisabled() throws IOException {
-		ResourcePatternResolver resolver = mock(ResourcePatternResolver.class);
-		PluginRegistry registry = new PluginRegistry(false, resolver);
-
-		registry.getManifests();
-
-		verify(resolver, times(0)).getResources(anyString());
-	}
-
-	@Test
 	public void scansOnlyOnce() throws IOException {
 		ResourcePatternResolver resolver = mock(ResourcePatternResolver.class);
 		when(resolver.getResources(MANIFESTS)).thenReturn(new Resource[] {
 			manifest("/app/META-INF/cibseven-plugins/demo/plugin.json", "{\"entry\":\"index.js\",\"apiVersion\":\"1\"}")
 		});
-		PluginRegistry registry = new PluginRegistry(true, resolver);
+		PluginRegistry registry = new PluginRegistry(resolver);
 
 		List<ObjectNode> first = registry.getManifests();
 		List<ObjectNode> second = registry.getManifests();
 
 		assertSame(first, second);
 		verify(resolver, times(1)).getResources(MANIFESTS);
+	}
+
+	/**
+	 * A plugin may name every version it was tested against, so the frontend has to see
+	 * the list rather than a value flattened into a string.
+	 */
+	@Test
+	public void reportsSeveralDeclaredApiVersionsAsDeclared() throws IOException {
+		ResourcePatternResolver resolver = mock(ResourcePatternResolver.class);
+		when(resolver.getResources(MANIFESTS)).thenReturn(new Resource[] {
+			manifest("/app/META-INF/cibseven-plugins/demo/plugin.json",
+				"{\"entry\":\"index.js\",\"apiVersion\":[\"1\",\"2\"]}")
+		});
+
+		ObjectNode manifest = new PluginRegistry(resolver).getManifests().get(0);
+
+		assertTrue(manifest.get("apiVersion").isArray());
+		assertEquals("1", manifest.get("apiVersion").get(0).asText());
+		assertEquals("2", manifest.get("apiVersion").get(1).asText());
+	}
+
+	@Test
+	public void reportsAnAbsentApiVersionAsEmpty() throws IOException {
+		ResourcePatternResolver resolver = mock(ResourcePatternResolver.class);
+		when(resolver.getResources(MANIFESTS)).thenReturn(new Resource[] {
+			manifest("/app/META-INF/cibseven-plugins/demo/plugin.json", "{\"entry\":\"index.js\"}")
+		});
+
+		assertEquals("", new PluginRegistry(resolver).getManifests().get(0).get("apiVersion").asText());
 	}
 
 	@Test
@@ -160,7 +167,7 @@ public class PluginRegistryTest {
 				"{\"id\":\"claims-to-be-something-else\",\"entry\":\"index.js\",\"apiVersion\":\"1\"}")
 		});
 
-		List<ObjectNode> manifests = new PluginRegistry(true, resolver).getManifests();
+		List<ObjectNode> manifests = new PluginRegistry(resolver).getManifests();
 
 		// The folder is where the files are served from, so it decides the id
 		assertEquals("demo", manifests.get(0).get("id").asText());
@@ -173,7 +180,7 @@ public class PluginRegistryTest {
 			manifest("/app/META-INF/cibseven-plugins/demo/plugin.json", "{\"apiVersion\":\"1\"}")
 		});
 
-		assertTrue(new PluginRegistry(true, resolver).getManifests().isEmpty());
+		assertTrue(new PluginRegistry(resolver).getManifests().isEmpty());
 	}
 
 	@Test
@@ -183,7 +190,7 @@ public class PluginRegistryTest {
 			manifest("/app/META-INF/cibseven-plugins/demo/plugin.json", "this is not json")
 		});
 
-		assertTrue(new PluginRegistry(true, resolver).getManifests().isEmpty());
+		assertTrue(new PluginRegistry(resolver).getManifests().isEmpty());
 	}
 
 	@Test
@@ -193,7 +200,7 @@ public class PluginRegistryTest {
 			manifest("/app/META-INF/cibseven-plugins/../plugin.json", "{\"entry\":\"index.js\",\"apiVersion\":\"1\"}")
 		});
 
-		assertTrue(new PluginRegistry(true, resolver).getManifests().isEmpty());
+		assertTrue(new PluginRegistry(resolver).getManifests().isEmpty());
 	}
 
 	@Test
@@ -206,7 +213,7 @@ public class PluginRegistryTest {
 				"{\"entry\":\"second.js\",\"apiVersion\":\"1\"}")
 		});
 
-		List<ObjectNode> manifests = new PluginRegistry(true, resolver).getManifests();
+		List<ObjectNode> manifests = new PluginRegistry(resolver).getManifests();
 
 		// Files are served from one classpath root only, so the second would get the first one's
 		assertEquals(1, manifests.size());
@@ -218,7 +225,7 @@ public class PluginRegistryTest {
 		ResourcePatternResolver resolver = mock(ResourcePatternResolver.class);
 		when(resolver.getResources(MANIFESTS)).thenThrow(new IOException("broken classpath"));
 		when(resolver.getResources(ROOTS)).thenThrow(new IOException("broken classpath"));
-		PluginRegistry registry = new PluginRegistry(true, resolver);
+		PluginRegistry registry = new PluginRegistry(resolver);
 
 		assertNotNull(registry.getManifests());
 		assertTrue(registry.getManifests().isEmpty());
@@ -235,7 +242,7 @@ public class PluginRegistryTest {
 				"{\"entry\":\"main.js\",\"apiVersion\":\"1\"}")
 		});
 
-		List<ObjectNode> manifests = new PluginRegistry(true, resolver).getManifests();
+		List<ObjectNode> manifests = new PluginRegistry(resolver).getManifests();
 
 		assertEquals(2, manifests.size());
 		assertEquals("first", manifests.get(0).get("id").asText());
@@ -250,7 +257,7 @@ public class PluginRegistryTest {
 			manifest("/app/a.jar!/META-INF/cibseven-plugins/first/plugin.json",
 				"{\"entry\":\"index.js\",\"apiVersion\":\"1\"}")
 		});
-		PluginRegistry registry = new PluginRegistry(true, resolver);
+		PluginRegistry registry = new PluginRegistry(resolver);
 
 		registry.scanAtStartup();
 
@@ -260,12 +267,4 @@ public class PluginRegistryTest {
 		verify(resolver, times(1)).getResources(MANIFESTS);
 	}
 
-	@Test
-	public void doesNotScanAtStartupWhenPluginsAreDisabled() throws IOException {
-		ResourcePatternResolver resolver = mock(ResourcePatternResolver.class);
-
-		new PluginRegistry(false, resolver).scanAtStartup();
-
-		verify(resolver, never()).getResources(anyString());
-	}
 }

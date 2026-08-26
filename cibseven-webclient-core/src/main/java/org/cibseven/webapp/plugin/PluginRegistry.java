@@ -28,7 +28,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -65,7 +64,6 @@ public class PluginRegistry {
 
 	private static final List<String> OPTIONAL_FIELDS = List.of("slots", "styles", "translations");
 
-	private final boolean enabled;
 	private final ResourcePatternResolver resolver;
 	private final ObjectMapper mapper = new ObjectMapper();
 
@@ -75,17 +73,12 @@ public class PluginRegistry {
 	// Annotated because this class has a second constructor for tests: Spring only
 	// picks a constructor on its own when there is exactly one.
 	@Autowired
-	public PluginRegistry(@Value("${cibseven.webclient.plugins.enabled:false}") boolean enabled) {
-		this(enabled, new PathMatchingResourcePatternResolver());
+	public PluginRegistry() {
+		this(new PathMatchingResourcePatternResolver());
 	}
 
-	PluginRegistry(boolean enabled, ResourcePatternResolver resolver) {
-		this.enabled = enabled;
+	PluginRegistry(ResourcePatternResolver resolver) {
 		this.resolver = resolver;
-	}
-
-	public boolean isEnabled() {
-		return enabled;
 	}
 
 	/**
@@ -94,19 +87,16 @@ public class PluginRegistry {
 	 */
 	@PostConstruct
 	void scanAtStartup() {
-		if (enabled) {
-			getManifests();
-		}
+		getManifests();
 	}
 
 	/**
-	 * Manifests of all deployed plugins, empty when plugins are disabled. The
-	 * classpath cannot change while the application runs, so the scan result is
-	 * kept.
+	 * Manifests of all deployed plugins. The classpath cannot change while the
+	 * application runs, so the scan result is kept.
 	 */
 	public synchronized List<ObjectNode> getManifests() {
 		if (manifests == null) {
-			manifests = enabled ? scan() : Collections.emptyList();
+			manifests = scan();
 		}
 		return manifests;
 	}
@@ -188,7 +178,10 @@ public class PluginRegistry {
 			ObjectNode manifest = JsonNodeFactory.instance.objectNode();
 			manifest.put("id", id);
 			manifest.put("entry", entry);
-			manifest.put("apiVersion", json.path("apiVersion").asText(""));
+			// Passed on as declared: a plugin may name one version or several it was tested
+			// against, and flattening an array here would hide them from the frontend
+			if (json.has("apiVersion")) manifest.set("apiVersion", json.get("apiVersion"));
+			else manifest.put("apiVersion", "");
 			// every optional field of the documented manifest has to be passed on;
 			// one left out here is silently missing in the frontend
 			for (String field : OPTIONAL_FIELDS) {

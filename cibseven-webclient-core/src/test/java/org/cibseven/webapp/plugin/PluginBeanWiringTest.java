@@ -16,7 +16,6 @@
  */
 package org.cibseven.webapp.plugin;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -47,27 +46,21 @@ public class PluginBeanWiringTest {
 	}
 
 	@Test
-	public void createsPluginBeansWithPluginsDisabledByDefault() {
+	public void createsThePluginBeans() {
 		try (AnnotationConfigApplicationContext context = context()) {
-			PluginRegistry registry = context.getBean(PluginRegistry.class);
-
-			assertNotNull(registry);
-			assertFalse(registry.isEnabled());
+			assertNotNull(context.getBean(PluginRegistry.class));
 			assertNotNull(context.getBean(PluginService.class));
 		}
 	}
 
+	/**
+	 * Whether plugins are enabled is decided by {@link PluginAutoConfiguration}; a
+	 * registry that exists always scans, and the list it reports is what it found.
+	 */
 	@Test
-	public void readsTheEnabledFlagFromConfiguration() {
-		try (AnnotationConfigApplicationContext context = context("cibseven.webclient.plugins.enabled=true")) {
-			assertTrue(context.getBean(PluginRegistry.class).isEnabled());
-		}
-	}
-
-	@Test
-	public void servesAnEmptyPluginListWhenDisabled() {
+	public void servesWhateverTheRegistryFound() {
 		try (AnnotationConfigApplicationContext context = context()) {
-			assertTrue(context.getBean(PluginService.class).getPlugins().get("plugins").isEmpty());
+			assertTrue(context.getBean(PluginService.class).getPlugins().has("plugins"));
 		}
 	}
 }

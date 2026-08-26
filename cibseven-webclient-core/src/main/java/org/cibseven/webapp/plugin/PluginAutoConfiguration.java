@@ -17,18 +17,20 @@
 package org.cibseven.webapp.plugin;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Import;
 
 /**
- * Wires plugin discovery, the plugin endpoint and the serving of plugin files.
+ * Wires plugin discovery and the plugin endpoints, and only when
+ * {@code cibseven.webclient.plugins.enabled} is set: with plugins off there is no
+ * registry, no scan and no endpoint at all.
  *
  * <p>Registered in {@code META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports}
  * instead of relying on component scanning: every product scans a different set of
- * packages, and this module is the one they all depend on. Whether anything is
- * actually discovered or served stays governed by
- * {@code cibseven.webclient.plugins.enabled}.
+ * packages, and this module is the one they all depend on.
  */
 @AutoConfiguration
+@ConditionalOnProperty(prefix = "cibseven.webclient.plugins", name = "enabled")
 @Import({PluginRegistry.class, PluginService.class})
 public class PluginAutoConfiguration {
 }
