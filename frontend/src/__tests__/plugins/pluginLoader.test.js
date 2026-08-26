@@ -17,9 +17,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { fetchPluginManifests, loadPlugins, initPlugins, syncPluginTranslations } from '@/plugins/pluginLoader.js'
 import { setPluginContext } from '@/plugins/pluginContext.js'
+import { getPlugin, resetPlugins, PLUGIN_API_VERSION } from '@/plugins/pluginsConfig.js'
 import { axios } from '@/globals.js'
 import { i18n } from '@/i18n'
-import { PLUGIN_API_VERSION } from '@/plugins/pluginsConfig.js'
 
 vi.mock('@/globals.js', () => ({
   axios: { create: vi.fn() }
@@ -46,6 +46,7 @@ describe('pluginLoader', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     setPluginContext({ config: null })
+    resetPlugins()
     document.head.querySelectorAll('link[data-plugin]').forEach(link => link.remove())
     vi.spyOn(console, 'warn').mockImplementation(() => {})
     vi.spyOn(console, 'error').mockImplementation(() => {})
@@ -91,8 +92,38 @@ describe('pluginLoader', () => {
       expect(importer).toHaveBeenCalledWith(expect.stringContaining('plugins/demo/index.js'))
       expect(register).toHaveBeenCalledWith({
         id: 'demo',
-        baseUrl: expect.stringContaining('plugins/demo/')
+        baseUrl: expect.stringContaining('plugins/demo/'),
+        registerPlugin: expect.any(Function)
       })
+    })
+
+    /**
+     * The plugin id identifies who contributed something, so it is stamped by the
+     * loader rather than left to every plugin to pass correctly.
+     */
+    it('stamps the plugin id on a contribution that names none', async () => {
+      mockHttp({})
+      const importer = () => Promise.resolve({
+        register: ({ registerPlugin }) => registerPlugin('demo-slot', { name: 'Contribution' }, { id: 'a-tab' })
+      })
+
+      await loadPlugins([validManifest], 'en', importer)
+
+      expect(getPlugin('demo-slot').value).toEqual([
+        { component: { name: 'Contribution' }, id: 'a-tab', pluginId: 'demo' }
+      ])
+    })
+
+    it('stamps its own id over one a plugin claims for another plugin', async () => {
+      mockHttp({})
+      const importer = () => Promise.resolve({
+        register: ({ registerPlugin }) =>
+          registerPlugin('demo-slot', { name: 'Contribution' }, { pluginId: 'somebody-else' })
+      })
+
+      await loadPlugins([validManifest], 'en', importer)
+
+      expect(getPlugin('demo-slot').value[0].pluginId).toBe('demo')
     })
 
     // A plugin whose file never arrives is reported, not awaited for the life of the page

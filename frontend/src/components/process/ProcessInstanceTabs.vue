@@ -22,7 +22,19 @@
 
 <script>
 import { GenericTabs } from '@cib/common-frontend'
-import { getPlugin } from '@/plugins/pluginsConfig.js'
+import { getPlugin, reserveSlotIds } from '@/plugins/pluginsConfig.js'
+
+const BUILTIN_TABS = [
+  { id: 'variables', text: 'process.variables' },
+  { id: 'incidents', text: 'process.incidents' },
+  { id: 'usertasks', text: 'process.usertasks' },
+  { id: 'jobs', text: 'process.jobs' },
+  { id: 'calledProcessInstances', text: 'process.calledProcessInstances' },
+  { id: 'externalTasks', text: 'process.externalTasks' }
+]
+
+// At import time, because a plugin can register before this tab bar is ever rendered
+reserveSlotIds('process-instance-tab', BUILTIN_TABS.map(tab => tab.id))
 
 export default {
   name: 'ProcessInstanceTabs',
@@ -33,14 +45,7 @@ export default {
   emits: ['update:modelValue', 'tab-click'],
   data: function () {
     return {
-      builtinTabs: [
-        { id: 'variables', text: 'process.variables' },
-        { id: 'incidents', text: 'process.incidents' },
-        { id: 'usertasks', text: 'process.usertasks' },
-        { id: 'jobs', text: 'process.jobs' },
-        { id: 'calledProcessInstances', text: 'process.calledProcessInstances' },
-        { id: 'externalTasks', text: 'process.externalTasks' }
-      ]
+      builtinTabs: BUILTIN_TABS
     }
   },
   computed: {

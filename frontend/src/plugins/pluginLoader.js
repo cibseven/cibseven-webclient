@@ -18,7 +18,7 @@ import { watch } from 'vue'
 import { axios } from '@/globals.js'
 import { i18n } from '@/i18n'
 import { getPluginContext } from './pluginContext.js'
-import { PLUGIN_API_VERSION } from './pluginsConfig.js'
+import { PLUGIN_API_VERSION, registerPlugin } from './pluginsConfig.js'
 
 // Plugins are discovered by the backend on its classpath and served by it
 const PLUGINS_BASE_PATH = 'plugins/'
@@ -169,7 +169,14 @@ async function loadPlugin(manifest, lang, importer) {
     }
     await loadPluginTranslations(manifest, lang)
     loadPluginStyles(manifest)
-    await register({ id: manifest.id, baseUrl: resolveUrl(`${PLUGINS_BASE_PATH}${manifest.id}/`) })
+    await register({
+      id: manifest.id,
+      baseUrl: resolveUrl(`${PLUGINS_BASE_PATH}${manifest.id}/`),
+      // Handed over rather than imported, so the plugin id is stamped on every
+      // contribution and cannot be forgotten or claimed for another plugin
+      registerPlugin: (slotName, component, meta = {}) =>
+        registerPlugin(slotName, component, { ...meta, pluginId: manifest.id })
+    })
     console.info(`Plugin "${manifest.id}" loaded`)
     return true
   } catch (error) {

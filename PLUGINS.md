@@ -96,14 +96,13 @@ can ship a hand-written module:
 
 ```js
 import { h } from 'vue'
-import { registerPlugin } from '@cibseven/plugin-runtime'
 
-export function register({ id }) {
+export function register({ id, registerPlugin }) {
   registerPlugin('process-instance-tab', {
     name: 'MiniReport',
     props: { instance: { type: Object, default: null } },
     render() { return h('p', this.instance?.id) }
-  }, { pluginId: id, id: 'mini-report', text: `plugins.${id}.title` })
+  }, { id: 'mini-report', text: `plugins.${id}.title` })
 }
 ```
 
@@ -162,20 +161,22 @@ user switches to when that happens. A component only uses `$t('plugins.<id>.…'
 and follows the switch like any other label; a language the manifest does not
 list falls back to the key.
 
-`src/index.js` exports `register`, called once during startup:
+`src/index.js` exports `register`, called once during startup with the plugin's id,
+its base URL, and a `registerPlugin` bound to it:
 
 ```js
-import { registerPlugin } from '@cibseven/plugin-runtime'
 import DemoReport from './DemoReport.vue'
 
-export function register({ id }) {
+export function register({ id, registerPlugin }) {
   registerPlugin('process-instance-tab', DemoReport, {
-    pluginId: id,
     id: 'demo-report',                // becomes ?tab=demo-report
     text: `plugins.${id}.title`       // translation key
   })
 }
 ```
+
+Which plugin a contribution came from is not passed in but stamped on it, so it is
+neither forgotten nor claimed for another plugin.
 
 The components themselves import what they need from the same module:
 
@@ -188,7 +189,7 @@ The components themselves import what they need from the same module:
 | `axios` | the configured instance, carrying the user's authentication |
 | `getContext()` | `config`, a frozen copy of how the application is configured |
 | `navigation` | `push`, `replace` and `currentRoute()`, to send the user to another view |
-| `registerPlugin`, `getPlugin` | the slot registry |
+| `registerPlugin`, `getPlugin` | the slot registry - prefer the `registerPlugin` handed to `register`, which knows the plugin's id |
 | `i18n`, `mergeTranslations` | translations, namespaced per plugin |
 
 Navigating is a capability rather than the router itself, so defining routes and
@@ -290,7 +291,9 @@ Two things follow from the list being shared:
 - **Registered ids have to be unique across all plugins**, not only within one:
   the id becomes `?tab=<id>`, so a second contribution registering an id that is
   already taken is dropped with a console warning. Prefixing it with the plugin
-  name is the simplest way to be safe.
+  name is the simplest way to be safe. The ids the application renders itself -
+  `variables`, `jobs`, the rest of the built-in tabs - are reserved and refused
+  the same way, so a plugin cannot shadow one of them either.
 - **The order of contributed tabs is not defined.** Plugins are loaded
   concurrently and register when their module has arrived, so with two plugins
   their tabs can appear in either order. The built-in tabs always come first.

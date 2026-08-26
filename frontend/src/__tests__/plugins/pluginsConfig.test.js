@@ -14,13 +14,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect, beforeEach } from 'vitest'
-import { registerPlugin, getPlugin, resetPlugins, PLUGIN_API_VERSION } from '@/plugins/pluginsConfig.js'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { registerPlugin, getPlugin, resetPlugins, reserveSlotIds, PLUGIN_API_VERSION } from '@/plugins/pluginsConfig.js'
 import packageJson from '../../../package.json'
 
 describe('pluginsConfig', () => {
   beforeEach(() => {
     resetPlugins()
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
   })
 
   it('yields an empty array for a slot nothing contributed to', () => {
@@ -65,6 +66,34 @@ describe('pluginsConfig', () => {
 
     expect(getPlugin('tab').value).toHaveLength(1)
     expect(getPlugin('tab').value[0].component.name).toBe('First')
+  })
+
+  /**
+   * The application renders its own tabs under fixed ids, so a plugin taking one
+   * would put a second tab next to it and make ?tab=<id> ambiguous.
+   */
+  it('refuses an id the application reserved for itself', () => {
+    reserveSlotIds('reserving-slot', ['variables', 'jobs'])
+    registerPlugin('reserving-slot', { name: 'Impostor' }, { id: 'jobs', text: 'plugins.demo.title' })
+
+    expect(getPlugin('reserving-slot').value).toEqual([])
+    expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('"jobs"'))
+  })
+
+  it('accepts an id another slot reserved', () => {
+    reserveSlotIds('slot-with-tabs', ['jobs'])
+    registerPlugin('slot-without-tabs', { name: 'Contribution' }, { id: 'jobs' })
+
+    expect(getPlugin('slot-without-tabs').value).toHaveLength(1)
+  })
+
+  it('keeps the ids of several reservations for one slot', () => {
+    reserveSlotIds('twice-reserving-slot', ['variables'])
+    reserveSlotIds('twice-reserving-slot', ['jobs'])
+    registerPlugin('twice-reserving-slot', { name: 'A' }, { id: 'variables' })
+    registerPlugin('twice-reserving-slot', { name: 'B' }, { id: 'jobs' })
+
+    expect(getPlugin('twice-reserving-slot').value).toEqual([])
   })
 
   it('allows the same id in a different slot', () => {

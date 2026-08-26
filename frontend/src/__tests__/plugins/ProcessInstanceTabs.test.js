@@ -55,6 +55,17 @@ describe('ProcessInstanceTabs', () => {
     expect(tabIds(wrapper)).toEqual([...BUILTIN_TABS, 'a', 'b'])
   })
 
+  /**
+   * A tab id becomes ?tab=<id>, so a plugin taking one of the built-in ids would
+   * add a second tab under it and make the selection ambiguous.
+   */
+  it('refuses a contribution taking the id of a built-in tab', () => {
+    registerPlugin('process-instance-tab', { name: 'FakeJobs' }, { id: 'jobs', text: 'plugins.demo.title' })
+    const wrapper = shallowMount(ProcessInstanceTabs, { props: { modelValue: 'variables' } })
+
+    expect(tabIds(wrapper)).toEqual(BUILTIN_TABS)
+  })
+
   it('ignores a contribution that declares no tab label', () => {
     registerPlugin('process-instance-tab', { name: 'NoLabel' }, { id: 'no-label' })
     const wrapper = shallowMount(ProcessInstanceTabs, { props: { modelValue: 'variables' } })

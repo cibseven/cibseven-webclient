@@ -89,8 +89,13 @@ import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
 import { BWaitingBox, GenericTabs } from '@cib/common-frontend'
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from '@/utils/debounce.js'
-import { getPlugin } from '@/plugins/pluginsConfig.js'
+import { getPlugin, reserveSlotIds } from '@/plugins/pluginsConfig.js'
 import PluginSlot from '@/components/common/PluginSlot.vue'
+
+const BUILTIN_TABS = [{ id: 'instances', text: 'decision.instances' }]
+
+// See ProcessInstanceTabs: the ids of this slot's own tabs are not available to plugins
+reserveSlotIds('decision-definition-tab', BUILTIN_TABS.map(tab => tab.id))
 
 export default {
   name: 'DecisionDefinitionVersion',
@@ -104,7 +109,7 @@ export default {
   data: function() {
     return {
       topBarHeight: 0,
-      builtinTabs: [ { id: 'instances', text: 'decision.instances' } ],
+      builtinTabs: BUILTIN_TABS,
       activeTab: 'instances',
       sortByDefaultKey: 'evaluationTime',
       sorting: false,

@@ -28,11 +28,25 @@ export const PLUGIN_API_VERSION = version.split('.').slice(0, 2).join('.')
 /** @type {Record<string, import('vue').ShallowRef<Array<object>>>} */
 const pluginSlots = {}
 
+/** Ids the application itself uses in a slot. @type {Record<string, Set<string>>} */
+const reservedSlotIds = {}
+
 function ensureSlot(slotName) {
   if (!pluginSlots[slotName]) {
     pluginSlots[slotName] = shallowRef([])
   }
   return pluginSlots[slotName]
+}
+
+/**
+ * Declares the ids the application itself renders in a slot, so a plugin cannot
+ * take one of them. Called where those ids are defined, before plugins load.
+ *
+ * @param {string} slotName - Name of the slot
+ * @param {Array<string>} ids
+ */
+export function reserveSlotIds(slotName, ids) {
+  reservedSlotIds[slotName] = new Set([...(reservedSlotIds[slotName] ?? []), ...ids])
 }
 
 /**
@@ -47,6 +61,10 @@ export function registerPlugin(slotName, component, meta = {}) {
   const slot = ensureSlot(slotName)
   // Ids reach the UI (a tab id becomes ?tab=<id>), so a second registration under
   // the same id would render twice and select ambiguously.
+  if (meta.id && reservedSlotIds[slotName]?.has(meta.id)) {
+    console.warn(`Ignoring a contribution with id "${meta.id}": slot "${slotName}" uses it itself`)
+    return
+  }
   if (meta.id && slot.value.some(contribution => contribution.id === meta.id)) {
     console.warn(`Ignoring a second contribution with id "${meta.id}" in slot "${slotName}"`)
     return
@@ -67,7 +85,10 @@ export function getPlugin(slotName) {
   return ensureSlot(slotName)
 }
 
-/** Removes all registered contributions. Intended for tests. */
+/**
+ * Removes all registered contributions. Intended for tests. Reserved ids are kept:
+ * they belong to the application, which claims them once while it loads.
+ */
 export function resetPlugins() {
   Object.keys(pluginSlots).forEach(slotName => {
     pluginSlots[slotName].value = []
