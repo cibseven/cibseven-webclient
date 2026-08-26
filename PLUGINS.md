@@ -132,6 +132,12 @@ described above.
 | `translations` | per language, merged under `plugins.<id>.*` |
 | `styles` | stylesheets of the plugin, added to the page before it registers |
 
+Translations are loaded per language, as the application loads its own: the file
+for the active language while the plugin loads, and the one for a language the
+user switches to when that happens. A component only uses `$t('plugins.<id>.…')`
+and follows the switch like any other label; a language the manifest does not
+list falls back to the key.
+
 `src/index.js` exports `register`, called once during startup:
 
 ```js

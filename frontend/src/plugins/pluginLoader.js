@@ -14,6 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+import { watch } from 'vue'
 import { axios } from '@/globals.js'
 import { i18n } from '@/i18n'
 import { getPluginContext } from './pluginContext.js'
@@ -22,6 +23,10 @@ import { PLUGIN_API_VERSION } from './pluginsConfig.js'
 // Plugins are discovered by the backend on its classpath and served by it
 const PLUGINS_ENDPOINT = 'info/plugins'
 const PLUGINS_BASE_PATH = 'plugins/'
+
+/** Manifests of the plugins in the page, and the languages already merged for them. */
+const loaded = []
+const merged = new Set()
 
 // Loading happens before the first render, so every step is bounded: a slow or
 // unresponsive plugin must delay the application, not replace it with a blank page.
@@ -78,13 +83,25 @@ export async function fetchPluginManifests() {
  */
 async function loadPluginTranslations(manifest, lang) {
   const file = manifest.translations?.[lang]
-  if (!file) return
+  if (!file || merged.has(`${manifest.id}:${lang}`)) return
+  merged.add(`${manifest.id}:${lang}`)
   try {
     const res = await axios.create({ timeout: REQUEST_TIMEOUT_MS }).get(resolveUrl(`${PLUGINS_BASE_PATH}${manifest.id}/${file}`))
     i18n.global.mergeLocaleMessage(lang, { plugins: { [manifest.id]: res.data } })
   } catch {
     console.debug(`Optional plugin translations not found for "${manifest.id}":`, file)
   }
+}
+
+/**
+ * Loads the translations of every plugin for a language, for when the user switches to one
+ * the plugins were not loaded in. The application loads its own messages per language the
+ * same way, in 'switchLanguage'.
+ *
+ * @param {string} lang
+ */
+export async function syncPluginTranslations(lang) {
+  await Promise.all(loaded.map(manifest => loadPluginTranslations(manifest, lang)))
 }
 
 /**
@@ -171,10 +188,14 @@ async function loadPlugin(manifest, lang, importer) {
  * @returns {Promise<Array<string>>} ids of the plugins that were loaded
  */
 export async function loadPlugins(manifests, lang, importer = importModule) {
+  loaded.length = 0
+  merged.clear()
   const usable = (manifests ?? []).filter(isUsable)
   const results = await Promise.all(usable.map(async manifest => {
-    const loaded = await loadPlugin(manifest, lang, importer)
-    return loaded ? manifest.id : null
+    if (!await loadPlugin(manifest, lang, importer)) return null
+    // Kept so their translations can follow a later language change
+    loaded.push(manifest)
+    return manifest.id
   }))
   return results.filter(Boolean)
 }
@@ -193,5 +214,9 @@ export async function initPlugins(lang, importer = importModule) {
 
   const manifests = await fetchPluginManifests()
   if (manifests.length === 0) return []
-  return loadPlugins(manifests, lang, importer)
+  const ids = await loadPlugins(manifests, lang, importer)
+
+  // A plugin's labels come from its own files, so a language switch has to fetch them
+  watch(() => i18n.global.locale, next => syncPluginTranslations(next))
+  return ids
 }

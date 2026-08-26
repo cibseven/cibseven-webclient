@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { fetchPluginManifests, loadPlugins, initPlugins } from '@/plugins/pluginLoader.js'
+import { fetchPluginManifests, loadPlugins, initPlugins, syncPluginTranslations } from '@/plugins/pluginLoader.js'
 import { setPluginContext } from '@/plugins/pluginContext.js'
 import { axios } from '@/globals.js'
 import { i18n } from '@/i18n'
@@ -157,6 +157,46 @@ describe('pluginLoader', () => {
 
       await expect(loadPlugins([{ apiVersion: PLUGIN_API_VERSION }], 'en', importer)).resolves.toEqual([])
       expect(importer).not.toHaveBeenCalled()
+    })
+
+    /**
+     * The application loads its own messages per language on a switch; a plugin's live in
+     * its own files, so they have to follow, or its labels fall back to the raw keys.
+     */
+    it('loads a plugin\'s translations for a language switched to later', async () => {
+      const get = mockHttp({
+        'translations_en.json': { title: 'Report' },
+        'translations_de.json': { title: 'Bericht' }
+      })
+      const manifest = { ...validManifest, translations: { en: 'translations_en.json', de: 'translations_de.json' } }
+      await loadPlugins([manifest], 'en', () => Promise.resolve({ register: vi.fn() }))
+
+      await syncPluginTranslations('de')
+
+      expect(get).toHaveBeenCalledWith(expect.stringContaining('translations_de.json'))
+      expect(i18n.global.mergeLocaleMessage)
+        .toHaveBeenCalledWith('de', { plugins: { demo: { title: 'Bericht' } } })
+    })
+
+    it('fetches a language only once, however often it is switched to', async () => {
+      const get = mockHttp({ 'translations_de.json': { title: 'Bericht' } })
+      const manifest = { ...validManifest, translations: { de: 'translations_de.json' } }
+      await loadPlugins([manifest], 'en', () => Promise.resolve({ register: vi.fn() }))
+
+      await syncPluginTranslations('de')
+      await syncPluginTranslations('de')
+
+      expect(get.mock.calls.filter(([url]) => url.includes('translations_de.json'))).toHaveLength(1)
+    })
+
+    it('has nothing to load for a language a plugin does not ship', async () => {
+      const get = mockHttp({})
+      await loadPlugins([validManifest], 'en', () => Promise.resolve({ register: vi.fn() }))
+      get.mockClear()
+
+      await syncPluginTranslations('es')
+
+      expect(get).not.toHaveBeenCalled()
     })
 
     it('skips a plugin that exports no register function', async () => {
