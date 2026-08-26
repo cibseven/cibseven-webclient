@@ -95,10 +95,7 @@ describe('pluginLoader', () => {
       })
     })
 
-    /**
-     * Loading happens before the first render, so a plugin whose file never
-     * arrives would otherwise leave the application on a blank page for good.
-     */
+    // A plugin whose file never arrives is reported, not awaited for the life of the page
     it('gives up on a plugin whose import never settles', async () => {
       vi.useFakeTimers()
       mockHttp({})

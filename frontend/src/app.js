@@ -68,12 +68,11 @@ Promise.all([
   const theme = getTheme(config)
   loadTheme(theme).then(() => {
     applyTheme(theme)
-    switchLanguage(config, i18n.global.locale).then(async () => {
-      // Plugins are given their context before they are loaded, and are loaded
-      // before the first render, so a slot never renders twice on startup.
-      // Without plugins present this resolves immediately.
+    switchLanguage(config, i18n.global.locale).then(() => {
+      // Plugins load next to the application, never before it: slots are reactive, so a
+      // contribution appears once its plugin arrives, and no plugin can delay the first render.
       setPluginContext({ config })
-      await initPlugins(i18n.global.locale)
+      initPlugins(i18n.global.locale).catch(error => console.error('Plugins could not be loaded:', error))
 
       const app = createApp({ /*jshint nonew:false */
         name: 'CIB7App',

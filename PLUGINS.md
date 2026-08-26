@@ -317,6 +317,9 @@ What this does **not** change:
 - **Availability.** A plugin that fails to load, exports no `register`, or throws
   while rendering is isolated: it is logged and dropped, and the rest of the
   application keeps working.
+- **Startup.** Plugins are loaded next to the application rather than before it,
+  so a slow or unreachable one cannot delay it: its contributions appear once it
+  has registered them, and the webclient starts at its usual speed either way.
 
 For whoever deploys a plugin: it is their code and their responsibility. It has
 to be retested on every webclient update, and layout changes on our side can

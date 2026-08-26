@@ -28,8 +28,8 @@ const PLUGINS_BASE_PATH = 'plugins/'
 const loaded = []
 const merged = new Set()
 
-// Loading happens before the first render, so every step is bounded: a slow or
-// unresponsive plugin must delay the application, not replace it with a blank page.
+// Every step is bounded, so a plugin whose files never arrive is reported and
+// dropped rather than left pending for the lifetime of the page.
 const REQUEST_TIMEOUT_MS = 5000
 const IMPORT_TIMEOUT_MS = 10000
 
