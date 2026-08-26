@@ -1,6 +1,6 @@
 {
 	"entry": "index.js",
-	"apiVersion": ["2.3"],
+	"apiVersion": ["2.2", "2.3"],
 	"slots": ["process-instance-tab"],
 	"styles": ["styles.css"],
 	"translations": {
