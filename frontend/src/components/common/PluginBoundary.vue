@@ -17,26 +17,26 @@
 
 -->
 <template>
-  <component :is="component" v-if="!failed" v-bind="params"></component>
+  <component :is="component" v-if="!failed" v-bind="$attrs"></component>
 </template>
 
 <script>
 export default {
   name: 'PluginBoundary',
+  // Everything but the props below is passed on to the contribution untouched
+  inheritAttrs: false,
   props: {
     // Component contributed by a plugin
     component: { type: [Object, Function], required: true },
-    // Props handed to the contributed component
-    params: { type: Object, default: () => ({}) },
     // Id of the contributing plugin, used for diagnostics
     pluginId: { type: String, default: 'unknown' }
   },
   data() {
     return { failed: false }
   },
-  // Plugin code is third-party code: an error inside a contribution must not
-  // take down the view that hosts it. The contribution is dropped, the
-  // surrounding application keeps working.
+  // Called by Vue when a descendant throws while rendering, in a watcher or in a
+  // lifecycle hook. Plugin code is third-party code: the contribution is dropped and
+  // the view that hosts it keeps working. Returning false stops the error here.
   errorCaptured(error) {
     console.error(`Plugin "${this.pluginId}" failed and was removed from the page:`, error)
     this.failed = true
