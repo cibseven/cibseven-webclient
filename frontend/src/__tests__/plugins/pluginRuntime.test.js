@@ -108,6 +108,15 @@ describe('plugin-runtime', () => {
       expect(config).toEqual({ theme: 'cib', nested: { pluginsEnabled: true } })
     })
 
+    /** Freezing only the config would still let a plugin swap the whole of it. */
+    it('hands over a context a plugin cannot put another config on', () => {
+      setPluginContext({ config: { theme: 'cib' } })
+
+      const handed = runtime.getContext()
+      expect(() => { handed.config = { theme: 'other' } }).toThrow()
+      expect(runtime.getContext().config).toEqual({ theme: 'cib' })
+    })
+
     /** The store is product state: plugins go through the services instead. */
     it('does not expose the store', () => {
       setPluginContext({ config: {}, store: { commit: () => {} } })

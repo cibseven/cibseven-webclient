@@ -27,21 +27,22 @@
  * Handing over a copy keeps honest plugins from corrupting the application by
  * accident.
  */
-let context = {
+let context = Object.freeze({
   config: null
-}
+})
 
 /**
- * The config is handed over as a frozen deep copy: a plugin reads how the
- * application is configured without being able to reconfigure it, or to change
- * what another plugin then reads. The store is deliberately not exposed - a
- * plugin uses the services, so product state stays ours to change.
+ * The config is handed over as a frozen deep copy, and so is the context holding
+ * it: a plugin reads how the application is configured without being able to
+ * reconfigure it, or to replace what another plugin then reads. The store is
+ * deliberately not exposed - a plugin uses the services, so product state stays
+ * ours to change.
  *
  * @param {object} next - { config }
  */
 export function setPluginContext(next) {
   const config = 'config' in next ? freezeDeep(structuredClone(next.config)) : context.config
-  context = { config }
+  context = Object.freeze({ config })
 }
 
 /** @returns {{ config: object|null }} */
