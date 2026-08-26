@@ -57,6 +57,9 @@ Building the plugin produces that layout already, so packaging is one command:
 npm run package     # builds, then jars dist/META-INF into <name>.jar
 ```
 
+That script belongs to the starter; nothing depends on it. Any way of getting the
+files to that path inside a jar does the same - `jar cf`, a Maven or Gradle copy.
+
 **One jar per plugin.** Its name and version are the plugin author's business;
 only the folder name identifies the plugin, and it has to be unique across
 everything on the classpath.
@@ -85,8 +88,29 @@ location, so this needs no configuration.
 
 ## Writing a plugin
 
-A plugin is a small Vite project of single-file components.
-[frontend/plugin-example/demo-report](frontend/plugin-example/demo-report) is the
+What the webclient loads is an ES module: `entry` exports `register`, and `vue` and
+`@cibseven/plugin-runtime` stay bare imports that the page's import map resolves to
+the application's own instances. How that module is produced is the plugin author's
+choice - Vite, Rollup, webpack, esbuild - and a plugin that needs no build at all
+can ship a hand-written module:
+
+```js
+import { h } from 'vue'
+import { registerPlugin } from '@cibseven/plugin-runtime'
+
+export function register({ id }) {
+  registerPlugin('process-instance-tab', {
+    name: 'MiniReport',
+    props: { instance: { type: Object, default: null } },
+    render() { return h('p', this.instance?.id) }
+  }, { pluginId: id, id: 'mini-report', text: `plugins.${id}.title` })
+}
+```
+
+Single-file components are what needs a build, since `.vue` has to be compiled. The
+starter does that with Vite, the tool the webclient itself is built with, so its
+output and our runtime always belong together.
+[frontend/plugin-example/demo-report](frontend/plugin-example/demo-report) is that
 starter: copy the folder, rename it, write your components.
 
 ```
@@ -178,10 +202,11 @@ navigation.push({ name: 'process', params: { processKey } })
 navigation.currentRoute()   // a snapshot: { name, path, params, query, hash }
 ```
 
-### The one line that must not change
+### What must never be bundled
 
 ```js
-// vite.config.js
+// vite.config.js in the starter; the same list under 'externals' in webpack,
+// '--external:' in esbuild, or nothing at all in a plugin that is not bundled
 rollupOptions: {
   external: ['vue', 'axios', 'bootstrap', '@cibseven/plugin-runtime']
 }
