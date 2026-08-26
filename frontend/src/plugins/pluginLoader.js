@@ -109,10 +109,13 @@ function isUsable(manifest) {
     console.warn('Ignoring plugin manifest without "id" or "entry":', manifest)
     return false
   }
-  if (manifest.apiVersion !== PLUGIN_API_VERSION) {
+  // A plugin may name several versions it was built and tested against, so that one
+  // published build can serve more than one webclient version.
+  const declared = Array.isArray(manifest.apiVersion) ? manifest.apiVersion : [manifest.apiVersion]
+  if (!declared.map(String).includes(PLUGIN_API_VERSION)) {
     console.warn(
       `Ignoring plugin "${manifest.id}": it declares plugin API version ` +
-      `"${manifest.apiVersion}", this webclient provides "${PLUGIN_API_VERSION}"`)
+      `"${declared.join('", "')}", this webclient provides "${PLUGIN_API_VERSION}"`)
     return false
   }
   return true

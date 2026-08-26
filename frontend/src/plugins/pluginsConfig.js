@@ -17,9 +17,12 @@
 import { shallowRef } from 'vue'
 
 /**
- * Version of the plugin API exposed by 'plugin-runtime.js'. A plugin manifest
- * declaring a different apiVersion is rejected by the loader instead of being
- * loaded and failing in an unpredictable way later.
+ * Version of the plugin API exposed by 'plugin-runtime.js'. A plugin lists the versions
+ * it was built and tested against, and the loader rejects a manifest that does not name
+ * this one instead of loading it and failing unpredictably later.
+ *
+ * It counts the plugin API, not the product: a release that changes nothing here must not
+ * invalidate a published plugin.
  */
 export const PLUGIN_API_VERSION = '1'
 

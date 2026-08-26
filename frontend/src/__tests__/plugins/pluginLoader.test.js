@@ -129,6 +129,27 @@ describe('pluginLoader', () => {
       expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('"2"'))
     })
 
+    // One published build can serve several webclient versions, so a plugin may name
+    // every version it was tested against.
+    it('accepts a plugin that lists this API version among several', async () => {
+      mockHttp({})
+      const register = vi.fn()
+
+      await expect(loadPlugins([{ ...validManifest, apiVersion: ['0', '1'] }], 'en',
+        () => Promise.resolve({ register }))).resolves.toEqual(['demo'])
+      expect(register).toHaveBeenCalled()
+    })
+
+    it('rejects a plugin whose list leaves this API version out', async () => {
+      mockHttp({})
+      const importer = vi.fn()
+
+      await expect(loadPlugins([{ ...validManifest, apiVersion: ['2', '3'] }], 'en', importer))
+        .resolves.toEqual([])
+      expect(importer).not.toHaveBeenCalled()
+      expect(console.warn).toHaveBeenCalledWith(expect.stringContaining('"2", "3"'))
+    })
+
     it('skips a manifest without id or entry', async () => {
       mockHttp({})
       const importer = vi.fn()
