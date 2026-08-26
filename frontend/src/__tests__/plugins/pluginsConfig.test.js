@@ -16,6 +16,7 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest'
 import { registerPlugin, getPlugin, resetPlugins, PLUGIN_API_VERSION } from '@/plugins/pluginsConfig.js'
+import packageJson from '../../../package.json'
 
 describe('pluginsConfig', () => {
   beforeEach(() => {
@@ -89,8 +90,10 @@ describe('pluginsConfig', () => {
     expect(getPlugin('slot-b').value).toHaveLength(0)
   })
 
-  it('exposes the API version plugins are validated against', () => {
-    expect(PLUGIN_API_VERSION).toBe('1')
+  // Plugins name it in their manifest, so it has to be the release and not a nightly
+  it('exposes the release plugins are validated against, without a pre-release suffix', () => {
+    expect(PLUGIN_API_VERSION).toBe(packageJson.version.replace(/-.*$/, ''))
+    expect(PLUGIN_API_VERSION).not.toContain('-')
   })
 
   it('clears all slots on reset', () => {

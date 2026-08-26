@@ -19,6 +19,7 @@ import { fetchPluginManifests, loadPlugins, initPlugins } from '@/plugins/plugin
 import { setPluginContext } from '@/plugins/pluginContext.js'
 import { axios } from '@/globals.js'
 import { i18n } from '@/i18n'
+import { PLUGIN_API_VERSION } from '@/plugins/pluginsConfig.js'
 
 vi.mock('@/globals.js', () => ({
   axios: { create: vi.fn() }
@@ -28,7 +29,7 @@ vi.mock('@/i18n', () => ({
   i18n: { global: { mergeLocaleMessage: vi.fn() } }
 }))
 
-const validManifest = { id: 'demo', entry: 'index.js', apiVersion: '1' }
+const validManifest = { id: 'demo', entry: 'index.js', apiVersion: PLUGIN_API_VERSION }
 
 // Serves the manifest file and, optionally, plugin translation files
 function mockHttp(responses) {
@@ -135,7 +136,7 @@ describe('pluginLoader', () => {
       mockHttp({})
       const register = vi.fn()
 
-      await expect(loadPlugins([{ ...validManifest, apiVersion: ['0', '1'] }], 'en',
+      await expect(loadPlugins([{ ...validManifest, apiVersion: ['0.0.1', PLUGIN_API_VERSION] }], 'en',
         () => Promise.resolve({ register }))).resolves.toEqual(['demo'])
       expect(register).toHaveBeenCalled()
     })
@@ -154,7 +155,7 @@ describe('pluginLoader', () => {
       mockHttp({})
       const importer = vi.fn()
 
-      await expect(loadPlugins([{ apiVersion: '1' }], 'en', importer)).resolves.toEqual([])
+      await expect(loadPlugins([{ apiVersion: PLUGIN_API_VERSION }], 'en', importer)).resolves.toEqual([])
       expect(importer).not.toHaveBeenCalled()
     })
 
@@ -185,7 +186,7 @@ describe('pluginLoader', () => {
 
     it('loads the remaining plugins when one of them fails', async () => {
       mockHttp({})
-      const other = { id: 'other', entry: 'index.js', apiVersion: '1' }
+      const other = { id: 'other', entry: 'index.js', apiVersion: PLUGIN_API_VERSION }
       const importer = vi.fn(url => url.includes('/demo/')
         ? Promise.reject(new Error('boom'))
         : Promise.resolve({ register: vi.fn() }))

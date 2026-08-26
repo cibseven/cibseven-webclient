@@ -20,6 +20,7 @@ import * as vue from 'vue'
 import { ref, reactive, nextTick } from 'vue'
 import { axios } from '@/globals.js'
 import { ProcessService } from '@/services.js'
+import { PLUGIN_API_VERSION } from '@/plugins/pluginsConfig.js'
 import { getPlugin, resetPlugins } from '@/plugins/pluginsConfig.js'
 import { setPluginContext } from '@/plugins/pluginContext.js'
 import { setPluginRouter } from '@/plugins/pluginNavigation.js'
@@ -64,7 +65,7 @@ describe('plugin-runtime', () => {
     })
 
     it('reports a stable runtime identity', () => {
-      expect(runtime.getRuntimeInfo().apiVersion).toBe('1')
+      expect(runtime.getRuntimeInfo().apiVersion).toBe(PLUGIN_API_VERSION)
       expect(runtime.getRuntimeInfo().instance).toBe(runtime.getRuntimeInfo().instance)
     })
   })

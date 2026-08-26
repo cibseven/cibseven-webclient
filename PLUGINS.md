@@ -118,7 +118,7 @@ described above.
 ```json
 {
   "entry": "index.js",
-  "apiVersion": ["1"],
+  "apiVersion": ["2.3.0"],
   "slots": ["process-instance-tab"],
   "translations": { "en": "translations_en.json" }
 }
