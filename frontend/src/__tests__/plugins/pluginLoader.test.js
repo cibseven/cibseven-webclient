@@ -19,14 +19,15 @@ import { fetchPluginManifests, loadPlugins, initPlugins, syncPluginTranslations 
 import { setPluginContext } from '@/plugins/pluginContext.js'
 import { getPlugin, resetPlugins, PLUGIN_API_VERSION } from '@/plugins/pluginsConfig.js'
 import { axios } from '@/globals.js'
-import { i18n } from '@/i18n'
+import { i18n, registerTranslationLoader } from '@/i18n'
 
 vi.mock('@/globals.js', () => ({
   axios: { create: vi.fn() }
 }))
 
 vi.mock('@/i18n', () => ({
-  i18n: { global: { mergeLocaleMessage: vi.fn() } }
+  i18n: { global: { mergeLocaleMessage: vi.fn() } },
+  registerTranslationLoader: vi.fn()
 }))
 
 const validManifest = { id: 'demo', entry: 'index.js', apiVersion: PLUGIN_API_VERSION }
@@ -341,6 +342,27 @@ describe('pluginLoader', () => {
 
       await expect(initPlugins('en', () => Promise.resolve({ register }))).resolves.toEqual(['demo'])
       expect(register).toHaveBeenCalled()
+    })
+
+    /**
+     * Registered as a translation source rather than watching the locale: the
+     * application loads a language's messages before switching to it, and plugin
+     * messages arriving afterwards would render the keys once.
+     */
+    it('registers the plugin translations as a source of the application', async () => {
+      mockHttp({ plugins: { plugins: [validManifest] } })
+
+      await initPlugins('en', () => Promise.resolve({ register: vi.fn() }))
+
+      expect(registerTranslationLoader).toHaveBeenCalledWith(syncPluginTranslations)
+    })
+
+    it('registers no source when no plugin is deployed', async () => {
+      mockHttp({ plugins: { plugins: [] } })
+
+      await initPlugins('en', vi.fn())
+
+      expect(registerTranslationLoader).not.toHaveBeenCalled()
     })
 
     it('does nothing when no plugin is deployed', async () => {

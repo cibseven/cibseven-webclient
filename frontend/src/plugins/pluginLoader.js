@@ -14,9 +14,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { watch } from 'vue'
 import { axios } from '@/globals.js'
-import { i18n } from '@/i18n'
+import { i18n, registerTranslationLoader } from '@/i18n'
 import { getPluginContext } from './pluginContext.js'
 import { PLUGIN_API_VERSION, registerPlugin } from './pluginsConfig.js'
 
@@ -224,6 +223,6 @@ export async function initPlugins(lang, importer = importModule) {
   const ids = await loadPlugins(manifests, lang, importer)
 
   // A plugin's labels come from its own files, so a language switch has to fetch them
-  watch(() => i18n.global.locale, lang => syncPluginTranslations(lang))
+  registerTranslationLoader(syncPluginTranslations)
   return ids
 }

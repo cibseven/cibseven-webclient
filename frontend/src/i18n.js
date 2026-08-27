@@ -91,6 +91,22 @@ const defaultTranslationSources = [
   translationSources.themes
 ]
 
+// Sources that only exist at runtime, plugins today. They are loaded with the built-in
+// ones, so a language is never switched to before their messages are there.
+const extraLoaders = []
+
+/**
+ * Registers a loader called with every language, like the built-in sources. It is
+ * called right away for the languages already loaded, since a source registered
+ * later would otherwise never see them.
+ *
+ * @param {(lang: string) => Promise<void>} load
+ */
+const registerTranslationLoader = function(load) {
+  extraLoaders.push(load)
+  loadedLanguages.forEach(load)
+}
+
 const loadTranslations = async function(config, lang, sources = defaultTranslationSources) {
   if (sources.includes(translationSources.commonComponents)) {
     // Add translations from @cib/common-frontend library
@@ -116,6 +132,8 @@ const loadTranslations = async function(config, lang, sources = defaultTranslati
     // Add translations from public/themes/translations_*.json
     await loadTranslationsFromThemes(config, lang)
   }
+
+  await Promise.all(extraLoaders.map(load => load(lang)))
 }
 
 const setLanguage = function(language) {
@@ -148,6 +166,7 @@ export {
   i18n,
   switchLanguage,
   loadTranslations,
+  registerTranslationLoader,
   setLanguage,
   translationSources
 }
