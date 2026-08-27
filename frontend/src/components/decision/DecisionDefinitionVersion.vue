@@ -19,7 +19,7 @@
 <template>
   <div v-if="decision" class="h-100">
     <ViewerFrame :resizerMixin="this">
-      <DmnViewer ref="diagram" class="h-100" @viewbox-changed="onViewboxChanged" />
+      <DmnViewer ref="diagram" class="h-100" @viewbox-changed="onViewboxChanged" :sidebar-left-open="leftOpen" />
     </ViewerFrame>
 
     <div class="position-absolute w-100" style="left: 0; z-index: 1" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight + 1) + 'px; ' + toggleTransition">
@@ -104,7 +104,8 @@ export default {
   props: {
     versionIndex: String,
     loading: Boolean,
-    decisionKey: String
+    decisionKey: String,
+    leftOpen: { type: Boolean, default: true }
   },
   data: function() {
     return {

@@ -34,8 +34,9 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.SharedEntityManagerCreator;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionManager;
 
@@ -50,11 +51,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  * called {@code entityManagerFactory} and {@code transactionManager}, and they may well point at a
  * different database (CIB7-1776).
  *
+ * <p>{@link ModelerScopedBean} stands for any modeler bean that asks for the qualified factory and
+ * builds a shared entity manager from it.</p>
+ *
  * <p>The transaction manager assertions go through {@code BeanFactoryAnnotationUtils.qualifiedBeanOfType},
  * which is the lookup {@code TransactionAspectSupport.determineQualifiedTransactionManager} performs
  * for a {@code @Transactional(ModelerJpa.TRANSACTION_MANAGER)} qualifier.</p>
  */
-class AuditDiagramFactoryResolutionTest {
+class ModelerPersistenceUnitResolutionTest {
 
 	/** An embedding application: it owns the default names, the modeler owns its own. */
 	private final ApplicationContextRunner embedded =
@@ -65,10 +69,10 @@ class AuditDiagramFactoryResolutionTest {
 			new ApplicationContextRunner().withUserConfiguration(ModelerUnitOnlyConfig.class);
 
 	@Test
-	void auditDiagramResolvesTheModelersFactoryNotTheHosts() {
+	void aModelerBeanResolvesTheModelersFactoryNotTheHosts() {
 		embedded.run(context -> {
 			assertThat(context).hasNotFailed();
-			EntityManager entityManager = entityManagerOf(context.getBean(AuditDiagram.class));
+			EntityManager entityManager = context.getBean(ModelerScopedBean.class).entityManager();
 
 			assertThat(entityManager.getEntityManagerFactory())
 					.isSameAs(context.getBean(ModelerJpa.ENTITY_MANAGER_FACTORY, EntityManagerFactory.class))
@@ -116,7 +120,7 @@ class AuditDiagramFactoryResolutionTest {
 	void worksWithoutAnyDefaultlyNamedBeans() {
 		noDefaultNames.run(context -> {
 			assertThat(context).hasNotFailed();
-			assertThat(entityManagerOf(context.getBean(AuditDiagram.class)).getEntityManagerFactory())
+			assertThat(context.getBean(ModelerScopedBean.class).entityManager().getEntityManagerFactory())
 					.isSameAs(context.getBean(ModelerJpa.ENTITY_MANAGER_FACTORY, EntityManagerFactory.class));
 
 			TransactionManager resolved = BeanFactoryAnnotationUtils.qualifiedBeanOfType(
@@ -126,12 +130,22 @@ class AuditDiagramFactoryResolutionTest {
 		});
 	}
 
-	private static EntityManager entityManagerOf(AuditDiagram auditDiagram) {
-		return (EntityManager) ReflectionTestUtils.getField(auditDiagram, "entityManager");
+	@Component
+	static class ModelerScopedBean {
+
+		private final EntityManager entityManager;
+
+		ModelerScopedBean(@Qualifier(ModelerJpa.ENTITY_MANAGER_FACTORY) EntityManagerFactory entityManagerFactory) {
+			this.entityManager = SharedEntityManagerCreator.createSharedEntityManager(entityManagerFactory);
+		}
+
+		EntityManager entityManager() {
+			return entityManager;
+		}
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@Import(AuditDiagram.class)
+	@Import(ModelerScopedBean.class)
 	static class HostAndModelerUnitsConfig {
 
 		@Bean
@@ -171,7 +185,7 @@ class AuditDiagramFactoryResolutionTest {
 	}
 
 	@Configuration(proxyBeanMethods = false)
-	@Import(AuditDiagram.class)
+	@Import(ModelerScopedBean.class)
 	static class ModelerUnitOnlyConfig {
 
 		@Bean
