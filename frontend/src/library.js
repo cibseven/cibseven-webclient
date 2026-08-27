@@ -25,7 +25,7 @@ export { default as store, modules as storeModules } from '@/store'
 export { debounce } from '@/utils/debounce.js'
 export { formatDate, formatDateForTooltips, formatDuration } from '@/utils/dates.js'
 export { initEmbeddedForm } from './embedded-form/embedded-form.js'
-export { i18n, setLanguage, loadTranslations, translationSources } from './i18n'
+export { i18n, setLanguage, loadTranslations, registerTranslationLoader, translationSources } from './i18n'
 export { appRoutes,
   createAppRouter,
   authGuard,
