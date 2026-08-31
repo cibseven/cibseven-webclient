@@ -20,9 +20,11 @@ import java.util.List;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import org.cibseven.modeler.model.FormSnapshotEntity;
 
@@ -37,4 +39,25 @@ public interface FormSnapshotRepository
 	@Query("SELECT s FROM FormSnapshotEntity s "
 			+ "WHERE s.id = :id AND s.schemaMod = TRUE ORDER BY s.rev DESC")
 	List<FormSnapshotEntity> findHistory(@Param("id") String id, Pageable pageable);
+
+	/**
+	 * Keeps the newest versions of every form and deletes the snapshots below them, so a form
+	 * saved for years does not carry every schema it ever had.
+	 */
+	@Transactional
+	@Modifying
+	@Query(value = "DELETE FROM MOD_FORMS_AUD fa "
+			+ " WHERE form_schema IS NOT NULL "
+			+ "AND NOT EXISTS ( "
+			+ "    SELECT 1 "
+			+ "    FROM ( "
+			+ "        SELECT id, version, "
+			+ "               ROW_NUMBER() OVER (PARTITION BY id ORDER BY version DESC) AS rn "
+			+ "        FROM MOD_FORMS_AUD "
+			+ "        WHERE version IS NOT NULL"
+			+ "    ) ranked "
+			+ "    WHERE ranked.id = fa.id "
+			+ "      AND ranked.version = fa.version "
+			+ "      AND ranked.rn <= :versionLimit )", nativeQuery = true)
+	void deleteOldRecords(@Param("versionLimit") int versionLimit);
 }
