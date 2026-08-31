@@ -136,6 +136,45 @@ class FormHistoryRepositoryTest {
 		});
 	}
 
+	/**
+	 * A form saved for years would otherwise carry every schema it ever had, so the cleanup
+	 * job keeps the newest versions and drops the rest.
+	 */
+	@Test
+	void keepsOnlyTheNewestVersionsOfAForm() {
+		runner.run(context -> {
+			FormSnapshotRepository snapshots = context.getBean(FormSnapshotRepository.class);
+			for (int version = 1; version <= 5; version++) {
+				snapshots.save(FormSnapshotEntity.modified(form("f7", version, "v" + version), nextRevision(context), true));
+			}
+
+			snapshots.deleteOldRecords(2);
+
+			assertThat(snapshots.findHistory("f7", PageRequest.of(0, 10)))
+				.extracting(FormSnapshotEntity::getVersion)
+				.containsExactly(5, 4);
+		});
+	}
+
+	/** Cleaning one form's history must not touch another's. */
+	@Test
+	void keepsTheNewestVersionsOfEveryFormSeparately() {
+		runner.run(context -> {
+			FormSnapshotRepository snapshots = context.getBean(FormSnapshotRepository.class);
+			for (int version = 1; version <= 3; version++) {
+				snapshots.save(FormSnapshotEntity.modified(form("f8", version, "a" + version), nextRevision(context), true));
+				snapshots.save(FormSnapshotEntity.modified(form("f9", version, "b" + version), nextRevision(context), true));
+			}
+
+			snapshots.deleteOldRecords(1);
+
+			assertThat(snapshots.findHistory("f8", PageRequest.of(0, 10)))
+				.extracting(FormSnapshotEntity::getVersion).containsExactly(3);
+			assertThat(snapshots.findHistory("f9", PageRequest.of(0, 10)))
+				.extracting(FormSnapshotEntity::getVersion).containsExactly(3);
+		});
+	}
+
 	/** What the history endpoint hands out has to be the form as it was. */
 	@Test
 	void turnsASnapshotBackIntoAForm() {
