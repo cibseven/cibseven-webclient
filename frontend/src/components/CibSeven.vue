@@ -438,10 +438,30 @@ export default {
       sessionStorage.removeItem('accessToken')
       sessionStorage.removeItem('tokenModeler')
       // Note: engine token cleanup is handled by CIBHeaderFlow.logout()
+      const ssoLogoutUrl = this.buildSsoLogoutUrl()
+      if (ssoLogoutUrl) {
+        // Clearing the browser only ends our own session: while the one at the identity
+        // provider is still alive it hands out a new code right away and logs the user
+        // back in. Leave the app so the provider ends its session as well.
+        window.location.href = ssoLogoutUrl
+        return
+      }
       // Set the hash before reload: router.push is async and loses the race, so the
       // reload would otherwise land on the current page instead of the start page.
       window.location.hash = '#/'
       window.location.reload() //refresh to empty vuex and axios defaults
+    },
+    buildSsoLogoutUrl: function() {
+      const config = this.$root.config
+      if (!config.ssoActive || !config.logoutEndpoint) return null
+      // Without an id_token_hint the provider identifies the client by client_id, which
+      // OpenID Connect RP-Initiated Logout allows.
+      const redirectTo = config.postLogoutRedirectUri ||
+        (window.location.origin + window.location.pathname)
+      return config.logoutEndpoint +
+        (config.logoutEndpoint.includes('?') ? '&' : '?') +
+        'client_id=' + encodeURIComponent(config.clientId) +
+        '&post_logout_redirect_uri=' + encodeURIComponent(redirectTo)
     },
     openStartProcess: function() {
       this.$eventBus.emit('openStartProcess')

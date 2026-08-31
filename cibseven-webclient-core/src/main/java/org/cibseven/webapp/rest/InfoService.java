@@ -49,6 +49,16 @@ public class InfoService extends BaseService {
 	@Value("${cibseven.webclient.theme:cib}") private String theme;
 	@Value("${cibseven.webclient.sso.active:false}") private boolean ssoActive;
 	@Value("${cibseven.webclient.sso.endpoints.authorization:}") private String authorizationEndpoint;
+	/**
+	 * OpenID Connect {@code end_session_endpoint}. When set, the logout also ends the session at the
+	 * identity provider instead of only dropping the token kept in the browser.
+	 */
+	@Value("${cibseven.webclient.sso.endpoints.logout:}") private String logoutEndpoint;
+	/**
+	 * Where the identity provider sends the browser back to once the session is ended. Has to be
+	 * registered at the provider. Defaults to the page the application is served from.
+	 */
+	@Value("${cibseven.webclient.sso.postLogoutRedirectUri:}") private String postLogoutRedirectUri;
 	@Value("${cibseven.webclient.sso.clientId:}") private String clientId;
 	@Value("${cibseven.webclient.sso.scopes:}") private String scopes;
 	/**
@@ -182,6 +192,8 @@ public class InfoService extends BaseService {
        
 		if (ssoActive) {
 			configJson.put("authorizationEndpoint", authorizationEndpoint);
+			configJson.put("logoutEndpoint", logoutEndpoint);
+			configJson.put("postLogoutRedirectUri", postLogoutRedirectUri);
 			configJson.put("clientId", clientId);
 			configJson.put("scopes", scopes);
 		}
