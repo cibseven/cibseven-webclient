@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
@@ -38,8 +37,6 @@ import org.cibseven.modeler.repository.FormRepository;
 
 @Component
 public class FormProvider implements IFormProvider {
-	
-	@Value("${cibseven.webclient.modeler.deleteProcesses.versionLimit:50}") private Integer versionLimit;
 	
 	@Autowired
 	private FormRepository formRepositoryDao;
