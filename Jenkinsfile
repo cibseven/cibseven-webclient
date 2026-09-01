@@ -38,22 +38,26 @@ def npmReleasePackage(String packageDir, String npmrcFile) {
     def isDevVersion = packageVersion.contains('-dev')
     def mavenTagArg = isDevVersion ? "-Dnpm.publish.tag.arg=' --tag dev'" : ""
 
-    sh """
-        # Copy the .npmrc file to the package directory
-        echo "Copying .npmrc file to ${packageDir} directory..."
-        cp ${npmrcFile} ./${packageDir}/.npmrc
-        
-        echo "Current package.json version:"
-        grep '"version"' ${packageDir}/package.json
-        
-        echo "Running Maven to release the npm package..."
-        mvn -T4 \\
-            -Dbuild.number=${BUILD_NUMBER} \\
-            -Drelease-npm-library=${packageDir} \\
-            -Dskip.npm.version.update=true \\
-            ${mavenTagArg} \\
-            clean generate-resources
-    """
+    withEnv(["NPM_RC_FILE=${npmrcFile}"]) {
+        // Only the .npmrc credential path is shell-expanded ($NPM_RC_FILE); it must never be
+        // spliced in via Groovy string interpolation, or Jenkins can't mask it in the log.
+        sh """
+            # Copy the .npmrc file to the package directory
+            echo "Copying .npmrc file to ${packageDir} directory..."
+            cp "\$NPM_RC_FILE" "./${packageDir}/.npmrc"
+
+            echo "Current package.json version:"
+            grep '"version"' ${packageDir}/package.json
+
+            echo "Running Maven to release the npm package..."
+            mvn -T4 \\
+                -Dbuild.number=${BUILD_NUMBER} \\
+                -Drelease-npm-library=${packageDir} \\
+                -Dskip.npm.version.update=true \\
+                ${mavenTagArg} \\
+                clean generate-resources
+        """
+    }
 }
 
 pipeline {
