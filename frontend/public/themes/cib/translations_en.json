@@ -2,6 +2,28 @@
 	"login": {
 		"productName": "CIB seven"
 	},
+	"deepLinks": {
+		"processInstance": {
+			"httpbin": {
+				"title": "httpbin (instance)"
+			}
+		},
+		"processDefinition": {
+			"httpbin": {
+				"title": "httpbin (definition)"
+			}
+		},
+		"decisionDefinition": {
+			"httpbin": {
+				"title": "httpbin (decision)"
+			}
+		},
+		"decisionInstance": {
+			"httpbin": {
+				"title": "httpbin (decision instance)"
+			}
+		}
+	},
 	"process-descriptions": {
 		"my-process-key": "My Process Description"
 	}
