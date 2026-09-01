@@ -40,7 +40,6 @@
     </div>
 
     <div class="position-absolute w-100 border-top" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
-      <DeepLinkFrame v-if="matchedDeepLink" :url="resolvedDeepLinkUrl" :title="$t(`deepLinks.${matchedDeepLink.id}.title`)"></DeepLinkFrame>
       <div v-if="activeTab === 'inputs'">
         <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 0; left: 0; bottom: 0">
           <FlowTable striped resizable thead-class="sticky-header" :items="instance.inputs" primary-key="id" :fields="[
@@ -50,7 +49,7 @@
           </FlowTable>
         </div>
       </div>
-      <div v-if="activeTab === 'outputs'">
+      <div v-else-if="activeTab === 'outputs'">
         <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 0; left: 0; bottom: 0">
           <FlowTable striped resizable thead-class="sticky-header" :items="instance.outputs" primary-key="id" :fields="[
             { label: 'decision.name', key: 'clauseName', class: 'col-4', tdClass: 'py-1' },
@@ -59,6 +58,7 @@
           </FlowTable>
         </div>
       </div>
+      <DeepLinkFrame v-else-if="matchedDeepLink" :url="resolvedDeepLinkUrl" :title="$t(`deepLinks.${matchedDeepLink.id}.title`)"></DeepLinkFrame>
     </div>
   </div>
 </template>

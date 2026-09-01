@@ -70,7 +70,11 @@
     </div>
 
     <div ref="rContent" class="position-absolute w-100 overflow-hidden border-top" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
-      <div class="overflow-y-scroll bg-white position-absolute w-100" style="top: 0px; left: 0; bottom: 0" @scroll="handleScroll">
+      <div class="bg-white position-absolute w-100" style="top: 0px; left: 0; bottom: 0" @scroll="handleScroll"
+        :class="[
+          (matchedDeepLink || ['incidents', 'jobDefinitions'].includes(activeTab)) ? '' : 'overflow-y-scroll',
+        ]"
+      >
         <template v-if="isInstancesView">
           <div ref="filterTable" class="d-flex w-100">
 
