@@ -42,11 +42,11 @@ describe('deepLinks utility', () => {
 
     it('returns valid entries unchanged', () => {
       const config = { deepLinks: { processInstance: [
-        { id: 'vhvOutput', url: 'https://external.example/app' },
+        { id: 'myExternalLinkId', url: 'https://external.example/app' },
         { id: 'abc123', url: 'https://external.example/app2' }
       ] } }
       expect(getDeepLinkEntries(config, 'processInstance')).toEqual([
-        { id: 'vhvOutput', url: 'https://external.example/app', text: 'deepLinks.processInstance.vhvOutput.title' },
+        { id: 'myExternalLinkId', url: 'https://external.example/app', text: 'deepLinks.processInstance.myExternalLinkId.title' },
         { id: 'abc123', url: 'https://external.example/app2', text: 'deepLinks.processInstance.abc123.title' }
       ])
       expect(warnSpy).not.toHaveBeenCalled()

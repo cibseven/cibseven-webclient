@@ -67,13 +67,13 @@ describe('DecisionInstance', () => {
 
     it('appends configured decisionInstance deep links after the built-in tabs', () => {
       const context = { $root: { config: { deepLinks: { decisionInstance: [
-        { id: 'vhvOutput', url: 'https://external.example' }
+        { id: 'myExternalLinkId', url: 'https://external.example' }
       ] } } } }
       const tabs = DecisionInstance.computed.tabs.call(context)
       expect(tabs).toEqual([
         { id: 'inputs', text: 'decision.inputs' },
         { id: 'outputs', text: 'decision.outputs' },
-        { id: 'vhvOutput', text: 'deepLinks.decisionInstance.vhvOutput.title', url: 'https://external.example' }
+        { id: 'myExternalLinkId', text: 'deepLinks.decisionInstance.myExternalLinkId.title', url: 'https://external.example' }
       ])
     })
 
@@ -92,10 +92,10 @@ describe('DecisionInstance', () => {
   describe('matchedDeepLink', () => {
     it('returns the deep link entry matching the active tab', () => {
       const context = {
-        activeTab: 'vhvOutput',
-        $root: { config: { deepLinks: { decisionInstance: [{ id: 'vhvOutput', url: 'https://external.example' }] } } }
+        activeTab: 'myExternalLinkId',
+        $root: { config: { deepLinks: { decisionInstance: [{ id: 'myExternalLinkId', url: 'https://external.example' }] } } }
       }
-      expect(DecisionInstance.computed.matchedDeepLink.call(context)).toEqual({ id: 'vhvOutput', url: 'https://external.example', text: 'deepLinks.decisionInstance.vhvOutput.title' })
+      expect(DecisionInstance.computed.matchedDeepLink.call(context)).toEqual({ id: 'myExternalLinkId', url: 'https://external.example', text: 'deepLinks.decisionInstance.myExternalLinkId.title' })
     })
 
     it('returns undefined when the active tab is a built-in tab', () => {
@@ -107,7 +107,7 @@ describe('DecisionInstance', () => {
   describe('resolvedDeepLinkUrl', () => {
     it('appends decision instance context and language to the deep link url', () => {
       const context = {
-        matchedDeepLink: { id: 'vhvOutput', url: 'https://external.example/app' },
+        matchedDeepLink: { id: 'myExternalLinkId', url: 'https://external.example/app' },
         instance: { id: 'inst-1', decisionDefinitionId: 'dec-1', decisionDefinitionKey: 'myDecision' },
         currentLanguage: () => 'en'
       }

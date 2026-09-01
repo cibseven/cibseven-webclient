@@ -34,9 +34,9 @@ describe('config utility', () => {
 
     it('should merge configured deepLinks entries over the empty defaults', () => {
       const config = applyConfigDefaults({
-        deepLinks: { processInstance: [{ id: 'vhvOutput', url: 'https://external.example' }] }
+        deepLinks: { processInstance: [{ id: 'myExternalLinkId', url: 'https://external.example' }] }
       })
-      expect(config.deepLinks.processInstance).toEqual([{ id: 'vhvOutput', url: 'https://external.example' }])
+      expect(config.deepLinks.processInstance).toEqual([{ id: 'myExternalLinkId', url: 'https://external.example' }])
       expect(config.deepLinks.decisionInstance).toEqual([])
     })
 

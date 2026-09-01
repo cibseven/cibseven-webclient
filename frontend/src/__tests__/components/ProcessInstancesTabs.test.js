@@ -37,10 +37,10 @@ describe('ProcessInstancesTabs', () => {
 
     it('appends configured processDefinition deep links after the built-in tabs', () => {
       const context = { $root: { config: { deepLinks: { processDefinition: [
-        { id: 'vhvOutput', url: 'https://external.example' }
+        { id: 'myExternalLinkId', url: 'https://external.example' }
       ] } } } }
       const tabs = ProcessInstancesTabs.computed.tabs.call(context)
-      expect(tabs.at(-1)).toEqual({ id: 'vhvOutput', text: 'deepLinks.processDefinition.vhvOutput.title', url: 'https://external.example' })
+      expect(tabs.at(-1)).toEqual({ id: 'myExternalLinkId', text: 'deepLinks.processDefinition.myExternalLinkId.title', url: 'https://external.example' })
       expect(tabs).toHaveLength(5)
     })
 

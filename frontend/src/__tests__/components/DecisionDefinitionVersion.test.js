@@ -39,12 +39,12 @@ describe('DecisionDefinitionVersion', () => {
 
     it('appends configured decisionDefinition deep links after the built-in tab', () => {
       const context = { $root: { config: { deepLinks: { decisionDefinition: [
-        { id: 'vhvOutput', url: 'https://external.example' }
+        { id: 'myExternalLinkId', url: 'https://external.example' }
       ] } } } }
       const tabs = DecisionDefinitionVersion.computed.tabs.call(context)
       expect(tabs).toEqual([
         { id: 'instances', text: 'decision.instances' },
-        { id: 'vhvOutput', text: 'deepLinks.decisionDefinition.vhvOutput.title', url: 'https://external.example' }
+        { id: 'myExternalLinkId', text: 'deepLinks.decisionDefinition.myExternalLinkId.title', url: 'https://external.example' }
       ])
     })
 
@@ -60,10 +60,10 @@ describe('DecisionDefinitionVersion', () => {
   describe('matchedDeepLink', () => {
     it('returns the deep link entry matching the active tab', () => {
       const context = {
-        activeTab: 'vhvOutput',
-        $root: { config: { deepLinks: { decisionDefinition: [{ id: 'vhvOutput', url: 'https://external.example' }] } } }
+        activeTab: 'myExternalLinkId',
+        $root: { config: { deepLinks: { decisionDefinition: [{ id: 'myExternalLinkId', url: 'https://external.example' }] } } }
       }
-      expect(DecisionDefinitionVersion.computed.matchedDeepLink.call(context)).toEqual({ id: 'vhvOutput', url: 'https://external.example', text: 'deepLinks.decisionDefinition.vhvOutput.title' })
+      expect(DecisionDefinitionVersion.computed.matchedDeepLink.call(context)).toEqual({ id: 'myExternalLinkId', url: 'https://external.example', text: 'deepLinks.decisionDefinition.myExternalLinkId.title' })
     })
 
     it('returns undefined when the active tab is the built-in instances tab', () => {
@@ -75,7 +75,7 @@ describe('DecisionDefinitionVersion', () => {
   describe('resolvedDeepLinkUrl', () => {
     it('appends decision definition context and language to the deep link url', () => {
       const context = {
-        matchedDeepLink: { id: 'vhvOutput', url: 'https://external.example/app' },
+        matchedDeepLink: { id: 'myExternalLinkId', url: 'https://external.example/app' },
         decision: { id: 'dec-1', key: 'myDecision', tenantId: 'tenant-1' },
         currentLanguage: () => 'en'
       }

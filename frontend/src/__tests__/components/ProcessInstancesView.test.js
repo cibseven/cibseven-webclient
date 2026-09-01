@@ -21,10 +21,10 @@ describe('ProcessInstancesView', () => {
   describe('matchedDeepLink', () => {
     it('returns the deep link entry matching the active tab', () => {
       const context = {
-        activeTab: 'vhvOutput',
-        $root: { config: { deepLinks: { processDefinition: [{ id: 'vhvOutput', url: 'https://external.example' }] } } }
+        activeTab: 'myExternalLinkId',
+        $root: { config: { deepLinks: { processDefinition: [{ id: 'myExternalLinkId', url: 'https://external.example' }] } } }
       }
-      expect(ProcessInstancesView.computed.matchedDeepLink.call(context)).toEqual({ id: 'vhvOutput', url: 'https://external.example', text: 'deepLinks.processDefinition.vhvOutput.title' })
+      expect(ProcessInstancesView.computed.matchedDeepLink.call(context)).toEqual({ id: 'myExternalLinkId', url: 'https://external.example', text: 'deepLinks.processDefinition.myExternalLinkId.title' })
     })
 
     it('returns undefined when the active tab is a built-in tab', () => {
@@ -36,7 +36,7 @@ describe('ProcessInstancesView', () => {
   describe('resolvedDeepLinkUrl', () => {
     it('appends process definition context and language to the deep link url', () => {
       const context = {
-        matchedDeepLink: { id: 'vhvOutput', url: 'https://external.example/app' },
+        matchedDeepLink: { id: 'myExternalLinkId', url: 'https://external.example/app' },
         process: { id: 'def-1', key: 'myProcess' },
         tenantId: 'tenant-1',
         currentLanguage: () => 'en'
