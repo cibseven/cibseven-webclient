@@ -24,6 +24,20 @@ describe('config utility', () => {
       expect(config.theme).toBe('cib')
       expect(config.supportedLanguages).toEqual(['en'])
       expect(config.permissions.tasklist).toEqual({ application: ['ACCESS'] })
+      expect(config.deepLinks).toEqual({
+        processDefinition: [],
+        processInstance: [],
+        decisionDefinition: [],
+        decisionInstance: []
+      })
+    })
+
+    it('should merge configured deepLinks entries over the empty defaults', () => {
+      const config = applyConfigDefaults({
+        deepLinks: { processInstance: [{ id: 'vhvOutput', url: 'https://external.example' }] }
+      })
+      expect(config.deepLinks.processInstance).toEqual([{ id: 'vhvOutput', url: 'https://external.example' }])
+      expect(config.deepLinks.decisionInstance).toEqual([])
     })
 
     it('should return the default configuration for an empty object', () => {

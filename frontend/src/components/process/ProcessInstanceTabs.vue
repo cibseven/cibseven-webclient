@@ -22,6 +22,18 @@
 
 <script>
 import { GenericTabs } from '@cib/common-frontend'
+import { getDeepLinkEntries } from '@/utils/deepLinks.js'
+
+const BUILTIN_TABS = [
+  { id: 'variables', text: 'process.variables' },
+  { id: 'incidents', text: 'process.incidents' },
+  { id: 'usertasks', text: 'process.usertasks' },
+  { id: 'jobs', text: 'process.jobs' },
+  { id: 'calledProcessInstances', text: 'process.calledProcessInstances' },
+  { id: 'externalTasks', text: 'process.externalTasks' }
+]
+
+export const RESERVED_TAB_IDS = BUILTIN_TABS.map(tab => tab.id)
 
 export default {
   name: 'ProcessInstanceTabs',
@@ -30,15 +42,13 @@ export default {
   },
   props: { modelValue: String },
   emits: ['update:modelValue', 'tab-click'],
-  data: function () {
-    return {
-      tabs: [
-        { id: 'variables', text: 'process.variables' },
-        { id: 'incidents', text: 'process.incidents' },
-        { id: 'usertasks', text: 'process.usertasks' },
-        { id: 'jobs', text: 'process.jobs' },
-        { id: 'calledProcessInstances', text: 'process.calledProcessInstances' },
-        { id: 'externalTasks', text: 'process.externalTasks' }
+  computed: {
+    tabs: function() {
+      const deepLinkTabs = getDeepLinkEntries(this.$root.config, 'processInstance', RESERVED_TAB_IDS)
+        .map(entry => ({ id: entry.id, text: `deepLinks.${entry.id}.title` }))
+      return [
+        ...BUILTIN_TABS,
+        ...deepLinkTabs,
       ]
     }
   }

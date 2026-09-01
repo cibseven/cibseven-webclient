@@ -183,6 +183,12 @@ const DEFAULT_CONFIG = {
       { "name": "Call Activity", "type": "bpmn:CallActivity", "color": "#059DBB" }
     ],
     filterBpmnOpacity: "0.4"
+  },
+  deepLinks: {
+    processDefinition: [],
+    processInstance: [],
+    decisionDefinition: [],
+    decisionInstance: []
   }
 }
 

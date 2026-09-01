@@ -186,6 +186,7 @@ export { default as JobDueDateModal } from '@/components/process/modals/JobDueDa
 export { default as ViewerFrame } from '@/components/common-components/ViewerFrame.vue'
 export { default as RemovableBadge } from '@/components/common-components/RemovableBadge.vue'
 export { default as WarningBox } from '@/components/common-components/WarningBox.vue'
+export { default as DeepLinkFrame } from '@/components/common-components/DeepLinkFrame.vue'
 
 // re-export common frontend library
 export * from '@cib/common-frontend'

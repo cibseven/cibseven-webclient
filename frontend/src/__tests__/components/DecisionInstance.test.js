@@ -56,6 +56,69 @@ describe('DecisionInstance', () => {
     })
   })
 
+  describe('tabs', () => {
+    it('includes only the built-in inputs/outputs tabs when no deep links are configured', () => {
+      const tabs = DecisionInstance.computed.tabs.call({ $root: { config: {} } })
+      expect(tabs).toEqual([
+        { id: 'inputs', text: 'decision.inputs' },
+        { id: 'outputs', text: 'decision.outputs' }
+      ])
+    })
+
+    it('appends configured decisionInstance deep links after the built-in tabs', () => {
+      const context = { $root: { config: { deepLinks: { decisionInstance: [
+        { id: 'vhvOutput', url: 'https://external.example' }
+      ] } } } }
+      const tabs = DecisionInstance.computed.tabs.call(context)
+      expect(tabs).toEqual([
+        { id: 'inputs', text: 'decision.inputs' },
+        { id: 'outputs', text: 'decision.outputs' },
+        { id: 'vhvOutput', text: 'deepLinks.vhvOutput.title' }
+      ])
+    })
+
+    it('drops a deep link entry that collides with a built-in tab id', () => {
+      const context = { $root: { config: { deepLinks: { decisionInstance: [
+        { id: 'outputs', url: 'https://external.example' }
+      ] } } } }
+      const tabs = DecisionInstance.computed.tabs.call(context)
+      expect(tabs).toEqual([
+        { id: 'inputs', text: 'decision.inputs' },
+        { id: 'outputs', text: 'decision.outputs' }
+      ])
+    })
+  })
+
+  describe('matchedDeepLink', () => {
+    it('returns the deep link entry matching the active tab', () => {
+      const context = {
+        activeTab: 'vhvOutput',
+        $root: { config: { deepLinks: { decisionInstance: [{ id: 'vhvOutput', url: 'https://external.example' }] } } }
+      }
+      expect(DecisionInstance.computed.matchedDeepLink.call(context)).toEqual({ id: 'vhvOutput', url: 'https://external.example' })
+    })
+
+    it('returns undefined when the active tab is a built-in tab', () => {
+      const context = { activeTab: 'inputs', $root: { config: {} } }
+      expect(DecisionInstance.computed.matchedDeepLink.call(context)).toBeUndefined()
+    })
+  })
+
+  describe('resolvedDeepLinkUrl', () => {
+    it('appends decision instance context and language to the deep link url', () => {
+      const context = {
+        matchedDeepLink: { id: 'vhvOutput', url: 'https://external.example/app' },
+        instance: { id: 'inst-1', decisionDefinitionId: 'dec-1', decisionDefinitionKey: 'myDecision' },
+        currentLanguage: () => 'en'
+      }
+      const url = new URL(DecisionInstance.computed.resolvedDeepLinkUrl.call(context))
+      expect(url.searchParams.get('decisionInstanceId')).toBe('inst-1')
+      expect(url.searchParams.get('decisionDefinitionId')).toBe('dec-1')
+      expect(url.searchParams.get('decisionDefinitionKey')).toBe('myDecision')
+      expect(url.searchParams.get('lang')).toBe('en')
+    })
+  })
+
   describe('isDmnStringLiteral', () => {
     it.each([
       ['"hello"',       true],

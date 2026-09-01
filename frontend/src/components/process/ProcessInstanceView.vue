@@ -111,6 +111,7 @@
       <JobsTable v-else-if="activeTab === 'jobs'" :instance="selectedInstance" :process="process"></JobsTable>
       <CalledProcessInstancesTable v-else-if="activeTab === 'calledProcessInstances'" :selected-instance="selectedInstance" :activity-instance-history="activityInstanceHistory"></CalledProcessInstancesTable>
       <ExternalTasksTable v-else-if="activeTab === 'externalTasks'" :instance="selectedInstance"></ExternalTasksTable>
+      <DeepLinkFrame v-else-if="matchedDeepLink" :url="resolvedDeepLinkUrl" :title="$t(`deepLinks.${matchedDeepLink.id}.title`)"></DeepLinkFrame>
       <component :is="ProcessInstanceTabsContentPlugin" v-if="ProcessInstanceTabsContentPlugin" :instance="selectedInstance" :active-tab="activeTab" :process="process"></component>
     </div>
 
@@ -132,16 +133,19 @@ import UserTasksTable from '@/components/process/tables/UserTasksTable.vue'
 import JobsTable from '@/components/process/tables/JobsTable.vue'
 import CalledProcessInstancesTable from '@/components/process/tables/CalledProcessInstancesTable.vue'
 import ExternalTasksTable from '@/components/process/tables/ExternalTasksTable.vue'
-import ProcessInstanceTabs from '@/components/process/ProcessInstanceTabs.vue'
+import ProcessInstanceTabs, { RESERVED_TAB_IDS } from '@/components/process/ProcessInstanceTabs.vue'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
+import DeepLinkFrame from '@/components/common-components/DeepLinkFrame.vue'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
+import { getDeepLinkEntries, buildDeepLinkUrl } from '@/utils/deepLinks.js'
 
 export default {
   name: 'ProcessInstanceView',
-  components: { VariablesTable, IncidentsTable, UserTasksTable, BpmnViewer, 
-    JobsTable, CalledProcessInstancesTable, ExternalTasksTable, ProcessInstanceTabs, ScrollableTabsContainer, ViewerFrame },
+  components: { VariablesTable, IncidentsTable, UserTasksTable, BpmnViewer,
+    JobsTable, CalledProcessInstancesTable, ExternalTasksTable, ProcessInstanceTabs, ScrollableTabsContainer, ViewerFrame, DeepLinkFrame },
   mixins: [resizerMixin, tabUrlMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
+  inject: ['currentLanguage'],
   props: {
     process: Object,
     tenantId: String,
@@ -189,6 +193,20 @@ export default {
       return this.$options.components && this.$options.components.BpmnViewerPlugin
         ? this.$options.components.BpmnViewerPlugin
         : null
+    },
+    matchedDeepLink() {
+      return getDeepLinkEntries(this.$root.config, 'processInstance', RESERVED_TAB_IDS)
+        .find(entry => entry.id === this.activeTab)
+    },
+    resolvedDeepLinkUrl() {
+      return buildDeepLinkUrl(this.matchedDeepLink.url, {
+        processInstanceId: this.selectedInstance?.id,
+        processDefinitionId: this.process?.id,
+        processDefinitionKey: this.process?.key,
+        businessKey: this.selectedInstance?.businessKey,
+        tenantId: this.tenantId,
+        lang: this.currentLanguage()
+      })
     },
   },
   mounted: function() {
