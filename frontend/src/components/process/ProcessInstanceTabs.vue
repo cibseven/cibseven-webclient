@@ -45,7 +45,6 @@ export default {
   computed: {
     tabs: function() {
       const deepLinkTabs = getDeepLinkEntries(this.$root.config, 'processInstance', RESERVED_TAB_IDS)
-        .map(entry => ({ id: entry.id, text: `deepLinks.${entry.id}.title` }))
       return [
         ...BUILTIN_TABS,
         ...deepLinkTabs,

@@ -24,7 +24,7 @@ describe('ProcessInstancesView', () => {
         activeTab: 'vhvOutput',
         $root: { config: { deepLinks: { processDefinition: [{ id: 'vhvOutput', url: 'https://external.example' }] } } }
       }
-      expect(ProcessInstancesView.computed.matchedDeepLink.call(context)).toEqual({ id: 'vhvOutput', url: 'https://external.example' })
+      expect(ProcessInstancesView.computed.matchedDeepLink.call(context)).toEqual({ id: 'vhvOutput', url: 'https://external.example', text: 'deepLinks.processDefinition.vhvOutput.title' })
     })
 
     it('returns undefined when the active tab is a built-in tab', () => {

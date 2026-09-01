@@ -40,7 +40,7 @@ describe('ProcessInstancesTabs', () => {
         { id: 'vhvOutput', url: 'https://external.example' }
       ] } } } }
       const tabs = ProcessInstancesTabs.computed.tabs.call(context)
-      expect(tabs.at(-1)).toEqual({ id: 'vhvOutput', text: 'deepLinks.vhvOutput.title' })
+      expect(tabs.at(-1)).toEqual({ id: 'vhvOutput', text: 'deepLinks.processDefinition.vhvOutput.title', url: 'https://external.example' })
       expect(tabs).toHaveLength(5)
     })
 

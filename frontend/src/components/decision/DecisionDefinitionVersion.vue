@@ -123,8 +123,10 @@ export default {
     },
     tabs() {
       const deepLinkTabs = getDeepLinkEntries(this.$root.config, 'decisionDefinition', RESERVED_TAB_IDS)
-        .map(entry => ({ id: entry.id, text: `deepLinks.${entry.id}.title` }))
-      return [{ id: 'instances', text: 'decision.instances' }, ...deepLinkTabs]
+      return [
+        { id: 'instances', text: 'decision.instances' },
+        ...deepLinkTabs,
+      ]
     },
     matchedDeepLink() {
       return getDeepLinkEntries(this.$root.config, 'decisionDefinition', RESERVED_TAB_IDS)

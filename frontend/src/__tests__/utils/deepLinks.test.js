@@ -45,7 +45,10 @@ describe('deepLinks utility', () => {
         { id: 'vhvOutput', url: 'https://external.example/app' },
         { id: 'abc123', url: 'https://external.example/app2' }
       ] } }
-      expect(getDeepLinkEntries(config, 'processInstance')).toEqual(config.deepLinks.processInstance)
+      expect(getDeepLinkEntries(config, 'processInstance')).toEqual([
+        { id: 'vhvOutput', url: 'https://external.example/app', text: 'deepLinks.processInstance.vhvOutput.title' },
+        { id: 'abc123', url: 'https://external.example/app2', text: 'deepLinks.processInstance.abc123.title' }
+      ])
       expect(warnSpy).not.toHaveBeenCalled()
     })
 
@@ -58,7 +61,7 @@ describe('deepLinks utility', () => {
         { url: 'https://external.example' }
       ] } }
       const result = getDeepLinkEntries(config, 'processInstance')
-      expect(result).toEqual([{ id: 'valid1', url: 'https://external.example' }])
+      expect(result).toEqual([{ id: 'valid1', url: 'https://external.example', text: 'deepLinks.processInstance.valid1.title' }])
       expect(warnSpy).toHaveBeenCalledTimes(4)
     })
 
@@ -68,7 +71,7 @@ describe('deepLinks utility', () => {
         { id: 'blankUrl', url: '' },
         { id: 'good', url: 'https://external.example' }
       ] } }
-      expect(getDeepLinkEntries(config, 'processInstance')).toEqual([{ id: 'good', url: 'https://external.example' }])
+      expect(getDeepLinkEntries(config, 'processInstance')).toEqual([{ id: 'good', url: 'https://external.example', text: 'deepLinks.processInstance.good.title' }])
     })
 
     it('drops entries whose id collides with a reserved built-in tab id', () => {
@@ -77,7 +80,7 @@ describe('deepLinks utility', () => {
         { id: 'custom', url: 'https://external.example' }
       ] } }
       const result = getDeepLinkEntries(config, 'processInstance', ['variables', 'incidents'])
-      expect(result).toEqual([{ id: 'custom', url: 'https://external.example' }])
+      expect(result).toEqual([{ id: 'custom', url: 'https://external.example', text: 'deepLinks.processInstance.custom.title' }])
     })
 
     it('drops later duplicate ids, keeping the first occurrence', () => {
@@ -86,7 +89,7 @@ describe('deepLinks utility', () => {
         { id: 'dup', url: 'https://second.example' }
       ] } }
       const result = getDeepLinkEntries(config, 'processInstance')
-      expect(result).toEqual([{ id: 'dup', url: 'https://first.example' }])
+      expect(result).toEqual([{ id: 'dup', url: 'https://first.example', text: 'deepLinks.processInstance.dup.title' }])
     })
   })
 

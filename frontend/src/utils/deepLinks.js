@@ -50,7 +50,11 @@ export function getDeepLinkEntries(config, section, reservedIds = []) {
     }
     seen.add(entry.id)
     return true
-  })
+  }).map(entry => ({
+    id: entry.id,
+    url: entry.url,
+    text: `deepLinks.${section}.${entry.id}.title`
+  }))
 }
 
 /**

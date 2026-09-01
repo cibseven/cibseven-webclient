@@ -44,7 +44,7 @@ describe('DecisionDefinitionVersion', () => {
       const tabs = DecisionDefinitionVersion.computed.tabs.call(context)
       expect(tabs).toEqual([
         { id: 'instances', text: 'decision.instances' },
-        { id: 'vhvOutput', text: 'deepLinks.vhvOutput.title' }
+        { id: 'vhvOutput', text: 'deepLinks.decisionDefinition.vhvOutput.title', url: 'https://external.example' }
       ])
     })
 
@@ -63,7 +63,7 @@ describe('DecisionDefinitionVersion', () => {
         activeTab: 'vhvOutput',
         $root: { config: { deepLinks: { decisionDefinition: [{ id: 'vhvOutput', url: 'https://external.example' }] } } }
       }
-      expect(DecisionDefinitionVersion.computed.matchedDeepLink.call(context)).toEqual({ id: 'vhvOutput', url: 'https://external.example' })
+      expect(DecisionDefinitionVersion.computed.matchedDeepLink.call(context)).toEqual({ id: 'vhvOutput', url: 'https://external.example', text: 'deepLinks.decisionDefinition.vhvOutput.title' })
     })
 
     it('returns undefined when the active tab is the built-in instances tab', () => {

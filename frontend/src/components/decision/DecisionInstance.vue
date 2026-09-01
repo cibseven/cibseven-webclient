@@ -100,7 +100,6 @@ export default {
     ...mapGetters('diagram', ['isDiagramReady']),
     tabs() {
       const deepLinkTabs = getDeepLinkEntries(this.$root.config, 'decisionInstance', RESERVED_TAB_IDS)
-        .map(entry => ({ id: entry.id, text: `deepLinks.${entry.id}.title` }))
       return [
         { id: 'inputs', text: 'decision.inputs' },
         { id: 'outputs', text: 'decision.outputs' },
