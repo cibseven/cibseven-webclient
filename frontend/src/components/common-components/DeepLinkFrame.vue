@@ -21,7 +21,7 @@
 </template>
 
 <script>
-import { buildDeepLinkUrl } from '@/utils/deepLinks.js'
+import { buildDeepLinkUrl, resolveDeepLinkLabel } from '@/utils/deepLinks.js'
 
 export default {
   name: 'DeepLinkFrame',
@@ -37,13 +37,7 @@ export default {
       return buildDeepLinkUrl(this.link.url, this.params)
     },
     title() {
-      if (!this.link) {
-        return ''
-      }
-      if (this.$te(this.link.text)) {
-        return this.$t(this.link.text)
-      }
-      return this.link.id
+      return resolveDeepLinkLabel(this.$t, this.link)
     }
   }
 }

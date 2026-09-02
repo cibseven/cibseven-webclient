@@ -39,13 +39,23 @@ describe('ProcessInstanceTabs', () => {
       ])
     })
 
-    it('appends configured processInstance deep links after the built-in tabs', () => {
-      const context = { $root: { config: { deepLinks: { processInstance: [
-        { id: 'myExternalLinkId', url: 'https://external.example' }
-      ] } } } }
+    it('appends configured processInstance deep links, falling back to the id when untranslated', () => {
+      const context = {
+        $root: { config: { deepLinks: { processInstance: [{ id: 'myExternalLinkId', url: 'https://external.example' }] } } },
+        $t: key => key
+      }
       const tabs = ProcessInstanceTabs.computed.tabs.call(context)
-      expect(tabs.at(-1)).toEqual({ id: 'myExternalLinkId', text: 'deepLinks.processInstance.myExternalLinkId.title', url: 'https://external.example' })
+      expect(tabs.at(-1)).toEqual({ id: 'myExternalLinkId', text: 'myExternalLinkId' })
       expect(tabs).toHaveLength(7)
+    })
+
+    it('uses the translated label when a translation exists', () => {
+      const context = {
+        $root: { config: { deepLinks: { processInstance: [{ id: 'myExternalLinkId', url: 'https://external.example' }] } } },
+        $t: () => 'My External Link'
+      }
+      const tabs = ProcessInstanceTabs.computed.tabs.call(context)
+      expect(tabs.at(-1)).toEqual({ id: 'myExternalLinkId', text: 'My External Link' })
     })
 
     it('drops a deep link entry that collides with a built-in tab id', () => {

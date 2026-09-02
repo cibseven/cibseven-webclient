@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { getDeepLinkEntries, buildDeepLinkUrl } from '@/utils/deepLinks.js'
+import { getDeepLinkEntries, buildDeepLinkUrl, resolveDeepLinkLabel } from '@/utils/deepLinks.js'
 
 describe('deepLinks utility', () => {
   let warnSpy
@@ -122,6 +122,18 @@ describe('deepLinks utility', () => {
       const result = buildDeepLinkUrl('not-a-valid-url', { lang: 'en' })
       expect(result).toBe('not-a-valid-url')
       expect(warnSpy).toHaveBeenCalled()
+    })
+  })
+
+  describe('resolveDeepLinkLabel', () => {
+    it('falls back to the entry id when $t returns the key unchanged (no translation found)', () => {
+      const entry = { id: 'vhvOutput', url: 'https://external.example', text: 'deepLinks.processInstance.vhvOutput.title' }
+      expect(resolveDeepLinkLabel(key => key, entry)).toBe('vhvOutput')
+    })
+
+    it('returns the translated label when $t resolves it to something other than the key', () => {
+      const entry = { id: 'vhvOutput', url: 'https://external.example', text: 'deepLinks.processInstance.vhvOutput.title' }
+      expect(resolveDeepLinkLabel(() => 'VHV Output', entry)).toBe('VHV Output')
     })
   })
 })

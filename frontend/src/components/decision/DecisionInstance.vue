@@ -75,7 +75,7 @@ import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
 import DeepLinkFrame from '@/components/common-components/DeepLinkFrame.vue'
 import { FlowTable, GenericTabs } from '@cib/common-frontend'
 import { mapActions, mapGetters } from 'vuex'
-import { getDeepLinkEntries } from '@/utils/deepLinks.js'
+import { getDeepLinkEntries, resolveDeepLinkLabel } from '@/utils/deepLinks.js'
 
 const RESERVED_TAB_IDS = ['inputs', 'outputs']
 
@@ -100,6 +100,7 @@ export default {
     ...mapGetters('diagram', ['isDiagramReady']),
     tabs() {
       const deepLinkTabs = getDeepLinkEntries(this.$root.config, 'decisionInstance', RESERVED_TAB_IDS)
+        .map(entry => ({ id: entry.id, text: resolveDeepLinkLabel(this.$t, entry) }))
       return [
         { id: 'inputs', text: 'decision.inputs' },
         { id: 'outputs', text: 'decision.outputs' },

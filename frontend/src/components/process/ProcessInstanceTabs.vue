@@ -22,7 +22,7 @@
 
 <script>
 import { GenericTabs } from '@cib/common-frontend'
-import { getDeepLinkEntries } from '@/utils/deepLinks.js'
+import { getDeepLinkEntries, resolveDeepLinkLabel } from '@/utils/deepLinks.js'
 
 const BUILTIN_TABS = [
   { id: 'variables', text: 'process.variables' },
@@ -45,6 +45,7 @@ export default {
   computed: {
     tabs: function() {
       const deepLinkTabs = getDeepLinkEntries(this.$root.config, 'processInstance', RESERVED_TAB_IDS)
+        .map(entry => ({ id: entry.id, text: resolveDeepLinkLabel(this.$t, entry) }))
       return [
         ...BUILTIN_TABS,
         ...deepLinkTabs,

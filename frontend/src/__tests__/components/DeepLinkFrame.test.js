@@ -18,10 +18,10 @@ import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import DeepLinkFrame from '@/components/common-components/DeepLinkFrame.vue'
 
-function createWrapper(props, { te = false, t = key => key } = {}) {
+function createWrapper(props, { t = key => key } = {}) {
   return mount(DeepLinkFrame, {
     props,
-    global: { mocks: { $t: t, $te: te instanceof Function ? te : () => te } }
+    global: { mocks: { $t: t } }
   })
 }
 
@@ -43,17 +43,24 @@ describe('DeepLinkFrame.vue', () => {
     expect(wrapper.find('iframe').attributes('src')).toBe('https://external.example/app')
   })
 
-  it('falls back to the link id as title when no translation exists for the text key', () => {
+  it('falls back to the link id as title when $t returns the key unchanged (no translation found)', () => {
     const wrapper = createWrapper({
       link: { id: 'vhvOutput', url: 'https://external.example/app', text: 'deepLinks.processInstance.vhvOutput.title' }
-    }, { te: false })
+    }, { t: key => key })
     expect(wrapper.find('iframe').attributes('title')).toBe('vhvOutput')
   })
 
-  it('uses the translated text as title when a translation exists for the text key', () => {
+  it('uses the translated text as title when $t resolves it to something other than the key', () => {
     const wrapper = createWrapper({
       link: { id: 'vhvOutput', url: 'https://external.example/app', text: 'deepLinks.processInstance.vhvOutput.title' }
-    }, { te: true, t: () => 'VHV Output' })
+    }, { t: () => 'VHV Output' })
     expect(wrapper.find('iframe').attributes('title')).toBe('VHV Output')
+  })
+
+  it('renders an empty url and title when no link is given', () => {
+    const wrapper = createWrapper({ link: null })
+    const iframe = wrapper.find('iframe')
+    expect(iframe.attributes('src')).toBe('')
+    expect(iframe.attributes('title')).toBe('')
   })
 })

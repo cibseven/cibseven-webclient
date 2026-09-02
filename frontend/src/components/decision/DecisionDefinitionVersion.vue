@@ -88,7 +88,7 @@ import DeepLinkFrame from '@/components/common-components/DeepLinkFrame.vue'
 import { BWaitingBox, GenericTabs } from '@cib/common-frontend'
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from '@/utils/debounce.js'
-import { getDeepLinkEntries } from '@/utils/deepLinks.js'
+import { getDeepLinkEntries, resolveDeepLinkLabel } from '@/utils/deepLinks.js'
 
 const RESERVED_TAB_IDS = ['instances']
 
@@ -123,6 +123,7 @@ export default {
     },
     tabs() {
       const deepLinkTabs = getDeepLinkEntries(this.$root.config, 'decisionDefinition', RESERVED_TAB_IDS)
+        .map(entry => ({ id: entry.id, text: resolveDeepLinkLabel(this.$t, entry) }))
       return [
         { id: 'instances', text: 'decision.instances' },
         ...deepLinkTabs,

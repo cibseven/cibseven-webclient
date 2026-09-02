@@ -58,6 +58,21 @@ export function getDeepLinkEntries(config, section, reservedIds = []) {
 }
 
 /**
+ * Resolves the display label for a deep link entry: the translation for
+ * entry.text if one exists, otherwise the entry's id. vue-i18n's $t()
+ * returns the key unchanged when no translation is found, which is how a
+ * missing translation is detected here.
+ * @param {Function} t - a $t-like translation function (key) => String
+ * @param {{id: String, text: String}} entry - a deep link entry as returned by getDeepLinkEntries
+ * @returns {String}
+ */
+export function resolveDeepLinkLabel(t, entry) {
+  if (!entry) return ''
+  const translated = t(entry.text)
+  return translated === entry.text ? entry.id : translated
+}
+
+/**
  * Appends predefined context parameters to a deep link URL's query string.
  * @param {String} url - the deep link's configured URL
  * @param {Object} params - key/value pairs to append; nullish/empty values are skipped

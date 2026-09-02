@@ -37,15 +37,25 @@ describe('DecisionDefinitionVersion', () => {
       expect(tabs).toEqual([{ id: 'instances', text: 'decision.instances' }])
     })
 
-    it('appends configured decisionDefinition deep links after the built-in tab', () => {
-      const context = { $root: { config: { deepLinks: { decisionDefinition: [
-        { id: 'myExternalLinkId', url: 'https://external.example' }
-      ] } } } }
+    it('appends configured decisionDefinition deep links, falling back to the id when untranslated', () => {
+      const context = {
+        $root: { config: { deepLinks: { decisionDefinition: [{ id: 'myExternalLinkId', url: 'https://external.example' }] } } },
+        $t: key => key
+      }
       const tabs = DecisionDefinitionVersion.computed.tabs.call(context)
       expect(tabs).toEqual([
         { id: 'instances', text: 'decision.instances' },
-        { id: 'myExternalLinkId', text: 'deepLinks.decisionDefinition.myExternalLinkId.title', url: 'https://external.example' }
+        { id: 'myExternalLinkId', text: 'myExternalLinkId' }
       ])
+    })
+
+    it('uses the translated label when a translation exists', () => {
+      const context = {
+        $root: { config: { deepLinks: { decisionDefinition: [{ id: 'myExternalLinkId', url: 'https://external.example' }] } } },
+        $t: () => 'My External Link'
+      }
+      const tabs = DecisionDefinitionVersion.computed.tabs.call(context)
+      expect(tabs.at(-1)).toEqual({ id: 'myExternalLinkId', text: 'My External Link' })
     })
 
     it('drops a deep link entry that collides with the built-in instances tab id', () => {
