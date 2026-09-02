@@ -15,7 +15,11 @@
  *  limitations under the License.
  */
 
-const ID_PATTERN = /^[a-zA-Z0-9]+$/
+// Letters, digits, '-' and '_' only: safe unencoded both as a JSON string value
+// and as a URL query parameter value (RFC 3986 "unreserved" characters, minus
+// '.' and '~' which are left out so the id can't be confused with the '.'
+// nesting used by the deepLinks.<section>.<id>.title i18n key).
+const ID_PATTERN = /^[a-zA-Z0-9_-]+$/
 
 /**
  * Reads and validates the config.deepLinks[section] array, dropping any

@@ -52,10 +52,27 @@ describe('deepLinks utility', () => {
       expect(warnSpy).not.toHaveBeenCalled()
     })
 
-    it('drops entries with an id that does not match ^[a-zA-Z0-9]+$', () => {
+    it('accepts ids with letters, digits, hyphens and underscores', () => {
       const config = { deepLinks: { processInstance: [
         { id: 'valid1', url: 'https://external.example' },
         { id: 'has-dash', url: 'https://external.example' },
+        { id: 'camelValue', url: 'https://external.example' },
+        { id: 'has_underscore', url: 'https://external.example' }
+      ] } }
+      const result = getDeepLinkEntries(config, 'processInstance')
+      expect(result).toEqual([
+        { id: 'valid1', url: 'https://external.example', text: 'deepLinks.processInstance.valid1.title' },
+        { id: 'has-dash', url: 'https://external.example', text: 'deepLinks.processInstance.has-dash.title' },
+        { id: 'camelValue', url: 'https://external.example', text: 'deepLinks.processInstance.camelValue.title' },
+        { id: 'has_underscore', url: 'https://external.example', text: 'deepLinks.processInstance.has_underscore.title' }
+      ])
+      expect(warnSpy).not.toHaveBeenCalled()
+    })
+
+    it('drops entries with an id that does not match ^[a-zA-Z0-9_-]+$', () => {
+      const config = { deepLinks: { processInstance: [
+        { id: 'valid1', url: 'https://external.example' },
+        { id: 'has.dot', url: 'https://external.example' },
         { id: 'has space', url: 'https://external.example' },
         { id: '', url: 'https://external.example' },
         { url: 'https://external.example' }
