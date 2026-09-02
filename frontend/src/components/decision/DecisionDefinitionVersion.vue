@@ -31,7 +31,7 @@
     </div>
 
     <div class="position-absolute w-100 overflow-hidden border-top" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
-      <DeepLinkFrame v-if="matchedDeepLink" :url="resolvedDeepLinkUrl" :title="$t(`deepLinks.${matchedDeepLink.id}.title`)"></DeepLinkFrame>
+      <DeepLinkFrame v-if="matchedDeepLink" :url="resolvedDeepLinkUrl" :title="$t(matchedDeepLink.text)"></DeepLinkFrame>
       <div v-if="activeTab === 'instances'">
         <div ref="filterTable" class="bg-white d-flex position-absolute w-100">
           <div class="container-fluid p-2">

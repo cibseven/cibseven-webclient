@@ -58,7 +58,7 @@
           </FlowTable>
         </div>
       </div>
-      <DeepLinkFrame v-else-if="matchedDeepLink" :url="resolvedDeepLinkUrl" :title="$t(`deepLinks.${matchedDeepLink.id}.title`)"></DeepLinkFrame>
+      <DeepLinkFrame v-else-if="matchedDeepLink" :url="resolvedDeepLinkUrl" :title="$t(matchedDeepLink.text)"></DeepLinkFrame>
     </div>
   </div>
 </template>

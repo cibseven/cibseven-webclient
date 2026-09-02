@@ -111,7 +111,7 @@
       <JobsTable v-else-if="activeTab === 'jobs'" :instance="selectedInstance" :process="process"></JobsTable>
       <CalledProcessInstancesTable v-else-if="activeTab === 'calledProcessInstances'" :selected-instance="selectedInstance" :activity-instance-history="activityInstanceHistory"></CalledProcessInstancesTable>
       <ExternalTasksTable v-else-if="activeTab === 'externalTasks'" :instance="selectedInstance"></ExternalTasksTable>
-      <DeepLinkFrame v-else-if="matchedDeepLink" :url="resolvedDeepLinkUrl" :title="$t(`deepLinks.${matchedDeepLink.id}.title`)"></DeepLinkFrame>
+      <DeepLinkFrame v-else-if="matchedDeepLink" :url="resolvedDeepLinkUrl" :title="$t(matchedDeepLink.text)"></DeepLinkFrame>
       <component :is="ProcessInstanceTabsContentPlugin" v-if="ProcessInstanceTabsContentPlugin" :instance="selectedInstance" :active-tab="activeTab" :process="process"></component>
     </div>
 

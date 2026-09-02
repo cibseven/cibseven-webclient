@@ -151,7 +151,7 @@
         <JobDefinitionsTable v-else-if="activeTab === 'jobDefinitions'"
           :process="process" />
         <CalledProcessDefinitionsTable v-else-if="activeTab === 'calledProcessDefinitions'" :process="process" />
-        <DeepLinkFrame v-else-if="matchedDeepLink" :url="resolvedDeepLinkUrl" :title="$t(`deepLinks.${matchedDeepLink.id}.title`)"></DeepLinkFrame>
+        <DeepLinkFrame v-else-if="matchedDeepLink" :url="resolvedDeepLinkUrl" :title="$t(matchedDeepLink.text)"></DeepLinkFrame>
         <component :is="ProcessInstancesTabsContentPlugin" v-if="ProcessInstancesTabsContentPlugin" :process="process" :active-tab="activeTab"></component>
       </div>
     </div>
