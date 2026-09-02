@@ -38,22 +38,26 @@ def npmReleasePackage(String packageDir, String npmrcFile) {
     def isDevVersion = packageVersion.contains('-dev')
     def mavenTagArg = isDevVersion ? "-Dnpm.publish.tag.arg=' --tag dev'" : ""
 
-    sh """
-        # Copy the .npmrc file to the package directory
-        echo "Copying .npmrc file to ${packageDir} directory..."
-        cp ${npmrcFile} ./${packageDir}/.npmrc
-        
-        echo "Current package.json version:"
-        grep '"version"' ${packageDir}/package.json
-        
-        echo "Running Maven to release the npm package..."
-        mvn -T4 \\
-            -Dbuild.number=${BUILD_NUMBER} \\
-            -Drelease-npm-library=${packageDir} \\
-            -Dskip.npm.version.update=true \\
-            ${mavenTagArg} \\
-            clean generate-resources
-    """
+    withEnv(["NPM_RC_FILE=${npmrcFile}"]) {
+        // Only the .npmrc credential path is shell-expanded ($NPM_RC_FILE); it must never be
+        // spliced in via Groovy string interpolation, or Jenkins can't mask it in the log.
+        sh """
+            # Copy the .npmrc file to the package directory
+            echo "Copying .npmrc file to ${packageDir} directory..."
+            cp "\$NPM_RC_FILE" "./${packageDir}/.npmrc"
+
+            echo "Current package.json version:"
+            grep '"version"' ${packageDir}/package.json
+
+            echo "Running Maven to release the npm package..."
+            mvn -T4 \\
+                -Dbuild.number=${BUILD_NUMBER} \\
+                -Drelease-npm-library=${packageDir} \\
+                -Dskip.npm.version.update=true \\
+                ${mavenTagArg} \\
+                clean generate-resources
+        """
+    }
 }
 
 pipeline {
@@ -63,6 +67,7 @@ pipeline {
                     .withContainerFromName(pipelineParams.mvnContainerName, pipelineParams.buildPodConfig[pipelineParams.mvnContainerName])
                     .withHelm4Container()
                     .withNode24Container()
+                    .withGitleaksContainer()
                     .asYaml()
             defaultContainer pipelineParams.mvnContainerName
         }
@@ -156,6 +161,30 @@ pipeline {
                     // pipeline as root but repository being owned by user 1000. For more, see
                     // https://stackoverflow.com/questions/72978485/git-submodule-update-failed-with-fatal-detected-dubious-ownership-in-repositor
                     sh "git config --global --add safe.directory \$(pwd)"
+                }
+            }
+        }
+
+        stage('Analyze Repository') {
+            steps {
+                script {
+                    def reportPath = "reports/gitleaks-report.sarif"
+                    // create reports folder if it doesn't exist
+                    sh "[ -d reports ] || mkdir reports"
+                    container(Constants.GITLEAKS_CONTAINER) {
+                        // Scan the folder for secrets, generate a SARIF report, and continue the build even if vulnerabilities are found
+                        def exitCode = sh(returnStatus: true, script: "gitleaks dir --report-format sarif --report-path ${reportPath}")
+
+                        if (exitCode == 0) {
+                            echo 'No secrets detected by Gitleaks'
+                        } else if (exitCode == 1) {
+                            echo 'WARNING: Gitleaks detected potential secrets! This will lead to an `unstable` build, check the test result for details.'
+                        } else {
+                            echo "ERROR: Gitleaks encountered an error (exit code: ${exitCode}). Please check the logs."
+                        }
+                    }
+                    // Publish Gitleaks report to Jenkins
+                    recordIssues( tool: sarif(pattern: "**/${reportPath}"), sourceCodeRetention: 'LAST_BUILD', aggregatingResults: true, enabledForFailure: true, failOnError: false, ignoreQualityGate: false )
                 }
             }
         }
