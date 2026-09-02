@@ -17,11 +17,6 @@
 			"httpbin": {
 				"title": "httpbin (decision)"
 			}
-		},
-		"decisionInstance": {
-			"httpbin": {
-				"title": "httpbin (decision instance)"
-			}
 		}
 	},
 	"process-descriptions": {

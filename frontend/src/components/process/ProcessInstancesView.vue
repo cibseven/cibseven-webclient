@@ -151,7 +151,7 @@
         <JobDefinitionsTable v-else-if="activeTab === 'jobDefinitions'"
           :process="process" />
         <CalledProcessDefinitionsTable v-else-if="activeTab === 'calledProcessDefinitions'" :process="process" />
-        <DeepLinkFrame v-else-if="matchedDeepLink" :url="resolvedDeepLinkUrl" :title="$t(matchedDeepLink.text)"></DeepLinkFrame>
+        <DeepLinkFrame v-else-if="matchedDeepLink" :link="matchedDeepLink" :params="matchedDeepLinkParams"></DeepLinkFrame>
         <component :is="ProcessInstancesTabsContentPlugin" v-if="ProcessInstancesTabsContentPlugin" :process="process" :active-tab="activeTab"></component>
       </div>
     </div>
@@ -196,7 +196,7 @@ import ScrollableTabsContainer from '@/components/common-components/ScrollableTa
 import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
 import RemovableBadge from '@/components/common-components/RemovableBadge.vue'
 import DeepLinkFrame from '@/components/common-components/DeepLinkFrame.vue'
-import { getDeepLinkEntries, buildDeepLinkUrl } from '@/utils/deepLinks.js'
+import { getDeepLinkEntries } from '@/utils/deepLinks.js'
 import { mapGetters, mapActions } from 'vuex'
 
 export default {
@@ -345,13 +345,13 @@ export default {
       return getDeepLinkEntries(this.$root.config, 'processDefinition', RESERVED_TAB_IDS)
         .find(entry => entry.id === this.activeTab)
     },
-    resolvedDeepLinkUrl() {
-      return buildDeepLinkUrl(this.matchedDeepLink.url, {
+    matchedDeepLinkParams() {
+      return {
         processDefinitionId: this.process?.id,
         processDefinitionKey: this.process?.key,
         tenantId: this.tenantId,
         lang: this.currentLanguage()
-      })
+      }
     },
     processName: function() {
       return this.process.name !== null ? this.process.name : this.process.key

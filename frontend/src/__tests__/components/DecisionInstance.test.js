@@ -104,18 +104,18 @@ describe('DecisionInstance', () => {
     })
   })
 
-  describe('resolvedDeepLinkUrl', () => {
-    it('appends decision instance context and language to the deep link url', () => {
+  describe('matchedDeepLinkParams', () => {
+    it('builds decision instance context and language params', () => {
       const context = {
-        matchedDeepLink: { id: 'myExternalLinkId', url: 'https://external.example/app' },
         instance: { id: 'inst-1', decisionDefinitionId: 'dec-1', decisionDefinitionKey: 'myDecision' },
         currentLanguage: () => 'en'
       }
-      const url = new URL(DecisionInstance.computed.resolvedDeepLinkUrl.call(context))
-      expect(url.searchParams.get('decisionInstanceId')).toBe('inst-1')
-      expect(url.searchParams.get('decisionDefinitionId')).toBe('dec-1')
-      expect(url.searchParams.get('decisionDefinitionKey')).toBe('myDecision')
-      expect(url.searchParams.get('lang')).toBe('en')
+      expect(DecisionInstance.computed.matchedDeepLinkParams.call(context)).toEqual({
+        decisionInstanceId: 'inst-1',
+        decisionDefinitionId: 'dec-1',
+        decisionDefinitionKey: 'myDecision',
+        lang: 'en'
+      })
     })
   })
 

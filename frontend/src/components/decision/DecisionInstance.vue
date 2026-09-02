@@ -58,7 +58,7 @@
           </FlowTable>
         </div>
       </div>
-      <DeepLinkFrame v-else-if="matchedDeepLink" :url="resolvedDeepLinkUrl" :title="$t(matchedDeepLink.text)"></DeepLinkFrame>
+      <DeepLinkFrame v-else-if="matchedDeepLink" :link="matchedDeepLink" :params="matchedDeepLinkParams"></DeepLinkFrame>
     </div>
   </div>
 </template>
@@ -75,7 +75,7 @@ import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
 import DeepLinkFrame from '@/components/common-components/DeepLinkFrame.vue'
 import { FlowTable, GenericTabs } from '@cib/common-frontend'
 import { mapActions, mapGetters } from 'vuex'
-import { getDeepLinkEntries, buildDeepLinkUrl } from '@/utils/deepLinks.js'
+import { getDeepLinkEntries } from '@/utils/deepLinks.js'
 
 const RESERVED_TAB_IDS = ['inputs', 'outputs']
 
@@ -110,13 +110,13 @@ export default {
       return getDeepLinkEntries(this.$root.config, 'decisionInstance', RESERVED_TAB_IDS)
         .find(entry => entry.id === this.activeTab)
     },
-    resolvedDeepLinkUrl() {
-      return buildDeepLinkUrl(this.matchedDeepLink.url, {
+    matchedDeepLinkParams() {
+      return {
         decisionInstanceId: this.instance?.id,
         decisionDefinitionId: this.instance?.decisionDefinitionId,
         decisionDefinitionKey: this.instance?.decisionDefinitionKey,
         lang: this.currentLanguage()
-      })
+      }
     }
   },
   watch: {

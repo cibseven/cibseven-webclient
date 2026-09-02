@@ -31,7 +31,7 @@
     </div>
 
     <div class="position-absolute w-100 overflow-hidden border-top" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
-      <DeepLinkFrame v-if="matchedDeepLink" :url="resolvedDeepLinkUrl" :title="$t(matchedDeepLink.text)"></DeepLinkFrame>
+      <DeepLinkFrame v-if="matchedDeepLink" :link="matchedDeepLink" :params="matchedDeepLinkParams"></DeepLinkFrame>
       <div v-if="activeTab === 'instances'">
         <div ref="filterTable" class="bg-white d-flex position-absolute w-100">
           <div class="container-fluid p-2">
@@ -88,7 +88,7 @@ import DeepLinkFrame from '@/components/common-components/DeepLinkFrame.vue'
 import { BWaitingBox, GenericTabs } from '@cib/common-frontend'
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from '@/utils/debounce.js'
-import { getDeepLinkEntries, buildDeepLinkUrl } from '@/utils/deepLinks.js'
+import { getDeepLinkEntries } from '@/utils/deepLinks.js'
 
 const RESERVED_TAB_IDS = ['instances']
 
@@ -132,13 +132,13 @@ export default {
       return getDeepLinkEntries(this.$root.config, 'decisionDefinition', RESERVED_TAB_IDS)
         .find(entry => entry.id === this.activeTab)
     },
-    resolvedDeepLinkUrl() {
-      return buildDeepLinkUrl(this.matchedDeepLink.url, {
+    matchedDeepLinkParams() {
+      return {
         decisionDefinitionId: this.decision?.id,
         decisionDefinitionKey: this.decision?.key,
         tenantId: this.decision?.tenantId,
         lang: this.currentLanguage()
-      })
+      }
     },
     DecisionDefinitionVersionActionsPlugin: function() {
       return this.$options.components && this.$options.components.DecisionDefinitionVersionActionsPlugin

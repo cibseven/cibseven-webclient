@@ -21,11 +21,30 @@
 </template>
 
 <script>
+import { buildDeepLinkUrl } from '@/utils/deepLinks.js'
+
 export default {
   name: 'DeepLinkFrame',
   props: {
-    url: { type: String, required: true },
-    title: { type: String, default: '' }
+    link: { type: Object, required: true },
+    params: { type: Object, default: () => ({}) }
+  },
+  computed: {
+    url() {
+      if (!this.link) {
+        return ''
+      }
+      return buildDeepLinkUrl(this.link.url, this.params)
+    },
+    title() {
+      if (!this.link) {
+        return ''
+      }
+      if (this.$te(this.link.text)) {
+        return this.$t(this.link.text)
+      }
+      return this.link.id
+    }
   }
 }
 </script>

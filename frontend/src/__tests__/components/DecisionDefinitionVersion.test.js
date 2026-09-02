@@ -72,18 +72,18 @@ describe('DecisionDefinitionVersion', () => {
     })
   })
 
-  describe('resolvedDeepLinkUrl', () => {
-    it('appends decision definition context and language to the deep link url', () => {
+  describe('matchedDeepLinkParams', () => {
+    it('builds decision definition context and language params', () => {
       const context = {
-        matchedDeepLink: { id: 'myExternalLinkId', url: 'https://external.example/app' },
         decision: { id: 'dec-1', key: 'myDecision', tenantId: 'tenant-1' },
         currentLanguage: () => 'en'
       }
-      const url = new URL(DecisionDefinitionVersion.computed.resolvedDeepLinkUrl.call(context))
-      expect(url.searchParams.get('decisionDefinitionId')).toBe('dec-1')
-      expect(url.searchParams.get('decisionDefinitionKey')).toBe('myDecision')
-      expect(url.searchParams.get('tenantId')).toBe('tenant-1')
-      expect(url.searchParams.get('lang')).toBe('en')
+      expect(DecisionDefinitionVersion.computed.matchedDeepLinkParams.call(context)).toEqual({
+        decisionDefinitionId: 'dec-1',
+        decisionDefinitionKey: 'myDecision',
+        tenantId: 'tenant-1',
+        lang: 'en'
+      })
     })
   })
 })

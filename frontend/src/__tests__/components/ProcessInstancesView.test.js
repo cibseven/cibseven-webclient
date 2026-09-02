@@ -33,19 +33,19 @@ describe('ProcessInstancesView', () => {
     })
   })
 
-  describe('resolvedDeepLinkUrl', () => {
-    it('appends process definition context and language to the deep link url', () => {
+  describe('matchedDeepLinkParams', () => {
+    it('builds process definition context and language params', () => {
       const context = {
-        matchedDeepLink: { id: 'myExternalLinkId', url: 'https://external.example/app' },
         process: { id: 'def-1', key: 'myProcess' },
         tenantId: 'tenant-1',
         currentLanguage: () => 'en'
       }
-      const url = new URL(ProcessInstancesView.computed.resolvedDeepLinkUrl.call(context))
-      expect(url.searchParams.get('processDefinitionId')).toBe('def-1')
-      expect(url.searchParams.get('processDefinitionKey')).toBe('myProcess')
-      expect(url.searchParams.get('tenantId')).toBe('tenant-1')
-      expect(url.searchParams.get('lang')).toBe('en')
+      expect(ProcessInstancesView.computed.matchedDeepLinkParams.call(context)).toEqual({
+        processDefinitionId: 'def-1',
+        processDefinitionKey: 'myProcess',
+        tenantId: 'tenant-1',
+        lang: 'en'
+      })
     })
   })
 })

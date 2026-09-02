@@ -111,7 +111,7 @@
       <JobsTable v-else-if="activeTab === 'jobs'" :instance="selectedInstance" :process="process"></JobsTable>
       <CalledProcessInstancesTable v-else-if="activeTab === 'calledProcessInstances'" :selected-instance="selectedInstance" :activity-instance-history="activityInstanceHistory"></CalledProcessInstancesTable>
       <ExternalTasksTable v-else-if="activeTab === 'externalTasks'" :instance="selectedInstance"></ExternalTasksTable>
-      <DeepLinkFrame v-else-if="matchedDeepLink" :url="resolvedDeepLinkUrl" :title="$t(matchedDeepLink.text)"></DeepLinkFrame>
+      <DeepLinkFrame v-else-if="matchedDeepLink" :link="matchedDeepLink" :params="matchedDeepLinkParams"></DeepLinkFrame>
       <component :is="ProcessInstanceTabsContentPlugin" v-if="ProcessInstanceTabsContentPlugin" :instance="selectedInstance" :active-tab="activeTab" :process="process"></component>
     </div>
 
@@ -138,7 +138,7 @@ import ScrollableTabsContainer from '@/components/common-components/ScrollableTa
 import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
 import DeepLinkFrame from '@/components/common-components/DeepLinkFrame.vue'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
-import { getDeepLinkEntries, buildDeepLinkUrl } from '@/utils/deepLinks.js'
+import { getDeepLinkEntries } from '@/utils/deepLinks.js'
 
 export default {
   name: 'ProcessInstanceView',
@@ -198,15 +198,15 @@ export default {
       return getDeepLinkEntries(this.$root.config, 'processInstance', RESERVED_TAB_IDS)
         .find(entry => entry.id === this.activeTab)
     },
-    resolvedDeepLinkUrl() {
-      return buildDeepLinkUrl(this.matchedDeepLink.url, {
+    matchedDeepLinkParams() {
+      return {
         processInstanceId: this.selectedInstance?.id,
         processDefinitionId: this.process?.id,
         processDefinitionKey: this.process?.key,
         businessKey: this.selectedInstance?.businessKey,
         tenantId: this.tenantId,
         lang: this.currentLanguage()
-      })
+      }
     },
   },
   mounted: function() {
