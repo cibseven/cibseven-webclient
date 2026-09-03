@@ -204,7 +204,7 @@ export default {
 		 */
 		fetchFinishedScopeVariables: async function (runtimeVariables) {
 			const runtimeIds = new Set(runtimeVariables.map(v => v.id))
-			let historic = []
+			let historic
 			try {
 				historic = await HistoryService.fetchProcessInstanceVariablesHistory(this.selectedInstance.id, this.restFilter)
 			} catch (error) {
