@@ -201,10 +201,15 @@ export default {
     matchedDeepLinkParams() {
       return {
         processInstanceId: this.selectedInstance?.id,
+        processInstanceTenantId: this.selectedInstance?.tenantId,
+        businessKey: this.selectedInstance?.businessKey,
+
         processDefinitionId: this.process?.id,
         processDefinitionKey: this.process?.key,
-        businessKey: this.selectedInstance?.businessKey,
-        tenantId: this.tenantId,
+        processDefinitionVersion: this.process?.version,
+        processDefinitionVersionTag: this.process?.versionTag,
+        processDefinitionTenantId: this.process?.tenantId,
+
         lang: this.currentLanguage()
       }
     },

@@ -349,7 +349,10 @@ export default {
       return {
         processDefinitionId: this.process?.id,
         processDefinitionKey: this.process?.key,
-        tenantId: this.tenantId,
+        processDefinitionVersion: this.process?.version,
+        processDefinitionVersionTag: this.process?.versionTag,
+        processDefinitionTenantId: this.process?.tenantId,        
+
         lang: this.currentLanguage()
       }
     },
