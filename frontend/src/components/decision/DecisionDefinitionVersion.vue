@@ -137,7 +137,10 @@ export default {
       return {
         decisionDefinitionId: this.decision?.id,
         decisionDefinitionKey: this.decision?.key,
-        tenantId: this.decision?.tenantId,
+        decisionDefinitionTenantId: this.decision?.tenantId,
+        decisionDefinitionVersion: this.decision?.version,
+        decisionDefinitionVersionTag: this.decision?.versionTag,
+
         lang: this.currentLanguage()
       }
     },

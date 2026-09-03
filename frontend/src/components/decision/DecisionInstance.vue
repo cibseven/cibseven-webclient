@@ -114,8 +114,13 @@ export default {
     matchedDeepLinkParams() {
       return {
         decisionInstanceId: this.instance?.id,
+        decisionInstanceTenantId: this.instance?.tenantId,
+
+        processInstanceId: this.instance?.processInstanceId,
+
         decisionDefinitionId: this.instance?.decisionDefinitionId,
         decisionDefinitionKey: this.instance?.decisionDefinitionKey,
+
         lang: this.currentLanguage()
       }
     }
