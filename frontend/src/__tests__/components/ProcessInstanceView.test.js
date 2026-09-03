@@ -34,19 +34,21 @@ describe('ProcessInstanceView', () => {
   })
 
   describe('matchedDeepLinkParams', () => {
-    it('builds process instance context and language params', () => {
+    it('builds process instance and process definition context (with distinct tenant ids) and language params', () => {
       const context = {
-        selectedInstance: { id: 'inst-1', businessKey: 'bk-1' },
-        process: { id: 'def-1', key: 'myProcess' },
-        tenantId: 'tenant-1',
+        selectedInstance: { id: 'inst-1', businessKey: 'bk-1', tenantId: 'instance-tenant' },
+        process: { id: 'def-1', key: 'myProcess', version: '3', versionTag: 'v3', tenantId: 'definition-tenant' },
         currentLanguage: () => 'en'
       }
       expect(ProcessInstanceView.computed.matchedDeepLinkParams.call(context)).toEqual({
         processInstanceId: 'inst-1',
+        processInstanceTenantId: 'instance-tenant',
+        businessKey: 'bk-1',
         processDefinitionId: 'def-1',
         processDefinitionKey: 'myProcess',
-        businessKey: 'bk-1',
-        tenantId: 'tenant-1',
+        processDefinitionVersion: '3',
+        processDefinitionVersionTag: 'v3',
+        processDefinitionTenantId: 'definition-tenant',
         lang: 'en'
       })
     })

@@ -85,13 +85,15 @@ describe('DecisionDefinitionVersion', () => {
   describe('matchedDeepLinkParams', () => {
     it('builds decision definition context and language params', () => {
       const context = {
-        decision: { id: 'dec-1', key: 'myDecision', tenantId: 'tenant-1' },
+        decision: { id: 'dec-1', key: 'myDecision', tenantId: 'tenant-1', version: '2', versionTag: 'v2' },
         currentLanguage: () => 'en'
       }
       expect(DecisionDefinitionVersion.computed.matchedDeepLinkParams.call(context)).toEqual({
         decisionDefinitionId: 'dec-1',
         decisionDefinitionKey: 'myDecision',
-        tenantId: 'tenant-1',
+        decisionDefinitionTenantId: 'tenant-1',
+        decisionDefinitionVersion: '2',
+        decisionDefinitionVersionTag: 'v2',
         lang: 'en'
       })
     })

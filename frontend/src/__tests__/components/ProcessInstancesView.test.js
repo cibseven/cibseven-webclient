@@ -36,14 +36,15 @@ describe('ProcessInstancesView', () => {
   describe('matchedDeepLinkParams', () => {
     it('builds process definition context and language params', () => {
       const context = {
-        process: { id: 'def-1', key: 'myProcess' },
-        tenantId: 'tenant-1',
+        process: { id: 'def-1', key: 'myProcess', version: '3', versionTag: 'v3', tenantId: 'definition-tenant' },
         currentLanguage: () => 'en'
       }
       expect(ProcessInstancesView.computed.matchedDeepLinkParams.call(context)).toEqual({
         processDefinitionId: 'def-1',
         processDefinitionKey: 'myProcess',
-        tenantId: 'tenant-1',
+        processDefinitionVersion: '3',
+        processDefinitionVersionTag: 'v3',
+        processDefinitionTenantId: 'definition-tenant',
         lang: 'en'
       })
     })

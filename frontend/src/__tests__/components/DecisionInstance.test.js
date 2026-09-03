@@ -115,15 +115,25 @@ describe('DecisionInstance', () => {
   })
 
   describe('matchedDeepLinkParams', () => {
-    it('builds decision instance context and language params', () => {
+    it('builds decision instance and decision definition context (with distinct tenant ids) and language params', () => {
       const context = {
-        instance: { id: 'inst-1', decisionDefinitionId: 'dec-1', decisionDefinitionKey: 'myDecision' },
+        instance: {
+          id: 'inst-1',
+          tenantId: 'instance-tenant',
+          processInstanceId: 'pi-1',
+          decisionDefinitionId: 'dec-1',
+          decisionDefinitionKey: 'myDecision'
+        },
+        decisionDefinition: { tenantId: 'definition-tenant' },
         currentLanguage: () => 'en'
       }
       expect(DecisionInstance.computed.matchedDeepLinkParams.call(context)).toEqual({
         decisionInstanceId: 'inst-1',
+        decisionInstanceTenantId: 'instance-tenant',
+        processInstanceId: 'pi-1',
         decisionDefinitionId: 'dec-1',
         decisionDefinitionKey: 'myDecision',
+        decisionDefinitionTenantId: 'definition-tenant',
         lang: 'en'
       })
     })

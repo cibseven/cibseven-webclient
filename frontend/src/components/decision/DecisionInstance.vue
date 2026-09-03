@@ -98,6 +98,10 @@ export default {
   },
   computed: {
     ...mapGetters('diagram', ['isDiagramReady']),
+    ...mapGetters(['getSelectedDecisionVersion']),
+    decisionDefinition() {
+      return this.getSelectedDecisionVersion()
+    },
     tabs() {
       const deepLinkTabs = getDeepLinkEntries(this.$root.config, 'decisionInstance', RESERVED_TAB_IDS)
         .map(entry => ({ id: entry.id, text: resolveDeepLinkLabel(this.$t, entry) }))
@@ -120,6 +124,9 @@ export default {
 
         decisionDefinitionId: this.instance?.decisionDefinitionId,
         decisionDefinitionKey: this.instance?.decisionDefinitionKey,
+        decisionDefinitionTenantId: this.decisionDefinition?.tenantId,
+        decisionDefinitionVersion: this.decisionDefinition?.version,
+        decisionDefinitionVersionTag: this.decisionDefinition?.versionTag,
 
         lang: this.currentLanguage()
       }
