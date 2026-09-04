@@ -322,9 +322,7 @@ const appRoutes = [
 let router = null
 
 function authGuard(strict) {
-  return async function(to, from) {
-    console?.debug('navigation guard', from, to)
-
+  return async function(to) {
     if (router.root.user) return true
 
     async function getSelfInfo() {
