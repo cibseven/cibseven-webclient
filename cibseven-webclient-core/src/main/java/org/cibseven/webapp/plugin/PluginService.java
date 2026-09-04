@@ -47,16 +47,15 @@ import lombok.extern.slf4j.Slf4j;
  * readable without authentication, as the frontend needs them before anybody has
  * logged in; plugin <em>data</em> goes through the regular authenticated endpoints.
  *
- * <p>Sits next to {@code /info} rather than under the services base path, and
- * extends {@code BaseService} without needing it: distributions mount the webclient
- * below an application path ({@code /webapp} in CIB seven Run) by prefixing exactly
- * the controllers assignable to {@code BaseService}, and the frontend resolves both
- * endpoints relative to its own location. That is also why the files are served
- * here instead of by a resource handler, which would get no such prefix.
+ * <p>Extends {@code BaseService} without needing it: distributions mount the
+ * webclient below an application path ({@code /webapp} in CIB seven Run) by prefixing
+ * exactly the controllers assignable to {@code BaseService}. That is also why the
+ * files are served here instead of by a resource handler, which would get no such
+ * prefix.
  */
 @ApiResponses({ @ApiResponse(responseCode = "500", description = "An unexpected system error occured") })
 @ConditionalOnProperty(prefix = "cibseven.webclient.plugins", name = "enabled")
-@RestController @RequestMapping("/plugins") @Slf4j
+@RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/plugins") @Slf4j
 public class PluginService extends BaseService {
 
 	private final PluginRegistry pluginRegistry;

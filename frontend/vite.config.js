@@ -99,12 +99,6 @@ export default defineConfig({
           })
         },
       },
-      // Plugin files are served by the backend from its classpath
-      '/plugins': {
-        target: backendUrl,
-        changeOrigin: true,
-        secure: false,
-      },
     },
   },
   build: isLibrary

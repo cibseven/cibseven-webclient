@@ -19,6 +19,7 @@ import { fetchPluginManifests, loadPlugins, initPlugins, syncPluginTranslations 
 import { setPluginContext } from '@/plugins/pluginContext.js'
 import { getPlugin, resetPlugins, PLUGIN_API_VERSION } from '@/plugins/pluginsConfig.js'
 import { axios } from '@/globals.js'
+import { setServicesBasePath } from '@/services.js'
 import { i18n, registerTranslationLoader } from '@/i18n'
 
 vi.mock('@/globals.js', () => ({
@@ -46,6 +47,9 @@ function mockHttp(responses) {
 describe('pluginLoader', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // What the distributions configure, and what the application sets before it
+    // loads plugins - the endpoints live below it like every other one
+    setServicesBasePath('services/v1')
     setPluginContext({ config: null })
     resetPlugins()
     document.head.querySelectorAll('link[data-plugin]').forEach(link => link.remove())
@@ -60,7 +64,16 @@ describe('pluginLoader', () => {
       const get = mockHttp({ plugins: { plugins: [validManifest] } })
 
       await expect(fetchPluginManifests()).resolves.toEqual([validManifest])
-      expect(get).toHaveBeenCalledWith(expect.stringMatching(/\/plugins$/))
+      expect(get).toHaveBeenCalledWith(expect.stringMatching(/\/services\/v1\/plugins$/))
+    })
+
+    /** Under a context path the frontend has to stay below it, hence a relative URL. */
+    it('asks below the location of the application, not at the host root', async () => {
+      const get = mockHttp({ plugins: { plugins: [] } })
+
+      await fetchPluginManifests()
+
+      expect(get).toHaveBeenCalledWith(`${document.baseURI}services/v1/plugins`)
     })
 
     it('returns an empty list when the backend reports no plugins', async () => {
@@ -90,10 +103,10 @@ describe('pluginLoader', () => {
       const importer = vi.fn(() => Promise.resolve({ register }))
 
       await expect(loadPlugins([validManifest], 'en', importer)).resolves.toEqual(['demo'])
-      expect(importer).toHaveBeenCalledWith(expect.stringContaining('plugins/demo/index.js'))
+      expect(importer).toHaveBeenCalledWith(expect.stringContaining('services/v1/plugins/demo/index.js'))
       expect(register).toHaveBeenCalledWith({
         id: 'demo',
-        baseUrl: expect.stringContaining('plugins/demo/'),
+        baseUrl: expect.stringContaining('services/v1/plugins/demo/'),
         registerPlugin: expect.any(Function)
       })
     })

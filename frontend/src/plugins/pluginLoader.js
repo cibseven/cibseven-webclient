@@ -16,11 +16,12 @@
  */
 import { axios } from '@/globals.js'
 import { i18n, registerTranslationLoader } from '@/i18n'
+import { getServicesBasePath } from '@/services.js'
 import { getPluginContext } from './pluginContext.js'
 import { PLUGIN_API_VERSION, registerPlugin } from './pluginsConfig.js'
 
-// Plugins are discovered by the backend on its classpath and served by it
-const PLUGINS_BASE_PATH = 'plugins/'
+// Plugins are discovered by the backend on its classpath and served by it, from
+// the same base path as every other endpoint
 const PLUGINS_ENDPOINT = 'plugins'
 
 /** Manifests of the plugins in the page, and the languages already merged for them. */
@@ -41,14 +42,28 @@ function withTimeout(promise, ms, description) {
 }
 
 /**
- * Resolves a path relative to the document base, so plugin assets are found
- * both under a context path (/webapp/) and at the root.
+ * Resolves an endpoint below the services base path against the document base, so
+ * plugin assets are found both under a context path (/webapp/) and at the root.
+ * The base path is known by the time plugins load: the application reads it from
+ * '/info' and sets it before it starts them.
  *
- * @param {string} relativePath
+ * @param {string} endpoint - Path below the base path, e.g. 'plugins/demo/index.js'
  * @returns {string}
  */
-function resolveUrl(relativePath) {
-  return new URL(relativePath, document.baseURI).href
+function resolveUrl(endpoint) {
+  const basePath = getServicesBasePath()
+  return new URL(`${basePath ? `${basePath}/` : ''}${endpoint}`, document.baseURI).href
+}
+
+/**
+ * URL of a file a plugin ships.
+ *
+ * @param {object} manifest
+ * @param {string} file
+ * @returns {string}
+ */
+function pluginFileUrl(manifest, file) {
+  return resolveUrl(`${PLUGINS_ENDPOINT}/${manifest.id}/${file}`)
 }
 
 /**
@@ -85,7 +100,7 @@ async function loadPluginTranslations(manifest, lang) {
   if (!file || merged.has(`${manifest.id}:${lang}`)) return
   merged.add(`${manifest.id}:${lang}`)
   try {
-    const res = await axios.create({ timeout: REQUEST_TIMEOUT_MS }).get(resolveUrl(`${PLUGINS_BASE_PATH}${manifest.id}/${file}`))
+    const res = await axios.create({ timeout: REQUEST_TIMEOUT_MS }).get(pluginFileUrl(manifest, file))
     i18n.global.mergeLocaleMessage(lang, { plugins: { [manifest.id]: res.data } })
   } catch {
     console.debug(`Optional plugin translations not found for "${manifest.id}":`, file)
@@ -114,7 +129,7 @@ function loadPluginStyles(manifest) {
   files.forEach(file => {
     const link = document.createElement('link')
     link.rel = 'stylesheet'
-    link.href = resolveUrl(`${PLUGINS_BASE_PATH}${manifest.id}/${file}`)
+    link.href = pluginFileUrl(manifest, file)
     link.dataset.plugin = manifest.id
     document.head.appendChild(link)
   })
@@ -158,7 +173,7 @@ function importModule(url) {
  * @returns {Promise<boolean>} whether the plugin was loaded
  */
 async function loadPlugin(manifest, lang, importer) {
-  const url = resolveUrl(`${PLUGINS_BASE_PATH}${manifest.id}/${manifest.entry}`)
+  const url = pluginFileUrl(manifest, manifest.entry)
   try {
     const module = await withTimeout(importer(url), IMPORT_TIMEOUT_MS, `Loading plugin "${manifest.id}"`)
     const register = module.register ?? module.default
@@ -170,7 +185,7 @@ async function loadPlugin(manifest, lang, importer) {
     loadPluginStyles(manifest)
     await register({
       id: manifest.id,
-      baseUrl: resolveUrl(`${PLUGINS_BASE_PATH}${manifest.id}/`),
+      baseUrl: pluginFileUrl(manifest, ''),
       // Handed over rather than imported, so the plugin id is stamped on every
       // contribution and cannot be forgotten or claimed for another plugin
       registerPlugin: (slotName, component, meta = {}) =>
