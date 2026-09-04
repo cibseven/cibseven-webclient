@@ -17,12 +17,14 @@
 package org.cibseven.webapp.plugin;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.test.context.support.TestPropertySourceUtils;
 
@@ -33,6 +35,10 @@ import org.springframework.test.context.support.TestPropertySourceUtils;
  * annotated - only shows up when the application is started.
  */
 public class PluginBeanWiringTest {
+
+	private AnnotationConfigApplicationContext enabledContext() {
+		return context("cibseven.webclient.plugins.enabled=true");
+	}
 
 	private AnnotationConfigApplicationContext context(String... properties) {
 		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
@@ -47,20 +53,29 @@ public class PluginBeanWiringTest {
 
 	@Test
 	public void createsThePluginBeans() {
-		try (AnnotationConfigApplicationContext context = context()) {
+		try (AnnotationConfigApplicationContext context = enabledContext()) {
 			assertNotNull(context.getBean(PluginRegistry.class));
 			assertNotNull(context.getBean(PluginService.class));
 		}
 	}
 
-	/**
-	 * Whether plugins are enabled is decided by {@link PluginAutoConfiguration}; a
-	 * registry that exists always scans, and the list it reports is what it found.
-	 */
+	/** A registry that exists always scans, and the list it reports is what it found. */
 	@Test
 	public void servesWhateverTheRegistryFound() {
-		try (AnnotationConfigApplicationContext context = context()) {
+		try (AnnotationConfigApplicationContext context = enabledContext()) {
 			assertTrue(context.getBean(PluginService.class).getPlugins().has("plugins"));
+		}
+	}
+
+	/**
+	 * The controller carries {@code @RestController} and would therefore be picked up
+	 * by a product that component-scans this package. Its own condition is what keeps
+	 * the endpoints off there too, rather than only in {@link PluginAutoConfiguration}.
+	 */
+	@Test
+	public void registersNoEndpointsWhenPluginsAreDisabled() {
+		try (AnnotationConfigApplicationContext context = context()) {
+			assertThrows(NoSuchBeanDefinitionException.class, () -> context.getBean(PluginService.class));
 		}
 	}
 }

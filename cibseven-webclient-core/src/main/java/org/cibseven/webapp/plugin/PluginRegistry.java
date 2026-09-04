@@ -31,7 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,18 +41,15 @@ import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Discovers frontend plugins on the classpath.
+ * Discovers frontend plugins on the classpath: a folder below
+ * {@code META-INF/cibseven-plugins/} holding a {@code plugin.json} and the files it
+ * references. Deploying one is putting a jar on the classpath, so it works the same
+ * in a war and in a Spring Boot jar.
  *
- * A plugin is a folder below {@code META-INF/cibseven-plugins/} containing a
- * {@code plugin.json} and the files it references. Deploying a plugin therefore
- * means putting one more jar on the classpath - no filesystem layout is involved,
- * which is what makes it behave the same in a war and in a Spring Boot jar.
- *
- * The folder name is the plugin id and the only source of it: it is what the
- * frontend builds its URLs from, so a value inside the manifest could contradict
- * the path the files are actually served from.
+ * <p>The folder name is the plugin id and the only source of it, because that is
+ * what the frontend builds its URLs from.
  */
-@Component @Slf4j
+@Slf4j
 public class PluginRegistry {
 
 	private static final String PLUGINS_ROOT = "META-INF/cibseven-plugins/";
@@ -70,8 +66,8 @@ public class PluginRegistry {
 	private List<ObjectNode> manifests;
 	private Map<String, Resource> locations = Collections.emptyMap();
 
-	// Annotated because this class has a second constructor for tests: Spring only
-	// picks a constructor on its own when there is exactly one.
+	// Needed because of the second constructor: Spring picks one on its own only when
+	// there is exactly one.
 	@Autowired
 	public PluginRegistry() {
 		this(new PathMatchingResourcePatternResolver());
@@ -90,10 +86,7 @@ public class PluginRegistry {
 		getManifests();
 	}
 
-	/**
-	 * Manifests of all deployed plugins. The classpath cannot change while the
-	 * application runs, so the scan result is kept.
-	 */
+	/** Manifests of all deployed plugins; cached, as the classpath cannot change at runtime. */
 	public synchronized List<ObjectNode> getManifests() {
 		if (manifests == null) {
 			manifests = scan();
@@ -102,10 +95,8 @@ public class PluginRegistry {
 	}
 
 	/**
-	 * Folder of every accepted plugin, by id, used to serve its files. Keyed by id
-	 * and taken from the manifest that was accepted, so a plugin whose manifest was
-	 * rejected serves nothing, and a second folder of the same id cannot serve its
-	 * files under the accepted plugin's id.
+	 * Folder of every accepted plugin, by id, used to serve its files. Only accepted
+	 * manifests are in here, so a rejected or duplicate plugin serves nothing.
 	 */
 	public synchronized Map<String, Resource> getPluginLocations() {
 		getManifests();
@@ -138,17 +129,12 @@ public class PluginRegistry {
 		if (folders.isEmpty()) {
 			log.info("No frontend plugin found on the classpath");
 		} else {
-			// The ids are what the frontend then asks for, so they are worth naming
 			log.info("Found {} frontend plugin(s) on the classpath: {}", folders.size(), folders.keySet());
 		}
 		return Collections.unmodifiableList(found);
 	}
 
-	/**
-	 * The folder a manifest was found in, so the plugin's files are served from the
-	 * jar its manifest came from rather than from whichever jar happens to be first
-	 * on the classpath.
-	 */
+	/** The folder the manifest came from, so files are served from its own jar. */
 	private Resource folderOf(Resource manifest, String id) {
 		try {
 			return manifest.createRelative("");
@@ -178,12 +164,11 @@ public class PluginRegistry {
 			ObjectNode manifest = JsonNodeFactory.instance.objectNode();
 			manifest.put("id", id);
 			manifest.put("entry", entry);
-			// Passed on as declared: a plugin may name one version or several it was tested
-			// against, and flattening an array here would hide them from the frontend
+			// Passed on as declared: a plugin may name several versions it was tested against
 			if (json.has("apiVersion")) manifest.set("apiVersion", json.get("apiVersion"));
 			else manifest.put("apiVersion", "");
-			// every optional field of the documented manifest has to be passed on;
-			// one left out here is silently missing in the frontend
+			// Every documented optional field belongs here; one missing is silently
+			// unavailable in the frontend
 			for (String field : OPTIONAL_FIELDS) {
 				if (json.has(field)) manifest.set(field, json.get(field));
 			}

@@ -28,6 +28,7 @@ import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mock.web.MockServletContext;
+import org.springframework.test.context.support.TestPropertySourceUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
@@ -58,6 +59,8 @@ public class PluginResourceServingTest {
 	private MockMvc mockMvc() {
 		AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
 		context.setServletContext(new MockServletContext());
+		// The controller only exists where plugins are enabled
+		TestPropertySourceUtils.addInlinedPropertiesToEnvironment(context, "cibseven.webclient.plugins.enabled=true");
 		context.register(WebConfig.class, PluginRegistry.class, PluginService.class);
 		context.refresh();
 		return MockMvcBuilders.webAppContextSetup(context).build();

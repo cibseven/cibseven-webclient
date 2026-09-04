@@ -18,6 +18,7 @@ package org.cibseven.webapp.plugin;
 
 import java.io.IOException;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.Resource;
 import org.springframework.http.CacheControl;
 import org.springframework.http.MediaType;
@@ -42,27 +43,19 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Tells the frontend which plugins are deployed and serves their files.
+ * Tells the frontend which plugins are deployed and serves their files. Both are
+ * readable without authentication, as the frontend needs them before anybody has
+ * logged in; plugin <em>data</em> goes through the regular authenticated endpoints.
  *
- * Deliberately a controller of its own with a namespace of its own instead of
- * another method on {@code InfoService}: the endpoints have to stay available in
- * products that replace that service, and nothing about plugins reaches into a
- * path another controller owns.
- *
- * <p>Both responses are readable without authentication - the frontend needs them
- * before anybody has logged in. A plugin is code the operator installed on the
- * classpath, so its files are no more secret than the webclient's own bundle;
- * plugin <em>data</em> is fetched through the regular authenticated endpoints.
- *
- * <p>It extends {@code BaseService} although it needs neither the engine nor a
- * user, because distributions mount the whole webclient below an application path
- * ({@code /webapp} in CIB seven Run) by prefixing exactly those controllers that
- * are assignable to {@code BaseService}. The frontend resolves both endpoints
- * relative to its own location, so a controller left out of that prefix is
- * unreachable for it - which is also why the files are served here rather than
- * through a resource handler, as resource handlers get no such prefix.
+ * <p>Sits next to {@code /info} rather than under the services base path, and
+ * extends {@code BaseService} without needing it: distributions mount the webclient
+ * below an application path ({@code /webapp} in CIB seven Run) by prefixing exactly
+ * the controllers assignable to {@code BaseService}, and the frontend resolves both
+ * endpoints relative to its own location. That is also why the files are served
+ * here instead of by a resource handler, which would get no such prefix.
  */
 @ApiResponses({ @ApiResponse(responseCode = "500", description = "An unexpected system error occured") })
+@ConditionalOnProperty(prefix = "cibseven.webclient.plugins", name = "enabled")
 @RestController @RequestMapping("/plugins") @Slf4j
 public class PluginService extends BaseService {
 
