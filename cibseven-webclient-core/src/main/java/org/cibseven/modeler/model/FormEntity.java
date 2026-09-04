@@ -20,6 +20,7 @@ import java.sql.Timestamp;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.envers.Audited;
 import org.hibernate.type.SqlTypes;
 
 import jakarta.persistence.Column;
@@ -37,6 +38,7 @@ import lombok.Setter;
 @RequiredArgsConstructor
 @Entity
 @Table(name = "MOD_FORMS")
+@Audited
 public class FormEntity {
 
 	@Id
@@ -63,6 +65,7 @@ public class FormEntity {
 
 	@JdbcTypeCode(SqlTypes.LONGVARBINARY)
 	@Column(name = "form_schema", nullable = false)
+	@Audited(withModifiedFlag = true)
 	private byte[] formSchema;
 
 	@Column(name = "formid", unique = true, nullable = false, length = 100)
