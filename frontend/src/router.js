@@ -267,19 +267,19 @@ const appRoutes = [
           children: [
             { path: '', name: 'usersManagement', component: UsersManagement },
             { path: 'users', name: 'adminUsers',
-              beforeEnter: permissionsGuardUserAdmin('usersManagement', 'user'), component: AdminUsers },
+              beforeEnter: permissionsGuard('usersManagement', 'user'), component: AdminUsers },
             { path: 'user/:userId', name: 'adminUser',
-              beforeEnter: permissionsGuardUserAdmin('usersManagement', 'user'), component: ProfileUser,
+              beforeEnter: permissionsGuard('usersManagement', 'user'), component: ProfileUser,
               props: () => ({ editMode: true })
             },
-            { path: 'groups', name: 'adminGroups', beforeEnter: permissionsGuardUserAdmin('groupsManagement', 'group'), component: AdminGroups },
-            { path: 'group/:groupId', name: 'adminGroup', beforeEnter: permissionsGuardUserAdmin('groupsManagement', 'group'), component: ProfileGroup },
+            { path: 'groups', name: 'adminGroups', beforeEnter: permissionsGuard('groupsManagement', 'group'), component: AdminGroups },
+            { path: 'group/:groupId', name: 'adminGroup', beforeEnter: permissionsGuard('groupsManagement', 'group'), component: ProfileGroup },
             // Tenants
-            { path: 'tenants', name: 'adminTenants', beforeEnter: permissionsGuardUserAdmin('tenantsManagement', 'tenant'), component: TenantsView },
-            { path: 'tenant/:tenantId', name: 'adminTenant', beforeEnter: permissionsGuardUserAdmin('tenantsManagement', 'tenant'), component: EditTenant },
+            { path: 'tenants', name: 'adminTenants', beforeEnter: permissionsGuard('tenantsManagement', 'tenant'), component: TenantsView },
+            { path: 'tenant/:tenantId', name: 'adminTenant', beforeEnter: permissionsGuard('tenantsManagement', 'tenant'), component: EditTenant },
             // System
             { path: 'system', redirect: '/seven/auth/admin/system/system-diagnostics', name: 'adminSystem', component: SystemView,
-              beforeEnter: permissionsGuardUserAdmin('systemManagement', 'system'),
+              beforeEnter: permissionsGuard('systemManagement', 'system'),
               children: [
                 { path: 'system-diagnostics', name: 'system-diagnostics', component: SystemDiagnostics },
                 { path: 'execution-metrics', name: 'execution-metrics', component: ExecutionMetrics }
@@ -287,16 +287,16 @@ const appRoutes = [
             },
             // Authorizations
             { path: 'authorizations', name: 'authorizations',
-              beforeEnter: permissionsGuardUserAdmin('authorizationsManagement', 'authorization'), component: AdminAuthorizations,
+              beforeEnter: permissionsGuard('authorizationsManagement', 'authorization'), component: AdminAuthorizations,
               children: [
                 { path: ':resourceTypeId/:resourceTypeKey', name: 'authorizationType', component: AdminAuthorizationsTable }
               ]
             }
           ]
         },
-        { path: 'admin/create-user', name: 'createUser', beforeEnter: permissionsGuardUserAdmin('usersManagement', 'user'), component: CreateUser },
-        { path: 'admin/create-group', name: 'createGroup', beforeEnter: permissionsGuardUserAdmin('groupsManagement', 'group'), component: CreateGroup },
-        { path: 'admin/create-tenant', name: 'createTenant', beforeEnter: permissionsGuardUserAdmin('tenantsManagement', 'tenant'), component: CreateTenant },
+        { path: 'admin/create-user', name: 'createUser', beforeEnter: permissionsGuard('usersManagement', 'user'), component: CreateUser },
+        { path: 'admin/create-group', name: 'createGroup', beforeEnter: permissionsGuard('groupsManagement', 'group'), component: CreateGroup },
+        { path: 'admin/create-tenant', name: 'createTenant', beforeEnter: permissionsGuard('tenantsManagement', 'tenant'), component: CreateTenant },
       ]}
     ]},
     {
@@ -394,22 +394,9 @@ function modelerGuard(to, from) {
   return permissionsGuard('modeler')(to, from)
 }
 
-function permissionsGuard(permission) {
+function permissionsGuard(permission, condition = undefined) {
   return function(to, from) {
-    if (router.root.applicationPermissions(router.root.config.permissions[permission], permission)) return true
-    return {
-      name: 'no-permission',
-      query: {
-        permission: permission,
-        refPath: from.fullPath,
-      }
-    }
-  }
-}
-
-function permissionsGuardUserAdmin(permission, condition) {
-  return function(to, from) {
-    if (router.root.applicationPermissions(router.root.config.permissions[permission], condition)) return true
+    if (router.root.applicationPermissions(router.root.config.permissions[permission], condition || permission)) return true
     return {
       name: 'no-permission',
       query: {
@@ -467,5 +454,4 @@ export {
   setupGuard,
   modelerGuard,
   permissionsGuard,
-  permissionsGuardUserAdmin
 }
