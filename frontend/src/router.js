@@ -60,14 +60,16 @@ import ModelerView from '@/components/modeler/ModelerView.vue'
 import { redirectToProcessInstance, redirectToProcessDefinition, redirectToTask } from '@/utils/redirects.js'
 
 const appRoutes = [
-    { path: '/',  name: 'root', redirect: '/seven/auth/start-configurable' },
-    {
-      path: '/api/translations',
-      name: 'translations',
-      component: TranslationsDownload,
-    },
-    { path: '/seven', name: 'seven', component: CibSeven, children: [
-      { path: 'login', name: 'login', beforeEnter: async function(to) {
+  { path: '/', name: 'root', redirect: '/seven/auth/start-configurable' },
+  {
+    path: '/api/translations',
+    name: 'translations',
+    component: TranslationsDownload,
+  },
+  {
+    path: '/seven', name: 'seven', component: CibSeven, children: [
+      {
+        path: 'login', name: 'login', beforeEnter: async function (to) {
           // Check if setup is required first
           try {
             const res = await SetupService.getStatus()
@@ -85,235 +87,237 @@ const appRoutes = [
             }
             return true
           }
-        }, component: LoginView },
+        }, component: LoginView
+      },
+
       { path: 'setup', name: 'setup', beforeEnter: setupGuard, component: InitialSetup },
-      { path: 'auth', name: 'auth', beforeEnter: authGuard(true), component: {
-        components: { BWaitingBox }, template: '<BWaitingBox ref="loader" class="d-flex justify-content-center" styling="width:20%">\
-          <router-view ref="down" class="w-100 h-100"></router-view></BWaitingBox>',
-        mixins: [permissionsMixin],
-        inject: ['loadProcesses','loadDecisions'],
-        mounted: function() {
-          this.$refs.loader.done = true
-          this.$refs.loader.wait(this.loadProcesses(false))
-          this.$refs.loader.wait(this.loadDecisions())
-          // Preload the filters to have them in the admin view.
-          this.$store.dispatch('findFilters').then(response => {
-            this.$store.commit('setFilters',
-              { filters: this.filtersByPermissions(this.$root.config.permissions.displayFilter, response) })
-          })
-        },
-      }, children: [
-        { path: 'no-permission', name: 'no-permission',
-          beforeEnter: (to) => ({
-            name: 'start',
-            query: {
-              errorType: 'NoPermission',
-              permission: to.query?.permission,
-              refPath: to.query?.refPath,
-            }
-          })
-        },
 
-        // Start page with configurable redirects
-        { path: 'start-configurable', name: 'start-configurable',
-          beforeEnter: (to, from) => {
-            const cockpitAvailable = router.root.applicationPermissions(router.root.config.permissions['cockpit'], 'cockpit')
-            const tasklistAvailable = router.root.applicationPermissions(router.root.config.permissions['tasklist'], 'tasklist')
-
-            const cockpitOverride = cockpitAvailable ? null : {
-              name: 'no-permission',
-              query: {
-                permission: 'cockpit',
-                refPath: from.fullPath,
-              }
-            }
-            const tasklistOverride = tasklistAvailable ? null : {
-              name: 'no-permission',
-              query: {
-                permission: 'tasklist',
-                refPath: from.fullPath,
-              }
-            }
-
-            const configuredStartPage = localStorage?.getItem('cibseven:preferences:startPage') || 'start'
-            switch (configuredStartPage) {
-              case 'processes-dashboard':
-                return cockpitOverride || { name: 'processesDashboard' }
-              case 'decisions-list':
-                return cockpitOverride || { name: 'decision-list' }
-              case 'human-tasks-dashboard':
-                return cockpitOverride || { name: 'human-tasks' }
-
-              case 'tasks':
-                return tasklistOverride || { name: 'tasks' }
-              case 'start-process':
-                return tasklistOverride || { name: 'start-process' }
-              case 'start':
-              default:
-                return { name: 'start' }
-            }
-          }
-        },
-
-        { path: 'start', name: 'start', component: StartView },
-
-        // Modeler
-        { path: 'modeler/:diagramId?', name: 'modeler', beforeEnter: modelerGuard, component: ModelerView, meta: { title: 'start.modeler.title' } },
-
-        { path: 'account/:userId', name: 'account', beforeEnter: (to, from) => {
-            const userProfileAvailable = router.root.applicationPermissions(router.root.config.permissions['userProfile'], 'userProfile')
-            if (userProfileAvailable && to.params.userId && to.params.userId === router.root.user.id && router.root.config.layout.showUserSettings) {
-              return true
-            }
-            return {
-              name: 'no-permission',
-              query: {
-                permission: 'userProfile',
-                refPath: from.fullPath,
-              }
-            }
-          }, component: ProfileUser
-        },
-
-        // Start new process (end-user)
-        { path: 'start-process', name: 'start-process', beforeEnter: permissionsGuard('tasklist'),
-          component: StartProcessView
-        },
-
-        // Tasks in active processes
-        { path: 'task/:taskId', name: 'task-id', beforeEnter: (to, from) => redirectToTask(router, to, from) },
-        { path: 'tasks', name: 'tasks', beforeEnter: permissionsGuard('tasklist'), component: TasksView,
-          children: [
-            { path: ':filterId/:taskId?', name: 'tasklist', component: TaskView }
-          ]
-        },
-
-        // Batches
-        { path: 'batches', name: 'batches', beforeEnter: permissionsGuard('cockpit'),
-          component: BatchesView
-        },
-
-        // Process management (power-user)
-        { path: 'processes', name: 'cockpit', redirect: '/seven/auth/processes/dashboard', beforeEnter: permissionsGuard('cockpit') },
-        { path: 'processes/dashboard', name: 'processesDashboard', beforeEnter: permissionsGuard('cockpit'),
-          component: ProcessesDashboardView
-        },
-        { path: 'processes/list', name: 'processManagement', beforeEnter: permissionsGuard('cockpit'),
-          component: ProcessListView
-        },
-        // process definition by id redirect
-        { path: 'processes/definition/:definitionId?', name: 'process-definition-id',
-          beforeEnter: (to, from) => redirectToProcessDefinition(router, to, from),
-        },
-        // process instance by id redirect
-        { path: 'processes/instance/:instanceId?', name: 'process-instance-id',
-          beforeEnter: (to, from) => redirectToProcessInstance(router, to, from),
-        },
-        { path: 'processes/not-found-instanceId', name: 'not-found-instanceId',
-          beforeEnter: (to) => ({
-            name: 'start',
-            query: {
-              errorType: 'notFoundInstanceId',
-              instanceId: to.query?.instanceId,
-              refPath: to.query?.refPath,
-            }
-          })
-        },
-        { path: 'process/:processKey/:versionIndex?/:instanceId?', name: 'process', beforeEnter: permissionsGuard('cockpit'),
-          component: ProcessView, props: route => ({
-            processKey: route.params.processKey,
-            versionIndex: route.params.versionIndex,
-            instanceId: route.params.instanceId,
-            tenantId: route.query.tenantId
-          })
-        },
-        // decisions
-        { path: 'decisions', name: 'decisions', redirect: '/seven/auth/decisions/list', beforeEnter: permissionsGuard('cockpit') },
-        { path: 'decisions/list', name: 'decision-list', beforeEnter: permissionsGuard('cockpit'),
-          component: DecisionListView
-        },
-        {
-          path: 'decision/:decisionKey',
-          name: 'decision',
-          beforeEnter: permissionsGuard('cockpit'),
-          component: DecisionView,
-          props: true,
-          children: [
-            {
-              path: ':versionIndex',
-              name: 'decision-version',
-              component: DecisionDefinitionVersion,
-              props: true
-            },
-            {
-              path: ':versionIndex/:instanceId',
-              name: 'decision-instance',
-              component: DecisionInstance,
-              props: true
-            }
-          ]
-        },
-        { path: 'deployments/:deploymentId?', name: 'deployments', beforeEnter: permissionsGuard('cockpit'),
-          component: DeploymentsView, props: route => ({
-            deploymentId: route.params.deploymentId
-          })
-        },
-        { path: 'human-tasks', name: 'human-tasks', beforeEnter: permissionsGuard('cockpit'), component: HumanTasksView },
-        // users management
-        { path: 'admin', name: 'admin',
-          component: {
-            template: '<router-view></router-view>'
+      {
+        path: 'auth', name: 'auth', beforeEnter: authGuard(true), component: {
+          components: { BWaitingBox }, template: '<BWaitingBox ref="loader" class="d-flex justify-content-center" styling="width:20%">\
+        <router-view ref="down" class="w-100 h-100"></router-view></BWaitingBox>',
+          mixins: [permissionsMixin],
+          inject: ['loadProcesses', 'loadDecisions'],
+          mounted: function () {
+            this.$refs.loader.done = true
+            this.$refs.loader.wait(this.loadProcesses(false))
+            this.$refs.loader.wait(this.loadDecisions())
+            // Preload the filters to have them in the admin view.
+            this.$store.dispatch('findFilters').then(response => {
+              this.$store.commit('setFilters',
+                { filters: this.filtersByPermissions(this.$root.config.permissions.displayFilter, response) })
+            })
           },
-          children: [
-            { path: '', name: 'usersManagement', component: UsersManagement },
-            { path: 'users', name: 'adminUsers',
-              beforeEnter: permissionsGuard('usersManagement', 'user'), component: AdminUsers },
-            { path: 'user/:userId', name: 'adminUser',
-              beforeEnter: permissionsGuard('usersManagement', 'user'), component: ProfileUser,
-              props: () => ({ editMode: true })
-            },
-            { path: 'groups', name: 'adminGroups', beforeEnter: permissionsGuard('groupsManagement', 'group'), component: AdminGroups },
-            { path: 'group/:groupId', name: 'adminGroup', beforeEnter: permissionsGuard('groupsManagement', 'group'), component: ProfileGroup },
-            // Tenants
-            { path: 'tenants', name: 'adminTenants', beforeEnter: permissionsGuard('tenantsManagement', 'tenant'), component: TenantsView },
-            { path: 'tenant/:tenantId', name: 'adminTenant', beforeEnter: permissionsGuard('tenantsManagement', 'tenant'), component: EditTenant },
-            // System
-            { path: 'system', redirect: '/seven/auth/admin/system/system-diagnostics', name: 'adminSystem', component: SystemView,
-              beforeEnter: permissionsGuard('systemManagement', 'system'),
-              children: [
-                { path: 'system-diagnostics', name: 'system-diagnostics', component: SystemDiagnostics },
-                { path: 'execution-metrics', name: 'execution-metrics', component: ExecutionMetrics }
-              ]
-            },
-            // Authorizations
-            { path: 'authorizations', name: 'authorizations',
-              beforeEnter: permissionsGuard('authorizationsManagement', 'authorization'), component: AdminAuthorizations,
-              children: [
-                { path: ':resourceTypeId/:resourceTypeKey', name: 'authorizationType', component: AdminAuthorizationsTable }
-              ]
+        }, children: [
+          {
+            path: 'no-permission', name: 'no-permission',
+            beforeEnter: (to) => ({
+              name: 'start',
+              query: {
+                errorType: 'NoPermission',
+                permission: to.query?.permission,
+                refPath: to.query?.refPath,
+              }
+            })
+          },
+
+          // Start page with configurable redirects
+          {
+            path: 'start-configurable', name: 'start-configurable',
+            beforeEnter: (to, from) => {
+              const cockpitAvailable = router.root.applicationPermissions(router.root.config.permissions['cockpit'], 'cockpit')
+              const tasklistAvailable = router.root.applicationPermissions(router.root.config.permissions['tasklist'], 'tasklist')
+
+              const cockpitOverride = cockpitAvailable ? null : {
+                name: 'no-permission',
+                query: {
+                  permission: 'cockpit',
+                  refPath: from.fullPath,
+                }
+              }
+              const tasklistOverride = tasklistAvailable ? null : {
+                name: 'no-permission',
+                query: {
+                  permission: 'tasklist',
+                  refPath: from.fullPath,
+                }
+              }
+
+              const configuredStartPage = localStorage?.getItem('cibseven:preferences:startPage') || 'start'
+              switch (configuredStartPage) {
+                case 'processes-dashboard':
+                  return cockpitOverride || { name: 'processesDashboard' }
+                case 'decisions-list':
+                  return cockpitOverride || { name: 'decision-list' }
+                case 'human-tasks-dashboard':
+                  return cockpitOverride || { name: 'human-tasks' }
+
+                case 'tasks':
+                  return tasklistOverride || { name: 'tasks' }
+                case 'start-process':
+                  return tasklistOverride || { name: 'start-process' }
+                case 'start':
+                default:
+                  return { name: 'start' }
+              }
             }
-          ]
-        },
-        { path: 'admin/create-user', name: 'createUser', beforeEnter: permissionsGuard('usersManagement', 'user'), component: CreateUser },
-        { path: 'admin/create-group', name: 'createGroup', beforeEnter: permissionsGuard('groupsManagement', 'group'), component: CreateGroup },
-        { path: 'admin/create-tenant', name: 'createTenant', beforeEnter: permissionsGuard('tenantsManagement', 'tenant'), component: CreateTenant },
-      ]}
-    ]},
-    {
-      path: '/deployed-form/:locale/:taskId/:token?/:theme?/:translation?',
-      name: 'deployed-form',
-      beforeEnter: [authGuard(false), permissionsGuard('tasklist')],
-      props: true,
-      component: DeployedForm
-    },
-    {
-      path: '/start-deployed-form/:locale/:processDefinitionId/:token?/:theme?/:translation?',
-      name: 'start-deployed-form',
-      beforeEnter: [authGuard(false), permissionsGuard('tasklist')],
-      props: true,
-      component: StartDeployedForm
-    },
-  ];
+          },
+
+          { path: 'start', name: 'start', component: StartView },
+
+          // Modeler
+          { path: 'modeler/:diagramId?', name: 'modeler', beforeEnter: modelerGuard, component: ModelerView, meta: { title: 'start.modeler.title' } },
+
+          {
+            path: 'account/:userId', name: 'account', beforeEnter: (to, from) => {
+              const userProfileAvailable = router.root.applicationPermissions(router.root.config.permissions['userProfile'], 'userProfile')
+              if (userProfileAvailable && to.params.userId && to.params.userId === router.root.user.id && router.root.config.layout.showUserSettings) {
+                return true
+              }
+              return {
+                name: 'no-permission',
+                query: {
+                  permission: 'userProfile',
+                  refPath: from.fullPath,
+                }
+              }
+            }, component: ProfileUser
+          },
+
+          // Start new process (end-user)
+          { path: 'start-process', name: 'start-process', beforeEnter: permissionsGuard('tasklist'), component: StartProcessView },
+
+          // Tasks in active processes
+          { path: 'task/:taskId', name: 'task-id', beforeEnter: (to, from) => redirectToTask(router, to, from) },
+          {
+            path: 'tasks', name: 'tasks', beforeEnter: permissionsGuard('tasklist'), component: TasksView,
+            children: [
+              { path: ':filterId/:taskId?', name: 'tasklist', component: TaskView }
+            ]
+          },
+
+          // Batches
+          { path: 'batches', name: 'batches', beforeEnter: permissionsGuard('cockpit'), component: BatchesView },
+
+          // Process management (power-user)
+          { path: 'processes', name: 'cockpit', redirect: '/seven/auth/processes/dashboard', beforeEnter: permissionsGuard('cockpit') },
+          { path: 'processes/dashboard', name: 'processesDashboard', beforeEnter: permissionsGuard('cockpit'), component: ProcessesDashboardView },
+          { path: 'processes/list', name: 'processManagement', beforeEnter: permissionsGuard('cockpit'), component: ProcessListView },
+          // process definition by id redirect
+          {
+            path: 'processes/definition/:definitionId?', name: 'process-definition-id',
+            beforeEnter: (to, from) => redirectToProcessDefinition(router, to, from),
+          },
+          // process instance by id redirect
+          {
+            path: 'processes/instance/:instanceId?', name: 'process-instance-id',
+            beforeEnter: (to, from) => redirectToProcessInstance(router, to, from),
+          },
+          {
+            path: 'processes/not-found-instanceId', name: 'not-found-instanceId',
+            beforeEnter: (to) => ({
+              name: 'start',
+              query: {
+                errorType: 'notFoundInstanceId',
+                instanceId: to.query?.instanceId,
+                refPath: to.query?.refPath,
+              }
+            })
+          },
+          {
+            path: 'process/:processKey/:versionIndex?/:instanceId?', name: 'process', beforeEnter: permissionsGuard('cockpit'),
+            component: ProcessView, props: route => ({
+              processKey: route.params.processKey,
+              versionIndex: route.params.versionIndex,
+              instanceId: route.params.instanceId,
+              tenantId: route.query.tenantId
+            })
+          },
+          // decisions
+          { path: 'decisions', name: 'decisions', redirect: '/seven/auth/decisions/list', beforeEnter: permissionsGuard('cockpit') },
+          { path: 'decisions/list', name: 'decision-list', beforeEnter: permissionsGuard('cockpit'), component: DecisionListView },
+          {
+            path: 'decision/:decisionKey',
+            name: 'decision',
+            beforeEnter: permissionsGuard('cockpit'),
+            component: DecisionView,
+            props: true,
+            children: [
+              {
+                path: ':versionIndex', name: 'decision-version', component: DecisionDefinitionVersion, props: true
+              },
+              {
+                path: ':versionIndex/:instanceId', name: 'decision-instance', component: DecisionInstance, props: true
+              }
+            ]
+          },
+          {
+            path: 'deployments/:deploymentId?', name: 'deployments', beforeEnter: permissionsGuard('cockpit'),
+            component: DeploymentsView, props: route => ({
+              deploymentId: route.params.deploymentId
+            })
+          },
+          { path: 'human-tasks', name: 'human-tasks', beforeEnter: permissionsGuard('cockpit'), component: HumanTasksView },
+          // users management
+          {
+            path: 'admin', name: 'admin',
+            component: {
+              template: '<router-view></router-view>'
+            },
+            children: [
+              { path: '', name: 'usersManagement', component: UsersManagement },
+              { path: 'users', name: 'adminUsers', beforeEnter: permissionsGuard('usersManagement', 'user'), component: AdminUsers },
+              {
+                path: 'user/:userId', name: 'adminUser',
+                beforeEnter: permissionsGuard('usersManagement', 'user'), component: ProfileUser,
+                props: () => ({ editMode: true })
+              },
+              { path: 'groups', name: 'adminGroups', beforeEnter: permissionsGuard('groupsManagement', 'group'), component: AdminGroups },
+              { path: 'group/:groupId', name: 'adminGroup', beforeEnter: permissionsGuard('groupsManagement', 'group'), component: ProfileGroup },
+              // Tenants
+              { path: 'tenants', name: 'adminTenants', beforeEnter: permissionsGuard('tenantsManagement', 'tenant'), component: TenantsView },
+              { path: 'tenant/:tenantId', name: 'adminTenant', beforeEnter: permissionsGuard('tenantsManagement', 'tenant'), component: EditTenant },
+              // System
+              {
+                path: 'system', redirect: '/seven/auth/admin/system/system-diagnostics', name: 'adminSystem', component: SystemView,
+                beforeEnter: permissionsGuard('systemManagement', 'system'),
+                children: [
+                  { path: 'system-diagnostics', name: 'system-diagnostics', component: SystemDiagnostics },
+                  { path: 'execution-metrics', name: 'execution-metrics', component: ExecutionMetrics }
+                ]
+              },
+              // Authorizations
+              {
+                path: 'authorizations', name: 'authorizations',
+                beforeEnter: permissionsGuard('authorizationsManagement', 'authorization'), component: AdminAuthorizations,
+                children: [
+                  { path: ':resourceTypeId/:resourceTypeKey', name: 'authorizationType', component: AdminAuthorizationsTable }
+                ]
+              }
+            ]
+          },
+          { path: 'admin/create-user', name: 'createUser', beforeEnter: permissionsGuard('usersManagement', 'user'), component: CreateUser },
+          { path: 'admin/create-group', name: 'createGroup', beforeEnter: permissionsGuard('groupsManagement', 'group'), component: CreateGroup },
+          { path: 'admin/create-tenant', name: 'createTenant', beforeEnter: permissionsGuard('tenantsManagement', 'tenant'), component: CreateTenant },
+        ]
+      }
+    ]
+  },
+  {
+    path: '/deployed-form/:locale/:taskId/:token?/:theme?/:translation?',
+    name: 'deployed-form',
+    beforeEnter: [ authGuard(false), permissionsGuard('tasklist') ],
+    props: true,
+    component: DeployedForm
+  },
+  {
+    path: '/start-deployed-form/:locale/:processDefinitionId/:token?/:theme?/:translation?',
+    name: 'start-deployed-form',
+    beforeEnter: [ authGuard(false), permissionsGuard('tasklist') ],
+    props: true,
+    component: StartDeployedForm
+  },
+];
 
 let router = null
 
