@@ -47,6 +47,9 @@ export default {
     },
     permissionsSystemManagement() {
       return this.$root.user && this.applicationPermissions(this.$root.config.permissions.systemManagement, 'system')
+    },
+    permissionsUserProfile() {
+      return this.$root.user && this.applicationPermissions(this.$root.config.permissions.userProfile, 'userProfile')
     }
   }
 }

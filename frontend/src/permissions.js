@@ -30,10 +30,7 @@ const permissionsMixin = {
 			return this.$_permissionsMixin_checkPermissionsAllowed(access, null, permissionsCheck)
 		},
 		applicationPermissionsDenied: function (permissionsRequired, access) {
-			if (!this.$root.config.authorizationEnabled) return false
-			if (!permissionsRequired) return true
-			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
-			return this.$_permissionsMixin_checkPermissionsDenied(access, null, permissionsCheck)
+			return !this.applicationPermissions(permissionsRequired, access)
 		},
 		tasksByPermissions: function(permissionsRequired, tasks) {
 			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
@@ -135,13 +132,6 @@ const permissionsMixin = {
 			return (permissionsCheck.length > 0) && permissionsCheck.every(permission =>
 				(permission.granted.includes(val) || permission.granted.includes('*')) &&
 				!permission.revoked.includes(val) && !permission.revoked.includes('*')
-			)
-		},
-		$_permissionsMixin_checkPermissionsDenied: function(object, key, permissionsCheck) {
-			if (!this.$root.config.authorizationEnabled) return false;
-			const val = key ? object[key] : object
-			return permissionsCheck.some(permission =>
-				permission.revoked.includes(val) || permission.revoked.includes('*')
 			)
 		}
 	}
