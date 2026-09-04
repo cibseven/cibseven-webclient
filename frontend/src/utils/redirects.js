@@ -37,18 +37,7 @@ async function getRuntimeProcessInstanceData(instanceId) {
   })
 }
 
-export async function redirectToProcessDefinition(router, to, from) {
-  const cockpitAvailable = router.root.applicationPermissions(router.root.config.permissions['cockpit'], 'cockpit')
-  if (!cockpitAvailable) {
-    return {
-      name: 'no-permission',
-      query: {
-        permission: 'cockpit',
-        refPath: from.fullPath,
-      }
-    }
-  }
-
+export async function redirectToProcessDefinition(to, from) {
   const definitionId = to.params.definitionId
   try {
     const processDefinition = await ProcessService.findProcessById(definitionId, false)
@@ -77,18 +66,7 @@ export async function redirectToProcessDefinition(router, to, from) {
 
 export async function redirectToProcessInstance(router, to, from) {
   const instanceId = to.params.instanceId
-  const cockpitAvailable = router.root.applicationPermissions(router.root.config.permissions['cockpit'], 'cockpit')
-  if (!cockpitAvailable) {
-    return {
-      name: 'no-permission',
-      query: {
-        permission: 'cockpit',
-        refPath: from.fullPath,
-      }
-    }
-  }
-
-  const historyLevel = router.root.config.camundaHistoryLevel || 'none'
+  const historyLevel = router.root.config.camundaHistoryLevel || 'full'
   const method = historyLevel !== 'none' ? getHistoryProcessInstanceData : getRuntimeProcessInstanceData
   try {
     const instanceData = await method(instanceId)
@@ -116,19 +94,8 @@ export async function redirectToProcessInstance(router, to, from) {
   }
 }
 
-export async function redirectToTask(router, to, from) {
+export async function redirectToTask(to) {
   const taskId = to.params.taskId
-  const cockpitAvailable = router.root.applicationPermissions(router.root.config.permissions['tasklist'], 'tasklist')
-  if (!cockpitAvailable) {
-    return {
-      name: 'no-permission',
-      query: {
-        permission: 'tasklist',
-        refPath: from.fullPath,
-      }
-    }
-  }
-
   return {
     name: 'tasklist',
     params: {

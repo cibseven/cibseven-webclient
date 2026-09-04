@@ -173,7 +173,13 @@ const appRoutes = [
           { path: 'start-process', name: 'start-process', beforeEnter: permissionsGuard('tasklist'), component: StartProcessView },
 
           // Tasks in active processes
-          { path: 'task/:taskId', name: 'task-id', beforeEnter: (to, from) => redirectToTask(router, to, from) },
+          {
+            path: 'task/:taskId', name: 'task-id',
+            beforeEnter: [
+              permissionsGuard('tasklist'),
+              redirectToTask,
+            ]
+          },
           {
             path: 'tasks', name: 'tasks', beforeEnter: permissionsGuard('tasklist'), component: TasksView,
             children: [
@@ -191,12 +197,18 @@ const appRoutes = [
           // process definition by id redirect
           {
             path: 'processes/definition/:definitionId?', name: 'process-definition-id',
-            beforeEnter: (to, from) => redirectToProcessDefinition(router, to, from),
+            beforeEnter: [
+              permissionsGuard('cockpit'),
+              redirectToProcessDefinition,
+            ],
           },
           // process instance by id redirect
           {
             path: 'processes/instance/:instanceId?', name: 'process-instance-id',
-            beforeEnter: (to, from) => redirectToProcessInstance(router, to, from),
+            beforeEnter: [
+              permissionsGuard('cockpit'),
+              (to, from) => redirectToProcessInstance(router, to, from),
+            ],
           },
           {
             path: 'processes/not-found-instanceId', name: 'not-found-instanceId',
