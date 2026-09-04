@@ -32,6 +32,7 @@ export default {
 				deserializeValues: false,
 			},
 			variables: [],
+			variablesSource: null,
 			file: null,
 			selectedVariable: null
 		}
@@ -49,9 +50,36 @@ export default {
 				this.loadSelectedInstanceVariables()
 			}
 		},
-		activityInstancesGrouped: 'loadSelectedInstanceVariables'
+		activityInstancesGrouped: 'onScopeMapChanged'
 	},
 	computed: {
+		isActiveInstance: function() {
+			if (this.selectedInstance?.state) {
+				// 'state' is available from historic process instances
+				const activeStates = ['ACTIVE', 'SUSPENDED']
+				return this.selectedInstance && activeStates.includes(this.selectedInstance.state)
+			}
+			else {
+				// use runtime instance
+				// they have 'ended' and 'suspended' states
+				return this.selectedInstance && this.selectedInstance.ended === false
+			}
+		},
+		historyAvailable: function () {
+			return ['full', 'audit'].includes(this.$root.config.camundaHistoryLevel)
+		},
+		liveActivityInstanceIds: function () {
+			const ids = new Set()
+			if (this.activityInstance) {
+				const collect = ai => {
+					ids.add(ai.id)
+					ai.childActivityInstances?.forEach(collect)
+					ai.childTransitionInstances?.forEach(ti => ids.add(ti.id))
+				}
+				collect(this.activityInstance)
+			}
+			return ids
+		},
 		activityInstanceData: function () {
 				const names = {}
 				const activityIds = {}
@@ -62,17 +90,18 @@ export default {
 						if (ai.childActivityInstances?.length > 0) flatten(ai.childActivityInstances)
 					})
 				}
+				// finished scopes first, so the runtime tree overrides entries for scopes present in both
+				if (this.activityInstanceHistory) {
+					this.activityInstanceHistory.forEach(ai => {
+						names[ai.id] = ai.activityName || ai.activityId
+						activityIds[ai.id] = ai.activityId
+					})
+				}
 				if (this.activityInstance) {
 					names[this.activityInstance.id] = this.activityInstance.name
 					flatten(this.activityInstance.childActivityInstances)
-				} else {
+				} else if (this.selectedInstance) {
 					names[this.selectedInstance.id] = this.selectedInstance.processDefinitionName
-					if (this.activityInstanceHistory) {
-						this.activityInstanceHistory.forEach(ai => {
-							names[ai.id] = ai.activityName || ai.activityId
-							activityIds[ai.id] = ai.activityId
-						})
-					}
 				}
 				return { names, activityIds }
 		},
@@ -103,36 +132,124 @@ export default {
 		loadSelectedInstanceVariables: function() {
 			if (this.fetching) return // Prevent concurrent requests
 			if (this.selectedInstance && this.activityInstancesGrouped) {
-				if (this.selectedInstance.state === 'ACTIVE' || this.$root.config.camundaHistoryLevel === 'none') {
-					this.fetchInstanceVariables('ProcessService', 'fetchProcessInstanceVariables')
+				if (this.isActiveInstance) {
+					// runtime stays the source of truth for a running instance; history only ADDS
+					// variables whose scope (e.g. a finished external task) is already gone from
+					// ACT_RU_VARIABLE (CIB7-1203)
+					this.fetchActiveInstanceVariables()
+				} else if (this.historyAvailable) {
+					this.fetchInstanceVariables('HistoryService', 'fetchProcessInstanceVariablesHistory')
 				} else {
-					if (this.$root.config.camundaHistoryLevel === 'full' || this.$root.config.camundaHistoryLevel === 'audit') {
-						this.fetchInstanceVariables('HistoryService', 'fetchProcessInstanceVariablesHistory')
-					} else {
-						// no variables available for finished process instances if history level is 'activity' or 'none'
-						this.variables = []
-						this.filteredVariables = []
-						this.loading = false
-						this.fetching = false
-					}
+					// no variables available for finished process instances if history level is 'activity' or 'none'
+					this.setLoadedVariables([])
+					this.loading = false
+					this.fetching = false
 				}
 			}
+		},
+		onScopeMapChanged: function () {
+			// scope maps (runtime tree / historic activity instances) can arrive after the
+			// variables were already fetched - re-annotate in place instead of re-fetching
+			if (this.variables.length && !this.fetching) {
+				this.annotateVariables(this.variables)
+				// in-place annotation does not trigger the 'variables' watcher, so refresh the filtered list
+				if (typeof this.applyActivityFilter === 'function') this.applyActivityFilter()
+				else this.filteredVariables = [...this.variables]
+			} else {
+				this.loadSelectedInstanceVariables()
+			}
+		},
+		annotateVariables: function (variables) {
+			variables.forEach(v => {
+				v.scope = this.activityInstancesGrouped[v.activityInstanceId] || v.activityInstanceId
+				v.scopeActivityId = this.activityInstanceIdToActivityId[v.activityInstanceId] || null
+				v.isLive = this.isVariableScopeLive(v)
+			})
+		},
+		isVariableScopeLive: function (v) {
+			if (!this.isActiveInstance) return false
+			// runtime rows are live by definition
+			if (v.variableSource === 'runtime' || this.variablesSource === 'runtime') return true
+			if (this.activityInstance) return this.liveActivityInstanceIds.has(v.activityInstanceId)
+			// no runtime tree available (e.g. suspended instances, external embedders)
+			return true
+		},
+		/**
+		 * Variables of a running instance: the runtime query is authoritative, the history query
+		 * only contributes the variables of scopes that have already finished. Loading both makes
+		 * the tab independent of the configured history level - if history is unavailable or
+		 * incomplete (level 'activity'/'none', 'cibseven.webclient.historyLevel' out of sync with
+		 * the engine, variables written before the level was raised), the runtime variables are
+		 * still shown exactly as before.
+		 */
+		fetchActiveInstanceVariables: async function () {
+			this.fetching = true
+			this.loading = true
+			this.variablesSource = null
+			try {
+				const runtime = (await ProcessService.fetchProcessInstanceVariables(this.selectedInstance.id, this.restFilter))
+					.map(v => ({ ...v, variableSource: 'runtime' }))
+				const finishedScope = this.historyAvailable
+					? await this.fetchFinishedScopeVariables(runtime)
+					: []
+				this.setLoadedVariables([...runtime, ...finishedScope])
+			} finally {
+				this.loading = false
+				this.fetching = false
+			}
+		},
+		/**
+		 * History rows that the runtime query did not return, i.e. variables of finished scopes.
+		 * A failing history query must not hide the runtime variables, so it degrades to [].
+		 */
+		fetchFinishedScopeVariables: async function (runtimeVariables) {
+			const runtimeIds = new Set(runtimeVariables.map(v => v.id))
+			let historic
+			try {
+				historic = await HistoryService.fetchProcessInstanceVariablesHistory(this.selectedInstance.id, this.restFilter)
+			} catch (error) {
+				console.warn('CIB7-1203: could not load historic variables, showing runtime variables only', error)
+				return []
+			}
+			return historic
+				.filter(v => !runtimeIds.has(v.id))
+				// the history endpoint ignores 'variableValues', so apply that filter here to keep
+				// the search results of running instances consistent with the runtime query
+				.filter(v => this.matchesVariableValuesFilter(v))
+				.map(v => ({ ...v, variableSource: 'history' }))
+		},
+		matchesVariableValuesFilter: function (variable) {
+			const conditions = this.filter?.variableValues
+			if (!conditions?.length) return true
+			const options = {
+				namesIgnoreCase: this.filter.variableNamesIgnoreCase === true,
+				valuesIgnoreCase: this.filter.variableValuesIgnoreCase === true
+			}
+			return conditions.every(c => variableUtils.matchesValueCondition(variable, c, options))
 		},
 		fetchInstanceVariables: async function (service, method) {
 			this.fetching = true
 			this.loading = true
-			const variables = await serviceMap[service][method](this.selectedInstance.id, this.restFilter)
-			variables.forEach(v => {
-				v.scope = this.activityInstancesGrouped[v.activityInstanceId] || v.activityInstanceId
-				v.scopeActivityId = this.activityInstanceIdToActivityId[v.activityInstanceId] || null
-			})
+			this.variablesSource = service === 'ProcessService' ? 'runtime' : 'history'
+			try {
+				let variables = await serviceMap[service][method](this.selectedInstance.id, this.restFilter)
+				if (this.variablesSource === 'history') {
+					// the history endpoint ignores 'variableValues', so apply that filter here as well
+					variables = variables.filter(v => this.matchesVariableValuesFilter(v))
+				}
+				this.setLoadedVariables(variables)
+			} finally {
+				// a rejected query must not leave 'fetching' set, that would block every later reload
+				this.loading = false
+				this.fetching = false
+			}
+		},
+		setLoadedVariables: function (variables) {
+			this.annotateVariables(variables)
 			variables.sort((a, b) => a.name.localeCompare(b.name))
-
 			this.variables = variables
 			this.filteredVariables = [...variables]
-			this.loading = false
-			this.fetching = false
-		},    
+		},
     displayValue(variable) {
 	  return variableUtils.displayValue(variable)
     },
@@ -168,7 +285,7 @@ export default {
 				const blob = new Blob([Uint8Array.from(atob(variable.value.data), c => c.codePointAt(0))], { type: variable.value.contentType })
 				this.$refs.importPopper.triggerDownload(blob, this.getFileVariableName(variable))
 			} else {
-				const download = this.selectedInstance.state === 'ACTIVE' ?
+				const download = variable.isLive ?
 					ProcessService.fetchVariableDataByExecutionId(variable.executionId, variable.name) :
 					HistoryService.fetchHistoryVariableDataById(variable.id)
 				download.then(data => {

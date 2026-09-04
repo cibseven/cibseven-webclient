@@ -1,5 +1,5 @@
--- The two tables the diagram history is written to, as a real installation has them: copied from
--- the shipped create script (activiti.h2.create.modeler.sql in the cibseven repository).
+-- The tables the diagram and form history are written to, as a real installation has them: copied
+-- from the shipped create script (activiti.h2.create.modeler.sql in the cibseven repository).
 --
 -- Pinned here on purpose. Letting Hibernate generate the schema from the entities would make a
 -- wrong column name pass the test, since it would create whatever the mapping declares.
@@ -26,4 +26,21 @@ CREATE TABLE IF NOT EXISTS MOD_PROCESSES_DIAGRAMS_AUD (
     REVTYPE TINYINT,
     CONSTRAINT MOD_PK_RESOURCES_AUD PRIMARY KEY (ID, REV),
     CONSTRAINT MOD_FK_RESOURCES_AUD_REV FOREIGN KEY (REV) REFERENCES MOD_REVINFO(REV)
+);
+
+CREATE TABLE IF NOT EXISTS MOD_FORMS_AUD (
+    ID VARCHAR(36) NOT NULL,
+    DESCRIPTION VARCHAR(150),
+    CREATED TIMESTAMP,
+    UPDATED TIMESTAMP,
+    ACTIVE BOOLEAN DEFAULT TRUE,
+    FORM_SCHEMA BLOB,
+    FORMID VARCHAR(100),
+    VERSION INTEGER DEFAULT 1,
+    SCHEMA_MOD BOOLEAN DEFAULT false,
+    UPDATED_BY VARCHAR(100),
+    REV BIGINT NOT NULL,
+    REVTYPE TINYINT,
+    CONSTRAINT MOD_PK_FORMS_AUD PRIMARY KEY (ID, REV),
+    CONSTRAINT MOD_FK_FORMS_AUD_REV FOREIGN KEY (REV) REFERENCES MOD_REVINFO(REV)
 );
