@@ -161,11 +161,10 @@ const appRoutes = [
         { path: 'modeler/:diagramId?', name: 'modeler', beforeEnter: modelerGuard, component: ModelerView, meta: { title: 'start.modeler.title' } },
 
         { path: 'account/:userId', name: 'account', beforeEnter: (to, from) => {
-            const deniedResult = permissionsDeniedGuard('userProfile')(to, from)
-            if (deniedResult !== true) return deniedResult
-
-            if (to.params.userId && to.params.userId === router.root.user.id &&
-              router.root.config.layout.showUserSettings) return true
+            const userProfileAvailable = router.root.applicationPermissions(router.root.config.permissions['userProfile'], 'userProfile')
+            if (userProfileAvailable && to.params.userId && to.params.userId === router.root.user.id && router.root.config.layout.showUserSettings) {
+              return true
+            }
             return {
               name: 'no-permission',
               query: {
@@ -408,19 +407,6 @@ function permissionsGuard(permission) {
   }
 }
 
-function permissionsDeniedGuard(permission) {
-  return function(to, from) {
-    if (!router.root.applicationPermissionsDenied(router.root.config.permissions[permission], permission)) return true
-    return {
-      name: 'no-permission',
-      query: {
-        permission: permission,
-        refPath: from.fullPath,
-      }
-    }
-  }
-}
-
 function permissionsGuardUserAdmin(permission, condition) {
   return function(to, from) {
     if (router.root.adminManagementPermissions(router.root.config.permissions[permission], condition)) return true
@@ -481,6 +467,5 @@ export {
   setupGuard,
   modelerGuard,
   permissionsGuard,
-  permissionsDeniedGuard,
   permissionsGuardUserAdmin
 }
