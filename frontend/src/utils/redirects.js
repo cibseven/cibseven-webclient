@@ -37,107 +37,106 @@ async function getRuntimeProcessInstanceData(instanceId) {
   })
 }
 
-export async function redirectToProcessDefinition(router, to, from, next) {
+export async function redirectToProcessDefinition(router, to, from) {
   const cockpitAvailable = router.root.applicationPermissions(router.root.config.permissions['cockpit'], 'cockpit')
-  if (cockpitAvailable) {
-    const definitionId = to.params.definitionId
-    await ProcessService.findProcessById(definitionId, false).then(processDefinition => {
-      next({
-        name: 'process',
-        params: {
-          processKey: processDefinition.key,
-          versionIndex: processDefinition.version,
-        },
-        query: {
-          ...to.query,
-          ...(processDefinition.tenantId ? { tenantId: processDefinition.tenantId } : {}),
-          tab: to.query?.tab || 'instances',
-        }
-      })
-    }).catch(() => {
-      next({
-        name: 'not-found-definitionId',
-        query: {
-          definitionId,
-          refPath: from.fullPath,
-        }
-      })
-    })
-  }
-  else {
-    next({
+  if (!cockpitAvailable) {
+    return {
       name: 'no-permission',
       query: {
         permission: 'cockpit',
         refPath: from.fullPath,
       }
-    })
+    }
   }
-}
 
-export async function redirectToProcessInstance(router, to, from, next) {
-  const instanceId = to.params.instanceId
-  const cockpitAvailable = router.root.applicationPermissions(router.root.config.permissions['cockpit'], 'cockpit')
-  if (cockpitAvailable) {
-    const historyLevel = router.root.config.camundaHistoryLevel || 'none'
-    const method = historyLevel !== 'none' ? getHistoryProcessInstanceData : getRuntimeProcessInstanceData
-    await method(instanceId).then(instanceData => {
-      next({
-        name: 'process',
-        params: {
-          processKey: instanceData.processKey,
-          versionIndex: instanceData.versionIndex,
-          instanceId,
-        },
-        query: {
-          ...to.query,
-          ...(instanceData.tenantId ? { tenantId: instanceData.tenantId } : {}),
-          tab: to.query?.tab || 'variables',
-        }
-      })
-    }).catch(() => {
-      next({
-        name: 'not-found-instanceId',
-        query: {
-          instanceId,
-          refPath: from.fullPath,
-        }
-      })
-    })
-  }
-  else {
-    next({
-      name: 'no-permission',
-      query: {
-        permission: 'cockpit',
-        refPath: from.fullPath,
-      }
-    })
-  }
-}
-
-export async function redirectToTask(router, to, from, next) {
-  const taskId = to.params.taskId
-  const cockpitAvailable = router.root.applicationPermissions(router.root.config.permissions['tasklist'], 'tasklist')
-  if (cockpitAvailable) {
-    next({
-      name: 'tasklist',
+  const definitionId = to.params.definitionId
+  try {
+    const processDefinition = await ProcessService.findProcessById(definitionId, false)
+    return {
+      name: 'process',
       params: {
-        filterId: '-', // TODO: select first available filter with this task
-        taskId,
+        processKey: processDefinition.key,
+        versionIndex: processDefinition.version,
       },
       query: {
         ...to.query,
+        ...(processDefinition.tenantId ? { tenantId: processDefinition.tenantId } : {}),
+        tab: to.query?.tab || 'instances',
       }
-    })
+    }
+  } catch {
+    return {
+      name: 'not-found-definitionId',
+      query: {
+        definitionId,
+        refPath: from.fullPath,
+      }
+    }
   }
-  else {
-    next({
+}
+
+export async function redirectToProcessInstance(router, to, from) {
+  const instanceId = to.params.instanceId
+  const cockpitAvailable = router.root.applicationPermissions(router.root.config.permissions['cockpit'], 'cockpit')
+  if (!cockpitAvailable) {
+    return {
+      name: 'no-permission',
+      query: {
+        permission: 'cockpit',
+        refPath: from.fullPath,
+      }
+    }
+  }
+
+  const historyLevel = router.root.config.camundaHistoryLevel || 'none'
+  const method = historyLevel !== 'none' ? getHistoryProcessInstanceData : getRuntimeProcessInstanceData
+  try {
+    const instanceData = await method(instanceId)
+    return {
+      name: 'process',
+      params: {
+        processKey: instanceData.processKey,
+        versionIndex: instanceData.versionIndex,
+        instanceId,
+      },
+      query: {
+        ...to.query,
+        ...(instanceData.tenantId ? { tenantId: instanceData.tenantId } : {}),
+        tab: to.query?.tab || 'variables',
+      }
+    }
+  } catch {
+    return {
+      name: 'not-found-instanceId',
+      query: {
+        instanceId,
+        refPath: from.fullPath,
+      }
+    }
+  }
+}
+
+export async function redirectToTask(router, to, from) {
+  const taskId = to.params.taskId
+  const cockpitAvailable = router.root.applicationPermissions(router.root.config.permissions['tasklist'], 'tasklist')
+  if (!cockpitAvailable) {
+    return {
       name: 'no-permission',
       query: {
         permission: 'tasklist',
         refPath: from.fullPath,
       }
-    })
+    }
+  }
+
+  return {
+    name: 'tasklist',
+    params: {
+      filterId: '-', // TODO: select first available filter with this task
+      taskId,
+    },
+    query: {
+      ...to.query,
+    }
   }
 }

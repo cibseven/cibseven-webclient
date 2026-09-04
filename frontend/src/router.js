@@ -67,22 +67,24 @@ const appRoutes = [
       component: TranslationsDownload,
     },
     { path: '/seven', name: 'seven', component: CibSeven, children: [
-      { path: 'login', name: 'login', beforeEnter: function(to, from, next) {
+      { path: 'login', name: 'login', beforeEnter: async function(to) {
           // Check if setup is required first
-          SetupService.getStatus().then(res => {
-            if (res.data) {
-              next({ name: 'setup' }) // Redirect to setup if no users exist
-            } else if (router.root.config.ssoActive) {
+          try {
+            const res = await SetupService.getStatus()
+            if (res.data) return { name: 'setup' } // Redirect to setup if no users exist
+            if (router.root.config.ssoActive) {
               location.href = './sso-login.html?nextUrl=' + encodeURIComponent(to.query.nextUrl ? to.query.nextUrl : '')
-            } else {
-              next()
+              return false // cancel SPA navigation while redirecting to SSO
             }
-          }).catch(() => {
+            return true
+          } catch {
             // On error, proceed with normal login flow
-            if (router.root.config.ssoActive)
+            if (router.root.config.ssoActive) {
               location.href = './sso-login.html?nextUrl=' + encodeURIComponent(to.query.nextUrl ? to.query.nextUrl : '')
-            else next()
-          })
+              return false
+            }
+            return true
+          }
         }, component: LoginView },
       { path: 'setup', name: 'setup', beforeEnter: setupGuard, component: InitialSetup },
       { path: 'auth', name: 'auth', beforeEnter: authGuard(true), component: {
@@ -102,21 +104,19 @@ const appRoutes = [
         },
       }, children: [
         { path: 'no-permission', name: 'no-permission',
-          beforeEnter: async (to, from, next) => {
-            next({
-              name: 'start',
-              query: {
-                errorType: 'NoPermission',
-                permission: to.query?.permission,
-                refPath: to.query?.refPath,
-              }
-            })
-          }
+          beforeEnter: (to) => ({
+            name: 'start',
+            query: {
+              errorType: 'NoPermission',
+              permission: to.query?.permission,
+              refPath: to.query?.refPath,
+            }
+          })
         },
 
         // Start page with configurable redirects
         { path: 'start-configurable', name: 'start-configurable',
-          beforeEnter: (to, from, next) => {
+          beforeEnter: (to, from) => {
             const cockpitAvailable = router.root.applicationPermissions(router.root.config.permissions['cockpit'], 'cockpit')
             const tasklistAvailable = router.root.applicationPermissions(router.root.config.permissions['tasklist'], 'tasklist')
 
@@ -138,25 +138,19 @@ const appRoutes = [
             const configuredStartPage = localStorage?.getItem('cibseven:preferences:startPage') || 'start'
             switch (configuredStartPage) {
               case 'processes-dashboard':
-                next(cockpitOverride || { name: 'processesDashboard' })
-                break;
+                return cockpitOverride || { name: 'processesDashboard' }
               case 'decisions-list':
-                next(cockpitOverride || { name: 'decision-list' })
-                break;
+                return cockpitOverride || { name: 'decision-list' }
               case 'human-tasks-dashboard':
-                next(cockpitOverride || { name: 'human-tasks' })
-                break;
+                return cockpitOverride || { name: 'human-tasks' }
 
               case 'tasks':
-                next(tasklistOverride || { name: 'tasks'})
-                break;
+                return tasklistOverride || { name: 'tasks' }
               case 'start-process':
-                next(tasklistOverride || { name: 'start-process' })
-                break;
+                return tasklistOverride || { name: 'start-process' }
               case 'start':
               default:
-                next({ name: 'start' })
-                break;
+                return { name: 'start' }
             }
           }
         },
@@ -166,21 +160,19 @@ const appRoutes = [
         // Modeler
         { path: 'modeler/:diagramId?', name: 'modeler', beforeEnter: modelerGuard, component: ModelerView, meta: { title: 'start.modeler.title' } },
 
-        { path: 'account/:userId', name: 'account', beforeEnter: (to, from, next) => {
-            permissionsDeniedGuard('userProfile')(to, from, result => {
-              if (result) next(result)
-              else {
-                if (to.params.userId && to.params.userId === router.root.user.id &&
-                  router.root.config.layout.showUserSettings)next()
-                else next({
-                  name: 'no-permission',
-                  query: {
-                    permission: 'userProfile',
-                    refPath: from.fullPath,
-                  }
-                })
+        { path: 'account/:userId', name: 'account', beforeEnter: (to, from) => {
+            const deniedResult = permissionsDeniedGuard('userProfile')(to, from)
+            if (deniedResult !== true) return deniedResult
+
+            if (to.params.userId && to.params.userId === router.root.user.id &&
+              router.root.config.layout.showUserSettings) return true
+            return {
+              name: 'no-permission',
+              query: {
+                permission: 'userProfile',
+                refPath: from.fullPath,
               }
-            })
+            }
           }, component: ProfileUser
         },
 
@@ -190,7 +182,7 @@ const appRoutes = [
         },
 
         // Tasks in active processes
-        { path: 'task/:taskId', name: 'task-id', beforeEnter: async (to, from, next) => redirectToTask(router, to, from, next) },
+        { path: 'task/:taskId', name: 'task-id', beforeEnter: (to, from) => redirectToTask(router, to, from) },
         { path: 'tasks', name: 'tasks', beforeEnter: permissionsGuard('tasklist'), component: TasksView,
           children: [
             { path: ':filterId/:taskId?', name: 'tasklist', component: TaskView }
@@ -212,23 +204,21 @@ const appRoutes = [
         },
         // process definition by id redirect
         { path: 'processes/definition/:definitionId?', name: 'process-definition-id',
-          beforeEnter: async (to, from, next) => redirectToProcessDefinition(router, to, from, next),
+          beforeEnter: (to, from) => redirectToProcessDefinition(router, to, from),
         },
         // process instance by id redirect
         { path: 'processes/instance/:instanceId?', name: 'process-instance-id',
-          beforeEnter: async (to, from, next) => redirectToProcessInstance(router, to, from, next),
+          beforeEnter: (to, from) => redirectToProcessInstance(router, to, from),
         },
         { path: 'processes/not-found-instanceId', name: 'not-found-instanceId',
-          beforeEnter: async (to, from, next) => {
-            next({
-              name: 'start',
-              query: {
-                errorType: 'notFoundInstanceId',
-                instanceId: to.query?.instanceId,
-                refPath: to.query?.refPath,
-              }
-            })
-          }
+          beforeEnter: (to) => ({
+            name: 'start',
+            query: {
+              errorType: 'notFoundInstanceId',
+              instanceId: to.query?.instanceId,
+              refPath: to.query?.refPath,
+            }
+          })
         },
         { path: 'process/:processKey/:versionIndex?/:instanceId?', name: 'process', beforeEnter: permissionsGuard('cockpit'),
           component: ProcessView, props: route => ({
@@ -329,147 +319,130 @@ const appRoutes = [
 let router = null
 
 function authGuard(strict) {
-  return function(to, from, next) {
+  return async function(to, from) {
     console && console.debug('navigation guard', from, to)
 
-    if (router.root.user) next()
-    else getSelfInfo()['catch'](error => {
-      if (error.response) {
-        const res = error.response
-        const params = res.data.params && res.data.params.length > 0
-        if (res.data && res.data.type === 'TokenExpiredException' && params) {
-          console && console.info('Prolonged token')
-          if (sessionStorage.getItem('token')) sessionStorage.setItem('token', res.data.params[0])
-          else if (localStorage.getItem('token')) localStorage.setItem('token', res.data.params[0])
-          getSelfInfo()
-        } else {
-          console && console.warn('Not authenticated, redirecting ...')
-          sessionStorage.getItem('token') ? sessionStorage.removeItem('token') : localStorage.removeItem('token')
-          // Check if setup is required before redirecting to login
-          checkSetupRequired().then(requiresSetup => {
-            if (requiresSetup) {
-              next({ name: 'setup' })
-            } else {
-              next({ path: strict ? '/seven/login' : undefined, query: { nextUrl: to.fullPath } })
-            }
-          }).catch(() => {
-            next({ path: strict ? '/seven/login' : undefined, query: { nextUrl: to.fullPath } })
-          })
-          if ((res.data.type !== 'AuthenticationException' && res.data.type !== 'TokenExpiredException') || params)
-            router.root.$refs.error.show(res.data) // When reloading $refs.error is often undefined => init race condition ?
-        }
-        } else
-          console && console.error('Strange AJAX error', error)
-    })
+    if (router.root.user) return true
 
-    function checkSetupRequired() {
-      return SetupService.getStatus()
-        .then(res => res.data)
-    }
-
-    function getSelfInfo() {
+    async function getSelfInfo() {
       if (to.query.token) sessionStorage.setItem('token', to.query.token)
       const token = sessionStorage.getItem('token') || localStorage.getItem('token')
       const headers = { authorization: token }
       const inst = axios.create() // bypass standard error handling
-      return inst.get(router.root.config.servicesBasePath + '/auth', { headers: headers }).then(res => {
-        console && console.info('auth successful', res.data)
-        axios.defaults.headers.common.authorization = res.data.authToken
-          AuthService.fetchAuths().then(permissions => {
-            router.root.user = { ...res.data, permissions }
-            next()
-          })
-      })
+      const res = await inst.get(router.root.config.servicesBasePath + '/auth', { headers: headers })
+      console && console.info('auth successful', res.data)
+      axios.defaults.headers.common.authorization = res.data.authToken
+      const permissions = await AuthService.fetchAuths()
+      router.root.user = { ...res.data, permissions }
+    }
+
+    async function redirectToLogin(res, params) {
+      console && console.warn('Not authenticated, redirecting ...')
+      sessionStorage.getItem('token') ? sessionStorage.removeItem('token') : localStorage.removeItem('token')
+      if ((res.data.type !== 'AuthenticationException' && res.data.type !== 'TokenExpiredException') || params)
+        router.root.$refs.error.show(res.data) // When reloading $refs.error is often undefined => init race condition ?
+      // Check if setup is required before redirecting to login
+      let requiresSetup
+      try {
+        requiresSetup = (await SetupService.getStatus()).data
+      } catch {
+        requiresSetup = false
+      }
+      if (requiresSetup) return { name: 'setup' }
+      return { path: strict ? '/seven/login' : undefined, query: { nextUrl: to.fullPath } }
+    }
+
+    try {
+      await getSelfInfo()
+      return true
+    } catch (error) {
+      if (!error.response) {
+        console && console.error('Strange AJAX error', error)
+        return false
+      }
+      const res = error.response
+      const params = res.data.params && res.data.params.length > 0
+      if (res.data && res.data.type === 'TokenExpiredException' && params) {
+        console && console.info('Prolonged token')
+        if (sessionStorage.getItem('token')) sessionStorage.setItem('token', res.data.params[0])
+        else if (localStorage.getItem('token')) localStorage.setItem('token', res.data.params[0])
+        try {
+          await getSelfInfo()
+          return true
+        } catch {
+          return redirectToLogin(res, params)
+        }
+      }
+
+      return redirectToLogin(res, params)
     }
   }
 }
 
-function setupGuard(to, from, next) {
-  SetupService.getStatus().then(res => {
-    if (res.data) {
-      next() // Allow access to setup page
-    } else {
-      next({ name: 'login' }) // Setup not required, redirect to login
-    }
-  }).catch(error => {
+async function setupGuard() {
+  try {
+    const res = await SetupService.getStatus()
+    if (res.data) return true // Allow access to setup page
+    return { name: 'login' } // Setup not required, redirect to login
+  } catch (error) {
     console && console.error('Error checking setup status', error)
-    next({ name: 'login' }) // On error, redirect to login
-  })
+    return { name: 'login' } // On error, redirect to login
+  }
 }
 
-function modelerGuard(to, from, next) {
-  if (!router.root?.config?.modelerEnabled) {
-    next({ name: 'start-configurable' })
-    return
-  }
-  permissionsGuard('modeler')(to, from, next)
+function modelerGuard(to, from) {
+  if (!router.root?.config?.modelerEnabled) return { name: 'start-configurable' }
+  return permissionsGuard('modeler')(to, from)
 }
 
 function permissionsGuard(permission) {
-  return function(to, from, next) {
-    if (router.root.applicationPermissions(router.root.config.permissions[permission], permission)) next()
-    else {
-      next({
-        name: 'no-permission',
-        query: {
-          permission: permission,
-          refPath: from.fullPath,
-        }
-      })
+  return function(to, from) {
+    if (router.root.applicationPermissions(router.root.config.permissions[permission], permission)) return true
+    return {
+      name: 'no-permission',
+      query: {
+        permission: permission,
+        refPath: from.fullPath,
+      }
     }
   }
 }
+
 function permissionsDeniedGuard(permission) {
-  return function(to, from, next) {
-    if (!router.root.applicationPermissionsDenied(router.root.config.permissions[permission], permission)) next()
-    else {
-      next({
-        name: 'no-permission',
-        query: {
-          permission: permission,
-          refPath: from.fullPath,
-        }
-      })
+  return function(to, from) {
+    if (!router.root.applicationPermissionsDenied(router.root.config.permissions[permission], permission)) return true
+    return {
+      name: 'no-permission',
+      query: {
+        permission: permission,
+        refPath: from.fullPath,
+      }
     }
   }
 }
+
 function permissionsGuardUserAdmin(permission, condition) {
-  return function(to, from, next) {
-    if (router.root.adminManagementPermissions(router.root.config.permissions[permission], condition)) next()
-    else {
-      next({
-        name: 'no-permission',
-        query: {
-          permission: permission,
-          refPath: from.fullPath,
-        }
-      })
+  return function(to, from) {
+    if (router.root.adminManagementPermissions(router.root.config.permissions[permission], condition)) return true
+    return {
+      name: 'no-permission',
+      query: {
+        permission: permission,
+        refPath: from.fullPath,
+      }
     }
   }
 }
 
 function combineGuards(...guards) {
-  return function(to, from, next) {
-    let index = 0;
-
-    const runGuard = () => {
-      if (index < guards.length) {
-        const guard = guards[index];
-        index++;
-        guard(to, from, (result) => {
-          if (result === false || result instanceof Error || typeof result === 'string' || result?.path) {
-            next(result); // Stop if a guard blocks navigation
-          } else {
-            runGuard(); // Proceed to the next guard
-          }
-        });
-      } else {
-        next(); // All guards passed
+  return async function(to, from) {
+    for (const guard of guards) {
+      const result = await guard(to, from)
+      if (result === false || result instanceof Error || typeof result === 'string' || result?.path) {
+        return result // Stop if a guard blocks navigation
       }
-    };
-
-    runGuard();
-  };
+    }
+  }
 }
 
 /**
