@@ -154,19 +154,22 @@ const appRoutes = [
           { path: 'modeler/:diagramId?', name: 'modeler', beforeEnter: modelerGuard, component: ModelerView, meta: { title: 'start.modeler.title' } },
 
           {
-            path: 'account/:userId', name: 'account', beforeEnter: (to, from) => {
-              const userProfileAvailable = router.root.applicationPermissions(router.root.config.permissions['userProfile'], 'userProfile')
-              if (userProfileAvailable && to.params.userId && to.params.userId === router.root.user.id && router.root.config.layout.showUserSettings) {
-                return true
-              }
-              return {
-                name: 'no-permission',
-                query: {
-                  permission: 'userProfile',
-                  refPath: from.fullPath,
+            path: 'account/:userId', name: 'account', component: ProfileUser,
+            beforeEnter: [
+              permissionsGuard('userProfile'),
+              (to, from) => {
+                if (to.params.userId && to.params.userId === router.root.user.id && router.root.config.layout.showUserSettings) {
+                  return true
+                }
+                return {
+                  name: 'no-permission',
+                  query: {
+                    permission: 'userProfile',
+                    refPath: from.fullPath,
+                  }
                 }
               }
-            }, component: ProfileUser
+            ],
           },
 
           // Start new process (end-user)
