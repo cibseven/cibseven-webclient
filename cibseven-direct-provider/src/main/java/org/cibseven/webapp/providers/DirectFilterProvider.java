@@ -50,10 +50,6 @@ public class DirectFilterProvider implements IFilterProvider{
 		List<Filter> filters = new ArrayList<>();
 		for (org.cibseven.bpm.engine.filter.Filter filter : matchingFilters) {
 			FilterDto filterDto = FilterDto.fromFilter(filter);
-			// TODO: itemCount not used?
-			// if (itemCount != null && itemCount) {
-			// dto.setItemCount(directProviderUtil.getProcessEngine(user).getFilterService().count(filter.getId()));
-			// }
 			filters.add(directProviderUtil.convertValue(filterDto, Filter.class, user));
 		}
 		return filters;
