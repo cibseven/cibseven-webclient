@@ -302,14 +302,14 @@ const appRoutes = [
     {
       path: '/deployed-form/:locale/:taskId/:token?/:theme?/:translation?',
       name: 'deployed-form',
-      beforeEnter: combineGuards(authGuard(false), permissionsGuard('tasklist')),
+      beforeEnter: [authGuard(false), permissionsGuard('tasklist')],
       props: true,
       component: DeployedForm
     },
     {
       path: '/start-deployed-form/:locale/:processDefinitionId/:token?/:theme?/:translation?',
       name: 'start-deployed-form',
-      beforeEnter: combineGuards(authGuard(false), permissionsGuard('tasklist')),
+      beforeEnter: [authGuard(false), permissionsGuard('tasklist')],
       props: true,
       component: StartDeployedForm
     },
@@ -402,17 +402,6 @@ function permissionsGuard(permission, condition = undefined) {
       query: {
         permission: permission,
         refPath: from.fullPath,
-      }
-    }
-  }
-}
-
-function combineGuards(...guards) {
-  return async function(to, from) {
-    for (const guard of guards) {
-      const result = await guard(to, from)
-      if (result === false || result instanceof Error || typeof result === 'string' || result?.path) {
-        return result // Stop if a guard blocks navigation
       }
     }
   }
