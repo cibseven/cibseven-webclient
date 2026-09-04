@@ -70,7 +70,11 @@
     </div>
 
     <div ref="rContent" class="position-absolute w-100 overflow-hidden border-top" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
-      <div class="overflow-y-scroll bg-white position-absolute w-100" style="top: 0px; left: 0; bottom: 0" @scroll="handleScroll">
+      <div class="bg-white position-absolute w-100" style="top: 0px; left: 0; bottom: 0" @scroll="handleScroll"
+        :class="[
+          (matchedDeepLink || ['incidents', 'jobDefinitions'].includes(activeTab)) ? '' : 'overflow-y-scroll',
+        ]"
+      >
         <template v-if="isInstancesView">
           <div ref="filterTable" class="d-flex w-100">
 
@@ -147,6 +151,7 @@
         <JobDefinitionsTable v-else-if="activeTab === 'jobDefinitions'"
           :process="process" />
         <CalledProcessDefinitionsTable v-else-if="activeTab === 'calledProcessDefinitions'" :process="process" />
+        <DeepLinkFrame v-else-if="matchedDeepLink" :link="matchedDeepLink" :params="matchedDeepLinkParams"></DeepLinkFrame>
         <component :is="ProcessInstancesTabsContentPlugin" v-if="ProcessInstancesTabsContentPlugin" :process="process" :active-tab="activeTab"></component>
       </div>
     </div>
@@ -186,18 +191,20 @@ import bpmnViewportPersistenceMixin from '@/components/process/mixins/bpmnViewpo
 import viewerFrameSizePersistenceMixin from '@/components/process/mixins/viewerFrameSizePersistenceMixin.js'
 import { debounce } from '@/utils/debounce.js'
 import { SuccessAlert, ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
-import ProcessInstancesTabs from '@/components/process/ProcessInstancesTabs.vue'
+import ProcessInstancesTabs, { RESERVED_TAB_IDS } from '@/components/process/ProcessInstancesTabs.vue'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
 import RemovableBadge from '@/components/common-components/RemovableBadge.vue'
+import DeepLinkFrame from '@/components/common-components/DeepLinkFrame.vue'
+import { getDeepLinkEntries } from '@/utils/deepLinks.js'
 import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'ProcessInstancesView',
   components: { InstancesTable, JobDefinitionsTable, BpmnViewer, MultisortModal,
      SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable, CalledProcessDefinitionsTable,
-     ProcessInstancesTabs, ScrollableTabsContainer, ViewerFrame, RemovableBadge },
-  inject: ['loadProcesses'],
+     ProcessInstancesTabs, ScrollableTabsContainer, ViewerFrame, RemovableBadge, DeepLinkFrame },
+  inject: ['loadProcesses', 'currentLanguage'],
   mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin, tabUrlMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
   emits: ['task-selected', 'filter-instances', 'instance-deleted'],
   props: {
@@ -333,6 +340,21 @@ export default {
       return this.$options.components && this.$options.components.BpmnViewerPlugin
         ? this.$options.components.BpmnViewerPlugin
         : null
+    },
+    matchedDeepLink() {
+      return getDeepLinkEntries(this.$root.config, 'processDefinition', RESERVED_TAB_IDS)
+        .find(entry => entry.id === this.activeTab)
+    },
+    matchedDeepLinkParams() {
+      return {
+        processDefinitionId: this.process?.id,
+        processDefinitionKey: this.process?.key,
+        processDefinitionVersion: this.process?.version,
+        processDefinitionVersionTag: this.process?.versionTag,
+        processDefinitionTenantId: this.process?.tenantId,        
+
+        lang: this.currentLanguage()
+      }
     },
     processName: function() {
       return this.process.name !== null ? this.process.name : this.process.key

@@ -324,5 +324,19 @@
 			{ "name": "Call Activity", "type": "bpmn:CallActivity", "color": "#059DBB" }
 		],
 		"filterBpmnOpacity": "0.4"
+	},
+	"deepLinks": {
+		"processDefinition": [
+			{ "id": "httpbin", "url": "https://httpbin.org/get?linkId=1" }
+		],
+		"processInstance": [
+			{ "id": "httpbin", "url": "https://httpbin.org/get?linkId=2" }
+		],
+		"decisionDefinition": [
+			{ "id": "httpbin", "url": "https://httpbin.org/get?linkId=3" }
+		],
+		"decisionInstance": [
+			{ "id": "httpbin", "url": "https://httpbin.org/get?linkId=4" }
+		]
 	}
 }

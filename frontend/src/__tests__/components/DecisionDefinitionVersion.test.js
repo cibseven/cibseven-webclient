@@ -30,4 +30,72 @@ describe('DecisionDefinitionVersion', () => {
       expect(DecisionDefinitionVersion.methods.viewerFrameStorageKey.call({})).toBe('cibseven:viewer-frame-size:decision')
     })
   })
+
+  describe('tabs', () => {
+    it('includes only the built-in instances tab when no deep links are configured', () => {
+      const tabs = DecisionDefinitionVersion.computed.tabs.call({ $root: { config: {} } })
+      expect(tabs).toEqual([{ id: 'instances', text: 'decision.instances' }])
+    })
+
+    it('appends configured decisionDefinition deep links, falling back to the id when untranslated', () => {
+      const context = {
+        $root: { config: { deepLinks: { decisionDefinition: [{ id: 'myExternalLinkId', url: 'https://external.example' }] } } },
+        $t: key => key
+      }
+      const tabs = DecisionDefinitionVersion.computed.tabs.call(context)
+      expect(tabs).toEqual([
+        { id: 'instances', text: 'decision.instances' },
+        { id: 'myExternalLinkId', text: 'myExternalLinkId' }
+      ])
+    })
+
+    it('uses the translated label when a translation exists', () => {
+      const context = {
+        $root: { config: { deepLinks: { decisionDefinition: [{ id: 'myExternalLinkId', url: 'https://external.example' }] } } },
+        $t: () => 'My External Link'
+      }
+      const tabs = DecisionDefinitionVersion.computed.tabs.call(context)
+      expect(tabs.at(-1)).toEqual({ id: 'myExternalLinkId', text: 'My External Link' })
+    })
+
+    it('drops a deep link entry that collides with the built-in instances tab id', () => {
+      const context = { $root: { config: { deepLinks: { decisionDefinition: [
+        { id: 'instances', url: 'https://external.example' }
+      ] } } } }
+      const tabs = DecisionDefinitionVersion.computed.tabs.call(context)
+      expect(tabs).toEqual([{ id: 'instances', text: 'decision.instances' }])
+    })
+  })
+
+  describe('matchedDeepLink', () => {
+    it('returns the deep link entry matching the active tab', () => {
+      const context = {
+        activeTab: 'myExternalLinkId',
+        $root: { config: { deepLinks: { decisionDefinition: [{ id: 'myExternalLinkId', url: 'https://external.example' }] } } }
+      }
+      expect(DecisionDefinitionVersion.computed.matchedDeepLink.call(context)).toEqual({ id: 'myExternalLinkId', url: 'https://external.example', text: 'deepLinks.decisionDefinition.myExternalLinkId.title' })
+    })
+
+    it('returns undefined when the active tab is the built-in instances tab', () => {
+      const context = { activeTab: 'instances', $root: { config: {} } }
+      expect(DecisionDefinitionVersion.computed.matchedDeepLink.call(context)).toBeUndefined()
+    })
+  })
+
+  describe('matchedDeepLinkParams', () => {
+    it('builds decision definition context and language params', () => {
+      const context = {
+        decision: { id: 'dec-1', key: 'myDecision', tenantId: 'tenant-1', version: '2', versionTag: 'v2' },
+        currentLanguage: () => 'en'
+      }
+      expect(DecisionDefinitionVersion.computed.matchedDeepLinkParams.call(context)).toEqual({
+        decisionDefinitionId: 'dec-1',
+        decisionDefinitionKey: 'myDecision',
+        decisionDefinitionTenantId: 'tenant-1',
+        decisionDefinitionVersion: '2',
+        decisionDefinitionVersionTag: 'v2',
+        lang: 'en'
+      })
+    })
+  })
 })

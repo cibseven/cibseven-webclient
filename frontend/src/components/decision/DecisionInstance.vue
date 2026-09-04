@@ -49,7 +49,7 @@
           </FlowTable>
         </div>
       </div>
-      <div v-if="activeTab === 'outputs'">
+      <div v-else-if="activeTab === 'outputs'">
         <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 0; left: 0; bottom: 0">
           <FlowTable striped resizable thead-class="sticky-header" :items="instance.outputs" primary-key="id" :fields="[
             { label: 'decision.name', key: 'clauseName', class: 'col-4', tdClass: 'py-1' },
@@ -58,6 +58,7 @@
           </FlowTable>
         </div>
       </div>
+      <DeepLinkFrame v-else-if="matchedDeepLink" :link="matchedDeepLink" :params="matchedDeepLinkParams"></DeepLinkFrame>
     </div>
   </div>
 </template>
@@ -71,13 +72,18 @@ import bpmnViewportPersistenceMixin from '@/components/process/mixins/bpmnViewpo
 import viewerFrameSizePersistenceMixin from '@/components/process/mixins/viewerFrameSizePersistenceMixin.js'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
+import DeepLinkFrame from '@/components/common-components/DeepLinkFrame.vue'
 import { FlowTable, GenericTabs } from '@cib/common-frontend'
 import { mapActions, mapGetters } from 'vuex'
+import { getDeepLinkEntries, resolveDeepLinkLabel } from '@/utils/deepLinks.js'
+
+const RESERVED_TAB_IDS = ['inputs', 'outputs']
 
 export default {
   name: 'DecisionInstance',
-  components: { DmnViewer, FlowTable, GenericTabs, ScrollableTabsContainer, ViewerFrame },
+  components: { DmnViewer, FlowTable, GenericTabs, ScrollableTabsContainer, ViewerFrame, DeepLinkFrame },
   mixins: [permissionsMixin, resizerMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
+  inject: ['currentLanguage'],
   props: {
     versionIndex: String,
     instanceId: String,
@@ -87,15 +93,44 @@ export default {
   data() {
     return {
       instance: null,
-      tabs: [
-        { id: 'inputs', text: 'decision.inputs' },
-        { id: 'outputs', text: 'decision.outputs' }
-      ],
       activeTab: 'inputs'
     }
   },
   computed: {
-    ...mapGetters('diagram', ['isDiagramReady'])
+    ...mapGetters('diagram', ['isDiagramReady']),
+    ...mapGetters(['getSelectedDecisionVersion']),
+    decisionDefinition() {
+      return this.getSelectedDecisionVersion()
+    },
+    tabs() {
+      const deepLinkTabs = getDeepLinkEntries(this.$root.config, 'decisionInstance', RESERVED_TAB_IDS)
+        .map(entry => ({ id: entry.id, text: resolveDeepLinkLabel(this.$t, entry) }))
+      return [
+        { id: 'inputs', text: 'decision.inputs' },
+        { id: 'outputs', text: 'decision.outputs' },
+        ...deepLinkTabs
+      ]
+    },
+    matchedDeepLink() {
+      return getDeepLinkEntries(this.$root.config, 'decisionInstance', RESERVED_TAB_IDS)
+        .find(entry => entry.id === this.activeTab)
+    },
+    matchedDeepLinkParams() {
+      return {
+        decisionInstanceId: this.instance?.id,
+        decisionInstanceTenantId: this.instance?.tenantId,
+
+        processInstanceId: this.instance?.processInstanceId,
+
+        decisionDefinitionId: this.instance?.decisionDefinitionId,
+        decisionDefinitionKey: this.instance?.decisionDefinitionKey,
+        decisionDefinitionTenantId: this.decisionDefinition?.tenantId,
+        decisionDefinitionVersion: this.decisionDefinition?.version,
+        decisionDefinitionVersionTag: this.decisionDefinition?.versionTag,
+
+        lang: this.currentLanguage()
+      }
+    }
   },
   watch: {
     isDiagramReady(isReady) {

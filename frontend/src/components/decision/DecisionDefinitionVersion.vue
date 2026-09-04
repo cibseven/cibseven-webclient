@@ -31,6 +31,7 @@
     </div>
 
     <div class="position-absolute w-100 overflow-hidden border-top" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
+      <DeepLinkFrame v-if="matchedDeepLink" :link="matchedDeepLink" :params="matchedDeepLinkParams"></DeepLinkFrame>
       <div v-if="activeTab === 'instances'">
         <div ref="filterTable" class="bg-white d-flex position-absolute w-100">
           <div class="container-fluid p-2">
@@ -83,14 +84,19 @@ import bpmnViewportPersistenceMixin from '@/components/process/mixins/bpmnViewpo
 import viewerFrameSizePersistenceMixin from '@/components/process/mixins/viewerFrameSizePersistenceMixin.js'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
+import DeepLinkFrame from '@/components/common-components/DeepLinkFrame.vue'
 import { BWaitingBox, GenericTabs } from '@cib/common-frontend'
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from '@/utils/debounce.js'
+import { getDeepLinkEntries, resolveDeepLinkLabel } from '@/utils/deepLinks.js'
+
+const RESERVED_TAB_IDS = ['instances']
 
 export default {
   name: 'DecisionDefinitionVersion',
-  components: { DmnViewer, DecisionInstancesTable, ViewerFrame, BWaitingBox, GenericTabs, ScrollableTabsContainer },
+  components: { DmnViewer, DecisionInstancesTable, ViewerFrame, BWaitingBox, GenericTabs, ScrollableTabsContainer, DeepLinkFrame },
   mixins: [permissionsMixin, resizerMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
+  inject: ['currentLanguage'],
   props: {
     versionIndex: String,
     loading: Boolean,
@@ -100,7 +106,6 @@ export default {
   data: function() {
     return {
       topBarHeight: 0,
-      tabs: [ { id: 'instances', text: 'decision.instances' } ],
       activeTab: 'instances',
       sortByDefaultKey: 'evaluationTime',
       sorting: false,
@@ -115,6 +120,29 @@ export default {
     ...mapGetters(['getSelectedDecisionVersion']),
     decision: function() {
       return this.getSelectedDecisionVersion()
+    },
+    tabs() {
+      const deepLinkTabs = getDeepLinkEntries(this.$root.config, 'decisionDefinition', RESERVED_TAB_IDS)
+        .map(entry => ({ id: entry.id, text: resolveDeepLinkLabel(this.$t, entry) }))
+      return [
+        { id: 'instances', text: 'decision.instances' },
+        ...deepLinkTabs,
+      ]
+    },
+    matchedDeepLink() {
+      return getDeepLinkEntries(this.$root.config, 'decisionDefinition', RESERVED_TAB_IDS)
+        .find(entry => entry.id === this.activeTab)
+    },
+    matchedDeepLinkParams() {
+      return {
+        decisionDefinitionId: this.decision?.id,
+        decisionDefinitionKey: this.decision?.key,
+        decisionDefinitionTenantId: this.decision?.tenantId,
+        decisionDefinitionVersion: this.decision?.version,
+        decisionDefinitionVersionTag: this.decision?.versionTag,
+
+        lang: this.currentLanguage()
+      }
     },
     DecisionDefinitionVersionActionsPlugin: function() {
       return this.$options.components && this.$options.components.DecisionDefinitionVersionActionsPlugin
