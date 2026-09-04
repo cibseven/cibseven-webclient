@@ -320,7 +320,7 @@ let router = null
 
 function authGuard(strict) {
   return async function(to, from) {
-    console && console.debug('navigation guard', from, to)
+    console?.debug('navigation guard', from, to)
 
     if (router.root.user) return true
 
@@ -330,14 +330,14 @@ function authGuard(strict) {
       const headers = { authorization: token }
       const inst = axios.create() // bypass standard error handling
       const res = await inst.get(router.root.config.servicesBasePath + '/auth', { headers: headers })
-      console && console.info('auth successful', res.data)
+      console?.info('auth successful', res.data)
       axios.defaults.headers.common.authorization = res.data.authToken
       const permissions = await AuthService.fetchAuths()
       router.root.user = { ...res.data, permissions }
     }
 
     async function redirectToLogin(res, params) {
-      console && console.warn('Not authenticated, redirecting ...')
+      console?.warn('Not authenticated, redirecting ...')
       sessionStorage.getItem('token') ? sessionStorage.removeItem('token') : localStorage.removeItem('token')
       if ((res.data.type !== 'AuthenticationException' && res.data.type !== 'TokenExpiredException') || params)
         router.root.$refs.error.show(res.data) // When reloading $refs.error is often undefined => init race condition ?
@@ -357,13 +357,13 @@ function authGuard(strict) {
       return true
     } catch (error) {
       if (!error.response) {
-        console && console.error('Strange AJAX error', error)
+        console?.error('Strange AJAX error', error)
         return false
       }
       const res = error.response
       const params = res.data.params && res.data.params.length > 0
       if (res.data && res.data.type === 'TokenExpiredException' && params) {
-        console && console.info('Prolonged token')
+        console?.info('Prolonged token')
         if (sessionStorage.getItem('token')) sessionStorage.setItem('token', res.data.params[0])
         else if (localStorage.getItem('token')) localStorage.setItem('token', res.data.params[0])
         try {
@@ -385,7 +385,7 @@ async function setupGuard() {
     if (res.data) return true // Allow access to setup page
     return { name: 'login' } // Setup not required, redirect to login
   } catch (error) {
-    console && console.error('Error checking setup status', error)
+    console?.error('Error checking setup status', error)
     return { name: 'login' } // On error, redirect to login
   }
 }
