@@ -76,8 +76,21 @@ public class InfoServiceTest {
 		ReflectionTestUtils.setField(infoService, "engineRestUrl", "./");
 		ReflectionTestUtils.setField(infoService, "legacyAuthorizationEnabled", false);
 		ReflectionTestUtils.setField(infoService, "modelerEnabled", false);
+		ReflectionTestUtils.setField(infoService, "pluginsEnabled", false);
 		ReflectionTestUtils.setField(infoService, "camundaHistoryLevel", "full");
 		ReflectionTestUtils.setField(infoService, "authorizationEnabled", true);
+	}
+
+	@Test
+	public void testGetConfig_reportsWhetherPluginsAreEnabled() {
+		EngineConfiguration config = new EngineConfiguration("default", "full", true, false);
+		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
+
+		// the frontend skips asking for plugins when this is false
+		assertFalse(infoService.getConfig(null).get("pluginsEnabled").asBoolean());
+
+		ReflectionTestUtils.setField(infoService, "pluginsEnabled", true);
+		assertTrue(infoService.getConfig(null).get("pluginsEnabled").asBoolean());
 	}
 
 	@Test
