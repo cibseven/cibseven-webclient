@@ -176,43 +176,6 @@ describe('applicationPermissionsDenied', () => {
 })
 
 // ---------------------------------------------------------------------------
-// adminManagementPermissions
-// ---------------------------------------------------------------------------
-describe('adminManagementPermissions', () => {
-  it('returns true when user has ALL on user resource (users management)', () => {
-    const ctx = createContext({
-      user: [allow('*', ['ALL'])],
-    })
-    expect(ctx.adminManagementPermissions(configPermissions.usersManagement, 'user')).toBe(true)
-  })
-
-  it('returns true via group wildcard grant', () => {
-    const ctx = createContext({
-      user:          [allow('*', ['ALL'], { userId: null, groupId: 'admin-group' })],
-      group:         [allow('*', ['ALL'], { userId: null, groupId: 'admin-group' })],
-      authorization: [allow('*', ['ALL'], { userId: null, groupId: 'admin-group' })],
-      tenant:        [allow('*', ['ALL'], { userId: null, groupId: 'admin-group' })],
-      system:        [allow('*', ['ALL'], { userId: null, groupId: 'admin-group' })],
-    })
-    expect(ctx.adminManagementPermissions(configPermissions.usersManagement,          'user')).toBe(true)
-    expect(ctx.adminManagementPermissions(configPermissions.groupsManagement,         'group')).toBe(true)
-    expect(ctx.adminManagementPermissions(configPermissions.authorizationsManagement, 'authorization')).toBe(true)
-    expect(ctx.adminManagementPermissions(configPermissions.tenantsManagement,        'tenant')).toBe(true)
-    expect(ctx.adminManagementPermissions(configPermissions.systemManagement,         'system')).toBe(true)
-  })
-
-  it('returns false when user has no user-management permission', () => {
-    const ctx = createContext({ user: [] })
-    expect(ctx.adminManagementPermissions(configPermissions.usersManagement, 'user')).toBe(false)
-  })
-
-  it('returns true when authorizationEnabled is false', () => {
-    const ctx = createContext({ user: [] }, { authorizationEnabled: false })
-    expect(ctx.adminManagementPermissions(configPermissions.usersManagement, 'user')).toBe(true)
-  })
-})
-
-// ---------------------------------------------------------------------------
 // hasAdminManagementPermissions
 // ---------------------------------------------------------------------------
 describe('hasAdminManagementPermissions', () => {

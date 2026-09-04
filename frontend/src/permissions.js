@@ -17,11 +17,11 @@
 const permissionsMixin = {
 	methods: {
 		hasAdminManagementPermissions: function(permissions) {
-			return (this.adminManagementPermissions(permissions.usersManagement, 'user') ||
-			this.adminManagementPermissions(permissions.groupsManagement, 'group') ||
-			this.adminManagementPermissions(permissions.authorizationsManagement, 'authorization') ||
-			this.adminManagementPermissions(permissions.tenantsManagement, 'tenant') ||
-			this.adminManagementPermissions(permissions.systemManagement, 'system'))
+			return (this.applicationPermissions(permissions.usersManagement, 'user') ||
+			this.applicationPermissions(permissions.groupsManagement, 'group') ||
+			this.applicationPermissions(permissions.authorizationsManagement, 'authorization') ||
+			this.applicationPermissions(permissions.tenantsManagement, 'tenant') ||
+			this.applicationPermissions(permissions.systemManagement, 'system'))
 		},
 		applicationPermissions: function(permissionsRequired, access) {
 			if (!this.$root.config.authorizationEnabled) return true
@@ -29,11 +29,14 @@ const permissionsMixin = {
 			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
 			return this.$_permissionsMixin_checkPermissionsAllowed(access, null, permissionsCheck)
 		},
+		/**
+		 * @deprecated Use `applicationPermissions` instead.
+		 * @param {Object} permissionsRequired 
+		 * @param {string} access 
+		 * @returns {boolean} `true` if the user does not have the required permissions, `false` otherwise
+		 */
 		applicationPermissionsDenied: function (permissionsRequired, access) {
-			if (!this.$root.config.authorizationEnabled) return false
-			if (!permissionsRequired) return true
-			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
-			return this.$_permissionsMixin_checkPermissionsDenied(access, null, permissionsCheck)
+			return !this.applicationPermissions(permissionsRequired, access)
 		},
 		tasksByPermissions: function(permissionsRequired, tasks) {
 			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
@@ -95,10 +98,6 @@ const permissionsMixin = {
 			/////////////////////////////////////////
 			return filter ? this.$_permissionsMixin_checkPermissionsAllowed(filter, 'id', permissionsCheck) : false
 		},
-		adminManagementPermissions: function(permissionsRequired, access) {
-			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
-			return this.$_permissionsMixin_checkPermissionsAllowed(access, null, permissionsCheck)
-		},
 		$_permissionsMixin_setAllPermissionsObject: function(permissionsRequired) {
 			if (!permissionsRequired) return []
 			return Object.keys(permissionsRequired).map(function(key) {
@@ -139,13 +138,6 @@ const permissionsMixin = {
 			return (permissionsCheck.length > 0) && permissionsCheck.every(permission =>
 				(permission.granted.includes(val) || permission.granted.includes('*')) &&
 				!permission.revoked.includes(val) && !permission.revoked.includes('*')
-			)
-		},
-		$_permissionsMixin_checkPermissionsDenied: function(object, key, permissionsCheck) {
-			if (!this.$root.config.authorizationEnabled) return false;
-			const val = key ? object[key] : object
-			return permissionsCheck.some(permission =>
-				permission.revoked.includes(val) || permission.revoked.includes('*')
 			)
 		}
 	}

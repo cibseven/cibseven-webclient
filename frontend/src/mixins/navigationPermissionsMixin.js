@@ -34,19 +34,22 @@ export default {
       return this.$root.user && this.hasAdminManagementPermissions(this.$root.config.permissions)
     },
     permissionsUsersManagement() {
-      return this.$root.user && this.adminManagementPermissions(this.$root.config.permissions.usersManagement, 'user')
+      return this.$root.user && this.applicationPermissions(this.$root.config.permissions.usersManagement, 'user')
     },
     permissionsGroupsManagement() {
-      return this.$root.user && this.adminManagementPermissions(this.$root.config.permissions.groupsManagement, 'group')
+      return this.$root.user && this.applicationPermissions(this.$root.config.permissions.groupsManagement, 'group')
     },
     permissionsTenantsManagement() {
-      return this.$root.user && this.adminManagementPermissions(this.$root.config.permissions.tenantsManagement, 'tenant')
+      return this.$root.user && this.applicationPermissions(this.$root.config.permissions.tenantsManagement, 'tenant')
     },
     permissionsAuthorizationsManagement() {
-      return this.$root.user && this.adminManagementPermissions(this.$root.config.permissions.authorizationsManagement, 'authorization')
+      return this.$root.user && this.applicationPermissions(this.$root.config.permissions.authorizationsManagement, 'authorization')
     },
     permissionsSystemManagement() {
-      return this.$root.user && this.adminManagementPermissions(this.$root.config.permissions.systemManagement, 'system')
+      return this.$root.user && this.applicationPermissions(this.$root.config.permissions.systemManagement, 'system')
+    },
+    permissionsUserProfile() {
+      return this.$root.user && this.applicationPermissions(this.$root.config.permissions.userProfile, 'userProfile')
     }
   }
 }
