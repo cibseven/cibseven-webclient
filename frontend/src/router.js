@@ -125,23 +125,8 @@ const appRoutes = [
           {
             path: 'start-configurable', name: 'start-configurable',
             beforeEnter: (to, from) => {
-              const cockpitAvailable = router.root.applicationPermissions(router.root.config.permissions['cockpit'], 'cockpit')
-              const tasklistAvailable = router.root.applicationPermissions(router.root.config.permissions['tasklist'], 'tasklist')
-
-              const cockpitOverride = cockpitAvailable ? null : {
-                name: 'no-permission',
-                query: {
-                  permission: 'cockpit',
-                  refPath: from.fullPath,
-                }
-              }
-              const tasklistOverride = tasklistAvailable ? null : {
-                name: 'no-permission',
-                query: {
-                  permission: 'tasklist',
-                  refPath: from.fullPath,
-                }
-              }
+              const cockpitOverride = redirectToNoPermissions(to, from, 'cockpit')
+              const tasklistOverride = redirectToNoPermissions(to, from, 'tasklist')
 
               const configuredStartPage = localStorage?.getItem('cibseven:preferences:startPage') || 'start'
               switch (configuredStartPage) {
@@ -409,6 +394,12 @@ function permissionsGuard(permission, condition = undefined) {
       }
     }
   }
+}
+
+function redirectToNoPermissions(to, from, permission, condition = undefined) {
+  const result = permissionsGuard(permission, condition)(to, from)
+  if (result === true) return null
+  return result
 }
 
 /**
