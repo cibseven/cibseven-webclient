@@ -17,11 +17,11 @@
 
 -->
 <template>
-  <header style="height: 55px"> <!-- Empty container with height of navbar -->
+  <header class="cib-navbar" style="height: 55px"> <!-- Empty container with height of navbar -->
     <b-navbar toggleable="md" fixed="top" type="light" class="border-bottom bg-white px-3">
       <slot></slot>
-      <button 
-        class="navbar-toggler" 
+      <button
+        class="navbar-toggler position-relative"
         type="button" 
         @click.stop="isCollapsed = !isCollapsed"
         :aria-expanded="isCollapsed"
@@ -30,20 +30,71 @@
         <span v-else class="navbar-toggler-icon"></span>
       </button>
       <b-collapse is-nav id="nav_collapse" class="flex-grow-0" v-model="isCollapsed">
-        <b-navbar-nav>
+        <b-navbar-nav class="align-items-md-center">
           <!-- Custom navigation items slot (for mobile menu items from parent) -->
           <slot name="customNavItems"></slot>
-          
+
+          <!-- Order: Help (via slot) → Language → Engine → User -->
+          <b-nav-item-dropdown 
+            v-if="$slots.helpItems" 
+            class="cib-navbar-utility"
+            no-caret
+            right
+            :label="$t('cib-header.helpMenu')">
+            <template v-slot:button-content>
+              <span class="mdi mdi-24px mdi-help-circle align-middle" aria-hidden="true"></span>
+              <span class="mdi mdi-18px mdi-chevron-down align-middle" aria-hidden="true"></span>
+              <span class="d-md-none ms-2">{{ $t('cib-header.helpMenu') }}</span>
+            </template>
+            <li class="cib-dropdown-title fw-semibold text-body px-3 pt-2 pb-1" role="presentation">{{ $t('cib-header.helpMenu') }}</li>
+            <b-dropdown-divider></b-dropdown-divider>
+            <slot name="helpItems"></slot>
+          </b-nav-item-dropdown>
+
+          <b-nav-item-dropdown 
+            class="cib-navbar-utility"
+            no-caret
+            right 
+            :title="$t('cib-header.languages')"
+            :label="$t('cib-header.languagesMenu')">
+            <template v-slot:button-content>
+              <span class="d-flex align-items-center">
+                <span class="mdi mdi-24px mdi-web align-middle" aria-hidden="true"></span>
+                <span class="d-md-none ms-2">{{ $t('cib-header.languages') }}</span>
+              </span>
+              <span class="mdi mdi-18px mdi-chevron-down align-middle" aria-hidden="true"></span>
+            </template>
+            <li class="cib-dropdown-title fw-semibold text-body px-3 pt-2 pb-1" role="presentation">{{ $t('cib-header.languages') }}</li>
+            <b-dropdown-divider></b-dropdown-divider>
+            <b-dropdown-item-button v-for="lang in languages" :key="lang" :active="lang === currentLanguage()" @click="setCurrentLanguage(lang)" :title="$t('cib-header.languages') + ': ' + $t('cib-header.' + lang)">
+              <div class="d-flex align-items-baseline">
+                <span class="lang-label d-inline-block text-center text-uppercase text-dark rounded me-2" :class="{ 'lang-label-active': lang === currentLanguage() }">
+                  {{ lang }}
+                </span>
+                <span class="flex-grow-1">
+                  {{ $t('cib-header.' + lang) }}
+                </span>
+              </div>
+            </b-dropdown-item-button>
+          </b-nav-item-dropdown>
+
           <!-- Engine Selector - only show if more than one engine -->
           <b-nav-item-dropdown 
             v-if="normalizedEngines.length > 1" 
-            extra-toggle-classes="py-1" 
+            class="cib-navbar-utility"
+            no-caret
             right 
             :title="$t('cib-header.engineMenu')"
             :label="$t('cib-header.engineMenu')">
             <template v-slot:button-content>
-              <span class="mdi mdi-24px mdi-engine align-middle me-2" aria-hidden="true"></span><span class="d-md-none">{{ $t('cib-header.engine') }}</span>
+              <span class="d-flex align-items-center">
+                <span class="mdi mdi-24px mdi-engine align-middle" aria-hidden="true"></span>
+                <span class="d-md-none ms-2">{{ $t('cib-header.engine') }}</span>
+              </span>
+              <span class="mdi mdi-18px mdi-chevron-down align-middle" aria-hidden="true"></span>
             </template>
+            <li class="cib-dropdown-title fw-semibold text-body px-3 pt-2 pb-1" role="presentation">{{ $t('cib-header.engine') }}</li>
+            <b-dropdown-divider></b-dropdown-divider>
             <b-dropdown-item-button
               v-for="engine in normalizedEngines" 
               :key="engine.id" 
@@ -59,46 +110,22 @@
           </b-nav-item-dropdown>
 
           <b-nav-item-dropdown 
-            extra-toggle-classes="py-1" 
-            right 
-            :title="$t('cib-header.languages')"
-            :label="$t('cib-header.languagesMenu')">
-            <template v-slot:button-content>
-              <span class="mdi mdi-24px mdi-web align-middle me-2" aria-hidden="true"></span><span class="d-md-none">{{ $t('cib-header.languages') }}</span>
-            </template>
-            <b-dropdown-item-button v-for="lang in languages" :key="lang" :active="lang === currentLanguage()" @click="setCurrentLanguage(lang)" :title="$t('cib-header.languages') + ': ' + $t('cib-header.' + lang)">
-              <div class="d-flex align-items-baseline">
-                <span class="lang-label text-center text-uppercase text-dark rounded me-2" :class="{ 'lang-label-active': lang === currentLanguage() }">
-                  {{ lang }}
-                </span>
-                <span class="flex-grow-1">
-                  {{ $t('cib-header.' + lang) }}
-                </span>
-              </div>
-            </b-dropdown-item-button>
-          </b-nav-item-dropdown>
-
-          <b-nav-item-dropdown 
-            v-if="$slots.helpItems" 
-            extra-toggle-classes="py-1" 
-            right
-            :label="$t('cib-header.helpMenu')">
-            <template v-slot:button-content>
-              <span class="mdi mdi-24px mdi-help-circle align-middle" aria-hidden="true"></span>
-              <span class="d-md-none">{{ $t('cib-header.helpMenu') }}</span>
-            </template>
-            <slot name="helpItems"></slot>
-          </b-nav-item-dropdown>
-
-          <b-nav-item-dropdown 
             v-if="user" 
+            class="cib-navbar-utility"
             :title="$t('start.account.tooltip')" 
-            extra-toggle-classes="py-1" 
+            no-caret
             right
             :label="$t('admin.users.account')">
             <template v-slot:button-content>
-              <span class="mdi mdi-24px mdi-account align-middle" aria-hidden="true"></span> <span>{{ user.displayName }}</span>
+              <span class="d-flex align-items-center">
+                <b-avatar size="sm" class="cib-user-avatar" :text="userInitials" aria-hidden="true"></b-avatar>
+                <span class="visually-hidden">{{ user.displayName || user.id }}</span>
+                <span class="d-md-none ms-2">{{ user.displayName || user.id }}</span>
+              </span>
+              <span class="mdi mdi-18px mdi-chevron-down align-middle" aria-hidden="true"></span>
             </template>
+            <li class="cib-dropdown-title fw-semibold text-body px-3 pt-2 pb-1" role="presentation">{{ $t('admin.users.account') }}</li>
+            <b-dropdown-divider></b-dropdown-divider>
             <slot name="userItems"></slot>
             <b-dropdown-item-button @click="logout" :title="$t('start.account.logout.tooltip', { productName })">{{ $t('start.account.logout.title') }}</b-dropdown-item-button>
           </b-nav-item-dropdown>
@@ -117,6 +144,7 @@ import {
   hasTokenForEngine, 
   restoreTokenForEngine 
 } from '@/utils/engineTokens.js'
+import { getUserInitials } from '@/utils/user.js'
 
 export default {
   name: 'CIBHeaderFlow',
@@ -133,6 +161,9 @@ export default {
   computed: {
     productName() {
       return this.$root.config.productNamePageTitle || this.$t('login.productName')
+    },
+    userInitials() {
+      return getUserInitials(this.user)
     },
     normalizedEngines() {
       return this.engines.map(engine => ({
@@ -249,7 +280,6 @@ export default {
 <style scoped>
 /* Ensure hamburger toggle is always on top */
 :deep(.navbar-toggler) {
-  position: relative;
   z-index: 1050;
 }
 
@@ -260,7 +290,6 @@ export default {
 
 .lang-label {
   min-width: 36px;
-  display: inline-block;
   background-color: var(--bs-gray-200) !important;
 }
 .dropdown-item:hover .lang-label {
@@ -271,3 +300,12 @@ export default {
   background-color: var(--bs-gray-500) !important;
 }
 </style>
+
+<!--
+  .cib-navbar-utility chrome (dropdown carets, hover states, mobile drawer rows,
+  .cib-user-avatar colors) now lives in @cib/bootstrap-theme (src/scss/_utilities.scss) —
+  BNavItemDropdown hardcodes dropdown-toggle internally, so neither scoped nor
+  :deep() selectors here can reach it reliably. See that file's comment for the
+  full explanation.
+-->
+
