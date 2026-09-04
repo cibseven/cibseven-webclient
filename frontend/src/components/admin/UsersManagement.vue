@@ -59,31 +59,31 @@ export default {
           title: 'admin.users.title',
           image: adminUsersImage,
           link: { name: 'adminUsers' },
-          hasAccess: this.adminManagementPermissions(this.$root.config.permissions.usersManagement, 'user')
+          hasAccess: this.applicationPermissions(this.$root.config.permissions.usersManagement, 'user')
         },
         {
           title: 'admin.groups.title',
           image: groupsAdminImage,
           link: { name: 'adminGroups' },
-          hasAccess: this.adminManagementPermissions(this.$root.config.permissions.groupsManagement, 'group')
+          hasAccess: this.applicationPermissions(this.$root.config.permissions.groupsManagement, 'group')
         },
         {
           title: 'admin.tenants.title',
           image: tenantsAdminImage,
           link: { name: 'adminTenants' },
-          hasAccess: this.adminManagementPermissions(this.$root.config.permissions.tenantsManagement, 'tenant')
+          hasAccess: this.applicationPermissions(this.$root.config.permissions.tenantsManagement, 'tenant')
         },
         {
           title: 'admin.authorizations.title',
           image: authorizationsAdminImage,
           link: { name: 'authorizations' },
-          hasAccess: this.adminManagementPermissions(this.$root.config.permissions.authorizationsManagement, 'authorization')
+          hasAccess: this.applicationPermissions(this.$root.config.permissions.authorizationsManagement, 'authorization')
         },
         {
           title: 'admin.system.title',
           image: systemAdminImage,
           link: { name: 'adminSystem' },
-          hasAccess: this.adminManagementPermissions(this.$root.config.permissions.systemManagement, 'system')
+          hasAccess: this.applicationPermissions(this.$root.config.permissions.systemManagement, 'system')
         },
       ]
 

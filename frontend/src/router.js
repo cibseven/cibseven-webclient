@@ -409,7 +409,7 @@ function permissionsGuard(permission) {
 
 function permissionsGuardUserAdmin(permission, condition) {
   return function(to, from) {
-    if (router.root.adminManagementPermissions(router.root.config.permissions[permission], condition)) return true
+    if (router.root.applicationPermissions(router.root.config.permissions[permission], condition)) return true
     return {
       name: 'no-permission',
       query: {
