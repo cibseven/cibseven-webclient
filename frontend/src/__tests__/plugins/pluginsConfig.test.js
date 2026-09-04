@@ -36,7 +36,27 @@ describe('pluginsConfig', () => {
     const component = { name: 'Contribution' }
     registerPlugin('demo', component, { pluginId: 'demo-plugin' })
 
-    expect(getPlugin('demo').value).toEqual([{ component, pluginId: 'demo-plugin' }])
+    expect(getPlugin('demo').value).toMatchObject([{ component, pluginId: 'demo-plugin' }])
+  })
+
+  // A plugin contributing twice to one slot used to render under one key, which
+  // makes Vue reuse the wrong element between them.
+  it('gives every contribution of one plugin a key of its own', () => {
+    registerPlugin('demo', { name: 'First' }, { pluginId: 'demo-plugin' })
+    registerPlugin('demo', { name: 'Second' }, { pluginId: 'demo-plugin' })
+    registerPlugin('other-slot', { name: 'Third' }, { pluginId: 'demo-plugin' })
+
+    const keys = [...getPlugin('demo').value, ...getPlugin('other-slot').value].map(c => c.key)
+
+    expect(new Set(keys).size).toBe(3)
+    expect(keys.every(key => key.startsWith('demo-plugin-'))).toBe(true)
+  })
+
+  it('keeps a key of its own for a contribution without a plugin id', () => {
+    const first = registerPlugin('demo', { name: 'First' })
+    const second = registerPlugin('demo', { name: 'Second' })
+
+    expect(first.key).not.toBe(second.key)
   })
 
   it('keeps contributions of several plugins to one slot in registration order', () => {

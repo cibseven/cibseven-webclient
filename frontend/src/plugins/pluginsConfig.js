@@ -31,6 +31,9 @@ const pluginSlots = {}
 /** Ids the application itself uses in a slot. @type {Record<string, Set<string>>} */
 const reservedSlotIds = {}
 
+/** Counts contributions, to give each one a key of its own. */
+let contributions = 0
+
 function ensureSlot(slotName) {
   if (!pluginSlots[slotName]) {
     pluginSlots[slotName] = shallowRef([])
@@ -56,6 +59,7 @@ export function reserveSlotIds(slotName, ids) {
  * @param {string} slotName - Name of the slot (e.g. 'process-instance-tab')
  * @param {object} component - A Vue component definition
  * @param {object} [meta] - Optional metadata (e.g. { pluginId, id, text })
+ * @returns {object|null} the stored contribution, or null when it was rejected
  */
 export function registerPlugin(slotName, component, meta = {}) {
   const slot = ensureSlot(slotName)
@@ -63,14 +67,18 @@ export function registerPlugin(slotName, component, meta = {}) {
   // the same id would render twice and select ambiguously.
   if (meta.id && reservedSlotIds[slotName]?.has(meta.id)) {
     console.warn(`Ignoring a contribution with id "${meta.id}": slot "${slotName}" uses it itself`)
-    return
+    return null
   }
   if (meta.id && slot.value.some(contribution => contribution.id === meta.id)) {
     console.warn(`Ignoring a second contribution with id "${meta.id}" in slot "${slotName}"`)
-    return
+    return null
   }
+  // One plugin may register several times in the same slot, so its id is no key.
+  // Stamped here rather than in the slot, where only a list position is available.
+  const contribution = { component, ...meta, key: `${meta.pluginId ?? 'app'}-${++contributions}` }
   // shallowRef: replace the array so consumers re-render
-  slot.value = [...slot.value, { component, ...meta }]
+  slot.value = [...slot.value, contribution]
+  return contribution
 }
 
 /**

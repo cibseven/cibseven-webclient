@@ -52,6 +52,22 @@ describe('PluginSlot', () => {
     expect(wrapper.findAll('.contribution')).toHaveLength(2)
   })
 
+  // All of them used to render under the plugin's id: one duplicated key, which
+  // makes Vue warn and reuse the wrong element as soon as the list changes.
+  it('renders every contribution of one plugin, each under its own key', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    registerPlugin('demo', Contribution, { pluginId: 'one-plugin' })
+    registerPlugin('demo', Contribution, { pluginId: 'one-plugin' })
+    const wrapper = mount(PluginSlot, { props: { name: 'demo' } })
+
+    registerPlugin('demo', Contribution, { pluginId: 'one-plugin' })
+    await flushPromises()
+
+    expect(wrapper.findAll('.contribution')).toHaveLength(3)
+    const warnings = warn.mock.calls.map(call => String(call[0]))
+    expect(warnings.filter(message => message.includes('Duplicate keys'))).toEqual([])
+  })
+
   it('ignores contributions to other slots', () => {
     registerPlugin('other', Contribution, { pluginId: 'a' })
     const wrapper = mount(PluginSlot, { props: { name: 'demo' } })

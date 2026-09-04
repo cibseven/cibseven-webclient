@@ -74,7 +74,7 @@ describe('plugin-runtime', () => {
       const component = { name: 'FromPlugin' }
       runtime.registerPlugin('demo', component, { pluginId: 'demo' })
 
-      expect(getPlugin('demo').value).toEqual([{ component, pluginId: 'demo' }])
+      expect(getPlugin('demo').value).toMatchObject([{ component, pluginId: 'demo' }])
     })
 
     it('sees slot updates reactively', async () => {

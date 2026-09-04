@@ -15,6 +15,7 @@
  *  limitations under the License.
  */
 import { describe, it, expect, vi } from 'vitest'
+import { flushPromises } from '@vue/test-utils'
 import { i18n, switchLanguage, registerTranslationLoader } from '@/i18n'
 
 vi.mock('@/globals.js', () => ({
@@ -58,5 +59,39 @@ describe('registerTranslationLoader', () => {
     })
 
     expect(loaded).toContain('de')
+  })
+
+  /**
+   * The loaders fetch files of their own - a plugin's translations - and the first
+   * language switch happens during startup, so a failing one must not take it down.
+   */
+  it('switches the language even when a registered source fails', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const reached = []
+    registerTranslationLoader(() => Promise.reject(new Error('plugin translations unreachable')))
+    registerTranslationLoader(lang => {
+      reached.push(lang)
+      return Promise.resolve()
+    })
+
+    // A language nothing loaded yet, so the sources are asked as part of the switch
+    await expect(switchLanguage({ supportedLanguages: ['en', 'fr'] }, 'fr')).resolves.toBe('fr')
+
+    expect(i18n.global.locale).toBe('fr')
+    // The sources are independent, so one failing does not skip the next
+    expect(reached).toContain('fr')
+    expect(error).toHaveBeenCalled()
+    error.mockRestore()
+  })
+
+  it('reports a source that fails while catching up on a loaded language', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+    await switchLanguage(config, 'de')
+
+    registerTranslationLoader(() => Promise.reject(new Error('plugin translations unreachable')))
+    await flushPromises()
+
+    expect(error).toHaveBeenCalled()
+    error.mockRestore()
   })
 })

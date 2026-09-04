@@ -17,8 +17,8 @@
 
 -->
 <template>
-  <PluginBoundary v-for="(contribution, index) in contributions"
-    :key="contribution.pluginId ?? index"
+  <PluginBoundary v-for="contribution in contributions"
+    :key="contribution.key"
     :component="contribution.component" :plugin-id="contribution.pluginId" v-bind="params">
   </PluginBoundary>
 </template>

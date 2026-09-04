@@ -175,7 +175,8 @@ export function register({ id, registerPlugin }) {
 ```
 
 Which plugin a contribution came from is not passed in but stamped on it, so it is
-neither forgotten nor claimed for another plugin.
+neither forgotten nor claimed for another plugin. The same goes for the key it is
+rendered under, which is why registering several times is no problem.
 
 The components themselves import what they need from the same module:
 

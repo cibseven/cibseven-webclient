@@ -56,7 +56,7 @@ export { createProvideObject } from '@/utils/provide.js'
 // plugins — the mechanism is shared with cibseven-webclient-ee and
 // flow-webclient-frontend; each application supplies its own plugin-runtime
 // entry, since module instances only exist within one build
-export { registerPlugin, getPlugin, resetPlugins, PLUGIN_API_VERSION } from '@/plugins/pluginsConfig.js'
+export { registerPlugin, getPlugin, resetPlugins, reserveSlotIds, PLUGIN_API_VERSION } from '@/plugins/pluginsConfig.js'
 // as one object, so a downstream plugin runtime can hand it over without listing every service
 export * as services from '@/services.js'
 export { setPluginContext, getPluginContext } from '@/plugins/pluginContext.js'

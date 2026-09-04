@@ -110,7 +110,7 @@ describe('pluginLoader', () => {
 
       await loadPlugins([validManifest], 'en', importer)
 
-      expect(getPlugin('demo-slot').value).toEqual([
+      expect(getPlugin('demo-slot').value).toMatchObject([
         { component: { name: 'Contribution' }, id: 'a-tab', pluginId: 'demo' }
       ])
     })

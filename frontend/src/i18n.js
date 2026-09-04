@@ -104,7 +104,23 @@ const extraLoaders = []
  */
 const registerTranslationLoader = function(load) {
   extraLoaders.push(load)
-  loadedLanguages.forEach(load)
+  loadedLanguages.forEach(lang => runTranslationLoader(load, lang))
+}
+
+/**
+ * Runs one registered loader. Their messages come from outside the application -
+ * a plugin fetches its own files - so one that fails must leave the language
+ * switch, and with it the startup, alone.
+ *
+ * @param {(lang: string) => Promise<void>} load
+ * @param {string} lang
+ */
+const runTranslationLoader = async function(load, lang) {
+  try {
+    await load(lang)
+  } catch (error) {
+    console.error(`A registered translation loader failed for "${lang}":`, error)
+  }
 }
 
 const loadTranslations = async function(config, lang, sources = defaultTranslationSources) {
@@ -133,7 +149,7 @@ const loadTranslations = async function(config, lang, sources = defaultTranslati
     await loadTranslationsFromThemes(config, lang)
   }
 
-  await Promise.all(extraLoaders.map(load => load(lang)))
+  await Promise.all(extraLoaders.map(load => runTranslationLoader(load, lang)))
 }
 
 const setLanguage = function(language) {
