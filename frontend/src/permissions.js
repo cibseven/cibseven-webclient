@@ -29,6 +29,12 @@ const permissionsMixin = {
 			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
 			return this.$_permissionsMixin_checkPermissionsAllowed(access, null, permissionsCheck)
 		},
+		/**
+		 * @deprecated Use `applicationPermissions` instead.
+		 * @param {Object} permissionsRequired 
+		 * @param {string} access 
+		 * @returns {boolean} `true` if the user does not have the required permissions, `false` otherwise
+		 */
 		applicationPermissionsDenied: function (permissionsRequired, access) {
 			return !this.applicationPermissions(permissionsRequired, access)
 		},
