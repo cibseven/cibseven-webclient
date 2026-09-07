@@ -40,42 +40,90 @@
         <span class="d-none d-lg-inline ms-2">{{ $t('start.startProcess.title') }}</span>
       </b-button>
 
-      <!-- Desktop: Show menus as icons outside collapse -->
-      <div class="d-none d-md-flex">
-        <b-button v-if="$root.config.layout.showFeedbackButton" variant="outline-secondary" @click="$refs.report.show()" class="border-0 py-0 me-2" :title="$t('seven.feedback')" :label="$t('seven.feedback')">
-          <span class="mdi mdi-24px mdi-message-alert"></span>
-        </b-button>
-
-        <b-navbar-nav v-if="computedMenuItems.length > 0">
-          <b-nav-item-dropdown extra-toggle-classes="py-1" right :title="$t('navigation.menu')" :label="$t('navigation.navigation')">
-            <template v-slot:button-content>
-              <span class="visually-hidden">{{ $t('navigation.menu') }}</span>
-              <span class="mdi mdi-24px mdi-menu align-middle"></span>
-            </template>
-            <template v-for="(group, gIdx) in computedMenuItems" :key="gIdx">
-              <b-dropdown-divider v-if="group.divider"></b-dropdown-divider>
-              <b-dropdown-group v-else-if="group.items && group.items.length > 0" :header="$t(group.groupTitle)">
+      <!-- Desktop: navbar tools | utilities -->
+      <div class="d-none d-md-flex align-items-center cib-navbar-tools">
+        <b-navbar-nav v-if="computedMenuItems.length > 0" class="flex-row align-items-center">
+          <li
+            v-for="tool in computedMenuItems"
+            :key="tool.id"
+            class="nav-item d-flex align-items-center gap-0 cib-navbar-tool"
+          >
+            <router-link
+              class="cib-navbar-icon-btn d-inline-flex align-items-center justify-content-center p-0 text-decoration-none text-body-secondary"
+              :class="{ 'cib-navbar-control-active': isToolActive(tool) }"
+              :to="getToolDefaultTo(tool)"
+              :title="$t(tool.title)"
+              :aria-label="$t(tool.title)"
+            >
+              <span :class="['mdi', 'mdi-24px', tool.icon]" aria-hidden="true"></span>
+            </router-link>
+            <b-nav-item-dropdown
+              class="cib-navbar-chevron-dropdown"
+              :class="{ 'cib-navbar-control-active': isToolActive(tool) }"
+              no-caret
+              right
+              :title="$t(tool.title)"
+              :label="$t(tool.title)"
+            >
+              <template v-slot:button-content>
+                <span class="visually-hidden">{{ $t(tool.title) }}</span>
+                <span class="mdi mdi-18px mdi-chevron-down align-middle" aria-hidden="true"></span>
+              </template>
+              <b-dropdown-item
+                class="cib-dropdown-title"
+                :to="getToolDefaultTo(tool)"
+                :title="$t(tool.title)"
+              ><span class="fw-semibold">{{ $t(tool.title) }}</span></b-dropdown-item>
+              <b-dropdown-divider></b-dropdown-divider>
+              <template v-for="(item, idx) in tool.items" :key="tool.id + '-' + idx">
+                <b-dropdown-divider v-if="item.divider"></b-dropdown-divider>
                 <b-dropdown-item
-                  v-for="(item, idx) in group.items"
-                  :key="'ext-' + idx"
+                  v-else
                   :to="item.to"
                   :href="item.href"
-                  :title="$t(item.tooltip)"
+                  :title="item.tooltip ? $t(item.tooltip) : $t(item.title)"
                   :active="isMenuItemActive(item)"
                   :target="item.external ? '_blank' : undefined"
-                ><span :class="item.group ? 'fw-semibold' : ''">{{ $t(item.title) }}</span></b-dropdown-item>
-              </b-dropdown-group>
-            </template>
-          </b-nav-item-dropdown>
+                >{{ $t(item.title) }}</b-dropdown-item>
+              </template>
+            </b-nav-item-dropdown>
+          </li>
         </b-navbar-nav>
-        
+
+        <span
+          v-if="computedMenuItems.length > 0 || $root.config.layout.showFeedbackButton || $root.config.layout.showInfoAndHelp"
+          class="cib-navbar-divider d-inline-block flex-shrink-0 mx-2"
+          aria-hidden="true"
+        ></span>
+
+        <b-button
+          v-if="$root.config.layout.showFeedbackButton"
+          variant="outline-secondary"
+          @click="$refs.report.show()"
+          class="border-0 cib-navbar-icon-btn cib-navbar-icon-btn-standalone d-inline-flex align-items-center justify-content-center p-0 text-decoration-none text-body-secondary me-1"
+          :title="$t('seven.feedback')"
+          :aria-label="$t('seven.feedback')"
+        >
+          <span class="mdi mdi-24px mdi-message-alert" aria-hidden="true"></span>
+        </b-button>
+
         <b-navbar-nav v-if="$root.config.layout.showInfoAndHelp">
-          <b-nav-item-dropdown extra-toggle-classes="py-1" right :title="$t('navigation.infoAndHelp')" :label="$t('navigation.infoAndHelp')">
+          <b-nav-item-dropdown
+            class="cib-navbar-utility-dropdown"
+            extra-toggle-classes="cib-navbar-icon-btn"
+            no-caret
+            right
+            :title="$t('navigation.infoAndHelp')"
+            :label="$t('navigation.infoAndHelp')"
+          >
             <template v-slot:button-content>
               <span class="visually-hidden">{{ $t('navigation.infoAndHelp') }}</span>
-              <span class="mdi mdi-24px mdi-help-circle align-middle"></span>
+              <span class="mdi mdi-24px mdi-help-circle align-middle" aria-hidden="true"></span>
+              <span class="mdi mdi-18px mdi-chevron-down align-middle" aria-hidden="true"></span>
             </template>
-            <template v-for="(item, idx) in helpMenuItems" :key="idx">
+            <li class="cib-dropdown-title px-3 pt-2 pb-1" role="presentation">{{ $t('navigation.infoAndHelp') }}</li>
+            <b-dropdown-divider></b-dropdown-divider>
+            <template v-for="(item, idx) in helpMenuItems" :key="'help-' + idx">
               <b-dropdown-item v-if="item.type === 'link'" :href="item.href" :title="$t(item.tooltip)" target="_blank">{{ $t(item.title) }}</b-dropdown-item>
               <b-dropdown-item-button v-else :title="$t(item.tooltip)" @click="$refs[item.ref].show()">{{ $t(item.title) }}</b-dropdown-item-button>
             </template>
@@ -83,38 +131,65 @@
         </b-navbar-nav>
       </div>
 
-      <!-- Mobile: Show menus as list items inside CIBHeaderFlow's collapse (via customNavItems slot) -->
+      <!-- Mobile: tools + feedback + help inside collapse -->
       <template v-if="$root.user || ($root.config.layout.showInfoAndHelp && helpMenuItems.length > 0)" #customNavItems>
+        <template v-for="tool in computedMenuItems" :key="'mob-' + tool.id">
+          <b-nav-item-dropdown
+            class="d-md-none cib-navbar-utility-dropdown"
+            extra-toggle-classes="py-1"
+            right
+            :title="$t(tool.title)"
+            :label="$t(tool.title)"
+          >
+            <template v-slot:button-content>
+              <span class="d-flex align-items-center">
+                <span :class="['mdi', 'mdi-24px', tool.icon, 'align-middle', 'me-2']" aria-hidden="true"></span>
+                <span class="cib-mobile-row-title">{{ $t(tool.title) }}</span>
+              </span>
+              <span class="mdi mdi-18px mdi-chevron-down align-middle ms-1" aria-hidden="true"></span>
+            </template>
+            <b-dropdown-item
+              class="cib-dropdown-title"
+              :to="getToolDefaultTo(tool)"
+              :title="$t(tool.title)"
+            ><span class="fw-semibold">{{ $t(tool.title) }}</span></b-dropdown-item>
+            <b-dropdown-divider></b-dropdown-divider>
+            <template v-for="(item, idx) in tool.items" :key="'mob-' + tool.id + '-' + idx">
+              <b-dropdown-divider v-if="item.divider"></b-dropdown-divider>
+              <b-dropdown-item
+                v-else
+                :to="item.to"
+                :href="item.href"
+                :title="item.tooltip ? $t(item.tooltip) : $t(item.title)"
+                :active="isMenuItemActive(item)"
+                :target="item.external ? '_blank' : undefined"
+              >{{ $t(item.title) }}</b-dropdown-item>
+            </template>
+          </b-nav-item-dropdown>
+        </template>
         <b-nav-item-dropdown v-if="$root.config.layout.showFeedbackButton" class="d-md-none" no-caret :title="$t('seven.feedback')" :label="$t('seven.feedback')">
           <template v-slot:button-content>
             <span class="mdi mdi-24px mdi-message-alert align-middle me-2"></span>{{ $t('seven.feedback') }}
           </template>
           <b-dropdown-item-button @click="closeMenuAndShow('report')">{{ $t('seven.feedback') }}</b-dropdown-item-button>
         </b-nav-item-dropdown>
-        <b-nav-item-dropdown v-if="computedMenuItems.length > 0" class="d-md-none" extra-toggle-classes="py-1" right :title="$t('navigation.menu')" :label="$t('navigation.navigation')">
+        <b-nav-item-dropdown
+          v-if="$root.config.layout.showInfoAndHelp"
+          class="d-md-none cib-navbar-utility-dropdown"
+          extra-toggle-classes="py-1"
+          right
+          :title="$t('navigation.infoAndHelp')"
+          :label="$t('navigation.infoAndHelp')"
+        >
           <template v-slot:button-content>
-            <span class="mdi mdi-24px mdi-menu align-middle me-2"></span>{{ $t('navigation.menu') }}
+            <span class="d-flex align-items-center">
+              <span class="mdi mdi-24px mdi-help-circle align-middle me-2"></span>{{ $t('navigation.infoAndHelp') }}
+            </span>
+            <span class="mdi mdi-18px mdi-chevron-down align-middle ms-1" aria-hidden="true"></span>
           </template>
-          <template v-for="(group, gIdx) in computedMenuItems" :key="gIdx">
-            <b-dropdown-divider v-if="group.divider"></b-dropdown-divider>
-            <b-dropdown-group v-else-if="group.items && group.items.length > 0" :header="$t(group.groupTitle)">
-              <b-dropdown-item
-                v-for="(item, idx) in group.items"
-                :key="'mob-' + idx"
-                :to="item.to"
-                :href="item.href"
-                :title="$t(item.tooltip)"
-                :active="isMenuItemActive(item)"
-                :target="item.external ? '_blank' : undefined"
-              ><span :class="item.group ? 'fw-semibold' : ''">{{ $t(item.title) }}</span></b-dropdown-item>
-            </b-dropdown-group>
-          </template>
-        </b-nav-item-dropdown>
-        <b-nav-item-dropdown class="d-md-none" extra-toggle-classes="py-1" right :title="$t('navigation.infoAndHelp')" :label="$t('navigation.infoAndHelp')">
-          <template v-slot:button-content>
-            <span class="mdi mdi-24px mdi-help-circle align-middle me-2"></span>{{ $t('navigation.infoAndHelp') }}
-          </template>
-          <template v-for="(item, idx) in helpMenuItems" :key="idx">
+          <li class="cib-dropdown-title px-3 pt-2 pb-1" role="presentation">{{ $t('navigation.infoAndHelp') }}</li>
+          <b-dropdown-divider></b-dropdown-divider>
+          <template v-for="(item, idx) in helpMenuItems" :key="'mob-help-' + idx">
             <b-dropdown-item v-if="item.type === 'link'" :href="item.href" :title="$t(item.tooltip)" target="_blank">{{ $t(item.title) }}</b-dropdown-item>
             <b-dropdown-item-button v-else :title="$t(item.tooltip)" @click="closeMenuAndShow(item.ref)">{{ $t(item.title) }}</b-dropdown-item-button>
           </template>
@@ -172,6 +247,7 @@ import SupportModal from '@/components/modals/SupportModal.vue'
 import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
 import FeedbackModal from '@/components/modals/FeedbackModal.vue'
 import { updateAppTitle } from '@/utils/init'
+import { buildNavGroups, projectGroupsForNavbar, permissionFlagsFromVm } from '@/navigation/navGroups.js'
 
 export default {
   name: 'CibSeven',
@@ -184,7 +260,7 @@ export default {
     }
   },
   watch: {
-    // when the title of the view inside top toolbar is changed
+    // when the title of the view inside top navbar is changed
     // => let's change title of the whole web-page in browser
     pageTitle: function(title) {
       this.refreshAppTitle(title)
@@ -195,121 +271,7 @@ export default {
       return this.$root.config.productNamePageTitle || this.$t('login.productName')
     },
     menuItems: function() {
-      return [{
-          show: this.permissionsTaskList && this.startableProcesses,
-          groupTitle: 'start.taskList.title',
-          items: [{
-              to: '/seven/auth/start-process',
-              active: ['seven/auth/start-process'],
-              tooltip: 'start.startProcess.tooltip',
-              title: 'start.startProcess.title'
-            }, {
-              to: '/seven/auth/tasks',
-              active: ['seven/auth/tasks'],
-              tooltip: 'start.taskList.tooltip',
-              title: 'start.taskList.title'
-            }
-          ]
-        }, {
-          show: this.permissionsTaskList && this.permissionsCockpit && this.startableProcesses,
-          divider: true,
-        }, {
-          show: this.permissionsCockpit,
-          groupTitle: 'start.cockpit.title',
-          items: [{
-              group: true,
-              to: '/seven/auth/processes',
-              active: ['seven/auth/processes/dashboard'],
-              tooltip: 'start.cockpit.tooltip',
-              title: 'start.cockpit.title'
-            }, {
-              to: '/seven/auth/processes/list',
-              active: ['seven/auth/process/', 'seven/auth/processes/list'],
-              tooltip: 'start.cockpit.processes.tooltip',
-              title: 'start.cockpit.processes.title'
-            }, {
-              to: '/seven/auth/decisions/list',
-              active: ['seven/auth/decision/', 'seven/auth/decisions/list'],
-              tooltip: 'start.cockpit.decisions.tooltip',
-              title: 'start.cockpit.decisions.title',
-            }, {
-              to: '/seven/auth/human-tasks',
-              active: ['seven/auth/human-tasks'],
-              tooltip: 'start.cockpit.humanTasks.tooltip',
-              title: 'start.cockpit.humanTasks.title'
-            }, {
-              to: '/seven/auth/deployments',
-              active: ['seven/auth/deployments'],
-              tooltip: 'start.cockpit.deployments.tooltip',
-              title: 'start.cockpit.deployments.title'
-            }, {
-              to: '/seven/auth/batches',
-              active: ['seven/auth/batches'],
-              tooltip: 'start.cockpit.batches.tooltip',
-              title: 'start.cockpit.batches.title',
-              activeExact: true,
-            }
-          ]
-        }, {
-          show: this.permissionsModeler && (this.permissionsTaskList || this.permissionsCockpit),
-          divider: true,
-        }, {
-          show: this.permissionsModeler,
-          groupTitle: 'start.modeler.title',
-          items: [{
-              to: '/seven/auth/modeler',
-              active: ['seven/auth/modeler'],
-              tooltip: 'start.modeler.tooltip',
-              title: 'start.modeler.title'
-            }
-          ]
-        }, {
-          show: this.permissionsUsers && (this.permissionsTaskList || this.permissionsCockpit || this.permissionsModeler),
-          divider: true,
-        }, {
-          show: this.permissionsUsers,
-          groupTitle: 'start.admin.title',
-          items: [{
-              group: true,
-              to: '/seven/auth/admin',
-              active: ['seven/auth/admin'],
-              activeExact: true,
-              tooltip: 'start.admin.tooltip',
-              title: 'start.admin.title'
-            }, {
-              show: this.permissionsUsersManagement,
-              to: '/seven/auth/admin/users',
-              active: ['seven/auth/admin/user', 'seven/auth/admin/create-user'],
-              tooltip: 'admin.users.tooltip',
-              title: 'admin.users.title'
-            }, {
-              show: this.permissionsGroupsManagement,
-              to: '/seven/auth/admin/groups',
-              active: ['seven/auth/admin/group', 'seven/auth/admin/create-group'],
-              tooltip: 'admin.groups.tooltip',
-              title: 'admin.groups.title'
-            }, {
-              show: this.permissionsTenantsManagement,
-              to: '/seven/auth/admin/tenants',
-              active: ['seven/auth/admin/tenant', 'seven/auth/admin/create-tenant'],
-              tooltip: 'admin.tenants.tooltip',
-              title: 'admin.tenants.title'
-            }, {
-              show: this.permissionsAuthorizationsManagement,
-              to: '/seven/auth/admin/authorizations',
-              active: ['seven/auth/admin/authorizations'],
-              tooltip: 'admin.authorizations.tooltip',
-              title: 'admin.authorizations.title'
-            }, {
-              show: this.permissionsSystemManagement,
-              to: '/seven/auth/admin/system',
-              active: ['seven/auth/admin/system'],
-              tooltip: 'admin.system.tooltip',
-              title: 'admin.system.title'
-            }
-          ]
-        }
-      ]
+      return buildNavGroups(permissionFlagsFromVm(this))
     },
     computedMenuItems: function() {
       return this.getVisibleMenuItems(this.menuItems)
@@ -327,22 +289,19 @@ export default {
       return items
     },
     startableProcesses: function() {
-      return this.processesFilteredUnsorted.find(p => { return p.startableInTasklist })
+      return (this.$store.state.process.list || []).some(process => process.startableInTasklist === true && !process.revoked && process.suspended !== 'true')
     },
-    processesFilteredUnsorted: function() {
-      if (!this.$store.state.process.list) return []
-      return this.$store.state.process.list.filter(process => {
-        return ((!process.revoked))
-      })
-    },
-    // when route is changed => let's change title of the view inside top toolbar
+    // when route is changed => let's change title of the view inside top navbar
     pageTitle: function() {
+      if (this.$route.meta?.title) {
+        return this.$t(this.$route.meta.title)
+      }
       let title = ''
-      this.computedMenuItems.some(group => {
-        if (!group.items) {
+      this.computedMenuItems.some(tool => {
+        if (!tool.items) {
            return false
         }
-        const item = group.items.find(i => this.isMenuItemActive(i))
+        const item = tool.items.find(i => !i.divider && this.isMenuItemActive(i))
         if (item) {
           // exceptional case with 'Processes' menu item
           if (this.$route.name === 'process') {
@@ -387,11 +346,6 @@ export default {
         }
         return true
       })
-    },
-    isUsersManagementActive: function() {
-      return this.$route.path.includes('seven/auth/admin/user') ||
-        this.$route.path.includes('seven/auth/admin/group') ||
-        this.$route.path.includes('seven/auth/admin/authorizations')
     }
   },
   mounted: function () {
@@ -413,22 +367,30 @@ export default {
   methods: {
     // override this method to add/remove menu items
     getVisibleMenuItems: function(items) {
-      return items
-        .filter(group => group.show)
-        .map(group => ({
-          ...group,
-          items: group.items ? group.items.filter(item => item.show !== false) : group.items
-        }))
+      return projectGroupsForNavbar(items)
+    },
+    getToolDefaultTo: function(tool) {
+      return tool.defaultTo || tool.items.find(item => item.to)?.to || '/seven/auth/start'
+    },
+    isToolActive: function(tool) {
+      if (tool.startTo?.name && this.$route.name === tool.startTo.name) return true
+      if (tool.hubRouteNames?.includes(this.$route.name)) return true
+      return tool.items.some(item => this.isMenuItemActive(item))
     },
     isMenuItemActive: function(item) {
+      if (item.routeName || item.activeRouteNames) {
+        return this.$route.name === item.routeName || !!item.activeRouteNames?.includes(this.$route.name)
+      }
       if (!item.active) {
         return false
       }
+      const path = this.$route.path
       if (item.activeExact) {
-        return item.active.some(a => this.$route.path.endsWith(a))
-      } else {
-        return item.active.some(a => this.$route.path.includes(a))
+        return item.active.some(a => path.endsWith(a))
       }
+      return item.active.some(a => a.endsWith('/')
+        ? path.includes('/' + a)
+        : path.endsWith('/' + a) || path.includes('/' + a + '/'))
     },
     logout: function() {
       //Remove some storage variables when logout
@@ -498,9 +460,17 @@ export default {
 </script>
 
 <style lang="css" scoped>
-/* Customizing the separator to reduce gap */
 .dropdown-divider {
-  margin-top: 0.15rem; /* Reduce top gap */
-  margin-bottom: 0.15rem; /* Reduce bottom gap */
+  margin-top: 0.15rem;
+  margin-bottom: 0.15rem;
 }
 </style>
+
+<!--
+  .cib-navbar-divider / .cib-navbar-* / .cib-dropdown-title / .cib-navbar-utility
+  chrome styling now lives in @cib/bootstrap-theme (src/scss/_utilities.scss) —
+  CibSevenEE extends this component, and BNavItemDropdown hardcodes Bootstrap's
+  dropdown-toggle caret, so neither scoped nor :deep() selectors here can reach
+  it reliably. See that file's comment for the full explanation.
+-->
+

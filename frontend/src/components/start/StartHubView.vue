@@ -19,16 +19,11 @@
 <template>
   <div :style="{ 'height': 'calc(100% - 55px)' }" class="d-flex flex-column">
     <div class="h-100 container-fluid overflow-auto bg-light">
-      <div v-if="hasTiles" class="row justify-content-center">
-        <StartViewItem v-if="showAccessManagement"
-          :title="$t('start.accessManagement.title')"
-          :src="accessManagementImage"
-          :to="{ name: 'accessManagement' }"
-        ></StartViewItem>
-        <StartViewItem v-if="showSystem"
-          :title="$t('admin.system.title')"
-          :src="systemImage"
-          :to="{ name: 'adminSystem' }"
+      <div v-if="items.length > 0" class="row justify-content-center">
+        <StartViewItem v-for="item in items" :key="item.title"
+          :title="item.title"
+          :src="item.src"
+          :to="item.to"
         ></StartViewItem>
       </div>
       <div v-else>
@@ -40,45 +35,21 @@
 </template>
 
 <script>
-import { permissionsMixin } from '@/permissions.js'
-import navigationPermissionsMixin from '@/mixins/navigationPermissionsMixin.js'
 import StartViewItem from '@/components/start/StartViewItem.vue'
-import {
-  buildNavGroups,
-  filterVisibleNavGroups,
-  accessManagementCatalogItems,
-  permissionFlagsFromVm
-} from '@/navigation/navGroups.js'
 
-import accessManagementImage from '@/assets/images/start/admin.svg'
-import systemAdminImage from '@/assets/images/admin/system_admin.svg'
-
+/** Shared shell for the Tasks/Builder/Data/Access-management hub pages: a tile grid or empty state. */
 export default {
-  name: 'UsersManagement',
-  mixins: [permissionsMixin, navigationPermissionsMixin],
+  name: 'StartHubView',
   components: { StartViewItem },
-  data() {
-    return {
-      accessManagementImage,
-      systemImage: systemAdminImage
+  props: {
+    items: {
+      type: Array,
+      default: () => []
     }
   },
   computed: {
     productName() {
       return this.$root.config.productNamePageTitle || this.$t('login.productName')
-    },
-    // Shared nav catalog, so this matches the start page / navbar (see StartView.vue).
-    adminGroup() {
-      return filterVisibleNavGroups(buildNavGroups(permissionFlagsFromVm(this))).find(g => g.id === 'admin')
-    },
-    showAccessManagement() {
-      return accessManagementCatalogItems(this.adminGroup?.items).length > 0
-    },
-    showSystem() {
-      return !!this.adminGroup?.items.some(item => item.collapseGroup === 'system')
-    },
-    hasTiles() {
-      return this.showAccessManagement || this.showSystem
     }
   }
 }
