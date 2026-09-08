@@ -92,11 +92,14 @@ function dummyParams(path) {
   return params
 }
 
-// Resolves a named route on the given router instance, auto-filling any dynamic
-// segments (:id, :id?) with dummy values so required params never block resolution.
+// Dummy params for a named route, auto-filling any dynamic segments (:id, :id?) so
+// required params never block resolution/navigation.
+function paramsFor(name) {
+  return dummyParams(enumerationRouter.getRoutes().find(r => r.name === name).path)
+}
+
 function resolveRoute(router, name) {
-  const path = enumerationRouter.getRoutes().find(r => r.name === name).path
-  return router.resolve({ name, params: dummyParams(path) })
+  return router.resolve({ name, params: paramsFor(name) })
 }
 
 function createRootStub(overrides = {}) {
@@ -114,17 +117,6 @@ function createRootStub(overrides = {}) {
     $refs: { error: { show: vi.fn() } },
     ...overrides,
   }
-}
-
-async function runGuardChain(matched, to, from) {
-  for (const record of matched) {
-    const guards = Array.isArray(record.beforeEnter) ? record.beforeEnter : (record.beforeEnter ? [record.beforeEnter] : [])
-    for (const guard of guards) {
-      const result = await guard(to, from)
-      if (result !== undefined && result !== true) return result
-    }
-  }
-  return true
 }
 
 // Finds the guard that actually gates `name`: its own beforeEnter, or -- for a route
@@ -174,23 +166,19 @@ describe('router guards', () => {
       // navigation -- otherwise a permission redirect would mask a broken auth check.
       router.setRoot(createRootStub({ user: null, applicationPermissions: vi.fn(() => true) }))
 
-      const from = router.resolve('/')
-      const to = resolveRoute(router, name)
+      await router.push({ name, params: paramsFor(name) })
 
-      const result = await runGuardChain(to.matched, to, from)
-
-      expect(result).not.toBe(true)
+      // Never actually landed on the protected route -- either the navigation was
+      // aborted, or it was redirected somewhere else (login/setup/no-permission).
+      expect(router.currentRoute.value.name).not.toBe(name)
     })
 
     it('allows navigation past the auth gate once the user is authenticated', async () => {
       router.setRoot(createRootStub({ user: { id: 'u1' } }))
 
-      const from = router.resolve('/')
-      const to = router.resolve({ name: 'start' })
+      await router.push({ name: 'start' })
 
-      const result = await runGuardChain(to.matched, to, from)
-
-      expect(result).toBe(true)
+      expect(router.currentRoute.value.name).toBe('start')
     })
   })
 
@@ -234,12 +222,9 @@ describe('router guards', () => {
       axios.create.mockReturnValue({ get: vi.fn().mockRejectedValue(new Error('network error')) })
       router.setRoot(createRootStub({ user: null }))
 
-      const from = router.resolve('/')
-      const to = resolveRoute(router, name)
+      await router.push({ name, params: paramsFor(name) })
 
-      const result = await runGuardChain(to.matched, to, from)
-
-      expect(result).not.toBe(true)
+      expect(router.currentRoute.value.name).not.toBe(name)
     })
 
     it.each(Object.entries(STANDALONE_GUARDED_ROUTES))('"%s" requires permission %o once authenticated', async (name, { permission, guardIndex }) => {
