@@ -16,6 +16,7 @@
  */
 import { describe, it, expect, vi } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
+import { mergeModelerTranslations } from 'cibseven-modeler'
 import { i18n, switchLanguage, registerTranslationLoader } from '@/i18n'
 
 vi.mock('@/globals.js', () => ({
@@ -28,6 +29,57 @@ vi.mock('@cib/common-frontend', () => ({ mergeLocaleMessage: vi.fn() }))
 vi.mock('cibseven-modeler', () => ({ mergeModelerTranslations: vi.fn() }))
 
 const config = { supportedLanguages: ['en', 'de', 'es'] }
+
+describe('loadTranslations', () => {
+  /**
+   * The libraries merge their messages synchronously, and the first switch happens
+   * during startup: one of them throwing must not leave the application unstarted.
+   */
+  it('switches the language and keeps loading when a source throws', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+    mergeModelerTranslations.mockImplementationOnce(() => {
+      throw new Error('modeler messages unavailable')
+    })
+    const reached = []
+    registerTranslationLoader(lang => {
+      reached.push(lang)
+      return Promise.resolve()
+    })
+
+    await expect(switchLanguage({ supportedLanguages: ['en', 'nl'] }, 'nl')).resolves.toBe('nl')
+
+    expect(i18n.global.locale).toBe('nl')
+    // The sources after the failing one still run
+    expect(reached).toContain('nl')
+    expect(error).toHaveBeenCalled()
+    error.mockRestore()
+  })
+
+  /** Half-loaded messages are worth another attempt, so the language is not remembered. */
+  it('loads the sources again on the next switch to a language that failed', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    mergeModelerTranslations.mockImplementationOnce(() => {
+      throw new Error('modeler messages unavailable')
+    })
+    const languages = { supportedLanguages: ['en', 'pt'] }
+
+    await switchLanguage(languages, 'pt')
+    mergeModelerTranslations.mockClear()
+    await switchLanguage(languages, 'pt')
+
+    expect(mergeModelerTranslations).toHaveBeenCalledWith(i18n, 'pt')
+    console.error.mockRestore()
+  })
+
+  it('remembers a language whose sources all loaded', async () => {
+    await switchLanguage({ supportedLanguages: ['en', 'it'] }, 'it')
+    mergeModelerTranslations.mockClear()
+
+    await switchLanguage({ supportedLanguages: ['en', 'it'] }, 'it')
+
+    expect(mergeModelerTranslations).not.toHaveBeenCalled()
+  })
+})
 
 describe('registerTranslationLoader', () => {
   /**

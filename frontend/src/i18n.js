@@ -104,52 +104,70 @@ const extraLoaders = []
  */
 const registerTranslationLoader = function(load) {
   extraLoaders.push(load)
-  loadedLanguages.forEach(lang => runTranslationLoader(load, lang))
+  loadedLanguages.forEach(lang => runTranslationSource('a registered source', lang, () => load(lang)))
 }
 
 /**
- * Runs one registered loader. Their messages come from outside the application -
- * a plugin fetches its own files - so one that fails must leave the language
- * switch, and with it the startup, alone.
+ * Runs one translation source. Their messages come from outside this module -
+ * libraries, files fetched at runtime, a plugin's own translations - so one that
+ * fails must leave the language switch, and with it the startup, alone.
  *
- * @param {(lang: string) => Promise<void>} load
+ * @param {string} source - Named in the log, to tell the sources apart
  * @param {string} lang
+ * @param {() => void|Promise<void>} load
+ * @returns {Promise<boolean>} whether the source was loaded
  */
-const runTranslationLoader = async function(load, lang) {
+const runTranslationSource = async function(source, lang, load) {
   try {
-    await load(lang)
+    await load()
+    return true
   } catch (error) {
-    console.error(`A registered translation loader failed for "${lang}":`, error)
+    console.error(`Translations from "${source}" could not be loaded for "${lang}":`, error)
+    return false
   }
 }
 
+/**
+ * Merges the messages of every requested source. Never rejects: a source that
+ * fails is logged and skipped, so the ones after it are still loaded.
+ *
+ * @returns {Promise<boolean>} whether every source was loaded
+ */
 const loadTranslations = async function(config, lang, sources = defaultTranslationSources) {
+  const loaded = []
+
   if (sources.includes(translationSources.commonComponents)) {
     // Add translations from @cib/common-frontend library
-    commonFrontendMergeLocaleMessage(i18n, lang)
+    loaded.push(await runTranslationSource('@cib/common-frontend', lang,
+      () => commonFrontendMergeLocaleMessage(i18n, lang)))
   }
 
   if (sources.includes(translationSources.sevenComponents)) {
     // Add translations from src/assets/translations_*.json
-    loadTranslationsFromSevenComponents(i18n, lang)
+    loaded.push(await runTranslationSource('cibseven-components', lang,
+      () => loadTranslationsFromSevenComponents(i18n, lang)))
   }
 
   if (sources.includes(translationSources.modelerComponents)) {
     // Add translations from cibseven-modeler library
-    loadTranslationsFromModeler(i18n, lang)
+    loaded.push(await runTranslationSource('cibseven-modeler', lang,
+      () => loadTranslationsFromModeler(i18n, lang)))
   }
 
   if (sources.includes(translationSources.public)) {
     // Add translations from public/translations_*.json
-    await loadTranslationsFromPublic(lang)
+    loaded.push(await runTranslationSource('public', lang, () => loadTranslationsFromPublic(lang)))
   }
 
   if (sources.includes(translationSources.themes)) {
     // Add translations from public/themes/translations_*.json
-    await loadTranslationsFromThemes(config, lang)
+    loaded.push(await runTranslationSource('themes', lang, () => loadTranslationsFromThemes(config, lang)))
   }
 
-  await Promise.all(extraLoaders.map(load => runTranslationLoader(load, lang)))
+  loaded.push(...await Promise.all(extraLoaders.map(
+    load => runTranslationSource('a registered source', lang, () => load(lang)))))
+
+  return loaded.every(Boolean)
 }
 
 const setLanguage = function(language) {
@@ -169,10 +187,12 @@ const switchLanguage = async function(config, lang) {
     return Promise.resolve(language)
   }
 
-  // Load translations before switching language
-  await loadTranslations(config, language)
-
-  loadedLanguages.push(language)
+  // Load translations before switching language. A language whose sources did not
+  // all load is not remembered, so switching to it again tries them once more -
+  // and it is switched to either way, since its keys beat no application at all.
+  if (await loadTranslations(config, language)) {
+    loadedLanguages.push(language)
+  }
   setLanguage(language)
 
   return Promise.resolve(language)
