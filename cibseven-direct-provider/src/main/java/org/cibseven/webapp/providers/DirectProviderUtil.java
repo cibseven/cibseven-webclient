@@ -51,6 +51,9 @@ import lombok.Setter;
 
 public class DirectProviderUtil {
 
+	private static final String FIRST_RESULT_PARAM = "firstResult";
+	private static final String MAX_RESULTS_PARAM = "maxResults";
+
 	protected Map<String, ProcessEngine> processEngines = new HashMap<>();
 	protected Map<String, ObjectMapper> objectMappers = new HashMap<>();
 	@Setter
@@ -219,5 +222,38 @@ public class DirectProviderUtil {
 			throw new SystemException(errorMessage);
 		}
 		return value;
+	}
+
+	protected Integer getFirstResult(Map<String, Object> params) {
+		return getPagingParam(params, FIRST_RESULT_PARAM);
+	}
+
+	protected Integer getMaxResults(Map<String, Object> params) {
+		return getPagingParam(params, MAX_RESULTS_PARAM);
+	}
+
+	/**
+	 * Copy of the request parameters without the paging keys, so that they are not
+	 * offered to the query DTO as filter criteria.
+	 */
+	protected Map<String, Object> withoutPagingParams(Map<String, Object> params) {
+		Map<String, Object> queryParams = new HashMap<>(params);
+		queryParams.remove(FIRST_RESULT_PARAM);
+		queryParams.remove(MAX_RESULTS_PARAM);
+		return queryParams;
+	}
+
+	/**
+	 * Values arrive as strings via {@code @RequestParam}, but internal callers may
+	 * pass numbers.
+	 */
+	private Integer getPagingParam(Map<String, Object> params, String name) {
+		Object value = params.get(name);
+		if (value == null)
+			return null;
+		if (value instanceof Number)
+			return ((Number) value).intValue();
+		String text = value.toString().trim();
+		return text.isEmpty() ? null : Integer.valueOf(text);
 	}
 }
