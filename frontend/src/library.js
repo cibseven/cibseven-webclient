@@ -30,9 +30,7 @@ export { appRoutes,
   createAppRouter,
   authGuard,
   setupGuard,
-  permissionsGuard,
-  permissionsDeniedGuard,
-  permissionsGuardUserAdmin } from './router.js'
+  permissionsGuard } from './router.js'
 export { updateAppTitle, checkExternalReturn, isMobile, hasHeader, getTheme, loadTheme, applyTheme, handleAxiosError, fetchAndStoreProcesses, fetchDecisionsIfEmpty, setupTaskNotifications } from './utils/init'
 export { parseXMLDocumentation } from './utils/parser.js'
 export { applyConfigDefaults } from './utils/config.js'
