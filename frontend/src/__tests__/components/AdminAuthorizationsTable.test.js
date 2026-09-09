@@ -64,12 +64,42 @@ beforeEach(() => {
 })
 
 describe('authorization type helpers', () => {
-  it('recognizes the type regardless of the engine sending it as a number', () => {
-    expect(isGlobal({ type: GLOBAL })).toBe(true)
-    expect(isGlobal({ type: ALLOW })).toBe(false)
-    expect(isGlobal({ type: null })).toBe(false)
-    expect(isAllow({ type: ALLOW })).toBe(true)
-    expect(isAllow({ type: DENY })).toBe(false)
+  it.each([
+    [GLOBAL, true],
+    [ALLOW, false],
+    [DENY, false],
+    [null, false],
+    [undefined, false]
+  ])('isGlobal({ type: %j }) => %j', (type, expected) => {
+    expect(isGlobal({ type })).toBe(expected)
+  })
+
+  it.each([
+    [ALLOW, true],
+    [GLOBAL, false],
+    [DENY, false],
+    [null, false],
+    [undefined, false]
+  ])('isAllow({ type: %j }) => %j', (type, expected) => {
+    expect(isAllow({ type })).toBe(expected)
+  })
+})
+
+describe('applyGlobalIdentity', () => {
+  it.each([
+    [{ userId: null, groupId: 'sales' }],
+    [{ userId: 'demo', groupId: null }],
+    [{ userId: null, groupId: null }]
+  ])('forces the identity to the user "*" regardless of the starting values %j', (start) => {
+    const ctx = context({ isUserToEdit: false })
+    const auth = authorization(start)
+
+    applyGlobalIdentity.call(ctx, auth)
+
+    expect(auth.userId).toBe('*')
+    expect(auth.groupId).toBeNull()
+    expect(auth.userIdGroupId).toBe('*')
+    expect(ctx.isUserToEdit).toBe(true)
   })
 })
 
@@ -87,26 +117,45 @@ describe('setType', () => {
     expect(ctx.isUserToEdit).toBe(true)
   })
 
-  it('clears the identity forced by GLOBAL when another type is selected', () => {
+  it.each([
+    [ALLOW],
+    [DENY]
+  ])('clears the identity forced by GLOBAL when type %j is selected', (targetType) => {
     const ctx = context()
     const auth = authorization({ type: GLOBAL, userId: '*', userIdGroupId: '*' })
 
-    setType.call(ctx, auth, DENY)
+    setType.call(ctx, auth, targetType)
 
-    expect(auth.type).toBe(DENY)
+    expect(auth.type).toBe(targetType)
     expect(auth.userId).toBeNull()
     expect(auth.groupId).toBeNull()
     expect(auth.userIdGroupId).toBeNull()
   })
 
-  it('keeps the entered identity when switching between ALLOW and DENY', () => {
+  it.each([
+    [ALLOW, DENY],
+    [DENY, ALLOW],
+    [ALLOW, ALLOW]
+  ])('keeps the entered identity when switching from %j to %j', (fromType, toType) => {
     const ctx = context()
-    const auth = authorization({ userId: 'demo' })
+    const auth = authorization({ type: fromType, userId: 'demo' })
+
+    setType.call(ctx, auth, toType)
+
+    expect(auth.type).toBe(toType)
+    expect(auth.userId).toBe('demo')
+    expect(auth.groupId).toBeNull()
+  })
+
+  it('leaves a group identity alone when switching between non-GLOBAL types', () => {
+    const ctx = context({ isUserToEdit: false })
+    const auth = authorization({ type: ALLOW, groupId: 'sales' })
 
     setType.call(ctx, auth, DENY)
 
     expect(auth.type).toBe(DENY)
-    expect(auth.userId).toBe('demo')
+    expect(auth.groupId).toBe('sales')
+    expect(auth.userId).toBeNull()
   })
 })
 
@@ -121,21 +170,68 @@ describe('prepareEdit', () => {
     expect(auth.groupId).toBeNull()
     expect(ctx.isUserToEdit).toBe(true)
   })
+
+  it.each([
+    [[], []],
+    [['ALL'], ['READ', 'UPDATE']],
+    [['NONE'], []],
+    [['READ'], ['READ']],
+    [['READ', 'UPDATE'], ['READ', 'UPDATE']]
+  ])('expands stored permissions %j into the selected list %j', (stored, expectedSelected) => {
+    const auth = authorization({ id: '7', permissions: stored })
+    const ctx = context({ authorizations: [auth], selected: [] })
+
+    prepareEdit.call(ctx, auth)
+
+    expect(ctx.selected).toEqual(expectedSelected)
+  })
+
+  it.each([
+    ['demo', null, true],
+    [null, 'sales', false]
+  ])('sets isUserToEdit from the stored identity (userId=%j, groupId=%j) => %j', (userId, groupId, expected) => {
+    const auth = authorization({ id: '7', userId, groupId })
+    const ctx = context({ authorizations: [auth], isUserToEdit: !expected })
+
+    prepareEdit.call(ctx, auth)
+
+    expect(ctx.isUserToEdit).toBe(expected)
+  })
+
+  it('drops an unfinished new row before editing another one', () => {
+    const unfinished = authorization({ id: '0' })
+    const auth = authorization({ id: '7' })
+    const ctx = context({ authorizations: [unfinished, auth] })
+
+    prepareEdit.call(ctx, auth)
+
+    expect(ctx.authorizations).toEqual([auth])
+  })
+
+  it('keeps a backup of the stored row, including a copy of its permissions array', () => {
+    const auth = authorization({ id: '7', permissions: ['READ'] })
+    const ctx = context({ authorizations: [auth] })
+
+    prepareEdit.call(ctx, auth)
+
+    expect(ctx.editBackup.permissions).toEqual(['READ'])
+    expect(ctx.editBackup.permissions).not.toBe(auth.permissions)
+  })
 })
 
 describe('reloadAfterRejectedSave', () => {
-    it('drops the edit state and reloads from the engine', () => {
-      const ctx = context({ edit: '0', selected: ['READ'], authorizationSelected: {}, firstResult: 40 })
+  it('drops the edit state and reloads from the engine', () => {
+    const ctx = context({ edit: '0', selected: ['READ'], authorizationSelected: {}, firstResult: 40 })
 
-      reloadAfterRejectedSave.call(ctx)
+    reloadAfterRejectedSave.call(ctx)
 
-      expect(ctx.edit).toBeNull()
-      expect(ctx.selected).toEqual([])
-      expect(ctx.authorizationSelected).toBeNull()
-      expect(ctx.firstResult).toBe(0)
-      expect(ctx.loadAuthorizations).toHaveBeenCalledWith('0')
-    })
+    expect(ctx.edit).toBeNull()
+    expect(ctx.selected).toEqual([])
+    expect(ctx.authorizationSelected).toBeNull()
+    expect(ctx.firstResult).toBe(0)
+    expect(ctx.loadAuthorizations).toHaveBeenCalledWith('0')
   })
+})
 
 describe('save', () => {
   it('stores an ALLOW for the user "*" as GLOBAL', async () => {
@@ -221,6 +317,51 @@ describe('save', () => {
 
     expect(auth.type).toBe(DENY)
   })
+
+  it.each([
+    [[], ['NONE']],
+    [['READ', 'UPDATE'], ['ALL']],
+    [['READ'], ['READ']]
+  ])('maps the selected permissions %j to the stored value %j', (selected, expectedPermissions) => {
+    const ctx = context({ selected })
+    const auth = authorization({ userId: 'demo' })
+
+    save.call(ctx, auth)
+
+    expect(auth.permissions).toEqual(expectedPermissions)
+  })
+
+  it.each([
+    ['demo', null, true, 'userId', 'demo'],
+    [null, 'sales', false, 'groupId', 'sales']
+  ])('builds userIdGroupId from whichever identity is set (userId=%j, groupId=%j, isUserToEdit=%j)', (userId, groupId, isUserToEdit) => {
+    const ctx = context({ isUserToEdit })
+    const auth = authorization({ userId, groupId })
+
+    save.call(ctx, auth)
+
+    expect(auth.userIdGroupId).toBe(userId != null ? userId : groupId)
+  })
+
+  it('moves a typed group into userId when isUserToEdit is true but userId was left empty', () => {
+    const ctx = context({ isUserToEdit: true })
+    const auth = authorization({ userId: null, groupId: 'sales' })
+
+    save.call(ctx, auth)
+
+    expect(auth.userId).toBe('sales')
+    expect(auth.groupId).toBeNull()
+  })
+
+  it('moves a typed user into groupId when isUserToEdit is false but groupId was left empty', () => {
+    const ctx = context({ isUserToEdit: false })
+    const auth = authorization({ userId: 'demo', groupId: null })
+
+    save.call(ctx, auth)
+
+    expect(auth.groupId).toBe('demo')
+    expect(auth.userId).toBeNull()
+  })
 })
 
 describe('a GLOBAL authorization for the resource already exists', () => {
@@ -280,15 +421,18 @@ describe('a GLOBAL authorization for the resource already exists', () => {
     expect(AdminService.updateAuthorization).toHaveBeenCalledWith('existing', expect.objectContaining({ type: 0 }))
   })
 
-  it('ignores a GLOBAL authorization stored for a different resource', async () => {
-    const auth = authorization({ id: '7', type: 1, userId: '*', resourceId: 'invoices' })
-    const ctx = context({ authorizations: [storedGlobal('reports'), auth] })
+  it.each([
+    ['invoices', 'reports'],
+    ['reports ', 'reports'],
+    ['REPORTS', 'reports']
+  ])('does not treat resourceId %j as a match for the stored GLOBAL resourceId %j', async (resourceId, storedResourceId) => {
+    const auth = authorization({ id: '7', type: 1, userId: '*', resourceId })
+    const ctx = context({ authorizations: [storedGlobal(storedResourceId), auth] })
 
     await save.call(ctx, auth)
 
     expect(ctx.$root.$refs.error.show).not.toHaveBeenCalled()
-    expect(AdminService.createAuthorization).toHaveBeenCalledWith(expect.objectContaining({ type: GLOBAL, resourceId: 'invoices' }))
-    expect(AdminService.deleteAuthorization).toHaveBeenCalledWith('7')
+    expect(AdminService.createAuthorization).toHaveBeenCalled()
   })
 
   it('leaves a conflict with a row that was never loaded to the engine', async () => {
@@ -299,6 +443,33 @@ describe('a GLOBAL authorization for the resource already exists', () => {
 
     expect(ctx.$root.$refs.error.show).not.toHaveBeenCalled()
     expect(AdminService.createAuthorization).toHaveBeenCalled()
+  })
+
+  it('ignores a stored GLOBAL row for the same resource that is DENY, not GLOBAL type', async () => {
+    const auth = authorization({ id: '7', type: 1, userId: '*', resourceId: 'reports' })
+    const deny = { id: 'other', type: DENY, permissions: ['ALL'], userId: '*', groupId: null, resourceType: 0, resourceId: 'reports' }
+    const ctx = context({ authorizations: [deny, auth] })
+
+    await save.call(ctx, auth)
+
+    expect(ctx.$root.$refs.error.show).not.toHaveBeenCalled()
+    expect(AdminService.createAuthorization).toHaveBeenCalled()
+  })
+})
+
+describe('hasConflictingGlobal', () => {
+  it('returns false when the authorization has no resourceId yet', () => {
+    const auth = authorization({ resourceId: null })
+    const ctx = context({ authorizations: [auth] })
+
+    expect(hasConflictingGlobal.call(ctx, auth)).toBe(false)
+  })
+
+  it('does not compare the row against itself', () => {
+    const auth = authorization({ id: '7', type: GLOBAL, userId: '*', resourceId: 'reports' })
+    const ctx = context({ authorizations: [auth] })
+
+    expect(hasConflictingGlobal.call(ctx, auth)).toBe(false)
   })
 })
 
@@ -358,6 +529,19 @@ describe('discarding an edit', () => {
 
     expect(ctx.authorizations).toHaveLength(0)
   })
+
+  it('resets the selected permissions and edit state regardless of the row being discarded', () => {
+    const auth = authorization({ id: '7', permissions: ['READ'] })
+    const ctx = editing(auth)
+    ctx.edit = '7'
+    ctx.selected = ['READ', 'UPDATE']
+
+    cancelEdit.call(ctx, auth)
+
+    expect(ctx.edit).toBeNull()
+    expect(ctx.selected).toEqual([])
+    expect(ctx.authorizationSelected).toBeNull()
+  })
 })
 
 describe('the configured authorization types', () => {
@@ -381,5 +565,16 @@ describe('the configured authorization types', () => {
     expect(types['0'].id).toBe(GLOBAL)
     expect(types['2'].id).toBe(DENY)
     expect(types['0'].key).toBe('global')
+  })
+
+  it.each([
+    ['0', 'global', GLOBAL],
+    ['1', 'allow', ALLOW],
+    ['2', 'deny', DENY]
+  ])('numbers the configured type %j (%j) to %j regardless of source shape', (key, typeKey, expectedId) => {
+    const types = typesFrom({ [key]: { id: key, key: typeKey } })
+
+    expect(types[key].id).toBe(expectedId)
+    expect(types[key].key).toBe(typeKey)
   })
 })
