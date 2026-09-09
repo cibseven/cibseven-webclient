@@ -28,7 +28,7 @@ vi.mock('@/services.js', () => ({
 }))
 
 const { isGlobal, isAllow, setType, applyGlobalIdentity, save, prepareEdit, reloadAfterRejectedSave,
-  findConflictingGlobal, persistAuthorization, cancelEdit } = AdminAuthorizationsTable.methods
+  hasConflictingGlobal, persistAuthorization, cancelEdit } = AdminAuthorizationsTable.methods
 
 const GLOBAL = 0
 const ALLOW = 1
@@ -49,7 +49,7 @@ function context(overrides = {}) {
     isGlobal,
     isAllow,
     applyGlobalIdentity,
-    findConflictingGlobal,
+    hasConflictingGlobal,
     persistAuthorization,
     ...overrides
   }
@@ -66,10 +66,9 @@ beforeEach(() => {
 describe('authorization type helpers', () => {
   it('recognizes the type regardless of the engine sending it as a number', () => {
     expect(isGlobal({ type: GLOBAL })).toBe(true)
-    expect(isGlobal({ type: '0' })).toBe(true)
     expect(isGlobal({ type: ALLOW })).toBe(false)
     expect(isGlobal({ type: null })).toBe(false)
-    expect(isAllow({ type: '1' })).toBe(true)
+    expect(isAllow({ type: ALLOW })).toBe(true)
     expect(isAllow({ type: DENY })).toBe(false)
   })
 })
@@ -358,5 +357,29 @@ describe('discarding an edit', () => {
     cancelEdit.call(ctx, auth)
 
     expect(ctx.authorizations).toHaveLength(0)
+  })
+})
+
+describe('the configured authorization types', () => {
+  // admin.types is deployment configuration, its ids have been strings and are now numbers
+  function typesFrom(configured) {
+    return AdminAuthorizationsTable.data.call({
+      $root: { config: { admin: { types: configured, resourcesTypes: {} } } }
+    }).types
+  }
+
+  it('numbers ids that the configuration carries as strings', () => {
+    const types = typesFrom({ '0': { id: '0', key: 'global' }, '1': { id: '1', key: 'allow' } })
+
+    expect(types['0'].id).toBe(GLOBAL)
+    expect(types['1'].id).toBe(ALLOW)
+  })
+
+  it('leaves ids that are already numbers alone', () => {
+    const types = typesFrom({ '0': { id: 0, key: 'global' }, '2': { id: 2, key: 'deny' } })
+
+    expect(types['0'].id).toBe(GLOBAL)
+    expect(types['2'].id).toBe(DENY)
+    expect(types['0'].key).toBe('global')
   })
 })

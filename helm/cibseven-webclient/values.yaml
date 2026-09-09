@@ -529,9 +529,9 @@ configmaps:
               "1": { "id": "1", "key": "user", "permissions": ["READ","UPDATE","CREATE","DELETE"] }
             },
             "types": {
-              "0": { "id": "0", "key": "global" },
-              "1": { "id": "1", "key": "allow" },
-              "2": { "id": "2", "key": "deny" }
+              "0": { "id": 0, "key": "global" },
+              "1": { "id": 1, "key": "allow" },
+              "2": { "id": 2, "key": "deny" }
             }
           },
           "notifications": {{ .Values.ui.notifications | toJson }},

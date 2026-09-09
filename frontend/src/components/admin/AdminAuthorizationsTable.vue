@@ -58,7 +58,7 @@
                   </b-button>
                 </template>
                 <b-dropdown-item class="ms-2" v-for="type in types" :key="type.key"
-                  @click="setType(row.item, type.id)" :active="Number(row.item.type) === Number(type.id)">
+                  @click="setType(row.item, type.id)" :active="row.item.type === type.id">
                   {{ $t('admin.authorizations.types.' + type.key) }}
                 </b-dropdown-item>
               </b-dropdown>
@@ -183,7 +183,12 @@ import { FlowTable, TaskPopper, ConfirmDialog, BWaitingBox } from '@cib/common-f
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import WarningBox from '@/components/common-components/WarningBox.vue'
 
-// Authorization types as configured in admin.types and evaluated by the engine.
+// admin.types is deployment configuration and has carried its ids as strings, while the engine
+// models the type as an int. Numbering them here keeps the type a number everywhere below.
+function numberedTypes(types) {
+  return Object.fromEntries(Object.entries(types).map(([key, type]) => [key, { ...type, id: Number(type.id) }]))
+}
+
 const TYPE_GLOBAL = 0
 const TYPE_ALLOW = 1
 // The engine's wildcard identity, meaning "every user".
@@ -198,7 +203,7 @@ export default {
       filter: '',
       authorizations: [],
       resourcesTypes: this.$root.config.admin.resourcesTypes,
-      types: this.$root.config.admin.types,
+      types: numberedTypes(this.$root.config.admin.types),
       edit: null,
       editBackup: null,
       isUserToEdit: true,
@@ -341,14 +346,14 @@ export default {
       }
     },
     isGlobal: function (authorization) {
-      return authorization.type != null && Number(authorization.type) === TYPE_GLOBAL
+      return authorization.type === TYPE_GLOBAL
     },
     isAllow: function (authorization) {
-      return authorization.type != null && Number(authorization.type) === TYPE_ALLOW
+      return authorization.type === TYPE_ALLOW
     },
     setType: function (authorization, typeId) {
       const wasGlobal = this.isGlobal(authorization)
-      authorization.type = Number(typeId)
+      authorization.type = typeId
       if (this.isGlobal(authorization)) {
         this.applyGlobalIdentity(authorization)
       } else if (wasGlobal) {
@@ -391,10 +396,7 @@ export default {
       } else {
         authorization.permissions = this.selected
       }
-      // The engine keys an authorization by type, identity and resource, so a second GLOBAL row for the
-      // same resource is refused by its persistence layer with a purely technical error. Name the actual
-      // conflict instead, and leave the row in the editor so the resource can be corrected.
-      if (this.isGlobal(authorization) && this.findConflictingGlobal(authorization)) {
+      if (this.isGlobal(authorization) && this.hasConflictingGlobal(authorization)) {
         // Show the row as it was entered again, the conversion never reached the engine.
         if (convertedToGlobal) authorization.type = TYPE_ALLOW
         this.$root.$refs.error.show({ type: 'globalAuthorizationExists', params: [authorization.resourceId] })
@@ -403,12 +405,12 @@ export default {
 
       return this.persistAuthorization(authorization, convertedToGlobal)
     },
-    findConflictingGlobal: function (authorization) {
-      if (authorization.resourceId == null) return null
+    hasConflictingGlobal: function (authorization) {
+      if (authorization.resourceId == null) return false
       // Checked against the rows at hand, so saving stays a single request. A conflict with a row that was
       // never loaded still ends up rejected by the engine, and reloadAfterRejectedSave() cleans that up.
-      return this.authorizations.find(row => row !== authorization && this.isGlobal(row) &&
-        row.resourceId === authorization.resourceId) || null
+      return this.authorizations.some(row => row !== authorization && this.isGlobal(row) &&
+        row.resourceId === authorization.resourceId)
     },
     persistAuthorization: function (authorization, convertedToGlobal) {
       this.editBackup = null
