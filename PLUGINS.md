@@ -319,6 +319,11 @@ What this document describes may not change incompatibly within a line. A plugin
 should therefore be retested when the minor version rises, and can be published
 for several lines at once once it has been.
 
+The interface is frozen in `frontend/src/__tests__/plugins/pluginInterface.test.js`:
+the runtime exports, the argument of `register`, the slots with their props, and
+the manifest fields. Changing any of them fails that test, which is where the
+version is raised along with the list.
+
 ## Trust model and limits
 
 **Plugin code is not sandboxed.** It is imported into the webclient page and has
