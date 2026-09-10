@@ -188,8 +188,11 @@ describe('package', () => {
       expect(missing).toEqual([])
     })
 
-    it('exports paths that exist', () => {
-      const absent = exported.filter(target => !fs.existsSync(path.resolve(srcDir, '..', target)))
+    /** Sources only: the bundles are build output and do not exist while testing. */
+    it('exports source paths that exist', () => {
+      const absent = exported
+        .filter(target => !target.startsWith('./dist/'))
+        .filter(target => !fs.existsSync(path.resolve(srcDir, '..', target)))
 
       expect(absent).toEqual([])
     })
