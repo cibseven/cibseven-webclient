@@ -47,6 +47,13 @@ export default mergeConfig(
           // built on its own, against the import map: its imports do not resolve here
           'plugin-example/**',
 
+          // Entry-point scripts: their module scope boots the application, so importing
+          // them in jsdom has no meaningful unit under test. 'app.js' mounts the SPA
+          // ('createApp(...).mount("#app")'), 'sso-login.js' assigns 'location.href',
+          // which jsdom refuses to navigate. Both are covered by the Playwright E2E suite.
+          'src/app.js',
+          'src/sso-login.js',
+
           // Exclude test files
           'src/__tests__/**',
 
