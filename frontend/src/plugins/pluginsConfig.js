@@ -25,6 +25,18 @@ import { version } from '../../package.json'
  */
 export const PLUGIN_API_VERSION = version.split('.').slice(0, 2).join('.')
 
+/**
+ * Identifies this runtime instance. Two different values observed by application
+ * and plugin mean the plugin loaded a second copy of the runtime, i.e. the import
+ * map or the plugin build is misconfigured.
+ *
+ * @returns {{ apiVersion: string, instance: object }}
+ */
+const runtimeInstance = Object.freeze({})
+export function getRuntimeInfo() {
+  return { apiVersion: PLUGIN_API_VERSION, instance: runtimeInstance }
+}
+
 /** @type {Record<string, import('vue').ShallowRef<Array<object>>>} */
 const pluginSlots = {}
 

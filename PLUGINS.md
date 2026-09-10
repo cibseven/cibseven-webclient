@@ -299,9 +299,10 @@ Two things follow from the list being shared:
   concurrently and register when their module has arrived, so with two plugins
   their tabs can appear in either order. The built-in tabs always come first.
 
-In the enterprise webclient the tab bar is replaced by
-`ProcessInstanceTabsPlugin.vue`, an older build-time extension point, so plugin
-tabs appear in CE today and EE needs the same few lines in that component.
+An application embedding this webclient renders the same slots, as long as it
+supplies a `plugin-runtime` entry of its own - module instances only exist within
+one build - and injects the import map with
+`pluginRuntimeImportMap` from `cibseven-components/vite`.
 
 ## Compatibility
 
