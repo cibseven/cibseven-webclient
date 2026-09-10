@@ -33,7 +33,11 @@ import { getDeepLinkEntries, resolveDeepLinkLabel, buildDeepLinkUrl } from '@/ut
 export default {
   name: 'DeepLinkButtons',
   props: {
-    section: { type: String, required: true },
+    section: {
+      type: String,
+      required: true,
+      validator: value => ['processInstance', 'processDefinition', 'decisionDefinition', 'decisionInstance'].includes(value)
+    },
     params: { type: Object, required: true },
     collapseButtons: { type: Boolean, required: false, default: false },
   },
