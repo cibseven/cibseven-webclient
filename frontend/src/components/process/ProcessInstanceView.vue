@@ -196,6 +196,7 @@ export default {
     },
     matchedDeepLink() {
       return getDeepLinkEntries(this.$root.config, 'processInstance', RESERVED_TAB_IDS)
+        .filter(entry => entry.type === 'tab')
         .find(entry => entry.id === this.activeTab)
     },
     matchedDeepLinkParams() {

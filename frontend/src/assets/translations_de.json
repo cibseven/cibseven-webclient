@@ -1361,5 +1361,8 @@
 			"title": "Warum wird diese Seite angezeigt?",
 			"description": "Sie versuchen, auf die Prozess-Engine \"{0}\" zuzugreifen. Diese Engine ist für die Verwendung des integrierten Identitätsdienstes (Datenbank) konfiguriert, hat jedoch keine administrativen Benutzer eingerichtet. Auf dieser Seite können Sie einen ersten Benutzer für den Zugriff auf die Prozess-Engine erstellen."
 		}
+	},
+	"deepLink": {
+		"tooltip": "Öffnen {text}\n{url}"
 	}
 }

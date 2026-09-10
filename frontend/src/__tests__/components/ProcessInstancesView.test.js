@@ -22,13 +22,21 @@ describe('ProcessInstancesView', () => {
     it('returns the deep link entry matching the active tab', () => {
       const context = {
         activeTab: 'myExternalLinkId',
-        $root: { config: { deepLinks: { processDefinition: [{ id: 'myExternalLinkId', url: 'https://external.example' }] } } }
+        $root: { config: { deepLinks: { processDefinition: [{ id: 'myExternalLinkId', url: 'https://external.example', type: 'tab' }] } } }
       }
-      expect(ProcessInstancesView.computed.matchedDeepLink.call(context)).toEqual({ id: 'myExternalLinkId', url: 'https://external.example', text: 'deepLinks.processDefinition.myExternalLinkId.title' })
+      expect(ProcessInstancesView.computed.matchedDeepLink.call(context)).toEqual({ id: 'myExternalLinkId', url: 'https://external.example', type: 'tab', text: 'deepLinks.processDefinition.myExternalLinkId.title' })
     })
 
     it('returns undefined when the active tab is a built-in tab', () => {
       const context = { activeTab: 'instances', $root: { config: {} } }
+      expect(ProcessInstancesView.computed.matchedDeepLink.call(context)).toBeUndefined()
+    })
+
+    it('returns undefined when the matching entry is a button-type link', () => {
+      const context = {
+        activeTab: 'myButtonLinkId',
+        $root: { config: { deepLinks: { processDefinition: [{ id: 'myButtonLinkId', url: 'https://external.example', type: 'button' }] } } }
+      }
       expect(ProcessInstancesView.computed.matchedDeepLink.call(context)).toBeUndefined()
     })
   })

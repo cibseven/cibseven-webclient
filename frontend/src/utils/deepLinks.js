@@ -22,6 +22,17 @@
 const ID_PATTERN = /^[a-zA-Z0-9_-]+$/
 
 /**
+ * Checks if there are any valid deep link entries for the given section.
+ * @param {Object} config - the merged application config (this.$root.config)
+ * @param {String} section - one of processDefinition, processInstance, decisionDefinition, decisionInstance
+ * @param {String} [type] - when given, only entries with this entry.type (e.g. "tab", "button") count
+ * @returns {Boolean}
+ */
+export function hasDeepLinks(config, section, type) {
+  return getDeepLinkEntries(config, section).some(entry => !type || entry.type === type)
+}
+
+/**
  * Reads and validates the config.deepLinks[section] array, dropping any
  * entry with an invalid id, a missing url, an id that collides with a
  * built-in tab id, or a duplicate id.
@@ -55,8 +66,7 @@ export function getDeepLinkEntries(config, section, reservedIds = []) {
     seen.add(entry.id)
     return true
   }).map(entry => ({
-    id: entry.id,
-    url: entry.url,
+    ...entry,
     text: `deepLinks.${section}.${entry.id}.title`
   }))
 }

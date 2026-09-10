@@ -16,18 +16,19 @@
 -->
 <template>
   <div class="d-flex flex-column h-100">
-    <div v-if="isActiveInstance || ProcessVariablesSearchBoxPlugin || selectedActivityId || selectedScopeInstanceId" class="bg-white d-flex w-100 flex-wrap">
-      <div v-if="ProcessVariablesSearchBoxPlugin" :class="isActiveInstance ? 'col-10 p-2' : 'col-12 p-2'">
+    <div v-if="isActiveInstance || hasDeepLinks || ProcessVariablesSearchBoxPlugin || selectedActivityId || selectedScopeInstanceId" class="bg-white d-flex w-100 flex-wrap">
+      <div v-if="ProcessVariablesSearchBoxPlugin" :class="(isActiveInstance || hasDeepLinks) ? 'col-10 p-2' : 'col-12 p-2'">
         <component :is="ProcessVariablesSearchBoxPlugin"
           :query="filter"
           @change-query-object="changeFilter"
           :total-count="filteredVariables.length"
         ></component>
       </div>
-      <div v-if="isActiveInstance" :class="ProcessVariablesSearchBoxPlugin ? 'col-2 p-3' : 'p-3'">
-        <b-button class="border" size="sm" variant="light" @click="addNewVariable" :title="$t('process-instance.addVariable')">
+      <div v-if="isActiveInstance || hasDeepLinks" :class="ProcessVariablesSearchBoxPlugin ? 'col-2 p-3' : 'p-3'">
+        <b-button v-if="isActiveInstance" class="border" size="sm" variant="light" @click="addNewVariable" :title="$t('process-instance.addVariable')">
           <span class="mdi mdi-plus"></span> {{ $t('process-instance.addVariable') }}
         </b-button>
+        <DeepLinkButtons v-if="hasDeepLinks" section="processInstance" />
       </div>
       <div v-if="!ProcessVariablesSearchBoxPlugin && (selectedActivityId || selectedScopeInstanceId)" class="p-3">
         <RemovableBadge
@@ -152,14 +153,16 @@ import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
 import EditVariableModal from '@/components/process/modals/EditVariableModal.vue'
 import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
+import DeepLinkButtons from '@/components/common-components/DeepLinkButtons.vue'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { permissionsMixin } from '@/permissions.js'
 import { mapGetters, mapActions } from 'vuex'
 import variableUtils from '@/components/process/mixins/variableUtils'
+import { hasDeepLinks } from '@/utils/deepLinks.js'
 
 export default {
   name: 'VariablesTable',
-  components: { FlowTable, TaskPopper, AddVariableModal, DeleteVariableModal, EditVariableModal, SuccessAlert, BWaitingBox, CopyableActionButton, CellActionButton, RemovableBadge },
+  components: { FlowTable, TaskPopper, AddVariableModal, DeleteVariableModal, EditVariableModal, SuccessAlert, BWaitingBox, CopyableActionButton, DeepLinkButtons, CellActionButton, RemovableBadge },
   mixins: [ processesVariablesMixin, copyToClipboardMixin, permissionsMixin ],
   data: function() {
     return {
@@ -215,6 +218,9 @@ export default {
       return this.$options.components && this.$options.components.VariablesTableActionsPlugin
         ? this.$options.components.VariablesTableActionsPlugin
         : null
+    },
+    hasDeepLinks() {
+      return hasDeepLinks(this.$root.config, 'processInstance', 'button')
     },
   },
   methods: {

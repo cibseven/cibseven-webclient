@@ -43,8 +43,9 @@ export default {
   props: { modelValue: String },
   emits: ['update:modelValue', 'tab-click'],
   computed: {
-    tabs: function() {
+    tabs() {
       const deepLinkTabs = getDeepLinkEntries(this.$root.config, 'processInstance', RESERVED_TAB_IDS)
+        .filter(entry => entry.type === 'tab')
         .map(entry => ({ id: entry.id, text: resolveDeepLinkLabel(this.$t, entry) }))
       return [
         ...BUILTIN_TABS,

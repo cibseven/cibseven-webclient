@@ -1361,5 +1361,8 @@
 			"title": "Why is this page shown?",
 			"description": "You are trying to access the process engine \"{0}\". This engine is configured to use the built-in identity service (database) but has no administrative users configured. This page allows you to create an initial user for accessing the process engine."
 		}
+	},
+	"deepLink": {
+		"tooltip": "Open {text}\n{url}"
 	}
 }

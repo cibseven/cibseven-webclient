@@ -127,6 +127,7 @@
                   <span class="mdi mdi-file-eye-outline"></span> {{ collapseButtons  ? '': $t('process.showDeployment') }}
                 </b-button>
                 <component :is="ProcessActionsPlugin" v-if="ProcessActionsPlugin" :process="process" :collapseButtons="collapseButtons"></component>
+                <DeepLinkButtons section="processInstance" :collapseButtons="collapseButtons" />
               </div>
             </div>
           </div>
@@ -196,6 +197,7 @@ import ScrollableTabsContainer from '@/components/common-components/ScrollableTa
 import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
 import RemovableBadge from '@/components/common-components/RemovableBadge.vue'
 import DeepLinkFrame from '@/components/common-components/DeepLinkFrame.vue'
+import DeepLinkButtons from '@/components/common-components/DeepLinkButtons.vue'
 import { getDeepLinkEntries } from '@/utils/deepLinks.js'
 import { mapGetters, mapActions } from 'vuex'
 
@@ -203,7 +205,7 @@ export default {
   name: 'ProcessInstancesView',
   components: { InstancesTable, JobDefinitionsTable, BpmnViewer, MultisortModal,
      SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable, CalledProcessDefinitionsTable,
-     ProcessInstancesTabs, ScrollableTabsContainer, ViewerFrame, RemovableBadge, DeepLinkFrame },
+     ProcessInstancesTabs, ScrollableTabsContainer, ViewerFrame, RemovableBadge, DeepLinkFrame, DeepLinkButtons },
   inject: ['loadProcesses', 'currentLanguage'],
   mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin, tabUrlMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
   emits: ['task-selected', 'filter-instances', 'instance-deleted'],
@@ -343,6 +345,7 @@ export default {
     },
     matchedDeepLink() {
       return getDeepLinkEntries(this.$root.config, 'processDefinition', RESERVED_TAB_IDS)
+        .filter(entry => entry.type === 'tab')
         .find(entry => entry.id === this.activeTab)
     },
     matchedDeepLinkParams() {

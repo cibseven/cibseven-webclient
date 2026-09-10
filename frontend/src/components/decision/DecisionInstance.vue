@@ -42,6 +42,9 @@
     <div class="position-absolute w-100 border-top" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
       <div v-if="activeTab === 'inputs'">
         <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 0; left: 0; bottom: 0">
+          <div v-if="hasDeepLinks" class="p-2">
+            <DeepLinkButtons section="decisionInstance" />
+          </div>
           <FlowTable striped resizable thead-class="sticky-header" :items="instance.inputs" primary-key="id" :fields="[
             { label: 'decision.name', key: 'clauseName', class: 'col-4', tdClass: 'py-1' },
             { label: 'decision.type', key: 'type', class: 'col-4', tdClass: 'py-1' },
@@ -51,6 +54,9 @@
       </div>
       <div v-else-if="activeTab === 'outputs'">
         <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 0; left: 0; bottom: 0">
+          <div v-if="hasDeepLinks" class="p-2">
+            <DeepLinkButtons section="decisionInstance" />
+          </div>
           <FlowTable striped resizable thead-class="sticky-header" :items="instance.outputs" primary-key="id" :fields="[
             { label: 'decision.name', key: 'clauseName', class: 'col-4', tdClass: 'py-1' },
             { label: 'decision.type', key: 'type', class: 'col-4', tdClass: 'py-1' },
@@ -75,13 +81,14 @@ import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
 import DeepLinkFrame from '@/components/common-components/DeepLinkFrame.vue'
 import { FlowTable, GenericTabs } from '@cib/common-frontend'
 import { mapActions, mapGetters } from 'vuex'
-import { getDeepLinkEntries, resolveDeepLinkLabel } from '@/utils/deepLinks.js'
+import { getDeepLinkEntries, resolveDeepLinkLabel, hasDeepLinks } from '@/utils/deepLinks.js'
+import DeepLinkButtons from '@/components/common-components/DeepLinkButtons.vue'
 
 const RESERVED_TAB_IDS = ['inputs', 'outputs']
 
 export default {
   name: 'DecisionInstance',
-  components: { DmnViewer, FlowTable, GenericTabs, ScrollableTabsContainer, ViewerFrame, DeepLinkFrame },
+  components: { DmnViewer, FlowTable, GenericTabs, ScrollableTabsContainer, ViewerFrame, DeepLinkFrame, DeepLinkButtons },
   mixins: [permissionsMixin, resizerMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
   inject: ['currentLanguage'],
   props: {
@@ -104,6 +111,7 @@ export default {
     },
     tabs() {
       const deepLinkTabs = getDeepLinkEntries(this.$root.config, 'decisionInstance', RESERVED_TAB_IDS)
+        .filter(entry => entry.type === 'tab')
         .map(entry => ({ id: entry.id, text: resolveDeepLinkLabel(this.$t, entry) }))
       return [
         { id: 'inputs', text: 'decision.inputs' },
@@ -111,8 +119,12 @@ export default {
         ...deepLinkTabs
       ]
     },
+    hasDeepLinks() {
+      return hasDeepLinks(this.$root.config, 'decisionInstance', 'button')
+    },
     matchedDeepLink() {
       return getDeepLinkEntries(this.$root.config, 'decisionInstance', RESERVED_TAB_IDS)
+        .filter(entry => entry.type === 'tab')
         .find(entry => entry.id === this.activeTab)
     },
     matchedDeepLinkParams() {

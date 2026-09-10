@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { getDeepLinkEntries, buildDeepLinkUrl, resolveDeepLinkLabel } from '@/utils/deepLinks.js'
+import { hasDeepLinks, getDeepLinkEntries, buildDeepLinkUrl, resolveDeepLinkLabel } from '@/utils/deepLinks.js'
 
 describe('deepLinks utility', () => {
   let warnSpy
@@ -26,6 +26,56 @@ describe('deepLinks utility', () => {
 
   afterEach(() => {
     warnSpy.mockRestore()
+  })
+
+  describe('hasDeepLinks', () => {
+    it('returns false when config has no deepLinks section', () => {
+      expect(hasDeepLinks(undefined, 'processInstance')).toBe(false)
+      expect(hasDeepLinks({}, 'processInstance')).toBe(false)
+    })
+
+    it('returns false when the section is an empty array', () => {
+      const config = { deepLinks: { processInstance: [] } }
+      expect(hasDeepLinks(config, 'processInstance')).toBe(false)
+    })
+
+    it('returns false when the section only contains invalid entries', () => {
+      const config = { deepLinks: { processInstance: [
+        { id: 'has space', url: 'https://external.example' },
+        { id: 'noUrl' }
+      ] } }
+      expect(hasDeepLinks(config, 'processInstance')).toBe(false)
+      expect(warnSpy).toHaveBeenCalled()
+    })
+
+    it('returns true when the section has at least one valid entry', () => {
+      const config = { deepLinks: { processInstance: [
+        { id: 'valid1', url: 'https://external.example' }
+      ] } }
+      expect(hasDeepLinks(config, 'processInstance')).toBe(true)
+    })
+
+    it('checks only the requested section', () => {
+      const config = { deepLinks: { processInstance: [
+        { id: 'valid1', url: 'https://external.example' }
+      ] } }
+      expect(hasDeepLinks(config, 'decisionInstance')).toBe(false)
+    })
+
+    it('matches entries of any type when no type is given', () => {
+      const config = { deepLinks: { processInstance: [
+        { id: 'tabLink', url: 'https://external.example', type: 'tab' }
+      ] } }
+      expect(hasDeepLinks(config, 'processInstance')).toBe(true)
+    })
+
+    it('returns true only when an entry matches the given type', () => {
+      const config = { deepLinks: { processInstance: [
+        { id: 'tabLink', url: 'https://external.example', type: 'tab' }
+      ] } }
+      expect(hasDeepLinks(config, 'processInstance', 'button')).toBe(false)
+      expect(hasDeepLinks(config, 'processInstance', 'tab')).toBe(true)
+    })
   })
 
   describe('getDeepLinkEntries', () => {

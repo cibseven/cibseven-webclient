@@ -1360,5 +1360,8 @@
 			"title": "¿Por qué se muestra esta página?",
 			"description": "Está intentando acceder al motor de procesos \"{0}\". Este motor está configurado para usar el servicio de identidad integrado (base de datos) pero no tiene usuarios administrativos configurados. Esta página le permite crear un usuario inicial para acceder al motor de procesos."
 		}
+	},
+	"deepLink": {
+		"tooltip": "Abrir {text}\n{url}"
 	}
 }

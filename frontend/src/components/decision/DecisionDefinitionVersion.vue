@@ -56,6 +56,7 @@
               </div>
               <div class="col-4">
                 <component :is="DecisionDefinitionVersionActionsPlugin" v-if="DecisionDefinitionVersionActionsPlugin" :decision="decision" :decision-key="decisionKey"></component>
+                <DeepLinkButtons section="decisionDefinition" />
               </div>
             </div>
           </div>
@@ -89,12 +90,13 @@ import { BWaitingBox, GenericTabs } from '@cib/common-frontend'
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from '@/utils/debounce.js'
 import { getDeepLinkEntries, resolveDeepLinkLabel } from '@/utils/deepLinks.js'
+import DeepLinkButtons from '@/components/common-components/DeepLinkButtons.vue'
 
 const RESERVED_TAB_IDS = ['instances']
 
 export default {
   name: 'DecisionDefinitionVersion',
-  components: { DmnViewer, DecisionInstancesTable, ViewerFrame, BWaitingBox, GenericTabs, ScrollableTabsContainer, DeepLinkFrame },
+  components: { DmnViewer, DecisionInstancesTable, ViewerFrame, BWaitingBox, GenericTabs, ScrollableTabsContainer, DeepLinkFrame, DeepLinkButtons },
   mixins: [permissionsMixin, resizerMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
   inject: ['currentLanguage'],
   props: {
@@ -123,6 +125,7 @@ export default {
     },
     tabs() {
       const deepLinkTabs = getDeepLinkEntries(this.$root.config, 'decisionDefinition', RESERVED_TAB_IDS)
+        .filter(entry => entry.type === 'tab')
         .map(entry => ({ id: entry.id, text: resolveDeepLinkLabel(this.$t, entry) }))
       return [
         { id: 'instances', text: 'decision.instances' },
@@ -131,6 +134,7 @@ export default {
     },
     matchedDeepLink() {
       return getDeepLinkEntries(this.$root.config, 'decisionDefinition', RESERVED_TAB_IDS)
+        .filter(entry => entry.type === 'tab')
         .find(entry => entry.id === this.activeTab)
     },
     matchedDeepLinkParams() {
