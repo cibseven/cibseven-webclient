@@ -15,6 +15,12 @@
 		auto-configuration classes; cibseven-webclient-web-sb4 also overrides the
 		BOM to Spring Boot 4.x.</description>
 
+	<properties>
+		<!-- jacoco:check floors; measured 16.8% line / 13.8% branch. See the root pom for the rules. -->
+		<jacoco.line.coverage.floor>0.15</jacoco.line.coverage.floor>
+		<jacoco.branch.coverage.floor>0.12</jacoco.branch.coverage.floor>
+	</properties>
+
 	<dependencies>
 
 		<dependency>
@@ -214,28 +220,5 @@
 
 	</dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-failsafe-plugin</artifactId>
-				<version>3.2.5</version> <!-- or latest -->
-				<executions>
-					<execution>
-					<goals>
-						<goal>integration-test</goal>
-						<goal>verify</goal>
-					</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<includes>
-						<!-- Include only integration tests from the providers package -->
-						<include>org/cibseven/webapp/providers/**/*IT.java</include>
-					</includes>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 
 </project>

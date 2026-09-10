@@ -10,6 +10,12 @@
 	<name>CIB seven webclient web</name>
 	<description>Web application module for the CIB seven webclient platform (Spring Boot 3.5.x).</description>
 
+	<properties>
+		<!-- jacoco:check floors; measured 32.0% line / 0.0% branch. See the root pom for the rules. -->
+		<jacoco.line.coverage.floor>0.30</jacoco.line.coverage.floor>
+		<jacoco.branch.coverage.floor>0.00</jacoco.branch.coverage.floor>
+	</properties>
+
 	<dependencies>
 
 		<dependency>

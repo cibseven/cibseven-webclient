@@ -9,6 +9,12 @@
 	<name>CIB seven webclient interfaces</name>
 	<description>Provider interfaces</description>
 
+	<properties>
+		<!-- jacoco:check floors; measured 2.8% line / 0.0% branch. See the root pom for the rules. -->
+		<jacoco.line.coverage.floor>0.01</jacoco.line.coverage.floor>
+		<jacoco.branch.coverage.floor>0.00</jacoco.branch.coverage.floor>
+	</properties>
+
 	<dependencies>
 
 		<dependency>
@@ -84,30 +90,14 @@
 			<groupId>jakarta.annotation</groupId>
 			<artifactId>jakarta.annotation-api</artifactId>
 		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<version>${version.spring.boot}</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-failsafe-plugin</artifactId>
-				<version>3.2.5</version> <!-- or latest -->
-				<executions>
-					<execution>
-					<goals>
-						<goal>integration-test</goal>
-						<goal>verify</goal>
-					</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<includes>
-						<!-- Include only integration tests from the providers package -->
-						<include>org/cibseven/webapp/providers/**/*IT.java</include>
-					</includes>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 
 </project>

@@ -9,6 +9,12 @@
 	<name>CIB seven webclient direct provider</name>
 	<description>Services of the direct provider access to the cibseven engine</description>
 
+	<properties>
+		<!-- jacoco:check floors; measured 5.7% line / 3.7% branch. See the root pom for the rules. -->
+		<jacoco.line.coverage.floor>0.04</jacoco.line.coverage.floor>
+		<jacoco.branch.coverage.floor>0.02</jacoco.branch.coverage.floor>
+	</properties>
+
 	<dependencies>
 		<dependency>
 		    <groupId>jakarta.ws.rs</groupId>
