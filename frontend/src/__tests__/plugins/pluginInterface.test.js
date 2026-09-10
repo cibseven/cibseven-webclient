@@ -30,14 +30,14 @@ import { findComponents } from '../utils.js'
  * only tests the behaviour of.
  *
  * A plugin is built separately and deployed as a jar, so it meets whichever
- * webclient it is installed into. PLUGIN_API_VERSION is what tells the two
- * whether they fit, and it is only worth anything if it rises whenever this
- * interface changes. Every list below therefore has to be updated in the same
- * commit as the change it describes - and raising the minor version in
- * frontend/package.json is part of that change, not an afterthought.
+ * webclient it is installed into, and PLUGIN_API_VERSION is what tells the two
+ * whether they fit. It is not a version of its own to raise: it is the webclient's
+ * major.minor, which the build writes into frontend/package.json from the project
+ * version. Changing anything below therefore belongs in a new webclient minor, and
+ * the list has to be updated in the same commit as the change it describes.
  *
  * Nothing here may change unnoticed: a renamed export, a dropped slot prop, a new
- * manifest field and a new slot are all reasons for a new version.
+ * manifest field and a new slot all reach deployed plugins.
  */
 
 // eslint-disable-next-line no-undef
@@ -74,7 +74,7 @@ const SLOTS = {
   'decision-definition-tab': ['decision', 'tenantId']
 }
 
-const BUMP = 'the plugin interface changed - raise PLUGIN_API_VERSION (the minor in frontend/package.json) and update this list'
+const BUMP = 'the plugin interface changed - it may only change in a new webclient minor, and this list has to be updated with it'
 
 describe('plugin interface', () => {
   beforeEach(() => {

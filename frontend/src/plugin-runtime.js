@@ -25,7 +25,8 @@
  * runtime, and neither reactivity nor provide/inject would cross that boundary.
  *
  * Everything exported here is an official interface: it is what plugins compile
- * against and may not change without a bump of PLUGIN_API_VERSION.
+ * against. PLUGIN_API_VERSION is not a version of its own to raise but the
+ * webclient's own major.minor, so this may only change in a new webclient minor.
  */
 import { i18n } from './i18n.js'
 import { PLUGIN_API_VERSION } from './plugins/pluginsConfig.js'

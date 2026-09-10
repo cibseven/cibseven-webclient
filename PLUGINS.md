@@ -321,8 +321,8 @@ for several lines at once once it has been.
 
 The interface is frozen in `frontend/src/__tests__/plugins/pluginInterface.test.js`:
 the runtime exports, the argument of `register`, the slots with their props, and
-the manifest fields. Changing any of them fails that test, which is where the
-version is raised along with the list.
+the manifest fields. Changing any of them fails that test, which is the reminder
+that the change belongs in a new webclient minor rather than a patch.
 
 ## Trust model and limits
 
