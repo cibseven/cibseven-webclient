@@ -20,7 +20,7 @@ import DeepLinkButtons from '@/components/common-components/DeepLinkButtons.vue'
 
 function createWrapper(props, { config = {}, t = key => key } = {}) {
   return mount(DeepLinkButtons, {
-    props,
+    props: { params: {}, ...props },
     global: {
       mocks: {
         $t: t,
@@ -76,11 +76,45 @@ describe('DeepLinkButtons.vue', () => {
     expect(openSpy).toHaveBeenCalledWith('https://external.example/button', '_blank')
   })
 
+  it('appends the given params to the url when opening it', async () => {
+    const config = { deepLinks: { processInstance: [
+      { id: 'buttonLink', url: 'https://external.example/button', type: 'button' }
+    ] } }
+    const wrapper = createWrapper(
+      { section: 'processInstance', params: { processInstanceId: 'pi-1' } },
+      { config }
+    )
+    await wrapper.find('button').trigger('click')
+    expect(openSpy).toHaveBeenCalledWith('https://external.example/button?processInstanceId=pi-1', '_blank')
+  })
+
+  it('opens the url in the configured target window instead of _blank', async () => {
+    const config = { deepLinks: { processInstance: [
+      { id: 'buttonLink', url: 'https://external.example/button', type: 'button', target: 'myWindow' }
+    ] } }
+    const wrapper = createWrapper({ section: 'processInstance' }, { config })
+    await wrapper.find('button').trigger('click')
+    expect(openSpy).toHaveBeenCalledWith('https://external.example/button', 'myWindow')
+  })
+
   it('sets a tooltip with the resolved label and url', () => {
     const config = { deepLinks: { processInstance: [
       { id: 'buttonLink', url: 'https://external.example/button', type: 'button' }
     ] } }
     const wrapper = createWrapper({ section: 'processInstance' }, { config, t: key => key })
     expect(wrapper.find('button').attributes('title')).toBe('deepLink.tooltip')
+  })
+
+  it('appends the given params to the url used to build the tooltip', () => {
+    const config = { deepLinks: { processInstance: [
+      { id: 'buttonLink', url: 'https://external.example/button', type: 'button' }
+    ] } }
+    let tooltipArgs
+    const wrapper = createWrapper(
+      { section: 'processInstance', params: { processInstanceId: 'pi-1' } },
+      { config, t: (key, args) => { tooltipArgs = args; return key } }
+    )
+    wrapper.find('button').attributes('title')
+    expect(tooltipArgs.url).toBe('https://external.example/button?processInstanceId=pi-1')
   })
 })
