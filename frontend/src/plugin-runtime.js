@@ -29,7 +29,6 @@
  * webclient's own major.minor, so this may only change in a new webclient minor.
  */
 import { i18n } from './i18n.js'
-import { PLUGIN_API_VERSION } from './plugins/pluginsConfig.js'
 
 // Bare re-exports, so an import map can point "vue" at this module and a plugin
 // built from single-file components keeps working unchanged.
@@ -40,30 +39,9 @@ export * as vue from 'vue'
 export * as services from './services.js'
 export { axios } from './globals.js'
 export { i18n }
-export { registerPlugin, getPlugin, PLUGIN_API_VERSION } from './plugins/pluginsConfig.js'
+export { registerPlugin, getPlugin, PLUGIN_API_VERSION, getRuntimeInfo } from './plugins/pluginsConfig.js'
 export { getPluginContext as getContext } from './plugins/pluginContext.js'
 export { navigation } from './plugins/pluginNavigation.js'
-
-/**
- * Merges translations of a plugin under the 'plugins.<id>' namespace, so plugin
- * keys cannot collide with application or theme keys.
- *
- * @param {string} pluginId
- * @param {string} lang
- * @param {object} messages
- */
-export function mergeTranslations(pluginId, lang, messages) {
-  i18n.global.mergeLocaleMessage(lang, { plugins: { [pluginId]: messages } })
-}
-
-/**
- * Identifies this runtime instance. Two different values observed by
- * application and plugin would mean the plugin loaded a second copy of the
- * runtime, i.e. the import map or the plugin build is misconfigured.
- *
- * @returns {{ apiVersion: string, instance: object }}
- */
-const instance = Object.freeze({})
-export function getRuntimeInfo() {
-  return { apiVersion: PLUGIN_API_VERSION, instance }
-}
+// Kept in the loader and exported by the library, so an application embedding
+// this one hands plugins the same function rather than a copy.
+export { mergeTranslations } from './plugins/pluginLoader.js'

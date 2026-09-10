@@ -9,6 +9,7 @@
     "dist/cibseven-components.css",
     "dist/cibseven-components.es.js",
     "dist/cibseven-components.umd.js",
+    "src/plugins/pluginImportMap.js",
     "src/themes"
   ],
   "exports": {
@@ -16,6 +17,7 @@
       "import": "./dist/cibseven-components.es.js",
       "require": "./dist/cibseven-components.umd.js"
     },
+    "./vite": "./src/plugins/pluginImportMap.js",
     "./themes/*": "./src/themes/*",
     "./dist/cibseven-components.css": "./dist/cibseven-components.css"
   },
