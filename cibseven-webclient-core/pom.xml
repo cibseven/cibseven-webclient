@@ -16,9 +16,9 @@
 		BOM to Spring Boot 4.x.</description>
 
 	<properties>
-		<!-- jacoco:check floors; measured 16.8% line / 13.8% branch. See the root pom for the rules. -->
-		<jacoco.line.coverage.floor>0.15</jacoco.line.coverage.floor>
-		<jacoco.branch.coverage.floor>0.12</jacoco.branch.coverage.floor>
+		<!-- jacoco:check floors; measured 23.6% line / 18.7% branch. See the root pom for the rules. -->
+		<jacoco.line.coverage.floor>0.21</jacoco.line.coverage.floor>
+		<jacoco.branch.coverage.floor>0.16</jacoco.branch.coverage.floor>
 	</properties>
 
 	<dependencies>
