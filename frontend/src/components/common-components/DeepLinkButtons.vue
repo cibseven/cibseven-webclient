@@ -28,13 +28,14 @@
 </template>
 
 <script>
-import { getDeepLinkEntries, resolveDeepLinkLabel } from '@/utils/deepLinks.js'
+import { getDeepLinkEntries, resolveDeepLinkLabel, buildDeepLinkUrl } from '@/utils/deepLinks.js'
 
 export default {
   name: 'DeepLinkButtons',
   props: {
     section: { type: String, required: true },
-    collapseButtons: { type: Boolean, required: false, default: false }
+    params: { type: Object, required: true },
+    collapseButtons: { type: Boolean, required: false, default: false },
   },
   computed: {
     links() {
@@ -50,11 +51,12 @@ export default {
     tooltip(link) {
       return this.$t('deepLink.tooltip', {
         text: resolveDeepLinkLabel(this.$t, link),
-        url: link.url,
+        url: buildDeepLinkUrl(link.url, this.params),
       })
     },
     openLink(link) {
-      window.open(link.url, link.target || '_blank')
+      const completeUrl = buildDeepLinkUrl(link.url, this.params)
+      window.open(completeUrl, link.target || '_blank')
     }
   }
 }

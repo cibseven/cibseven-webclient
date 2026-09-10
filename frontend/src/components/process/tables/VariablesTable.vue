@@ -28,7 +28,7 @@
         <b-button v-if="isActiveInstance" class="border" size="sm" variant="light" @click="addNewVariable" :title="$t('process-instance.addVariable')">
           <span class="mdi mdi-plus"></span> {{ $t('process-instance.addVariable') }}
         </b-button>
-        <DeepLinkButtons v-if="hasDeepLinks" section="processInstance" />
+        <DeepLinkButtons v-if="hasDeepLinks" section="processInstance" :params="matchedDeepLinkParams" />
       </div>
       <div v-if="!ProcessVariablesSearchBoxPlugin && (selectedActivityId || selectedScopeInstanceId)" class="p-3">
         <RemovableBadge
@@ -164,6 +164,7 @@ export default {
   name: 'VariablesTable',
   components: { FlowTable, TaskPopper, AddVariableModal, DeleteVariableModal, EditVariableModal, SuccessAlert, BWaitingBox, CopyableActionButton, DeepLinkButtons, CellActionButton, RemovableBadge },
   mixins: [ processesVariablesMixin, copyToClipboardMixin, permissionsMixin ],
+  inject: ['currentLanguage'],
   data: function() {
     return {
       filteredVariables: [],
@@ -221,6 +222,21 @@ export default {
     },
     hasDeepLinks() {
       return hasDeepLinks(this.$root.config, 'processInstance', 'button')
+    },
+    matchedDeepLinkParams() {
+      return {
+        processInstanceId: this.selectedInstance?.id,
+        processInstanceTenantId: this.selectedInstance?.tenantId,
+        businessKey: this.selectedInstance?.businessKey,
+
+        processDefinitionId: this.process?.id,
+        processDefinitionKey: this.process?.key,
+        processDefinitionVersion: this.process?.version,
+        processDefinitionVersionTag: this.process?.versionTag,
+        processDefinitionTenantId: this.process?.tenantId,
+
+        lang: this.currentLanguage()
+      }
     },
   },
   methods: {

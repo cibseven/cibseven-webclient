@@ -56,7 +56,7 @@
               </div>
               <div class="col-4">
                 <component :is="DecisionDefinitionVersionActionsPlugin" v-if="DecisionDefinitionVersionActionsPlugin" :decision="decision" :decision-key="decisionKey"></component>
-                <DeepLinkButtons section="decisionDefinition" />
+                <DeepLinkButtons section="decisionDefinition" :params="matchedDeepLinkParams" />
               </div>
             </div>
           </div>

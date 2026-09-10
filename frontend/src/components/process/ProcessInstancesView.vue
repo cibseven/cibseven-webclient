@@ -127,7 +127,7 @@
                   <span class="mdi mdi-file-eye-outline"></span> {{ collapseButtons  ? '': $t('process.showDeployment') }}
                 </b-button>
                 <component :is="ProcessActionsPlugin" v-if="ProcessActionsPlugin" :process="process" :collapseButtons="collapseButtons"></component>
-                <DeepLinkButtons section="processInstance" :collapseButtons="collapseButtons" />
+                <DeepLinkButtons section="processDefinition" :collapseButtons="collapseButtons" :params="matchedDeepLinkParams" />
               </div>
             </div>
           </div>
