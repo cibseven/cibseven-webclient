@@ -22,6 +22,7 @@ import path from 'node:path'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
+import { pluginRuntimeImportMap } from './src/plugins/pluginImportMap.js'
 
 const backendUrl = 'http://localhost:8080/webapp'
 
@@ -35,13 +36,17 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 console.log('isLibrary', isLibrary)
+// Plugins are loaded at runtime and are therefore not part of this build: they
+// resolve the application's Vue and services through the import map below.
+const pluginRuntimeUrl = isLibrary ? null : './plugin-runtime.js'
 
 // https://vite.dev/config/
 export default defineConfig({
   base: './',
   plugins: [
     vue(),
-    vueDevTools()
+    vueDevTools(),
+    pluginRuntimeImportMap(pluginRuntimeUrl)
   ],
   resolve: {
     dedupe: ['bootstrap'],
@@ -137,6 +142,20 @@ export default defineConfig({
           main: path.resolve(__dirname, 'index.html'),
           ssoLogin: path.resolve(__dirname, 'sso-login.html'),
           embeddedForms: path.resolve(__dirname, 'embedded-forms.html'),
+          // Public API for runtime-loaded plugins. As an entry of this build it
+          // shares Vue, axios and services with the application instead of
+          // bundling its own copies.
+          pluginRuntime: path.resolve(__dirname, 'src/plugin-runtime.js'),
+        },
+        // The html entries export nothing, so Vite defaults to dropping entry
+        // exports - which would strip and rename the plugin runtime's API.
+        // Keeping signatures strict makes its exports survive the build.
+        preserveEntrySignatures: 'strict',
+        output: {
+          // Plugins reference the runtime through a fixed URL, so this one entry
+          // must not be content-hashed.
+          entryFileNames: chunk =>
+            chunk.name === 'pluginRuntime' ? 'plugin-runtime.js' : 'assets/[name]-[hash].js',
         }
       }
     }

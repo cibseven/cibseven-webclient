@@ -1,0 +1,12 @@
+{
+	"title": "Demo-Bericht",
+	"instance": "Prozessinstanz",
+	"basePath": "Services-Basispfad (aus der Anwendungskonfiguration)",
+	"total": "Prozesse",
+	"definition": "Definition",
+	"name": "Name",
+	"key": "Schlüssel",
+	"version": "Version",
+	"empty": "Kein für Sie sichtbarer Prozess",
+	"failed": "Prozessabfrage fehlgeschlagen mit"
+}

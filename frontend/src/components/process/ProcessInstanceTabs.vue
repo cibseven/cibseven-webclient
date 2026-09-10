@@ -22,6 +22,19 @@
 
 <script>
 import { GenericTabs } from '@cib/common-frontend'
+import { getPlugin, reserveSlotIds } from '@/plugins/pluginsConfig.js'
+
+const BUILTIN_TABS = [
+  { id: 'variables', text: 'process.variables' },
+  { id: 'incidents', text: 'process.incidents' },
+  { id: 'usertasks', text: 'process.usertasks' },
+  { id: 'jobs', text: 'process.jobs' },
+  { id: 'calledProcessInstances', text: 'process.calledProcessInstances' },
+  { id: 'externalTasks', text: 'process.externalTasks' }
+]
+
+// At import time, because a plugin can register before this tab bar is ever rendered
+reserveSlotIds('process-instance-tab', BUILTIN_TABS.map(tab => tab.id))
 
 export default {
   name: 'ProcessInstanceTabs',
@@ -32,14 +45,18 @@ export default {
   emits: ['update:modelValue', 'tab-click'],
   data: function () {
     return {
-      tabs: [
-        { id: 'variables', text: 'process.variables' },
-        { id: 'incidents', text: 'process.incidents' },
-        { id: 'usertasks', text: 'process.usertasks' },
-        { id: 'jobs', text: 'process.jobs' },
-        { id: 'calledProcessInstances', text: 'process.calledProcessInstances' },
-        { id: 'externalTasks', text: 'process.externalTasks' }
-      ]
+      builtinTabs: BUILTIN_TABS
+    }
+  },
+  computed: {
+    tabs: function() {
+      // Tabs contributed by plugins are appended, so the order of the built-in
+      // tabs never depends on what is deployed. Their content is rendered by the
+      // PluginSlot in ProcessInstanceView.
+      const contributed = getPlugin('process-instance-tab').value
+        .filter(contribution => contribution.id && contribution.text)
+        .map(({ id, text }) => ({ id, text }))
+      return [...this.builtinTabs, ...contributed]
     }
   }
 }

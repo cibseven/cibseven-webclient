@@ -16,6 +16,9 @@
  */
 import { describe, it, expect } from 'vitest'
 import * as library from '@/library.js'
+import * as pluginsConfig from '@/plugins/pluginsConfig.js'
+import * as pluginLoader from '@/plugins/pluginLoader.js'
+import PluginSlot from '@/components/common/PluginSlot.vue'
 import { findComponents } from './utils.js'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -68,6 +71,48 @@ describe('library.js', () => {
         const namePattern = new RegExp(String.raw`name:\s*['"]${fileName}['"],`)
         expect(content).toMatch(namePattern, `File ${file} does not contain name: '${fileName}'`)
       })
+    })
+  })
+
+  /**
+   * The plugin interface other products build on: cibseven-webclient-ee and
+   * flow-webclient consume it from this library, so a rename or a dropped export
+   * has to fail here rather than in their build.
+   */
+  describe('plugin interface', () => {
+    const expectedExports = [
+      'registerPlugin', 'getPlugin', 'resetPlugins', 'PLUGIN_API_VERSION', 'reserveSlotIds',
+      'setPluginContext', 'getPluginContext',
+      'setPluginRouter', 'navigation',
+      'initPlugins', 'loadPlugins', 'fetchPluginManifests',
+      'PluginSlot', 'PluginBoundary'
+    ]
+
+    it('exports the plugin API', () => {
+      const missing = expectedExports.filter(name => library[name] === undefined)
+
+      expect(missing).toEqual([])
+    })
+
+    it('exports the modules themselves, not copies of them', () => {
+      expect(library.registerPlugin).toBe(pluginsConfig.registerPlugin)
+      expect(library.getPlugin).toBe(pluginsConfig.getPlugin)
+      expect(library.initPlugins).toBe(pluginLoader.initPlugins)
+      expect(library.PluginSlot).toBe(PluginSlot)
+    })
+
+    /**
+     * The whole point of the export: a product registering through the library
+     * has to reach the registry the slots of this application read.
+     */
+    it('registers into the registry the application renders from', () => {
+      library.resetPlugins()
+      const component = { name: 'FromAnotherProduct' }
+
+      library.registerPlugin('library-slot', component, { pluginId: 'ee' })
+
+      expect(pluginsConfig.getPlugin('library-slot').value).toMatchObject([{ component, pluginId: 'ee' }])
+      library.resetPlugins()
     })
   })
 

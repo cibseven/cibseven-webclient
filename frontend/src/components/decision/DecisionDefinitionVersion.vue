@@ -69,6 +69,9 @@
           </div>
         </div>
       </div>
+
+      <PluginSlot name="decision-definition-tab" :only="activeTab"
+        :params="{ decision: decision, tenantId: decision?.tenantId }"></PluginSlot>
     </div>
   </div>
 </template>
@@ -86,10 +89,17 @@ import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
 import { BWaitingBox, GenericTabs } from '@cib/common-frontend'
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from '@/utils/debounce.js'
+import { getPlugin, reserveSlotIds } from '@/plugins/pluginsConfig.js'
+import PluginSlot from '@/components/common/PluginSlot.vue'
+
+const BUILTIN_TABS = [{ id: 'instances', text: 'decision.instances' }]
+
+// See ProcessInstanceTabs: the ids of this slot's own tabs are not available to plugins
+reserveSlotIds('decision-definition-tab', BUILTIN_TABS.map(tab => tab.id))
 
 export default {
   name: 'DecisionDefinitionVersion',
-  components: { DmnViewer, DecisionInstancesTable, ViewerFrame, BWaitingBox, GenericTabs, ScrollableTabsContainer },
+  components: { DmnViewer, DecisionInstancesTable, ViewerFrame, BWaitingBox, GenericTabs, ScrollableTabsContainer, PluginSlot },
   mixins: [permissionsMixin, resizerMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
   props: {
     versionIndex: String,
@@ -100,7 +110,7 @@ export default {
   data: function() {
     return {
       topBarHeight: 0,
-      tabs: [ { id: 'instances', text: 'decision.instances' } ],
+      builtinTabs: BUILTIN_TABS,
       activeTab: 'instances',
       sortByDefaultKey: 'evaluationTime',
       sorting: false,
@@ -115,6 +125,14 @@ export default {
     ...mapGetters(['getSelectedDecisionVersion']),
     decision: function() {
       return this.getSelectedDecisionVersion()
+    },
+    tabs: function() {
+      // Contributed tabs are appended, so the built-in ones keep their order
+      // whatever is deployed. Their content is rendered by the PluginSlot below.
+      const contributed = getPlugin('decision-definition-tab').value
+        .filter(contribution => contribution.id && contribution.text)
+        .map(({ id, text }) => ({ id, text }))
+      return [...this.builtinTabs, ...contributed]
     },
     DecisionDefinitionVersionActionsPlugin: function() {
       return this.$options.components && this.$options.components.DecisionDefinitionVersionActionsPlugin
