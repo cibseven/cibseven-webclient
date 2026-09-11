@@ -61,7 +61,7 @@ public class HistoryTaskService extends BaseService {
 			@Parameter(description = "Restrict to tasks that have the given key") @RequestParam String taskDefinitionKey,
 			@Parameter(description = "Process instance Id") @RequestParam String processInstanceId,
 			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
+		checkPermission(user, SevenResourceType.HISTORIC_TASK, PermissionConstants.READ_ALL);
 		return bpmProvider.findTasksByDefinitionKeyHistory(taskDefinitionKey, processInstanceId, user);
 	}
 
@@ -74,7 +74,7 @@ public class HistoryTaskService extends BaseService {
 	public Collection<TaskHistory> findTasksByProcessInstanceHistory(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
+		checkPermission(user, SevenResourceType.HISTORIC_TASK, PermissionConstants.READ_ALL);
 		return bpmProvider.findTasksByProcessInstanceHistory(processInstanceId, user);
 	}
 	
@@ -87,7 +87,7 @@ public class HistoryTaskService extends BaseService {
 	public Collection<TaskHistory> findTasksByTaskIdHistory(
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.TASK, PermissionConstants.READ_ALL);
+		checkPermission(user, SevenResourceType.HISTORIC_TASK, PermissionConstants.READ_ALL);
 		return bpmProvider.findTasksByTaskIdHistory(taskId, user);
 	}
 	
