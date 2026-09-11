@@ -2,6 +2,16 @@
 	"login": {
 		"productName": "CIB seven"
 	},
+	"deepLinks": {
+		"processDefinition": {
+		},
+		"processInstance": {
+		},
+		"decisionDefinition": {
+		},
+		"decisionInstance": {
+		}
+	},
 	"process-descriptions": {
 		"my-process-key": "Описание моего процесса"
 	}
