@@ -54,7 +54,7 @@ export default {
   },
   methods: {
     text(link) {
-      return (this.collapseButtons === true) ? '' : link.text
+      return this.collapseButtons ? '' : link.text
     },
     tooltip(link) {
       return this.$t('deepLink.tooltip', {
