@@ -171,6 +171,40 @@ describe('package', () => {
     })
   })
 
+  /**
+   * What consumers can import. A path that is exported but not packed installs
+   * fine and fails only where it is imported, in another project's build.
+   */
+  describe('published files', () => {
+    const exported = Object.values(getPackageJson().exports)
+      .flatMap(entry => typeof entry === 'string' ? [entry] : Object.values(entry))
+      .filter(target => !target.includes('*'))
+
+    it('packs every path it exports', () => {
+      const packed = getPackageJson().files
+      const missing = exported.filter(target =>
+        !packed.some(pattern => target.replace('./', '').startsWith(pattern.replace(/\/$/, ''))))
+
+      expect(missing).toEqual([])
+    })
+
+    /** Sources only: the bundles are build output and do not exist while testing. */
+    it('exports source paths that exist', () => {
+      const absent = exported
+        .filter(target => !target.startsWith('./dist/'))
+        .filter(target => !fs.existsSync(path.resolve(srcDir, '..', target)))
+
+      expect(absent).toEqual([])
+    })
+
+    /** Published as source rather than bundled, so it has to stand on its own. */
+    it('publishes a self-contained vite helper', () => {
+      const helper = fs.readFileSync(path.resolve(srcDir, 'plugins/pluginImportMap.js'), 'utf-8')
+
+      expect(helper).not.toMatch(/^\s*import\s/m)
+    })
+  })
+
   describe('package-lock.json', () => {
     it('should resolve to artifacts.cibseven.org only', () => {
       const packageLockPath = path.resolve(srcDir, '../package-lock.json')

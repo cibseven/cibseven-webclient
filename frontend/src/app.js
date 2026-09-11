@@ -35,6 +35,9 @@ import { hasHeader, checkExternalReturn,
 import { applyConfigDefaults } from './utils/config.js'
 import { i18n, switchLanguage } from './i18n'
 import { createProvideObject } from './utils/provide.js'
+import { setPluginContext } from './plugins/pluginContext.js'
+import { setPluginRouter } from './plugins/pluginNavigation.js'
+import { initPlugins } from './plugins/pluginLoader.js'
 
 // check for token inside hash
 // if it exists => redirect to new uri
@@ -66,6 +69,11 @@ Promise.all([
   loadTheme(theme).then(() => {
     applyTheme(theme)
     switchLanguage(config, i18n.global.locale).then(() => {
+      // Plugins load next to the application, never before it: slots are reactive, so a
+      // contribution appears once its plugin arrives, and no plugin can delay the first render.
+      setPluginContext({ config })
+      initPlugins(i18n.global.locale).catch(error => console.error('Plugins could not be loaded:', error))
+
       const app = createApp({ /*jshint nonew:false */
         name: 'CIB7App',
         el: '#app',
@@ -131,6 +139,9 @@ Promise.all([
       registerComponents(app)
 
       const router = createAppRouter(appRoutes)
+      // Plugins already registered by now, so their navigation resolves the
+      // router lazily rather than being handed it up front.
+      setPluginRouter(router)
       app.use(router)
       app.use(store)
       app.use(i18n)

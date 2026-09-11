@@ -61,11 +61,12 @@
 		     do NOT take effect — the fixed versions are pinned via explicit dependencyManagement
 		     entries below.
 		     ============================================================================ -->
-		<!-- Apache Tomcat: CVE-2026-41293, -43512, -43515, -41284, -43513, -42498, -43514.
-		     SB3 runs the Tomcat 10.1.x line (fixed in 10.1.55), SB4 the 11.0.x line (fixed in 11.0.22).
+		<!-- Apache Tomcat: CVE-2026-41293, -43512, -43515, -41284, -43513, -42498, -43514 (fixed in
+		     10.1.55/11.0.22), plus CVE-2026-65182, -65905, -68525 (fixed in 10.1.58/11.0.25).
+		     SB3 runs the Tomcat 10.1.x line, SB4 the 11.0.x line.
 		     Suffix mirrors cibseven-parent: version.tomcat = 11.x (SB4), version.tomcat10 = 10.x (SB3). -->
 		<version.tomcat10>10.1.59</version.tomcat10>
-		<version.tomcat>11.0.22</version.tomcat>
+		<version.tomcat>11.0.25</version.tomcat>
 		<!-- swagger-ui webjar (via springdoc, both flavours): bundles DOMPurify 3.4.0 ->
 		     CVE-2026-41240, -0540, CVE-2025-15599, CVE-2026-41238, -41239 and related GHSAs. -->
 		<version.swagger-ui>5.32.6</version.swagger-ui>
@@ -454,9 +455,9 @@ You may obtain a copy of the License at
 				<version>${version.log4j2}</version>
 			</dependency>
 
-			<!-- Override Apache Tomcat for the SB3 flavour (BOM pins the vulnerable 10.1.54) to fix
-			     CVE-2026-41293, -43512, -43515, -41284, -43513, -42498, -43514 (fixed in 10.1.55).
-			     The SB4 module overrides these to ${version.tomcat} (11.0.22) in its own pom. -->
+			<!-- Override Apache Tomcat for the SB3 flavour (BOM pins a vulnerable version) to fix
+			     CVE-2026-41293, -43512, -43515, -41284, -43513, -42498, -43514, -65182, -65905, -68525.
+			     The SB4 module overrides these to ${version.tomcat} in its own pom. -->
 			<dependency>
 				<groupId>org.apache.tomcat.embed</groupId>
 				<artifactId>tomcat-embed-core</artifactId>

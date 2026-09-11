@@ -63,6 +63,25 @@
 				<artifactId>httpcore5-h2</artifactId>
 				<version>${version.httpcore5}</version>
 			</dependency>
+
+			<!-- Override Apache Tomcat for the SB4 flavour (BOM pins a vulnerable version) to fix
+			     CVE-2026-41293, -43512, -43515, -41284, -43513, -42498, -43514, -65182, -65905, -68525.
+			     Remove once the imported Spring Boot 4 BOM manages a fixed version. -->
+			<dependency>
+				<groupId>org.apache.tomcat.embed</groupId>
+				<artifactId>tomcat-embed-core</artifactId>
+				<version>${version.tomcat}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.tomcat.embed</groupId>
+				<artifactId>tomcat-embed-el</artifactId>
+				<version>${version.tomcat}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.tomcat.embed</groupId>
+				<artifactId>tomcat-embed-websocket</artifactId>
+				<version>${version.tomcat}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 

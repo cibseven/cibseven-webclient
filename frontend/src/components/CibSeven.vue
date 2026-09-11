@@ -122,7 +122,7 @@
       </template>
 
       <template v-slot:userItems>
-        <b-dropdown-item v-if="$root.user && $root.config.layout.showUserSettings && !applicationPermissionsDenied($root.config.permissions.userProfile, 'userProfile')"
+        <b-dropdown-item v-if="$root.config.layout.showUserSettings && permissionsUserProfile"
           :to="'/seven/auth/account/' + $root.user.id"
           :active="isMenuItemActive({active: ['seven/auth/account']})"
           :title="$t('start.account.profile.tooltip')">{{ $t('start.account.profile.title') }}</b-dropdown-item>

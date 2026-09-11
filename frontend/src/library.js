@@ -25,14 +25,12 @@ export { default as store, modules as storeModules } from '@/store'
 export { debounce } from '@/utils/debounce.js'
 export { formatDate, formatDateForTooltips, formatDuration } from '@/utils/dates.js'
 export { initEmbeddedForm } from './embedded-form/embedded-form.js'
-export { i18n, setLanguage, loadTranslations, translationSources } from './i18n'
+export { i18n, setLanguage, loadTranslations, registerTranslationLoader, translationSources } from './i18n'
 export { appRoutes,
   createAppRouter,
   authGuard,
   setupGuard,
-  permissionsGuard,
-  permissionsDeniedGuard,
-  permissionsGuardUserAdmin } from './router.js'
+  permissionsGuard } from './router.js'
 export { updateAppTitle, checkExternalReturn, isMobile, hasHeader, getTheme, loadTheme, applyTheme, handleAxiosError, fetchAndStoreProcesses, fetchDecisionsIfEmpty, setupTaskNotifications } from './utils/init'
 export { parseXMLDocumentation } from './utils/parser.js'
 export { applyConfigDefaults } from './utils/config.js'
@@ -52,6 +50,18 @@ export { TaskService, FilterService, ProcessService, VariableInstanceService, Hi
 export { getEnabledShortcuts, getShortcutsForModal,
   getGlobalNavigationShortcuts, getTaskEventShortcuts, checkKeyMatch } from './utils/shortcuts.js'
 export { createProvideObject } from '@/utils/provide.js'
+
+// plugins — the mechanism is shared with the applications embedding this
+// library; each supplies its own plugin-runtime entry, since module instances
+// only exist within one build
+export { registerPlugin, getPlugin, resetPlugins, reserveSlotIds, PLUGIN_API_VERSION, getRuntimeInfo } from '@/plugins/pluginsConfig.js'
+// as one object, so a downstream plugin runtime can hand it over without listing every service
+export * as services from '@/services.js'
+export { setPluginContext, getPluginContext } from '@/plugins/pluginContext.js'
+export { setPluginRouter, navigation } from '@/plugins/pluginNavigation.js'
+export { initPlugins, loadPlugins, fetchPluginManifests, mergeTranslations } from '@/plugins/pluginLoader.js'
+export { default as PluginSlot } from '@/components/common/PluginSlot.vue'
+export { default as PluginBoundary } from '@/components/common/PluginBoundary.vue'
 
 // mixins
 export { default as processesVariablesMixin } from '@/components/process/mixins/processesVariablesMixin.js'

@@ -1,0 +1,12 @@
+{
+	"title": "Demo report",
+	"instance": "Process instance",
+	"basePath": "Services base path (from the application config)",
+	"total": "Processes",
+	"definition": "Definition",
+	"name": "Name",
+	"key": "Key",
+	"version": "Version",
+	"empty": "No process visible to you",
+	"failed": "Process request failed with"
+}

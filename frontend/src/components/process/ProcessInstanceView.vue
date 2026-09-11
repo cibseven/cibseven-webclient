@@ -113,6 +113,8 @@
       <ExternalTasksTable v-else-if="activeTab === 'externalTasks'" :instance="selectedInstance"></ExternalTasksTable>
       <DeepLinkFrame v-else-if="matchedDeepLink" :link="matchedDeepLink" :params="matchedDeepLinkParams"></DeepLinkFrame>
       <component :is="ProcessInstanceTabsContentPlugin" v-if="ProcessInstanceTabsContentPlugin" :instance="selectedInstance" :active-tab="activeTab" :process="process"></component>
+      <PluginSlot name="process-instance-tab" :only="activeTab"
+        :params="{ instance: selectedInstance, process: process, tenantId: tenantId }"></PluginSlot>
     </div>
 
   </div>
@@ -138,12 +140,13 @@ import ScrollableTabsContainer from '@/components/common-components/ScrollableTa
 import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
 import DeepLinkFrame from '@/components/common-components/DeepLinkFrame.vue'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
+import PluginSlot from '@/components/common/PluginSlot.vue'
 import { getDeepLinkEntries } from '@/utils/deepLinks.js'
 
 export default {
   name: 'ProcessInstanceView',
   components: { VariablesTable, IncidentsTable, UserTasksTable, BpmnViewer,
-    JobsTable, CalledProcessInstancesTable, ExternalTasksTable, ProcessInstanceTabs, ScrollableTabsContainer, ViewerFrame, DeepLinkFrame },
+    JobsTable, CalledProcessInstancesTable, ExternalTasksTable, ProcessInstanceTabs, ScrollableTabsContainer, ViewerFrame, DeepLinkFrame, PluginSlot },
   mixins: [resizerMixin, tabUrlMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
   inject: ['currentLanguage'],
   props: {
