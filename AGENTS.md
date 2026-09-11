@@ -67,6 +67,8 @@ The main CIB seven BPM web application: a multi-module Maven project with a Vue 
 - **Aim for ≥ 80% line coverage on new/changed files, and never reduce overall coverage.** If a change is genuinely untestable (build config, generated code), say so explicitly in the PR/commit description.
 - Java: JaCoCo is configured in the root pom — run `mvn test` in the affected module; new backend code needs JUnit coverage of the same standard.
 - Tests must assert behavior — no assertion-free or snapshot-only padding to inflate numbers.
+- **Coverage thresholds are enforced** in `frontend/vitest.config.js`: a global floor plus 80% for `src/store/**`, `src/mixins/**`, `src/utils/**`, `src/plugins/**` and `src/services.js`. Raise a threshold when you raise coverage; never lower one to make a change pass.
+- For the house testing recipes (Vuex store, axios service, mixin, component with and without mounting) and the jsdom pitfalls, see the [`frontend-vitest-coverage` skill](.claude/skills/frontend-vitest-coverage/SKILL.md).
 
 ## Git Conventions
 - One-line conventional commit messages: `type(scope): summary` (e.g. `fix(CIBHeaderFlow): …`); no body, no trailers.
