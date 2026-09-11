@@ -195,10 +195,18 @@ pipeline {
             }
             steps {
                 script {
-                    // junitPublisher is disabled here because the explicit `junit` step below
-                    // already archives the same surefire reports. Leaving both on publishes every
-                    // report twice, which showed each test case twice in the Jenkins test report.
-                    withMaven(options: [junitPublisher(disabled: true), jacocoPublisher(disabled: false)]) {
+                    // Both of withMaven's publishers are off, because the steps below already
+                    // cover what they do:
+                    //   junitPublisher  - the explicit `junit` step archives the same surefire
+                    //                     reports. With both on, every report was published twice
+                    //                     and each test case appeared twice in the test report.
+                    //   jacocoPublisher - drives the legacy JaCoCo plugin, which built a second
+                    //                     coverage report out of the per-module jacoco.exec data.
+                    //                     recordCoverage below supersedes it and reports the
+                    //                     aggregate instead, so keeping it only produced two
+                    //                     coverage widgets showing different percentages for the
+                    //                     same code.
+                    withMaven(options: [junitPublisher(disabled: true), jacocoPublisher(disabled: true)]) {
                         sh "mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean verify"
                     }
                     if (!params.DEPLOY_TO_MAVEN_CENTRAL) {
