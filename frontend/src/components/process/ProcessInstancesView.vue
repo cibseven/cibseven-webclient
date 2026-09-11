@@ -368,7 +368,7 @@ export default {
     ...mapGetters(['selectedActivityId', 'selectedActivityInstancesListMode']),
     ...mapGetters('instances', ['instances']),
     collapseButtons: function() {
-      return this.ProcessInstancesSearchBoxPlugin || this.selectedActivityId
+      return !!(this.ProcessInstancesSearchBoxPlugin || this.selectedActivityId)
     },
   },
   methods: {

@@ -23,7 +23,7 @@
     :title="tooltip(link)"
     type="button"
     class="btn btn-sm btn-light" >
-    {{ link.text }} 
+    <span class="mdi" :class="link.icon" aria-hidden="true"></span> {{ text(link) }}
   </button>
 </template>
 
@@ -48,13 +48,17 @@ export default {
         .map(entry => ({
           ...entry,
           text: resolveDeepLinkLabel(this.$t, entry),
+          icon: entry.icon || 'mdi-checkbox-marked-circle-plus-outline',
         }))
     }
   },
   methods: {
+    text(link) {
+      return (this.collapseButtons === true) ? '' : link.text
+    },
     tooltip(link) {
       return this.$t('deepLink.tooltip', {
-        text: resolveDeepLinkLabel(this.$t, link),
+        text: link.text,
         url: buildDeepLinkUrl(link.url, this.params),
       })
     },

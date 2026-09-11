@@ -117,4 +117,64 @@ describe('DeepLinkButtons.vue', () => {
     wrapper.find('button').attributes('title')
     expect(tooltipArgs.url).toBe('https://external.example/button?processInstanceId=pi-1')
   })
+
+  describe('icon', () => {
+    it('falls back to the default wrench icon when no icon is configured', () => {
+      const config = { deepLinks: { processInstance: [
+        { id: 'buttonLink', url: 'https://external.example/button', type: 'button' }
+      ] } }
+      const wrapper = createWrapper({ section: 'processInstance' }, { config })
+      expect(wrapper.find('span.mdi').classes()).toContain('mdi-wrench-outline')
+    })
+
+    it('uses the configured icon class', () => {
+      const config = { deepLinks: { processInstance: [
+        { id: 'buttonLink', url: 'https://external.example/button', type: 'button', icon: 'mdi-file-document-outline' }
+      ] } }
+      const wrapper = createWrapper({ section: 'processInstance' }, { config })
+      const iconClasses = wrapper.find('span.mdi').classes()
+      expect(iconClasses).toContain('mdi-file-document-outline')
+      expect(iconClasses).not.toContain('mdi-wrench-outline')
+    })
+
+    it('hides the decorative icon from assistive technology', () => {
+      const config = { deepLinks: { processInstance: [
+        { id: 'buttonLink', url: 'https://external.example/button', type: 'button' }
+      ] } }
+      const wrapper = createWrapper({ section: 'processInstance' }, { config })
+      expect(wrapper.find('span.mdi').attributes('aria-hidden')).toBe('true')
+    })
+  })
+
+  describe('collapseButtons', () => {
+    it('shows the label text by default', () => {
+      const config = { deepLinks: { processInstance: [
+        { id: 'buttonLink', url: 'https://external.example/button', type: 'button' }
+      ] } }
+      const wrapper = createWrapper({ section: 'processInstance' }, { config })
+      expect(wrapper.find('button').text()).toBe('buttonLink')
+    })
+
+    it('hides the label text when collapseButtons is true, keeping the icon', () => {
+      const config = { deepLinks: { processInstance: [
+        { id: 'buttonLink', url: 'https://external.example/button', type: 'button' }
+      ] } }
+      const wrapper = createWrapper({ section: 'processInstance', collapseButtons: true }, { config })
+      expect(wrapper.find('button').text()).toBe('')
+      expect(wrapper.find('span.mdi').exists()).toBe(true)
+    })
+
+    it('keeps the full label in the tooltip even when collapsed', () => {
+      const config = { deepLinks: { processInstance: [
+        { id: 'buttonLink', url: 'https://external.example/button', type: 'button' }
+      ] } }
+      let tooltipArgs
+      const wrapper = createWrapper(
+        { section: 'processInstance', collapseButtons: true },
+        { config, t: (key, args) => { tooltipArgs = args; return key } }
+      )
+      wrapper.find('button').attributes('title')
+      expect(tooltipArgs.text).toBe('buttonLink')
+    })
+  })
 })
