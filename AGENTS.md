@@ -65,7 +65,7 @@ The main CIB seven BPM web application: a multi-module Maven project with a Vue 
   - Full run: `npm run test:coverage` (istanbul; reports in `target/coverage/`)
   - Scoped check: `npx vitest run <test files> --coverage --coverage.include="src/<changed files>"`
 - **Aim for ≥ 80% line coverage on new/changed files, and never reduce overall coverage.** If a change is genuinely untestable (build config, generated code), say so explicitly in the PR/commit description.
-- Java: JaCoCo is configured in the root pom — run `mvn test` in the affected module; new backend code needs JUnit coverage of the same standard.
+- Java: run `mvn -B clean verify -pl '!.'` — **not `mvn test`**, which skips the `*IT` classes and the coverage gates. The repo-wide figure is `cibseven-coverage-aggregate/target/site/jacoco-aggregate/`, and `jacoco:check` enforces a floor per module plus a global one; never lower a floor to make a build pass. See the `java-jacoco-coverage` skill for the test recipes, the gates and the known traps.
 - Tests must assert behavior — no assertion-free or snapshot-only padding to inflate numbers.
 
 ## Git Conventions

@@ -28,6 +28,17 @@
 		<maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
 		<maven-enforcer-plugin.version>3.6.2</maven-enforcer-plugin.version>
 		<jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
+		<maven-failsafe-plugin.version>3.2.5</maven-failsafe-plugin.version>
+
+		<!--
+			JaCoCo floors enforced by jacoco:check. Every module overrides these in its own
+			<properties> with a value a couple of points under what it currently measures, so an
+			honest refactor has headroom but a real regression trips the build. Raise them when
+			coverage rises - never lower them to make a build pass.
+			The repo-wide floor lives in cibseven-coverage-aggregate/pom.xml.
+		-->
+		<jacoco.line.coverage.floor>0.00</jacoco.line.coverage.floor>
+		<jacoco.branch.coverage.floor>0.00</jacoco.branch.coverage.floor>
 
 		<git-commit-id-maven-plugin.version>9.0.2</git-commit-id-maven-plugin.version>
 
@@ -131,6 +142,8 @@ You may obtain a copy of the License at
 				<module>cibseven-webclient-core</module>
 				<module>cibseven-direct-provider</module>
 				<module>cibseven-webclient-web-sb4</module>
+				<!-- must stay last: aggregates the coverage of every module above -->
+				<module>cibseven-coverage-aggregate</module>
 			</modules>
 			<build>
 				<plugins>
@@ -579,6 +592,36 @@ You may obtain a copy of the License at
 					<doclint>none</doclint>
 				</configuration>
 			</plugin>
+			<!--
+				*IT classes are integration tests: surefire's default includes (Test*, *Test, *Tests,
+				*TestCase) deliberately skip them, and failsafe runs them in `integration-test` instead.
+				Declared here so every module behaves the same way - this used to be copy-pasted into
+				cibseven-interfaces/pom.xml and cibseven-webclient-core/pom.xml.
+
+				The include is restricted to the providers package on purpose. The two *IT classes outside
+				it - org.cibseven.webapp.rest.TenantProviderIT and org.cibseven.webapp.rest.AnalyticsServiceIT
+				- are dormant live-engine tests: they drive a real CustomRestTemplate against
+				cibseven.webclient.engineRest.url and assert a seeded demo dataset (7 running instances,
+				24 deployments, "Invoice Receipt", ...) that no longer exists, so they cannot pass in CI.
+			-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>${maven-failsafe-plugin.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<includes>
+						<include>org/cibseven/webapp/providers/**/*IT.java</include>
+					</includes>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
@@ -596,6 +639,46 @@ You may obtain a copy of the License at
 						<goals>
 							<goal>report</goal>
 						</goals>
+					</execution>
+				<!--
+					The `jacoco-report` execution above runs in the `test` phase, so it only ever sees
+					surefire data. The failsafe *IT runs happen later, in `integration-test`, and append to
+					the same jacoco.exec, so reporting again at `verify` is what makes their coverage count
+					(measured on cibseven-webclient-core: 358/4358 lines -> 733/4358).
+					The `test`-phase execution is kept so a plain `mvn test` still produces a report.
+				-->
+					<execution>
+						<id>jacoco-report-integration</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>jacoco-check</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<rule>
+									<element>BUNDLE</element>
+									<limits>
+										<limit>
+											<counter>LINE</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>${jacoco.line.coverage.floor}</minimum>
+										</limit>
+										<limit>
+											<counter>BRANCH</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>${jacoco.branch.coverage.floor}</minimum>
+										</limit>
+									</limits>
+								</rule>
+							</rules>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
