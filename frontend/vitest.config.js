@@ -29,10 +29,7 @@ export default mergeConfig(
       },
       environment: 'jsdom',
       setupFiles: ['src/__tests__/vitest.setup.js'],
-      exclude: [
-        ...configDefaults.exclude,
-        'playwright/**',
-      ],
+      exclude: configDefaults.exclude,
       root: fileURLToPath(new URL('./', import.meta.url)),
       coverage: {
         provider: 'istanbul',
@@ -51,8 +48,6 @@ export default mergeConfig(
           'src/__tests__/**',
 
           // Test and config files
-          'playwright/**', // Exclude Playwright tests
-          'playwright.config.js', // Exclude Playwright config
           'vite.config.js', // Exclude Vite config
           'vitest.config.js', // Exclude this config file itself
           '**/*.config.js', // Exclude all config files

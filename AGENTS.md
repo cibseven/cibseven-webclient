@@ -9,7 +9,7 @@ The main CIB seven BPM web application: a multi-module Maven project with a Vue 
 - **Frontend:** Vue 3 with **Options API** (`export default {}`), Vite, vue-router 4 (hash history), Vuex 4 (namespaced modules), axios, vue-i18n
 - **Backend:** Java 17, Spring Boot 3.5.x (Jakarta EE), Spring MVC REST controllers, SpringDoc OpenAPI
 - **UI:** Bootstrap 5, SCSS, Material Design Icons (`@mdi/font`), `@cib/bootstrap-components`, `@cib/common-frontend`
-- **Testing:** Vitest + @vue/test-utils (unit), Playwright (E2E), Spring Boot Test + JUnit (backend), JaCoCo (Java coverage)
+- **Testing:** Vitest + @vue/test-utils (unit), Spring Boot Test + JUnit (backend), JaCoCo (Java coverage). E2E tests live in a separate repository.
 - **Linting:** ESLint 9 flat config + eslint-plugin-vue (essential) + eslint-plugin-vuejs-accessibility, no Prettier
 
 ## Coding Conventions
@@ -60,7 +60,7 @@ The main CIB seven BPM web application: a multi-module Maven project with a Vue 
 
 ## Testing & Coverage (required for every commit)
 - **Every commit that changes production code must include new or updated tests covering that change.** Bug fixes need a regression test; new features need tests for the main paths.
-- Frontend unit tests live in `frontend/src/__tests__/` (Vitest, jsdom, `@vue/test-utils`); E2E in `playwright/`.
+- Frontend unit tests live in `frontend/src/__tests__/` (Vitest, jsdom, `@vue/test-utils`). E2E tests are maintained in a separate repository.
 - Before committing, verify coverage of the code you touched:
   - Full run: `npm run test:coverage` (istanbul; reports in `target/coverage/`)
   - Scoped check: `npx vitest run <test files> --coverage --coverage.include="src/<changed files>"`
