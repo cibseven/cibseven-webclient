@@ -64,7 +64,7 @@ export default {
     },
     openLink(link) {
       const completeUrl = buildDeepLinkUrl(link.url, this.params)
-      window.open(completeUrl, link.target || '_blank')
+      window.open(completeUrl, link.target || '_blank', 'noopener,noreferrer')
     }
   }
 }

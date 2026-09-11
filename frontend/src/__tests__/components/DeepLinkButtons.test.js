@@ -73,7 +73,7 @@ describe('DeepLinkButtons.vue', () => {
     ] } }
     const wrapper = createWrapper({ section: 'processInstance' }, { config })
     await wrapper.find('button').trigger('click')
-    expect(openSpy).toHaveBeenCalledWith('https://external.example/button', '_blank')
+    expect(openSpy).toHaveBeenCalledWith('https://external.example/button', '_blank', 'noopener,noreferrer')
   })
 
   it('appends the given params to the url when opening it', async () => {
@@ -85,7 +85,7 @@ describe('DeepLinkButtons.vue', () => {
       { config }
     )
     await wrapper.find('button').trigger('click')
-    expect(openSpy).toHaveBeenCalledWith('https://external.example/button?processInstanceId=pi-1', '_blank')
+    expect(openSpy).toHaveBeenCalledWith('https://external.example/button?processInstanceId=pi-1', '_blank', 'noopener,noreferrer')
   })
 
   it('opens the url in the configured target window instead of _blank', async () => {
@@ -94,7 +94,17 @@ describe('DeepLinkButtons.vue', () => {
     ] } }
     const wrapper = createWrapper({ section: 'processInstance' }, { config })
     await wrapper.find('button').trigger('click')
-    expect(openSpy).toHaveBeenCalledWith('https://external.example/button', 'myWindow')
+    expect(openSpy).toHaveBeenCalledWith('https://external.example/button', 'myWindow', 'noopener,noreferrer')
+  })
+
+  it('never grants the opened page a window.opener reference back, to prevent reverse tabnabbing', async () => {
+    const config = { deepLinks: { processInstance: [
+      { id: 'buttonLink', url: 'https://external.example/button', type: 'button' }
+    ] } }
+    const wrapper = createWrapper({ section: 'processInstance' }, { config })
+    await wrapper.find('button').trigger('click')
+    const windowFeatures = openSpy.mock.calls[0][2]
+    expect(windowFeatures).toContain('noopener')
   })
 
   it('sets a tooltip with the resolved label and url', () => {
