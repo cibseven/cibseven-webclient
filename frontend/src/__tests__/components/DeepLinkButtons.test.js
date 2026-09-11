@@ -119,12 +119,12 @@ describe('DeepLinkButtons.vue', () => {
   })
 
   describe('icon', () => {
-    it('falls back to the default wrench icon when no icon is configured', () => {
+    it('falls back to the default icon when no icon is configured', () => {
       const config = { deepLinks: { processInstance: [
         { id: 'buttonLink', url: 'https://external.example/button', type: 'button' }
       ] } }
       const wrapper = createWrapper({ section: 'processInstance' }, { config })
-      expect(wrapper.find('span.mdi').classes()).toContain('mdi-wrench-outline')
+      expect(wrapper.find('span.mdi').classes()).toContain('mdi-checkbox-marked-circle-plus-outline')
     })
 
     it('uses the configured icon class', () => {
@@ -134,7 +134,7 @@ describe('DeepLinkButtons.vue', () => {
       const wrapper = createWrapper({ section: 'processInstance' }, { config })
       const iconClasses = wrapper.find('span.mdi').classes()
       expect(iconClasses).toContain('mdi-file-document-outline')
-      expect(iconClasses).not.toContain('mdi-wrench-outline')
+      expect(iconClasses).not.toContain('mdi-checkbox-marked-circle-plus-outline')
     })
 
     it('hides the decorative icon from assistive technology', () => {
