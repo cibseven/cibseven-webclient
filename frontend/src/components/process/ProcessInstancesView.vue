@@ -343,7 +343,9 @@ export default {
     ...mapGetters(['selectedActivityId', 'selectedActivityInstancesListMode']),
     ...mapGetters('instances', ['instances']),
     collapseButtons: function() {
-      return this.ProcessInstancesSearchBoxPlugin || this.selectedActivityId
+      // Both operands are values, not flags: a component or an activity id. The consumers
+      // declare a Boolean prop, so the decision is coerced here rather than passed on raw.
+      return Boolean(this.ProcessInstancesSearchBoxPlugin || this.selectedActivityId)
     },
   },
   methods: {
