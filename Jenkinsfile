@@ -195,7 +195,10 @@ pipeline {
             }
             steps {
                 script {
-                    withMaven(options: [junitPublisher(disabled: false), jacocoPublisher(disabled: false)]) {
+                    // junitPublisher is disabled here because the explicit `junit` step below
+                    // already archives the same surefire reports. Leaving both on publishes every
+                    // report twice, which showed each test case twice in the Jenkins test report.
+                    withMaven(options: [junitPublisher(disabled: true), jacocoPublisher(disabled: false)]) {
                         sh "mvn -T4 -Dbuild.number=${BUILD_NUMBER} clean verify"
                     }
                     if (!params.DEPLOY_TO_MAVEN_CENTRAL) {
@@ -416,7 +419,10 @@ pipeline {
                         }
                     }
 
-                    withMaven(options: []) {
+                    // junitPublisher is disabled here because the explicit `junit` step below
+                    // already archives the same surefire reports. Leaving both on publishes every
+                    // report twice, which showed each test case twice in the Jenkins test report.
+                    withMaven(options: [junitPublisher(disabled: true)]) {
                         def skipTestsFlag = params.VERIFY ? "-DskipTests" : ""
                         sh "mvn -T4 -U clean \
                         org.cyclonedx:cyclonedx-maven-plugin:makeBom \
@@ -460,7 +466,10 @@ pipeline {
             }
             steps {
                 script {
-                    withMaven(options: []) {
+                    // junitPublisher is disabled here because the explicit `junit` step below
+                    // already archives the same surefire reports. Leaving both on publishes every
+                    // report twice, which showed each test case twice in the Jenkins test report.
+                    withMaven(options: [junitPublisher(disabled: true)]) {
                         withCredentials([file(credentialsId: 'credential-cibseven-gpg-private-key', variable: 'GPG_KEY_FILE'), string(credentialsId: 'credential-cibseven-gpg-passphrase', variable: 'GPG_KEY_PASS')]) {
                             sh "gpg --batch --import ${GPG_KEY_FILE}"
     
