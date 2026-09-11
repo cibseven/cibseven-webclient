@@ -201,17 +201,32 @@ pipeline {
                     if (!params.DEPLOY_TO_MAVEN_CENTRAL) {
                         junit allowEmptyResults: true, testResults: ConstantsInternal.MAVEN_TEST_RESULTS
 
-                        // Show coverage in Jenkins UI
+                        // Show coverage in Jenkins UI.
+                        //
+                        // The JaCoCo side reads the aggregate report, not the per-module
+                        // */target/site/jacoco/jacoco.xml reports. Both describe the same 8,728
+                        // lines, but a per-module report only sees the coverage its own module's
+                        // tests produce, so summing the five understates the result (39.4% vs
+                        // 43.2% at the time of writing - cibseven-interfaces is largely covered
+                        // by cibseven-webclient-core's tests, which the per-module view cannot
+                        // credit). The aggregate is also the figure jacoco:check holds the global
+                        // floor against, so the badge here and the gate agree.
+                        //
+                        // Keep this as ONE call: adding the per-module pattern back alongside the
+                        // aggregate would report every class twice.
                         recordCoverage(
                             tools: [
                                 [parser: 'COBERTURA', pattern: 'frontend/target/coverage/cobertura-coverage.xml'],
-                                [parser: 'JACOCO', pattern: '**/target/site/jacoco/jacoco.xml']
+                                [parser: 'JACOCO', pattern: 'cibseven-coverage-aggregate/target/site/jacoco-aggregate/jacoco.xml']
                             ],
                             sourceCodeRetention: 'LAST_BUILD',
                             sourceDirectories: [
                                 [path: 'frontend/src'],
+                                [path: 'cibseven-interfaces/src/main/java'],
                                 [path: 'cibseven-webclient-core/src/main/java'],
-                                [path: 'cibseven-webclient-web/src/main/java']
+                                [path: 'cibseven-direct-provider/src/main/java'],
+                                [path: 'cibseven-webclient-web/src/main/java'],
+                                [path: 'cibseven-webclient-web-sb4/src/main/java']
                             ]
                         )
                     }
@@ -413,11 +428,23 @@ pipeline {
                     if (!params.VERIFY) {
                         junit allowEmptyResults: true, testResults: ConstantsInternal.MAVEN_TEST_RESULTS
 
-                        // Show coverage in Jenkins UI
+                        // Show coverage in Jenkins UI. See the 'Maven verify' stage for why
+                        // the JaCoCo side reads the aggregate report rather than the per-module
+                        // ones, and why this stays a single call.
                         recordCoverage(
-                            tools: [[parser: 'COBERTURA', pattern: 'frontend/target/coverage/cobertura-coverage.xml']],
+                            tools: [
+                                [parser: 'COBERTURA', pattern: 'frontend/target/coverage/cobertura-coverage.xml'],
+                                [parser: 'JACOCO', pattern: 'cibseven-coverage-aggregate/target/site/jacoco-aggregate/jacoco.xml']
+                            ],
                             sourceCodeRetention: 'LAST_BUILD',
-                            sourceDirectories: [[path: 'frontend/src']]
+                            sourceDirectories: [
+                                [path: 'frontend/src'],
+                                [path: 'cibseven-interfaces/src/main/java'],
+                                [path: 'cibseven-webclient-core/src/main/java'],
+                                [path: 'cibseven-direct-provider/src/main/java'],
+                                [path: 'cibseven-webclient-web/src/main/java'],
+                                [path: 'cibseven-webclient-web-sb4/src/main/java']
+                            ]
                         )
                     }
                 }
