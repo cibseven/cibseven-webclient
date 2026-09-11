@@ -56,8 +56,8 @@
 			own tests produce, whereas the merged data also credits cross-module coverage (core's
 			tests cover a lot of cibseven-interfaces, for instance).
 		-->
-		<jacoco.aggregate.line.floor>0.27</jacoco.aggregate.line.floor>
-		<jacoco.aggregate.branch.floor>0.21</jacoco.aggregate.branch.floor>
+		<jacoco.aggregate.line.floor>0.34</jacoco.aggregate.line.floor>
+		<jacoco.aggregate.branch.floor>0.27</jacoco.aggregate.branch.floor>
 	</properties>
 
 	<build>
