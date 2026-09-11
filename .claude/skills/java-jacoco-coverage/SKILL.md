@@ -68,8 +68,9 @@ assertThat(engine.takePath()).isEqualTo("/decision-definition");
 ```
 
 Assert **both** halves: the request that went out (path, method, body, headers) and the object
-that came back. The request path is where the bugs are — see `DecisionProviderTest`, which pins a
-malformed tenant URL.
+that came back. The request path is where the bugs are — see `DecisionProviderTest`, whose
+disabled `evaluateDecisionDefinitionByKeyAndTenant_usesTheTenantIdSegment` documents a malformed
+tenant URL (read "When a test disagrees with the code" below before adding one of those).
 
 A provider with extra `@Value` fields of its own needs them set too (`UserProvider` has
 `userProvider` and `wildcard`), or you get an NPE deep inside a URL builder.
@@ -226,22 +227,67 @@ mvn -B clean verify -pl '!.' -Djacoco.aggregate.line.floor=0.99
 
 ## When a test disagrees with the code
 
-Decide which one is wrong before "fixing" the test. If the code is wrong, **pin the current
-behaviour** and report it rather than changing production source:
+Decide which one is wrong before "fixing" the test. If the code is wrong, **do not change
+production source and do not assert the broken behaviour as if it were correct.** Write the test
+the way it should pass once the bug is fixed, disable it, and say why:
 
 ```java
-// KNOWN BUG (pinned, not fixed): <what is wrong, and what it costs in production>
-assertThat(body).contains("\"executionDate\": 2026-01-01T10:00:00");
+/**
+ * TODO KNOWN BUG (not fixed): <what is wrong, and what it costs in production>. This test states
+ * the behaviour the method should have; it fails until <the fix>.
+ */
+@Test
+@Disabled("KNOWN BUG: <one-line summary>")
+void suspendProcessDefinition_quotesTheExecutionDate() throws Exception {
+	...
+	assertThat(body).contains("\"executionDate\": \"2026-01-01T10:00:00\"");
+}
 ```
 
-Existing pins worth knowing about, because they will surprise you:
+The rules:
 
-- `ApplicationException` (and `AuthenticationException` from the shared `common-auth` library)
-  declare only a varargs `Object...` constructor and never call `super(message)`. **Every**
-  exception in those families has a null `getMessage()` and a broken cause chain; the real
-  message is only in `getData()`. Do not assert on the message of one of those.
-- `ProcessProvider.suspendProcessDefinition` interpolates the execution date into JSON unquoted.
-- `DecisionProvider.evaluateDecisionDefinitionByKeyAndTenant` builds `/tenant<id>` instead of
-  `/tenant-id/<id>`.
-- `DirectBatchProvider.deleteBatch` compares the cascade flag with `equals("true")`, so a real
-  JSON boolean never cascades.
+- `org.junit.jupiter.api.Disabled` — the reason string starts with `KNOWN BUG:` so the whole set
+  is greppable (`grep -rn '@Disabled("KNOWN BUG' --include=*.java`) and shows up in the surefire
+  output as a skip with its explanation.
+- The javadoc above it starts with `TODO KNOWN BUG (not fixed):` and carries the full story: what
+  the code does, what it costs in production, and what has to change for the test to go green.
+- Name the test after the **correct** behaviour (`..._quotesTheExecutionDate`), not the defect.
+- **Keep an enabled sibling** wherever the same lines can be reached without asserting the bug —
+  it keeps the path covered while the bug stands. `DirectBatchProviderTest` covers the cascade
+  branch with the string `"false"`; `SsoHelperTest` still asserts that a rejected code throws
+  `AuthenticationException`, only the assertion on its (missing) message is disabled;
+  `ExceptionContractTest` still exercises all four subclasses through `getData()`.
+- A disabled test earns no coverage. Two of these — the tenant-scoped decision evaluation and the
+  empty-JWKS guard — are the only callers of their lines, so ~4 lines of `cibseven-webclient-core`
+  went uncovered when they were disabled (45.0% → 44.9% line). That is the honest number; do not
+  buy it back by re-pinning the defect.
+- **Check that it actually fails.** A disabled test nobody has run may be asserting the wrong
+  "correct" behaviour. Deactivate the condition and watch it fail for the documented reason:
+
+  ```bash
+  mvn -B -o test -pl cibseven-webclient-core -Dtest=DecisionProviderTest -Djacoco.skip=true \
+    -DargLine="-Djunit.jupiter.conditions.deactivate=org.junit.jupiter.engine.extension.DisabledCondition"
+  ```
+
+- Test a single class this way rather than running `mvn verify` over the whole reactor for every
+  edit; the full `mvn -B clean verify -pl '!.'` is for the end, when the gates matter.
+- When a bug gets fixed, delete the `@Disabled` and the `TODO` block — the test is already
+  written.
+
+`KNOWN BUG` is the only label; earlier `KNOWN LIMITATION` / `KNOWN INEFFICIENCY` pins were folded
+into it, since from a caller's seat they are the same thing. The twelve currently disabled, and
+why they will surprise you:
+
+| Where | Bug |
+|---|---|
+| `ExceptionContractTest`, `DirectVariableProviderTest` | `ApplicationException` declares only a varargs `Object...` constructor and never calls `super(message)`. **Every** subclass has a null `getMessage()` and a broken cause chain; the real message is only in `getData()`. Do not assert on the message of one of those. |
+| `SsoHelperTest` | `AuthenticationException` from the shared `common-auth` library has the same shape, so every SSO failure logs an empty message. Three enabled tests there assert only the exception type for that reason. |
+| `SsoHelperTest` | `KeyResolver.loadKey` guards a null `KeyList` but not a JWKS with no `keys`, so an empty key set NPEs instead of failing authentication. |
+| `SevenUserProviderTest` | `SevenUserProvider.verify` builds its `AuthenticationException` from the same null claim that just failed, so a token with no `user` claim NPEs. |
+| `ProcessProviderTest` | `ProcessProvider.suspendProcessDefinition` interpolates the execution date into JSON unquoted. |
+| `DecisionProviderTest` | `DecisionProvider.evaluateDecisionDefinitionByKeyAndTenant` builds `/tenant<id>` instead of `/tenant-id/<id>`. |
+| `TaskProviderTest` | `TaskProvider.setAssignee` compares `assignee.equals("null")`, so a real null reference NPEs instead of unclaiming. |
+| `DirectBatchProviderTest` | `DirectBatchProvider.deleteBatch` compares the cascade flag with `equals("true")`, so a real JSON boolean never cascades. |
+| `SevenAuthorizationUtilsTest` | `hasCockpitRights` inspects `permissions[0]` only, so a GRANT listing ACCESS in any later position is denied. The GLOBAL branch of the same method reads the whole array. |
+| `SevenAuthorizationUtilsTest` | `hasSpecificProcessRights` matches the resource id exactly, so a `"*"` grant — "every process" to the engine — authorises nothing. |
+| `DirectProcessProviderDefinitionsTest` | `findProcessVersionsByDefinitionKey` runs three history queries per version, so a process with many versions costs 3×N round-trips. |

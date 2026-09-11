@@ -52,6 +52,7 @@ import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Variable;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
@@ -184,8 +185,22 @@ public class DirectVariableProviderTest {
 			.isInstanceOf(NoObjectFoundException.class);
 	}
 
+	/**
+	 * TODO KNOWN BUG (not fixed): {@code ApplicationException} declares only
+	 * {@code ApplicationException(Object... data)} and never calls {@code super(message)}, so every
+	 * constructor of its subclasses - here {@code NoObjectFoundException(Throwable)} - stores the
+	 * message and cause in {@code data} and leaves {@code RuntimeException}'s own message and cause
+	 * unset. The provider builds "HistoryVariable with Id 'missing' does not exist." and it never
+	 * reaches {@code getMessage()}; the wrapped {@code SystemException} never reaches
+	 * {@code getCause()}. Anything logging or serialising this exception sees nothing. Affects all
+	 * four subclasses of {@code ApplicationException}, of which {@code NoObjectFoundException} is
+	 * thrown throughout the providers. This test states what the caller should be able to read; it
+	 * fails until {@code ApplicationException} passes message and cause up to
+	 * {@code RuntimeException}. See {@code ExceptionContractTest} in {@code cibseven-interfaces}.
+	 */
 	@Test
-	void fetchHistoryVariableDataById_losesTheReasonItThrew() {
+	@Disabled("KNOWN BUG: ApplicationException never calls super(message), so the reason is only in getData()")
+	void fetchHistoryVariableDataById_reportsWhyItThrew() {
 		HistoricVariableInstanceQuery query =
 			mock(HistoricVariableInstanceQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
 		when(historyService.createHistoricVariableInstanceQuery()).thenReturn(query);
@@ -194,17 +209,10 @@ public class DirectVariableProviderTest {
 		Throwable thrown = org.assertj.core.api.Assertions.catchThrowable(
 			() -> variableProvider.fetchHistoryVariableDataById("missing", user));
 
-		// KNOWN BUG (pinned, not fixed): ApplicationException declares only
-		// `ApplicationException(Object... data)` and never calls super(message), so every
-		// constructor of its subclasses - here NoObjectFoundException(Throwable) - stores the
-		// message and cause in `data` and leaves RuntimeException's own message and cause unset.
-		// The provider builds "HistoryVariable with Id 'missing' does not exist." and it never
-		// reaches getMessage(); the wrapped SystemException never reaches getCause(). Anything
-		// logging or serialising this exception sees nothing. Affects the four subclasses of
-		// ApplicationException, of which NoObjectFoundException is thrown throughout the providers.
-		assertThat(thrown.getMessage()).isNull();
-		assertThat(thrown.getCause()).isNull();
-		// the information survives only here
+		assertThat(thrown).isInstanceOf(NoObjectFoundException.class);
+		assertThat(thrown.getCause()).isInstanceOf(SystemException.class)
+			.hasMessageContaining("HistoryVariable with Id 'missing' does not exist.");
+		// today the information survives only here
 		assertThat(((NoObjectFoundException) thrown).getData()).hasSize(2);
 	}
 

@@ -34,6 +34,7 @@ import org.cibseven.webapp.auth.assertion.AssertionType;
 import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import io.jsonwebtoken.Jwts;
@@ -140,17 +141,22 @@ public class SsoHelperTest {
 		assertThat(server.takeRequest().getPath()).isEqualTo("/certs");
 	}
 
+	/**
+	 * TODO KNOWN BUG (not fixed): {@code KeyResolver.loadKey} guards against a null {@code KeyList}
+	 * but not against a {@code KeyList} whose "keys" array is absent, so a JWKS document that
+	 * parses but has no keys - a misconfigured or half-migrated identity provider - dereferences
+	 * null and fails with a bare {@link NullPointerException}. This test asserts the
+	 * {@code AuthenticationException} the guard is meant to produce; it fails until the empty-key
+	 * case is guarded too.
+	 */
 	@Test
+	@Disabled("KNOWN BUG: KeyResolver.loadKey does not guard an empty JWKS, so it NPEs instead of failing authentication")
 	void construction_failsWhenTheProviderPublishesNoKeys() {
 		enqueueJson("{}");
 
-		// KNOWN BUG (pinned, not fixed): KeyResolver.loadKey guards against a null KeyList but not
-		// against a KeyList whose "keys" array is absent, so a JWKS document that parses but has no
-		// keys - a misconfigured or half-migrated identity provider - dereferences null and fails
-		// with a bare NullPointerException instead of the intended AuthenticationException.
 		assertThatThrownBy(() -> new SsoHelper(url("/token"), CLIENT_ID, CLIENT_SECRET, null, null,
 				url("/certs"), url("/userinfo"), url("/introspect")))
-			.isInstanceOf(NullPointerException.class);
+			.isInstanceOf(AuthenticationException.class);
 	}
 
 	@Test
@@ -209,12 +215,11 @@ public class SsoHelperTest {
 		String token = signedToken(hashed("a-different-nonce"));
 		enqueueJson("{\"access_token\":\"" + token + "\",\"id_token\":\"" + token + "\"}");
 
-		// a mismatching nonce means the response does not belong to this login attempt
-		// KNOWN BUG (pinned, not fixed): the reason never reaches getMessage() - see
-		// authenticationExceptionsCarryNoMessage below.
+		// a mismatching nonce means the response does not belong to this login attempt.
+		// The reason it gives never reaches getMessage() - see
+		// authenticationExceptionsShouldCarryTheProviderMessage below, which is disabled.
 		assertThatThrownBy(() -> helper.codeExchange("the-code", "https://app/callback", "nonce-1"))
-			.isInstanceOf(AuthenticationException.class)
-			.hasMessage(null);
+			.isInstanceOf(AuthenticationException.class);
 	}
 
 	@Test
@@ -252,10 +257,10 @@ public class SsoHelperTest {
 		server.takeRequest();
 		server.enqueue(new MockResponse().setResponseCode(400).setBody("{\"error\":\"invalid_grant\"}"));
 
-		// the provider's response body is passed to the exception but does not survive it
+		// the provider's response body is passed to the exception but does not survive it -
+		// see authenticationExceptionsShouldCarryTheProviderMessage, which is disabled
 		assertThatThrownBy(() -> helper.codeExchange("stale-code", "https://app/callback", "nonce-1"))
-			.isInstanceOf(AuthenticationException.class)
-			.hasMessage(null);
+			.isInstanceOf(AuthenticationException.class);
 	}
 
 	// ---------- refresh ----------
@@ -342,9 +347,9 @@ public class SsoHelperTest {
 		server.takeRequest();
 		server.enqueue(new MockResponse().setResponseCode(401).setBody("{}"));
 
+		// the message is lost on the way out - see authenticationExceptionsShouldCarryTheProviderMessage
 		assertThatThrownBy(() -> helper.getUserInfo("bad-token"))
-			.isInstanceOf(AuthenticationException.class)
-			.hasMessage(null);
+			.isInstanceOf(AuthenticationException.class);
 	}
 
 	@Test
@@ -409,7 +414,7 @@ public class SsoHelperTest {
 	}
 
 	@Test
-	void authenticationExceptionsCarryNoMessage() throws Exception {
+	void codeExchange_failsAuthenticationWhenTheProviderRejectsTheCode() throws Exception {
 		SsoHelper helper = helper();
 		server.takeRequest();
 		server.enqueue(new MockResponse().setResponseCode(400)
@@ -418,17 +423,36 @@ public class SsoHelperTest {
 		Throwable thrown = org.assertj.core.api.Assertions.catchThrowable(
 			() -> helper.codeExchange("stale-code", "https://app/callback", "nonce-1"));
 
-		// KNOWN BUG (pinned, not fixed): org.cibseven.webapp.auth.exception.AuthenticationException
-		// comes from the shared common-auth library and declares only
-		// `AuthenticationException(Object... data)`, never calling super(message). Every
-		// authentication failure in the webclient therefore has a null getMessage() and a broken
-		// cause chain - the identity provider's own error_description is collected into getData()
-		// and nowhere else, so operators debugging a failed SSO login get an empty log line.
-		// Same shape as ApplicationException; see ExceptionContractTest in cibseven-interfaces.
-		assertThat(thrown.getMessage()).isNull();
-		assertThat(thrown.getCause()).isNull();
+		assertThat(thrown).isInstanceOf(AuthenticationException.class);
+		// today the provider's own explanation survives only here
 		assertThat(((AuthenticationException) thrown).getData())
 			.anySatisfy(entry -> assertThat(String.valueOf(entry)).contains("code expired"));
+	}
+
+	/**
+	 * TODO KNOWN BUG (not fixed): {@code org.cibseven.webapp.auth.exception.AuthenticationException}
+	 * comes from the shared common-auth library and declares only
+	 * {@code AuthenticationException(Object... data)}, never calling {@code super(message)}. Every
+	 * authentication failure in the webclient therefore has a null {@code getMessage()} and a broken
+	 * cause chain - the identity provider's own {@code error_description} is collected into
+	 * {@code getData()} and nowhere else, so operators debugging a failed SSO login get an empty log
+	 * line. Same shape as {@code ApplicationException}; see {@code ExceptionContractTest} in
+	 * {@code cibseven-interfaces}. This test asserts what the log line should say; it fails until
+	 * the library exception forwards its message.
+	 */
+	@Test
+	@Disabled("KNOWN BUG: common-auth AuthenticationException never calls super(message), so every SSO failure logs an empty message")
+	void authenticationExceptionsShouldCarryTheProviderMessage() throws Exception {
+		SsoHelper helper = helper();
+		server.takeRequest();
+		server.enqueue(new MockResponse().setResponseCode(400)
+			.setBody("{\"error\":\"invalid_grant\",\"error_description\":\"code expired\"}"));
+
+		Throwable thrown = org.assertj.core.api.Assertions.catchThrowable(
+			() -> helper.codeExchange("stale-code", "https://app/callback", "nonce-1"));
+
+		assertThat(thrown).isInstanceOf(AuthenticationException.class);
+		assertThat(thrown.getMessage()).contains("code expired");
 	}
 
 	@Test

@@ -32,6 +32,7 @@ import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.rest.model.SevenUser;
 import org.cibseven.webapp.rest.model.SevenVerifyUser;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -310,16 +311,21 @@ public class SevenUserProviderTest {
 		assertThat(provider.verify(claims).getId()).isEqualTo("demo");
 	}
 
+	/**
+	 * TODO KNOWN BUG (not fixed): {@code verify()} catches {@code Exception} and builds its
+	 * {@code AuthenticationException} from {@code userClaims.get("user").toString()} - the very
+	 * expression that just failed - so a token whose claims carry no "user" leaves the handler with
+	 * a {@link NullPointerException} instead of the intended authentication failure. This test
+	 * asserts the failure a caller should see; it fails until the catch block stops dereferencing
+	 * the missing claim.
+	 */
 	@Test
-	void verify_throwsNullPointerWhenTheClaimsCarryNoUser() {
+	@Disabled("KNOWN BUG: verify() rebuilds its AuthenticationException from the null claim that just failed, so it NPEs")
+	void verify_failsAuthenticationWhenTheClaimsCarryNoUser() {
 		io.jsonwebtoken.Claims claims = mock(io.jsonwebtoken.Claims.class);
 		when(claims.get("user")).thenReturn(null);
 
-		// KNOWN BUG (pinned, not fixed): verify() catches Exception and builds its
-		// AuthenticationException from userClaims.get("user").toString() - the very expression that
-		// just failed - so a token whose claims carry no "user" leaves the handler with a
-		// NullPointerException instead of the intended authentication failure.
 		assertThatThrownBy(() -> provider.verify(claims))
-			.isInstanceOf(NullPointerException.class);
+			.isInstanceOf(AuthenticationException.class);
 	}
 }

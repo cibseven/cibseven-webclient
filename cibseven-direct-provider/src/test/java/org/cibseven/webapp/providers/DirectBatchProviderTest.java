@@ -43,6 +43,7 @@ import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.HistoryBatch;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -96,16 +97,31 @@ public class DirectBatchProviderTest {
 	}
 
 	@Test
-	void deleteBatch_treatsARealBooleanFlagAsFalse() {
+	void deleteBatch_doesNotCascadeOnTheStringFalse() {
+		Map<String, Object> params = new HashMap<>();
+		params.put("cascade", "false");
+
+		batchProvider.deleteBatch("batch-1", params, user);
+
+		verify(managementService).deleteBatch("batch-1", false);
+	}
+
+	/**
+	 * TODO KNOWN BUG (not fixed): {@code DirectBatchProvider.deleteBatch} compares the flag with
+	 * {@code equals("true")}, so only the <em>String</em> {@code "true"} enables cascade. A JSON
+	 * body sending a real boolean {@code true} - which is what a typed client sends - silently
+	 * deletes without cascading. This test states the behaviour the method should have; it fails
+	 * until the flag is coerced instead of string-compared.
+	 */
+	@Test
+	@Disabled("KNOWN BUG: deleteBatch compares the cascade flag with equals(\"true\"), so a real JSON boolean never cascades")
+	void deleteBatch_cascadesWhenTheFlagIsARealBoolean() {
 		Map<String, Object> params = new HashMap<>();
 		params.put("cascade", Boolean.TRUE);
 
 		batchProvider.deleteBatch("batch-1", params, user);
 
-		// KNOWN BUG (pinned, not fixed): the flag is compared with equals("true"), so only the
-		// *String* "true" enables cascade. A JSON body sending a real boolean true - which is what
-		// a typed client would send - silently deletes without cascading.
-		verify(managementService).deleteBatch("batch-1", false);
+		verify(managementService).deleteBatch("batch-1", true);
 	}
 
 	@Test

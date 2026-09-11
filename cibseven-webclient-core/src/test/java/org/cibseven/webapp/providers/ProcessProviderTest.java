@@ -32,6 +32,7 @@ import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.cibseven.webapp.rest.model.ProcessInstance;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class ProcessProviderTest {
@@ -240,19 +241,22 @@ public class ProcessProviderTest {
 			"{ \"suspended\": true,\"includeProcessInstances\": false,\"executionDate\": null }");
 	}
 
+	/**
+	 * TODO KNOWN BUG (not fixed): the body is assembled by string concatenation and the
+	 * executionDate is interpolated unquoted, so a non-null date produces malformed JSON
+	 * ({@code "executionDate": 2026-01-01T10:00:00}) that the engine rejects. Scheduling a delayed
+	 * suspension through this method cannot work; only the null case happens to be valid JSON.
+	 * This test asserts the body the engine expects; it fails until the date is quoted.
+	 */
 	@Test
-	void suspendProcessDefinition_buildsInvalidJsonForAnExecutionDate() throws Exception {
+	@Disabled("KNOWN BUG: suspendProcessDefinition interpolates the execution date into JSON unquoted")
+	void suspendProcessDefinition_quotesTheExecutionDate() throws Exception {
 		engine.enqueueEmpty(204);
 
 		processProvider.suspendProcessDefinition("id-1", Boolean.TRUE, Boolean.FALSE, "2026-01-01T10:00:00", user);
 
-		// KNOWN BUG (pinned, not fixed): the body is assembled by string concatenation and the
-		// executionDate is interpolated unquoted, so a non-null date produces malformed JSON
-		// (`"executionDate": 2026-01-01T10:00:00`) that the engine rejects. Scheduling a delayed
-		// suspension through this method cannot work. Only the null case happens to be valid JSON.
 		String body = engine.take().getBody().readUtf8();
-		assertThat(body).contains("\"executionDate\": 2026-01-01T10:00:00");
-		assertThat(body).doesNotContain("\"executionDate\": \"2026-01-01T10:00:00\"");
+		assertThat(body).contains("\"executionDate\": \"2026-01-01T10:00:00\"");
 	}
 
 	// ---------- counts and history ----------

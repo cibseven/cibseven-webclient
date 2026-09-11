@@ -26,6 +26,7 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.Decision;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class DecisionProviderTest {
@@ -139,18 +140,22 @@ public class DecisionProviderTest {
 		assertThat(engine.takePath()).isEqualTo("/decision-definition/key/risk/tenant-id/acme/xml");
 	}
 
+	/**
+	 * TODO KNOWN BUG (not fixed): every other tenant-scoped method in this provider builds
+	 * ".../key/{key}/tenant-id/{tenant}/...", but
+	 * {@code evaluateDecisionDefinitionByKeyAndTenant} concatenates {@code "/tenant" + tenant} with
+	 * no {@code "-id/"} and no separator, so it requests "/tenantacme" and the engine answers 404.
+	 * Evaluating a tenant-scoped decision cannot work through this method. This test asserts the
+	 * path the engine expects; it fails until the URL is built like its neighbours.
+	 */
 	@Test
-	void evaluateDecisionDefinitionByKeyAndTenant_buildsAMalformedTenantUrl() throws Exception {
+	@Disabled("KNOWN BUG: evaluateDecisionDefinitionByKeyAndTenant builds /tenant<id> instead of /tenant-id/<id>")
+	void evaluateDecisionDefinitionByKeyAndTenant_usesTheTenantIdSegment() throws Exception {
 		engine.enqueueJson("[]");
 
 		decisionProvider.evaluateDecisionDefinitionByKeyAndTenant(new HashMap<>(), "risk", "acme", user);
 
-		// KNOWN BUG (pinned, not fixed): every other tenant-scoped method in this provider builds
-		// ".../key/{key}/tenant-id/{tenant}/...", but this one concatenates "/tenant" + tenant with
-		// no "-id/" and no separator, so it requests "/tenant-idacme"-style nonsense and the engine
-		// answers 404. Evaluating a tenant-scoped decision cannot work through this method.
-		// The correct path would be "/decision-definition/key/risk/tenant-id/acme/evaluate".
-		assertThat(engine.takePath()).isEqualTo("/decision-definition/key/risk/tenantacme/evaluate");
+		assertThat(engine.takePath()).isEqualTo("/decision-definition/key/risk/tenant-id/acme/evaluate");
 	}
 
 	@Test

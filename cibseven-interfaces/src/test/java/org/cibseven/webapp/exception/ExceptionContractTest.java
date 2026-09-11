@@ -18,6 +18,7 @@ package org.cibseven.webapp.exception;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -25,8 +26,9 @@ import org.junit.jupiter.api.Test;
  * <p>
  * {@link SystemException} extends {@link RuntimeException} properly, so its message and cause
  * survive. {@link ApplicationException} does not - see
- * {@link #applicationExceptionSubclassesLoseTheirMessageAndCause()} - and everything derived from
- * it is affected. These tests pin both, because the difference decides what a caller can log.
+ * {@link #applicationExceptionSubclassesShouldKeepTheirMessageAndCause()}, which is disabled
+ * because it describes the behaviour the family should have and fails today - and everything
+ * derived from it is affected. The difference decides what a caller can log.
  */
 public class ExceptionContractTest {
 
@@ -62,39 +64,39 @@ public class ExceptionContractTest {
 
 	// ---------- ApplicationException: loses both ----------
 
+	/**
+	 * TODO KNOWN BUG (not fixed): {@link ApplicationException} declares only
+	 * {@code ApplicationException(Object... data)} and never calls {@code super(message)}, so every
+	 * constructor of every subclass resolves to that varargs constructor. The arguments are stashed
+	 * in {@code data} and {@link RuntimeException}'s own message and cause are left unset. Anything
+	 * that logs or serialises one of these exceptions - which is what the REST error handlers do -
+	 * sees nothing at all, and the cause chain is broken for stack traces. This test states the
+	 * contract the family should honour; it fails until {@code ApplicationException} forwards the
+	 * message and cause to {@code RuntimeException}.
+	 */
 	@Test
-	void applicationExceptionSubclassesLoseTheirMessageAndCause() {
+	@Disabled("KNOWN BUG: ApplicationException never calls super(message), so getMessage()/getCause() are null for every subclass")
+	void applicationExceptionSubclassesShouldKeepTheirMessageAndCause() {
 		SystemException cause = new SystemException("variable 'amount' does not exist");
 
 		NoObjectFoundException fromCause = new NoObjectFoundException(cause);
 		NoObjectFoundException fromMessage = new NoObjectFoundException("no such variable");
 
-		// KNOWN BUG (pinned, not fixed): ApplicationException declares only
-		// `ApplicationException(Object... data)` and never calls super(message), so every
-		// constructor of every subclass resolves to that varargs constructor. The arguments are
-		// stashed in `data` and RuntimeException's own message and cause are left unset. Anything
-		// that logs or serialises one of these exceptions - which is what the REST error handlers
-		// do - sees nothing at all, and the cause chain is broken for stack traces.
-		assertThat(fromCause.getMessage()).isNull();
-		assertThat(fromCause.getCause()).isNull();
-		assertThat(fromMessage.getMessage()).isNull();
-
-		// the information is reachable only through getData()
-		assertThat(fromCause.getData()).containsExactly("The object could not be found!", cause);
-		assertThat(fromMessage.getData()).containsExactly("no such variable");
+		assertThat(fromCause.getMessage()).isEqualTo("The object could not be found!");
+		assertThat(fromCause.getCause()).isSameAs(cause);
+		assertThat(fromMessage.getMessage()).isEqualTo("no such variable");
 	}
 
 	@Test
-	void everyApplicationExceptionSubclassBehavesTheSameWay() {
-		// the same defect, reached through each of the four subclasses
-		assertThat(new OptimisticLockingException(new IllegalStateException("clash")).getMessage()).isNull();
-		assertThat(new UnknownResourceTypeException(99).getMessage()).isNull();
-		assertThat(new ExistingElementTemplateException("dup").getMessage()).isNull();
-		assertThat(new NoObjectFoundException("gone").getMessage()).isNull();
-
-		// and the arguments they were built with are only in data
+	void everyApplicationExceptionSubclassCollectsItsArgumentsInData() {
+		// what each subclass was built with is reachable through getData() - and today only there
+		assertThat(new OptimisticLockingException(new IllegalStateException("clash")).getData())
+			.hasSize(2).startsWith("Entity was updated by another transaction concurrently.");
 		assertThat(new UnknownResourceTypeException(99).getData()).containsExactly(99);
 		assertThat(new ExistingElementTemplateException("dup").getData()).containsExactly("dup");
+		assertThat(new NoObjectFoundException("gone").getData()).containsExactly("gone");
+		assertThat(new NoObjectFoundException(new IllegalStateException("boom")).getData())
+			.hasSize(2).startsWith("The object could not be found!");
 	}
 
 	@Test

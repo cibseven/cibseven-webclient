@@ -53,6 +53,7 @@ import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -214,9 +215,31 @@ public class DirectProcessProviderDefinitionsTest {
 		assertThat(version.getAllInstances()).isEqualTo(9L);
 		assertThat(version.getRunningInstances()).isEqualTo(2L);
 		assertThat(version.getCompletedInstances()).isEqualTo(7L);
-		// KNOWN INEFFICIENCY (pinned, not fixed): three history queries per version, so the
-		// version list of a process with many versions costs 3xN engine round-trips.
-		verify(historyService, Mockito.times(3)).createHistoricProcessInstanceQuery();
+	}
+
+	/**
+	 * TODO KNOWN BUG (not fixed, performance): the counts above cost three history queries per
+	 * version - all, unfinished, completed - so the version list of a process with many versions
+	 * costs 3xN engine round-trips. One query per version can carry all three counts. This test
+	 * asserts that budget; it fails until the three queries are folded into one.
+	 */
+	@Test
+	@Disabled("KNOWN BUG: findProcessVersionsByDefinitionKey runs three history queries per version instead of one")
+	void findProcessVersionsByDefinitionKey_countsInstancesWithOneHistoryQueryPerVersion() {
+		ProcessDefinition v2 = mockDefinition("id-2", "invoice", "Invoice Receipt", 2);
+		when(definitionQuery.list()).thenReturn(List.of(v2));
+		HistoricProcessInstanceQuery historyQuery =
+			mock(HistoricProcessInstanceQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
+		when(historyService.createHistoricProcessInstanceQuery()).thenReturn(historyQuery);
+		HistoricProcessInstance instance = mock(HistoricProcessInstance.class);
+		when(historyQuery.unlimitedList()).thenReturn(
+			Collections.nCopies(9, instance),
+			Collections.nCopies(2, instance),
+			Collections.nCopies(7, instance));
+
+		processProvider.findProcessVersionsByDefinitionKey("invoice", null, Optional.empty(), user);
+
+		verify(historyService, Mockito.times(1)).createHistoricProcessInstanceQuery();
 	}
 
 	@Test

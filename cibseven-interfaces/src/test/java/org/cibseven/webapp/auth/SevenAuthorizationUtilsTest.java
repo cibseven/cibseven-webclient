@@ -24,6 +24,7 @@ import java.util.List;
 import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.rest.model.Authorization;
 import org.cibseven.webapp.rest.model.Authorizations;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -108,16 +109,20 @@ public class SevenAuthorizationUtilsTest {
 			.isInstanceOf(AccessDeniedException.class);
 	}
 
+	/**
+	 * TODO KNOWN BUG (not fixed): the GRANT branch inspects {@code permissions[0]} only, so a grant
+	 * that lists ACCESS second is not recognised, even though the engine would honour it - the user
+	 * is denied the cockpit they were granted. The GLOBAL branch below does check the whole array.
+	 * This test asserts the permission array is read as a whole; it fails until the GRANT branch
+	 * stops looking only at the first element.
+	 */
 	@Test
-	void hasCockpitRights_onlyLooksAtTheFirstPermissionOfAGrant() {
+	@Disabled("KNOWN BUG: hasCockpitRights inspects permissions[0] only, so ACCESS in any later position is ignored")
+	void hasCockpitRights_acceptsAccessAnywhereInTheGrantPermissions() {
 		Authorizations authorizations = new Authorizations();
-		// KNOWN LIMITATION (pinned, not fixed): the GRANT branch inspects permissions[0] only, so
-		// a grant that lists ACCESS second is not recognised, even though the engine would honour
-		// it. The GLOBAL branch below does check the whole array.
 		authorizations.setApplication(List.of(authorization(AUTH_TYPE_GRANT, "cockpit", "READ", "ACCESS")));
 
-		assertThatThrownBy(() -> SevenAuthorizationUtils.hasCockpitRights(authorizations))
-			.isInstanceOf(AccessDeniedException.class);
+		assertThat(SevenAuthorizationUtils.hasCockpitRights(authorizations)).isTrue();
 	}
 
 	@Test
@@ -278,16 +283,20 @@ public class SevenAuthorizationUtilsTest {
 			.hasMessageContaining("invoice");
 	}
 
+	/**
+	 * TODO KNOWN BUG (not fixed): unlike {@code hasCockpitRights}, this check compares the resource
+	 * id to the process key exactly, so a grant on "*" - which the engine treats as "every
+	 * process" - does not authorise starting a specific process here. This test asserts the
+	 * wildcard grant the engine issues; it fails until the resource id is matched like
+	 * {@code hasCockpitRights} matches it.
+	 */
 	@Test
-	void hasSpecificProcessRights_doesNotAcceptTheWildcardResource() {
+	@Disabled("KNOWN BUG: hasSpecificProcessRights compares the resource id exactly, so a \"*\" grant authorises nothing")
+	void hasSpecificProcessRights_acceptsTheWildcardResource() {
 		Authorizations authorizations = new Authorizations();
-		// KNOWN LIMITATION (pinned, not fixed): unlike hasCockpitRights, this check compares the
-		// resource id to the process key exactly, so a grant on "*" - which the engine treats as
-		// "every process" - does not authorise starting a specific process here.
 		authorizations.setProcessDefinition(List.of(authorization(AUTH_TYPE_GRANT, "*", "ALL")));
 
-		assertThatThrownBy(() -> SevenAuthorizationUtils.hasSpecificProcessRights(authorizations, "invoice"))
-			.isInstanceOf(AccessDeniedException.class);
+		assertThat(SevenAuthorizationUtils.hasSpecificProcessRights(authorizations, "invoice")).isTrue();
 	}
 
 	@Test
