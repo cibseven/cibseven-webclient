@@ -324,23 +324,5 @@
 			{ "name": "Call Activity", "type": "bpmn:CallActivity", "color": "#059DBB" }
 		],
 		"filterBpmnOpacity": "0.4"
-	},
-	"deepLinks": {
-		"processDefinition": [
-			{ "id": "httpbin1", "url": "https://httpbin.org/get?linkId=1", "type": "tab" },
-			{ "id": "httpbin2", "url": "https://httpbin.org/get?linkId=1", "type": "button" }
-		],
-		"processInstance": [
-			{ "id": "httpbin1", "url": "https://httpbin.org/get?linkId=2", "type": "tab" },
-			{ "id": "httpbin2", "url": "https://httpbin.org/get?linkId=2", "type": "button" }
-		],
-		"decisionDefinition": [
-			{ "id": "httpbin1", "url": "https://httpbin.org/get?linkId=3", "type": "tab" },
-			{ "id": "httpbin2", "url": "https://httpbin.org/get?linkId=3", "type": "button" }
-		],
-		"decisionInstance": [
-			{ "id": "httpbin1", "url": "https://httpbin.org/get?linkId=4", "type": "tab" },
-			{ "id": "httpbin2", "url": "https://httpbin.org/get?linkId=4", "type": "button" }
-		]
 	}
 }
