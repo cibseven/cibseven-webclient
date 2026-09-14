@@ -36,7 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class FolderMigrationTest {
 
-	private static final String GENERAL = "00000000-0000-0000-0000-0000000000d2";
+	private static final String GENERAL = "00000000-0000-0000-0000-0000000000d1";
 
 	private final ApplicationContextRunner runner = new ApplicationContextRunner()
 		.withPropertyValues("spring.datasource.url=jdbc:h2:mem:foldermigration;DB_CLOSE_DELAY=-1",
