@@ -20,6 +20,9 @@
   <div class="d-flex flex-column bg-light" :style="{ height: 'calc(100% - 55px)' }">
     <WarningBox v-if="authorizationDisabled" :message="$t('admin.authorizations.authorizationDisabledWarning')"/>
     <div class="container-fluid pb-2 pt-4">
+      <h4>{{ $t('admin.authorizations.resourcesTypes.' + resourcesTypes[$route.params.resourceTypeId].key) }}</h4>
+      <div :key="resourcesTypes[$route.params.resourceTypeId].key" class="alert alert-info"
+        v-html="$t('admin.authorizations.resourcesTypesDescriptions.' + resourcesTypes[$route.params.resourceTypeId].key)"></div>
       <div class="row align-items-center px-4">
         <div class="col-4">
           <b-input-group size="sm">
