@@ -155,11 +155,21 @@ public class ModelerServiceTest {
 
 	@Test
 	void getUnifiedDiagrams_forwardsThePagingAndFilters() {
-		when(unifiedDiagramProvider.getDiagrams("invoice", "bpmn", 5, 20)).thenReturn(List.of());
+		when(unifiedDiagramProvider.getDiagrams("invoice", "bpmn", null, 5, 20)).thenReturn(List.of());
 
-		service.getUnifiedDiagrams(request, 5, 20, "invoice", "bpmn");
+		service.getUnifiedDiagrams(request, 5, 20, "invoice", "bpmn", null);
 
-		verify(unifiedDiagramProvider).getDiagrams("invoice", "bpmn", 5, 20);
+		verify(unifiedDiagramProvider).getDiagrams("invoice", "bpmn", null, 5, 20);
+	}
+
+	/** The folder tree asks one folder at a time, so the filter has to reach the query. */
+	@Test
+	void getUnifiedDiagrams_forwardsTheFolder() {
+		when(unifiedDiagramProvider.getDiagrams(null, null, "folder-1", 0, 20)).thenReturn(List.of());
+
+		service.getUnifiedDiagrams(request, 0, 20, null, null, "folder-1");
+
+		verify(unifiedDiagramProvider).getDiagrams(null, null, "folder-1", 0, 20);
 	}
 
 	@Test

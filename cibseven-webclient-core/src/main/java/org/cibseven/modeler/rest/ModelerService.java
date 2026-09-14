@@ -120,9 +120,11 @@ public class ModelerService extends ModelerBaseService {
 		@RequestParam int firstResult,
 		@RequestParam int maxResults,
 		@RequestParam(required = false) String keyword,
-		@RequestParam(required = false) String type) {
+		@RequestParam(required = false) String type,
+		@Parameter(description = "Only the models in this folder; every folder when absent")
+		@RequestParam(required = false) String folderId) {
 		checkModelerAccess(rq);
-		return unifiedDiagramProvider.getDiagrams(keyword, type, firstResult, maxResults);
+		return unifiedDiagramProvider.getDiagrams(keyword, type, folderId, firstResult, maxResults);
 	}
 
 	@RequestMapping(value = "/unified-diagrams/{id}", method = RequestMethod.GET)

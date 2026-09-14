@@ -58,18 +58,21 @@ public interface ProcessDiagramRepository extends JpaRepository<ProcessDiagramEn
 		"   WHERE (:keyword IS NULL OR LOWER(p.name) LIKE LOWER(:keyword) " +
 		"          OR LOWER(p.processkey) LIKE LOWER(:keyword)) " +
 		"   AND (:type IS NULL OR p.type LIKE :type) " +
+		"   AND (:folderId IS NULL OR p.folder_id = :folderId) " +
 		"   UNION ALL " +
 		"   SELECT f.id, f.formid, 'form', f.formid, f.formid, " +
 		"          f.description, f.created, f.updated, f.updated_by, f.version, f.folder_id " +
 		"   FROM MOD_FORMS f" +
 		"   WHERE (:keyword IS NULL OR LOWER(f.formid) LIKE LOWER(:keyword)) " +
 		"   AND (:type IS NULL OR 'form' LIKE :type) " +
+		"   AND (:folderId IS NULL OR f.folder_id = :folderId) " +
 		") t " +
 		"ORDER BY t.updated DESC",
 		nativeQuery = true)
 	List<UnifiedDiagram> findAllUnified(
 		@Param("keyword") String keyword,
 		@Param("type") String type,
+		@Param("folderId") String folderId,
 		Pageable pageable);
 
 	@Query(value =
