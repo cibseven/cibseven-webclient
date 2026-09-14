@@ -103,12 +103,18 @@ public class FolderProvider {
 
 	@Transactional(value = ModelerJpa.TRANSACTION_MANAGER, readOnly = true)
 	public FolderEntity find(String id) {
+		if (id == null || id.isBlank()) {
+			throw new NoObjectFoundException("No folder id given");
+		}
 		return folderDao.findById(id)
 			.orElseThrow(() -> new NoObjectFoundException("No folder with id " + id));
 	}
 
 	@Transactional(ModelerJpa.TRANSACTION_MANAGER)
 	public FolderEntity create(String parentId, String name, String userId) {
+		if (parentId == null || parentId.isBlank()) {
+			throw new InvalidFolderException("parentId", "a folder is created inside another one");
+		}
 		FolderEntity parent = find(parentId);
 		String folderName = validName(name);
 		requireFreeName(parentId, folderName, null);
@@ -182,6 +188,9 @@ public class FolderProvider {
 	/** The folder a model may be placed in: it has to exist, and a root holds folders only. */
 	@Transactional(value = ModelerJpa.TRANSACTION_MANAGER, readOnly = true)
 	public FolderEntity requireModelFolder(String folderId) {
+		if (folderId == null || folderId.isBlank()) {
+			throw new InvalidFolderException("folderId", "a model needs the folder it goes into");
+		}
 		FolderEntity folder = find(folderId);
 		if (folder.getParentId() == null) {
 			throw new InvalidFolderException("folderId",

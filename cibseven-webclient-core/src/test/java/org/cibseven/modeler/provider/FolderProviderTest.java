@@ -211,4 +211,24 @@ class FolderProviderTest {
 		assertThat(created.getName()).isEqualTo(FolderProvider.DEFAULT_FOLDER_NAME);
 		assertThat(created.getParentId()).isEqualTo("root");
 	}
+
+	/** A request without the id reaches the repository, which rejects it as a system error. */
+	@Test
+	void reportsAMissingParentAsARequestError() {
+		assertThatThrownBy(() -> provider.create(null, "Drafts", "demo"))
+			.isInstanceOf(InvalidFolderException.class)
+			.satisfies(thrown -> assertThat(((InvalidFolderException) thrown).getField()).isEqualTo("parentId"));
+	}
+
+	@Test
+	void reportsAMissingFolderForAModelAsARequestError() {
+		assertThatThrownBy(() -> provider.requireModelFolder(" "))
+			.isInstanceOf(InvalidFolderException.class)
+			.satisfies(thrown -> assertThat(((InvalidFolderException) thrown).getField()).isEqualTo("folderId"));
+	}
+
+	@Test
+	void reportsALookupWithoutAnIdAsNotFound() {
+		assertThatThrownBy(() -> provider.find(null)).isInstanceOf(NoObjectFoundException.class);
+	}
 }
