@@ -98,7 +98,7 @@ public class ModelerServiceTest {
 		ReflectionTestUtils.setField(service, "unifiedDiagramProvider", unifiedDiagramProvider);
 		FolderEntity defaultFolder = new FolderEntity();
 		defaultFolder.setId("folder-1");
-		when(folderProvider.defaultFolder(any())).thenReturn(defaultFolder);
+		when(folderProvider.defaultFolder()).thenReturn(defaultFolder);
 		when(folderProvider.requireModelFolder(any())).thenReturn(defaultFolder);
 		ReflectionTestUtils.setField(service, "folderProvider", folderProvider);
 		ReflectionTestUtils.setField(service, "modelerAccessChecker", modelerAccessChecker);

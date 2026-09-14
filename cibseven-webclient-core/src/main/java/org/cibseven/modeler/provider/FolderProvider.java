@@ -22,7 +22,6 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import org.cibseven.modeler.config.ModelerJpa;
 import org.cibseven.modeler.model.FolderEntity;
-import org.cibseven.modeler.model.ModelSource;
 import org.cibseven.modeler.repository.FolderRepository;
 import org.cibseven.modeler.repository.FormRepository;
 import org.cibseven.modeler.repository.ProcessDiagramRepository;
@@ -43,7 +41,8 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * The modeler folder tree: what may be created, renamed, moved and deleted, and what a folder
  * holds. A model belongs to exactly one folder, so the tree is also the path a model is reached
- * under. Only the database source keeps folders here; a repository or a directory brings its own.
+ * under. Only models kept in the database have folders; a repository or a directory brings its
+ * own tree.
  */
 @Component
 @Slf4j
@@ -75,14 +74,14 @@ public class FolderProvider {
 	 * folders still works.
 	 */
 	@Transactional(ModelerJpa.TRANSACTION_MANAGER)
-	public FolderEntity defaultFolder(ModelSource source) {
-		return folderDao.findBySourceAndParentIdIsNullAndName(source, DEFAULT_FOLDER_NAME)
-			.orElseGet(() -> create(source, null, DEFAULT_FOLDER_NAME, null));
+	public FolderEntity defaultFolder() {
+		return folderDao.findByParentIdIsNullAndName(DEFAULT_FOLDER_NAME)
+			.orElseGet(() -> create(null, DEFAULT_FOLDER_NAME, null));
 	}
 
 	@Transactional(value = ModelerJpa.TRANSACTION_MANAGER, readOnly = true)
-	public List<FolderEntity> findAll(ModelSource source) {
-		return folderDao.findBySourceOrderByNameAsc(source);
+	public List<FolderEntity> findAll() {
+		return folderDao.findAllByOrderByNameAsc();
 	}
 
 	@Transactional(value = ModelerJpa.TRANSACTION_MANAGER, readOnly = true)
@@ -94,19 +93,16 @@ public class FolderProvider {
 			.orElseThrow(() -> new NoObjectFoundException("No folder with id " + id));
 	}
 
-	/** Without a parent the folder is created at the top level of the source. */
+	/** Without a parent the folder is created at the top level. */
 	@Transactional(ModelerJpa.TRANSACTION_MANAGER)
-	public FolderEntity create(ModelSource source, String parentId, String name, String userId) {
+	public FolderEntity create(String parentId, String name, String userId) {
 		FolderEntity parent = parentId == null || parentId.isBlank() ? null : find(parentId);
-		ModelSource folderSource = parent != null
-			? parent.getSource()
-			: Objects.requireNonNullElse(source, ModelSource.DATABASE);
+		String parentFolderId = parent == null ? null : parent.getId();
 		String folderName = validName(name);
-		requireFreeName(folderSource, parent == null ? null : parent.getId(), folderName, null);
+		requireFreeName(parentFolderId, folderName, null);
 
 		FolderEntity folder = new FolderEntity();
-		folder.setParentId(parent == null ? null : parent.getId());
-		folder.setSource(folderSource);
+		folder.setParentId(parentFolderId);
 		folder.setName(folderName);
 		folder.setCreated(Timestamp.valueOf(LocalDateTime.now()));
 		folder.setCreatedBy(userId);
@@ -117,7 +113,7 @@ public class FolderProvider {
 	public FolderEntity rename(String id, String name, String userId) {
 		FolderEntity folder = find(id);
 		String folderName = validName(name);
-		requireFreeName(folder.getSource(), folder.getParentId(), folderName, id);
+		requireFreeName(folder.getParentId(), folderName, id);
 
 		folder.setName(folderName);
 		return touch(folder, userId);
@@ -129,16 +125,11 @@ public class FolderProvider {
 		FolderEntity folder = find(id);
 		FolderEntity target = newParentId == null || newParentId.isBlank() ? null : find(newParentId);
 
-		if (target != null) {
-			if (target.getSource() != folder.getSource()) {
-				throw new InvalidFolderException("parentId", "a folder cannot move to another source");
-			}
-			if (subtreeIds(id).contains(target.getId())) {
-				throw new InvalidFolderException("parentId", "a folder cannot move into itself");
-			}
+		if (target != null && subtreeIds(id).contains(target.getId())) {
+			throw new InvalidFolderException("parentId", "a folder cannot move into itself");
 		}
 		String targetId = target == null ? null : target.getId();
-		requireFreeName(folder.getSource(), targetId, folder.getName(), id);
+		requireFreeName(targetId, folder.getName(), id);
 
 		folder.setParentId(targetId);
 		return touch(folder, userId);
@@ -213,13 +204,13 @@ public class FolderProvider {
 	}
 
 	/**
-	 * Two folders with one name in one place would be indistinguishable in the tree. At the top
-	 * level the place is the source, which is why the database cannot be left to decide it: a
-	 * unique key over a null parent is a no-op on most databases and too strict on the rest.
+	 * Two folders with one name in one place would be indistinguishable in the tree. The database
+	 * cannot be left to decide it at the top level: a unique key over a null parent is a no-op on
+	 * most databases and too strict on the rest.
 	 */
-	private void requireFreeName(ModelSource source, String parentId, String name, String allowedId) {
+	private void requireFreeName(String parentId, String name, String allowedId) {
 		Optional<FolderEntity> taken = parentId == null
-			? folderDao.findBySourceAndParentIdIsNullAndName(source, name)
+			? folderDao.findByParentIdIsNullAndName(name)
 			: folderDao.findByParentIdAndName(parentId, name);
 		if (taken.isPresent() && !taken.get().getId().equals(allowedId)) {
 			throw new InvalidFolderException("name", "a folder with that name is already there");

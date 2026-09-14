@@ -19,7 +19,6 @@ package org.cibseven.modeler.repository;
 import org.cibseven.modeler.config.ModelerPersistenceConfiguration;
 import org.cibseven.modeler.model.FolderEntity;
 import org.cibseven.modeler.model.FormEntity;
-import org.cibseven.modeler.model.ModelSource;
 import org.cibseven.modeler.model.ProcessDiagramEntity;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -75,16 +74,15 @@ class FolderMigrationTest {
 	}
 
 	@Test
-	void createsTheFolderAtTheTopLevelOfTheDatabaseSource() {
+	void createsTheFolderAtTheTopLevel() {
 		runner.run(context -> {
 			FolderRepository folders = context.getBean(FolderRepository.class);
 
-			FolderEntity general = folders
-				.findBySourceAndParentIdIsNullAndName(ModelSource.DATABASE, "General").orElseThrow();
+			FolderEntity general = folders.findByParentIdIsNullAndName("General").orElseThrow();
 
 			assertThat(general.getId()).isEqualTo(GENERAL);
 			assertThat(general.getParentId()).isNull();
-			// Nothing above it: the source is not a folder of its own
+			// Nothing above it: the upgrade adds one folder, not a tree
 			assertThat(folders.findAll()).hasSize(1);
 		});
 	}

@@ -21,14 +21,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.cibseven.modeler.model.FolderEntity;
-import org.cibseven.modeler.model.ModelSource;
 import org.cibseven.modeler.provider.FolderProvider;
 import org.cibseven.modeler.provider.FolderProvider.FolderContents;
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.ModelerAccessChecker;
 import org.cibseven.webapp.exception.AccessDeniedException;
-import org.cibseven.webapp.exception.InvalidFolderException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -73,39 +71,18 @@ class FolderServiceTest {
 
 	/** The listing is what a client calls first, so it is where the folder has to appear. */
 	@Test
-	void listingASourceCreatesTheFolderAnEmptyInstallationHasNone() {
-		when(folderProvider.findAll(ModelSource.DATABASE)).thenReturn(List.of(new FolderEntity()));
+	void listingCreatesTheFolderAnEmptyInstallationHasNone() {
+		when(folderProvider.findAll()).thenReturn(List.of(new FolderEntity()));
 
-		assertThat(service.findAll(ModelSource.DATABASE, request)).hasSize(1);
-		verify(folderProvider).defaultFolder(ModelSource.DATABASE);
+		assertThat(service.findAll(request)).hasSize(1);
+		verify(folderProvider).defaultFolder();
 	}
 
 	@Test
-	void createsInTheDatabaseSourceWhenTheRequestNamesNone() {
+	void createsTheFolderTheRequestDescribes() {
 		service.create(body("name", "Invoicing"), request);
 
-		verify(folderProvider).create(ModelSource.DATABASE, null, "Invoicing", "demo");
-	}
-
-	@Test
-	void createsInTheSourceTheRequestNames() {
-		Map<String, String> folder = body("name", "Invoicing");
-		folder.put("source", "GIT");
-
-		service.create(folder, request);
-
-		verify(folderProvider).create(ModelSource.GIT, null, "Invoicing", "demo");
-	}
-
-	@Test
-	void reportsASourceThatDoesNotExistAsARequestError() {
-		Map<String, String> folder = body("name", "Invoicing");
-		folder.put("source", "DROPBOX");
-
-		assertThatThrownBy(() -> service.create(folder, request))
-			.isInstanceOf(InvalidFolderException.class)
-			.satisfies(thrown -> assertThat(((InvalidFolderException) thrown).getField()).isEqualTo("source"));
-		verify(folderProvider, never()).create(any(), any(), any(), any());
+		verify(folderProvider).create(null, "Invoicing", "demo");
 	}
 
 	@Test
@@ -149,9 +126,8 @@ class FolderServiceTest {
 	void refusesAUserWithoutModelerAccess() {
 		doThrow(new AccessDeniedException("no modeler")).when(modelerAccessChecker).checkModelerAccess(USER);
 
-		assertThatThrownBy(() -> service.findAll(ModelSource.DATABASE, request))
-			.isInstanceOf(AccessDeniedException.class);
-		verify(folderProvider, never()).findAll(any());
+		assertThatThrownBy(() -> service.findAll(request)).isInstanceOf(AccessDeniedException.class);
+		verify(folderProvider, never()).findAll();
 	}
 
 	private static Map<String, String> body(String key, String value) {

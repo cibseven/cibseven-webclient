@@ -57,7 +57,6 @@ import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.modeler.model.DiagramUsageEntity;
 import org.cibseven.modeler.model.FormEntity;
-import org.cibseven.modeler.model.ModelSource;
 import org.cibseven.modeler.model.FormUsageEntity;
 import org.cibseven.modeler.model.UnifiedDiagram;
 import org.cibseven.modeler.model.ProcessDiagramEntity;
@@ -99,7 +98,7 @@ public class ModelerService extends ModelerBaseService {
 	/** The folder a new model goes into: the one asked for, or the default when none is named. */
 	private String folderFor(String folderId) {
 		return folderId == null || folderId.isBlank()
-			? folderProvider.defaultFolder(ModelSource.DATABASE).getId()
+			? folderProvider.defaultFolder().getId()
 			: folderProvider.requireModelFolder(folderId).getId();
 	}
 

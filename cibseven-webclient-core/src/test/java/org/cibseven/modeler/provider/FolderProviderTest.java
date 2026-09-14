@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.cibseven.modeler.model.FolderEntity;
-import org.cibseven.modeler.model.ModelSource;
 import org.cibseven.modeler.repository.FolderRepository;
 import org.cibseven.modeler.repository.FormRepository;
 import org.cibseven.modeler.repository.ProcessDiagramRepository;
@@ -73,24 +72,22 @@ class FolderProviderTest {
 		folder.setId(id);
 		folder.setParentId(parentId);
 		folder.setName(name);
-		folder.setSource(ModelSource.DATABASE);
 		when(folders.findById(id)).thenReturn(Optional.of(folder));
 		return folder;
 	}
 
 	@Test
-	void createsAFolderInheritingTheSourceOfItsParent() {
-		FolderEntity created = provider.create(null, "project", "  Drafts  ", "demo");
+	void createsAFolderInsideAnother() {
+		FolderEntity created = provider.create("project", "  Drafts  ", "demo");
 
 		assertThat(created.getName()).isEqualTo("Drafts");
 		assertThat(created.getParentId()).isEqualTo("project");
-		assertThat(created.getSource()).isEqualTo(ModelSource.DATABASE);
 		assertThat(created.getCreatedBy()).isEqualTo("demo");
 	}
 
 	@Test
 	void refusesAFolderWithoutAName() {
-		assertThatThrownBy(() -> provider.create(null, "project", "   ", "demo"))
+		assertThatThrownBy(() -> provider.create("project", "   ", "demo"))
 			.isInstanceOf(InvalidFolderException.class)
 			.satisfies(thrown -> assertThat(((InvalidFolderException) thrown).getField()).isEqualTo("name"));
 	}
@@ -101,7 +98,7 @@ class FolderProviderTest {
 		FolderEntity taken = folder("taken", "project", "Drafts");
 		when(folders.findByParentIdAndName("project", "Drafts")).thenReturn(Optional.of(taken));
 
-		assertThatThrownBy(() -> provider.create(null, "project", "Drafts", "demo"))
+		assertThatThrownBy(() -> provider.create("project", "Drafts", "demo"))
 			.isInstanceOf(InvalidFolderException.class);
 		verify(folders, never()).save(any());
 	}
@@ -181,21 +178,19 @@ class FolderProviderTest {
 
 	@Test
 	void makesTheDefaultFolderWhereTheUpgradePutsTheModels() {
-		when(folders.findBySourceAndParentIdIsNullAndName(ModelSource.DATABASE, FolderProvider.DEFAULT_FOLDER_NAME))
-			.thenReturn(Optional.empty());
+		when(folders.findByParentIdIsNullAndName(FolderProvider.DEFAULT_FOLDER_NAME)).thenReturn(Optional.empty());
 
-		FolderEntity created = provider.defaultFolder(ModelSource.DATABASE);
+		FolderEntity created = provider.defaultFolder();
 
 		assertThat(created.getName()).isEqualTo(FolderProvider.DEFAULT_FOLDER_NAME);
 		assertThat(created.getParentId()).isNull();
 	}
 
 	@Test
-	void createsAFolderAtTheTopLevelOfItsSource() {
-		FolderEntity created = provider.create(ModelSource.DATABASE, null, "Archive", "demo");
+	void createsAFolderAtTheTopLevel() {
+		FolderEntity created = provider.create(null, "Archive", "demo");
 
 		assertThat(created.getParentId()).isNull();
-		assertThat(created.getSource()).isEqualTo(ModelSource.DATABASE);
 		assertThat(created.getName()).isEqualTo("Archive");
 	}
 
@@ -204,25 +199,13 @@ class FolderProviderTest {
 	 * equal to itself on most databases: without this check a second Invoicing would be stored.
 	 */
 	@Test
-	void refusesASecondTopLevelFolderWithTheSameNameInOneSource() {
-		when(folders.findBySourceAndParentIdIsNullAndName(ModelSource.DATABASE, "Invoicing"))
-			.thenReturn(Optional.of(project));
+	void refusesASecondTopLevelFolderWithTheSameName() {
+		when(folders.findByParentIdIsNullAndName("Invoicing")).thenReturn(Optional.of(project));
 
-		assertThatThrownBy(() -> provider.create(ModelSource.DATABASE, null, "Invoicing", "demo"))
+		assertThatThrownBy(() -> provider.create(null, "Invoicing", "demo"))
 			.isInstanceOf(InvalidFolderException.class)
 			.satisfies(thrown -> assertThat(((InvalidFolderException) thrown).getField()).isEqualTo("name"));
 		verify(folders, never()).save(any());
-	}
-
-	/** A name is only taken within its own source, so a second source starts empty. */
-	@Test
-	void allowsTheTopLevelNameOfAnotherSource() {
-		when(folders.findBySourceAndParentIdIsNullAndName(ModelSource.DATABASE, "Invoicing"))
-			.thenReturn(Optional.of(project));
-
-		FolderEntity created = provider.create(ModelSource.GIT, null, "Invoicing", "demo");
-
-		assertThat(created.getSource()).isEqualTo(ModelSource.GIT);
 	}
 
 	@Test

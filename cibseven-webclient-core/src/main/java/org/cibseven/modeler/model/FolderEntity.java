@@ -22,8 +22,6 @@ import org.hibernate.annotations.UuidGenerator;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
@@ -36,17 +34,16 @@ import lombok.Setter;
 
 /**
  * A folder of the modeler tree. Every model belongs to exactly one, so a folder is also the
- * path a model is reached under. Only the database source keeps its tree here.
+ * path a model is reached under. Only models kept in the database have one: a repository or a
+ * directory brings its own tree.
  *
- * <p>A folder without a parent is one the UI shows as a project, at the top level of its source.
- * The source itself is not a folder: it is what the column says, and the UI offers it as a
- * choice rather than as something to open.</p>
+ * <p>A folder without a parent is one the UI shows as a project; models may live in any of them.</p>
  */
 @Setter @Getter @RequiredArgsConstructor
 @Entity
 @Table(
 	name = "MOD_FOLDERS",
-	uniqueConstraints = @UniqueConstraint(name = "UK_MOD_FOLDERS_PARENT_NAME", columnNames = { "source", "parent_id", "name" }),
+	uniqueConstraints = @UniqueConstraint(name = "UK_MOD_FOLDERS_PARENT_NAME", columnNames = { "parent_id", "name" }),
 	indexes = @Index(name = "IDX_MOD_FOLDERS_PARENT", columnList = "parent_id")
 )
 public class FolderEntity {
@@ -57,13 +54,9 @@ public class FolderEntity {
 	@Column(length = 36)
 	private String id;
 
-	/** Null in a folder at the top level of its source. */
+	/** Null in a folder at the top level. */
 	@Column(name = "parent_id", length = 36)
 	private String parentId;
-
-	@Enumerated(EnumType.STRING)
-	@Column(name = "source", nullable = false, length = 50)
-	private ModelSource source = ModelSource.DATABASE;
 
 	@NotBlank
 	@Column(name = "name", nullable = false, length = 255)

@@ -22,16 +22,15 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import org.cibseven.modeler.model.FolderEntity;
-import org.cibseven.modeler.model.ModelSource;
 
 public interface FolderRepository extends JpaRepository<FolderEntity, String> {
 
-	/** A folder at the top level of a source, where the name is not scoped by a parent. */
-	Optional<FolderEntity> findBySourceAndParentIdIsNullAndName(ModelSource source, String name);
+	/** A folder at the top level, where the name is not scoped by a parent. */
+	Optional<FolderEntity> findByParentIdIsNullAndName(String name);
 
 	List<FolderEntity> findByParentIdOrderByNameAsc(String parentId);
 
-	List<FolderEntity> findBySourceOrderByNameAsc(ModelSource source);
+	List<FolderEntity> findAllByOrderByNameAsc();
 
 	Optional<FolderEntity> findByParentIdAndName(String parentId, String name);
 

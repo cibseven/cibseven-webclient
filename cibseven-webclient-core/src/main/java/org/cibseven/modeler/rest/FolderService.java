@@ -27,15 +27,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.cibseven.modeler.model.FolderEntity;
-import org.cibseven.modeler.model.ModelSource;
 import org.cibseven.modeler.provider.FolderProvider;
 import org.cibseven.modeler.provider.FolderProvider.FolderContents;
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.exception.InvalidFolderException;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -60,14 +57,13 @@ public class FolderService extends ModelerBaseService {
 	private FolderProvider folderProvider;
 
 	@Operation(
-		summary = "Get the folders of a source",
-		description = "<strong>Return: every folder of the source, each with its parent")
+		summary = "Get the folders",
+		description = "<strong>Return: every folder, each with its parent")
 	@GetMapping
-	public List<FolderEntity> findAll(
-			@RequestParam(defaultValue = "DATABASE") ModelSource source, HttpServletRequest rq) {
+	public List<FolderEntity> findAll(HttpServletRequest rq) {
 		checkModelerAccess(rq);
-		folderProvider.defaultFolder(source);
-		return folderProvider.findAll(source);
+		folderProvider.defaultFolder();
+		return folderProvider.findAll();
 	}
 
 	@Operation(summary = "Get one folder", description = "<strong>Return: the folder")
@@ -90,7 +86,7 @@ public class FolderService extends ModelerBaseService {
 	@PostMapping
 	public FolderEntity create(@RequestBody Map<String, String> folder, HttpServletRequest rq) {
 		CIBUser user = checkModelerAccess(rq);
-		return folderProvider.create(sourceOf(folder), folder.get("parentId"), folder.get("name"), user.getId());
+		return folderProvider.create(folder.get("parentId"), folder.get("name"), user.getId());
 	}
 
 	@Operation(
@@ -117,15 +113,5 @@ public class FolderService extends ModelerBaseService {
 	public FolderContents delete(@PathVariable String id, HttpServletRequest rq) {
 		checkModelerAccess(rq);
 		return folderProvider.delete(id);
-	}
-
-	/** The source a folder without a parent is created at the top level of. */
-	private static ModelSource sourceOf(Map<String, String> folder) {
-		String source = folder.get("source");
-		try {
-			return source == null ? ModelSource.DATABASE : ModelSource.valueOf(source);
-		} catch (IllegalArgumentException e) {
-			throw new InvalidFolderException("source", "there is no source with that name");
-		}
 	}
 }
