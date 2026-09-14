@@ -16,8 +16,6 @@
  */
 package org.cibseven.modeler.repository;
 
-import java.util.List;
-
 import org.cibseven.modeler.config.ModelerPersistenceConfiguration;
 import org.cibseven.modeler.model.FolderEntity;
 import org.cibseven.modeler.model.FormEntity;
@@ -77,18 +75,17 @@ class FolderMigrationTest {
 	}
 
 	@Test
-	void createsTheSourceRootWithTheFolderBelowIt() {
+	void createsTheFolderAtTheTopLevelOfTheDatabaseSource() {
 		runner.run(context -> {
 			FolderRepository folders = context.getBean(FolderRepository.class);
 
-			FolderEntity root = folders.findBySourceAndParentIdIsNull(ModelSource.DATABASE).orElseThrow();
-			List<FolderEntity> below = folders.findByParentIdOrderByNameAsc(root.getId());
+			FolderEntity general = folders
+				.findBySourceAndParentIdIsNullAndName(ModelSource.DATABASE, "General").orElseThrow();
 
-			assertThat(below).singleElement().satisfies(folder -> {
-				assertThat(folder.getId()).isEqualTo(GENERAL);
-				assertThat(folder.getName()).isEqualTo("General");
-				assertThat(folder.getSource()).isEqualTo(ModelSource.DATABASE);
-			});
+			assertThat(general.getId()).isEqualTo(GENERAL);
+			assertThat(general.getParentId()).isNull();
+			// Nothing above it: the source is not a folder of its own
+			assertThat(folders.findAll()).hasSize(1);
 		});
 	}
 

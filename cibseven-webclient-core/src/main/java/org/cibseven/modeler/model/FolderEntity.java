@@ -36,17 +36,17 @@ import lombok.Setter;
 
 /**
  * A folder of the modeler tree. Every model belongs to exactly one, so a folder is also the
- * path a model is reached under, which is what the file and repository sources later map onto.
+ * path a model is reached under. Only the database source keeps its tree here.
  *
- * <p>A folder without a parent is the root of its source, and there is one per source. What the
- * UI calls a project is a folder directly below such a root; models live below that, never in a
- * root itself.</p>
+ * <p>A folder without a parent is one the UI shows as a project, at the top level of its source.
+ * The source itself is not a folder: it is what the column says, and the UI offers it as a
+ * choice rather than as something to open.</p>
  */
 @Setter @Getter @RequiredArgsConstructor
 @Entity
 @Table(
 	name = "MOD_FOLDERS",
-	uniqueConstraints = @UniqueConstraint(name = "UK_MOD_FOLDERS_PARENT_NAME", columnNames = { "parent_id", "name" }),
+	uniqueConstraints = @UniqueConstraint(name = "UK_MOD_FOLDERS_PARENT_NAME", columnNames = { "source", "parent_id", "name" }),
 	indexes = @Index(name = "IDX_MOD_FOLDERS_PARENT", columnList = "parent_id")
 )
 public class FolderEntity {
@@ -57,7 +57,7 @@ public class FolderEntity {
 	@Column(length = 36)
 	private String id;
 
-	/** Null in a source root, the only folder without a parent. */
+	/** Null in a folder at the top level of its source. */
 	@Column(name = "parent_id", length = 36)
 	private String parentId;
 

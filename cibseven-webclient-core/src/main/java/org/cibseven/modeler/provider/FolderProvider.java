@@ -22,6 +22,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * The modeler folder tree: what may be created, renamed, moved and deleted, and what a folder
  * holds. A model belongs to exactly one folder, so the tree is also the path a model is reached
- * under - which is what the file and repository sources map onto later.
+ * under. Only the database source keeps folders here; a repository or a directory brings its own.
  */
 @Component
 @Slf4j
@@ -69,31 +70,14 @@ public class FolderProvider {
 	}
 
 	/**
-	 * The root of a source, created on first use so an installation that never ran the migration
-	 * still has somewhere to put its models.
-	 */
-	@Transactional(ModelerJpa.TRANSACTION_MANAGER)
-	public FolderEntity root(ModelSource source) {
-		return folderDao.findBySourceAndParentIdIsNull(source).orElseGet(() -> {
-			FolderEntity root = new FolderEntity();
-			root.setSource(source);
-			root.setName(source.name());
-			root.setCreated(Timestamp.valueOf(LocalDateTime.now()));
-			log.info("Creating the {} root folder", source);
-			return folderDao.save(root);
-		});
-	}
-
-	/**
 	 * Where a model goes when the caller names no folder: the folder the upgrade put the models
 	 * of a flat installation in. Created on first use, so a client that knows nothing about
 	 * folders still works.
 	 */
 	@Transactional(ModelerJpa.TRANSACTION_MANAGER)
 	public FolderEntity defaultFolder(ModelSource source) {
-		FolderEntity root = root(source);
-		return folderDao.findByParentIdAndName(root.getId(), DEFAULT_FOLDER_NAME)
-			.orElseGet(() -> create(root.getId(), DEFAULT_FOLDER_NAME, null));
+		return folderDao.findBySourceAndParentIdIsNullAndName(source, DEFAULT_FOLDER_NAME)
+			.orElseGet(() -> create(source, null, DEFAULT_FOLDER_NAME, null));
 	}
 
 	@Transactional(value = ModelerJpa.TRANSACTION_MANAGER, readOnly = true)
@@ -110,18 +94,19 @@ public class FolderProvider {
 			.orElseThrow(() -> new NoObjectFoundException("No folder with id " + id));
 	}
 
+	/** Without a parent the folder is created at the top level of the source. */
 	@Transactional(ModelerJpa.TRANSACTION_MANAGER)
-	public FolderEntity create(String parentId, String name, String userId) {
-		if (parentId == null || parentId.isBlank()) {
-			throw new InvalidFolderException("parentId", "a folder is created inside another one");
-		}
-		FolderEntity parent = find(parentId);
+	public FolderEntity create(ModelSource source, String parentId, String name, String userId) {
+		FolderEntity parent = parentId == null || parentId.isBlank() ? null : find(parentId);
+		ModelSource folderSource = parent != null
+			? parent.getSource()
+			: Objects.requireNonNullElse(source, ModelSource.DATABASE);
 		String folderName = validName(name);
-		requireFreeName(parentId, folderName, null);
+		requireFreeName(folderSource, parent == null ? null : parent.getId(), folderName, null);
 
 		FolderEntity folder = new FolderEntity();
-		folder.setParentId(parent.getId());
-		folder.setSource(parent.getSource());
+		folder.setParentId(parent == null ? null : parent.getId());
+		folder.setSource(folderSource);
 		folder.setName(folderName);
 		folder.setCreated(Timestamp.valueOf(LocalDateTime.now()));
 		folder.setCreatedBy(userId);
@@ -130,9 +115,9 @@ public class FolderProvider {
 
 	@Transactional(ModelerJpa.TRANSACTION_MANAGER)
 	public FolderEntity rename(String id, String name, String userId) {
-		FolderEntity folder = requireNotRoot(find(id), "renamed");
+		FolderEntity folder = find(id);
 		String folderName = validName(name);
-		requireFreeName(folder.getParentId(), folderName, id);
+		requireFreeName(folder.getSource(), folder.getParentId(), folderName, id);
 
 		folder.setName(folderName);
 		return touch(folder, userId);
@@ -141,18 +126,21 @@ public class FolderProvider {
 	/** Moving keeps the id of the folder and everything below it, so links and deployments hold. */
 	@Transactional(ModelerJpa.TRANSACTION_MANAGER)
 	public FolderEntity move(String id, String newParentId, String userId) {
-		FolderEntity folder = requireNotRoot(find(id), "moved");
-		FolderEntity target = find(newParentId);
+		FolderEntity folder = find(id);
+		FolderEntity target = newParentId == null || newParentId.isBlank() ? null : find(newParentId);
 
-		if (target.getSource() != folder.getSource()) {
-			throw new InvalidFolderException("parentId", "a folder cannot move to another source");
+		if (target != null) {
+			if (target.getSource() != folder.getSource()) {
+				throw new InvalidFolderException("parentId", "a folder cannot move to another source");
+			}
+			if (subtreeIds(id).contains(target.getId())) {
+				throw new InvalidFolderException("parentId", "a folder cannot move into itself");
+			}
 		}
-		if (subtreeIds(id).contains(newParentId)) {
-			throw new InvalidFolderException("parentId", "a folder cannot move into itself");
-		}
-		requireFreeName(newParentId, folder.getName(), id);
+		String targetId = target == null ? null : target.getId();
+		requireFreeName(folder.getSource(), targetId, folder.getName(), id);
 
-		folder.setParentId(newParentId);
+		folder.setParentId(targetId);
 		return touch(folder, userId);
 	}
 
@@ -172,7 +160,7 @@ public class FolderProvider {
 	 */
 	@Transactional(ModelerJpa.TRANSACTION_MANAGER)
 	public FolderContents delete(String id) {
-		FolderEntity folder = requireNotRoot(find(id), "deleted");
+		FolderEntity folder = find(id);
 		List<String> ids = subtreeIds(id);
 		FolderContents removed = contents(id);
 
@@ -185,18 +173,13 @@ public class FolderProvider {
 		return removed;
 	}
 
-	/** The folder a model may be placed in: it has to exist, and a root holds folders only. */
+	/** The folder a model may be placed in: it has to be named, and it has to exist. */
 	@Transactional(value = ModelerJpa.TRANSACTION_MANAGER, readOnly = true)
 	public FolderEntity requireModelFolder(String folderId) {
 		if (folderId == null || folderId.isBlank()) {
 			throw new InvalidFolderException("folderId", "a model needs the folder it goes into");
 		}
-		FolderEntity folder = find(folderId);
-		if (folder.getParentId() == null) {
-			throw new InvalidFolderException("folderId",
-				"models live in a folder below the source, not in the source itself");
-		}
-		return folder;
+		return find(folderId);
 	}
 
 	/** The folder ids of a subtree, the folder itself first. */
@@ -218,13 +201,6 @@ public class FolderProvider {
 		return folderDao.save(folder);
 	}
 
-	private static FolderEntity requireNotRoot(FolderEntity folder, String operation) {
-		if (folder.getParentId() == null) {
-			throw new InvalidFolderException("id", "the folder of a source cannot be " + operation);
-		}
-		return folder;
-	}
-
 	private static String validName(String name) {
 		String trimmed = name == null ? "" : name.trim();
 		if (trimmed.isEmpty()) {
@@ -236,11 +212,17 @@ public class FolderProvider {
 		return trimmed;
 	}
 
-	/** Two folders with one name in one place would be indistinguishable in the tree. */
-	private void requireFreeName(String parentId, String name, String allowedId) {
-		Optional<FolderEntity> taken = folderDao.findByParentIdAndName(parentId, name);
+	/**
+	 * Two folders with one name in one place would be indistinguishable in the tree. At the top
+	 * level the place is the source, which is why the database cannot be left to decide it: a
+	 * unique key over a null parent is a no-op on most databases and too strict on the rest.
+	 */
+	private void requireFreeName(ModelSource source, String parentId, String name, String allowedId) {
+		Optional<FolderEntity> taken = parentId == null
+			? folderDao.findBySourceAndParentIdIsNullAndName(source, name)
+			: folderDao.findByParentIdAndName(parentId, name);
 		if (taken.isPresent() && !taken.get().getId().equals(allowedId)) {
-			throw new InvalidFolderException("name", "this folder already holds one with that name");
+			throw new InvalidFolderException("name", "a folder with that name is already there");
 		}
 	}
 }

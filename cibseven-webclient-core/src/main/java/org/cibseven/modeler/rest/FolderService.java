@@ -35,6 +35,7 @@ import org.cibseven.modeler.model.ModelSource;
 import org.cibseven.modeler.provider.FolderProvider;
 import org.cibseven.modeler.provider.FolderProvider.FolderContents;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.exception.InvalidFolderException;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -60,12 +61,12 @@ public class FolderService extends ModelerBaseService {
 
 	@Operation(
 		summary = "Get the folders of a source",
-		description = "<strong>Return: every folder of the source, the root included, each with its parent")
+		description = "<strong>Return: every folder of the source, each with its parent")
 	@GetMapping
 	public List<FolderEntity> findAll(
 			@RequestParam(defaultValue = "DATABASE") ModelSource source, HttpServletRequest rq) {
 		checkModelerAccess(rq);
-		folderProvider.root(source);
+		folderProvider.defaultFolder(source);
 		return folderProvider.findAll(source);
 	}
 
@@ -89,12 +90,12 @@ public class FolderService extends ModelerBaseService {
 	@PostMapping
 	public FolderEntity create(@RequestBody Map<String, String> folder, HttpServletRequest rq) {
 		CIBUser user = checkModelerAccess(rq);
-		return folderProvider.create(folder.get("parentId"), folder.get("name"), user.getId());
+		return folderProvider.create(sourceOf(folder), folder.get("parentId"), folder.get("name"), user.getId());
 	}
 
 	@Operation(
 		summary = "Rename or move a folder",
-		description = "<strong>Return: the folder, keeping its id so what is below it stays reachable")
+		description = "<strong>Return: the folder, keeping its id so what is below it stays reachable. A parentId of null moves it to the top level")
 	@PutMapping("/{id}")
 	public FolderEntity update(@PathVariable String id, @RequestBody Map<String, String> folder,
 			HttpServletRequest rq) {
@@ -116,5 +117,15 @@ public class FolderService extends ModelerBaseService {
 	public FolderContents delete(@PathVariable String id, HttpServletRequest rq) {
 		checkModelerAccess(rq);
 		return folderProvider.delete(id);
+	}
+
+	/** The source a folder without a parent is created at the top level of. */
+	private static ModelSource sourceOf(Map<String, String> folder) {
+		String source = folder.get("source");
+		try {
+			return source == null ? ModelSource.DATABASE : ModelSource.valueOf(source);
+		} catch (IllegalArgumentException e) {
+			throw new InvalidFolderException("source", "there is no source with that name");
+		}
 	}
 }

@@ -51,7 +51,6 @@ class FolderProviderTest {
 	private FormRepository forms;
 	private FolderProvider provider;
 
-	private FolderEntity root;
 	private FolderEntity project;
 
 	@BeforeEach
@@ -64,8 +63,7 @@ class FolderProviderTest {
 		ReflectionTestUtils.setField(provider, "processDiagramDao", diagrams);
 		ReflectionTestUtils.setField(provider, "formDao", forms);
 
-		root = folder("root", null, "DATABASE");
-		project = folder("project", "root", "Invoicing");
+		project = folder("project", null, "Invoicing");
 		when(folders.save(any())).thenAnswer(call -> call.getArgument(0));
 		when(folders.findByParentIdOrderByNameAsc(any())).thenReturn(List.of());
 	}
@@ -82,7 +80,7 @@ class FolderProviderTest {
 
 	@Test
 	void createsAFolderInheritingTheSourceOfItsParent() {
-		FolderEntity created = provider.create("project", "  Drafts  ", "demo");
+		FolderEntity created = provider.create(null, "project", "  Drafts  ", "demo");
 
 		assertThat(created.getName()).isEqualTo("Drafts");
 		assertThat(created.getParentId()).isEqualTo("project");
@@ -92,7 +90,7 @@ class FolderProviderTest {
 
 	@Test
 	void refusesAFolderWithoutAName() {
-		assertThatThrownBy(() -> provider.create("project", "   ", "demo"))
+		assertThatThrownBy(() -> provider.create(null, "project", "   ", "demo"))
 			.isInstanceOf(InvalidFolderException.class)
 			.satisfies(thrown -> assertThat(((InvalidFolderException) thrown).getField()).isEqualTo("name"));
 	}
@@ -103,7 +101,7 @@ class FolderProviderTest {
 		FolderEntity taken = folder("taken", "project", "Drafts");
 		when(folders.findByParentIdAndName("project", "Drafts")).thenReturn(Optional.of(taken));
 
-		assertThatThrownBy(() -> provider.create("project", "Drafts", "demo"))
+		assertThatThrownBy(() -> provider.create(null, "project", "Drafts", "demo"))
 			.isInstanceOf(InvalidFolderException.class);
 		verify(folders, never()).save(any());
 	}
@@ -124,21 +122,9 @@ class FolderProviderTest {
 		assertThat(renamed.getUpdatedBy()).isEqualTo("demo");
 	}
 
-	/** The source itself is not a folder a user made, so it is not theirs to rename or remove. */
-	@Test
-	void refusesToRenameTheSourceRoot() {
-		assertThatThrownBy(() -> provider.rename("root", "Elsewhere", "demo"))
-			.isInstanceOf(InvalidFolderException.class);
-	}
-
-	@Test
-	void refusesToDeleteTheSourceRoot() {
-		assertThatThrownBy(() -> provider.delete("root")).isInstanceOf(InvalidFolderException.class);
-	}
-
 	@Test
 	void movesAFolderKeepingItsId() {
-		FolderEntity other = folder("other", "root", "Archive");
+		FolderEntity other = folder("other", null, "Archive");
 
 		FolderEntity moved = provider.move("project", other.getId(), "demo");
 
@@ -188,36 +174,64 @@ class FolderProviderTest {
 		verify(folders).deleteAllById(List.of("project", "child"));
 	}
 
-	/** Models live below the source, so the home screen never mixes them with the projects. */
 	@Test
-	void refusesToPutAModelInTheSourceRoot() {
-		assertThatThrownBy(() -> provider.requireModelFolder("root"))
-			.isInstanceOf(InvalidFolderException.class)
-			.satisfies(thrown -> assertThat(((InvalidFolderException) thrown).getField()).isEqualTo("folderId"));
-	}
-
-	@Test
-	void acceptsAFolderBelowTheSourceForAModel() {
+	void acceptsAnExistingFolderForAModel() {
 		assertThat(provider.requireModelFolder("project").getId()).isEqualTo("project");
 	}
 
 	@Test
 	void makesTheDefaultFolderWhereTheUpgradePutsTheModels() {
-		when(folders.findBySourceAndParentIdIsNull(ModelSource.DATABASE)).thenReturn(Optional.of(root));
-		when(folders.findByParentIdAndName("root", FolderProvider.DEFAULT_FOLDER_NAME)).thenReturn(Optional.empty());
+		when(folders.findBySourceAndParentIdIsNullAndName(ModelSource.DATABASE, FolderProvider.DEFAULT_FOLDER_NAME))
+			.thenReturn(Optional.empty());
 
 		FolderEntity created = provider.defaultFolder(ModelSource.DATABASE);
 
 		assertThat(created.getName()).isEqualTo(FolderProvider.DEFAULT_FOLDER_NAME);
-		assertThat(created.getParentId()).isEqualTo("root");
+		assertThat(created.getParentId()).isNull();
 	}
 
-	/** A request without the id reaches the repository, which rejects it as a system error. */
 	@Test
-	void reportsAMissingParentAsARequestError() {
-		assertThatThrownBy(() -> provider.create(null, "Drafts", "demo"))
+	void createsAFolderAtTheTopLevelOfItsSource() {
+		FolderEntity created = provider.create(ModelSource.DATABASE, null, "Archive", "demo");
+
+		assertThat(created.getParentId()).isNull();
+		assertThat(created.getSource()).isEqualTo(ModelSource.DATABASE);
+		assertThat(created.getName()).isEqualTo("Archive");
+	}
+
+	/**
+	 * The top level is the one place the unique key cannot cover, because a null parent is not
+	 * equal to itself on most databases: without this check a second Invoicing would be stored.
+	 */
+	@Test
+	void refusesASecondTopLevelFolderWithTheSameNameInOneSource() {
+		when(folders.findBySourceAndParentIdIsNullAndName(ModelSource.DATABASE, "Invoicing"))
+			.thenReturn(Optional.of(project));
+
+		assertThatThrownBy(() -> provider.create(ModelSource.DATABASE, null, "Invoicing", "demo"))
 			.isInstanceOf(InvalidFolderException.class)
-			.satisfies(thrown -> assertThat(((InvalidFolderException) thrown).getField()).isEqualTo("parentId"));
+			.satisfies(thrown -> assertThat(((InvalidFolderException) thrown).getField()).isEqualTo("name"));
+		verify(folders, never()).save(any());
+	}
+
+	/** A name is only taken within its own source, so a second source starts empty. */
+	@Test
+	void allowsTheTopLevelNameOfAnotherSource() {
+		when(folders.findBySourceAndParentIdIsNullAndName(ModelSource.DATABASE, "Invoicing"))
+			.thenReturn(Optional.of(project));
+
+		FolderEntity created = provider.create(ModelSource.GIT, null, "Invoicing", "demo");
+
+		assertThat(created.getSource()).isEqualTo(ModelSource.GIT);
+	}
+
+	@Test
+	void movesAFolderToTheTopLevel() {
+		folder("child", "project", "Drafts");
+
+		FolderEntity moved = provider.move("child", null, "demo");
+
+		assertThat(moved.getParentId()).isNull();
 	}
 
 	@Test

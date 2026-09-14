@@ -26,8 +26,8 @@ import org.cibseven.modeler.model.ModelSource;
 
 public interface FolderRepository extends JpaRepository<FolderEntity, String> {
 
-	/** The root of a source, the folder every path of that source starts at. */
-	Optional<FolderEntity> findBySourceAndParentIdIsNull(ModelSource source);
+	/** A folder at the top level of a source, where the name is not scoped by a parent. */
+	Optional<FolderEntity> findBySourceAndParentIdIsNullAndName(ModelSource source, String name);
 
 	List<FolderEntity> findByParentIdOrderByNameAsc(String parentId);
 
