@@ -89,8 +89,20 @@ export async function fetchPluginManifests() {
 }
 
 /**
- * Merges the translations a plugin ships under the 'plugins.<id>' namespace, so
- * plugin keys can never collide with application or theme keys.
+ * Merges messages of a plugin under the 'plugins.<id>' namespace, so plugin keys
+ * can never collide with application or theme keys. Also handed to plugins
+ * through the runtime, for the ones that ship their messages in code.
+ *
+ * @param {string} pluginId
+ * @param {string} lang
+ * @param {object} messages
+ */
+export function mergeTranslations(pluginId, lang, messages) {
+  i18n.global.mergeLocaleMessage(lang, { plugins: { [pluginId]: messages } })
+}
+
+/**
+ * Merges the translations a plugin ships as a file.
  *
  * @param {object} manifest
  * @param {string} lang
@@ -101,7 +113,7 @@ async function loadPluginTranslations(manifest, lang) {
   merged.add(`${manifest.id}:${lang}`)
   try {
     const res = await axios.create({ timeout: REQUEST_TIMEOUT_MS }).get(pluginFileUrl(manifest, file))
-    i18n.global.mergeLocaleMessage(lang, { plugins: { [manifest.id]: res.data } })
+    mergeTranslations(manifest.id, lang, res.data)
   } catch {
     console.debug(`Optional plugin translations not found for "${manifest.id}":`, file)
   }

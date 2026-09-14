@@ -85,6 +85,8 @@ describe('library.js', () => {
       'setPluginContext', 'getPluginContext',
       'setPluginRouter', 'navigation',
       'initPlugins', 'loadPlugins', 'fetchPluginManifests',
+      // Handed to plugins by the runtime an embedding application supplies
+      'mergeTranslations', 'getRuntimeInfo',
       'PluginSlot', 'PluginBoundary'
     ]
 
