@@ -54,22 +54,14 @@ describe('BpmnViewer - getBadgeOverlayHtml number formatting', () => {
     expect(html).not.toContain('1500')
   })
 
-  it('abbreviates large numbers when shortenBadgeNumbers is "true"', () => {
-    const html = getBadgeOverlayHtml(1500, 'bg-info', 'runningInstances', 'act1')
-    expect(html).toContain('2K')
-    expect(html).not.toContain('1500')
-  })
-
-  it('abbreviates large numbers when shortenBadgeNumbers is "true"', () => {
-    const html = getBadgeOverlayHtml(1499, 'bg-info', 'runningInstances', 'act1')
-    expect(html).toContain('1K')
-    expect(html).not.toContain('1499')
-  })
-
-  it('abbreviates large numbers when shortenBadgeNumbers is "true"', () => {
-    const html = getBadgeOverlayHtml(1500000, 'bg-info', 'runningInstances', 'act1')
-    expect(html).toContain('2M')
-    expect(html).not.toContain('1500000')
+  it.each([
+    [1500, '2K', '1500'],
+    [1499, '1K', '1499'],
+    [1500000, '2M', '1500000']
+  ])('abbreviates large numbers when shortenBadgeNumbers is "true" (%i -> %s)', (number, expected, notExpected) => {
+    const html = getBadgeOverlayHtml(number, 'bg-info', 'runningInstances', 'act1')
+    expect(html).toContain(expected)
+    expect(html).not.toContain(notExpected)
   })
 
   it('shows full numbers below 1000 regardless of preference', () => {
@@ -88,22 +80,14 @@ describe('BpmnViewer - getBadgeOverlayHtml numbers not formatting', () => {
     expect(html).toContain('42')
   })
   
-  it('shows full numbers when shortenBadgeNumbers is "false"', () => {
-    const html = getBadgeOverlayHtml(1500, 'bg-info', 'runningInstances', 'act1')
-    expect(html).toContain('1500')
-    expect(html).not.toContain('1.5K')
-  })
-  
-  it('shows full numbers when shortenBadgeNumbers is "false"', () => {
-    const html = getBadgeOverlayHtml(1500000, 'bg-info', 'runningInstances', 'act1')
-    expect(html).toContain('1500000')
-    expect(html).not.toContain('2M')
-  })
-
-  it('shows full numbers when shortenBadgeNumbers is "false"', () => {
-    const html = getBadgeOverlayHtml(1499, 'bg-info', 'runningInstances', 'act1')
-    expect(html).toContain('1499')
-    expect(html).not.toContain('1K')
+  it.each([
+    [1500, '1500', '1.5K'],
+    [1500000, '1500000', '2M'],
+    [1499, '1499', '1K']
+  ])('shows full numbers when shortenBadgeNumbers is "false" (%i)', (number, expected, notExpected) => {
+    const html = getBadgeOverlayHtml(number, 'bg-info', 'runningInstances', 'act1')
+    expect(html).toContain(expected)
+    expect(html).not.toContain(notExpected)
   })
 })
 

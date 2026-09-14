@@ -1016,42 +1016,21 @@ describe('TasksNavBar - scrollToSelectedTask', () => {
     return vm
   }
 
-  it('should scroll a component ref into view and clear the pending id', () => {
+  // v-for refs arrive as an array, and either shape may carry the element directly or
+  // nest it under $el.
+  it.each([
+    ['a component ref', (scrollIntoView) => ({ $el: { scrollIntoView } })],
+    ['the first entry of an array ref', (scrollIntoView) => [{ $el: { scrollIntoView } }]],
+    ['a bare element ref', (scrollIntoView) => ({ scrollIntoView })],
+    ['a bare element inside an array ref', (scrollIntoView) => [{ scrollIntoView }]]
+  ])('should scroll %s into view and clear the pending id', (_label, buildRef) => {
     const scrollIntoView = vi.fn()
-    const vm = withRef({ $el: { scrollIntoView } })
+    const vm = withRef(buildRef(scrollIntoView))
 
     m.scrollToSelectedTask.call(vm)
 
     expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'center' })
     expect(vm.pendingScrollToTaskId).toBeNull()
-  })
-
-  // v-for refs arrive as an array.
-  it('should scroll the first entry of an array ref', () => {
-    const scrollIntoView = vi.fn()
-    const vm = withRef([{ $el: { scrollIntoView } }])
-
-    m.scrollToSelectedTask.call(vm)
-
-    expect(scrollIntoView).toHaveBeenCalled()
-  })
-
-  it('should scroll a bare element ref', () => {
-    const scrollIntoView = vi.fn()
-    const vm = withRef({ scrollIntoView })
-
-    m.scrollToSelectedTask.call(vm)
-
-    expect(scrollIntoView).toHaveBeenCalled()
-  })
-
-  it('should scroll a bare element inside an array ref', () => {
-    const scrollIntoView = vi.fn()
-    const vm = withRef([{ scrollIntoView }])
-
-    m.scrollToSelectedTask.call(vm)
-
-    expect(scrollIntoView).toHaveBeenCalled()
   })
 
   // The row may not be rendered yet, so the scroll is retried a bounded number of times.

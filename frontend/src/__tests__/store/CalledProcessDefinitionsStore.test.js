@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import CalledProcessDefinitionsStore from '../../store/CalledProcessDefinitionsStore.js'
 import { ProcessService, HistoryService } from '@/services.js'
 import { createStoreTestSuite } from './store-test-utils.js'
@@ -72,33 +72,6 @@ createStoreTestSuite('CalledProcessDefinitionsStore', CalledProcessDefinitionsSt
         staticCalledProcessDefinitions: []
       })
     })
-  },
-
-  mutations: {
-    setCalledProcessDefinitions: (mutation, getState) => {
-      it('should replace the displayed list', () => {
-        const state = getState()
-        state.calledProcessDefinitions = [{ id: 'old' }]
-        mutation(state, [{ id: 'new' }])
-        expect(state.calledProcessDefinitions).toEqual([{ id: 'new' }])
-      })
-    },
-
-    setAllCalledProcessDefinitions: (mutation, getState) => {
-      it('should replace the unfiltered list', () => {
-        const state = getState()
-        mutation(state, [{ id: 'new' }])
-        expect(state.allCalledProcessDefinitions).toEqual([{ id: 'new' }])
-      })
-    },
-
-    setStaticCalledProcessDefinitions: (mutation, getState) => {
-      it('should replace the static definitions', () => {
-        const state = getState()
-        mutation(state, [staticDef()])
-        expect(state.staticCalledProcessDefinitions).toEqual([staticDef()])
-      })
-    }
   },
 
   getters: {
@@ -450,5 +423,23 @@ createStoreTestSuite('CalledProcessDefinitionsStore', CalledProcessDefinitionsSt
         expect(lastGrouping(context)).toEqual([])
       })
     }
+  },
+
+  additional: (storeModule, getState) => {
+    describe('list-replacing mutations', () => {
+      // Each of these mutations does nothing but replace the identically-shaped field, so
+      // a table covers all three without repeating the same lines per mutation.
+      const cases = [
+        ['setCalledProcessDefinitions', 'calledProcessDefinitions', [{ id: 'new' }]],
+        ['setAllCalledProcessDefinitions', 'allCalledProcessDefinitions', [{ id: 'new' }]],
+        ['setStaticCalledProcessDefinitions', 'staticCalledProcessDefinitions', [staticDef()]]
+      ]
+
+      it.each(cases)('%s should replace state.%s', (mutationName, field, value) => {
+        const state = getState()
+        storeModule.mutations[mutationName](state, value)
+        expect(state[field]).toEqual(value)
+      })
+    })
   }
 })

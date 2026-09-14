@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import ProcessStore from '../../store/ProcessStore.js'
 import { ProcessService, HistoryService } from '@/services.js'
 import { createStoreTestSuite } from './store-test-utils.js'
@@ -51,33 +51,6 @@ createStoreTestSuite('ProcessStore', ProcessStore, {
         const state = getState()
         mutation(state, { processes: [process()] })
         expect(state.list).toEqual([process()])
-      })
-    },
-
-    setFavorite: (mutation, getState) => {
-      it('should set the favorite flag on the given process', () => {
-        const state = getState()
-        const target = process()
-        mutation(state, { process: target, value: true })
-        expect(target.favorite).toBe(true)
-      })
-    },
-
-    setStatistics: (mutation, getState) => {
-      it('should attach statistics to the given process', () => {
-        const state = getState()
-        const target = process()
-        mutation(state, { process: target, statistics: [{ instances: 3 }] })
-        expect(target.statistics).toEqual([{ instances: 3 }])
-      })
-    },
-
-    setSuspended: (mutation, getState) => {
-      it('should set the suspended flag on the given process', () => {
-        const state = getState()
-        const target = process()
-        mutation(state, { process: target, suspended: true })
-        expect(target.suspended).toBe(true)
       })
     },
 
@@ -229,44 +202,6 @@ createStoreTestSuite('ProcessStore', ProcessStore, {
       })
     },
 
-    setStatistics: (action, getContext) => {
-      it('should forward the statistics payload to the mutation', () => {
-        const context = getContext()
-        const target = process()
-
-        action(context, { process: target, statistics: [{ instances: 1 }] })
-
-        expect(context.commit).toHaveBeenCalledWith('setStatistics', { process: target, statistics: [{ instances: 1 }] })
-      })
-    },
-
-    setSuspended: (action, getContext) => {
-      it('should forward the suspended flag to the mutation', () => {
-        const context = getContext()
-        const target = process()
-
-        action(context, { process: target, suspended: true })
-
-        expect(context.commit).toHaveBeenCalledWith('setSuspended', { process: target, suspended: true })
-      })
-    },
-
-    clearHistoricActivityStatistics: (action, getContext) => {
-      it('should forward the key to the mutation', () => {
-        const context = getContext()
-        action(context, 'pd-1')
-        expect(context.commit).toHaveBeenCalledWith('clearHistoricActivityStatistics', 'pd-1')
-      })
-    },
-
-    removeProcessByKeyTenant: (action, getContext) => {
-      it('should forward key and tenant to the mutation', () => {
-        const context = getContext()
-        action(context, { key: 'invoice', tenantId: 't-1' })
-        expect(context.commit).toHaveBeenCalledWith('removeProcessByKeyTenant', { key: 'invoice', tenantId: 't-1' })
-      })
-    },
-
     loadHistoricActivityStatistics: (action, getContext) => {
       it('should request the full statistics set and store it under the definition id', async () => {
         const context = getContext()
@@ -321,5 +256,39 @@ createStoreTestSuite('ProcessStore', ProcessStore, {
         }, null)
       })
     }
+  },
+
+  additional: (storeModule) => {
+    describe('property mutations', () => {
+      // Each of these mutations does nothing but stamp one field onto the target process
+      // object, so a table exercises all three without repeating the same three lines.
+      const cases = [
+        ['setFavorite', { value: true }, 'favorite', true],
+        ['setStatistics', { statistics: [{ instances: 3 }] }, 'statistics', [{ instances: 3 }]],
+        ['setSuspended', { suspended: true }, 'suspended', true]
+      ]
+
+      it.each(cases)('%s should set process.%s', (mutationName, extra, field, expected) => {
+        const target = process()
+        storeModule.mutations[mutationName]({}, { process: target, ...extra })
+        expect(target[field]).toEqual(expected)
+      })
+    })
+
+    describe('pass-through actions', () => {
+      // These actions only forward their payload to the identically-named mutation.
+      const cases = [
+        ['setStatistics', { process: process(), statistics: [{ instances: 1 }] }],
+        ['setSuspended', { process: process(), suspended: true }],
+        ['clearHistoricActivityStatistics', 'pd-1'],
+        ['removeProcessByKeyTenant', { key: 'invoice', tenantId: 't-1' }]
+      ]
+
+      it.each(cases)('%s should forward the payload to its mutation', (actionName, payload) => {
+        const commit = vi.fn()
+        storeModule.actions[actionName]({ commit }, payload)
+        expect(commit).toHaveBeenCalledWith(actionName, payload)
+      })
+    })
   }
 })

@@ -54,6 +54,48 @@ global values describe the remainder (`src/components`, `src/embedded-form`, ent
 modules). When you raise a directory above 80% durably, add a glob for it and lift the
 global floor to match what is left. Never lower a threshold to make a change pass.
 
+## Collapsing repetitive tests with it.each
+
+When a `describe` accumulates 3+ `it`/`test` blocks with the *same setup and the same
+shape of assertions*, differing only in input values or expected output, collapse them
+into one `it.each([[...], [...]], ...)` block instead of leaving them as copy-pasted
+bodies. Keep every original scenario — collapsing must not drop a case.
+
+```js
+it.each([
+  ['true', 42, '42'],
+  ['false', 1234, '1.234'],
+])('formats %s / %i as %s', (shortenBadgeNumbers, input, expected) => {
+  expect(getBadgeOverlayHtml(input, shortenBadgeNumbers)).toContain(expected)
+})
+```
+
+Be conservative — this is a cleanup, not a target to hit:
+- Only collapse genuine near-duplicates. If the cases need different setup, or some
+  rows assert something the others don't (e.g. one of four "calls axios" tests also
+  checks `axios.create` was used for a fresh instance), leave them as separate `it`
+  blocks — forcing a table there loses the distinction or pollutes rows that don't need
+  it. `services.test.js`'s "engine-scoped, interceptor-free endpoints" tests are a
+  documented example of this call.
+- Don't merge a success-path test with an error-path test just because they exercise
+  the same action/method; that's usually a different assertion shape, not a table row.
+- Keep titles descriptive with `%s`/`%i`/`%j` or `$field` placeholders so a failing row
+  is identifiable without opening the file.
+- For Vuex store suites built on `createStoreTestSuite` (Recipe 1), put the table in the
+  `additional(storeModule, getState, getMocks)` hook rather than fighting the
+  per-mutation/per-action callback shape — see `ProcessStore.test.js`,
+  `IncidentsStore.test.js`, `BatchStore.test.js`, `TenantStore.test.js` and
+  `DecisionStore.test.js` for the pattern (pass-through actions, "sets one state field"
+  mutations, and flat getters are the usual candidates).
+- Re-run the file after collapsing and diff the test count — a collapse should reduce
+  the number of `it` blocks while keeping the number of exercised scenarios constant.
+
+If a test is deliberately pinning a known bug in production code (documenting current,
+not intended, behaviour), say so in a comment — e.g.
+`// KNOWN BUG (pinned, not fixed): refreshDecisionVersions ignores its 3rd argument` —
+so a reader doesn't mistake it for the wrong expectation and "fix" the test instead of
+the bug. See `DecisionStore.test.js` for two real examples.
+
 ## Recipe 1 — Vuex store module
 
 `src/__tests__/store/store-test-utils.js` already exists. `createStoreTestSuite` generates

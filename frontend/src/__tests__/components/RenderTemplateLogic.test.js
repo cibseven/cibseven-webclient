@@ -116,32 +116,22 @@ afterEach(() => {
 describe('RenderTemplate - computed', () => {
   // The form is read-only unless the current user holds the task, so it is taken out of
   // the tab order to signal that.
-  it('iframeTabIndex should be focusable for the task holder', () => {
-    expect(c.iframeTabIndex.call(context())).toBeUndefined()
-  })
-
-  it('iframeTabIndex should compare the assignee case-insensitively', () => {
-    const vm = context({ task: { id: 't1', assignee: 'DEMO' } })
-
-    expect(c.iframeTabIndex.call(vm)).toBeUndefined()
-  })
-
-  it('iframeTabIndex should accept an assignee object', () => {
-    const vm = context({ task: { id: 't1', assignee: { id: 'demo' } } })
+  it.each([
+    { label: 'the task holder', assignee: 'demo' },
+    { label: 'a case-insensitive match', assignee: 'DEMO' },
+    { label: 'an assignee object', assignee: { id: 'demo' } }
+  ])('iframeTabIndex should be focusable for $label', ({ assignee }) => {
+    const vm = context({ task: { id: 't1', assignee } })
 
     expect(c.iframeTabIndex.call(vm)).toBeUndefined()
   })
 
-  it('iframeTabIndex should take an unassigned task out of the tab order', () => {
-    expect(c.iframeTabIndex.call(context({ task: { id: 't1', assignee: null } }))).toBe(-1)
-  })
-
-  it('iframeTabIndex should take somebody else\'s task out of the tab order', () => {
-    expect(c.iframeTabIndex.call(context({ task: { id: 't1', assignee: 'other' } }))).toBe(-1)
-  })
-
-  it('iframeTabIndex should cope with an assignee object without an id', () => {
-    const vm = context({ task: { id: 't1', assignee: {} } })
+  it.each([
+    { label: 'an unassigned task', assignee: null },
+    { label: 'somebody else\'s task', assignee: 'other' },
+    { label: 'an assignee object without an id', assignee: {} }
+  ])('iframeTabIndex should take $label out of the tab order', ({ assignee }) => {
+    const vm = context({ task: { id: 't1', assignee } })
 
     expect(c.iframeTabIndex.call(vm)).toBe(-1)
   })

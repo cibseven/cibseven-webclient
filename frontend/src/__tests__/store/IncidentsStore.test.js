@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import IncidentsStore from '../../store/IncidentsStore.js'
 import { IncidentService } from '@/services.js'
 import { createStoreTestSuite } from './store-test-utils.js'
@@ -180,30 +180,23 @@ createStoreTestSuite('IncidentsStore', IncidentsStore, {
 
         expect(context.commit).toHaveBeenCalledWith('setIncidents', [incident({ id: 'existing' })])
       })
-    },
-
-    setIncidents: (action, getContext) => {
-      it('should forward the list to the mutation', () => {
-        const context = getContext()
-        action(context, [incident()])
-        expect(context.commit).toHaveBeenCalledWith('setIncidents', [incident()])
-      })
-    },
-
-    removeIncident: (action, getContext) => {
-      it('should forward the id to the mutation', () => {
-        const context = getContext()
-        action(context, 'inc-1')
-        expect(context.commit).toHaveBeenCalledWith('removeIncident', 'inc-1')
-      })
-    },
-
-    updateIncidentAnnotation: (action, getContext) => {
-      it('should forward the annotation payload to the mutation', () => {
-        const context = getContext()
-        action(context, { incidentId: 'inc-1', annotation: 'note' })
-        expect(context.commit).toHaveBeenCalledWith('updateIncidentAnnotation', { incidentId: 'inc-1', annotation: 'note' })
-      })
     }
+  },
+
+  additional: (storeModule) => {
+    describe('pass-through actions', () => {
+      // These actions only forward their payload to the identically-named mutation.
+      const cases = [
+        ['setIncidents', [incident()]],
+        ['removeIncident', 'inc-1'],
+        ['updateIncidentAnnotation', { incidentId: 'inc-1', annotation: 'note' }]
+      ]
+
+      it.each(cases)('%s should forward the payload to its mutation', (actionName, payload) => {
+        const commit = vi.fn()
+        storeModule.actions[actionName]({ commit }, payload)
+        expect(commit).toHaveBeenCalledWith(actionName, payload)
+      })
+    })
   }
 })

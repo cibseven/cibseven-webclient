@@ -144,51 +144,6 @@ createStoreTestSuite('BatchStore', BatchStore, {
     }
   },
 
-  getters: {
-    runtimeBatches: (getter, getState) => {
-      it('should expose the runtime batch list', () => {
-        const state = getState()
-        state.runtimeBatches = [batch()]
-        expect(getter(state)).toEqual([batch()])
-      })
-    },
-    historicBatches: (getter, getState) => {
-      it('should expose the historic batch list', () => {
-        const state = getState()
-        state.historicBatches = [batch()]
-        expect(getter(state)).toEqual([batch()])
-      })
-    },
-    cleanableBatchReport: (getter, getState) => {
-      it('should expose the cleanable batch report', () => {
-        const state = getState()
-        state.cleanableBatchReport = [{ batchType: 'x' }]
-        expect(getter(state)).toEqual([{ batchType: 'x' }])
-      })
-    },
-    selectedHistoricBatch: (getter, getState) => {
-      it('should expose the selected historic batch', () => {
-        const state = getState()
-        state.selectedHistoricBatch = batch()
-        expect(getter(state)).toEqual(batch())
-      })
-    },
-    historicBatchCount: (getter, getState) => {
-      it('should expose the historic batch count', () => {
-        const state = getState()
-        state.historicBatchCount = 7
-        expect(getter(state)).toBe(7)
-      })
-    },
-    cleanableBatchReportCount: (getter, getState) => {
-      it('should expose the cleanable batch report count', () => {
-        const state = getState()
-        state.cleanableBatchReportCount = 9
-        expect(getter(state)).toBe(9)
-      })
-    }
-  },
-
   actions: {
     getRuntimeBatches: (action, getContext) => {
       it('should fetch, commit and return the runtime batches', async () => {
@@ -351,7 +306,26 @@ createStoreTestSuite('BatchStore', BatchStore, {
     }
   },
 
-  additional: (storeModule) => {
+  additional: (storeModule, getState) => {
+    describe('field-exposing getters', () => {
+      // Each getter just returns the identically-named state field, so a table covers all
+      // six without repeating the same three lines per getter.
+      const cases = [
+        ['runtimeBatches', [batch()]],
+        ['historicBatches', [batch()]],
+        ['cleanableBatchReport', [{ batchType: 'x' }]],
+        ['selectedHistoricBatch', batch()],
+        ['historicBatchCount', 7],
+        ['cleanableBatchReportCount', 9]
+      ]
+
+      it.each(cases)('%s should expose state.%s', (name, value) => {
+        const state = getState()
+        state[name] = value
+        expect(storeModule.getters[name](state)).toEqual(value)
+      })
+    })
+
     describe('pass-through actions', () => {
       it('getBatchStatistics should delegate to the service', async () => {
         BatchService.getBatchStatistics.mockResolvedValue([{ id: 'b-1', remainingJobs: 2 }])
