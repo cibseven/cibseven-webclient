@@ -16,36 +16,11 @@
  */
 package org.cibseven.modeler.model;
 
-import java.time.LocalDateTime;
+/** Where a model is stored. Only DATABASE exists today; the others arrive with their sources. */
+public enum ModelSource {
 
-public interface UnifiedDiagram {
-
-	String getId();
-
-	/** Process name, or formId for forms. */
-	String getName();
-
-	/** 'bpmn-c7', 'dmn', or 'form'. */
-	String getType();
-
-	/** processkey for processes, formId for forms. */
-	String getProcesskey();
-
-	/** null for processes, formId for forms. */
-	String getFormId();
-
-	String getDescription();
-
-	LocalDateTime getCreated();
-
-	LocalDateTime getUpdated();
-
-	/** User id of last save, or null. */
-	String getUpdatedBy();
-
-	Integer getVersion();
-
-	/** The folder it lives in, so a list renders as a tree without a call per node. */
-	String getFolderId();
-
+	DATABASE,
+	GIT,
+	LOCAL,
+	ENGINE
 }

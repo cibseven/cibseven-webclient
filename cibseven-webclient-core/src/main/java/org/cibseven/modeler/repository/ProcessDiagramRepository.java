@@ -16,6 +16,7 @@
  */
 package org.cibseven.modeler.repository;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.domain.Pageable;
@@ -52,14 +53,14 @@ public interface ProcessDiagramRepository extends JpaRepository<ProcessDiagramEn
 		"SELECT * FROM ( " +
 		"   SELECT p.id, p.name, p.type, p.processkey, " +
 		"          NULL AS formid, " +
-		"          p.description, p.created, p.updated, p.updated_by, p.version " +
+		"          p.description, p.created, p.updated, p.updated_by, p.version, p.folder_id " +
 		"   FROM MOD_PROCESSES_DIAGRAMS p" +
 		"   WHERE (:keyword IS NULL OR LOWER(p.name) LIKE LOWER(:keyword) " +
 		"          OR LOWER(p.processkey) LIKE LOWER(:keyword)) " +
 		"   AND (:type IS NULL OR p.type LIKE :type) " +
 		"   UNION ALL " +
 		"   SELECT f.id, f.formid, 'form', f.formid, f.formid, " +
-		"          f.description, f.created, f.updated, f.updated_by, f.version " +
+		"          f.description, f.created, f.updated, f.updated_by, f.version, f.folder_id " +
 		"   FROM MOD_FORMS f" +
 		"   WHERE (:keyword IS NULL OR LOWER(f.formid) LIKE LOWER(:keyword)) " +
 		"   AND (:type IS NULL OR 'form' LIKE :type) " +
@@ -75,12 +76,12 @@ public interface ProcessDiagramRepository extends JpaRepository<ProcessDiagramEn
 		"SELECT * FROM ( " +
 		"   SELECT p.id, p.name, p.type, p.processkey, " +
 		"          NULL AS formid, " +
-		"          p.description, p.created, p.updated, p.updated_by, p.version " +
+		"          p.description, p.created, p.updated, p.updated_by, p.version, p.folder_id " +
 		"   FROM MOD_PROCESSES_DIAGRAMS p " +
 		"   WHERE p.id = :id " +
 		"   UNION ALL " +
 		"   SELECT f.id, f.formid, 'form', f.formid, f.formid, " +
-		"          f.description, f.created, f.updated, f.updated_by, f.version " +
+		"          f.description, f.created, f.updated, f.updated_by, f.version, f.folder_id " +
 		"   FROM MOD_FORMS f " +
 		"   WHERE f.id = :id " +
 		") t",
@@ -103,5 +104,9 @@ public interface ProcessDiagramRepository extends JpaRepository<ProcessDiagramEn
 			+ "      AND ranked.version = pa.version "
 			+ "      AND ranked.rn <= :versionLimit )", nativeQuery = true)
 	public void deleteOldRecords(@Param("versionLimit") int versionLimit);
+
+	List<ProcessDiagramEntity> findByFolderIdIn(Collection<String> folderIds);
+
+	long countByFolderIdIn(Collection<String> folderIds);
 
 }

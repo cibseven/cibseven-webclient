@@ -14,38 +14,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.cibseven.modeler.model;
+package org.cibseven.webapp.exception;
 
-import java.time.LocalDateTime;
+/**
+ * The engine resolves a process by its key, so the key is unique across the modeler. Copying a
+ * diagram therefore needs a key of its own, and reusing one is reported as a request error
+ * naming it.
+ */
+public class ExistingProcessKeyException extends ApplicationException {
 
-public interface UnifiedDiagram {
+	private static final long serialVersionUID = 1L;
 
-	String getId();
-
-	/** Process name, or formId for forms. */
-	String getName();
-
-	/** 'bpmn-c7', 'dmn', or 'form'. */
-	String getType();
-
-	/** processkey for processes, formId for forms. */
-	String getProcesskey();
-
-	/** null for processes, formId for forms. */
-	String getFormId();
-
-	String getDescription();
-
-	LocalDateTime getCreated();
-
-	LocalDateTime getUpdated();
-
-	/** User id of last save, or null. */
-	String getUpdatedBy();
-
-	Integer getVersion();
-
-	/** The folder it lives in, so a list renders as a tree without a call per node. */
-	String getFolderId();
-
+	public ExistingProcessKeyException(String processkey) {
+		super(processkey);
+	}
 }

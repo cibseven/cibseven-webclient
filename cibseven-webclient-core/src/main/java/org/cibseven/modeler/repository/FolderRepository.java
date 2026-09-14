@@ -16,31 +16,24 @@
  */
 package org.cibseven.modeler.repository;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
 
-import org.cibseven.modeler.model.FormEntity;
+import org.cibseven.modeler.model.FolderEntity;
+import org.cibseven.modeler.model.ModelSource;
 
-@Repository
-public interface FormRepository extends JpaRepository<FormEntity, String> {
+public interface FolderRepository extends JpaRepository<FolderEntity, String> {
 
-	List<FormEntity> findAllBy(Pageable pageable);
+	/** The root of a source, the folder every path of that source starts at. */
+	Optional<FolderEntity> findBySourceAndParentIdIsNull(ModelSource source);
 
-	FormEntity findByFormId(String formId);
+	List<FolderEntity> findByParentIdOrderByNameAsc(String parentId);
 
-	@Query("select f from FormEntity f " +
-		"where lower(f.formId) like lower(concat('%', :keyword, '%')) " +
-		"or lower(f.description) like lower(concat('%', :keyword, '%'))")
-	List<FormEntity> findAllFiltered(@Param("keyword") String keyword, Pageable pageable);
+	List<FolderEntity> findBySourceOrderByNameAsc(ModelSource source);
 
-	List<FormEntity> findByFolderIdIn(Collection<String> folderIds);
+	Optional<FolderEntity> findByParentIdAndName(String parentId, String name);
 
-	long countByFolderIdIn(Collection<String> folderIds);
-
+	boolean existsByParentId(String parentId);
 }
