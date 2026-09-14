@@ -421,9 +421,9 @@ pipeline {
                     String deployment = ""
                     if (isPatchVersion()) {
                         if (isSNAPSHOTVersion()) {
-                            deployment = "-Dnexus.snapshot.repository.id=mvn-cibseven-private -Dnexus.snapshot.repository=https://artifacts.cibseven.de/repository/private-snapshots"
+                            deployment = "-Dnexus.snapshot.repository.id=mvn-cibseven-private -Dnexus.snapshot.repository=https://artifacts.cibseven.org/repository/private-snapshots"
                         } else {
-                            deployment = "-Dnexus.release.repository.id=mvn-cibseven-private -Dnexus.release.repository=https://artifacts.cibseven.de/repository/private"
+                            deployment = "-Dnexus.release.repository.id=mvn-cibseven-private -Dnexus.release.repository=https://artifacts.cibseven.org/repository/private"
                         }
                     }
 
@@ -433,7 +433,6 @@ pipeline {
                     withMaven(options: [junitPublisher(disabled: true)]) {
                         def skipTestsFlag = params.VERIFY ? "-DskipTests" : ""
                         sh "mvn -T4 -U clean \
-                        org.cyclonedx:cyclonedx-maven-plugin:makeBom \
                         org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom \
                         -Dgenerate-frontend-sbom=true \
                         deploy ${skipTestsFlag} ${deployment}"
@@ -488,7 +487,6 @@ pipeline {
                                     -Dgpg.keyname="${GPG_KEYNAME}" \
                                     -Dgpg.passphrase="${GPG_KEY_PASS}" \
                                     clean \
-                                    org.cyclonedx:cyclonedx-maven-plugin:makeBom \
                                     org.cyclonedx:cyclonedx-maven-plugin:makeAggregateBom \
                                     -Dgenerate-frontend-sbom=true \
                                     deploy \
