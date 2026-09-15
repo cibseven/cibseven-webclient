@@ -952,7 +952,7 @@ public class ProcessService extends BaseService implements InitializingBean {
 	public ResponseEntity<Variable> fetchVariableByProcessInstanceId(@PathVariable String processInstanceId, @PathVariable String variableName, HttpServletRequest rq) {
 		try {
 			CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
-			checkPermission(userAuth, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.UPDATE_INSTANCE_VARIABLE_ALL);
+			checkPermission(userAuth, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
 			Variable variable = bpmProvider.fetchVariableByProcessInstanceId(processInstanceId, variableName, userAuth);    
 			return ResponseEntity.ok(variable);
 		} catch (Exception e) {
