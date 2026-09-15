@@ -584,7 +584,14 @@ public class DirectProcessProvider implements IProcessProvider {
 		// Check if caller wants incident handling
 		if (fetchIncidents != null && fetchIncidents) {
 			String processDefinitionId = (String) filters.get("processDefinitionId");
-			if (processDefinitionId != null) {
+			if (processDefinitionId == null) {
+				// No processDefinitionId - fetch incidents per instance (e.g. called from findProcessesInstancesRuntime)
+				if (historicProcessInstanceResults != null) {
+					historicProcessInstanceResults.forEach(p -> {
+						p.setIncidents(sevenDirectProvider.findIncidentByInstanceId(p.getId(), user));
+					});
+				}
+			} else {
 				@SuppressWarnings("unchecked")
 				List<String> activityIdIn = (List<String>) filters.get("activeActivityIdIn");
 
@@ -988,15 +995,15 @@ public class DirectProcessProvider implements IProcessProvider {
 
 		// fetch history for those ids to get full info
 		Map<String, Object> dataHistory = new HashMap<>();
-		Set<String> processInstanceIds = instanceResults.stream().map(ProcessInstance::getId).collect(Collectors.toSet());
+		List<String> processInstanceIds = instanceResults.stream().map(ProcessInstance::getId).collect(Collectors.toList());
 		dataHistory.put("processInstanceIds", processInstanceIds);
 		dataHistory.put("fetchIncidents", Boolean.TRUE);
 
 		Integer firstResult0 = 0;
 		Collection<HistoryProcessInstance> historicInstances = findProcessesInstancesHistory(dataHistory, Optional.of(firstResult0), maxResults, user);
-		// sort [historicInstances] is like they are inside [processInstanceIds]
+		// sort [historicInstances] like they are inside [processInstanceIds]
 		historicInstances = historicInstances.stream()
-				.sorted(Comparator.comparingInt(h -> instanceResults.indexOf(h.getId())))
+				.sorted(Comparator.comparingInt(h -> processInstanceIds.indexOf(h.getId())))
 				.collect(Collectors.toList());
 
 		return historicInstances;

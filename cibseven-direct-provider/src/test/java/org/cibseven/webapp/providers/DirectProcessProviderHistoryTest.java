@@ -18,6 +18,8 @@ package org.cibseven.webapp.providers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.cibseven.webapp.providers.ProcessInstanceRuntimeHistoryTestData.INCIDENT_ID_1;
+import static org.cibseven.webapp.providers.ProcessInstanceRuntimeHistoryTestData.INSTANCE_ID_1;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.RETURNS_SELF;
 import static org.mockito.Mockito.doReturn;
@@ -32,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.cibseven.bpm.engine.BadUserRequestException;
 import org.cibseven.bpm.engine.HistoryService;
@@ -50,6 +53,7 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
+import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.ProcessStatistics;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,6 +74,7 @@ public class DirectProcessProviderHistoryTest {
 	private ManagementService managementService;
 	private org.cibseven.bpm.engine.impl.HistoricProcessInstanceQueryImpl historyQuery;
 	private ProcessInstanceQuery instanceQuery;
+	private SevenDirectProvider sevenDirectProvider;
 	private DirectProcessProvider processProvider;
 	private CIBUser user;
 
@@ -102,7 +107,8 @@ public class DirectProcessProviderHistoryTest {
 		doReturn(processEngine).when(directProviderUtil).getProcessEngine(any(CIBUser.class));
 		doReturn(objectMapper).when(directProviderUtil).getObjectMapper(any(CIBUser.class));
 
-		processProvider = new DirectProcessProvider(directProviderUtil, mock(SevenDirectProvider.class));
+		sevenDirectProvider = mock(SevenDirectProvider.class);
+		processProvider = new DirectProcessProvider(directProviderUtil, sevenDirectProvider);
 	}
 
 	// ---------- history queries ----------
@@ -190,6 +196,32 @@ public class DirectProcessProviderHistoryTest {
 
 		// the engine would reject an unknown query property, so it has to be removed first
 		assertThat(filters).doesNotContainKey("fetchIncidents");
+	}
+
+	@Test
+	void findProcessesInstancesHistory_fetchesIncidentsPerInstanceWhenNoProcessDefinitionIdIsGiven() {
+		// this is exactly the filter shape findProcessesInstancesRuntime builds: a set of instance
+		// ids plus fetchIncidents, with no processDefinitionId
+		HistoricProcessInstance instance = mock(HistoricProcessInstance.class);
+		when(instance.getId()).thenReturn(INSTANCE_ID_1);
+		when(historyQuery.list()).thenReturn(List.of(instance));
+
+		Incident incident = new Incident();
+		incident.setId(INCIDENT_ID_1);
+		incident.setProcessInstanceId(INSTANCE_ID_1);
+		when(sevenDirectProvider.findIncidentByInstanceId(INSTANCE_ID_1, user)).thenReturn(List.of(incident));
+
+		Map<String, Object> filters = new HashMap<>();
+		filters.put("processInstanceIds", Set.of(INSTANCE_ID_1));
+		filters.put("fetchIncidents", Boolean.TRUE);
+
+		Collection<HistoryProcessInstance> result = processProvider.findProcessesInstancesHistory(
+			filters, Optional.empty(), Optional.empty(), user);
+
+		assertThat(result).singleElement()
+			.extracting(HistoryProcessInstance::getIncidents, org.assertj.core.api.InstanceOfAssertFactories.list(Incident.class))
+			.extracting(Incident::getId)
+			.containsExactly(INCIDENT_ID_1);
 	}
 
 	// ---------- statistics ----------

@@ -17,12 +17,20 @@
 package org.cibseven.webapp.providers;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.cibseven.webapp.providers.ProcessInstanceRuntimeHistoryTestData.HISTORY_INSTANCES_JSON_REVERSED;
+import static org.cibseven.webapp.providers.ProcessInstanceRuntimeHistoryTestData.INCIDENT_ID_1;
+import static org.cibseven.webapp.providers.ProcessInstanceRuntimeHistoryTestData.INSTANCE_ID_1;
+import static org.cibseven.webapp.providers.ProcessInstanceRuntimeHistoryTestData.INSTANCE_ID_2;
+import static org.cibseven.webapp.providers.ProcessInstanceRuntimeHistoryTestData.PROCESS_DEFINITION_KEY;
+import static org.cibseven.webapp.providers.ProcessInstanceRuntimeHistoryTestData.RUNTIME_INSTANCES_JSON;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -39,6 +47,7 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.HistoryStatistics;
+import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.cibseven.webapp.rest.model.ProcessInstance;
@@ -432,6 +441,58 @@ public class ProcessProviderIT extends BaseHelper {
         RecordedRequest secondRequest = mockWebServer.takeRequest();
         assertThat(secondRequest.getMethod()).isEqualTo("GET");
         assertThat(secondRequest.getPath()).contains("/engine-rest/process-definition?processDefinitionIdIn=process-1");
+    }
+
+    @Test
+    void testFindProcessesInstancesRuntimePreservesRuntimeQueryOrderEvenWhenHistoryReturnsInstancesReversed() throws Exception {
+        // Arrange
+        CIBUser user = getCibUser();
+        Map<String, Object> data = Map.of("processDefinitionKey", PROCESS_DEFINITION_KEY);
+
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(RUNTIME_INSTANCES_JSON)
+                .addHeader("Content-Type", "application/json"));
+        // history storage makes no ordering guarantee - the mock deliberately returns the rows in
+        // the opposite order to prove findProcessesInstancesRuntime re-sorts by the runtime order
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(HISTORY_INSTANCES_JSON_REVERSED)
+                .addHeader("Content-Type", "application/json"));
+
+        // Act
+        Collection<HistoryProcessInstance> result = processProvider.findProcessesInstancesRuntime(data, Optional.empty(), Optional.empty(), user);
+
+        // Assert
+        assertThat(result).extracting(HistoryProcessInstance::getId)
+                .containsExactly(INSTANCE_ID_1, INSTANCE_ID_2);
+    }
+
+    @Test
+    void testFindProcessesInstancesHistoryFetchesIncidentsPerInstanceWhenNoProcessDefinitionIdIsGiven() throws Exception {
+        // Arrange: this is exactly the filter shape findProcessesInstancesRuntime builds - a set of
+        // instance ids plus fetchIncidents, with no processDefinitionId
+        CIBUser user = getCibUser();
+        Map<String, Object> data = new HashMap<>();
+        data.put("processInstanceIds", Set.of(INSTANCE_ID_1));
+        data.put("fetchIncidents", Boolean.TRUE);
+
+        mockWebServer.enqueue(new MockResponse()
+                .setBody("[{\"id\":\"" + INSTANCE_ID_1 + "\"}]")
+                .addHeader("Content-Type", "application/json"));
+
+        Incident incident = new Incident();
+        incident.setId(INCIDENT_ID_1);
+        incident.setProcessInstanceId(INSTANCE_ID_1);
+        when(incidentProvider.findIncidentByInstanceId(INSTANCE_ID_1, user)).thenReturn(List.of(incident));
+
+        // Act
+        Collection<HistoryProcessInstance> result = processProvider.findProcessesInstancesHistory(
+                data, Optional.empty(), Optional.empty(), user);
+
+        // Assert
+        assertThat(result).singleElement()
+                .extracting(HistoryProcessInstance::getIncidents, org.assertj.core.api.InstanceOfAssertFactories.list(Incident.class))
+                .extracting(Incident::getId)
+                .containsExactly(INCIDENT_ID_1);
     }
 
     @Test
