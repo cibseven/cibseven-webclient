@@ -114,6 +114,8 @@ import jakarta.ws.rs.core.MultivaluedMap;
 
 public class DirectProcessProvider implements IProcessProvider {
 
+	private static final String FETCH_INCIDENTS = "fetchIncidents";
+
 	SevenDirectProvider sevenDirectProvider;
 	DirectProviderUtil directProviderUtil;
 
@@ -562,9 +564,9 @@ public class DirectProcessProvider implements IProcessProvider {
 	@Override
 	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(Map<String, Object> filters,
 			Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) {
-		Boolean fetchIncidents = (Boolean) filters.get("fetchIncidents");
+		Boolean fetchIncidents = (Boolean) filters.get(FETCH_INCIDENTS);
 		if (fetchIncidents != null) {
-			filters.remove("fetchIncidents");
+			filters.remove(FETCH_INCIDENTS);
 		}
 		HistoricProcessInstanceQueryDto historicProcessInstanceQueryDto = directProviderUtil.getObjectMapper(user).convertValue(filters,
 				HistoricProcessInstanceQueryDto.class);
@@ -997,7 +999,7 @@ public class DirectProcessProvider implements IProcessProvider {
 		Map<String, Object> dataHistory = new HashMap<>();
 		List<String> processInstanceIds = instanceResults.stream().map(ProcessInstance::getId).collect(Collectors.toList());
 		dataHistory.put("processInstanceIds", processInstanceIds);
-		dataHistory.put("fetchIncidents", Boolean.TRUE);
+		dataHistory.put(FETCH_INCIDENTS, Boolean.TRUE);
 
 		Integer firstResult0 = 0;
 		Collection<HistoryProcessInstance> historicInstances = findProcessesInstancesHistory(dataHistory, Optional.of(firstResult0), maxResults, user);
