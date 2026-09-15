@@ -34,11 +34,14 @@ public class UnifiedDiagramProvider implements IUnifiedDiagramProvider {
 	private final ProcessDiagramRepository processDiagramDao;
 
 	@Override
-	public List<UnifiedDiagram> getDiagrams(String keyword, String type, int firstResult, int maxResults) throws SystemException {
+	public List<UnifiedDiagram> getDiagrams(String keyword, String type, String folderId, int firstResult, int maxResults) throws SystemException {
 		String keywordPattern = (keyword == null || keyword.isEmpty()) ? null : "%" + keyword.toLowerCase() + "%";
     	String typePattern = (type == null || type.isEmpty()) ? null : type + "%";
 
-		return processDiagramDao.findAllUnified(keywordPattern, typePattern, PageRequest.of(firstResult / maxResults, maxResults));
+		// No folder means every folder, so a search still reaches across the whole tree
+		String folder = (folderId == null || folderId.isBlank()) ? null : folderId;
+
+		return processDiagramDao.findAllUnified(keywordPattern, typePattern, folder, PageRequest.of(firstResult / maxResults, maxResults));
 	}
 
 	@Override

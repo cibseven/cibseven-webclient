@@ -31,12 +31,14 @@ import java.util.List;
 import java.util.Optional;
 
 import org.cibseven.modeler.model.FormEntity;
+import org.cibseven.modeler.model.FolderEntity;
 import org.cibseven.modeler.model.FormUsageEntity;
 import org.cibseven.modeler.model.ProcessDiagramEntity;
 import org.cibseven.modeler.model.UnifiedDiagram;
 import org.cibseven.modeler.provider.DBProcessDiagramProvider;
 import org.cibseven.modeler.provider.DiagramUsageProvider;
 import org.cibseven.modeler.provider.FormProvider;
+import org.cibseven.modeler.provider.FolderProvider;
 import org.cibseven.modeler.provider.FormUsageProvider;
 import org.cibseven.modeler.provider.UnifiedDiagramProvider;
 import org.cibseven.modeler.provider.UserSessionProvider;
@@ -76,6 +78,7 @@ public class ModelerServiceTest {
 	@Mock private UserSessionProvider userSessionProvider;
 	@Mock private FormProvider formProvider;
 	@Mock private UnifiedDiagramProvider unifiedDiagramProvider;
+	@Mock private FolderProvider folderProvider;
 	@Mock private ModelerAccessChecker modelerAccessChecker;
 	@Mock private BpmProvider bpmProvider;
 	@Mock @SuppressWarnings("rawtypes") private BaseUserProvider baseUserProvider;
@@ -93,6 +96,11 @@ public class ModelerServiceTest {
 		ReflectionTestUtils.setField(service, "userSessionProvider", userSessionProvider);
 		ReflectionTestUtils.setField(service, "formProvider", formProvider);
 		ReflectionTestUtils.setField(service, "unifiedDiagramProvider", unifiedDiagramProvider);
+		FolderEntity defaultFolder = new FolderEntity();
+		defaultFolder.setId("folder-1");
+		when(folderProvider.defaultFolder()).thenReturn(defaultFolder);
+		when(folderProvider.requireModelFolder(any())).thenReturn(defaultFolder);
+		ReflectionTestUtils.setField(service, "folderProvider", folderProvider);
 		ReflectionTestUtils.setField(service, "modelerAccessChecker", modelerAccessChecker);
 		ReflectionTestUtils.setField(service, "bpmProvider", bpmProvider);
 		ReflectionTestUtils.setField(service, "baseUserProvider", baseUserProvider);
@@ -147,11 +155,21 @@ public class ModelerServiceTest {
 
 	@Test
 	void getUnifiedDiagrams_forwardsThePagingAndFilters() {
-		when(unifiedDiagramProvider.getDiagrams("invoice", "bpmn", 5, 20)).thenReturn(List.of());
+		when(unifiedDiagramProvider.getDiagrams("invoice", "bpmn", null, 5, 20)).thenReturn(List.of());
 
-		service.getUnifiedDiagrams(request, 5, 20, "invoice", "bpmn");
+		service.getUnifiedDiagrams(request, 5, 20, "invoice", "bpmn", null);
 
-		verify(unifiedDiagramProvider).getDiagrams("invoice", "bpmn", 5, 20);
+		verify(unifiedDiagramProvider).getDiagrams("invoice", "bpmn", null, 5, 20);
+	}
+
+	/** The folder tree asks one folder at a time, so the filter has to reach the query. */
+	@Test
+	void getUnifiedDiagrams_forwardsTheFolder() {
+		when(unifiedDiagramProvider.getDiagrams(null, null, "folder-1", 0, 20)).thenReturn(List.of());
+
+		service.getUnifiedDiagrams(request, 0, 20, null, null, "folder-1");
+
+		verify(unifiedDiagramProvider).getDiagrams(null, null, "folder-1", 0, 20);
 	}
 
 	@Test
@@ -278,7 +296,7 @@ public class ModelerServiceTest {
 			"application/json", "{\"components\":[]}".getBytes(StandardCharsets.UTF_8));
 		when(formProvider.createForm(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-		FormEntity created = service.saveForm("invoice-form", schema, request);
+		FormEntity created = service.saveForm("invoice-form", schema, null, request);
 
 		assertThat(created.getFormId()).isEqualTo("invoice-form");
 		assertThat(new String(created.getFormSchema(), StandardCharsets.UTF_8)).contains("components");
@@ -291,7 +309,7 @@ public class ModelerServiceTest {
 		when(unreadable.getBytes()).thenThrow(new IOException("stream closed"));
 		when(formProvider.createForm(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-		FormEntity created = service.saveForm("invoice-form", unreadable, request);
+		FormEntity created = service.saveForm("invoice-form", unreadable, null, request);
 
 		// the form is still created, just without a schema
 		assertThat(created.getFormSchema()).isNull();

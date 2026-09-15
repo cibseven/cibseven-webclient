@@ -18,26 +18,35 @@ package org.cibseven.modeler.model;
 
 import java.sql.Timestamp;
 
-import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UuidGenerator;
-import org.hibernate.type.SqlTypes;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
-
+import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-@Setter
-@Getter
-@RequiredArgsConstructor
+/**
+ * A folder of the modeler tree. Every model belongs to exactly one, so a folder is also the
+ * path a model is reached under. Only models kept in the database have one: a repository or a
+ * directory brings its own tree.
+ *
+ * <p>A folder without a parent is one the UI shows as a project; models may live in any of them.</p>
+ */
+@Setter @Getter @RequiredArgsConstructor
 @Entity
-@Table(name = "MOD_FORMS")
-public class FormEntity {
+@Table(
+	name = "MOD_FOLDERS",
+	uniqueConstraints = @UniqueConstraint(name = "UK_MOD_FOLDERS_PARENT_NAME", columnNames = { "parent_id", "name" }),
+	indexes = @Index(name = "IDX_MOD_FOLDERS_PARENT", columnList = "parent_id")
+)
+public class FolderEntity {
 
 	@Id
 	@GeneratedValue
@@ -45,33 +54,23 @@ public class FormEntity {
 	@Column(length = 36)
 	private String id;
 
-	@Column(name = "description", length = 150)
-	private String description;
+	/** Null in a folder at the top level. */
+	@Column(name = "parent_id", length = 36)
+	private String parentId;
+
+	@NotBlank
+	@Column(name = "name", nullable = false, length = 255)
+	private String name;
 
 	@Column(name = "created")
 	private Timestamp created;
+
+	@Column(name = "created_by", length = 100)
+	private String createdBy;
 
 	@Column(name = "updated")
 	private Timestamp updated;
 
 	@Column(name = "updated_by", length = 100)
 	private String updatedBy;
-
-	@JdbcTypeCode(SqlTypes.BOOLEAN)
-	@Column(name = "active", nullable = false, columnDefinition = "boolean default true")
-	private Boolean active = true;
-
-	@JdbcTypeCode(SqlTypes.LONGVARBINARY)
-	@Column(name = "form_schema", nullable = false)
-	private byte[] formSchema;
-
-	@Column(name = "formid", unique = true, nullable = false, length = 100)
-	private String formId;
-
-	/** The folder it lives in; a move rewrites this and nothing else. */
-	@Column(name = "folder_id", length = 36)
-	private String folderId;
-
-	@Column(name = "version", columnDefinition = "integer default 1")
-	private int version;
 }

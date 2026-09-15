@@ -26,11 +26,13 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.cibseven.modeler.model.FormEntity;
+import org.cibseven.modeler.model.FolderEntity;
 import org.cibseven.modeler.model.ProcessDiagramEntity;
 import org.cibseven.modeler.model.ProcessDiagramReduce;
 import org.cibseven.modeler.provider.DBProcessDiagramProvider;
 import org.cibseven.modeler.provider.DiagramUsageProvider;
 import org.cibseven.modeler.provider.FormProvider;
+import org.cibseven.modeler.provider.FolderProvider;
 import org.cibseven.modeler.provider.FormUsageProvider;
 import org.cibseven.modeler.provider.UnifiedDiagramProvider;
 import org.cibseven.modeler.provider.UserSessionProvider;
@@ -98,6 +100,12 @@ class ModelerServiceAuthorizationTest {
 		ReflectionTestUtils.setField(modelerService, "formUsageProvider", mock(FormUsageProvider.class));
 		ReflectionTestUtils.setField(modelerService, "userSessionProvider", mock(UserSessionProvider.class));
 		ReflectionTestUtils.setField(modelerService, "unifiedDiagramProvider", mock(UnifiedDiagramProvider.class));
+		FolderProvider folderProvider = mock(FolderProvider.class);
+		FolderEntity folder = new FolderEntity();
+		folder.setId("folder-1");
+		when(folderProvider.defaultFolder()).thenReturn(folder);
+		when(folderProvider.requireModelFolder(any())).thenReturn(folder);
+		ReflectionTestUtils.setField(modelerService, "folderProvider", folderProvider);
 		ReflectionTestUtils.setField(modelerService, "modelerAccessChecker", new ModelerAccessChecker(new AuthorizationChecker(bpmProvider)));
 
 		when(baseUserProvider.checkAuthorization(any(), anyBoolean())).thenReturn(USER);
@@ -230,7 +238,7 @@ class ModelerServiceAuthorizationTest {
 			}
 		}
 
-		assertEquals(28, checked, "endpoints of ModelerService covered by this sweep");
+		assertEquals(31, checked, "endpoints of ModelerService covered by this sweep");
 		assertEquals(List.of(), unprotected, "endpoints reachable without modeler access");
 	}
 

@@ -77,6 +77,10 @@ public class ProcessDiagramEntity {
 	@Column(name = "type")
 	private String type = "bpmn-c7";
 
+	/** The folder it lives in; a move rewrites this and nothing else. */
+	@Column(name = "folder_id", length = 36)
+	private String folderId;
+
 	@Column(name = "version", columnDefinition = "integer default 1")
 	private int version;
 
