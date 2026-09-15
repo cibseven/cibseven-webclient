@@ -66,7 +66,7 @@ export default {
       return this.$root.config.productNamePageTitle || this.$t('login.productName')
     },
     permissionsAdmin: function() {
-      return this.$root.user && this.adminManagementPermissions(this.$root.config.permissions.systemManagement, 'system')
+      return this.$root.user && this.applicationPermissions(this.$root.config.permissions.systemManagement, 'system')
     }
   },
   methods: {

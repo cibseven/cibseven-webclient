@@ -744,6 +744,32 @@
 				"operationLogCategory": "Operation Log Category",
 				"property": "Property"
 			},
+			"resourcesTypesDescriptions": {
+				"application": "Controls which web applications a user or group is allowed to open, e.g. <strong>Tasklist</strong>, <strong>Cockpit</strong>, <strong>Admin</strong>, or <strong>Optimize</strong>. This resource only supports the <strong>Access</strong> permission.",
+				"user": "Controls who may view, create, edit, or delete user accounts, and whether users can see each other’s basic information, e.g. when picking a task assignee.",
+				"group": "Controls who may view, create, edit, or delete groups.",
+				"groupMembership": "Controls who may add users to a group or remove them from it.",
+				"authorization": "Controls who may view, create, edit, or delete authorization rules themselves — i.e. who is allowed to grant or revoke other permissions.",
+				"system": "Controls access to the <strong>System Settings</strong> area in Admin: diagnostics, execution metrics, license key management, telemetry, and other engine-wide configuration. By default this area requires the <strong>All</strong> permission.",
+				"filter": "Controls who may view, create, edit, or delete the saved task filters shown in Tasklist. These are the same permissions that can be set directly in a filter’s own sharing settings.",
+				"processDefinition": "Controls whether a user or group can see and act on a deployed process definition in Cockpit and Tasklist, e.g. start new instances, suspend it, or work on its tasks and their variables.",
+				"task": "Controls who may view, claim, assign, or complete tasks, and who may read or update their variables. Can be scoped to a single task, e.g. to hand a specific task to a group.",
+				"processInstance": "Controls who may view, modify, suspend, retry a failed job on, or delete a running process instance. Can be restricted to individual instances instead of the whole process.",
+				"deployment": "Controls who may create, view, or delete deployments, i.e. the <strong>BPMN</strong>, <strong>DMN</strong>, and form resources uploaded to the engine.",
+				"decisionDefinition": "Controls who may view or evaluate a deployed <strong>DMN</strong> decision, and who may access its evaluation history.",
+				"tenant": "Controls who may view, create, edit, or delete tenants in a multi-tenant setup.",
+				"tenantMembership": "Controls who may assign users and groups to a tenant, or remove them from it.",
+				"batch": "Controls who may create or cancel batch operations, i.e. bulk actions such as process instance migration, restart, deletion, or mass variable updates.<br><strong>CREATE</strong> controls all batch operations. Each <strong>CREATE_BATCH_*</strong> permission controls one specific operation on top of <strong>CREATE</strong>, overriding it.",
+				"decisionRequirements": "Controls who may view a decision requirements definition, i.e. the graph showing how a set of related <strong>DMN</strong> decisions depend on each other.",
+				"report": "Controls who may view or manage saved reports.",
+				"dashboard": "Controls who may view or manage saved dashboards.",
+				"userOperationLogCategory": "Controls who may read the <strong>User Operations</strong> audit trail recorded per task or process instance, grouped into categories such as task worker, admin, or operator actions.",
+				"historicTask": "Controls who may view the historic data kept for a task after it has been completed.",
+				"historicProcessInstance": "Controls who may view or delete the historic data of a process instance after it has finished.",
+				"optimize": "Controls who may access <strong>Optimize</strong>, the process reporting and analytics application.",
+				"operationLogCategory": "Controls who may read or delete entries in the engine-wide <strong>Operation Log</strong> shown in Cockpit — a single searchable audit trail across the whole engine.",
+				"property": "Controls who may view or change internal engine configuration entries stored as key/value properties, not application-level settings."
+			},
 			"unselectAll": "Unselect All",
 			"selectAll": "Select All",
 			"confirmDelete": "Do you really want to delete the permission with the following parameters?",
@@ -1061,6 +1087,7 @@
 		"AccessDeniedException": "No Permission ({0})",
 		"NoPermission": "You do not have the necessary permissions to perform this action.\nRequired persmission: \"{permission}\".\nReferenced from: {refPath}",
 		"EntryAlreadyExistsException": "{0} already exists",
+		"globalAuthorizationExists": "A GLOBAL authorization for the resource \"{0}\" already exists. Adjust that authorization instead of adding a second one.",
 		"formNotFound": "The form \"{0}\" could not be loaded. The form is either empty or the form resource was not deployed correctly. Please check the deployment and try again.",
 		"deployedFormNotFound": "The deployed form resource \"{0}\" could not be found in the deployment. Please verify that the form resource is included in the deployment and try again.",
 		"NoObjectFoundException": "While performing this operation a specific problem has occurred. Please refresh the page in your browser and try again.",
@@ -1361,5 +1388,8 @@
 			"title": "Why is this page shown?",
 			"description": "You are trying to access the process engine \"{0}\". This engine is configured to use the built-in identity service (database) but has no administrative users configured. This page allows you to create an initial user for accessing the process engine."
 		}
+	},
+	"deepLink": {
+		"tooltip": "Open {text}\n{url}"
 	}
 }

@@ -16,18 +16,19 @@
 -->
 <template>
   <div class="d-flex flex-column h-100">
-    <div v-if="isActiveInstance || ProcessVariablesSearchBoxPlugin || selectedActivityId || selectedScopeInstanceId" class="bg-white d-flex w-100 flex-wrap">
-      <div v-if="ProcessVariablesSearchBoxPlugin" :class="isActiveInstance ? 'col-10 p-2' : 'col-12 p-2'">
+    <div v-if="isActiveInstance || hasDeepLinks || ProcessVariablesSearchBoxPlugin || selectedActivityId || selectedScopeInstanceId" class="bg-white d-flex w-100 flex-wrap">
+      <div v-if="ProcessVariablesSearchBoxPlugin" :class="(isActiveInstance || hasDeepLinks) ? 'col-10 p-2' : 'col-12 p-2'">
         <component :is="ProcessVariablesSearchBoxPlugin"
           :query="filter"
           @change-query-object="changeFilter"
           :total-count="filteredVariables.length"
         ></component>
       </div>
-      <div v-if="isActiveInstance" :class="ProcessVariablesSearchBoxPlugin ? 'col-2 p-3' : 'p-3'">
-        <b-button class="border" size="sm" variant="light" @click="addNewVariable" :title="$t('process-instance.addVariable')">
+      <div v-if="isActiveInstance || hasDeepLinks" :class="ProcessVariablesSearchBoxPlugin ? 'col-2 p-3' : 'p-3'">
+        <b-button v-if="isActiveInstance" class="border" size="sm" variant="light" @click="addNewVariable" :title="$t('process-instance.addVariable')">
           <span class="mdi mdi-plus"></span> {{ $t('process-instance.addVariable') }}
         </b-button>
+        <DeepLinkButtons v-if="hasDeepLinks" section="processInstance" :params="matchedDeepLinkParams" />
       </div>
       <div v-if="!ProcessVariablesSearchBoxPlugin && (selectedActivityId || selectedScopeInstanceId)" class="p-3">
         <RemovableBadge
@@ -102,16 +103,16 @@
               icon="mdi-download-outline"
               @click="downloadFile(table.item)">
             </CellActionButton>
-            <CellActionButton v-if="isFile(table.item) && isActiveInstance" :title="$t('process-instance.upload')"
+            <CellActionButton v-if="isFile(table.item) && table.item.isLive" :title="$t('process-instance.upload')"
               icon="mdi-upload-outline"
               @click="selectedVariable = table.item; $refs.uploadFile.show()">
             </CellActionButton>
             <CellActionButton v-if="'File' !== table.item.type && !isFileValueDataSource(table.item)"
-              :title="$t(isActiveInstance ? 'process-instance.edit' : 'process-instance.variables.historicVariable.tooltip')" 
-              :icon="isActiveInstance ? 'mdi-square-edit-outline' : 'mdi-eye-outline'"
+              :title="$t(table.item.isLive ? 'process-instance.edit' : 'process-instance.variables.historicVariable.tooltip')"
+              :icon="table.item.isLive ? 'mdi-square-edit-outline' : 'mdi-eye-outline'"
               @click="modifyVariable(table.item)">
             </CellActionButton>
-            <CellActionButton v-if="hasDeletionPermission" :title="$t('confirm.delete')" 
+            <CellActionButton v-if="hasDeletionPermissionFor(table.item)" :title="$t('confirm.delete')"
               icon="mdi-delete-outline" @click="deleteVariable(table.item)"></CellActionButton>
           </div>
         </template>
@@ -152,15 +153,18 @@ import AddVariableModal from '@/components/process/modals/AddVariableModal.vue'
 import EditVariableModal from '@/components/process/modals/EditVariableModal.vue'
 import processesVariablesMixin from '@/components/process/mixins/processesVariablesMixin.js'
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
+import DeepLinkButtons from '@/components/common-components/DeepLinkButtons.vue'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { permissionsMixin } from '@/permissions.js'
 import { mapGetters, mapActions } from 'vuex'
 import variableUtils from '@/components/process/mixins/variableUtils'
+import { hasDeepLinks } from '@/utils/deepLinks.js'
 
 export default {
   name: 'VariablesTable',
-  components: { FlowTable, TaskPopper, AddVariableModal, DeleteVariableModal, EditVariableModal, SuccessAlert, BWaitingBox, CopyableActionButton, CellActionButton, RemovableBadge },
+  components: { FlowTable, TaskPopper, AddVariableModal, DeleteVariableModal, EditVariableModal, SuccessAlert, BWaitingBox, CopyableActionButton, DeepLinkButtons, CellActionButton, RemovableBadge },
   mixins: [ processesVariablesMixin, copyToClipboardMixin, permissionsMixin ],
+  inject: ['currentLanguage'],
   data: function() {
     return {
       filteredVariables: [],
@@ -216,24 +220,22 @@ export default {
         ? this.$options.components.VariablesTableActionsPlugin
         : null
     },
-    isActiveInstance: function() {
-      if (this.selectedInstance?.state) {
-        // 'state' is available from historic process instances
-        const activeStates = ['ACTIVE', 'SUSPENDED']
-        return this.selectedInstance && activeStates.includes(this.selectedInstance.state)
-      }
-      else {
-        // use runtime instance
-        // they have 'ended' and 'suspended' states
-        return this.selectedInstance && this.selectedInstance.ended === false
-      }
+    hasDeepLinks() {
+      return hasDeepLinks(this.$root.config, 'processInstance', 'button')
     },
-    hasDeletionPermission: function() {
-      if (this.isActiveInstance) {
-        return this.processByPermissions(this.$root.config.permissions.deleteProcessInstance, this.selectedInstance)
-      }
-      else {
-        return this.processByPermissions(this.$root.config.permissions.deleteHistoricProcessInstance, this.selectedInstance)
+    matchedDeepLinkParams() {
+      return {
+        processInstanceId: this.selectedInstance?.id,
+        processInstanceTenantId: this.selectedInstance?.tenantId,
+        businessKey: this.selectedInstance?.businessKey,
+
+        processDefinitionId: this.process?.id,
+        processDefinitionKey: this.process?.key,
+        processDefinitionVersion: this.process?.version,
+        processDefinitionVersionTag: this.process?.versionTag,
+        processDefinitionTenantId: this.process?.tenantId,
+
+        lang: this.currentLanguage()
       }
     },
   },
@@ -273,15 +275,23 @@ export default {
     async addNewVariable() {
       this.$refs.addVariableModal.show()
     },
+    hasDeletionPermissionFor(variable) {
+      if (variable.isLive) {
+        return this.processByPermissions(this.$root.config.permissions.deleteProcessInstance, this.selectedInstance)
+      }
+      else {
+        return this.processByPermissions(this.$root.config.permissions.deleteHistoricProcessInstance, this.selectedInstance)
+      }
+    },
     async modifyVariable(variable) {
-      this.$refs.editVariableModal.show(variable.id, variable.name)
+      this.$refs.editVariableModal.show(variable.id, variable.name, !variable.isLive)
     },
     async deleteVariable(variable) {
-      this.$refs.deleteVariableModal.show(this.isActiveInstance, variable)
+      this.$refs.deleteVariableModal.show(variable.isLive === true, variable)
     },
-    onVariableDeleted() {
+    onVariableDeleted(variable) {
       this.loadSelectedInstanceVariables()
-      if (this.isActiveInstance) {
+      if (variable?.isLive) {
         this.$refs.runtimeVariableDeleted.show()
       }
       else {

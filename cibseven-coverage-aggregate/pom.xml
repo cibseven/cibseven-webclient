@@ -1,0 +1,176 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.cibseven.webapp</groupId>
+		<artifactId>cibseven-webclient</artifactId>
+		<version>2.3.0-SNAPSHOT</version>
+	</parent>
+	<artifactId>cibseven-coverage-aggregate</artifactId>
+	<packaging>pom</packaging>
+	<name>CIB seven webclient coverage aggregate</name>
+	<description>
+		Produces the single repo-wide JaCoCo report. Each module only ever reported on itself, so
+		there was no overall coverage figure to hold a floor against; jacoco:report-aggregate
+		collects the exec data of every module listed below into
+		target/site/jacoco-aggregate/, and jacoco:check enforces the global floor on it.
+
+		This module deliberately comes last in the reactor: report-aggregate can only see exec
+		data that already exists, and depending on every module is what orders it there (including
+		under CI's `mvn -T4 ... verify`). It ships nothing.
+	</description>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.cibseven.webapp</groupId>
+			<artifactId>cibseven-interfaces</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.cibseven.webapp</groupId>
+			<artifactId>cibseven-webclient-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.cibseven.webapp</groupId>
+			<artifactId>cibseven-direct-provider</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.cibseven.webapp</groupId>
+			<artifactId>cibseven-webclient-web</artifactId>
+			<version>${project.version}</version>
+			<type>war</type>
+		</dependency>
+		<dependency>
+			<groupId>org.cibseven.webapp</groupId>
+			<artifactId>cibseven-webclient-web-spring-boot-4</artifactId>
+			<version>${project.version}</version>
+			<type>war</type>
+		</dependency>
+	</dependencies>
+
+	<properties>
+		<!--
+			Repo-wide floors, enforced by the jacoco-check-global execution below. This is the one
+			place that notices slow overall drift: a module's own floor only sees the coverage its
+			own tests produce, whereas the merged data also credits cross-module coverage (core's
+			tests cover a lot of cibseven-interfaces, for instance).
+		-->
+		<jacoco.aggregate.line.floor>0.41</jacoco.aggregate.line.floor>
+		<jacoco.aggregate.branch.floor>0.33</jacoco.aggregate.branch.floor>
+	</properties>
+
+	<build>
+		<plugins>
+			<!--
+				jacoco:check can only analyse the classes of the module it runs in, and this module has
+				none of its own, so the jar modules' classes are unpacked here to give it a subject.
+				The two war modules are not unpacked (their classes sit under WEB-INF/classes, so the
+				package layout would not survive); they are held by their own per-module floors instead.
+				That leaves 8,541 of 8,738 lines - 97.7% of the codebase - under the global floor.
+			-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>collect-module-classes</id>
+						<phase>process-test-classes</phase>
+						<goals>
+							<goal>unpack-dependencies</goal>
+						</goals>
+						<configuration>
+							<includeGroupIds>org.cibseven.webapp</includeGroupIds>
+							<includeTypes>jar</includeTypes>
+							<includes>**/*.class</includes>
+							<outputDirectory>${project.build.outputDirectory}</outputDirectory>
+							<overWriteSnapshots>true</overWriteSnapshots>
+							<overWriteReleases>true</overWriteReleases>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>${jacoco-maven-plugin.version}</version>
+				<executions>
+					<!--
+						The inherited prepare-agent/report executions make no sense here - this module
+						has no sources and no tests of its own.
+					-->
+					<execution>
+						<id>jacoco-prepare-agent</id>
+						<phase>none</phase>
+					</execution>
+					<execution>
+						<id>jacoco-report</id>
+						<phase>none</phase>
+					</execution>
+					<execution>
+						<id>jacoco-report-integration</id>
+						<phase>none</phase>
+					</execution>
+					<execution>
+						<id>jacoco-check</id>
+						<phase>none</phase>
+					</execution>
+					<!-- one exec file holding every module's data, for the global check below -->
+					<execution>
+						<id>jacoco-merge</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>merge</goal>
+						</goals>
+						<configuration>
+							<fileSets>
+								<fileSet>
+									<directory>${project.basedir}/..</directory>
+									<includes>
+										<include>*/target/jacoco.exec</include>
+									</includes>
+								</fileSet>
+							</fileSets>
+							<destFile>${project.build.directory}/jacoco-merged.exec</destFile>
+						</configuration>
+					</execution>
+					<execution>
+						<id>jacoco-report-aggregate</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>report-aggregate</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>jacoco-check-global</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<dataFile>${project.build.directory}/jacoco-merged.exec</dataFile>
+							<rules>
+								<rule>
+									<element>BUNDLE</element>
+									<limits>
+										<limit>
+											<counter>LINE</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>${jacoco.aggregate.line.floor}</minimum>
+										</limit>
+										<limit>
+											<counter>BRANCH</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>${jacoco.aggregate.branch.floor}</minimum>
+										</limit>
+									</limits>
+								</rule>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
