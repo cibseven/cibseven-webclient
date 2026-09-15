@@ -268,6 +268,7 @@ describe('i18n', () => {
       stringLongKeys = stringLongKeys.filter(keyPath => 
         !keyPath.startsWith('admin.authorizations.confirmParams.') &&
         !keyPath.startsWith('admin.authorizations.resourcesTypes.') &&
+        !keyPath.startsWith('admin.authorizations.resourcesTypesDescriptions.') &&
         !keyPath.startsWith('admin.authorizations.types.') &&
         !keyPath.startsWith('advanced-search.criteriaKeys.') &&
         !keyPath.startsWith('errors.') &&

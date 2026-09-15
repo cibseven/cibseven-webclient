@@ -47,7 +47,7 @@ export function checkExternalReturn(href, hash) {
   const hashAux = hash
 
   if (hashAux.includes('token=')) {
-    let token = ''
+    let token
 
     const tokenStartPos = hashAux.indexOf('token=') + 'token='.length
 
@@ -109,7 +109,7 @@ export function handleAxiosError(router, root, error) {
     } else if (res.status === 500) {
       const exceptions = ['NoObjectFoundException', 'InvalidAttributeValueException', 'SubmitDeniedException',
         'UnsupportedTypeException', 'ExpressionEvaluationException', 'ExistingUserRequestException',
-        'ExistingGroupRequestException', 'AccessDeniedException', 'SystemException', 'InvalidUserIdException', 'InvalidValueHistoryTimeToLive',
+        'ExistingGroupRequestException', 'AccessDeniedException', 'SystemException', 'InvalidUserIdException',
         'VariableModificationException', 'WrongDeploymenIdException', 'NoRessourcesFoundException', 'DmnTransformationException', 'InvalidGroupIdException']
       if (!isDeployedForm && res.data.type && exceptions.includes(res.data.type))
         root.$refs.error.show(res.data)

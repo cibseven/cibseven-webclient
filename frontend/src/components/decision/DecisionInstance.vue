@@ -28,7 +28,7 @@
     </router-link>
 
     <ViewerFrame :resizerMixin="this">
-      <DmnViewer ref="diagram" class="h-100" @view-changed="onViewChanged" />
+      <DmnViewer ref="diagram" class="h-100" @view-changed="onViewChanged" @viewbox-changed="onViewboxChanged" :sidebar-left-open="leftOpen" />
     </ViewerFrame>
 
     <div class="position-absolute w-100" style="left: 0; z-index: 1" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight + 1) + 'px; ' + toggleTransition">
@@ -42,6 +42,9 @@
     <div class="position-absolute w-100 border-top" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
       <div v-if="activeTab === 'inputs'">
         <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 0; left: 0; bottom: 0">
+          <div v-if="hasDeepLinks" class="p-2">
+            <DeepLinkButtons section="decisionInstance" :params="matchedDeepLinkParams" />
+          </div>
           <FlowTable striped resizable thead-class="sticky-header" :items="instance.inputs" primary-key="id" :fields="[
             { label: 'decision.name', key: 'clauseName', class: 'col-4', tdClass: 'py-1' },
             { label: 'decision.type', key: 'type', class: 'col-4', tdClass: 'py-1' },
@@ -49,8 +52,11 @@
           </FlowTable>
         </div>
       </div>
-      <div v-if="activeTab === 'outputs'">
+      <div v-else-if="activeTab === 'outputs'">
         <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 0; left: 0; bottom: 0">
+          <div v-if="hasDeepLinks" class="p-2">
+            <DeepLinkButtons section="decisionInstance" :params="matchedDeepLinkParams" />
+          </div>
           <FlowTable striped resizable thead-class="sticky-header" :items="instance.outputs" primary-key="id" :fields="[
             { label: 'decision.name', key: 'clauseName', class: 'col-4', tdClass: 'py-1' },
             { label: 'decision.type', key: 'type', class: 'col-4', tdClass: 'py-1' },
@@ -58,6 +64,7 @@
           </FlowTable>
         </div>
       </div>
+      <DeepLinkFrame v-else-if="matchedDeepLink" :link="matchedDeepLink" :params="matchedDeepLinkParams"></DeepLinkFrame>
     </div>
   </div>
 </template>
@@ -67,32 +74,75 @@ import { permissionsMixin } from '@/permissions.js'
 import { DecisionService } from '@/services.js'
 import DmnViewer from '@/components/decision/DmnViewer.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
+import bpmnViewportPersistenceMixin from '@/components/process/mixins/bpmnViewportPersistenceMixin.js'
+import viewerFrameSizePersistenceMixin from '@/components/process/mixins/viewerFrameSizePersistenceMixin.js'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
+import DeepLinkFrame from '@/components/common-components/DeepLinkFrame.vue'
 import { FlowTable, GenericTabs } from '@cib/common-frontend'
 import { mapActions, mapGetters } from 'vuex'
+import { getDeepLinkEntries, resolveDeepLinkLabel, hasDeepLinks } from '@/utils/deepLinks.js'
+import DeepLinkButtons from '@/components/common-components/DeepLinkButtons.vue'
+
+const RESERVED_TAB_IDS = ['inputs', 'outputs']
 
 export default {
   name: 'DecisionInstance',
-  components: { DmnViewer, FlowTable, GenericTabs, ScrollableTabsContainer, ViewerFrame },
-  mixins: [permissionsMixin, resizerMixin],
+  components: { DmnViewer, FlowTable, GenericTabs, ScrollableTabsContainer, ViewerFrame, DeepLinkFrame, DeepLinkButtons },
+  mixins: [permissionsMixin, resizerMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
+  inject: ['currentLanguage'],
   props: {
     versionIndex: String,
     instanceId: String,
-    loading: Boolean
+    loading: Boolean,
+    leftOpen: { type: Boolean, default: true }
   },
   data() {
     return {
       instance: null,
-      tabs: [
-        { id: 'inputs', text: 'decision.inputs' },
-        { id: 'outputs', text: 'decision.outputs' }
-      ],
       activeTab: 'inputs'
     }
   },
   computed: {
-    ...mapGetters('diagram', ['isDiagramReady'])
+    ...mapGetters('diagram', ['isDiagramReady']),
+    ...mapGetters(['getSelectedDecisionVersion']),
+    decisionDefinition() {
+      return this.getSelectedDecisionVersion()
+    },
+    tabs() {
+      const deepLinkTabs = getDeepLinkEntries(this.$root.config, 'decisionInstance', RESERVED_TAB_IDS)
+        .filter(entry => entry.type === 'tab')
+        .map(entry => ({ id: entry.id, text: resolveDeepLinkLabel(this.$t, entry) }))
+      return [
+        { id: 'inputs', text: 'decision.inputs' },
+        { id: 'outputs', text: 'decision.outputs' },
+        ...deepLinkTabs
+      ]
+    },
+    hasDeepLinks() {
+      return hasDeepLinks(this.$root.config, 'decisionInstance', 'button')
+    },
+    matchedDeepLink() {
+      return getDeepLinkEntries(this.$root.config, 'decisionInstance', RESERVED_TAB_IDS)
+        .filter(entry => entry.type === 'tab')
+        .find(entry => entry.id === this.activeTab)
+    },
+    matchedDeepLinkParams() {
+      return {
+        decisionInstanceId: this.instance?.id,
+        decisionInstanceTenantId: this.instance?.tenantId,
+
+        processInstanceId: this.instance?.processInstanceId,
+
+        decisionDefinitionId: this.instance?.decisionDefinitionId,
+        decisionDefinitionKey: this.instance?.decisionDefinitionKey,
+        decisionDefinitionTenantId: this.decisionDefinition?.tenantId,
+        decisionDefinitionVersion: this.decisionDefinition?.version,
+        decisionDefinitionVersionTag: this.decisionDefinition?.versionTag,
+
+        lang: this.currentLanguage()
+      }
+    }
   },
   watch: {
     isDiagramReady(isReady) {
@@ -127,12 +177,18 @@ export default {
     loadDiagram() {
       this.getXmlById(this.instance.decisionDefinitionId).then(response => {
         setTimeout(() => {
-          this.$refs.diagram.showDiagram(response.dmnXml)
+          this.$refs.diagram.showDiagram(response.dmnXml).then(() => this.restoreViewboxIfSaved())
         }, 100)
       })
       .catch(error => {
         console.error("Error loading diagram:", error)
       })
+    },
+    viewboxStorageKey() {
+      return `cibseven:dmn-viewbox:${this.instance.decisionDefinitionId}`
+    },
+    viewerFrameStorageKey() {
+      return 'cibseven:viewer-frame-size:decision'
     },
     onViewChanged() {
       this.applyInstanceValues()

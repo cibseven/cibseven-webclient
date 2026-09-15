@@ -14,14 +14,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-// Persists the BpmnViewer pan/zoom viewport across navigation/reload, scoped to
-// sessionStorage (cleared when the tab/browser closes). Expects the host component
-// to expose `this.process.id` (process definition id) and a `ref="diagram"` pointing
-// to a BpmnViewer/BpmnViewerPlugin instance.
+// Persists a diagram viewer's pan/zoom viewport in sessionStorage. Expects
+// `ref="diagram"` to expose `setViewbox()` and a promise-returning `showDiagram()`,
+// and to emit `viewbox-changed`. Override `viewboxStorageKey` to scope by entity
+// (defaults to the process id).
 export default {
   methods: {
     viewboxStorageKey: function() {
-      return `bpmn-viewbox:${this.process.id}`
+      return `cibseven:bpmn-viewbox:${this.process.id}`
     },
     onViewboxChanged: function(viewbox) {
       try {

@@ -101,7 +101,7 @@ export default {
     },
     moveCriteria: function(direction) {
       this.moving = true
-      let temp = null
+      let temp
       if (direction === 'up' && this.selectedIndex > 0) {
         temp = this.sortingCriteria[this.selectedIndex];
         this.sortingCriteria[this.selectedIndex] = this.sortingCriteria[this.selectedIndex - 1]

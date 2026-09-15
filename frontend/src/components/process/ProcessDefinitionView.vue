@@ -88,6 +88,7 @@ import WarningBox from '@/components/common-components/WarningBox.vue'
 import { SidebarsFlow, TaskPopper } from '@cib/common-frontend'
 import { mapGetters, mapActions } from 'vuex'
 import { formatDate } from '@/utils/dates.js'
+import sidebarOpenPersistenceMixin from '@/mixins/sidebarOpenPersistenceMixin.js'
 
 function getStringObjByKeys(keys, obj) { // TODO rewrite to use join()
   let result = ''
@@ -100,6 +101,7 @@ function getStringObjByKeys(keys, obj) { // TODO rewrite to use join()
 export default {
   name: 'ProcessDefinitionView',
   components: { ProcessInstancesView, ProcessDetailsSidebar, ProcessInstanceView, ProcessInstanceDetailsSidebar, SidebarsFlow, TaskPopper, WarningBox },
+  mixins: [sidebarOpenPersistenceMixin],
   props: {
     processKey: { type: String, required: true },
     versionIndex: { type: String, required: true },
@@ -196,21 +198,9 @@ export default {
   methods: {
     ...mapActions(['clearActivitySelection', 'getProcessById']),
     formatDate,
-    getSavedLeftOpen(scope) {
-      try {
-        const saved = localStorage.getItem(`sidebar-left-open:${scope}`)
-        return saved === null ? true : saved === 'true'
-      } catch {
-        return true
-      }
-    },
     onLeftOpenChanged(isOpen) {
       this.leftOpen = isOpen
-      try {
-        localStorage.setItem(`sidebar-left-open:${this.sidebarScope}`, isOpen)
-      } catch {
-        // localStorage unavailable or quota exceeded - ignore
-      }
+      this.saveLeftOpen(this.sidebarScope, isOpen)
     },
     async findProcessInstance(instanceId) {
       return (this.$root.config.camundaHistoryLevel !== 'none') ?

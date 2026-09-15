@@ -15,6 +15,12 @@
 		auto-configuration classes; cibseven-webclient-web-sb4 also overrides the
 		BOM to Spring Boot 4.x.</description>
 
+	<properties>
+		<!-- jacoco:check floors; measured 45.0% line / 40.1% branch. See the root pom for the rules. -->
+		<jacoco.line.coverage.floor>0.43</jacoco.line.coverage.floor>
+		<jacoco.branch.coverage.floor>0.38</jacoco.branch.coverage.floor>
+	</properties>
+
 	<dependencies>
 
 		<dependency>
@@ -106,22 +112,45 @@
 		    <version>${jjwt.version}</version>
 		</dependency>
 
+		<!--
+			OpenAPI annotations used by the REST controllers in this module.
+
+			Declared <optional>: it stays on our own compile classpath but is NOT
+			exported to consumers. The version we would export (${swagger-annotations.version},
+		    from release-parent) may differ from the one springdoc drags in via swagger-core-jakarta,
+			used as dep in webclient-web/webclient-web-sb4 (sb3 and sb4 flavours).
+			So no single pinned version can satisfy both flavours.
+
+			Let these annotations arrive with springdoc (webclient-web), 
+			which manages the version consistently via its own parent pom at any graph depth.
+			The CE modules apply the same rule at their end,
+			so no exclusions are needed on the CE dependencies below.
+		-->
 		<dependency>
 			<groupId>io.swagger.core.v3</groupId>
         	<artifactId>swagger-annotations-jakarta</artifactId>
-			<version>${swagger-annotations.version}</version>				
+			<version>${swagger-annotations.version}</version>
+			<optional>true</optional>
 		</dependency>
 
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>${commons-io.version}</version>
-		</dependency>	
+		</dependency>
 
 		<dependency>
 			<groupId>org.cibseven.webapp.auth</groupId>
 			<artifactId>common-auth</artifactId>
 			<version>${common-auth.version}</version>
+			<exclusions>
+				<!-- Exclude common-auth's swagger-annotations;
+				 let springdoc (webclient-web/webclient-web-sb4) be the single source -->
+				<exclusion>
+					<groupId>io.swagger.core.v3</groupId>
+					<artifactId>swagger-annotations-jakarta</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- ==================== CIB seven Modeler dependencies ==================== -->
@@ -135,12 +164,6 @@
 		<dependency>
 			<groupId>jakarta.persistence</groupId>
 			<artifactId>jakarta.persistence-api</artifactId>
-		</dependency>
-
-		<!-- Hibernate Envers for audit / revision history -->
-		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-envers</artifactId>
 		</dependency>
 
 		<!-- Validation support for modeler REST controllers -->
@@ -197,28 +220,5 @@
 
 	</dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-failsafe-plugin</artifactId>
-				<version>3.2.5</version> <!-- or latest -->
-				<executions>
-					<execution>
-					<goals>
-						<goal>integration-test</goal>
-						<goal>verify</goal>
-					</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<includes>
-						<!-- Include only integration tests from the providers package -->
-						<include>org/cibseven/webapp/providers/**/*IT.java</include>
-					</includes>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 
 </project>

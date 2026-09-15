@@ -134,8 +134,11 @@ const ProcessService = {
   findProcessInstance: function(processInstanceId) {
     return axios.get(getServicesBasePath() + "/process/process-instance/" + processInstanceId)
   },
-  findCurrentProcessesInstances: function(filter) {
-    return axios.post(getServicesBasePath() + "/process/instances", filter)
+  findCurrentProcessesInstances: function(filter, firstResult, maxResults) {
+    const params = {}
+    if (firstResult != null) params.firstResult = firstResult
+    if (maxResults != null) params.maxResults = maxResults    
+    return axios.post(getServicesBasePath() + "/process/instances", filter, { params })
   },
   findActivityInstance: function(processInstanceId) {
     return axios.get(getServicesBasePath() + "/process/activity/by-process-instance/" + processInstanceId)

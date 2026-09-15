@@ -22,14 +22,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cibseven.modeler.config.ElementTemplateProperties;
+import org.cibseven.modeler.config.ModelerJpa;
 import org.cibseven.modeler.model.ElementTemplate;
 import org.cibseven.modeler.model.ElementTemplateOrigin;
 import org.cibseven.modeler.repository.ElementTemplateRepository;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -53,13 +56,19 @@ public class ElementTemplateLoader implements InitializingBean {
 	private final TransactionTemplate transactionTemplate;
 	private final ResourcePatternResolver resourcePatternResolver;
 
+	/**
+	 * @param transactionManager the modeler's own transaction manager. An unqualified
+	 *        {@code TransactionTemplate} would be built on the primary transaction manager, which in
+	 *        an embedding application belongs to the host and cannot run the modeler's JPA work.
+	 */
 	public ElementTemplateLoader(ElementTemplateRepository elementTemplateRepository, ObjectMapper mapper,
-			ElementTemplateProperties properties, TransactionTemplate transactionTemplate,
+			ElementTemplateProperties properties,
+			@Qualifier(ModelerJpa.TRANSACTION_MANAGER) PlatformTransactionManager transactionManager,
 			ResourcePatternResolver resourcePatternResolver) {
 		this.elementTemplateRepository = elementTemplateRepository;
 		this.mapper = mapper;
 		this.properties = properties;
-		this.transactionTemplate = transactionTemplate;
+		this.transactionTemplate = new TransactionTemplate(transactionManager);
 		this.resourcePatternResolver = resourcePatternResolver;
 	}
 

@@ -37,4 +37,7 @@ public class ProcessInstance {
     private Boolean suspended;
     private String tenantId;
     private Collection<Object> links;
+
+    // middleware extension
+    private Boolean withIncident;
 }

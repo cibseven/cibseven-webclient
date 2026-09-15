@@ -43,7 +43,7 @@
       @click="selectInstance($event)" @external-sort="handleSortChanged">
       <template v-slot:cell(state)="table">
         <span :title="getIconTitle(table.item.state)" class="mdi mdi-18px" :class="getIconState(table.item.state)"></span>
-        <span :title="$t('process.instanceIncidents')" v-if="table.item.incidents.length > 0" class="mdi mdi-18px mdi-alert-outline text-warning"></span>
+        <span :title="$t('process.instanceIncidents')" v-if="table.item.withIncident || table.item.incidents.length > 0" class="mdi mdi-18px mdi-alert-outline text-warning"></span>
       </template>
       <template v-slot:cell(id)="table">
         <CopyableActionButton

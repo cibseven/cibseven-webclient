@@ -259,6 +259,8 @@ export default {
         this.historyTimeToLive = data.historyTimeToLive
         this.$refs.historyTimeToLive.hide()
         this.$emit('onUpdateHistoryTimeToLive', this.version.id, data.historyTimeToLive);
+      }).catch(error => {
+        this.$root.$refs.error.show(error.response?.data)
       })
     },
     routeToSuperProcessInstance(superProcessInstanceId) {

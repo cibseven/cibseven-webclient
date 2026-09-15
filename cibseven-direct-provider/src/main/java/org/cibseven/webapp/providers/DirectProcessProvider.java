@@ -114,6 +114,8 @@ import jakarta.ws.rs.core.MultivaluedMap;
 
 public class DirectProcessProvider implements IProcessProvider {
 
+	private static final String FETCH_INCIDENTS = "fetchIncidents";
+
 	SevenDirectProvider sevenDirectProvider;
 	DirectProviderUtil directProviderUtil;
 
@@ -367,6 +369,9 @@ public class DirectProcessProvider implements IProcessProvider {
 			ProcessInstance webClientDto = directProviderUtil.convertValue(backendDto, ProcessInstance.class, user);
 			result.add(webClientDto);
 		}
+
+		addWithIncidentsInfo(result, false, user);
+
 		return result;
 	}
 
@@ -559,9 +564,9 @@ public class DirectProcessProvider implements IProcessProvider {
 	@Override
 	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(Map<String, Object> filters,
 			Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) {
-		Boolean fetchIncidents = (Boolean) filters.get("fetchIncidents");
+		Boolean fetchIncidents = (Boolean) filters.get(FETCH_INCIDENTS);
 		if (fetchIncidents != null) {
-			filters.remove("fetchIncidents");
+			filters.remove(FETCH_INCIDENTS);
 		}
 		HistoricProcessInstanceQueryDto historicProcessInstanceQueryDto = directProviderUtil.getObjectMapper(user).convertValue(filters,
 				HistoricProcessInstanceQueryDto.class);
@@ -581,7 +586,14 @@ public class DirectProcessProvider implements IProcessProvider {
 		// Check if caller wants incident handling
 		if (fetchIncidents != null && fetchIncidents) {
 			String processDefinitionId = (String) filters.get("processDefinitionId");
-			if (processDefinitionId != null) {
+			if (processDefinitionId == null) {
+				// No processDefinitionId - fetch incidents per instance (e.g. called from findProcessesInstancesRuntime)
+				if (historicProcessInstanceResults != null) {
+					historicProcessInstanceResults.forEach(p -> {
+						p.setIncidents(sevenDirectProvider.findIncidentByInstanceId(p.getId(), user));
+					});
+				}
+			} else {
 				@SuppressWarnings("unchecked")
 				List<String> activityIdIn = (List<String>) filters.get("activeActivityIdIn");
 
@@ -675,7 +687,11 @@ public class DirectProcessProvider implements IProcessProvider {
 		}
 
 		ProcessInstanceDto result = ProcessInstanceDto.fromProcessInstance(instance);
-		return directProviderUtil.convertValue(result, ProcessInstance.class, user);
+		ProcessInstance webClientDto = directProviderUtil.convertValue(result, ProcessInstance.class, user);
+
+		addWithIncidentsInfo(List.of(webClientDto), false, user);
+
+		return webClientDto;
 	}
 
 	@Override
@@ -781,20 +797,52 @@ public class DirectProcessProvider implements IProcessProvider {
 	}
 
 	@Override
-	public Collection<ProcessInstance> findCurrentProcessesInstances(Map<String, Object> data, CIBUser user)
+	public Collection<ProcessInstance> findCurrentProcessesInstances(Map<String, Object> data, Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user)
 			throws SystemException {
 		ProcessInstanceQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(data, ProcessInstanceQueryDto.class);
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
 		ProcessInstanceQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 
-		List<org.cibseven.bpm.engine.runtime.ProcessInstance> matchingInstances = QueryUtil.list(query, null, null);
+		List<org.cibseven.bpm.engine.runtime.ProcessInstance> matchingInstances = QueryUtil.list(query, firstResult.orElse(null), maxResults.orElse(null));
 
 		List<ProcessInstance> instanceResults = new ArrayList<>();
 		for (org.cibseven.bpm.engine.runtime.ProcessInstance instance : matchingInstances) {
 			ProcessInstanceDto resultInstance = ProcessInstanceDto.fromProcessInstance(instance);
 			instanceResults.add(directProviderUtil.convertValue(resultInstance, ProcessInstance.class, user));
 		}
+
+		boolean alreadyAllWithIncident = Boolean.TRUE.equals(data.get("withIncident"));
+		addWithIncidentsInfo(instanceResults, alreadyAllWithIncident, user);
+
 		return instanceResults;
+	}
+
+	private void addWithIncidentsInfo(Collection<ProcessInstance> result, boolean alreadyAllWithIncident, CIBUser user) {
+		if (result.isEmpty()) {
+			return;
+		}
+
+		if (alreadyAllWithIncident) {
+			result.forEach(i -> i.setWithIncident(Boolean.TRUE));
+			return;
+		}
+
+		result.forEach(i -> i.setWithIncident(Boolean.FALSE));
+
+		Set<String> processInstanceIds = result.stream().map(ProcessInstance::getId).collect(Collectors.toSet());
+		List<org.cibseven.bpm.engine.runtime.ProcessInstance> instancesWithIncident = directProviderUtil.getProcessEngine(user).getRuntimeService()
+				.createProcessInstanceQuery()
+				.processInstanceIds(processInstanceIds)
+				.withIncident()
+				.list();
+
+		Set<String> idsWithIncident = instancesWithIncident.stream()
+				.map(org.cibseven.bpm.engine.runtime.ProcessInstance::getId).collect(Collectors.toSet());
+		result.forEach(i -> {
+			if (idsWithIncident.contains(i.getId())) {
+				i.setWithIncident(Boolean.TRUE);
+			}
+		});
 	}
 
 	@Override
@@ -949,14 +997,15 @@ public class DirectProcessProvider implements IProcessProvider {
 
 		// fetch history for those ids to get full info
 		Map<String, Object> dataHistory = new HashMap<>();
-		dataHistory.put("processInstanceIds", instanceResults);
+		List<String> processInstanceIds = instanceResults.stream().map(ProcessInstance::getId).collect(Collectors.toList());
+		dataHistory.put("processInstanceIds", processInstanceIds);
+		dataHistory.put(FETCH_INCIDENTS, Boolean.TRUE);
 
 		Integer firstResult0 = 0;
-		//TODO: dataHistory as input parameter could be wrong!
 		Collection<HistoryProcessInstance> historicInstances = findProcessesInstancesHistory(dataHistory, Optional.of(firstResult0), maxResults, user);
-	// sort [historicInstances] like they are inside [processInstanceIds]
+		// sort [historicInstances] like they are inside [processInstanceIds]
 		historicInstances = historicInstances.stream()
-				.sorted(Comparator.comparingInt(h -> instanceResults.indexOf(h.getId())))
+				.sorted(Comparator.comparingInt(h -> processInstanceIds.indexOf(h.getId())))
 				.collect(Collectors.toList());
 
 		return historicInstances;

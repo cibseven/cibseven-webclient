@@ -119,7 +119,7 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
-		registry.addMapping("/**").allowedMethods("GET", "POST", "DELETE", "PUT");
+		registry.addMapping("/**").allowedMethods("GET", "POST", "DELETE", "PUT", "PATCH");
 	}
 
 	@Override

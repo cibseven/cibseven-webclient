@@ -22,11 +22,11 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
 import org.springframework.stereotype.Component;
+import org.cibseven.modeler.config.ModelerJpa;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -37,8 +37,6 @@ import org.cibseven.modeler.repository.FormRepository;
 
 @Component
 public class FormProvider implements IFormProvider {
-	
-	@Value("${cibseven.webclient.modeler.deleteProcesses.versionLimit:50}") private Integer versionLimit;
 	
 	@Autowired
 	private FormRepository formRepositoryDao;
@@ -78,7 +76,7 @@ public class FormProvider implements IFormProvider {
 		return formRepositoryDao.save(existing);
 	}
 	
-	@Transactional
+	@Transactional(ModelerJpa.TRANSACTION_MANAGER)
 	@Override
 	public void delete(String id) throws SystemException {
 		formRepositoryDao.deleteById(id);

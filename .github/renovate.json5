@@ -1,0 +1,107 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    // TEMPORARY: the raw "dependencyDashboard": false option turned out to be unreliable (a
+    // Dependency Dashboard issue still got created once). This preset is the documented, more
+    // robust way to fully disable it. Remove this entry to re-enable the dashboard.
+    // ":disableDependencyDashboard"
+  ],
+  "branchPrefix": "renovate/",
+  "addLabels": [
+    "dependencies"
+  ],
+  "prConcurrentLimit": 10,
+  "prHourlyLimit": 5,
+  "reviewers": [
+    "fernando-m-g",
+    "vladgrind"
+  ],
+  "baseBranchPatterns": [
+    "main"
+  ],
+  "ignorePaths": [
+    "**/qa/**"
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": false
+  },
+  // TEMPORARY: lock file maintenance paused for the initial rollout
+  // To re-enable, set "enabled" back to true.
+  "lockFileMaintenance": {
+    "enabled": false,
+    "addLabels": [
+      "automerge",
+      "ci:e2e",
+      "ci:rest-api"
+    ],
+  },
+  "packageRules": [
+    // Disable all packages by default; later rules explicitly re-enable trusted packages.
+    {
+      "matchPackageNames": [
+        "*"
+      ],
+      "enabled": false
+    },
+    // Re-enable only the trusted dependency families.
+    {
+      "matchPackageNames": [
+        "/^org.springframework/",
+        "/^org.apache.tomcat/",
+        "/^commons-fileupload/",
+        "/^org.apache.commons:commons-lang3/",
+        "/^net.minidev:json-smart/",
+        "/^com.jayway.jsonpath:json-path/",
+        "/^org.apache.httpcomponents.client5/",
+        "/^org.apache.httpcomponents.core5/",
+        "/^com.fasterxml.uuid/",
+        "/^com.fasterxml.jackson/",
+        "/^org.camunda.feel/",
+        "/^io.quarkus/",
+        "/^ch.qos.logback/",
+        "/^org.graalvm/",
+        "/^com.google.code.gson/",
+        "/^org.postgresql/",
+        "/^com.h2database/",
+        "/^com.mysql/",
+        "/^org.jboss.resteasy/",
+        "/^org.apache.groovy/"
+      ],
+      "enabled": true
+    },
+    // Add labels to eligible patch PRs; the automerge label is consumed by the auto-merge workflow.
+    {
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "addLabels": [
+        "ci:default-build",
+        "automerge"
+      ]
+    },
+    {
+      "matchUpdateTypes": [
+        "major",
+        "minor"
+      ],
+      "addLabels": [
+        "ci:all"
+      ],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "matchPackageNames": [
+        "org.cibseven:release-parent"
+      ],
+      "matchDepTypes": [
+        "parent"
+      ],
+      "enabled": true,
+      "addLabels": [
+        "ci:default-build",
+        "automerge"
+      ]
+    }
+  ]
+}

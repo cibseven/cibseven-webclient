@@ -10,6 +10,12 @@
 	<name>CIB seven webclient web</name>
 	<description>Web application module for the CIB seven webclient platform (Spring Boot 3.5.x).</description>
 
+	<properties>
+		<!-- jacoco:check floors; measured 32.0% line / 0.0% branch. See the root pom for the rules. -->
+		<jacoco.line.coverage.floor>0.30</jacoco.line.coverage.floor>
+		<jacoco.branch.coverage.floor>0.00</jacoco.branch.coverage.floor>
+	</properties>
+
 	<dependencies>
 
 		<dependency>
@@ -56,6 +62,9 @@
 			<scope>provided</scope>
 		</dependency>
 
+		<!-- The JPA wiring of the modeler lives in this module, so it is tested here. JPA itself and
+		     the H2 driver already come from cibseven-webclient-core; re-declaring them here would
+		     narrow their scope to test and drop them from the war. -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
