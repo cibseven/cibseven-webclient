@@ -994,7 +994,7 @@ public class DirectProcessProvider implements IProcessProvider {
 
 		Integer firstResult0 = 0;
 		Collection<HistoryProcessInstance> historicInstances = findProcessesInstancesHistory(dataHistory, Optional.of(firstResult0), maxResults, user);
-	// sort [historicInstances] like they are inside [processInstanceIds]
+		// sort [historicInstances] is like they are inside [processInstanceIds]
 		historicInstances = historicInstances.stream()
 				.sorted(Comparator.comparingInt(h -> instanceResults.indexOf(h.getId())))
 				.collect(Collectors.toList());
