@@ -123,6 +123,9 @@
                 <b-button size="sm" variant="light" @click="downloadBpmn()" :title="$t('process.downloadBpmn')">
                   <span class="mdi mdi-download"></span> {{ collapseButtons  ? '': $t('process.downloadBpmn') }}
                 </b-button>
+                <b-button v-if="permissionsModeler" size="sm" variant="light" @click="openModeler()" :title="$t('process.openModeler')">
+                  <span class="mdi mdi-pencil-outline"></span> {{ collapseButtons  ? '': $t('process.openModeler') }}
+                </b-button>
                 <b-button size="sm" variant="light" @click="viewDeployment()" :title="$t('process.showDeployment')">
                   <span class="mdi mdi-file-eye-outline"></span> {{ collapseButtons  ? '': $t('process.showDeployment') }}
                 </b-button>
@@ -179,6 +182,7 @@
 <script>
 import { ProcessService, getServicesBasePath } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
+import navigationPermissionsMixin from '@/mixins/navigationPermissionsMixin.js'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 import InstancesTable from '@/components/process/tables/InstancesTable.vue'
 import JobDefinitionsTable from '@/components/process/tables/JobDefinitionsTable.vue'
@@ -207,7 +211,7 @@ export default {
      SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable, CalledProcessDefinitionsTable,
      ProcessInstancesTabs, ScrollableTabsContainer, ViewerFrame, RemovableBadge, DeepLinkFrame, DeepLinkButtons },
   inject: ['loadProcesses', 'currentLanguage'],
-  mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin, tabUrlMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
+  mixins: [permissionsMixin, navigationPermissionsMixin, resizerMixin, copyToClipboardMixin, tabUrlMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
   emits: ['task-selected', 'filter-instances', 'instance-deleted'],
   props: {
     process: Object,
@@ -399,6 +403,10 @@ export default {
       const filename = this.process.resource.substr(this.process.resource.lastIndexOf('/') + 1, this.process.resource.lenght)
       window.location.href = getServicesBasePath() + '/process/' + this.process.id + '/data?filename=' + filename +
         '&token=' + this.$root.user.authToken
+    },
+    
+    openModeler: function() {
+      this.$router.push({ name: 'modeler', query: { processId: this.process.id, type: 'bpmn' } })
     },
     refreshDiagram: function() {
       this.$refs.diagram.cleanDiagramState()
