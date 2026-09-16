@@ -51,6 +51,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.cibseven.webapp.exception.ExistingFormIdException;
 import org.cibseven.webapp.exception.ExistingProcessKeyException;
 import org.cibseven.webapp.exception.InvalidFolderException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
@@ -702,5 +703,32 @@ public class ModelerService extends ModelerBaseService {
 		entity.setFolderId(folderProvider.requireModelFolder(target.get("folderId")).getId());
 		entity.setUpdatedBy(user.getUserID());
 		return formProvider.updateForm(entity);
+	}
+
+	@Operation(
+		summary = "Copy a form into a folder",
+		description = "<strong>Return: the copy. It needs a form id of its own, as a form is referenced by it")
+	@RequestMapping(value = "/form/{id}/copy", method = RequestMethod.POST)
+	public FormEntity copyForm(@PathVariable String id,
+			@RequestBody Map<String, String> target, HttpServletRequest rq) {
+		CIBUser user = checkModelerAccess(rq);
+		FormEntity source = formProvider.findById(id)
+			.orElseThrow(() -> new NoObjectFoundException("No form with id " + id));
+		String formId = target.get("formId");
+		if (formId == null || formId.isBlank()) {
+			throw new InvalidFolderException("formId", "a copy needs a form id of its own");
+		}
+		if (formProvider.findByFormId(formId) != null) {
+			throw new ExistingFormIdException(formId);
+		}
+
+		FormEntity copy = new FormEntity();
+		copy.setFormId(formId);
+		copy.setDescription(source.getDescription());
+		copy.setActive(true);
+		copy.setFormSchema(source.getFormSchema());
+		copy.setFolderId(folderProvider.requireModelFolder(target.get("folderId")).getId());
+		copy.setUpdatedBy(user.getUserID());
+		return formProvider.createForm(copy);
 	}
 }
