@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import org.cibseven.modeler.model.FolderEntity;
 import org.cibseven.modeler.provider.FolderProvider;
+import org.cibseven.modeler.provider.FolderProvider.FolderChange;
 import org.cibseven.modeler.provider.FolderProvider.FolderContents;
 import org.cibseven.webapp.auth.CIBUser;
 
@@ -96,14 +97,11 @@ public class FolderService extends ModelerBaseService {
 	public FolderEntity update(@PathVariable String id, @RequestBody Map<String, String> folder,
 			HttpServletRequest rq) {
 		CIBUser user = checkModelerAccess(rq);
-		FolderEntity updated = folderProvider.find(id);
-		if (folder.containsKey("name")) {
-			updated = folderProvider.rename(id, folder.get("name"), user.getUserID());
-		}
-		if (folder.containsKey("parentId")) {
-			updated = folderProvider.move(id, folder.get("parentId"), user.getUserID());
-		}
-		return updated;
+		// A key that is not there is not a change; a parentId that is there but null is a move
+		// to the top level
+		FolderChange change = new FolderChange(folder.containsKey("name"), folder.get("name"),
+			folder.containsKey("parentId"), folder.get("parentId"));
+		return folderProvider.update(id, change, user.getUserID());
 	}
 
 	@Operation(

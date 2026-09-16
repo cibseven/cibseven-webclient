@@ -109,6 +109,26 @@ public class FolderProvider {
 		return folderDao.save(folder);
 	}
 
+	/** What a request changes about a folder: it may rename it, move it, or both at once. */
+	public record FolderChange(boolean renaming, String name, boolean moving, String parentId) {
+	}
+
+	/**
+	 * Applies both in one transaction, so a move the tree refuses does not leave the folder
+	 * renamed.
+	 */
+	@Transactional(ModelerJpa.TRANSACTION_MANAGER)
+	public FolderEntity update(String id, FolderChange change, String userId) {
+		FolderEntity folder = find(id);
+		if (change.renaming()) {
+			folder = rename(id, change.name(), userId);
+		}
+		if (change.moving()) {
+			folder = move(id, change.parentId(), userId);
+		}
+		return folder;
+	}
+
 	@Transactional(ModelerJpa.TRANSACTION_MANAGER)
 	public FolderEntity rename(String id, String name, String userId) {
 		FolderEntity folder = find(id);

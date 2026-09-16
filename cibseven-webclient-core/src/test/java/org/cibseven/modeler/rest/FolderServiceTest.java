@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.cibseven.modeler.model.FolderEntity;
 import org.cibseven.modeler.provider.FolderProvider;
+import org.cibseven.modeler.provider.FolderProvider.FolderChange;
 import org.cibseven.modeler.provider.FolderProvider.FolderContents;
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
@@ -37,8 +38,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -89,8 +88,7 @@ class FolderServiceTest {
 	void renamesWithoutMovingWhenOnlyANameIsGiven() {
 		service.update("folder-1", body("name", "Billing"), request);
 
-		verify(folderProvider).rename("folder-1", "Billing", "demo");
-		verify(folderProvider, never()).move(any(), any(), any());
+		verify(folderProvider).update("folder-1", new FolderChange(true, "Billing", false, null), "demo");
 	}
 
 	/** A parentId that is there but null is the request to take the folder out of its parent. */
@@ -101,7 +99,19 @@ class FolderServiceTest {
 
 		service.update("folder-1", folder, request);
 
-		verify(folderProvider).move(eq("folder-1"), isNull(), eq("demo"));
+		verify(folderProvider).update("folder-1", new FolderChange(false, null, true, null), "demo");
+	}
+
+	/** Both in one request, so the provider can apply them as one. */
+	@Test
+	void passesARenameAndAMoveOnTogether() {
+		Map<String, String> folder = new HashMap<>();
+		folder.put("name", "Billing");
+		folder.put("parentId", "folder-2");
+
+		service.update("folder-1", folder, request);
+
+		verify(folderProvider).update("folder-1", new FolderChange(true, "Billing", true, "folder-2"), "demo");
 	}
 
 	@Test
