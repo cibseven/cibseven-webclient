@@ -70,18 +70,27 @@ public class FormProvider implements IFormProvider {
 
 	@Override
 	public FormEntity updateForm(FormEntity entity) throws SystemException {
-		requireFits(entity);
-		FormEntity existing = formRepositoryDao.findById(entity.getId())
+		FormEntity stored = formRepositoryDao.findById(entity.getId())
 			.orElseThrow(() -> new EntityNotFoundException("FormEntity not found"));
-		existing.setFormSchema(entity.getFormSchema());
+		applyUpdate(entity, stored);
+		return formRepositoryDao.save(stored);
+	}
+
+	/**
+	 * Copies what an update may change onto the stored form, leaving the rest as it is. A
+	 * subclass that writes the row itself calls this instead of repeating the list, so a field
+	 * added here reaches it too.
+	 */
+	protected void applyUpdate(FormEntity source, FormEntity stored) {
+		requireFits(source);
+		stored.setFormSchema(source.getFormSchema());
 		// Only when one is named: an import that replaces the content carries no folder and
 		// has to leave the form in the one it is already in
-		if (entity.getFolderId() != null) {
-			existing.setFolderId(entity.getFolderId());
+		if (source.getFolderId() != null) {
+			stored.setFolderId(source.getFolderId());
 		}
-		existing.setUpdated(Timestamp.valueOf(LocalDateTime.now()));
-		existing.setUpdatedBy(entity.getUpdatedBy());
-		return formRepositoryDao.save(existing);
+		stored.setUpdated(Timestamp.valueOf(LocalDateTime.now()));
+		stored.setUpdatedBy(source.getUpdatedBy());
 	}
 	
 	/**

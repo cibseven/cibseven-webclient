@@ -96,22 +96,30 @@ public class DBProcessDiagramProvider implements IProcessDiagramProvider {
 
 	@Override
 	public ProcessDiagramEntity updateDiagram(ProcessDiagramEntity entity) throws SystemException {
-		requireFits(entity);
-		ProcessDiagramEntity processDiagramEntity = processDiagramDao.findById(entity.getId()).orElseThrow(() -> new EntityNotFoundException("ProcessDiagramEntity not found"));
-		processDiagramEntity.setName(entity.getName());
-		processDiagramEntity.setProcesskey(entity.getProcesskey());
-		processDiagramEntity.setDescription(entity.getDescription());
-		processDiagramEntity.setType(entity.getType());
-		processDiagramEntity.setDiagram(entity.getDiagram());
+		ProcessDiagramEntity stored = processDiagramDao.findById(entity.getId()).orElseThrow(() -> new EntityNotFoundException("ProcessDiagramEntity not found"));
+		applyUpdate(entity, stored);
+		return processDiagramDao.save(stored);
+	}
+
+	/**
+	 * Copies what an update may change onto the stored diagram, leaving the rest as it is. A
+	 * subclass that writes the row itself calls this instead of repeating the list, so a field
+	 * added here reaches it too.
+	 */
+	protected void applyUpdate(ProcessDiagramEntity source, ProcessDiagramEntity stored) {
+		requireFits(source);
+		stored.setName(source.getName());
+		stored.setProcesskey(source.getProcesskey());
+		stored.setDescription(source.getDescription());
+		stored.setType(source.getType());
+		stored.setDiagram(source.getDiagram());
 		// Only when one is named: an import that replaces the content carries no folder and
 		// has to leave the diagram in the one it is already in
-		if (entity.getFolderId() != null) {
-			processDiagramEntity.setFolderId(entity.getFolderId());
+		if (source.getFolderId() != null) {
+			stored.setFolderId(source.getFolderId());
 		}
-		processDiagramEntity.setUpdated(Timestamp.valueOf(LocalDateTime.now()));
-		processDiagramEntity.setUpdatedBy(entity.getUpdatedBy());
-
-		return processDiagramDao.save(processDiagramEntity);
+		stored.setUpdated(Timestamp.valueOf(LocalDateTime.now()));
+		stored.setUpdatedBy(source.getUpdatedBy());
 	}
 	
 	@Transactional(ModelerJpa.TRANSACTION_MANAGER)
