@@ -22,8 +22,6 @@ import java.util.List;
 
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UuidGenerator;
-import org.hibernate.envers.Audited;
-import org.hibernate.envers.NotAudited;
 import org.hibernate.type.SqlTypes;
 
 import jakarta.persistence.CascadeType;
@@ -43,7 +41,6 @@ import lombok.Setter;
 @Setter @Getter @RequiredArgsConstructor
 @Entity
 @Table(name = "MOD_PROCESSES_DIAGRAMS")
-@Audited
 public class ProcessDiagramEntity {
 
 	@Id
@@ -85,11 +82,9 @@ public class ProcessDiagramEntity {
 
 	@JdbcTypeCode(SqlTypes.LONGVARBINARY)
 	@Column(name = "diagram")
-	@Audited(withModifiedFlag = true)
 	private byte[] diagram;
 
 	@OneToMany(mappedBy = "diagram", cascade = CascadeType.REMOVE, orphanRemoval = true, fetch = FetchType.EAGER)
-	@NotAudited
 	private List<DiagramUsageEntity> diagramUsages = new ArrayList<>();
 
 }

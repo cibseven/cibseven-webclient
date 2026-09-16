@@ -16,24 +16,32 @@
  */
 package org.cibseven.modeler.model;
 
-import org.hibernate.envers.RevisionEntity;
-import org.hibernate.envers.RevisionNumber;
-import org.hibernate.envers.RevisionTimestamp;
-
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
+/**
+ * One revision of the diagram history: a row here is what a snapshot in
+ * {@link ProcessDiagramSnapshotEntity} refers to, and its identity orders the history.
+ *
+ * <p>The identity column is the database's own, so a revision is obtained by inserting a row.
+ */
+@Setter @Getter
 @Entity
 @Table(name = "MOD_REVINFO")
-@RevisionEntity
-public class ModRevInfo{
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @RevisionNumber
-    private Long rev;
-    @RevisionTimestamp
-    private Long revtstmp;
+public class ModRevInfo {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "rev")
+	private Long rev;
+
+	/** Milliseconds since the epoch. */
+	@Column(name = "revtstmp")
+	private Long revtstmp;
 }

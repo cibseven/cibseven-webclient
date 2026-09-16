@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <div class="h-100 position-relative">
+  <div class="h-100 position-relative" :style="collapsedSidebarGutterStyle">
     <BWaitingBox
       v-if="loader"
       class="h-100"
@@ -66,7 +66,15 @@ import moveCanvasModule from 'diagram-js/lib/navigation/movecanvas'
 export default {
   name: 'DmnViewer',
   components: { BWaitingBox },
+  props: {
+    sidebarLeftOpen: { type: Boolean, default: true }
+  },
   emits: ['view-changed', 'viewbox-changed'],
+  computed: {
+    collapsedSidebarGutterStyle() {
+      return this.sidebarLeftOpen ? {} : { paddingLeft: '40px' }
+    }
+  },
   data() {
     return {
       viewer: null,

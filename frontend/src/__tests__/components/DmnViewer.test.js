@@ -17,6 +17,22 @@
 import { describe, it, expect, vi } from 'vitest'
 import DmnViewer from '@/components/decision/DmnViewer.vue'
 
+describe('DmnViewer - collapsedSidebarGutterStyle', () => {
+  const { collapsedSidebarGutterStyle } = DmnViewer.computed
+
+  it('adds a left padding gutter when the sidebar is collapsed', () => {
+    expect(collapsedSidebarGutterStyle.call({ sidebarLeftOpen: false })).toEqual({ paddingLeft: '40px' })
+  })
+
+  it('adds no padding when the sidebar is open', () => {
+    expect(collapsedSidebarGutterStyle.call({ sidebarLeftOpen: true })).toEqual({})
+  })
+
+  it('defaults to no padding (sidebar open) when the prop is not provided', () => {
+    expect(DmnViewer.props.sidebarLeftOpen.default).toBe(true)
+  })
+})
+
 describe('DmnViewer - setViewbox', () => {
   it('delegates to the active viewer canvas', () => {
     const viewbox = vi.fn()

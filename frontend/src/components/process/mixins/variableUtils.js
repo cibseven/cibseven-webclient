@@ -144,4 +144,68 @@ export default {
       'de.cib.cibflow.api.files.FileValueDataSource',
     ]
   },
+
+  /**
+   * Client-side equivalent of one 'variableValues' condition of the runtime variable-instance
+   * query ({ name, operator, value }, operators as offered by the variable search box).
+   * Needed because the historic variable-instance query does not support 'variableValues';
+   * conditions are combined with AND, so a variable of another name never matches.
+   * Unknown operators do not filter anything out.
+   */
+  matchesValueCondition(variable, condition, { namesIgnoreCase = false, valuesIgnoreCase = false } = {}) {
+    if (!condition || !condition.name) return true
+    if (this.asString(variable.name, namesIgnoreCase) !== this.asString(condition.name, namesIgnoreCase)) return false
+
+    const actual = variable.value
+    const expected = condition.value
+    const ignoreCase = valuesIgnoreCase
+    switch (condition.operator) {
+      case 'eq': return this.valuesEqual(actual, expected, ignoreCase)
+      case 'neq': return !this.valuesEqual(actual, expected, ignoreCase)
+      case 'gt': return this.compareValues(actual, expected, ignoreCase) > 0
+      case 'gteq': return this.compareValues(actual, expected, ignoreCase) >= 0
+      case 'lt': return this.compareValues(actual, expected, ignoreCase) < 0
+      case 'lteq': return this.compareValues(actual, expected, ignoreCase) <= 0
+      case 'like': return this.valueLike(actual, expected, ignoreCase)
+      default: return true
+    }
+  },
+
+  valuesEqual(actual, expected, ignoreCase = false) {
+    const numbers = this.asNumbers(actual, expected)
+    if (numbers) return numbers[0] === numbers[1]
+    return this.asString(actual, ignoreCase) === this.asString(expected, ignoreCase)
+  },
+
+  compareValues(actual, expected, ignoreCase = false) {
+    const numbers = this.asNumbers(actual, expected)
+    if (numbers) return numbers[0] - numbers[1]
+    const a = this.asString(actual, ignoreCase)
+    const b = this.asString(expected, ignoreCase)
+    return a < b ? -1 : (a > b ? 1 : 0)
+  },
+
+  valueLike(actual, expected, ignoreCase = false) {
+    const pattern = this.asString(expected, ignoreCase)
+      .replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // escape regex metacharacters, keep SQL wildcards
+      .replace(/%/g, '.*')
+      .replace(/_/g, '.')
+    try {
+      return new RegExp(`^${pattern}$`).test(this.asString(actual, ignoreCase))
+    } catch { return true }
+  },
+
+  asNumbers(actual, expected) {
+    if (actual === null || actual === undefined || expected === null || expected === undefined) return null
+    if (typeof actual === 'boolean' || typeof expected === 'boolean') return null
+    const a = Number(actual)
+    const b = Number(expected)
+    if (Number.isNaN(a) || Number.isNaN(b) || ('' + actual).trim() === '' || ('' + expected).trim() === '') return null
+    return [a, b]
+  },
+
+  asString(value, ignoreCase = false) {
+    const str = value === null || value === undefined ? '' : '' + value
+    return ignoreCase ? str.toLowerCase() : str
+  },
 }

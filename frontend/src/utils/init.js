@@ -47,7 +47,7 @@ export function checkExternalReturn(href, hash) {
   const hashAux = hash
 
   if (hashAux.includes('token=')) {
-    let token = ''
+    let token
 
     const tokenStartPos = hashAux.indexOf('token=') + 'token='.length
 

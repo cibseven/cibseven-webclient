@@ -9,7 +9,7 @@ The main CIB seven BPM web application: a multi-module Maven project with a Vue 
 - **Frontend:** Vue 3 with **Options API** (`export default {}`), Vite, vue-router 4 (hash history), Vuex 4 (namespaced modules), axios, vue-i18n
 - **Backend:** Java 17, Spring Boot 3.5.x (Jakarta EE), Spring MVC REST controllers, SpringDoc OpenAPI
 - **UI:** Bootstrap 5, SCSS, Material Design Icons (`@mdi/font`), `@cib/bootstrap-components`, `@cib/common-frontend`
-- **Testing:** Vitest + @vue/test-utils (unit), Playwright (E2E), Spring Boot Test + JUnit (backend), JaCoCo (Java coverage)
+- **Testing:** Vitest + @vue/test-utils (unit), Spring Boot Test + JUnit (backend), JaCoCo (Java coverage). E2E tests live in a separate repository.
 - **Linting:** ESLint 9 flat config + eslint-plugin-vue (essential) + eslint-plugin-vuejs-accessibility, no Prettier
 
 ## Coding Conventions
@@ -60,13 +60,15 @@ The main CIB seven BPM web application: a multi-module Maven project with a Vue 
 
 ## Testing & Coverage (required for every commit)
 - **Every commit that changes production code must include new or updated tests covering that change.** Bug fixes need a regression test; new features need tests for the main paths.
-- Frontend unit tests live in `frontend/src/__tests__/` (Vitest, jsdom, `@vue/test-utils`); E2E in `playwright/`.
+- Frontend unit tests live in `frontend/src/__tests__/` (Vitest, jsdom, `@vue/test-utils`). E2E tests are maintained in a separate repository.
 - Before committing, verify coverage of the code you touched:
   - Full run: `npm run test:coverage` (istanbul; reports in `target/coverage/`)
   - Scoped check: `npx vitest run <test files> --coverage --coverage.include="src/<changed files>"`
 - **Aim for ≥ 80% line coverage on new/changed files, and never reduce overall coverage.** If a change is genuinely untestable (build config, generated code), say so explicitly in the PR/commit description.
-- Java: JaCoCo is configured in the root pom — run `mvn test` in the affected module; new backend code needs JUnit coverage of the same standard.
+- Java: run `mvn -B clean verify -pl '!.'` — **not `mvn test`**, which skips the `*IT` classes and the coverage gates. The repo-wide figure is `cibseven-coverage-aggregate/target/site/jacoco-aggregate/`, and `jacoco:check` enforces a floor per module plus a global one; never lower a floor to make a build pass. See the `java-jacoco-coverage` skill for the test recipes, the gates and the known traps.
 - Tests must assert behavior — no assertion-free or snapshot-only padding to inflate numbers.
+- **Coverage thresholds are enforced** in `frontend/vitest.config.js`: a global floor plus 80% for `src/store/**`, `src/mixins/**`, `src/utils/**`, `src/plugins/**` and `src/services.js`. Raise a threshold when you raise coverage; never lower one to make a change pass.
+- For the house testing recipes (Vuex store, axios service, mixin, component with and without mounting) and the jsdom pitfalls, see the [`frontend-vitest-coverage` skill](.claude/skills/frontend-vitest-coverage/SKILL.md).
 
 ## Git Conventions
 - One-line conventional commit messages: `type(scope): summary` (e.g. `fix(CIBHeaderFlow): …`); no body, no trailers.

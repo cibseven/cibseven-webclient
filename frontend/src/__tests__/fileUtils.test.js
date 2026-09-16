@@ -26,14 +26,16 @@ describe('getFileContentBase64', () => {
     const mockBase64 = 'Some base64 content'
     const mockFile = { name: 'test.txt' }
 
-    vi.spyOn(globalThis, 'FileReader').mockImplementation(() => ({
-      readAsDataURL() {
-        this.result = `data:text/plain;base64,${mockBase64}`
-        this.onload()
-      },
-      onload: null,
-      onerror: null,
-    }))
+    vi.spyOn(globalThis, 'FileReader').mockImplementation(function () {
+      return {
+        readAsDataURL() {
+          this.result = `data:text/plain;base64,${mockBase64}`
+          this.onload()
+        },
+        onload: null,
+        onerror: null,
+      }
+    })
 
     const result = await getFileContentBase64(mockFile)
     expect(result).toBe(mockBase64)
@@ -42,13 +44,15 @@ describe('getFileContentBase64', () => {
   it('rejects when FileReader encounters an error', async () => {
     const mockFile = { name: 'broken.bin' }
 
-    vi.spyOn(globalThis, 'FileReader').mockImplementation(() => ({
-      readAsDataURL() {
-        this.onerror()
-      },
-      onload: null,
-      onerror: null,
-    }))
+    vi.spyOn(globalThis, 'FileReader').mockImplementation(function () {
+      return {
+        readAsDataURL() {
+          this.onerror()
+        },
+        onload: null,
+        onerror: null,
+      }
+    })
 
     await expect(getFileContentBase64(mockFile)).rejects.toThrow(
       'Failed to read file: broken.bin'

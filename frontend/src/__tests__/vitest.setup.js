@@ -20,3 +20,13 @@
 if (typeof document !== 'undefined' && !document.queryCommandSupported) {
   document.queryCommandSupported = () => false
 }
+// jsdom performs no layout and ships no ResizeObserver, but components that watch their
+// own size (e.g. the tabScrollButtons mixin) construct one on mount. A no-op keeps them
+// mountable; tests that care about resize behaviour call the observed callback directly.
+if (typeof globalThis.ResizeObserver === 'undefined') {
+  globalThis.ResizeObserver = class ResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+}

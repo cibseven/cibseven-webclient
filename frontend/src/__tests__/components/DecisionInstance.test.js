@@ -56,6 +56,118 @@ describe('DecisionInstance', () => {
     })
   })
 
+  describe('tabs', () => {
+    it('includes only the built-in inputs/outputs tabs when no deep links are configured', () => {
+      const tabs = DecisionInstance.computed.tabs.call({ $root: { config: {} } })
+      expect(tabs).toEqual([
+        { id: 'inputs', text: 'decision.inputs' },
+        { id: 'outputs', text: 'decision.outputs' }
+      ])
+    })
+
+    it('appends configured decisionInstance deep links, falling back to the id when untranslated', () => {
+      const context = {
+        $root: { config: { deepLinks: { decisionInstance: [{ id: 'myExternalLinkId', url: 'https://external.example', type: 'tab' }] } } },
+        $t: key => key
+      }
+      const tabs = DecisionInstance.computed.tabs.call(context)
+      expect(tabs).toEqual([
+        { id: 'inputs', text: 'decision.inputs' },
+        { id: 'outputs', text: 'decision.outputs' },
+        { id: 'myExternalLinkId', text: 'myExternalLinkId' }
+      ])
+    })
+
+    it('uses the translated label when a translation exists', () => {
+      const context = {
+        $root: { config: { deepLinks: { decisionInstance: [{ id: 'myExternalLinkId', url: 'https://external.example', type: 'tab' }] } } },
+        $t: () => 'My External Link'
+      }
+      const tabs = DecisionInstance.computed.tabs.call(context)
+      expect(tabs.at(-1)).toEqual({ id: 'myExternalLinkId', text: 'My External Link' })
+    })
+
+    it('ignores a configured deep link whose type is not "tab"', () => {
+      const context = {
+        $root: { config: { deepLinks: { decisionInstance: [{ id: 'myButtonLinkId', url: 'https://external.example', type: 'button' }] } } },
+        $t: key => key
+      }
+      const tabs = DecisionInstance.computed.tabs.call(context)
+      expect(tabs).toEqual([
+        { id: 'inputs', text: 'decision.inputs' },
+        { id: 'outputs', text: 'decision.outputs' }
+      ])
+    })
+
+    it('drops a deep link entry that collides with a built-in tab id', () => {
+      const context = { $root: { config: { deepLinks: { decisionInstance: [
+        { id: 'outputs', url: 'https://external.example', type: 'tab' }
+      ] } } } }
+      const tabs = DecisionInstance.computed.tabs.call(context)
+      expect(tabs).toEqual([
+        { id: 'inputs', text: 'decision.inputs' },
+        { id: 'outputs', text: 'decision.outputs' }
+      ])
+    })
+  })
+
+  describe('hasDeepLinks', () => {
+    it('returns true only when a button-type decisionInstance deep link is configured', () => {
+      const tabOnly = { $root: { config: { deepLinks: { decisionInstance: [{ id: 'tabLink', url: 'https://external.example', type: 'tab' }] } } } }
+      const buttonLink = { $root: { config: { deepLinks: { decisionInstance: [{ id: 'buttonLink', url: 'https://external.example', type: 'button' }] } } } }
+      expect(DecisionInstance.computed.hasDeepLinks.call(tabOnly)).toBe(false)
+      expect(DecisionInstance.computed.hasDeepLinks.call(buttonLink)).toBe(true)
+    })
+  })
+
+  describe('matchedDeepLink', () => {
+    it('returns the deep link entry matching the active tab', () => {
+      const context = {
+        activeTab: 'myExternalLinkId',
+        $root: { config: { deepLinks: { decisionInstance: [{ id: 'myExternalLinkId', url: 'https://external.example', type: 'tab' }] } } }
+      }
+      expect(DecisionInstance.computed.matchedDeepLink.call(context)).toEqual({ id: 'myExternalLinkId', url: 'https://external.example', type: 'tab', text: 'deepLinks.decisionInstance.myExternalLinkId.title' })
+    })
+
+    it('returns undefined when the active tab is a built-in tab', () => {
+      const context = { activeTab: 'inputs', $root: { config: {} } }
+      expect(DecisionInstance.computed.matchedDeepLink.call(context)).toBeUndefined()
+    })
+
+    it('returns undefined when the matching entry is a button-type link', () => {
+      const context = {
+        activeTab: 'myButtonLinkId',
+        $root: { config: { deepLinks: { decisionInstance: [{ id: 'myButtonLinkId', url: 'https://external.example', type: 'button' }] } } }
+      }
+      expect(DecisionInstance.computed.matchedDeepLink.call(context)).toBeUndefined()
+    })
+  })
+
+  describe('matchedDeepLinkParams', () => {
+    it('builds decision instance and decision definition context (with distinct tenant ids) and language params', () => {
+      const context = {
+        instance: {
+          id: 'inst-1',
+          tenantId: 'instance-tenant',
+          processInstanceId: 'pi-1',
+          decisionDefinitionId: 'dec-1',
+          decisionDefinitionKey: 'myDecision'
+        },
+        decisionDefinition: { tenantId: 'definition-tenant' },
+        currentLanguage: () => 'en'
+      }
+      expect(DecisionInstance.computed.matchedDeepLinkParams.call(context)).toEqual({
+        decisionInstanceId: 'inst-1',
+        decisionInstanceTenantId: 'instance-tenant',
+        processInstanceId: 'pi-1',
+        decisionDefinitionId: 'dec-1',
+        decisionDefinitionKey: 'myDecision',
+        decisionDefinitionTenantId: 'definition-tenant',
+        lang: 'en'
+      })
+    })
+  })
+
   describe('isDmnStringLiteral', () => {
     it.each([
       ['"hello"',       true],

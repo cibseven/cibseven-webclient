@@ -17,11 +17,11 @@
 const permissionsMixin = {
 	methods: {
 		hasAdminManagementPermissions: function(permissions) {
-			return (this.adminManagementPermissions(permissions.usersManagement, 'user') ||
-			this.adminManagementPermissions(permissions.groupsManagement, 'group') ||
-			this.adminManagementPermissions(permissions.authorizationsManagement, 'authorization') ||
-			this.adminManagementPermissions(permissions.tenantsManagement, 'tenant') ||
-			this.adminManagementPermissions(permissions.systemManagement, 'system'))
+			return (this.applicationPermissions(permissions.usersManagement, 'user') ||
+			this.applicationPermissions(permissions.groupsManagement, 'group') ||
+			this.applicationPermissions(permissions.authorizationsManagement, 'authorization') ||
+			this.applicationPermissions(permissions.tenantsManagement, 'tenant') ||
+			this.applicationPermissions(permissions.systemManagement, 'system'))
 		},
 		applicationPermissions: function(permissionsRequired, access) {
 			if (!this.$root.config.authorizationEnabled) return true
@@ -94,10 +94,6 @@ const permissionsMixin = {
 			}
 			/////////////////////////////////////////
 			return filter ? this.$_permissionsMixin_checkPermissionsAllowed(filter, 'id', permissionsCheck) : false
-		},
-		adminManagementPermissions: function(permissionsRequired, access) {
-			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
-			return this.$_permissionsMixin_checkPermissionsAllowed(access, null, permissionsCheck)
 		},
 		$_permissionsMixin_setAllPermissionsObject: function(permissionsRequired) {
 			if (!permissionsRequired) return []

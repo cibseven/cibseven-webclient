@@ -17,14 +17,23 @@
 package org.cibseven.webapp.providers;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.cibseven.webapp.providers.ProcessInstanceRuntimeHistoryTestData.HISTORY_INSTANCES_JSON_REVERSED;
+import static org.cibseven.webapp.providers.ProcessInstanceRuntimeHistoryTestData.INCIDENT_ID_1;
+import static org.cibseven.webapp.providers.ProcessInstanceRuntimeHistoryTestData.INSTANCE_ID_1;
+import static org.cibseven.webapp.providers.ProcessInstanceRuntimeHistoryTestData.INSTANCE_ID_2;
+import static org.cibseven.webapp.providers.ProcessInstanceRuntimeHistoryTestData.PROCESS_DEFINITION_KEY;
+import static org.cibseven.webapp.providers.ProcessInstanceRuntimeHistoryTestData.RUNTIME_INSTANCES_JSON;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,6 +47,7 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.HistoryStatistics;
+import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.cibseven.webapp.rest.model.ProcessInstance;
@@ -95,6 +105,15 @@ public class ProcessProviderIT extends BaseHelper {
         // Configure the base URL for the ProcessProvider to point to the MockWebServer
         String mockBaseUrl = mockWebServer.url("/").toString();
         ReflectionTestUtils.setField(processProvider, "cibsevenUrl", mockBaseUrl);
+
+        // The provider is a context-scoped singleton: without this, what one test remembered about the
+        // historic activity statistics query would decide which path the next one takes.
+        historicActivityStatisticsQueryUnsupported().clear();
+    }
+
+    @SuppressWarnings("unchecked")
+    private Set<String> historicActivityStatisticsQueryUnsupported() {
+        return (Set<String>) ReflectionTestUtils.getField(processProvider, "historicActivityStatisticsQueryUnsupported");
     }
 
     @AfterEach
@@ -425,6 +444,58 @@ public class ProcessProviderIT extends BaseHelper {
     }
 
     @Test
+    void testFindProcessesInstancesRuntimePreservesRuntimeQueryOrderEvenWhenHistoryReturnsInstancesReversed() throws Exception {
+        // Arrange
+        CIBUser user = getCibUser();
+        Map<String, Object> data = Map.of("processDefinitionKey", PROCESS_DEFINITION_KEY);
+
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(RUNTIME_INSTANCES_JSON)
+                .addHeader("Content-Type", "application/json"));
+        // history storage makes no ordering guarantee - the mock deliberately returns the rows in
+        // the opposite order to prove findProcessesInstancesRuntime re-sorts by the runtime order
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(HISTORY_INSTANCES_JSON_REVERSED)
+                .addHeader("Content-Type", "application/json"));
+
+        // Act
+        Collection<HistoryProcessInstance> result = processProvider.findProcessesInstancesRuntime(data, Optional.empty(), Optional.empty(), user);
+
+        // Assert
+        assertThat(result).extracting(HistoryProcessInstance::getId)
+                .containsExactly(INSTANCE_ID_1, INSTANCE_ID_2);
+    }
+
+    @Test
+    void testFindProcessesInstancesHistoryFetchesIncidentsPerInstanceWhenNoProcessDefinitionIdIsGiven() throws Exception {
+        // Arrange: this is exactly the filter shape findProcessesInstancesRuntime builds - a set of
+        // instance ids plus fetchIncidents, with no processDefinitionId
+        CIBUser user = getCibUser();
+        Map<String, Object> data = new HashMap<>();
+        data.put("processInstanceIds", Set.of(INSTANCE_ID_1));
+        data.put("fetchIncidents", Boolean.TRUE);
+
+        mockWebServer.enqueue(new MockResponse()
+                .setBody("[{\"id\":\"" + INSTANCE_ID_1 + "\"}]")
+                .addHeader("Content-Type", "application/json"));
+
+        Incident incident = new Incident();
+        incident.setId(INCIDENT_ID_1);
+        incident.setProcessInstanceId(INSTANCE_ID_1);
+        when(incidentProvider.findIncidentByInstanceId(INSTANCE_ID_1, user)).thenReturn(List.of(incident));
+
+        // Act
+        Collection<HistoryProcessInstance> result = processProvider.findProcessesInstancesHistory(
+                data, Optional.empty(), Optional.empty(), user);
+
+        // Assert
+        assertThat(result).singleElement()
+                .extracting(HistoryProcessInstance::getIncidents, org.assertj.core.api.InstanceOfAssertFactories.list(Incident.class))
+                .extracting(Incident::getId)
+                .containsExactly(INCIDENT_ID_1);
+    }
+
+    @Test
     void testFindHistoricActivityStatistics() throws Exception {
         // Arrange
         String processDefinitionId = "process-1";
@@ -482,5 +553,38 @@ public class ProcessProviderIT extends BaseHelper {
         RecordedRequest getRequest = mockWebServer.takeRequest();
         assertThat(getRequest.getMethod()).isEqualTo("GET");
         assertThat(getRequest.getPath()).contains("/engine-rest/history/process-definition/process-1/statistics?");
+    }
+
+    /**
+     * Whether the engine offers the query cannot change while it is running, so the rejected POST is
+     * made once and not on every call.
+     */
+    @Test
+    void testFindHistoricActivityStatisticsRemembersThatThePostQueryIsUnsupported() throws Exception {
+        String processDefinitionId = "process-1";
+        CIBUser user = getCibUser();
+        Map<String, Object> filters = Map.of("canceled", true);
+
+        String mockResponseBody = loadMockResponse("mocks/history_statistics_mock.json");
+
+        mockWebServer.enqueue(new MockResponse()
+                .setResponseCode(405)
+                .setBody("Method Not Allowed")
+                .addHeader("Content-Type", "text/plain"));
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(mockResponseBody)
+                .addHeader("Content-Type", "application/json"));
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(mockResponseBody)
+                .addHeader("Content-Type", "application/json"));
+
+        assertThat(processProvider.findHistoricActivityStatistics(processDefinitionId, filters, user)).hasSize(2);
+        assertThat(processProvider.findHistoricActivityStatistics(processDefinitionId, filters, user)).hasSize(2);
+
+        assertThat(mockWebServer.getRequestCount()).isEqualTo(3);
+        assertThat(mockWebServer.takeRequest().getMethod()).isEqualTo("POST");
+        assertThat(mockWebServer.takeRequest().getMethod()).isEqualTo("GET");
+        // The second call goes straight to the legacy variant instead of being rejected again.
+        assertThat(mockWebServer.takeRequest().getMethod()).isEqualTo("GET");
     }
 }

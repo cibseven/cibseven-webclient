@@ -76,6 +76,7 @@
       </template>
       <template v-slot:cell(callingActivity)="table">
         <CopyableActionButton
+          v-if="table.item.callingActivity"
           :display-value="table.item.callingActivity.activityName || table.item.callingActivity.activityId"
           :copy-value="table.item.callingActivity.activityId"
           :title="$t('process-instance.calledProcesses.callingActivity') + ':\n' + (table.item.callingActivity.activityName || table.item.callingActivity.activityId)"
@@ -166,7 +167,7 @@ export default {
           const tenantId = processPL.tenantId
           const businessKey = processPL.businessKey
 
-          const foundInst = this.activityInstanceHistory.find(processAIH => {
+          const foundInst = this.activityInstanceHistory?.find(processAIH => {
             if (processAIH.activityType === "callActivity"){
               if (processAIH.calledProcessInstanceId === processPL.id) {
                 return processAIH

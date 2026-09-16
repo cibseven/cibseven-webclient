@@ -744,6 +744,32 @@
 				"operationLogCategory": "Kategorie des Operationsprotokolls",
 				"property": "Eigenschaft"
 			},
+			"resourcesTypesDescriptions": {
+				"application": "Legt fest, welche Web-Anwendungen ein Benutzer oder eine Gruppe öffnen darf, z. B. <strong>Tasklist</strong>, <strong>Cockpit</strong>, <strong>Admin</strong> oder <strong>Optimize</strong>. Diese Ressource unterstützt nur die Berechtigung <strong>Access</strong>.",
+				"user": "Legt fest, wer Benutzerkonten anzeigen, anlegen, bearbeiten oder löschen darf, sowie ob Benutzer die Basisinformationen anderer Benutzer sehen können, z. B. bei der Auswahl eines Bearbeiters.",
+				"group": "Legt fest, wer Gruppen anzeigen, anlegen, bearbeiten oder löschen darf.",
+				"groupMembership": "Legt fest, wer Benutzer zu einer Gruppe hinzufügen oder daraus entfernen darf.",
+				"authorization": "Legt fest, wer Berechtigungsregeln selbst einsehen, anlegen, bearbeiten oder löschen darf — also wer andere Berechtigungen vergeben oder entziehen kann.",
+				"system": "Steuert den Zugriff auf den Bereich <strong>Systemeinstellungen</strong> im Admin: Diagnose, Ausführungsmetriken, Lizenzschlüsselverwaltung, Telemetrie und weitere systemweite Konfiguration. Dieser Bereich erfordert standardmäßig die Berechtigung <strong>All</strong>.",
+				"filter": "Legt fest, wer die in Tasklist angezeigten gespeicherten Aufgabenfilter anzeigen, anlegen, bearbeiten oder löschen darf. Es sind dieselben Berechtigungen, die auch direkt in den Freigabe-Einstellungen eines Filters gesetzt werden können.",
+				"processDefinition": "Legt fest, ob ein Benutzer oder eine Gruppe eine bereitgestellte Prozessdefinition in Cockpit und Tasklist sehen und darauf einwirken darf, z. B. neue Instanzen starten, sie unterbrechen oder an ihren Aufgaben und deren Variablen arbeiten.",
+				"task": "Legt fest, wer Aufgaben anzeigen, beanspruchen, zuweisen oder abschließen darf und wer deren Variablen lesen oder ändern darf. Kann auf eine einzelne Aufgabe eingeschränkt werden, z. B. um eine bestimmte Aufgabe einer Gruppe zuzuweisen.",
+				"processInstance": "Legt fest, wer eine laufende Prozessinstanz anzeigen, ändern, unterbrechen, einen fehlgeschlagenen Job erneut versuchen lassen oder löschen darf. Kann auf einzelne Instanzen statt auf den gesamten Prozess eingeschränkt werden.",
+				"deployment": "Legt fest, wer Bereitstellungen anlegen, anzeigen oder löschen darf, also die auf die Engine hochgeladenen <strong>BPMN</strong>-, <strong>DMN</strong>- und Formular-Ressourcen.",
+				"decisionDefinition": "Legt fest, wer eine bereitgestellte <strong>DMN</strong>-Entscheidung anzeigen oder auswerten darf und wer auf ihren Auswertungsverlauf zugreifen darf.",
+				"tenant": "Legt fest, wer Mandanten in einer Mandantenfähigkeits-Umgebung anzeigen, anlegen, bearbeiten oder löschen darf.",
+				"tenantMembership": "Legt fest, wer Benutzer und Gruppen einem Mandanten zuordnen oder daraus entfernen darf.",
+				"batch": "Legt fest, wer Stapelvorgänge anlegen oder abbrechen darf, also Massenaktionen wie die Migration, den Neustart, das Löschen oder die Massenänderung von Variablen von Prozessinstanzen.<br><strong>CREATE</strong> steuert alle Stapelvorgänge. Jede Berechtigung <strong>CREATE_BATCH_*</strong> steuert einen bestimmten Vorgang zusätzlich zu <strong>CREATE</strong> und setzt sich gegenüber ihr durch.",
+				"decisionRequirements": "Legt fest, wer eine Anforderungsdefinition für Entscheidungen anzeigen darf, also den Graphen, der zeigt, wie eine Gruppe zusammengehöriger <strong>DMN</strong>-Entscheidungen voneinander abhängt.",
+				"report": "Legt fest, wer gespeicherte Berichte anzeigen oder verwalten darf.",
+				"dashboard": "Legt fest, wer gespeicherte Dashboards anzeigen oder verwalten darf.",
+				"userOperationLogCategory": "Legt fest, wer das <strong>Benutzeraktionsprotokoll</strong> lesen darf, das pro Aufgabe oder Prozessinstanz geführt wird und in Kategorien wie Aktionen von Bearbeitern, Administratoren oder Operatoren unterteilt ist.",
+				"historicTask": "Legt fest, wer die historischen Daten einsehen darf, die nach Abschluss einer Aufgabe aufbewahrt werden.",
+				"historicProcessInstance": "Legt fest, wer die historischen Daten einer beendeten Prozessinstanz einsehen oder löschen darf.",
+				"optimize": "Legt fest, wer auf <strong>Optimize</strong>, die Anwendung für Prozess-Reporting und -Analyse, zugreifen darf.",
+				"operationLogCategory": "Legt fest, wer Einträge im systemweiten <strong>Operationsprotokoll</strong> in Cockpit lesen oder löschen darf — einem einzigen durchsuchbaren Prüfpfad über die gesamte Engine.",
+				"property": "Legt fest, wer interne Konfigurationseinträge der Engine, die als Schlüssel-Wert-Eigenschaften gespeichert sind, einsehen oder ändern darf – nicht die Anwendungseinstellungen."
+			},
 			"unselectAll": "Alle abwählen",
 			"selectAll": "Alle auswählen",
 			"confirmDelete": "Möchten Sie die Berechtigung mit den folgenden Parametern wirklich löschen?",
@@ -1061,6 +1087,7 @@
 		"AccessDeniedException": "Keine Berechtigung ({0})",
 		"NoPermission": "Sie haben nicht die erforderlichen Berechtigungen, um diese Aktion auszuführen.\nErforderliche Berechtigung: \"{permission}\".\nReferenziert von: {refPath}",
 		"EntryAlreadyExistsException": "{0} ist bereits vorhanden",
+		"globalAuthorizationExists": "Für die Ressource \"{0}\" existiert bereits eine GLOBAL-Berechtigung. Passe diese Berechtigung an, anstatt eine zweite anzulegen.",
 		"formNotFound": "Das Formular \"{0}\" konnte nicht geladen werden. Das Formular ist entweder leer oder die Formular-Ressource wurde nicht korrekt bereitgestellt. Bitte überprüfen Sie die Bereitstellung und versuchen Sie es erneut.",
 		"deployedFormNotFound": "Die bereitgestellte Formular-Ressource \"{0}\" konnte im Deployment nicht gefunden werden. Bitte überprüfen Sie, ob die Formular-Ressource im Deployment enthalten ist, und versuchen Sie es erneut.",
 		"NoObjectFoundException": "Bei der Ausführung der Anfrage ist ein Problem aufgetreten! Bitte aktualisieren Sie die Seite in Ihrem Browser und versuchen Sie es erneut.",
@@ -1361,5 +1388,8 @@
 			"title": "Warum wird diese Seite angezeigt?",
 			"description": "Sie versuchen, auf die Prozess-Engine \"{0}\" zuzugreifen. Diese Engine ist für die Verwendung des integrierten Identitätsdienstes (Datenbank) konfiguriert, hat jedoch keine administrativen Benutzer eingerichtet. Auf dieser Seite können Sie einen ersten Benutzer für den Zugriff auf die Prozess-Engine erstellen."
 		}
+	},
+	"deepLink": {
+		"tooltip": "Öffnen {text}\n{url}"
 	}
 }
