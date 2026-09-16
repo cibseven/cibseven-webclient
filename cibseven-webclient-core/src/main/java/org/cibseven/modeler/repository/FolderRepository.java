@@ -33,6 +33,4 @@ public interface FolderRepository extends JpaRepository<FolderEntity, String> {
 	List<FolderEntity> findAllByOrderByNameAsc();
 
 	Optional<FolderEntity> findByParentIdAndName(String parentId, String name);
-
-	boolean existsByParentId(String parentId);
 }

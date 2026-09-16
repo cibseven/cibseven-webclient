@@ -86,7 +86,7 @@ public class FolderService extends ModelerBaseService {
 	@PostMapping
 	public FolderEntity create(@RequestBody Map<String, String> folder, HttpServletRequest rq) {
 		CIBUser user = checkModelerAccess(rq);
-		return folderProvider.create(folder.get("parentId"), folder.get("name"), user.getId());
+		return folderProvider.create(folder.get("parentId"), folder.get("name"), user.getUserID());
 	}
 
 	@Operation(
@@ -98,10 +98,10 @@ public class FolderService extends ModelerBaseService {
 		CIBUser user = checkModelerAccess(rq);
 		FolderEntity updated = folderProvider.find(id);
 		if (folder.containsKey("name")) {
-			updated = folderProvider.rename(id, folder.get("name"), user.getId());
+			updated = folderProvider.rename(id, folder.get("name"), user.getUserID());
 		}
 		if (folder.containsKey("parentId")) {
-			updated = folderProvider.move(id, folder.get("parentId"), user.getId());
+			updated = folderProvider.move(id, folder.get("parentId"), user.getUserID());
 		}
 		return updated;
 	}

@@ -37,14 +37,14 @@ import lombok.Setter;
  * path a model is reached under. Only models kept in the database have one: a repository or a
  * directory brings its own tree.
  *
- * <p>A folder without a parent is one the UI shows as a project; models may live in any of them.</p>
+ * <p>A folder without a parent is at the top level; models may live in any folder.</p>
  */
 @Setter @Getter @RequiredArgsConstructor
 @Entity
 @Table(
 	name = "MOD_FOLDERS",
-	uniqueConstraints = @UniqueConstraint(name = "UK_MOD_FOLDERS_PARENT_NAME", columnNames = { "parent_id", "name" }),
-	indexes = @Index(name = "IDX_MOD_FOLDERS_PARENT", columnList = "parent_id")
+	uniqueConstraints = @UniqueConstraint(name = "MOD_UK_FOLDERS_PARENT_NAME", columnNames = { "parent_id", "name" }),
+	indexes = @Index(name = "MOD_IDX_FOLDERS_PARENT", columnList = "parent_id")
 )
 public class FolderEntity {
 
