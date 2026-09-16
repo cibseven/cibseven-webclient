@@ -71,6 +71,11 @@ public class FormProvider implements IFormProvider {
 		FormEntity existing = formRepositoryDao.findById(entity.getId())
 			.orElseThrow(() -> new EntityNotFoundException("FormEntity not found"));
 		existing.setFormSchema(entity.getFormSchema());
+		// Only when one is named: an import that replaces the content carries no folder and
+		// has to leave the form in the one it is already in
+		if (entity.getFolderId() != null) {
+			existing.setFolderId(entity.getFolderId());
+		}
 		existing.setUpdated(Timestamp.valueOf(LocalDateTime.now()));
 		existing.setUpdatedBy(entity.getUpdatedBy());
 		return formRepositoryDao.save(existing);

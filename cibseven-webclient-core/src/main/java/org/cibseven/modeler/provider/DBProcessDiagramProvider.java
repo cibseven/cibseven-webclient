@@ -83,6 +83,11 @@ public class DBProcessDiagramProvider implements IProcessDiagramProvider {
 		processDiagramEntity.setDescription(entity.getDescription());
 		processDiagramEntity.setType(entity.getType());
 		processDiagramEntity.setDiagram(entity.getDiagram());
+		// Only when one is named: an import that replaces the content carries no folder and
+		// has to leave the diagram in the one it is already in
+		if (entity.getFolderId() != null) {
+			processDiagramEntity.setFolderId(entity.getFolderId());
+		}
 		processDiagramEntity.setUpdated(Timestamp.valueOf(LocalDateTime.now()));
 		processDiagramEntity.setUpdatedBy(entity.getUpdatedBy());
 
