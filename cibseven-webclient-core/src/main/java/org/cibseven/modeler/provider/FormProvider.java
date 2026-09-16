@@ -32,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import jakarta.persistence.EntityNotFoundException;
 
 import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.webapp.exception.ValueTooLongException;
 import org.cibseven.modeler.model.FormEntity;
 import org.cibseven.modeler.repository.FormRepository;
 
@@ -61,6 +62,7 @@ public class FormProvider implements IFormProvider {
 	
 	@Override
 	public FormEntity createForm(FormEntity entity) throws SystemException {
+		requireFits(entity);
 		entity.setCreated(Timestamp.valueOf(LocalDateTime.now()));
 		entity.setUpdated(Timestamp.valueOf(LocalDateTime.now()));
 		return formRepositoryDao.save(entity);
@@ -68,6 +70,7 @@ public class FormProvider implements IFormProvider {
 
 	@Override
 	public FormEntity updateForm(FormEntity entity) throws SystemException {
+		requireFits(entity);
 		FormEntity existing = formRepositoryDao.findById(entity.getId())
 			.orElseThrow(() -> new EntityNotFoundException("FormEntity not found"));
 		existing.setFormSchema(entity.getFormSchema());
@@ -81,6 +84,22 @@ public class FormProvider implements IFormProvider {
 		return formRepositoryDao.save(existing);
 	}
 	
+	/**
+	 * Every write goes through here, so a value the column cannot hold is refused as a request
+	 * error naming the field. Left to the database it surfaces as a system error carrying the
+	 * failed SQL, which tells the user nothing and says more than it should.
+	 */
+	private void requireFits(FormEntity entity) {
+		requireFits("formId", entity.getFormId(), 100);
+		requireFits("description", entity.getDescription(), 150);
+	}
+
+	private void requireFits(String field, String value, int limit) {
+		if (value != null && value.length() > limit) {
+			throw new ValueTooLongException(field, limit);
+		}
+	}
+
 	@Transactional(ModelerJpa.TRANSACTION_MANAGER)
 	@Override
 	public void delete(String id) throws SystemException {

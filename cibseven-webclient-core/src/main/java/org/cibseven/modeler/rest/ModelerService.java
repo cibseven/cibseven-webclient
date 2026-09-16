@@ -256,7 +256,7 @@ public class ModelerService extends ModelerBaseService {
 		ProcessDiagramEntity entity = new ProcessDiagramEntity();
 		if (data.containsKey("name")) entity.setName(data.get("name").get(0).toString());
 		if (data.containsKey("processkey")) entity.setProcesskey(data.get("processkey").get(0).toString());
-		if (data.containsKey("description")) entity.setDescription(data.get("name").get(0).toString());
+		if (data.containsKey("description")) entity.setDescription(data.get("description").get(0).toString());
 		if (data.containsKey("active")) entity.setActive(true);
 		if (data.containsKey("type")) entity.setType(data.get("type").get(0).toString());
 		else entity.setActive(true);
@@ -435,7 +435,7 @@ public class ModelerService extends ModelerBaseService {
 		if (data.containsKey("id")) entity.setId(data.get("id").get(0).toString());
 		if (data.containsKey("name")) entity.setName(data.get("name").get(0).toString());
 		if (data.containsKey("processkey")) entity.setProcesskey(data.get("processkey").get(0).toString());
-		if (data.containsKey("description")) entity.setDescription(data.get("name").get(0).toString());
+		if (data.containsKey("description")) entity.setDescription(data.get("description").get(0).toString());
 		if (data.containsKey("active")) entity.setActive(true);
 		if (data.containsKey("type")) entity.setType(data.get("type").get(0).toString());
 		else entity.setActive(true);

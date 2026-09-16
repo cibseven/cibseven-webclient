@@ -29,6 +29,7 @@ import org.cibseven.modeler.config.ModelerJpa;
 import org.springframework.transaction.annotation.Transactional;
 
 import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.webapp.exception.ValueTooLongException;
 import org.cibseven.modeler.model.ProcessDiagramEntity;
 import org.cibseven.modeler.model.ProcessDiagramReduce;
 import org.cibseven.modeler.repository.ProcessDiagramRepository;
@@ -70,13 +71,32 @@ public class DBProcessDiagramProvider implements IProcessDiagramProvider {
 
 	@Override
 	public ProcessDiagramEntity createDiagram(ProcessDiagramEntity entity) throws SystemException {
+		requireFits(entity);
 		entity.setCreated(Timestamp.valueOf(LocalDateTime.now()));
 		entity.setUpdated(Timestamp.valueOf(LocalDateTime.now()));
 		return processDiagramDao.save(entity);
 	}
 
+	/**
+	 * Every write goes through here, so a value the column cannot hold is refused as a request
+	 * error naming the field. Left to the database it surfaces as a system error carrying the
+	 * failed SQL, which tells the user nothing and says more than it should.
+	 */
+	private void requireFits(ProcessDiagramEntity entity) {
+		requireFits("name", entity.getName(), 255);
+		requireFits("processkey", entity.getProcesskey(), 100);
+		requireFits("description", entity.getDescription(), 150);
+	}
+
+	private void requireFits(String field, String value, int limit) {
+		if (value != null && value.length() > limit) {
+			throw new ValueTooLongException(field, limit);
+		}
+	}
+
 	@Override
 	public ProcessDiagramEntity updateDiagram(ProcessDiagramEntity entity) throws SystemException {
+		requireFits(entity);
 		ProcessDiagramEntity processDiagramEntity = processDiagramDao.findById(entity.getId()).orElseThrow(() -> new EntityNotFoundException("ProcessDiagramEntity not found"));
 		processDiagramEntity.setName(entity.getName());
 		processDiagramEntity.setProcesskey(entity.getProcesskey());
