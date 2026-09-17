@@ -228,6 +228,13 @@ ui:
   pauseButtonTime: "5000"
   lazyLoadHistory: true
   filtersSearch: false
+  # Deep links shown as extra tabs/buttons on process and decision views.
+  # Each entry: { id, url, type: tab|button, icon (button only), target (button only) }
+  deepLinks:
+    processDefinition: []
+    processInstance: []
+    decisionDefinition: []
+    decisionInstance: []
 
 logging:
   consoleAppenderLayout: >-
@@ -610,7 +617,8 @@ configmaps:
               { "name": "Call Activity", "type": "bpmn:CallActivity", "color": "#059DBB" }
             ],
             "filterBpmnOpacity": "0.4"
-          }
+          },
+          "deepLinks": {{ .Values.ui.deepLinks | toPrettyJson | indent 2 }}
         }
 
 secrets:
