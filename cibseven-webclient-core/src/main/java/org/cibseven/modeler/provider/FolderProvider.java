@@ -48,9 +48,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class FolderProvider {
 
-	/** The folder an upgrade puts the models of a flat installation in. */
-	public static final String DEFAULT_FOLDER_NAME = "General";
-
 	@Autowired
 	private FolderRepository folderDao;
 
@@ -66,17 +63,6 @@ public class FolderProvider {
 		public long models() {
 			return diagrams + forms;
 		}
-	}
-
-	/**
-	 * Where a model goes when the caller names no folder: the folder the upgrade put the models
-	 * of a flat installation in. Created on first use, so a client that knows nothing about
-	 * folders still works.
-	 */
-	@Transactional(ModelerJpa.TRANSACTION_MANAGER)
-	public FolderEntity defaultFolder() {
-		return folderDao.findByParentIdIsNullAndName(DEFAULT_FOLDER_NAME)
-			.orElseGet(() -> create(null, DEFAULT_FOLDER_NAME, null));
 	}
 
 	@Transactional(value = ModelerJpa.TRANSACTION_MANAGER, readOnly = true)

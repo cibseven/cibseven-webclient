@@ -103,7 +103,6 @@ class ModelerServiceAuthorizationTest {
 		FolderProvider folderProvider = mock(FolderProvider.class);
 		FolderEntity folder = new FolderEntity();
 		folder.setId("folder-1");
-		when(folderProvider.defaultFolder()).thenReturn(folder);
 		when(folderProvider.requireModelFolder(any())).thenReturn(folder);
 		ReflectionTestUtils.setField(modelerService, "folderProvider", folderProvider);
 		ReflectionTestUtils.setField(modelerService, "modelerAccessChecker", new ModelerAccessChecker(new AuthorizationChecker(bpmProvider)));

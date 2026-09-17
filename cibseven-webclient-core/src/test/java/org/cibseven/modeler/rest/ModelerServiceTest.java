@@ -96,10 +96,9 @@ public class ModelerServiceTest {
 		ReflectionTestUtils.setField(service, "userSessionProvider", userSessionProvider);
 		ReflectionTestUtils.setField(service, "formProvider", formProvider);
 		ReflectionTestUtils.setField(service, "unifiedDiagramProvider", unifiedDiagramProvider);
-		FolderEntity defaultFolder = new FolderEntity();
-		defaultFolder.setId("folder-1");
-		when(folderProvider.defaultFolder()).thenReturn(defaultFolder);
-		when(folderProvider.requireModelFolder(any())).thenReturn(defaultFolder);
+		FolderEntity folder = new FolderEntity();
+		folder.setId("folder-1");
+		when(folderProvider.requireModelFolder(any())).thenReturn(folder);
 		ReflectionTestUtils.setField(service, "folderProvider", folderProvider);
 		ReflectionTestUtils.setField(service, "modelerAccessChecker", modelerAccessChecker);
 		ReflectionTestUtils.setField(service, "bpmProvider", bpmProvider);

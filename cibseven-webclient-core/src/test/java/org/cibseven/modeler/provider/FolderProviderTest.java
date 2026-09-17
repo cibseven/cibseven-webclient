@@ -176,14 +176,15 @@ class FolderProviderTest {
 		assertThat(provider.requireModelFolder("project").getId()).isEqualTo("project");
 	}
 
+	/**
+	 * The schema creates the first folder and files the models of an upgraded installation into
+	 * it. From there the tree is the user's: nothing recreates a folder they removed.
+	 */
 	@Test
-	void makesTheDefaultFolderWhereTheUpgradePutsTheModels() {
-		when(folders.findByParentIdIsNullAndName(FolderProvider.DEFAULT_FOLDER_NAME)).thenReturn(Optional.empty());
-
-		FolderEntity created = provider.defaultFolder();
-
-		assertThat(created.getName()).isEqualTo(FolderProvider.DEFAULT_FOLDER_NAME);
-		assertThat(created.getParentId()).isNull();
+	void doesNotInventAFolderForAModelThatNamesNone() {
+		assertThatThrownBy(() -> provider.requireModelFolder(null))
+			.isInstanceOf(InvalidFolderException.class);
+		verify(folders, never()).save(any());
 	}
 
 	@Test

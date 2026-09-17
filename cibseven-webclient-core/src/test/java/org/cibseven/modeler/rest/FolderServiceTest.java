@@ -68,13 +68,13 @@ class FolderServiceTest {
 		ReflectionTestUtils.setField(service, "baseUserProvider", baseUserProvider);
 	}
 
-	/** The listing is what a client calls first, so it is where the folder has to appear. */
+	/** Reading the tree only reads: a folder the user removed is not put back by listing it. */
 	@Test
-	void listingCreatesTheFolderAnEmptyInstallationHasNone() {
+	void listingHandsBackTheFoldersThereAreAndWritesNothing() {
 		when(folderProvider.findAll()).thenReturn(List.of(new FolderEntity()));
 
 		assertThat(service.findAll(request)).hasSize(1);
-		verify(folderProvider).defaultFolder();
+		verify(folderProvider, never()).create(any(), any(), any());
 	}
 
 	@Test

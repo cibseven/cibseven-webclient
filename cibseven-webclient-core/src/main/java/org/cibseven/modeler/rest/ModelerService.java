@@ -96,11 +96,9 @@ public class ModelerService extends ModelerBaseService {
 	@Autowired UnifiedDiagramProvider unifiedDiagramProvider;
 	@Autowired FolderProvider folderProvider;
 
-	/** The folder a new model goes into: the one asked for, or the default when none is named. */
+	/** The folder a new model goes into. A model lives in one, so the request has to name it. */
 	private String folderFor(String folderId) {
-		return folderId == null || folderId.isBlank()
-			? folderProvider.defaultFolder().getId()
-			: folderProvider.requireModelFolder(folderId).getId();
+		return folderProvider.requireModelFolder(folderId).getId();
 	}
 
 	@RequestMapping(value = "/processes", method = RequestMethod.GET)

@@ -63,7 +63,6 @@ public class FolderService extends ModelerBaseService {
 	@GetMapping
 	public List<FolderEntity> findAll(HttpServletRequest rq) {
 		checkModelerAccess(rq);
-		folderProvider.defaultFolder();
 		return folderProvider.findAll();
 	}
 
