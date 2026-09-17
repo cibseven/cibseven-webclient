@@ -1321,6 +1321,33 @@ public interface BpmProvider {
 		return getHistoricVariableInstanceProvider().getHistoricVariableInstance(id, deserializeValue, user);
 	}
 
+	/**
+	 * Queries historic variable instances the way the engine does, with the filters in the body.
+	 * @param filters The query as engine-rest takes it, empty for every instance
+	 * @param firstResult Index of the first result to return
+	 * @param maxResults Maximum number of results to return
+	 * @param deserializeValues Whether the values are deserialized, left to the engine when null
+	 * @param user the user performing the search
+	 * @return the matching historic variable instances
+	 * @throws SystemException in case of an error
+	 */
+	default Collection<VariableHistory> findHistoricVariableInstances(Map<String, Object> filters,
+			Optional<Integer> firstResult, Optional<Integer> maxResults, Boolean deserializeValues,
+			CIBUser user) throws SystemException {
+		return getHistoricVariableInstanceProvider().findHistoricVariableInstances(filters, firstResult, maxResults, deserializeValues, user);
+	}
+
+	/**
+	 * Counts the historic variable instances a query matches.
+	 * @param filters The query as engine-rest takes it, empty for every instance
+	 * @param user the user performing the search
+	 * @return how many instances match
+	 * @throws SystemException in case of an error
+	 */
+	default Integer findHistoricVariableInstancesCount(Map<String, Object> filters, CIBUser user) throws SystemException {
+		return getHistoricVariableInstanceProvider().findHistoricVariableInstancesCount(filters, user);
+	}
+
 /*
 
 ███████ ██   ██ ████████ ███████ ██████  ███    ██  █████  ██           ████████  █████  ███████ ██   ██     ██       ██████   ██████  
