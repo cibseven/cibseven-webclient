@@ -131,7 +131,7 @@ public class DirectBatchProvider implements IBatchProvider {
 	public void deleteBatch(String id, Map<String, Object> params, CIBUser user) {
 		Boolean cascade = false;
 		if (params.containsKey("cascade"))
-			cascade = params.get("cascade").equals("true");
+			cascade = Boolean.parseBoolean(String.valueOf(params.getOrDefault("cascade", false)));
 		try {
 			directProviderUtil.getProcessEngine(user).getManagementService().deleteBatch(id, cascade);
 		} catch (BadUserRequestException e) {

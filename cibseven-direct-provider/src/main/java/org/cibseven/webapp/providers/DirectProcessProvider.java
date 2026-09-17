@@ -310,19 +310,17 @@ public class DirectProcessProvider implements IProcessProvider {
 				List<HistoricProcessInstance> matchingHistoricProcessInstances = historicProcessInstanceQuery.unlimitedList();
 
 				process.setAllInstances(matchingHistoricProcessInstances.size());
-
-				historicProcessInstanceQueryDto.setUnfinished(true);
-				historicProcessInstanceQuery = historicProcessInstanceQueryDto.toQuery(directProviderUtil.getProcessEngine(user));
-				matchingHistoricProcessInstances = historicProcessInstanceQuery.unlimitedList();
-
-				process.setRunningInstances(matchingHistoricProcessInstances.size());
-
-				historicProcessInstanceQueryDto.setUnfinished(false);
-				historicProcessInstanceQueryDto.setCompleted(true);
-				historicProcessInstanceQuery = historicProcessInstanceQueryDto.toQuery(directProviderUtil.getProcessEngine(user));
-				matchingHistoricProcessInstances = historicProcessInstanceQuery.unlimitedList();
-
-				process.setCompletedInstances(matchingHistoricProcessInstances.size());
+				int runningInstances = 0;
+				int completedInstances = 0;
+				for (HistoricProcessInstance historicProcessInstance : matchingHistoricProcessInstances) {
+					if (historicProcessInstance.getState() == null || historicProcessInstance.getState().equals("ACTIVE")) {
+						runningInstances++;
+					} else if (historicProcessInstance.getState().equals("COMPLETED")) {
+						completedInstances++;
+					}
+				}
+				process.setRunningInstances(runningInstances);
+				process.setCompletedInstances(completedInstances);
 			}
 		}
 		return processes;

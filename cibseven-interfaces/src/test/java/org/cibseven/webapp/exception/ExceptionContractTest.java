@@ -18,7 +18,6 @@ package org.cibseven.webapp.exception;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -64,18 +63,7 @@ public class ExceptionContractTest {
 
 	// ---------- ApplicationException: loses both ----------
 
-	/**
-	 * TODO KNOWN BUG (not fixed): {@link ApplicationException} declares only
-	 * {@code ApplicationException(Object... data)} and never calls {@code super(message)}, so every
-	 * constructor of every subclass resolves to that varargs constructor. The arguments are stashed
-	 * in {@code data} and {@link RuntimeException}'s own message and cause are left unset. Anything
-	 * that logs or serialises one of these exceptions - which is what the REST error handlers do -
-	 * sees nothing at all, and the cause chain is broken for stack traces. This test states the
-	 * contract the family should honour; it fails until {@code ApplicationException} forwards the
-	 * message and cause to {@code RuntimeException}.
-	 */
 	@Test
-	@Disabled("KNOWN BUG: ApplicationException never calls super(message), so getMessage()/getCause() are null for every subclass")
 	void applicationExceptionSubclassesShouldKeepTheirMessageAndCause() {
 		SystemException cause = new SystemException("variable 'amount' does not exist");
 
