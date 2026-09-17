@@ -745,7 +745,7 @@
 				"property": "Propiedad"
 			},
 			"resourcesTypesDescriptions": {
-				"application": "Determina qué aplicaciones web puede abrir un usuario o grupo, por ejemplo <strong>Tasklist</strong>, <strong>Cockpit</strong>, <strong>Admin</strong> u <strong>Optimize</strong>. Este recurso solo admite el permiso <strong>Access</strong>.",
+				"application": "Determina qué aplicaciones web puede abrir un usuario o grupo, por ejemplo <strong>tasklist</strong>, <strong>cockpit</strong>, <strong>admin</strong> u <strong>modeler</strong>. Este recurso solo admite el permiso <strong>Access</strong>.",
 				"user": "Determina quién puede ver, crear, editar o eliminar cuentas de usuario, y si los usuarios pueden ver la información básica de otros usuarios, por ejemplo al elegir un responsable para una tarea.",
 				"group": "Determina quién puede ver, crear, editar o eliminar grupos.",
 				"groupMembership": "Determina quién puede añadir usuarios a un grupo o eliminarlos de él.",

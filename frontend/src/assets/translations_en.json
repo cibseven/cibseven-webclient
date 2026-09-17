@@ -745,7 +745,7 @@
 				"property": "Property"
 			},
 			"resourcesTypesDescriptions": {
-				"application": "Controls which web applications a user or group is allowed to open, e.g. <strong>Tasklist</strong>, <strong>Cockpit</strong>, <strong>Admin</strong>, or <strong>Optimize</strong>. This resource only supports the <strong>Access</strong> permission.",
+				"application": "Controls which web applications a user or group is allowed to open, e.g. <strong>tasklist</strong>, <strong>cockpit</strong>, <strong>admin</strong>, or <strong>modeler</strong>. This resource only supports the <strong>Access</strong> permission.",
 				"user": "Controls who may view, create, edit, or delete user accounts, and whether users can see each other’s basic information, e.g. when picking a task assignee.",
 				"group": "Controls who may view, create, edit, or delete groups.",
 				"groupMembership": "Controls who may add users to a group or remove them from it.",
