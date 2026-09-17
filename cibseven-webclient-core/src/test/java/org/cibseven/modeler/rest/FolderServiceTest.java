@@ -16,6 +16,10 @@
  */
 package org.cibseven.modeler.rest;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,18 +34,22 @@ import org.cibseven.webapp.auth.ModelerAccessChecker;
 import org.cibseven.webapp.exception.AccessDeniedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import jakarta.servlet.http.HttpServletRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /** What the folder endpoints pass on, and what they refuse before they get that far. */
@@ -131,13 +139,46 @@ class FolderServiceTest {
 		assertThat(service.contents("folder-1", request).models()).isEqualTo(1);
 	}
 
-	/** Every endpoint is behind the modeler permission, not only the ones that write. */
+	/**
+	 * Guards the whole controller rather than one endpoint: any endpoint added later that forgets
+	 * the access check fails here, as in {@link ModelerServiceAuthorizationTest}.
+	 */
 	@Test
-	void refusesAUserWithoutModelerAccess() {
+	void everyEndpointRejectsUsersWithoutModelerAccess() throws Exception {
 		doThrow(new AccessDeniedException("no modeler")).when(modelerAccessChecker).checkModelerAccess(USER);
+		List<String> unprotected = new ArrayList<>();
+		int checked = 0;
 
-		assertThatThrownBy(() -> service.findAll(request)).isInstanceOf(AccessDeniedException.class);
-		verify(folderProvider, never()).findAll();
+		for (Method method : FolderService.class.getDeclaredMethods()) {
+			if (!Modifier.isPublic(method.getModifiers())
+					|| AnnotatedElementUtils.findMergedAnnotation(method, RequestMapping.class) == null) {
+				continue;
+			}
+			checked++;
+			try {
+				method.invoke(service, defaultArguments(method));
+				unprotected.add(method.getName());
+			} catch (InvocationTargetException e) {
+				if (!(e.getCause() instanceof AccessDeniedException)) {
+					unprotected.add(method.getName() + " (" + e.getCause() + ")");
+				}
+			}
+		}
+
+		assertEquals(6, checked, "endpoints of FolderService covered by this sweep");
+		assertEquals(List.of(), unprotected, "endpoints reachable without modeler access");
+		verifyNoInteractions(folderProvider);
+	}
+
+	private Object[] defaultArguments(Method method) {
+		Class<?>[] types = method.getParameterTypes();
+		Object[] arguments = new Object[types.length];
+		for (int i = 0; i < types.length; i++) {
+			if (types[i] == HttpServletRequest.class) arguments[i] = request;
+			else if (Map.class.isAssignableFrom(types[i])) arguments[i] = new HashMap<>();
+			else if (types[i] == String.class) arguments[i] = "folder-1";
+		}
+		return arguments;
 	}
 
 	private static Map<String, String> body(String key, String value) {
