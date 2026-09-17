@@ -128,6 +128,31 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	}
 
 	@Override
+	public void claim(String taskId, String userId, CIBUser user) {
+		String url = getEngineRestUrl(user) + "/task/" + taskId + "/claim";
+		doPost(url, Map.of("userId", userId), String.class, user);
+	}
+
+	@Override
+	public void delegate(String taskId, String userId, CIBUser user) {
+		String url = getEngineRestUrl(user) + "/task/" + taskId + "/delegate";
+		doPost(url, Map.of("userId", userId), String.class, user);
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public Map<String, Object> findLocalVariables(String taskId, CIBUser user) {
+		String url = getEngineRestUrl(user) + "/task/" + taskId + "/localVariables";
+		return ((ResponseEntity<Map>) doGet(url, Map.class, user, false)).getBody();
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public Collection<Map<String, Object>> findComments(String taskId, CIBUser user) {
+		String url = getEngineRestUrl(user) + "/task/" + taskId + "/comment";
+		return Arrays.asList(((ResponseEntity<Map[]>) doGet(url, Map[].class, user, false)).getBody());
+	}
+
 	public void setAssignee(String taskId, String assignee, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/task/" + taskId;
 		String variables = "{}";
