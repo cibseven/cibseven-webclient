@@ -27,6 +27,9 @@ import org.cibseven.webapp.exception.InvalidFolderException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -176,17 +179,6 @@ class FolderProviderTest {
 		assertThat(provider.requireModelFolder("project").getId()).isEqualTo("project");
 	}
 
-	/**
-	 * The schema creates the first folder and files the models of an upgraded installation into
-	 * it. From there the tree is the user's: nothing recreates a folder they removed.
-	 */
-	@Test
-	void doesNotInventAFolderForAModelThatNamesNone() {
-		assertThatThrownBy(() -> provider.requireModelFolder(null))
-			.isInstanceOf(InvalidFolderException.class);
-		verify(folders, never()).save(any());
-	}
-
 	@Test
 	void createsAFolderAtTheTopLevel() {
 		FolderEntity created = provider.create(null, "Archive", "demo");
@@ -218,11 +210,19 @@ class FolderProviderTest {
 		assertThat(moved.getParentId()).isNull();
 	}
 
-	@Test
-	void reportsAMissingFolderForAModelAsARequestError() {
-		assertThatThrownBy(() -> provider.requireModelFolder(" "))
+	/**
+	 * The schema creates the first folder and files the models of an upgraded installation into
+	 * it. From there the tree is the user's, so a model that names no folder is refused rather
+	 * than filed into one the backend brings back.
+	 */
+	@ParameterizedTest
+	@NullSource
+	@ValueSource(strings = { "", " " })
+	void reportsAMissingFolderForAModelAsARequestError(String folderId) {
+		assertThatThrownBy(() -> provider.requireModelFolder(folderId))
 			.isInstanceOf(InvalidFolderException.class)
 			.satisfies(thrown -> assertThat(((InvalidFolderException) thrown).getField()).isEqualTo("folderId"));
+		verify(folders, never()).save(any());
 	}
 
 	@Test
