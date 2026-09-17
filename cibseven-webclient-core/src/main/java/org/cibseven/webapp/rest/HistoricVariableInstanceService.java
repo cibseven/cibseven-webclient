@@ -90,8 +90,6 @@ public class HistoricVariableInstanceService extends BaseService implements Init
 			@Parameter(description = "Whether the values are deserialized; left to the engine when absent")
 			@RequestParam(required = false) Boolean deserializeValues,
 			CIBUser user) {
-		// No in-webclient permission check: the query is forwarded with the user's token and the
-		// engine authorizes it. The check on the read above is the deprecated one, kept as it was
 		return bpmProvider.findHistoricVariableInstances(filters == null ? Map.of() : filters,
 				firstResult, maxResults, deserializeValues, user);
 	}
