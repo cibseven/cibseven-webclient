@@ -14,38 +14,17 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.cibseven.modeler.model;
+package org.cibseven.webapp.exception;
 
-import java.time.LocalDateTime;
+/**
+ * A form is referenced by its form id, so the id is unique across the modeler. Copying a form
+ * therefore needs an id of its own, and reusing one is reported as a request error naming it.
+ */
+public class ExistingFormIdException extends ApplicationException {
 
-public interface UnifiedDiagram {
+	private static final long serialVersionUID = 1L;
 
-	String getId();
-
-	/** Process name, or formId for forms. */
-	String getName();
-
-	/** 'bpmn-c7', 'dmn', or 'form'. */
-	String getType();
-
-	/** processkey for processes, formId for forms. */
-	String getProcesskey();
-
-	/** null for processes, formId for forms. */
-	String getFormId();
-
-	String getDescription();
-
-	LocalDateTime getCreated();
-
-	LocalDateTime getUpdated();
-
-	/** User id of last save, or null. */
-	String getUpdatedBy();
-
-	Integer getVersion();
-
-	/** The folder it lives in, so a list renders as a tree without a call per node. */
-	String getFolderId();
-
+	public ExistingFormIdException(String formId) {
+		super(formId);
+	}
 }

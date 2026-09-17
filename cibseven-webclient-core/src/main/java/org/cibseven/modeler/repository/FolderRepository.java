@@ -14,27 +14,23 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.cibseven.modeler.provider;
+package org.cibseven.modeler.repository;
 
 import java.util.List;
 import java.util.Optional;
 
-import org.cibseven.webapp.exception.SystemException;
-import org.cibseven.modeler.model.UnifiedDiagram;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface IUnifiedDiagramProvider {
+import org.cibseven.modeler.model.FolderEntity;
 
-	/**
-	 * Returns a paginated, sorted list of all diagrams (processes and forms)
-	 * matching the optional keyword and type filter.
-	 *
-	 * @param keyword    substring to match against name/processkey/formId ('' = no filter)
-	 * @param type       exact type to match, e.g. 'bpmn-c7', 'dmn', 'form' ('' = all)
-	 * @param firstResult zero-based offset
-	 * @param maxResults  page size
-	 */
-	List<UnifiedDiagram> getDiagrams(String keyword, String type, String folderId, int firstResult, int maxResults) throws SystemException;
+public interface FolderRepository extends JpaRepository<FolderEntity, String> {
 
-	Optional<UnifiedDiagram> getDiagramById(String id);
+	/** A folder at the top level, where the name is not scoped by a parent. */
+	Optional<FolderEntity> findByParentIdIsNullAndName(String name);
 
+	List<FolderEntity> findByParentIdOrderByNameAsc(String parentId);
+
+	List<FolderEntity> findAllByOrderByNameAsc();
+
+	Optional<FolderEntity> findByParentIdAndName(String parentId, String name);
 }

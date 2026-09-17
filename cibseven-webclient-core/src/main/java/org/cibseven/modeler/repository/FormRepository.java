@@ -16,6 +16,7 @@
  */
 package org.cibseven.modeler.repository;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.data.domain.Pageable;
@@ -37,5 +38,9 @@ public interface FormRepository extends JpaRepository<FormEntity, String> {
 		"where lower(f.formId) like lower(concat('%', :keyword, '%')) " +
 		"or lower(f.description) like lower(concat('%', :keyword, '%'))")
 	List<FormEntity> findAllFiltered(@Param("keyword") String keyword, Pageable pageable);
+
+	List<FormEntity> findByFolderIdIn(Collection<String> folderIds);
+
+	long countByFolderIdIn(Collection<String> folderIds);
 
 }
