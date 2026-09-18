@@ -175,9 +175,7 @@ export default {
       })
     },
     allFilter: function(processes) {
-      return processes.filter(function(process) {
-        return process.startableInTasklist && process.suspended !== 'true'
-      })
+      return processes.filter(process => process.startableInTasklist === true && !process.revoked && process.suspended !== 'true')
     },
     favoriteHandler: function(process) {
       process.favorite = !process.favorite
