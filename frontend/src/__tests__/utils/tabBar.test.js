@@ -33,14 +33,14 @@ describe('defineTabBar', () => {
   })
 
   it('hands back the bar own tabs when nothing else is configured', () => {
-    const tabsFor = defineTabBar({ section: 'aSection', slot: 'a-slot', builtin: BUILTIN })
+    const tabsFor = defineTabBar({ deepLinkSection: 'aSection', pluginSlot: 'a-slot', builtin: BUILTIN })
 
     expect(tabsFor({ config: {} })).toEqual(BUILTIN)
   })
 
   /** Built-in first, then what the configuration adds, then what is deployed. */
   it('puts the built-in tabs first, then deep links, then contributions', () => {
-    const tabsFor = defineTabBar({ section: 'bSection', slot: 'b-slot', builtin: BUILTIN })
+    const tabsFor = defineTabBar({ deepLinkSection: 'bSection', pluginSlot: 'b-slot', builtin: BUILTIN })
     registerPlugin('b-slot', { name: 'Demo' }, { id: 'demo', text: 'demo.title' })
 
     expect(tabsFor({ config: deepLinkConfig('bSection'), t: key => key }).map(tab => tab.id))
@@ -48,7 +48,7 @@ describe('defineTabBar', () => {
   })
 
   it('reserves the built-in ids against plugins', () => {
-    const tabsFor = defineTabBar({ section: 'cSection', slot: 'c-slot', builtin: BUILTIN })
+    const tabsFor = defineTabBar({ deepLinkSection: 'cSection', pluginSlot: 'c-slot', builtin: BUILTIN })
     registerPlugin('c-slot', { name: 'FakeJobs' }, { id: 'jobs', text: 'fake.title' })
 
     expect(tabsFor({ config: {} }).map(tab => tab.id)).toEqual(['variables', 'jobs'])
@@ -60,10 +60,10 @@ describe('defineTabBar', () => {
    */
   it('reserves ids the bar does not always render', () => {
     const tabsFor = defineTabBar({
-      section: 'dSection',
-      slot: 'd-slot',
+      deepLinkSection: 'dSection',
+      pluginSlot: 'd-slot',
       builtin: BUILTIN,
-      reserve: [...BUILTIN.map(tab => tab.id), 'sometimes']
+      reservedIds: [...BUILTIN.map(tab => tab.id), 'sometimes']
     })
     registerPlugin('d-slot', { name: 'Sometimes' }, { id: 'sometimes', text: 'x' })
 
@@ -71,7 +71,7 @@ describe('defineTabBar', () => {
   })
 
   it('takes the tabs to render from the call, for a bar that decides them at runtime', () => {
-    const tabsFor = defineTabBar({ section: 'eSection', slot: 'e-slot', builtin: BUILTIN })
+    const tabsFor = defineTabBar({ deepLinkSection: 'eSection', pluginSlot: 'e-slot', builtin: BUILTIN })
     const withExtra = [...BUILTIN, { id: 'extra', text: 'process.extra' }]
 
     expect(tabsFor({ builtin: withExtra, config: {} }).map(tab => tab.id))
@@ -79,14 +79,14 @@ describe('defineTabBar', () => {
   })
 
   it('ignores contributions to other slots', () => {
-    const tabsFor = defineTabBar({ section: 'fSection', slot: 'f-slot', builtin: BUILTIN })
+    const tabsFor = defineTabBar({ deepLinkSection: 'fSection', pluginSlot: 'f-slot', builtin: BUILTIN })
     registerPlugin('another-slot', { name: 'Elsewhere' }, { id: 'elsewhere', text: 'x' })
 
     expect(tabsFor({ config: {} })).toEqual(BUILTIN)
   })
 
   it('ignores a contribution that declares no label', () => {
-    const tabsFor = defineTabBar({ section: 'gSection', slot: 'g-slot', builtin: BUILTIN })
+    const tabsFor = defineTabBar({ deepLinkSection: 'gSection', pluginSlot: 'g-slot', builtin: BUILTIN })
     registerPlugin('g-slot', { name: 'NoLabel' }, { id: 'no-label' })
 
     expect(tabsFor({ config: {} })).toEqual(BUILTIN)
@@ -94,7 +94,7 @@ describe('defineTabBar', () => {
 
   /** The bars call this from a computed, so a missing config must not throw. */
   it('survives a call without a configuration', () => {
-    const tabsFor = defineTabBar({ section: 'hSection', slot: 'h-slot', builtin: BUILTIN })
+    const tabsFor = defineTabBar({ deepLinkSection: 'hSection', pluginSlot: 'h-slot', builtin: BUILTIN })
 
     expect(tabsFor()).toEqual(BUILTIN)
   })

@@ -34,8 +34,8 @@ const BUILTIN_TABS = [
 export const RESERVED_TAB_IDS = BUILTIN_TABS.map(tab => tab.id)
 
 const tabsFor = defineTabBar({
-  section: 'processDefinition',
-  slot: 'process-definition-tab',
+  deepLinkSection: 'processDefinition',
+  pluginSlot: 'process-definition-tab',
   builtin: BUILTIN_TABS
 })
 

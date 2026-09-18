@@ -97,8 +97,8 @@ const BUILTIN_TABS = [
 const RESERVED_TAB_IDS = BUILTIN_TABS.map(tab => tab.id)
 
 const tabsFor = defineTabBar({
-  section: 'decisionInstance',
-  slot: 'decision-instance-tab',
+  deepLinkSection: 'decisionInstance',
+  pluginSlot: 'decision-instance-tab',
   builtin: BUILTIN_TABS
 })
 

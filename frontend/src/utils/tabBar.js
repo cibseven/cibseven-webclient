@@ -18,34 +18,28 @@ import { getDeepLinkEntries, resolveDeepLinkLabel } from '@/utils/deepLinks.js'
 import { getPlugin, reserveSlotIds } from '@/plugins/pluginsConfig.js'
 
 /**
- * How a tab bar is built, for every bar that renders one.
+ * How a tab bar is built. A bar owns its tabs and their order; what surrounds them is the same
+ * everywhere, and copying it into each bar is how the enterprise ones ended up with the plugin
+ * part and without the deep links.
  *
- * A bar owns its tabs, their order and which of them a configuration leaves out. What it does
- * not own is what surrounds them: the ids it takes are reserved against plugins, the deep links
- * a configuration adds are appended, and so are the tabs plugins contribute. Those three are
- * the same wherever a bar is rendered, and were copied into each of them, which is how the
- * enterprise bars ended up with the plugin part and without the deep link part.
- *
- * @param {string} section the deep link section of this bar, e.g. 'processInstance'
- * @param {string} slot the plugin slot of this bar, e.g. 'process-instance-tab'
+ * @param {string} deepLinkSection section of the deepLinks configuration, e.g. 'processInstance'
+ * @param {string} pluginSlot slot plugins contribute tabs to, e.g. 'process-instance-tab'
  * @param {Array} builtin the bar's own tabs, as { id, text }
- * @param {Array} reserve the ids plugins may not take, the built-in ones by default. A bar
- *        whose tabs depend on the configuration reserves every id it can render, including
- *        the ones it leaves out today
+ * @param {Array} reservedIds ids a plugin may not take, the built-in ones by default. A bar whose
+ *        tabs depend on the configuration reserves every id it can render, today's included
  * @returns a function building the full list, called with the current configuration
  */
-export function defineTabBar({ section, slot, builtin = [], reserve = builtin.map(tab => tab.id) }) {
+export function defineTabBar({ deepLinkSection, pluginSlot, builtin = [], reservedIds = builtin.map(tab => tab.id) }) {
   // At import time, because a plugin can register before this bar is ever rendered
-  reserveSlotIds(slot, reserve)
+  reserveSlotIds(pluginSlot, reservedIds)
 
   return ({ builtin: current = builtin, config = null, t = key => key } = {}) => {
-    const deepLinkTabs = getDeepLinkEntries(config, section, reserve)
+    const deepLinkTabs = getDeepLinkEntries(config, deepLinkSection, reservedIds)
       .filter(entry => entry.type === 'tab')
       .map(entry => ({ id: entry.id, text: resolveDeepLinkLabel(t, entry) }))
 
-    // Contributed tabs are appended, so the built-in ones keep their order whatever is deployed.
-    // Their content is rendered by the PluginSlot of the view this bar belongs to.
-    const contributed = getPlugin(slot).value
+    // Appended, so the built-in order never depends on what is configured or deployed
+    const contributed = getPlugin(pluginSlot).value
       .filter(contribution => contribution.id && contribution.text)
       .map(({ id, text }) => ({ id, text }))
 
