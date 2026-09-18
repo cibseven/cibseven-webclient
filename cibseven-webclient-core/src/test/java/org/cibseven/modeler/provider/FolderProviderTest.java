@@ -171,7 +171,8 @@ class FolderProviderTest {
 
 		assertThat(removed.folders()).isEqualTo(1);
 		assertThat(removed.models()).isEqualTo(1);
-		verify(folders).deleteAllById(List.of("project", "child"));
+		// A folder points at its parent, so the child has to go first
+		verify(folders).deleteAllById(List.of("child", "project"));
 	}
 
 	@Test
