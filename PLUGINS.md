@@ -278,10 +278,20 @@ INFO o.cibseven.webapp.plugin.PluginRegistry : Found 1 frontend plugin(s) on the
 | `process-definition-tab` | one tab of a process definition | `process`, `tenantId` |
 | `decision-definition-tab` | one tab of a decision definition version | `decision`, `tenantId` |
 | `decision-instance-tab` | one tab of a decision instance | `instance`, `decision`, `tenantId` |
+| `dmn-viewer` | no UI of its own: a contribution works on the rendered DMN viewer | `viewer`, `container`, `activeView` |
 
 One registration carries both the tab label and its content: the tab bar reads
 `id` and `text`, and the view renders whichever contribution matches the active
-tab. Slots are added on demand rather than up front.
+tab. Slots are added on demand rather than up front, and each takes the shape its
+place needs.
+
+A contribution to `dmn-viewer` renders no tab and needs no `text`: it is mounted
+with the dmn-js instance, the element it renders into, and the view that is open,
+and works on those. dmn-js offers no API for changing a rendered read-only table,
+so a contribution that adds to one works on the DOM dmn-js produced - and that
+markup is dmn-js's, not ours, so it can change when dmn-js is upgraded.
+`activeView` changes whenever the user switches between the DRD and a decision,
+which is the signal to apply the work again.
 
 ### Several contributions in one slot
 
