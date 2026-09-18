@@ -92,16 +92,19 @@ import DeepLinkFrame from '@/components/common-components/DeepLinkFrame.vue'
 import { BWaitingBox, GenericTabs } from '@cib/common-frontend'
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from '@/utils/debounce.js'
-import { getPlugin, reserveSlotIds } from '@/plugins/pluginsConfig.js'
+import { getDeepLinkEntries } from '@/utils/deepLinks.js'
+import { defineTabBar } from '@/utils/tabBar.js'
 import PluginSlot from '@/components/common/PluginSlot.vue'
-import { getDeepLinkEntries, resolveDeepLinkLabel } from '@/utils/deepLinks.js'
 import DeepLinkButtons from '@/components/common-components/DeepLinkButtons.vue'
 
 const BUILTIN_TABS = [{ id: 'instances', text: 'decision.instances' }]
 const RESERVED_TAB_IDS = BUILTIN_TABS.map(tab => tab.id)
 
-// See ProcessInstanceTabs: the ids of this slot's own tabs are not available to plugins
-reserveSlotIds('decision-definition-tab', BUILTIN_TABS.map(tab => tab.id))
+const tabsFor = defineTabBar({
+  deepLinkSection: 'decisionDefinition',
+  pluginSlot: 'decision-definition-tab',
+  builtin: BUILTIN_TABS
+})
 
 export default {
   name: 'DecisionDefinitionVersion',
@@ -133,19 +136,7 @@ export default {
       return this.getSelectedDecisionVersion()
     },
     tabs: function() {
-      const deepLinkTabs = getDeepLinkEntries(this.$root.config, 'decisionDefinition', RESERVED_TAB_IDS)
-        .filter(entry => entry.type === 'tab')
-        .map(entry => ({ id: entry.id, text: resolveDeepLinkLabel(this.$t, entry) }))
-      // Contributed tabs are appended, so the built-in ones keep their order
-      // whatever is deployed. Their content is rendered by the PluginSlot below.
-      const contributed = getPlugin('decision-definition-tab').value
-        .filter(contribution => contribution.id && contribution.text)
-        .map(({ id, text }) => ({ id, text }))
-      return [
-        ...BUILTIN_TABS,
-        ...deepLinkTabs,
-        ...contributed,
-      ]
+      return tabsFor({ config: this.$root.config, t: this.$t })
     },
     matchedDeepLink() {
       return getDeepLinkEntries(this.$root.config, 'decisionDefinition', RESERVED_TAB_IDS)

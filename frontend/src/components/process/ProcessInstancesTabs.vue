@@ -22,8 +22,7 @@
 
 <script>
 import { GenericTabs } from '@cib/common-frontend'
-import { getDeepLinkEntries, resolveDeepLinkLabel } from '@/utils/deepLinks.js'
-import { getPlugin, reserveSlotIds } from '@/plugins/pluginsConfig.js'
+import { defineTabBar } from '@/utils/tabBar.js'
 
 const BUILTIN_TABS = [
   { id: 'instances', text: 'process.instances' },
@@ -34,8 +33,11 @@ const BUILTIN_TABS = [
 
 export const RESERVED_TAB_IDS = BUILTIN_TABS.map(tab => tab.id)
 
-// At import time, because a plugin can register before this tab bar is ever rendered
-reserveSlotIds('process-definition-tab', RESERVED_TAB_IDS)
+const tabsFor = defineTabBar({
+  deepLinkSection: 'processDefinition',
+  pluginSlot: 'process-definition-tab',
+  builtin: BUILTIN_TABS
+})
 
 export default {
   name: 'ProcessInstancesTabs',
@@ -46,21 +48,7 @@ export default {
   emits: ['update:modelValue', 'tab-click'],
   computed: {
     tabs() {
-      const deepLinkTabs = getDeepLinkEntries(this.$root.config, 'processDefinition', RESERVED_TAB_IDS)
-        .filter(entry => entry.type === 'tab')
-        .map(entry => ({ id: entry.id, text: resolveDeepLinkLabel(this.$t, entry) }))
-
-      // Tabs contributed by plugins are appended, so the order of the built-in
-      // tabs never depends on what is deployed. Their content is rendered by the
-      // PluginSlot in ProcessInstancesView.
-      const contributed = getPlugin('process-definition-tab').value
-        .filter(contribution => contribution.id && contribution.text)
-        .map(({ id, text }) => ({ id, text }))
-      return [
-        ...BUILTIN_TABS,
-        ...deepLinkTabs,
-        ...contributed,
-      ]
+      return tabsFor({ config: this.$root.config, t: this.$t })
     }
   }
 }
