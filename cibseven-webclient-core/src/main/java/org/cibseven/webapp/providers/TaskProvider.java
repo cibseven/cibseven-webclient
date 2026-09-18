@@ -132,7 +132,7 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 		String url = getEngineRestUrl(user) + "/task/" + taskId;
 		String variables = "{}";
 
-		if(!assignee.equals("null")) {
+		if(assignee != null && !assignee.equals("null")) {
 			url += "/assignee";
 			variables = "{ \"userId\": \"" + assignee + "\" }";
 		} else {

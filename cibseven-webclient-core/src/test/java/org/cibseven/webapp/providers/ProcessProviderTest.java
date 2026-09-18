@@ -21,7 +21,6 @@ import static org.assertj.core.api.Assertions.tuple;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 import org.cibseven.webapp.Data;
@@ -32,7 +31,6 @@ import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.cibseven.webapp.rest.model.ProcessInstance;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class ProcessProviderTest {
@@ -241,15 +239,7 @@ public class ProcessProviderTest {
 			"{ \"suspended\": true,\"includeProcessInstances\": false,\"executionDate\": null }");
 	}
 
-	/**
-	 * TODO KNOWN BUG (not fixed): the body is assembled by string concatenation and the
-	 * executionDate is interpolated unquoted, so a non-null date produces malformed JSON
-	 * ({@code "executionDate": 2026-01-01T10:00:00}) that the engine rejects. Scheduling a delayed
-	 * suspension through this method cannot work; only the null case happens to be valid JSON.
-	 * This test asserts the body the engine expects; it fails until the date is quoted.
-	 */
 	@Test
-	@Disabled("KNOWN BUG: suspendProcessDefinition interpolates the execution date into JSON unquoted")
 	void suspendProcessDefinition_quotesTheExecutionDate() throws Exception {
 		engine.enqueueEmpty(204);
 
