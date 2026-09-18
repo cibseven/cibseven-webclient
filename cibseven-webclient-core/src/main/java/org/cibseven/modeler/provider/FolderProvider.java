@@ -20,6 +20,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
@@ -163,7 +164,11 @@ public class FolderProvider {
 
 		processDiagramDao.deleteAll(processDiagramDao.findByFolderIdIn(ids));
 		formDao.deleteAll(formDao.findByFolderIdIn(ids));
-		folderDao.deleteAllById(ids);
+		// Deepest first: a folder points at its parent, so a parent removed before its children
+		// leaves the database refusing the delete
+		List<String> childrenFirst = new ArrayList<>(ids);
+		Collections.reverse(childrenFirst);
+		folderDao.deleteAllById(childrenFirst);
 
 		log.info("Deleted folder {} with {} folder(s) and {} model(s)",
 			folder.getName(), removed.folders(), removed.models());
