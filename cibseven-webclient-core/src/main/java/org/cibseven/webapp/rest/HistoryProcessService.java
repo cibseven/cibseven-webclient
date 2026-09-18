@@ -124,7 +124,7 @@ public class HistoryProcessService extends BaseService {
 			@Parameter(description = "Variable values ignore case") @RequestParam Optional<Boolean> variableValuesIgnoreCase,
 			@Parameter(description = "Deserialize values") @RequestParam Optional<Boolean> deserializeValues,
 			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
+		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_HISTORY_ALL);
 		final Map<String, Object> data = new HashMap<>();
 		data.put("variableName", variableName.orElse(null));
 		data.put("variableNameLike", variableNameLike.orElse(null));
@@ -153,7 +153,7 @@ public class HistoryProcessService extends BaseService {
 			@Parameter(description = "Process instance Id") @PathVariable String id,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.DELETE_ALL);
+		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.DELETE_HISTORY_ALL);
 		bpmProvider.deleteProcessInstanceFromHistory(id, user);
     // return 204 No Content, no body
     return ResponseEntity.noContent().build();
@@ -165,7 +165,7 @@ public class HistoryProcessService extends BaseService {
 	public ResponseEntity<Void> deleteVariableHistoryInstance(
 			@Parameter(description = "Id of the variable") @PathVariable String id,
 			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.DELETE_ALL);
+		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.DELETE_HISTORY_ALL);
 		bpmProvider.deleteVariableHistoryInstance(id, user);
     // return 204 No Content, no body
     return ResponseEntity.noContent().build();
