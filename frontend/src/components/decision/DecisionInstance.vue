@@ -84,10 +84,10 @@ import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
 import DeepLinkFrame from '@/components/common-components/DeepLinkFrame.vue'
 import { FlowTable, GenericTabs } from '@cib/common-frontend'
 import { mapActions, mapGetters } from 'vuex'
-import { getDeepLinkEntries, resolveDeepLinkLabel, hasDeepLinks } from '@/utils/deepLinks.js'
+import { getDeepLinkEntries, hasDeepLinks } from '@/utils/deepLinks.js'
 import DeepLinkButtons from '@/components/common-components/DeepLinkButtons.vue'
 import PluginSlot from '@/components/common/PluginSlot.vue'
-import { getPlugin, reserveSlotIds } from '@/plugins/pluginsConfig.js'
+import { defineTabBar } from '@/utils/tabBar.js'
 
 const BUILTIN_TABS = [
   { id: 'inputs', text: 'decision.inputs' },
@@ -96,8 +96,11 @@ const BUILTIN_TABS = [
 
 const RESERVED_TAB_IDS = BUILTIN_TABS.map(tab => tab.id)
 
-// See ProcessInstanceTabs: the ids of this slot's own tabs are not available to plugins
-reserveSlotIds('decision-instance-tab', RESERVED_TAB_IDS)
+const tabsFor = defineTabBar({
+  section: 'decisionInstance',
+  slot: 'decision-instance-tab',
+  builtin: BUILTIN_TABS
+})
 
 export default {
   name: 'DecisionInstance',
@@ -123,19 +126,7 @@ export default {
       return this.getSelectedDecisionVersion()
     },
     tabs() {
-      const deepLinkTabs = getDeepLinkEntries(this.$root.config, 'decisionInstance', RESERVED_TAB_IDS)
-        .filter(entry => entry.type === 'tab')
-        .map(entry => ({ id: entry.id, text: resolveDeepLinkLabel(this.$t, entry) }))
-      // Contributed tabs are appended, so the built-in ones keep their order
-      // whatever is deployed. Their content is rendered by the PluginSlot below.
-      const contributed = getPlugin('decision-instance-tab').value
-        .filter(contribution => contribution.id && contribution.text)
-        .map(({ id, text }) => ({ id, text }))
-      return [
-        ...BUILTIN_TABS,
-        ...deepLinkTabs,
-        ...contributed
-      ]
+      return tabsFor({ config: this.$root.config, t: this.$t })
     },
     hasDeepLinks() {
       return hasDeepLinks(this.$root.config, 'decisionInstance', 'button')

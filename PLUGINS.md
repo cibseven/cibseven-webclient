@@ -301,6 +301,12 @@ Two things follow from the list being shared:
   concurrently and register when their module has arrived, so with two plugins
   their tabs can appear in either order. The built-in tabs always come first.
 
+Every tab bar builds its tabs with `defineTabBar`, which reserves the bar's own
+ids, appends the tabs a deep link configuration adds, and then the contributed
+ones. A bar that renders elsewhere - the enterprise edition replaces the two
+process bars with longer lists - uses the same helper, which is what keeps a
+slot behaving the same in both editions.
+
 An application embedding this webclient renders the same slots, as long as it
 supplies a `plugin-runtime` entry of its own - module instances only exist within
 one build - and injects the import map with
