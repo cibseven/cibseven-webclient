@@ -326,7 +326,10 @@ configmaps:
         </Configuration>
 
     config.json:
-      path: /usr/local/tomcat/webapps/seven/config.json
+      # Spring Boot serves the frontend from classpath:/public/, which in the
+      # exploded war is WEB-INF/classes/public/. A file mounted at the war root
+      # is never read, so the ConfigMap has to replace the classpath copy.
+      path: /usr/local/tomcat/webapps/seven/WEB-INF/classes/public/config.json
       value: |-
         {
           "supportedLanguages": {{ toJson .Values.ui.supportedLanguages }},
