@@ -275,7 +275,9 @@ INFO o.cibseven.webapp.plugin.PluginRegistry : Found 1 frontend plugin(s) on the
 | Slot | Contributes | Props handed to the contribution |
 |---|---|---|
 | `process-instance-tab` | one tab of a process instance; the registered `id` becomes `?tab=<id>` | `instance`, `process`, `tenantId` |
+| `process-definition-tab` | one tab of a process definition | `process`, `tenantId` |
 | `decision-definition-tab` | one tab of a decision definition version | `decision`, `tenantId` |
+| `decision-instance-tab` | one tab of a decision instance | `instance`, `decision`, `tenantId` |
 
 One registration carries both the tab label and its content: the tab bar reads
 `id` and `text`, and the view renders whichever contribution matches the active
