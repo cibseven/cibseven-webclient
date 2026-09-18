@@ -65,6 +65,9 @@
         </div>
       </div>
       <DeepLinkFrame v-else-if="matchedDeepLink" :link="matchedDeepLink" :params="matchedDeepLinkParams"></DeepLinkFrame>
+
+      <PluginSlot name="decision-instance-tab" :only="activeTab"
+        :params="{ instance: instance, decision: decisionDefinition, tenantId: instance?.tenantId }"></PluginSlot>
     </div>
   </div>
 </template>
@@ -83,12 +86,22 @@ import { FlowTable, GenericTabs } from '@cib/common-frontend'
 import { mapActions, mapGetters } from 'vuex'
 import { getDeepLinkEntries, resolveDeepLinkLabel, hasDeepLinks } from '@/utils/deepLinks.js'
 import DeepLinkButtons from '@/components/common-components/DeepLinkButtons.vue'
+import PluginSlot from '@/components/common/PluginSlot.vue'
+import { getPlugin, reserveSlotIds } from '@/plugins/pluginsConfig.js'
 
-const RESERVED_TAB_IDS = ['inputs', 'outputs']
+const BUILTIN_TABS = [
+  { id: 'inputs', text: 'decision.inputs' },
+  { id: 'outputs', text: 'decision.outputs' }
+]
+
+const RESERVED_TAB_IDS = BUILTIN_TABS.map(tab => tab.id)
+
+// See ProcessInstanceTabs: the ids of this slot's own tabs are not available to plugins
+reserveSlotIds('decision-instance-tab', RESERVED_TAB_IDS)
 
 export default {
   name: 'DecisionInstance',
-  components: { DmnViewer, FlowTable, GenericTabs, ScrollableTabsContainer, ViewerFrame, DeepLinkFrame, DeepLinkButtons },
+  components: { DmnViewer, FlowTable, GenericTabs, ScrollableTabsContainer, ViewerFrame, DeepLinkFrame, DeepLinkButtons, PluginSlot },
   mixins: [permissionsMixin, resizerMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
   inject: ['currentLanguage'],
   props: {
@@ -113,10 +126,15 @@ export default {
       const deepLinkTabs = getDeepLinkEntries(this.$root.config, 'decisionInstance', RESERVED_TAB_IDS)
         .filter(entry => entry.type === 'tab')
         .map(entry => ({ id: entry.id, text: resolveDeepLinkLabel(this.$t, entry) }))
+      // Contributed tabs are appended, so the built-in ones keep their order
+      // whatever is deployed. Their content is rendered by the PluginSlot below.
+      const contributed = getPlugin('decision-instance-tab').value
+        .filter(contribution => contribution.id && contribution.text)
+        .map(({ id, text }) => ({ id, text }))
       return [
-        { id: 'inputs', text: 'decision.inputs' },
-        { id: 'outputs', text: 'decision.outputs' },
-        ...deepLinkTabs
+        ...BUILTIN_TABS,
+        ...deepLinkTabs,
+        ...contributed
       ]
     },
     hasDeepLinks() {
