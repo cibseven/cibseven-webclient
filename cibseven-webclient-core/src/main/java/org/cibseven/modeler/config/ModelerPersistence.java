@@ -16,7 +16,7 @@
  */
 package org.cibseven.modeler.config;
 
-import org.cibseven.webapp.persistence.CibsevenJpa;
+import org.cibseven.persistence.CibsevenJpa;
 
 /**
  * What the modeler puts into the webclient's persistence unit.

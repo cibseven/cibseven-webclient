@@ -21,7 +21,7 @@ import javax.sql.DataSource;
 import org.cibseven.modeler.model.ProcessDiagramEntity;
 import org.cibseven.modeler.repository.ProcessDiagramRepository;
 import org.cibseven.modeler.util.ElementTemplateLoader;
-import org.cibseven.webapp.persistence.CibsevenJpa;
+import org.cibseven.persistence.CibsevenJpa;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;

@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cibseven.modeler.config.ElementTemplateProperties;
-import org.cibseven.webapp.persistence.CibsevenJpa;
+import org.cibseven.persistence.CibsevenJpa;
 import org.cibseven.modeler.model.ElementTemplate;
 import org.cibseven.modeler.model.ElementTemplateOrigin;
 import org.cibseven.modeler.repository.ElementTemplateRepository;

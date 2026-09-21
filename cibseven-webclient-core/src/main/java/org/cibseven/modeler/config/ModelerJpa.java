@@ -16,7 +16,7 @@
  */
 package org.cibseven.modeler.config;
 
-import org.cibseven.webapp.persistence.CibsevenJpa;
+import org.cibseven.persistence.CibsevenJpa;
 
 /**
  * Names of the JPA beans the modeler runs on.
@@ -40,7 +40,11 @@ public final class ModelerJpa {
 	@Deprecated(since = "2.3.0", forRemoval = true)
 	public static final String DATA_SOURCE = CibsevenJpa.LEGACY_DATA_SOURCE;
 
-	/** @deprecated use {@link CibsevenJpa#PERSISTENCE_UNIT} */
+	/**
+	 * @deprecated use {@link CibsevenJpa#PERSISTENCE_UNIT}. Unlike the bean names, this value
+	 *             changed: a persistence unit has no aliases, so anything naming the unit itself,
+	 *             such as {@code @PersistenceContext(unitName = "modeler")}, has to be updated.
+	 */
 	@Deprecated(since = "2.3.0", forRemoval = true)
 	public static final String PERSISTENCE_UNIT = CibsevenJpa.PERSISTENCE_UNIT;
 

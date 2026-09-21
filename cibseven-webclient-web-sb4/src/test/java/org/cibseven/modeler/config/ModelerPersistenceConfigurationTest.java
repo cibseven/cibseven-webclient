@@ -18,7 +18,7 @@ package org.cibseven.modeler.config;
 
 import org.cibseven.modeler.model.ProcessDiagramEntity;
 import org.cibseven.modeler.repository.ProcessDiagramRepository;
-import org.cibseven.webapp.persistence.CibsevenJpa;
+import org.cibseven.persistence.CibsevenJpa;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration;
 import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;

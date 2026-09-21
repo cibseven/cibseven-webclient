@@ -18,9 +18,9 @@ package org.cibseven.modeler.config;
 
 import java.util.List;
 
-import org.cibseven.webapp.persistence.CibsevenEntityPackages;
-import org.cibseven.webapp.persistence.CibsevenJpa;
-import org.cibseven.webapp.persistence.CibsevenPersistenceConfiguration;
+import org.cibseven.persistence.CibsevenEntityPackages;
+import org.cibseven.persistence.CibsevenJpa;
+import org.cibseven.persistence.CibsevenPersistenceConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;

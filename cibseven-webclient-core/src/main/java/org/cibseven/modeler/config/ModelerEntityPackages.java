@@ -16,7 +16,7 @@
  */
 package org.cibseven.modeler.config;
 
-import org.cibseven.webapp.persistence.CibsevenEntityPackages;
+import org.cibseven.persistence.CibsevenEntityPackages;
 
 /**
  * Contributes entity packages to the modeler's persistence unit.

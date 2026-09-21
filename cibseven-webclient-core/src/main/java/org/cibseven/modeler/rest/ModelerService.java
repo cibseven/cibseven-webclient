@@ -76,7 +76,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 import org.cibseven.modeler.util.ByteArrayMultipartFile;
-import org.cibseven.webapp.persistence.CibsevenJpa;
+import org.cibseven.persistence.CibsevenJpa;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayInputStream;

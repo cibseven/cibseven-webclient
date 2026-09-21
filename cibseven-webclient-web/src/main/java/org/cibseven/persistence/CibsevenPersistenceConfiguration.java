@@ -14,16 +14,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.cibseven.webapp.persistence;
+package org.cibseven.persistence;
 
+import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.jpa.EntityManagerFactoryBuilder;
+import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -69,7 +71,12 @@ public class CibsevenPersistenceConfiguration {
 			ObjectProvider<DataSource> dataSource,
 			ObjectProvider<CibsevenEntityPackages> contributedPackages) {
 		Set<String> packages = new LinkedHashSet<>();
-		contributedPackages.forEach(contributor -> packages.addAll(contributor.packages()));
+		contributedPackages.forEach(contributor -> {
+			Collection<String> contributed = contributor.packages();
+			// Naming the contributor: the failure is theirs, and the stack trace would say ours
+			Objects.requireNonNull(contributed, () -> contributor.getClass().getName() + " contributed no packages");
+			packages.addAll(contributed);
+		});
 		return builder
 			.dataSource(cibsevenDataSource.getIfAvailable(
 				() -> modelerDataSource.getIfAvailable(dataSource::getObject)))

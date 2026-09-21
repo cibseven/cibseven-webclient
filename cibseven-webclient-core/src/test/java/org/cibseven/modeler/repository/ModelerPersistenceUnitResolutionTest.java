@@ -23,7 +23,7 @@ import javax.sql.DataSource;
 
 import org.cibseven.modeler.config.ModelerPersistence;
 import org.cibseven.modeler.model.ProcessDiagramEntity;
-import org.cibseven.webapp.persistence.CibsevenJpa;
+import org.cibseven.persistence.CibsevenJpa;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.BeanFactoryAnnotationUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -52,7 +52,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * called {@code entityManagerFactory} and {@code transactionManager}, and they may well point at a
  * different database (CIB7-1776).
  *
- * <p>{@link ModelerScopedBean} stands for any modeler bean that asks for the qualified factory and
+ * <p>{@link ModelerScopedBean} stands for any webclient bean that asks for the qualified factory and
  * builds a shared entity manager from it.</p>
  *
  * <p>The transaction manager assertions go through {@code BeanFactoryAnnotationUtils.qualifiedBeanOfType},
@@ -70,7 +70,7 @@ class ModelerPersistenceUnitResolutionTest {
 			new ApplicationContextRunner().withUserConfiguration(ModelerUnitOnlyConfig.class);
 
 	@Test
-	void aModelerBeanResolvesTheModelersFactoryNotTheHosts() {
+	void aModelerBeanResolvesTheWebclientsFactoryNotTheHosts() {
 		embedded.run(context -> {
 			assertThat(context).hasNotFailed();
 			EntityManager entityManager = context.getBean(ModelerScopedBean.class).entityManager();
@@ -82,7 +82,7 @@ class ModelerPersistenceUnitResolutionTest {
 	}
 
 	@Test
-	void modelerEntitiesLiveInTheModelersUnitOnly() {
+	void modelerEntitiesLiveInTheWebclientsUnitOnly() {
 		embedded.run(context -> {
 			assertThat(context.getBean(CibsevenJpa.ENTITY_MANAGER_FACTORY, EntityManagerFactory.class)
 					.getMetamodel().getEntities())
@@ -94,7 +94,7 @@ class ModelerPersistenceUnitResolutionTest {
 	}
 
 	@Test
-	void transactionalQualifierResolvesToTheModelersTransactionManager() {
+	void transactionalQualifierResolvesToTheWebclientsTransactionManager() {
 		embedded.run(context -> {
 			TransactionManager resolved = BeanFactoryAnnotationUtils.qualifiedBeanOfType(
 					context.getBeanFactory(), TransactionManager.class, CibsevenJpa.TRANSACTION_MANAGER);

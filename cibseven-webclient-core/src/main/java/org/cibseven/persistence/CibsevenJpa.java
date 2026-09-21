@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.cibseven.webapp.persistence;
+package org.cibseven.persistence;
 
 /**
  * Names of the JPA beans the webclient owns.

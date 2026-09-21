@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.cibseven.webapp.persistence;
+package org.cibseven.persistence;
 
 import java.util.Collection;
 
@@ -22,8 +22,9 @@ import java.util.Collection;
  * Contributes entity packages to the webclient's persistence unit.
  *
  * <p>A feature that stores data shares that unit rather than opening one of its own, so it also
- * shares its transaction manager. Declare a bean of this type to add a package to the unit, and
- * declare {@code @EnableJpaRepositories} for your own repositories against
+ * shares its transaction manager. Such a feature does three things: it imports
+ * {@code CibsevenPersistenceConfiguration}, which brings the unit up; it declares a bean of this
+ * type to add its entity package to it; and it points its own {@code @EnableJpaRepositories} at
  * {@link CibsevenJpa#ENTITY_MANAGER_FACTORY} and {@link CibsevenJpa#TRANSACTION_MANAGER}.</p>
  */
 @FunctionalInterface

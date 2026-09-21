@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.cibseven.webapp.persistence;
+package org.cibseven.persistence;
 
 import java.util.List;
 
@@ -27,8 +27,8 @@ import org.cibseven.modeler.model.ProcessDiagramEntity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.BeanFactoryAnnotationUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration;
-import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -211,7 +211,7 @@ class CibsevenPersistenceConfigurationTest {
 
 		@Bean
 		org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean appEntityManagerFactory(
-				org.springframework.boot.jpa.EntityManagerFactoryBuilder builder, DataSource dataSource) {
+				org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder builder, DataSource dataSource) {
 			// Deliberately scans a package without entities: the host's unit knows nothing of ours.
 			return builder.dataSource(dataSource).packages("org.cibseven.modeler.config")
 				.persistenceUnit("app").build();
@@ -249,7 +249,7 @@ class CibsevenPersistenceConfigurationTest {
 		@Bean(CibsevenJpa.DATA_SOURCE)
 		DataSource cibsevenDataSource() {
 			return new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseType.H2)
-				.setName("dedicated").build();
+				.generateUniqueName(true).build();
 		}
 	}
 
@@ -259,7 +259,7 @@ class CibsevenPersistenceConfigurationTest {
 		@Bean(CibsevenJpa.LEGACY_DATA_SOURCE)
 		DataSource modelerDataSource() {
 			return new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseType.H2)
-				.setName("dedicatedLegacy").build();
+				.generateUniqueName(true).build();
 		}
 	}
 }
