@@ -16,15 +16,22 @@
  */
 package org.cibseven.modeler.config;
 
-import org.cibseven.webapp.persistence.CibsevenEntityPackages;
+import org.cibseven.webapp.persistence.CibsevenJpa;
 
 /**
- * Contributes entity packages to the modeler's persistence unit.
+ * What the modeler puts into the webclient's persistence unit.
  *
- * @deprecated since 2.3.0, use {@link CibsevenEntityPackages}. A bean of this type is still
- *             collected, because the unit it contributed to is the one the webclient now owns.
+ * <p>The unit itself belongs to the webclient, see {@link CibsevenJpa}; the modeler is one
+ * contributor to it, on the same footing as any other feature that stores data.</p>
  */
-@Deprecated(since = "2.3.0", forRemoval = true)
-@FunctionalInterface
-public interface ModelerEntityPackages extends CibsevenEntityPackages {
+public final class ModelerPersistence {
+
+	/** Package holding the modeler's JPA entities. */
+	public static final String ENTITY_PACKAGE = "org.cibseven.modeler.model";
+
+	/** Package holding the modeler's Spring Data repositories. */
+	public static final String REPOSITORY_PACKAGE = "org.cibseven.modeler.repository";
+
+	private ModelerPersistence() {
+	}
 }

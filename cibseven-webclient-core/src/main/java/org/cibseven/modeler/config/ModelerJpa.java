@@ -16,39 +16,41 @@
  */
 package org.cibseven.modeler.config;
 
+import org.cibseven.webapp.persistence.CibsevenJpa;
+
 /**
- * Names of the JPA beans the modeler owns.
+ * Names of the JPA beans the modeler runs on.
  *
- * <p>The modeler is embedded into applications that bring their own JPA setup, so it must neither
- * claim {@code @Primary} nor attach itself to the beans named {@code entityManagerFactory} and
- * {@code transactionManager}: in an embedding application those are the host's beans, holding the
- * host's persistence unit and, quite possibly, a different database. The modeler therefore runs on
- * its own persistence unit under the names below, and every modeler component that needs an entity
- * manager or a transaction refers to them explicitly.</p>
- *
- * <p>A host that wants the modeler tables in a separate database can define a {@code DataSource}
- * bean named {@link #DATA_SOURCE}; without one the modeler uses the application's primary
- * {@code DataSource}, which is what a standalone webclient does.</p>
+ * @deprecated since 2.3.0, use {@link CibsevenJpa}. The unit is no longer the modeler's alone, so
+ *             it is named after the webclient rather than after one of its features. The bean names
+ *             below still resolve: the beans carry their former names as aliases.
  */
+@Deprecated(since = "2.3.0", forRemoval = true)
 public final class ModelerJpa {
 
-	/** Bean name of the modeler's entity manager factory. */
-	public static final String ENTITY_MANAGER_FACTORY = "modelerEntityManagerFactory";
+	/** @deprecated use {@link CibsevenJpa#ENTITY_MANAGER_FACTORY} */
+	@Deprecated(since = "2.3.0", forRemoval = true)
+	public static final String ENTITY_MANAGER_FACTORY = CibsevenJpa.LEGACY_ENTITY_MANAGER_FACTORY;
 
-	/** Bean name of the modeler's transaction manager, for {@code @Transactional} qualifiers. */
-	public static final String TRANSACTION_MANAGER = "modelerTransactionManager";
+	/** @deprecated use {@link CibsevenJpa#TRANSACTION_MANAGER} */
+	@Deprecated(since = "2.3.0", forRemoval = true)
+	public static final String TRANSACTION_MANAGER = CibsevenJpa.LEGACY_TRANSACTION_MANAGER;
 
-	/** Optional bean name of a dedicated data source for the modeler tables. */
-	public static final String DATA_SOURCE = "modelerDataSource";
+	/** @deprecated use {@link CibsevenJpa#DATA_SOURCE} */
+	@Deprecated(since = "2.3.0", forRemoval = true)
+	public static final String DATA_SOURCE = CibsevenJpa.LEGACY_DATA_SOURCE;
 
-	/** Name of the modeler's persistence unit. */
-	public static final String PERSISTENCE_UNIT = "modeler";
+	/** @deprecated use {@link CibsevenJpa#PERSISTENCE_UNIT} */
+	@Deprecated(since = "2.3.0", forRemoval = true)
+	public static final String PERSISTENCE_UNIT = CibsevenJpa.PERSISTENCE_UNIT;
 
-	/** Package holding the modeler's JPA entities. */
-	public static final String ENTITY_PACKAGE = "org.cibseven.modeler.model";
+	/** @deprecated use {@link ModelerPersistence#ENTITY_PACKAGE} */
+	@Deprecated(since = "2.3.0", forRemoval = true)
+	public static final String ENTITY_PACKAGE = ModelerPersistence.ENTITY_PACKAGE;
 
-	/** Package holding the modeler's Spring Data repositories. */
-	public static final String REPOSITORY_PACKAGE = "org.cibseven.modeler.repository";
+	/** @deprecated use {@link ModelerPersistence#REPOSITORY_PACKAGE} */
+	@Deprecated(since = "2.3.0", forRemoval = true)
+	public static final String REPOSITORY_PACKAGE = ModelerPersistence.REPOSITORY_PACKAGE;
 
 	private ModelerJpa() {
 	}

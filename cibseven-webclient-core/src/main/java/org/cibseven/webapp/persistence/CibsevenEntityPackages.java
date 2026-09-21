@@ -14,17 +14,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.cibseven.modeler.config;
+package org.cibseven.webapp.persistence;
 
-import org.cibseven.webapp.persistence.CibsevenEntityPackages;
+import java.util.Collection;
 
 /**
- * Contributes entity packages to the modeler's persistence unit.
+ * Contributes entity packages to the webclient's persistence unit.
  *
- * @deprecated since 2.3.0, use {@link CibsevenEntityPackages}. A bean of this type is still
- *             collected, because the unit it contributed to is the one the webclient now owns.
+ * <p>A feature that stores data shares that unit rather than opening one of its own, so it also
+ * shares its transaction manager. Declare a bean of this type to add a package to the unit, and
+ * declare {@code @EnableJpaRepositories} for your own repositories against
+ * {@link CibsevenJpa#ENTITY_MANAGER_FACTORY} and {@link CibsevenJpa#TRANSACTION_MANAGER}.</p>
  */
-@Deprecated(since = "2.3.0", forRemoval = true)
 @FunctionalInterface
-public interface ModelerEntityPackages extends CibsevenEntityPackages {
+public interface CibsevenEntityPackages {
+
+	Collection<String> packages();
 }

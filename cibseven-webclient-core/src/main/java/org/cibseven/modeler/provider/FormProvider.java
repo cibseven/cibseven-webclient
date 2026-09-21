@@ -26,7 +26,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
 import org.springframework.stereotype.Component;
-import org.cibseven.modeler.config.ModelerJpa;
+import org.cibseven.webapp.persistence.CibsevenJpa;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -109,7 +109,7 @@ public class FormProvider implements IFormProvider {
 		}
 	}
 
-	@Transactional(ModelerJpa.TRANSACTION_MANAGER)
+	@Transactional(CibsevenJpa.TRANSACTION_MANAGER)
 	@Override
 	public void delete(String id) throws SystemException {
 		formRepositoryDao.deleteById(id);
