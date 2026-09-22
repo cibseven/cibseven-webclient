@@ -43,19 +43,6 @@ public final class CibsevenJpa {
 	/** Name of the webclient's persistence unit. Internal to Spring: no table name depends on it. */
 	public static final String PERSISTENCE_UNIT = "cibseven";
 
-	/**
-	 * The names these beans had while the unit belonged to the modeler alone. They stay as bean
-	 * aliases so that code compiled against them keeps resolving: a {@code static final String} is
-	 * inlined at compile time, so an older jar carries the literal rather than the reference.
-	 */
-	public static final String LEGACY_ENTITY_MANAGER_FACTORY = "modelerEntityManagerFactory";
-
-	/** @see #LEGACY_ENTITY_MANAGER_FACTORY */
-	public static final String LEGACY_TRANSACTION_MANAGER = "modelerTransactionManager";
-
-	/** @see #LEGACY_ENTITY_MANAGER_FACTORY */
-	public static final String LEGACY_DATA_SOURCE = "modelerDataSource";
-
 	private CibsevenJpa() {
 	}
 }

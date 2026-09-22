@@ -16,9 +16,7 @@
  */
 package org.cibseven.persistence;
 
-import java.util.Collection;
 import java.util.LinkedHashSet;
-import java.util.Objects;
 import java.util.Set;
 
 import javax.sql.DataSource;
@@ -31,6 +29,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.util.Assert;
 
 import jakarta.persistence.EntityManagerFactory;
 
@@ -59,34 +58,28 @@ public class CibsevenPersistenceConfiguration {
 
 	/**
 	 * @param cibsevenDataSource a data source dedicated to the webclient, if the application defines
-	 *        one under {@link CibsevenJpa#DATA_SOURCE} or its former name
+	 *        one under {@link CibsevenJpa#DATA_SOURCE}
 	 * @param dataSource the application's data source, used when there is no dedicated one
 	 */
-	@Bean(name = { CibsevenJpa.ENTITY_MANAGER_FACTORY, CibsevenJpa.LEGACY_ENTITY_MANAGER_FACTORY },
-			defaultCandidate = false)
+	@Bean(name = CibsevenJpa.ENTITY_MANAGER_FACTORY, defaultCandidate = false)
 	LocalContainerEntityManagerFactoryBean cibsevenEntityManagerFactory(
 			EntityManagerFactoryBuilder builder,
 			@Qualifier(CibsevenJpa.DATA_SOURCE) ObjectProvider<DataSource> cibsevenDataSource,
-			@Qualifier(CibsevenJpa.LEGACY_DATA_SOURCE) ObjectProvider<DataSource> modelerDataSource,
 			ObjectProvider<DataSource> dataSource,
 			ObjectProvider<CibsevenEntityPackages> contributedPackages) {
 		Set<String> packages = new LinkedHashSet<>();
-		contributedPackages.forEach(contributor -> {
-			Collection<String> contributed = contributor.packages();
-			// Naming the contributor: the failure is theirs, and the stack trace would say ours
-			Objects.requireNonNull(contributed, () -> contributor.getClass().getName() + " contributed no packages");
-			packages.addAll(contributed);
-		});
+		contributedPackages.forEach(contributor -> packages.addAll(contributor.packages()));
+		// A feature that imports this without contributing its entities would get a unit that maps
+		// nothing, and would only find out when a repository call failed
+		Assert.notEmpty(packages, "The persistence unit needs at least one CibsevenEntityPackages bean");
 		return builder
-			.dataSource(cibsevenDataSource.getIfAvailable(
-				() -> modelerDataSource.getIfAvailable(dataSource::getObject)))
+			.dataSource(cibsevenDataSource.getIfAvailable(dataSource::getObject))
 			.packages(packages.toArray(String[]::new))
 			.persistenceUnit(CibsevenJpa.PERSISTENCE_UNIT)
 			.build();
 	}
 
-	@Bean(name = { CibsevenJpa.TRANSACTION_MANAGER, CibsevenJpa.LEGACY_TRANSACTION_MANAGER },
-			defaultCandidate = false)
+	@Bean(name = CibsevenJpa.TRANSACTION_MANAGER, defaultCandidate = false)
 	PlatformTransactionManager cibsevenTransactionManager(
 			@Qualifier(CibsevenJpa.ENTITY_MANAGER_FACTORY) EntityManagerFactory entityManagerFactory) {
 		return new JpaTransactionManager(entityManagerFactory);

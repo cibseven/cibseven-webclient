@@ -31,6 +31,7 @@ import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -49,7 +50,7 @@ class CibsevenPersistenceConfigurationTest {
 
 	/** A standalone webclient: Spring Boot auto-configures the application's JPA beans. */
 	private final ApplicationContextRunner standalone = new ApplicationContextRunner()
-		.withPropertyValues("spring.datasource.url=jdbc:h2:mem:standalone;DB_CLOSE_DELAY=-1",
+		.withPropertyValues("spring.datasource.url=jdbc:h2:mem:standalone-sb4;DB_CLOSE_DELAY=-1",
 			"spring.jpa.hibernate.ddl-auto=create-drop")
 		.withConfiguration(org.springframework.boot.autoconfigure.AutoConfigurations
 			.of(DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class))
@@ -65,24 +66,6 @@ class CibsevenPersistenceConfigurationTest {
 			assertThat(context).hasNotFailed();
 			assertThat(context).hasBean(CibsevenJpa.ENTITY_MANAGER_FACTORY);
 			assertThat(context).hasBean(CibsevenJpa.TRANSACTION_MANAGER);
-		});
-	}
-
-	/**
-	 * A {@code static final String} is inlined where it is used, so a jar compiled against the
-	 * former constants carries the old literals and would otherwise stop resolving.
-	 */
-	@Test
-	void theNamesItUsedToHaveStillResolveToTheSameBeans() {
-		standalone.run(context -> {
-			assertThat(context.getBean(CibsevenJpa.LEGACY_ENTITY_MANAGER_FACTORY))
-				.isSameAs(context.getBean(CibsevenJpa.ENTITY_MANAGER_FACTORY));
-			assertThat(context.getBean(CibsevenJpa.LEGACY_TRANSACTION_MANAGER))
-				.isSameAs(context.getBean(CibsevenJpa.TRANSACTION_MANAGER));
-
-			TransactionManager resolved = BeanFactoryAnnotationUtils.qualifiedBeanOfType(
-				context.getBeanFactory(), TransactionManager.class, CibsevenJpa.LEGACY_TRANSACTION_MANAGER);
-			assertThat(resolved).isSameAs(context.getBean(CibsevenJpa.TRANSACTION_MANAGER));
 		});
 	}
 
@@ -169,18 +152,8 @@ class CibsevenPersistenceConfigurationTest {
 			assertThat(context).hasNotFailed();
 			assertThat(context.getBean(CibsevenJpa.ENTITY_MANAGER_FACTORY, EntityManagerFactory.class)
 				.getProperties().get("jakarta.persistence.nonJtaDataSource"))
-				.isSameAs(context.getBean(CibsevenJpa.DATA_SOURCE, DataSource.class));
-		});
-	}
-
-	/** The documented hook for a separate database keeps working under the name it had. */
-	@Test
-	void aDedicatedDataSourceUnderTheFormerNameIsStillUsed() {
-		standalone.withUserConfiguration(HostWithDedicatedDataSourceUnderTheFormerName.class).run(context -> {
-			assertThat(context).hasNotFailed();
-			assertThat(context.getBean(CibsevenJpa.ENTITY_MANAGER_FACTORY, EntityManagerFactory.class)
-				.getProperties().get("jakarta.persistence.nonJtaDataSource"))
-				.isSameAs(context.getBean(CibsevenJpa.LEGACY_DATA_SOURCE, DataSource.class));
+				.isSameAs(context.getBean(CibsevenJpa.DATA_SOURCE, DataSource.class))
+				.isNotSameAs(context.getBean("applicationDataSource", DataSource.class));
 		});
 	}
 
@@ -221,6 +194,7 @@ class CibsevenPersistenceConfigurationTest {
 		}
 	}
 
+	/** Two data sources, so the assertion can tell which one the unit took. */
 	@Configuration(proxyBeanMethods = false)
 	static class HostWithDedicatedDataSource {
 
@@ -229,15 +203,13 @@ class CibsevenPersistenceConfigurationTest {
 			return new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseType.H2)
 				.generateUniqueName(true).build();
 		}
-	}
 
-	@Configuration(proxyBeanMethods = false)
-	static class HostWithDedicatedDataSourceUnderTheFormerName {
-
-		@Bean(CibsevenJpa.LEGACY_DATA_SOURCE)
-		DataSource modelerDataSource() {
+		@Bean
+		@Primary
+		DataSource applicationDataSource() {
 			return new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseType.H2)
 				.generateUniqueName(true).build();
 		}
 	}
+
 }

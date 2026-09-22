@@ -36,7 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ModelerPersistenceConfigurationTest {
 
 	private final ApplicationContextRunner standalone = new ApplicationContextRunner()
-		.withPropertyValues("spring.datasource.url=jdbc:h2:mem:modelershare;DB_CLOSE_DELAY=-1",
+		.withPropertyValues("spring.datasource.url=jdbc:h2:mem:modelershare-sb4;DB_CLOSE_DELAY=-1",
 			"spring.jpa.hibernate.ddl-auto=create-drop")
 		.withConfiguration(org.springframework.boot.autoconfigure.AutoConfigurations
 			.of(DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class))
