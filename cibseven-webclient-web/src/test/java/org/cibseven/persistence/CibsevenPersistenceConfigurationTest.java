@@ -20,7 +20,6 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.cibseven.modeler.config.ModelerEntityPackages;
 import org.cibseven.modeler.config.ModelerPersistence;
 import org.cibseven.modeler.config.contributed.ContributedEntity;
 import org.cibseven.modeler.model.ProcessDiagramEntity;
@@ -164,17 +163,6 @@ class CibsevenPersistenceConfigurationTest {
 		});
 	}
 
-	/** The SPI a feature used before the unit was renamed still adds it to the unit. */
-	@Test
-	void aContributorOfTheFormerTypeIsStillCollected() {
-		standalone.withUserConfiguration(FeatureUsingTheFormerContributor.class).run(context -> {
-			assertThat(context).hasNotFailed();
-			assertThat(context.getBean(CibsevenJpa.ENTITY_MANAGER_FACTORY, EntityManagerFactory.class)
-				.getMetamodel().getEntities())
-				.anyMatch(entity -> ContributedEntity.class.equals(entity.getJavaType()));
-		});
-	}
-
 	@Test
 	void aDedicatedDataSourceIsUsedWhenTheApplicationProvidesOne() {
 		standalone.withUserConfiguration(HostWithDedicatedDataSource.class).run(context -> {
@@ -229,16 +217,6 @@ class CibsevenPersistenceConfigurationTest {
 
 		@Bean
 		CibsevenEntityPackages contributedPackages() {
-			return () -> List.of(ContributedEntity.class.getPackageName());
-		}
-	}
-
-	@SuppressWarnings("removal")
-	@Configuration(proxyBeanMethods = false)
-	static class FeatureUsingTheFormerContributor {
-
-		@Bean
-		ModelerEntityPackages contributedPackages() {
 			return () -> List.of(ContributedEntity.class.getPackageName());
 		}
 	}
