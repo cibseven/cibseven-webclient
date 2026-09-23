@@ -1,6 +1,6 @@
 {
   "name": "cibseven-components",
-  "version": "2.3.0-dev.5",
+  "version": "2.3.0-dev.24",
   "type": "module",
   "license": "",
   "main": "./src/main.js",
@@ -9,6 +9,7 @@
     "dist/cibseven-components.css",
     "dist/cibseven-components.es.js",
     "dist/cibseven-components.umd.js",
+    "src/plugins/pluginImportMap.js",
     "src/themes"
   ],
   "exports": {
@@ -16,6 +17,7 @@
       "import": "./dist/cibseven-components.es.js",
       "require": "./dist/cibseven-components.umd.js"
     },
+    "./vite": "./src/plugins/pluginImportMap.js",
     "./themes/*": "./src/themes/*",
     "./dist/cibseven-components.css": "./dist/cibseven-components.css"
   },
@@ -29,26 +31,20 @@
     "test:report": "cross-env NODE_OPTIONS=--max-old-space-size=4096 vitest run --coverage --reporter=default --reporter=junit --outputFile=target/vitest-reports/TEST-front-end.xml",
     "test:coverage": "vitest run --coverage",
     "test:unit": "vitest",
-    "test:e2e:prepare": "npx playwright install",
-    "test:e2e": "start-server-and-test preview http://localhost:5173 'playwright test'",
-    "test:e2e:dev": "start-server-and-test 'vite dev --port 5173' http://localhost:5173 'playwright test --ui'",
-    "test:e2e:playwright": "start-server-and-test preview http://localhost:5173 'playwright test'",
-    "test:e2e:playwright:ui": "start-server-and-test 'vite dev --port 5173' http://localhost:5173 'playwright test --ui'",
-    "test:e2e:playwright:debug": "start-server-and-test 'vite dev --port 5173' http://localhost:5173 'playwright test --debug'",
     "lint": "eslint .",
     "format": "eslint . --fix"
   },
   "dependencies": {
     "@bpmn-io/form-js": "1.21.3",
-    "@cib/bootstrap-theme": "1.0.1",
-    "@cib/common-frontend": "1.0.4",
+    "@cib/bootstrap-theme": "1.0.3-dev.4",
+    "@cib/common-frontend": "1.0.5-dev.2",
     "@mdi/font": "7.4.47",
     "apexcharts": "4.7.0",
-    "axios": "1.15.2",
+    "axios": "1.18.1",
     "bootstrap": "5.3.8",
-    "bpm-sdk": "2.1.2",
+    "bpm-sdk": "2.1.3",
     "bpmn-js": "18.14.0",
-    "cibseven-modeler": "1.2.0-dev.2",
+    "cibseven-modeler": "1.3.0-dev.9",
     "dmn-js": "17.7.0",
     "js-abbreviation-number": "1.4.0",
     "js-sha256": "0.11.1",
@@ -62,32 +58,29 @@
     "vuex": "4.1.0"
   },
   "peerDependencies": {
-    "axios": "^1.15.2",
+    "axios": "^1.18.1",
     "bootstrap": "^5.3.8",
-    "cibseven-modeler": "^1.2.0-dev.2",
     "vue": "^3.5.33",
     "vue-i18n": "^11.4.0",
     "vue-router": "^5.0.6"
   },
   "devDependencies": {
-    "@eslint/js": "9.39.4",
-    "@playwright/test": "^1.57.0",
+    "@eslint/js": "10.0.1",
     "@vitejs/plugin-vue": "6.0.6",
-    "@vitest/coverage-istanbul": "3.2.4",
-    "@vitest/eslint-plugin": "1.6.16",
+    "@vitest/coverage-istanbul": "4.1.11",
+    "@vitest/eslint-plugin": "1.6.27",
     "@vue/compiler-dom": "3.5.33",
     "@vue/server-renderer": "3.5.33",
     "@vue/test-utils": "2.4.9",
     "cross-env": "7.0.3",
-    "eslint": "9.39.4",
-    "eslint-plugin-vue": "9.32.0",
-    "eslint-plugin-vuejs-accessibility": "2.5.0",
+    "eslint": "10.8.1",
+    "eslint-plugin-vue": "10.10.0",
+    "eslint-plugin-vuejs-accessibility": "2.6.0",
     "jsdom": "29.1.0",
     "sass": "1.89.0",
-    "start-server-and-test": "2.0.11",
-    "vite": "6.4.2",
+    "vite": "6.4.3",
     "vite-plugin-vue-devtools": "8.1.1",
-    "vitest": "3.2.4"
+    "vitest": "4.1.11"
   },
   "publishConfig": {
     "registry": "https://artifacts.cibseven.org/repository/npm-hosted/"

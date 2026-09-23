@@ -58,6 +58,9 @@ import lombok.Setter;
 
 public class DirectProviderUtil {
 
+	private static final String FIRST_RESULT_PARAM = "firstResult";
+	private static final String MAX_RESULTS_PARAM = "maxResults";
+
 	protected Map<String, ProcessEngine> processEngines = new HashMap<>();
 	protected Map<String, ObjectMapper> objectMappers = new HashMap<>();
 	@Setter
@@ -130,21 +133,18 @@ public class DirectProviderUtil {
 	}
 
 	/**
-	 * Executes {@code action} with the given user authenticated on the engine, so that the engine
-	 * enforces its authorizations for the operation. The user's groups and tenants are resolved from
-	 * the engine's identity service.
+	 * Executes {@code action} with the given user authenticated on the engine, resolving the user's
+	 * groups and tenants from the identity service. Where authorization is enabled, this is what lets
+	 * the engine enforce its authorizations for the operation.
 	 *
-	 * <p>If the engine has authorization disabled, the action runs unchanged: the engine performs
-	 * no authorization checks, so setting the authentication (and the group/tenant identity queries it
-	 * requires) would be pure overhead.
+	 * <p>Set regardless of whether authorization is enabled: the engine also needs the acting user to
+	 * write the user operation log and to resolve {@code ${currentUser()}} in filter expressions.
 	 */
 	protected <V extends Object> V runAsUser(CIBUser user, Supplier<V> action) {
-		ProcessEngine processEngine = getProcessEngine(user);
-		if (user == null || user.getId() == null
-				|| !processEngine.getProcessEngineConfiguration().isAuthorizationEnabled()) {
+		if (user == null || user.getId() == null) {
 			return action.get();
 		}
-		IdentityService identityService = processEngine.getIdentityService();
+		IdentityService identityService = getProcessEngine(user).getIdentityService();
 		Authentication previousAuthentication = identityService.getCurrentAuthentication();
 		try {
 			identityService.setAuthentication(user.getId(), getGroupsOfUser(user), getTenantsOfUser(user));
@@ -223,77 +223,36 @@ public class DirectProviderUtil {
 		return value;
 	}
 
-	protected <E, D, R> List<R> listAndConvert(Query<?, E> query, Integer firstResult, Integer maxResults,
-			Function<E, D> toIntermediateDto, Class<R> targetClass, CIBUser user) {
-
-		List<E> rawList = QueryUtil.list(query, firstResult, maxResults);
-		List<R> result = new ArrayList<>(rawList.size());
-		for (E item : rawList) {
-			result.add(convertValue(toIntermediateDto.apply(item), targetClass, user));
-		}
-		return result;
+	protected Integer getFirstResult(Map<String, Object> params) {
+		return getPagingParam(params, FIRST_RESULT_PARAM);
 	}
-	
-	protected <Q extends AbstractQueryDto<?>> Q parseQueryDto(Object params, Class<Q> queryDtoClass, CIBUser user) {
-		return getObjectMapper(user).convertValue(params, queryDtoClass);
+
+	protected Integer getMaxResults(Map<String, Object> params) {
+		return getPagingParam(params, MAX_RESULTS_PARAM);
 	}
 
 	/**
-	 * Holds the pagination parameters ({@code firstResult}/{@code maxResults}) extracted
-	 * from a request parameter map, together with the remaining parameters as a
-	 * {@link MultivaluedMap} suitable for building a query DTO.
+	 * Copy of the request parameters without the paging keys, so that they are not
+	 * offered to the query DTO as filter criteria.
 	 */
-	public static class PagedParams {
-		private final Integer firstResult;
-		private final Integer maxResults;
-		private final MultivaluedMap<String, String> queryParams;
-
-		PagedParams(Integer firstResult, Integer maxResults, MultivaluedMap<String, String> queryParams) {
-			this.firstResult = firstResult;
-			this.maxResults = maxResults;
-			this.queryParams = queryParams;
-		}
-
-		public Integer getFirstResult() {
-			return firstResult;
-		}
-
-		public Integer getMaxResults() {
-			return maxResults;
-		}
-
-		public MultivaluedMap<String, String> getQueryParams() {
-			return queryParams;
-		}
+	protected Map<String, Object> withoutPagingParams(Map<String, Object> params) {
+		Map<String, Object> queryParams = new HashMap<>(params);
+		queryParams.remove(FIRST_RESULT_PARAM);
+		queryParams.remove(MAX_RESULTS_PARAM);
+		return queryParams;
 	}
 
 	/**
-	 * Extracts {@code firstResult}/{@code maxResults} from the given params and collects
-	 * the remaining entries into a {@link MultivaluedMap}.
+	 * Values arrive as strings via {@code @RequestParam}, but internal callers may
+	 * pass numbers.
 	 */
-	protected PagedParams extractPagedParams(Map<String, Object> params) {
-		MultivaluedMap<String, String> multiValueMap = new MultivaluedHashMap<>();
-		Integer firstResult = null;
-		Integer maxResults = null;
-		for (Entry<String, Object> entry : params.entrySet()) {
-			if (entry.getKey().equals("firstResult"))
-				firstResult = Integer.parseInt((String) entry.getValue());
-			else if (entry.getKey().equals("maxResults"))
-				maxResults = Integer.parseInt((String) entry.getValue());
-			else
-				multiValueMap.putSingle(entry.getKey(), (String) entry.getValue());
-		}
-		return new PagedParams(firstResult, maxResults, multiValueMap);
-	}
-
-	/**
-	 * Builds a {@link MultivaluedMap} containing all entries of the given params.
-	 */
-	protected MultivaluedMap<String, String> toMultivaluedMap(Map<String, Object> params) {
-		MultivaluedMap<String, String> multiValueMap = new MultivaluedHashMap<>();
-		for (Entry<String, Object> entry : params.entrySet()) {
-			multiValueMap.putSingle(entry.getKey(), (String) entry.getValue());
-		}
-		return multiValueMap;
+	private Integer getPagingParam(Map<String, Object> params, String name) {
+		Object value = params.get(name);
+		if (value == null)
+			return null;
+		if (value instanceof Number)
+			return ((Number) value).intValue();
+		String text = value.toString().trim();
+		return text.isEmpty() ? null : Integer.valueOf(text);
 	}
 }

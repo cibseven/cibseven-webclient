@@ -57,10 +57,18 @@ public interface ITaskProvider {
 	public void createIdentityLink(String taskId, Map<String, Object> data, CIBUser user);
 	public void deleteIdentityLink(String taskId, Map<String, Object> data, CIBUser user);
 	public void handleBpmnError(String taskId, Map<String, Object> data, CIBUser user) throws SystemException;
+	public void handleBpmnEscalation(String taskId, Map<String, Object> data, CIBUser user) throws SystemException;
 	public Collection<TaskHistory> findTasksByTaskIdHistory(String taskId, CIBUser user);
 	public ResponseEntity<byte[]> getDeployedForm(String taskId, CIBUser user);
 	public ResponseEntity<String> getRenderedForm(String taskId, Map<String, Object> params, CIBUser user);
 	public Integer findHistoryTasksCount(Map<String, Object> filters, CIBUser user);
+	/**
+	 * Queries historic task instances by forwarding an arbitrary filter map, as the engine's
+	 * historic task query accepts it. Complements the fixed-filter lookups above, which only
+	 * cover task id, process instance and task definition key.
+	 */
+	public Collection<TaskHistory> findHistoryTasks(Map<String, Object> filters,
+			Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user);
 	public Collection<CandidateGroupTaskCount> getTaskCountByCandidateGroup(CIBUser user);
 	
 }

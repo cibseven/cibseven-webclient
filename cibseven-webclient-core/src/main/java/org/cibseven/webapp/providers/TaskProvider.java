@@ -202,25 +202,28 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	}
 
 	private void enrichTasksWithVariables(List<Task> tasks, List<String> variableNames, CIBUser user) {
-		String processInstanceIds = tasks.stream()
+		List<String> processInstanceIds = tasks.stream()
 			.map(Task::getProcessInstanceId)
 			.filter(id -> id != null && !id.isEmpty())
 			.distinct()
-			.collect(Collectors.joining(","));
+			.collect(Collectors.toList());
 
 		if (processInstanceIds.isEmpty()) return;
 
-		String url = getEngineRestUrl(user) + "/variable-instance?processInstanceIdIn="
-			+ processInstanceIds + "&deserializeValues=false";
+		String url = getEngineRestUrl(user) + "/variable-instance?deserializeValues=false";
+		Map<String, Object> body = new HashMap<>();
+		body.put("processInstanceIdIn", processInstanceIds);
+		body.put("orQueries", variableNames.stream()
+			.map(name -> Map.<String, Object>of("variableName", name))
+			.collect(Collectors.toList()));
 		try {
-			VariableInstance[] instances = ((ResponseEntity<VariableInstance[]>)
-				doGet(url, VariableInstance[].class, user, false)).getBody();
+			VariableInstance[] instances = doPost(url, body, VariableInstance[].class, user).getBody();
 			if (instances == null) return;
 
 			Map<String, Map<String, Object>> varsByInstance = new HashMap<>();
 			Map<String, Map<String, String>> typesByInstance = new HashMap<>();
 			for (VariableInstance vi : instances) {
-				if (variableNames.contains(vi.getName()) && vi.getProcessInstanceId() != null) {
+				if (vi.getProcessInstanceId() != null) {
 					Object displayValue = vi.getValue();
 					if ("Object".equals(vi.getType()) && vi.getValueInfo() != null) {
 						Object typeName = vi.getValueInfo().get("objectTypeName");
@@ -312,6 +315,12 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	}
 
 	@Override
+	public void handleBpmnEscalation(String taskId, Map<String, Object> data, CIBUser user) throws SystemException {
+		String url = getEngineRestUrl(user) + "/task/" + taskId + "/bpmnEscalation";
+		doPost(url, data, null, user);
+	}
+
+	@Override
 	public Collection<TaskHistory> findTasksByTaskIdHistory(String taskId, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/history/task?taskId=" + taskId;
 		return Arrays.asList(((ResponseEntity<TaskHistory[]>) doGet(url, TaskHistory[].class, user, false)).getBody());
@@ -337,6 +346,16 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 			throw new NullPointerException();
 		}
 		return body.get("count").asInt();
+	}
+
+	@Override
+	public Collection<TaskHistory> findHistoryTasks(Map<String, Object> filters,
+			Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) {
+		Map<String, Object> pagination = new HashMap<>();
+		firstResult.ifPresent(value -> pagination.put("firstResult", value));
+		maxResults.ifPresent(value -> pagination.put("maxResults", value));
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/history/task", pagination);
+		return Arrays.asList(((ResponseEntity<TaskHistory[]>) doPost(url, filters, TaskHistory[].class, user)).getBody());
 	}
 
 	@Override

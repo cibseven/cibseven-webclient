@@ -18,11 +18,12 @@ package org.cibseven.webapp.providers;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
+import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.ProcessEngineException;
 import org.cibseven.bpm.engine.authorization.AuthorizationQuery;
 import org.cibseven.bpm.engine.authorization.Permissions;
@@ -49,6 +50,12 @@ import org.cibseven.webapp.rest.model.SevenUser;
 import org.cibseven.webapp.rest.model.SevenVerifyUser;
 import org.cibseven.webapp.rest.model.User;
 import org.cibseven.webapp.rest.model.UserGroup;
+import org.cibseven.bpm.engine.ProcessEngine;
+import org.cibseven.bpm.engine.authorization.Permission;
+import org.cibseven.bpm.engine.authorization.Resource;
+import org.cibseven.bpm.engine.impl.util.ResourceTypeUtil;
+import org.cibseven.webapp.exception.UnknownResourceTypeException;
+import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
 
 public class DirectUserProvider implements IUserProvider {
@@ -79,43 +86,80 @@ public class DirectUserProvider implements IUserProvider {
 	}
 
 	@Override
-	public Authorizations getUserAuthorization(String userId, CIBUser user) {
-		AuthorizationQueryDto queryDto = new AuthorizationQueryDto();
-		queryDto.setUserIdIn(new String[] { userId });
-		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
-		AuthorizationQuery userQuery = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
+	public Authorizations getUserAuthorization(CIBUser user) {
+		Authentication currentAuthentication = directProviderUtil.getProcessEngine(user).getIdentityService()
+				.getCurrentAuthentication();
+		List<String> authenticatedGroupIds = currentAuthentication != null ? currentAuthentication.getGroupIds() : null;
 
-		List<org.cibseven.bpm.engine.authorization.Authorization> userAuthorizationList = QueryUtil.list(userQuery, null,
-				null);
-		GroupQuery groupQuery = directProviderUtil.getProcessEngine(user).getIdentityService().createGroupQuery();
-		List<Group> userGroups = groupQuery.groupMember(userId).orderByGroupName().asc().unlimitedList();
+		Collection<Authorization> userAuthorizations = directProviderUtil
+				.runWithoutAuthorization(() -> fetchOwnAuthorizations(user, authenticatedGroupIds), user);
 
-		Collection<Authorization> groupsAuthorizations;
-		if (!userGroups.isEmpty()) {
-			String[] listGroups = userGroups.stream().map(Group::getId).toArray(String[]::new);
-			AuthorizationQueryDto groupIdQueryDto = new AuthorizationQueryDto();
-			groupIdQueryDto.setGroupIdIn(listGroups);
-			groupIdQueryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
-			AuthorizationQuery groupIdQuery = groupIdQueryDto.toQuery(directProviderUtil.getProcessEngine(user));
-			List<org.cibseven.bpm.engine.authorization.Authorization> groupIdResultList = QueryUtil.list(groupIdQuery, null, null);
-			groupsAuthorizations = createAuthorizationCollection(groupIdResultList);
-		} else {
-			groupsAuthorizations = Collections.emptyList();
+		Authorizations auths = new Authorizations();
+		auths.setApplication(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.APPLICATION)));
+		auths.setFilter(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.FILTER)));
+		auths.setProcessDefinition(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.PROCESS_DEFINITION)));
+		auths.setProcessInstance(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.PROCESS_INSTANCE)));
+		auths.setTask(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.TASK)));
+		auths.setAuthorization(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.AUTHORIZATION)));
+		auths.setUser(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.USER)));
+		auths.setGroup(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.GROUP)));
+		auths.setDecisionDefinition(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.DECISION_DEFINITION)));
+		auths.setDecisionRequirementsDefinition(
+				SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.DECISION_REQUIREMENTS_DEFINITION)));
+		auths.setDeployment(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.DEPLOYMENT)));
+		// auths.setCaseDefinition(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.CASE_DEFINITION)));
+		// auths.setCaseInstance(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.CASE_INSTANCE)));
+		// auths.setJobDefinition(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.JOB_DEFINITION)));
+		auths.setBatch(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.BATCH)));
+		auths.setGroupMembership(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.GROUP_MEMBERSHIP)));
+		auths.setHistoricTask(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.HISTORIC_TASK)));
+		auths.setHistoricProcessInstance(
+				SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.HISTORIC_PROCESS_INSTANCE)));
+		auths.setTenant(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.TENANT)));
+		auths.setTenantMembership(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.TENANT_MEMBERSHIP)));
+		auths.setReport(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.REPORT)));
+		auths.setDashboard(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.DASHBOARD)));
+		auths.setUserOperationLogCategory(
+				SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.USER_OPERATION_LOG_CATEGORY)));
+		auths.setSystem(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.SYSTEM)));
+		// auths.setMessage(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.MESSAGE)));
+		// auths.setEventSubscription(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.EVENT_SUBSCRIPTION)));
+
+		return auths;
+	}
+
+	/**
+	 * Collects the authorizations that apply to {@code user}: the ones granted to the user itself, the
+	 * ones granted to a group it belongs to, and the global ones.
+	 *
+	 * @param authenticatedGroupIds the memberships carried by the engine authentication, or {@code null}
+	 *        when the engine did not authenticate the user; they are then queried instead.
+	 */
+	private Collection<Authorization> fetchOwnAuthorizations(CIBUser user, List<String> authenticatedGroupIds) {
+		ProcessEngine processEngine = directProviderUtil.getProcessEngine(user);
+		List<String> groupIds = authenticatedGroupIds != null ? authenticatedGroupIds
+				: directProviderUtil.getGroupsOfUser(user);
+
+		Collection<Authorization> authorizations = queryAuthorizations(processEngine, user,
+				queryDto -> queryDto.setUserIdIn(new String[] { user.getId() }));
+
+		if (groupIds != null && !groupIds.isEmpty()) {
+			authorizations.addAll(queryAuthorizations(processEngine, user,
+					queryDto -> queryDto.setGroupIdIn(groupIds.toArray(new String[0]))));
 		}
 
-		AuthorizationQueryDto globalIdQueryDto = new AuthorizationQueryDto();
-		globalIdQueryDto.setType(0);
-		globalIdQueryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
-		AuthorizationQuery globalIdQuery = globalIdQueryDto.toQuery(directProviderUtil.getProcessEngine(user));
-		List<org.cibseven.bpm.engine.authorization.Authorization> globalIdResultList = QueryUtil.list(globalIdQuery, null,
-				null);
-		Collection<Authorization> globalAuthorizations = createAuthorizationCollection(globalIdResultList);
+		authorizations.addAll(queryAuthorizations(processEngine, user, queryDto -> queryDto.setType(0)));
 
-		Collection<Authorization> userAuthorizations = createAuthorizationCollection(userAuthorizationList);
-		userAuthorizations.addAll(groupsAuthorizations);
-		userAuthorizations.addAll(globalAuthorizations);
+		return authorizations;
+	}
 
-		return buildAuthorizations(userAuthorizations);
+	private Collection<Authorization> queryAuthorizations(ProcessEngine processEngine, CIBUser user,
+			Consumer<AuthorizationQueryDto> filter) {
+		AuthorizationQueryDto queryDto = new AuthorizationQueryDto();
+		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
+		filter.accept(queryDto);
+		AuthorizationQuery query = queryDto.toQuery(processEngine);
+		return createAuthorizationCollection(QueryUtil.list(query, null, null));
 	}
 
 	@Override
@@ -561,4 +605,41 @@ public class DirectUserProvider implements IUserProvider {
 		return query.count();
 	}
 
+
+	/**
+	 * Decided by the engine in-process. The call runs with the user authenticated (see
+	 * {@link AuthorizingProviderProxy}), but the engine evaluates the check internally rather than
+	 * through a query the caller must be allowed to make, so a grant the user may not read still counts.
+	 */
+	@Override
+	public boolean isUserAuthorized(CIBUser user, int resourceType, String resourceId, String permission) {
+		ProcessEngine engine = directProviderUtil.getProcessEngine(user);
+		if (!engine.getProcessEngineConfiguration().isAuthorizationEnabled()) {
+			return true;
+		}
+		Resource resource = ResourceTypeUtil.getResourceByType(resourceType);
+		Permission required = ResourceTypeUtil.getPermissionByNameAndResourceType(permission, resourceType);
+		if (resource == null || required == null) {
+			throw new UnknownResourceTypeException(resourceType);
+		}
+		return engine.getAuthorizationService()
+			.isUserAuthorized(user.getId(), groupIdsOf(user, engine), required, resource, resourceId);
+	}
+
+	/**
+	 * Taken from the authentication {@link AuthorizingProviderProxy} already established, because
+	 * querying memberships as that user is filtered by READ on the group resource and would miss a
+	 * permission granted through a group. Resolved outside the authentication for non-proxied callers.
+	 */
+	private List<String> groupIdsOf(CIBUser user, ProcessEngine engine) {
+		Authentication authentication = engine.getIdentityService().getCurrentAuthentication();
+		if (authentication != null && user.getId().equals(authentication.getUserId())
+				&& authentication.getGroupIds() != null) {
+			return authentication.getGroupIds();
+		}
+		return directProviderUtil.runWithoutAuthorization(() -> engine.getIdentityService().createGroupQuery()
+			.groupMember(user.getId()).unlimitedList().stream()
+			.map(Group::getId)
+			.collect(Collectors.toList()), user);
+	}
 }

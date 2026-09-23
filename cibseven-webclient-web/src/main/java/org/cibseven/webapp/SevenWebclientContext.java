@@ -54,6 +54,7 @@ import org.springframework.web.servlet.mvc.WebContentInterceptor;
 import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @Configuration
@@ -77,6 +78,15 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 	@Value("${cibseven.webclient.custom.spring.jackson.parser.max-size:20000000}")
 	int jacksonParserMaxSize;
 
+	/**
+	 * Deprecated interim opt-out: serializes dates as epoch millis again. Kept only so
+	 * consumers that adapted to the pre-fix output have a migration window. Jackson 3
+	 * disables timestamp output by default, so this flag loses its purpose once the wire
+	 * layer moves to Jackson 3 - remove it together with that migration.
+	 */
+	@Value("${cibseven.webclient.custom.spring.jackson.serialization.write-dates-as-timestamps:false}")
+	boolean writeDatesAsTimestamps;
+
 	@Bean
 	public ObjectMapper objectMapper() {
 		ObjectMapper objectMapper = new ObjectMapper();
@@ -87,6 +97,8 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 		objectMapper.getFactory().setStreamReadConstraints(streamReadConstraints);
 		objectMapper.registerModule(new JavaTimeModule());
 		objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, writeDatesAsTimestamps);
+		objectMapper.configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, writeDatesAsTimestamps);
 		return objectMapper;
 	}
 
@@ -103,7 +115,7 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
-		registry.addMapping("/**").allowedMethods("GET", "POST", "DELETE", "PUT");
+		registry.addMapping("/**").allowedMethods("GET", "POST", "DELETE", "PUT", "PATCH");
 	}
 
 	@Override // https://stackoverflow.com/questions/16332092/spring-mvc-pathvariable-with-dot-is-getting-truncated

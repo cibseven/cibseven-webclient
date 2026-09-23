@@ -48,6 +48,12 @@ public class DirectFilterProvider implements IFilterProvider{
 		List<org.cibseven.bpm.engine.filter.Filter> matchingFilters = QueryUtil.list(query, null, null);
 		return directProviderUtil.listAndConvert(query, null, null, FilterDto::fromFilter, Filter.class, user);
 
+		List<Filter> filters = new ArrayList<>();
+		for (org.cibseven.bpm.engine.filter.Filter filter : matchingFilters) {
+			FilterDto filterDto = FilterDto.fromFilter(filter);
+			filters.add(directProviderUtil.convertValue(filterDto, Filter.class, user));
+		}
+		return filters;
 	}
 
 	@Override

@@ -34,8 +34,8 @@ public interface IDeploymentProvider {
 	public Deployment deployBpmn(MultiValueMap<String, Object> data, MultiValueMap<String, MultipartFile> file, CIBUser user) throws SystemException;
 	public Deployment createDeployment(MultiValueMap<String, Object> data, MultipartFile[] files, CIBUser user);
 	public Deployment redeployDeployment(String id, Map<String, Object> data, CIBUser user) throws SystemException;
-	public Long countDeployments(CIBUser user, String nameLike);
-	public Collection<Deployment> findDeployments(CIBUser user, String nameLike, int firstResult, int maxResults, String sortBy, String sortOrder);
+	public Long countDeployments(CIBUser user, MultiValueMap<String, String> queryParams);
+	public Collection<Deployment> findDeployments(CIBUser user, MultiValueMap<String, String> queryParams, int firstResult, int maxResults, String sortBy, String sortOrder);
 	public Collection<DeploymentResource> findDeploymentResources(String deploymentId, CIBUser user);
 	public Data fetchDataFromDeploymentResource(HttpServletRequest rq, String deploymentId, String resourceId, String fileName, CIBUser user);
 	public void deleteDeployment(String deploymentId, Boolean cascade, CIBUser user) throws SystemException;

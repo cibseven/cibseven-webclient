@@ -19,6 +19,7 @@ package org.cibseven.webapp.providers;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -92,6 +93,32 @@ public class VariableProviderIT extends BaseHelper {
         assertThat(variables).isNotNull();
         assertThat(variables).hasSize(1);
         assertThat(variables.iterator().next().getName()).isEqualTo("var1");
+    }
+
+    @Test
+    void testFetchProcessInstanceVariablesWithDuplicateNames() throws Exception {
+        String processInstanceId = "process-instance-1";
+        CIBUser user = getCibUser();
+
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(loadMockResponse("mocks/variable_duplicate_name_deserialized_mock.json"))
+                .addHeader("Content-Type", "application/json"));
+
+        mockWebServer.enqueue(new MockResponse()
+                .setBody(loadMockResponse("mocks/variable_duplicate_name_serialized_mock.json"))
+                .addHeader("Content-Type", "application/json"));
+
+        final Map<String, Object> data = Map.of(
+            "deserializeValues", true
+        );
+        List<Variable> variables = new ArrayList<>(
+                variableProvider.fetchProcessInstanceVariables(processInstanceId, data, user));
+
+        assertThat(variables).hasSize(2);
+        assertThat(variables.get(0).getValueDeserialized()).isEqualTo("first-deserialized");
+        assertThat(variables.get(0).getValueSerialized()).isEqualTo("first-serialized");
+        assertThat(variables.get(1).getValueDeserialized()).isEqualTo("second-deserialized");
+        assertThat(variables.get(1).getValueSerialized()).isEqualTo("second-serialized");
     }
 
     @Test

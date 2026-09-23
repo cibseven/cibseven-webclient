@@ -18,14 +18,19 @@
 -->
 <template>
   <div class="d-flex flex-column bg-light" :style="{ height: 'calc(100% - 55px)' }">
+    <WarningBox v-if="authorizationDisabled" :message="$t('admin.authorizations.authorizationDisabledWarning')"/>
     <div class="container-fluid pb-2 pt-4">
+      <h4>{{ $t('admin.authorizations.resourcesTypes.' + resourcesTypes[$route.params.resourceTypeId].key) }}</h4>
+      <div :key="resourcesTypes[$route.params.resourceTypeId].key" class="alert alert-info"
+        v-html="$t('admin.authorizations.resourcesTypesDescriptions.' + resourcesTypes[$route.params.resourceTypeId].key)"></div>
       <div class="row align-items-center px-4">
         <div class="col-4">
           <b-input-group size="sm">
             <template #prepend>
               <b-button class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
             </template>
-            <b-form-input :placeholder="$t('searches.search')" v-model.trim="filter"></b-form-input>
+            <label for="authorizations-search" class="visually-hidden">{{ $t('searches.search') }}</label>
+            <b-form-input id="authorizations-search" :placeholder="$t('searches.search')" v-model.trim="filter"></b-form-input>
           </b-input-group>
         </div>
         <div class="col-8 text-end">
@@ -42,7 +47,8 @@
     </div>
     <div class="container-fluid overflow-auto h-100 g-0" @scroll="showMore">
       <div class="px-4 mb-5">
-        <FlowTable striped thead-class="sticky-header light" :items="authorizations" primary-key="id"
+        <FlowTable striped resizable thead-class="sticky-header light" :items="authorizations" primary-key="id"
+          :native-layout="false"
           :fields="authorizationFields"
           class="shadow-sm border rounded"
         >
@@ -56,7 +62,7 @@
                   </b-button>
                 </template>
                 <b-dropdown-item class="ms-2" v-for="type in types" :key="type.key"
-                  @click="row.item.type = type.id" :active="row.item.type === type.id">
+                  @click="setType(row.item, type.id)" :active="row.item.type === type.id">
                   {{ $t('admin.authorizations.types.' + type.key) }}
                 </b-dropdown-item>
               </b-dropdown>
@@ -69,12 +75,13 @@
             <div v-if="edit === row.item.id">
               <b-input-group>
                 <b-input-group-prepend>
-                  <b-button variant="outline-secondary" @click="isUserToEdit = !isUserToEdit">
+                  <b-button variant="outline-secondary" :disabled="isGlobal(row.item)" @click="isUserToEdit = !isUserToEdit">
                     <span class="mdi" :class="isUserToEdit ? 'mdi-account' : 'mdi-account-group'"></span>
                   </b-button>
                 </b-input-group-prepend>
-                <b-form-input v-if="row.item.userId" v-model="row.item.userId"></b-form-input>
-                <b-form-input v-else v-model="row.item.groupId"></b-form-input>
+                <label :for="'authz-identity-' + row.item.id" class="visually-hidden">{{ $t('admin.authorizations.userIdGroupId') }}</label>
+                <b-form-input v-if="row.item.userId" :id="'authz-identity-' + row.item.id" v-model="row.item.userId" :disabled="isGlobal(row.item)"></b-form-input>
+                <b-form-input v-else :id="'authz-identity-' + row.item.id" v-model="row.item.groupId"></b-form-input>
               </b-input-group>
             </div>
             <div v-else>
@@ -117,7 +124,8 @@
           </template>
           <template v-slot:cell(name)="row">
             <div v-if="edit === row.item.id">
-              <b-form-select v-model="row.item.name" :options="filterNameOptions" @change="onFilterNameChange(row.item)">
+              <label :for="'authz-name-' + row.item.id" class="visually-hidden">{{ $t('admin.authorizations.name') }}</label>
+              <b-form-select :id="'authz-name-' + row.item.id" v-model="row.item.name" :options="filterNameOptions" @change="onFilterNameChange(row.item)">
                 <template v-slot:first>
                   <b-form-select-option :value="null"></b-form-select-option>
                 </template>
@@ -127,7 +135,8 @@
           </template>
           <template v-slot:cell(resourceId)="row">
             <div v-if="edit === row.item.id">
-              <b-form-input v-model="row.item.resourceId" :readonly="!!row.item.name"></b-form-input>
+              <label :for="'authz-resource-' + row.item.id" class="visually-hidden">{{ $t('admin.authorizations.resourceId') }}</label>
+              <b-form-input :id="'authz-resource-' + row.item.id" v-model="row.item.resourceId" :readonly="!!row.item.name"></b-form-input>
             </div>
             <div v-else> {{ row.item.resourceId }} </div>
           </template>
@@ -176,18 +185,31 @@ import { debounce } from '@/utils/debounce.js'
 import { getStringObjByKeys } from '@/components/admin/utils.js'
 import { FlowTable, TaskPopper, ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
+import WarningBox from '@/components/common-components/WarningBox.vue'
+
+// admin.types is deployment configuration and has carried its ids as strings, while the engine
+// models the type as an int. Numbering them here keeps the type a number everywhere below.
+function numberedTypes(types) {
+  return Object.fromEntries(Object.entries(types).map(([key, type]) => [key, { ...type, id: Number(type.id) }]))
+}
+
+const TYPE_GLOBAL = 0
+const TYPE_ALLOW = 1
+// The engine's wildcard identity, meaning "every user".
+const ALL_USERS = '*'
 
 export default {
   name: 'AdminAuthorizationsTable',
-  components: { FlowTable, TaskPopper, BWaitingBox, ConfirmDialog, CellActionButton },
+  components: { FlowTable, TaskPopper, BWaitingBox, ConfirmDialog, CellActionButton, WarningBox },
   data: function () {
     return {
       selected: [],
       filter: '',
       authorizations: [],
       resourcesTypes: this.$root.config.admin.resourcesTypes,
-      types: this.$root.config.admin.types,
+      types: numberedTypes(this.$root.config.admin.types),
       edit: null,
+      editBackup: null,
       isUserToEdit: true,
       authorizationSelected: null,
       firstResult: 0,
@@ -214,17 +236,29 @@ export default {
     }
   },
   computed: {
+    authorizationDisabled() {
+      return !this.$root.config.authorizationEnabled
+    },
     authorizationFields: function() {
+      const hasNameField = this.$route.params.resourceTypeId === '5'
+
       const baseFields = [
-        { label: 'admin.authorizations.type', key: 'type', class: 'col' },
-        { label: 'admin.authorizations.userIdGroupId', key: 'userIdGroupId', class: 'col' },
-        { label: 'admin.authorizations.permissions', key: 'permissions', class: 'col' },
-        { label: 'admin.authorizations.resourceId', key: 'resourceId', class: 'col' },
-        { label: 'admin.authorizations.actions', key: 'actions', class: 'col text-center', sortable: false,
+        { label: 'admin.authorizations.type', key: 'type' },
+        { label: 'admin.authorizations.userIdGroupId', key: 'userIdGroupId' },
+        { label: 'admin.authorizations.permissions', key: 'permissions' },
+        { label: 'admin.authorizations.resourceId', key: 'resourceId' },
+        { label: 'admin.authorizations.actions', key: 'actions', class: 'text-center', sortable: false,
           thClass: 'justify-content-center', tdClass: 'justify-content-center py-0' }
       ]
-      if (this.$route.params.resourceTypeId === '5')
-        baseFields.splice(3, 0, { label: 'admin.authorizations.name', key: 'name', class: 'col' })
+      if (hasNameField)
+        baseFields.splice(3, 0, { label: 'admin.authorizations.name', key: 'name', class: 'col-2' })
+
+      const colSizes = hasNameField ?
+        ['col-1', 'col-2', 'col-2', 'col-3', 'col-3', 'col-1 text-center'] :
+        ['col-1', 'col-3', 'col-4', 'col-3', 'col-1 text-center']
+      baseFields.forEach((field, index) => {
+        field.class = colSizes[index]
+      })
 
       return baseFields
     },
@@ -273,6 +307,10 @@ export default {
       // auth needs to be removed from list.
       if (this.authorizations[0].id === "0") this.authorizations.shift()
       this.edit = authorization.id
+      // The editor writes straight into the row, so keep its stored state to undo an abandoned edit.
+      this.editBackup = { ...authorization, permissions: [...authorization.permissions] }
+      // A GLOBAL authorization is always the user "*" without a group, keep the editor in line with that.
+      if (this.isGlobal(authorization)) this.applyGlobalIdentity(authorization)
       this.isUserToEdit = (authorization.userId != null)
       if (authorization.permissions.length === 0) {
         this.selected = []
@@ -300,7 +338,11 @@ export default {
       // If id == 0 then means that we are creating a new authorization.
       if (authorization.id === "0") {
         this.authorizations.shift()
+      } else if (this.editBackup && this.editBackup.id === authorization.id) {
+        // Nothing was persisted, so the table has to show the stored row again and not the abandoned input.
+        Object.assign(authorization, this.editBackup)
       }
+      this.editBackup = null
     },
     remove: function(authorization) {
       AdminService.deleteAuthorization(authorization.id).then(() => {
@@ -316,6 +358,33 @@ export default {
         this.selected = this.resourcesTypes[this.$route.params.resourceTypeId].permissions
       }
     },
+    isGlobal: function (authorization) {
+      return authorization.type === TYPE_GLOBAL
+    },
+    isAllow: function (authorization) {
+      return authorization.type === TYPE_ALLOW
+    },
+    setType: function (authorization, typeId) {
+      const wasGlobal = this.isGlobal(authorization)
+      authorization.type = typeId
+      if (this.isGlobal(authorization)) {
+        this.applyGlobalIdentity(authorization)
+      } else if (wasGlobal) {
+        // Drop the identity that GLOBAL forced, so a real user or group can be entered.
+        authorization.userId = null
+        authorization.groupId = null
+        authorization.userIdGroupId = null
+        this.isUserToEdit = true
+      }
+    },
+    applyGlobalIdentity: function (authorization) {
+      // AuthorizationEntity.setUserId() rejects a GLOBAL authorization whose userId is not "*",
+      // and a GLOBAL authorization never carries a groupId, so there is nothing to enter here.
+      authorization.userId = ALL_USERS
+      authorization.groupId = null
+      authorization.userIdGroupId = ALL_USERS
+      this.isUserToEdit = true
+    },
     save: function (authorization) {
       if ((this.isUserToEdit) && (authorization.userId == null)) {
         authorization.userId = authorization.groupId
@@ -326,6 +395,13 @@ export default {
       }
       authorization.userIdGroupId = authorization.userId != null ? authorization.userId : authorization.groupId
 
+     //Global should be used instead of an ALLOW to set permissions for all users
+      const convertedToGlobal = this.isAllow(authorization) && authorization.userId === ALL_USERS
+      if (convertedToGlobal) {
+        authorization.type = TYPE_GLOBAL
+        authorization.groupId = null
+      }
+
       if (this.selected.length === this.resourcesTypes[this.$route.params.resourceTypeId].permissions.length) {
         authorization.permissions = ['ALL']
       } else if (this.selected.length === 0) {
@@ -333,24 +409,65 @@ export default {
       } else {
         authorization.permissions = this.selected
       }
+      if (this.isGlobal(authorization) && this.hasConflictingGlobal(authorization)) {
+        // Show the row as it was entered again, the conversion never reached the engine.
+        if (convertedToGlobal) authorization.type = TYPE_ALLOW
+        this.$root.$refs.error.show({ type: 'globalAuthorizationExists', params: [authorization.resourceId] })
+        return
+      }
+
+      return this.persistAuthorization(authorization, convertedToGlobal)
+    },
+    hasConflictingGlobal: function (authorization) {
+      if (authorization.resourceId == null) return false
+      // Checked against the rows at hand, so saving stays a single request. A conflict with a row that was
+      // never loaded still ends up rejected by the engine, and reloadAfterRejectedSave() cleans that up.
+      return this.authorizations.some(row => row !== authorization && this.isGlobal(row) &&
+        row.resourceId === authorization.resourceId)
+    },
+    persistAuthorization: function (authorization, convertedToGlobal) {
+      this.editBackup = null
       // If id == 0 then means that we are creating a new authorization. and new auth is going to be always in first place.
       if (authorization.id === "0") {
         authorization.id = null
-        AdminService.createAuthorization(authorization).then((res) => {
+        return AdminService.createAuthorization(authorization).then((res) => {
           authorization.id = res.id
-        })
+        }, () => this.reloadAfterRejectedSave())
+      } else if (convertedToGlobal) {
+        // The engine keeps the type of an existing authorization: its update maps permissions, user, group
+        // and resource, but never TYPE_, so a PUT would report success and leave the ALLOW row in place.
+        // The row therefore has to be replaced. The new row is created first, so that a rejected create --
+        // a GLOBAL row for this resource already exists, for instance -- leaves the old one untouched.
+        const replacedId = authorization.id
+        authorization.id = null
+        return AdminService.createAuthorization(authorization).then((res) => {
+          authorization.id = res.id
+          return AdminService.deleteAuthorization(replacedId).then(() => {
+            this.cancelEdit(authorization)
+          })
+        }, () => this.reloadAfterRejectedSave())
       } else {
-        AdminService.updateAuthorization(authorization.id, authorization).then(() => {
+        return AdminService.updateAuthorization(authorization.id, authorization).then(() => {
           this.cancelEdit(authorization)
-        })
+        }, () => this.reloadAfterRejectedSave())
       }
+    },
+    reloadAfterRejectedSave: function () {
+      // The engine refused the row, so the table must not keep showing it as if it had been saved.
+      // The error itself is reported by the global axios error handler.
+      this.edit = null
+      this.selected = []
+      this.authorizationSelected = null
+      this.firstResult = 0
+      this.loading = true
+      this.loadAuthorizations(this.$route.params.resourceTypeId)
     },
     add: function () {
       // If we are already adding a new element, no more should be allowed.
       if (this.authorizations.length === 0 || this.authorizations[0].id !== "0") {
         this.authorizations.unshift({
           id: "0",
-          type: "1",
+          type: TYPE_ALLOW,
           permissions: [...this.resourcesTypes[this.$route.params.resourceTypeId].permissions],
           userId: null,
           groupId: null,
@@ -358,6 +475,7 @@ export default {
           resourceId: null
         })
         this.selected = this.authorizations[0].permissions
+        this.editBackup = null
         this.isUserToEdit = true
         this.authorizationSelected = this.authorizations[0]
         this.edit = this.authorizationSelected.id

@@ -68,6 +68,10 @@ public class FormEntity {
 	@Column(name = "formid", unique = true, nullable = false, length = 100)
 	private String formId;
 
+	/** The folder it lives in; a move rewrites this and nothing else. */
+	@Column(name = "folder_id", length = 36)
+	private String folderId;
+
 	@Column(name = "version", columnDefinition = "integer default 1")
 	private int version;
 }

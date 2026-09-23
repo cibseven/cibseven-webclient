@@ -34,4 +34,6 @@ public class TaskFilterQuery {
 	String processDefinitionId;
 	String processInstanceBusinessKeyLike;
 	List<ProcessVariablesCriteria> processVariables;
+	String dueAfter;
+	String followUpAfter;
 }

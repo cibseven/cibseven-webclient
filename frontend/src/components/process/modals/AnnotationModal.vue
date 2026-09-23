@@ -19,9 +19,9 @@
 <template>
   <b-modal ref="annotationModal" :title="$t(`${langKey}.editAnnotation`)">
     <div>
-      <b-form-group>
+      <b-form-group label-for="annotation-textarea">
         <template #label>{{ $t(`${langKey}.annotation`) }}</template>
-        <b-form-textarea v-model="annotation" :maxlength="annotationMaxLength" class="mb-1"></b-form-textarea>
+        <b-form-textarea id="annotation-textarea" v-model="annotation" :maxlength="annotationMaxLength" class="mb-1"></b-form-textarea>
         <div class="small float-end" :class="{ 'text-danger': invalidAnnotation }">{{ annotationLengthInfo }}</div>
       </b-form-group>
     </div>

@@ -23,6 +23,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import org.cibseven.webapp.exception.ExistingElementTemplateException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.modeler.model.ElementTemplate;
 import org.cibseven.modeler.repository.ElementTemplateRepository;
@@ -82,6 +83,9 @@ public class ElementTemplateProvider implements IElementTemplateProvider {
 	 */
 	@Override
 	public ElementTemplate addTemplate(ElementTemplate template) throws SystemException {
+		if (repository.findElementTemplateById(template.getTemplateId()) != null) {
+			throw new ExistingElementTemplateException(template.getTemplateId());
+		}
 		return repository.save(template);
 	}
 	

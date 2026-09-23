@@ -22,7 +22,7 @@
       <b-button :disabled="!instances || instances.length === 0" :title="$t('process.exportInstances')" variant="outline-secondary" @click="exportCSV()"
         class="ms-auto me-3 mdi mdi-18px mdi-download-outline border-0"></b-button>
     </div>
-    <SidebarsFlow ref="sidebars" class="border-top overflow-auto" :left-open="leftOpen" @update:left-open="leftOpen = $event" :left-caption="shortendLeftCaption">
+    <SidebarsFlow ref="sidebars" class="border-top overflow-auto" :left-open="leftOpen" @update:left-open="onLeftOpenChanged" :left-caption="shortendLeftCaption">
       <template v-slot:left>
         <template v-if="errorVersionNotFound !== null">
           <WarningBox :message="$t('process.definitionVersionNotFound', [errorVersionNotFound])"/>
@@ -34,7 +34,6 @@
           :version-index="computedVersionIndex"
           @on-refresh-process-definitions="onRefreshProcessDefinitions"
           @on-delete-process-definition="onDeleteProcessDefinition"
-          :instances="instances"
           :selected-instance="selectedInstance"
         ></ProcessDetailsSidebar>
         <ProcessInstanceDetailsSidebar v-else-if="(selectedInstance || instanceId)"
@@ -89,6 +88,9 @@ import WarningBox from '@/components/common-components/WarningBox.vue'
 import { SidebarsFlow, TaskPopper } from '@cib/common-frontend'
 import { mapGetters, mapActions } from 'vuex'
 import { formatDate } from '@/utils/dates.js'
+import sidebarOpenPersistenceMixin from '@/mixins/sidebarOpenPersistenceMixin.js'
+
+const UNFINISHED_FILTER_PREFERENCE_KEY = 'cibseven:preferences:unfinishedInstancesFilter'
 
 function getStringObjByKeys(keys, obj) { // TODO rewrite to use join()
   let result = ''
@@ -101,6 +103,7 @@ function getStringObjByKeys(keys, obj) { // TODO rewrite to use join()
 export default {
   name: 'ProcessDefinitionView',
   components: { ProcessInstancesView, ProcessDetailsSidebar, ProcessInstanceView, ProcessInstanceDetailsSidebar, SidebarsFlow, TaskPopper, WarningBox },
+  mixins: [sidebarOpenPersistenceMixin],
   props: {
     processKey: { type: String, required: true },
     versionIndex: { type: String, required: true },
@@ -133,11 +136,14 @@ export default {
       if (this.process && this.process.key === this.processKey && this.instanceId) {
         await this.loadInstanceById(this.instanceId)
       }
+    },
+    sidebarScope(newScope) {
+      this.leftOpen = this.getSavedLeftOpen(newScope)
     }
   },
   data() {
     return {
-      leftOpen: true,
+      leftOpen: this.getSavedLeftOpen(this.instanceId ? 'process-instance' : 'process-definition'),
       process: null, // selected process definition
       processDefinitions: [],
       errorVersionNotFound: null,
@@ -146,13 +152,16 @@ export default {
       task: null,
       activityInstance: null,
       activityInstanceHistory: null,
-      filter: { unfinished: true },
+      filter: localStorage.getItem(UNFINISHED_FILTER_PREFERENCE_KEY) === 'false' ? {} : { unfinished: true },
       loading: false,
       parentProcess: null
     }
   },
   computed: {
     ...mapGetters('instances', ['instances']),
+    sidebarScope() {
+      return (this.selectedInstance || this.instanceId) ? 'process-instance' : 'process-definition'
+    },
     shortendLeftCaption() {
       if (this.selectedInstance || this.instanceId) {
         return this.$t('process-instance.info')
@@ -191,6 +200,10 @@ export default {
   methods: {
     ...mapActions(['clearActivitySelection', 'getProcessById']),
     formatDate,
+    onLeftOpenChanged(isOpen) {
+      this.leftOpen = isOpen
+      this.saveLeftOpen(this.sidebarScope, isOpen)
+    },
     async findProcessInstance(instanceId) {
       return (this.$root.config.camundaHistoryLevel !== 'none') ?
         HistoryService.findProcessInstance(instanceId) :
@@ -225,7 +238,8 @@ export default {
         await this.loadInstanceById(this.instanceId)
         if (this.selectedInstance) {
           // instance found, load its process definition
-          await ProcessService.findProcessById(this.selectedInstance.processDefinitionId, true).then(process => {
+          const definitionId = this.selectedInstance.processDefinitionId ?? this.selectedInstance.definitionId
+          await ProcessService.findProcessById(definitionId, true).then(process => {
             this.process = process
           })
           if (this.process) {
@@ -380,7 +394,10 @@ export default {
         this.activityInstance = null
         this.activityInstanceHistory = selectedInstance ? this.activityInstanceHistory : null
         this.selectedInstance = selectedInstance
-        if (this.selectedInstance.state === 'ACTIVE') {
+        const isActiveInstance = 'state' in this.selectedInstance
+          ? this.selectedInstance.state === 'ACTIVE'
+          : this.selectedInstance.ended === false
+        if (isActiveInstance) {
           //Management
           await ProcessService.findActivityInstance(selectedInstance.id).then(async activityInstance => {
             this.activityInstance = activityInstance
@@ -423,6 +440,7 @@ export default {
     },
     filterInstances(filter) {
       this.filter = filter
+      localStorage.setItem(UNFINISHED_FILTER_PREFERENCE_KEY, filter.unfinished === true)
       // InstancesTable will automatically reload when filter changes
     },
     getIconState(state) {

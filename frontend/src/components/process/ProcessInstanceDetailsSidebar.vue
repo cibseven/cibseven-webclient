@@ -119,12 +119,37 @@ export default {
   },
 
   computed: {
+    isHistoricIncidentsView() {
+      switch (this.$root.config.camundaHistoryLevel) {
+        case 'none':
+        case 'activity':
+        case 'audit':
+          return false // always runtime view
+        case 'full':
+        default:
+          return true // always history view
+      }
+    },
+
+    instanceState() {
+      if (this.instance?.state) {
+        return this.instance.state
+      }
+      if (this.instance?.ended) {
+        return 'COMPLETED'
+      }
+      if (this.instance?.suspended) {
+        return 'SUSPENDED'
+      }
+      return 'ACTIVE'
+    },
+
     groups() {
       const groups = []
 
       if (this.instance) {
         groups.push([
-          { label: 'process-instance.processInstanceId', value: this.instance.id, state: this.instance.state, incidents: true },
+          { label: 'process-instance.processInstanceId', value: this.instance.id, state: this.instanceState, incidents: true },
           { label: 'process-instance.details.startUser', value: this.instance.startUserId },
           { label: 'process-instance.details.start', value: this.instance.startTime, date: true },
           ...(this.instance.endTime ? [
@@ -212,18 +237,6 @@ export default {
       return this.$t('process.instanceFinished')
     },
 
-    isHistoricView() {
-      switch (this.$root.config.camundaHistoryLevel) {
-        case 'none':
-        case 'activity':
-        case 'audit':
-          return false // always runtime view
-        case 'full':
-        default:
-          return true // always history view
-      }
-    },
-
     async loadIncidentsCount() {
       if (this.instance?.id) {
 
@@ -233,7 +246,7 @@ export default {
           processInstanceId: this.instance.id,
         }
 
-        const method = this.isHistoricView ?
+        const method = this.isHistoricIncidentsView ?
           IncidentService.fetchHistoricIncidentsCount :
           IncidentService.findIncidentsCount
 

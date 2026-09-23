@@ -39,11 +39,15 @@ public class DirectExternalTaskProvider implements IExternalTaskProvider {
 	}
 
 	@Override
-	public Collection<ExternalTask> getExternalTasks(Map<String, Object> queryParams, CIBUser user) throws SystemException {
-		ExternalTaskQueryDto queryDto = directProviderUtil.parseQueryDto(queryParams, ExternalTaskQueryDto.class, user);
+	public Collection<ExternalTask> getExternalTasks(Map<String, Object> params, CIBUser user) throws SystemException {
+		Integer firstResult = directProviderUtil.getFirstResult(params);
+		Integer maxResults = directProviderUtil.getMaxResults(params);
+		Map<String, Object> queryParams = directProviderUtil.withoutPagingParams(params);
+
+		ExternalTaskQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(queryParams, ExternalTaskQueryDto.class);
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
 		ExternalTaskQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
-		List<org.cibseven.bpm.engine.externaltask.ExternalTask> matchingTasks = QueryUtil.list(query, null, null);
+		List<org.cibseven.bpm.engine.externaltask.ExternalTask> matchingTasks = QueryUtil.list(query, firstResult, maxResults);
 
 		return directProviderUtil.listAndConvert(query, null, null, ExternalTaskDto::fromExternalTask, ExternalTask.class, user);
 

@@ -15,7 +15,29 @@
  *  limitations under the License.
  */
 import { describe, it, expect } from 'vitest'
-import { isValidEmail, same, isValidId } from '@/components/admin/utils'
+import { isValidEmail, same, isValidId, notEmpty, getStringObjByKeys } from '@/components/admin/utils'
+
+describe('notEmpty', () => {
+  it('null', () => {
+    expect(notEmpty(null)).toBeNull()
+  })
+
+  it.each([
+    '',
+    []
+  ])('notEmpty(%j) => false', (value) => {
+    expect(notEmpty(value)).toBeFalsy()
+  })
+
+  it.each([
+    'a',
+    'test',
+    [1],
+    ['a', 'b']
+  ])('notEmpty(%j) => true', (value) => {
+    expect(notEmpty(value)).toBeTruthy()
+  })
+})
 
 describe('isValidEmail', () => {
   it('null', () => {
@@ -117,5 +139,33 @@ describe('isValidId', () => {
     expect(isValidId('invalid id')).toBeFalsy()
     expect(isValidId('invalid\tid')).toBeFalsy()
     expect(isValidId('invalid\nid')).toBeFalsy()
+  })
+})
+
+describe('getStringObjByKeys', () => {
+  it('empty keys', () => {
+    expect(getStringObjByKeys([], {})).toBe('')
+  })
+
+  it.each([
+    [['type'], { type: '1' }, '1'],
+    [['type', 'resourceId'], { type: '1', resourceId: '42' }, '1;42'],
+    [['type', 'permissions', 'resourceId'], { type: '1', permissions: 'READ,UPDATE', resourceId: '42' }, '1;READ,UPDATE;42'],
+  ])('getStringObjByKeys(%j, %j) => %j', (keys, obj, expected) => {
+    expect(getStringObjByKeys(keys, obj)).toBe(expected)
+  })
+
+  it('uses userId when present for the userIdGroupId key', () => {
+    expect(getStringObjByKeys(['userIdGroupId'], { userId: 'kermit', groupId: null })).toBe('kermit')
+  })
+
+  it('falls back to groupId when userId is absent for the userIdGroupId key', () => {
+    expect(getStringObjByKeys(['userIdGroupId'], { userId: null, groupId: 'sales' })).toBe('sales')
+  })
+
+  it('combines the userIdGroupId key with other keys', () => {
+    const keys = ['type', 'userIdGroupId', 'permissions', 'resourceId']
+    const obj = { type: '1', userId: 'kermit', groupId: null, permissions: 'ALL', resourceId: '*' }
+    expect(getStringObjByKeys(keys, obj)).toBe('1;kermit;ALL;*')
   })
 })

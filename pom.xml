@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.cibseven</groupId>
 		<artifactId>release-parent</artifactId>
-		<version>1.4.0</version>
+		<version>1.7.0</version>
 	</parent>
 
 	<groupId>org.cibseven.webapp</groupId>
@@ -28,6 +28,17 @@
 		<maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
 		<maven-enforcer-plugin.version>3.6.2</maven-enforcer-plugin.version>
 		<jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
+		<maven-failsafe-plugin.version>3.2.5</maven-failsafe-plugin.version>
+
+		<!--
+			JaCoCo floors enforced by jacoco:check. Every module overrides these in its own
+			<properties> with a value a couple of points under what it currently measures, so an
+			honest refactor has headroom but a real regression trips the build. Raise them when
+			coverage rises - never lower them to make a build pass.
+			The repo-wide floor lives in cibseven-coverage-aggregate/pom.xml.
+		-->
+		<jacoco.line.coverage.floor>0.00</jacoco.line.coverage.floor>
+		<jacoco.branch.coverage.floor>0.00</jacoco.branch.coverage.floor>
 
 		<git-commit-id-maven-plugin.version>9.0.2</git-commit-id-maven-plugin.version>
 
@@ -37,7 +48,7 @@
 		<!-- ============================================================================
 		     Spring Boot 3 — default flavour (cibseven-webclient-web, -core, direct-provider).
 		     ============================================================================ -->
-		<version.spring.boot>3.5.15</version.spring.boot>
+		<version.spring.boot>3.5.16</version.spring.boot>
 		<version.openapi-starter-webmvc-ui>2.8.13</version.openapi-starter-webmvc-ui>
 
 		<!-- ============================================================================
@@ -46,11 +57,14 @@
 		     cibseven-parent (~/cibseven/cibseven/parent/pom.xml) so these can be consolidated
 		     there later: version.spring-boot4, version.tomcat (11.x) vs version.tomcat10.
 		     ============================================================================ -->
-		<version.spring.boot4>4.0.7</version.spring.boot4>
+		<version.spring.boot4>4.0.8</version.spring.boot4>
 		<version.openapi-starter-webmvc-ui4>3.0.2</version.openapi-starter-webmvc-ui4>
-		<!-- SB4 no longer bundles Jackson 2, but the shared core compiles against
-		     com.fasterxml.jackson.* (Jackson 2); the SB4 module pulls it back in explicitly. -->
-		<version.jackson2>2.21.4</version.jackson2>
+		<!-- SB4's own BOM still manages Jackson 2 (it imports com.fasterxml.jackson:jackson-bom
+		     and ships spring-boot-jackson2), but its starters default to Jackson 3 (tools.jackson.*)
+		     for the wire layer and don't pull Jackson 2 in transitively. The shared core compiles
+		     against com.fasterxml.jackson.* (Jackson 2) directly, so the SB4 module overrides SB4's
+		     own Jackson 2 BOM version explicitly to this patched release. -->
+		<version.jackson2>2.21.5</version.jackson2>
 
 		<!-- ============================================================================
 		     CVE overrides. This project imports spring-boot-dependencies as a BOM (not as the
@@ -58,15 +72,20 @@
 		     do NOT take effect — the fixed versions are pinned via explicit dependencyManagement
 		     entries below.
 		     ============================================================================ -->
-		<!-- Apache Tomcat: CVE-2026-41293, -43512, -43515, -41284, -43513, -42498, -43514.
-		     SB3 runs the Tomcat 10.1.x line (fixed in 10.1.55), SB4 the 11.0.x line (fixed in 11.0.22).
+		<!-- Apache Tomcat: CVE-2026-41293, -43512, -43515, -41284, -43513, -42498, -43514 (fixed in
+		     10.1.55/11.0.22), plus CVE-2026-65182, -65905, -68525 (fixed in 10.1.58/11.0.25).
+		     SB3 runs the Tomcat 10.1.x line, SB4 the 11.0.x line.
 		     Suffix mirrors cibseven-parent: version.tomcat = 11.x (SB4), version.tomcat10 = 10.x (SB3). -->
-		<version.tomcat10>10.1.55</version.tomcat10>
-		<version.tomcat>11.0.22</version.tomcat>
+		<version.tomcat10>10.1.59</version.tomcat10>
+		<version.tomcat>11.0.25</version.tomcat>
 		<!-- swagger-ui webjar (via springdoc, both flavours): bundles DOMPurify 3.4.0 ->
 		     CVE-2026-41240, -0540, CVE-2025-15599, CVE-2026-41238, -41239 and related GHSAs. -->
 		<version.swagger-ui>5.32.6</version.swagger-ui>
 		<version.commons-lang3>3.18.0</version.commons-lang3>
+		<!-- Temporary Apache HttpComponents CVE overrides.
+		     Remove these once the imported Spring Boot BOM manages fixed versions. -->
+		<version.httpclient5>5.6.4</version.httpclient5>
+		<version.httpcore5>5.4.3</version.httpcore5>
 		
 		<image.tomcat-11-base>harbor.cib.de/dev/tomcat-11-base:0.1.0@sha256:49e9bd250b4bc4e33465195106831b1afa69d38c0147f9960075cb1b45a8f7f5</image.tomcat-11-base>
 		<jib-maven-plugin.version>3.5.1</jib-maven-plugin.version>
@@ -77,10 +96,10 @@
 		<version.nodejs>24.13.1</version.nodejs>
 		<version.npm>11.8.0</version.npm>
 
-		<version.log4j2>2.25.4</version.log4j2>
+		<version.log4j2>2.25.5</version.log4j2>
 
 		<!-- Database driver versions (used by modeler JPA integration) -->
-		<version.postgresql>42.7.11</version.postgresql>
+		<version.postgresql>42.7.13</version.postgresql>
 		<version.mariadb>3.5.7</version.mariadb>
 		<version.h2>2.4.240</version.h2>
 		<version.mysql>9.5.0</version.mysql>
@@ -123,6 +142,8 @@ You may obtain a copy of the License at
 				<module>cibseven-webclient-core</module>
 				<module>cibseven-direct-provider</module>
 				<module>cibseven-webclient-web-sb4</module>
+				<!-- must stay last: aggregates the coverage of every module above -->
+				<module>cibseven-coverage-aggregate</module>
 			</modules>
 			<build>
 				<plugins>
@@ -208,6 +229,77 @@ You may obtain a copy of the License at
 								<phase>generate-resources</phase>
 								<configuration>
 									<arguments>run build</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<!-- Generate and attache a CycloneDX SBOM for the frontend's npm dependencies -->
+			<id>generate-frontend-sbom</id>
+			<activation>
+				<property>
+					<name>generate-frontend-sbom</name>
+					<value>true</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.github.eirslett</groupId>
+						<artifactId>frontend-maven-plugin</artifactId>
+						<version>${version.eirslett.frontend.maven.plugin}</version>
+						<inherited>false</inherited>
+						<executions>
+							<execution>
+								<id>generate-frontend-sbom-json</id>
+								<goals>
+									<goal>npm</goal>
+								</goals>
+								<phase>prepare-package</phase>
+								<configuration>
+									<arguments>exec --yes -- @cyclonedx/cyclonedx-npm@6.0.0 --output-file target/frontend-bom.json --output-format json --omit dev</arguments>
+								</configuration>
+							</execution>
+							<execution>
+								<id>generate-frontend-sbom-xml</id>
+								<goals>
+									<goal>npm</goal>
+								</goals>
+								<phase>prepare-package</phase>
+								<configuration>
+									<arguments>exec --yes -- @cyclonedx/cyclonedx-npm@6.0.0 --output-file target/frontend-bom.xml --output-format xml --omit dev</arguments>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>build-helper-maven-plugin</artifactId>
+						<inherited>false</inherited>
+						<executions>
+							<execution>
+								<!-- Distinct classifier since "cyclonedx" is already used by the Java backend's aggregate SBOM -->
+								<id>attach-frontend-sbom</id>
+								<phase>package</phase>
+								<goals>
+									<goal>attach-artifact</goal>
+								</goals>
+								<configuration>
+									<artifacts>
+										<artifact>
+											<file>${project.basedir}/frontend/target/frontend-bom.json</file>
+											<type>json</type>
+											<classifier>frontend-cyclonedx</classifier>
+										</artifact>
+										<artifact>
+											<file>${project.basedir}/frontend/target/frontend-bom.xml</file>
+											<type>xml</type>
+											<classifier>frontend-cyclonedx</classifier>
+										</artifact>
+									</artifacts>
 								</configuration>
 							</execution>
 						</executions>
@@ -332,7 +424,20 @@ You may obtain a copy of the License at
 
 	<dependencyManagement>
 		<dependencies>
-		
+
+			<!-- Import the Jackson 2 BOM before spring-boot-dependencies so it wins for every
+			     com.fasterxml.jackson.* artifact pulled in transitively by the SB3 modules
+			     (cibseven-webclient-web, -core, cibseven-direct-provider) via spring-boot-starter-web,
+			     jjwt-jackson and the cibseven-engine REST client — otherwise those would stay on
+			     whatever Jackson 2 version spring-boot-dependencies bundles. -->
+			<dependency>
+				<groupId>com.fasterxml.jackson</groupId>
+				<artifactId>jackson-bom</artifactId>
+				<version>${version.jackson2}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-dependencies</artifactId>
@@ -340,7 +445,7 @@ You may obtain a copy of the License at
 				<type>pom</type>
 				<version>${version.spring.boot}</version>
 			</dependency>
-		
+
 			<!-- Override log4j versions to fix security vulnerabilities -->
 			<dependency>
 				<groupId>org.apache.logging.log4j</groupId>
@@ -363,9 +468,9 @@ You may obtain a copy of the License at
 				<version>${version.log4j2}</version>
 			</dependency>
 
-			<!-- Override Apache Tomcat for the SB3 flavour (BOM pins the vulnerable 10.1.54) to fix
-			     CVE-2026-41293, -43512, -43515, -41284, -43513, -42498, -43514 (fixed in 10.1.55).
-			     The SB4 module overrides these to ${version.tomcat} (11.0.22) in its own pom. -->
+			<!-- Override Apache Tomcat for the SB3 flavour (BOM pins a vulnerable version) to fix
+			     CVE-2026-41293, -43512, -43515, -41284, -43513, -42498, -43514, -65182, -65905, -68525.
+			     The SB4 module overrides these to ${version.tomcat} in its own pom. -->
 			<dependency>
 				<groupId>org.apache.tomcat.embed</groupId>
 				<artifactId>tomcat-embed-core</artifactId>
@@ -396,6 +501,24 @@ You may obtain a copy of the License at
 				<groupId>org.webjars</groupId>
 				<artifactId>swagger-ui</artifactId>
 				<version>${version.swagger-ui}</version>
+			</dependency>
+
+			<!-- Temporary override: force Apache HttpComponents 5 CVE-fixed versions for SB3 modules.
+			     Remove once spring-boot-dependencies manages fixed HttpComponents versions. -->
+			<dependency>
+				<groupId>org.apache.httpcomponents.client5</groupId>
+				<artifactId>httpclient5</artifactId>
+				<version>${version.httpclient5}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.httpcomponents.core5</groupId>
+				<artifactId>httpcore5</artifactId>
+				<version>${version.httpcore5}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.httpcomponents.core5</groupId>
+				<artifactId>httpcore5-h2</artifactId>
+				<version>${version.httpcore5}</version>
 			</dependency>
 
 			<!-- Force a single ANTLR runtime version to satisfy enforcer dependency-convergence -->
@@ -469,6 +592,36 @@ You may obtain a copy of the License at
 					<doclint>none</doclint>
 				</configuration>
 			</plugin>
+			<!--
+				*IT classes are integration tests: surefire's default includes (Test*, *Test, *Tests,
+				*TestCase) deliberately skip them, and failsafe runs them in `integration-test` instead.
+				Declared here so every module behaves the same way - this used to be copy-pasted into
+				cibseven-interfaces/pom.xml and cibseven-webclient-core/pom.xml.
+
+				The include is restricted to the providers package on purpose. The two *IT classes outside
+				it - org.cibseven.webapp.rest.TenantProviderIT and org.cibseven.webapp.rest.AnalyticsServiceIT
+				- are dormant live-engine tests: they drive a real CustomRestTemplate against
+				cibseven.webclient.engineRest.url and assert a seeded demo dataset (7 running instances,
+				24 deployments, "Invoice Receipt", ...) that no longer exists, so they cannot pass in CI.
+			-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>${maven-failsafe-plugin.version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<includes>
+						<include>org/cibseven/webapp/providers/**/*IT.java</include>
+					</includes>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
@@ -486,6 +639,46 @@ You may obtain a copy of the License at
 						<goals>
 							<goal>report</goal>
 						</goals>
+					</execution>
+				<!--
+					The `jacoco-report` execution above runs in the `test` phase, so it only ever sees
+					surefire data. The failsafe *IT runs happen later, in `integration-test`, and append to
+					the same jacoco.exec, so reporting again at `verify` is what makes their coverage count
+					(measured on cibseven-webclient-core: 358/4358 lines -> 733/4358).
+					The `test`-phase execution is kept so a plain `mvn test` still produces a report.
+				-->
+					<execution>
+						<id>jacoco-report-integration</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>jacoco-check</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<rule>
+									<element>BUNDLE</element>
+									<limits>
+										<limit>
+											<counter>LINE</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>${jacoco.line.coverage.floor}</minimum>
+										</limit>
+										<limit>
+											<counter>BRANCH</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>${jacoco.branch.coverage.floor}</minimum>
+										</limit>
+									</limits>
+								</rule>
+							</rules>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>

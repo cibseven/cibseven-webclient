@@ -51,13 +51,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 @RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}")
 public class HistoryProcessService extends BaseService {
 
-	/*
-	@RequestMapping(value = "/instance-history/by-process-instance/{processInstanceId}", method = RequestMethod.GET)
-	public ProcessInstance findHistoryProcessInstanceHistory(@PathVariable String processInstanceId, Locale loc, CIBSevenUser user) {
-		return bpmProvider.findHistoryProcessInstanceHistory(processInstanceId, user);
-	}
-	*/
-
 	@Operation(
 			summary = "Queries for historic process instances that fulfill the given parameters",
 			description = "Parameters firstResult and maxResults are used for pagination")

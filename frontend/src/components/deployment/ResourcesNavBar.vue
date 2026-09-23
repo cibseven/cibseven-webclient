@@ -213,7 +213,7 @@ export default {
     },
     async getContent(resource) {
       this.diagramLoading = true
-      let content = null
+      let content
       const isBpmn = resource.name.toLowerCase().endsWith('.bpmn')
       if (isBpmn) {
         const processesDefinition = await ProcessService.findProcessesWithFilters('deploymentId=' + this.deployment.id + '&resourceName=' + resource.name)

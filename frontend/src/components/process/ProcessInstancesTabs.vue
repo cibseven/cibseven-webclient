@@ -22,6 +22,22 @@
 
 <script>
 import { GenericTabs } from '@cib/common-frontend'
+import { defineTabBar } from '@/utils/tabBar.js'
+
+const BUILTIN_TABS = [
+  { id: 'instances', text: 'process.instances' },
+  { id: 'jobDefinitions', text: 'process.jobDefinitions' },
+  { id: 'incidents', text: 'process.incidents' },
+  { id: 'calledProcessDefinitions', text: 'process.calledProcessDefinitions' },
+]
+
+export const RESERVED_TAB_IDS = BUILTIN_TABS.map(tab => tab.id)
+
+const tabsFor = defineTabBar({
+  deepLinkSection: 'processDefinition',
+  pluginSlot: 'process-definition-tab',
+  builtin: BUILTIN_TABS
+})
 
 export default {
   name: 'ProcessInstancesTabs',
@@ -30,14 +46,9 @@ export default {
   },
   props: { modelValue: String },
   emits: ['update:modelValue', 'tab-click'],
-  data: function () {
-    return {
-      tabs: [
-        { id: 'instances', text: 'process.instances' },
-        { id: 'jobDefinitions', text: 'process.jobDefinitions' },
-        { id: 'incidents', text: 'process.incidents' },
-        { id: 'calledProcessDefinitions', text: 'process.calledProcessDefinitions' },
-      ]
+  computed: {
+    tabs() {
+      return tabsFor({ config: this.$root.config, t: this.$t })
     }
   }
 }

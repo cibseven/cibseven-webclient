@@ -38,7 +38,9 @@ public class TaskFiltering {
 	Boolean likePatternIgnoreCase;
 	Boolean variableValuesIgnoreCase;
 	List<String> variableNames;
-	
+	String dueAfter;
+	String followUpAfter;
+
 	public String json() throws JsonProcessingException {
 		return new ObjectMapper().writeValueAsString(this);
 	}

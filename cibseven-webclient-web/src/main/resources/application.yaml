@@ -15,11 +15,6 @@ spring:
       ddl-auto: none
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-    properties:
-      hibernate:
-        integration:
-          envers:
-            enabled: false
   servlet:
     register-default-servlet: true
     multipart:
@@ -36,6 +31,20 @@ cibseven:
       # Enable or disable the modeler (JPA entities, repositories, REST endpoints).
       # Requires the parent project to provide a configured DataSource and pre-created schema.
       # Set to false for deployments where the modeler is not needed.
+      enabled: false
+      # Element template JSONs loaded into the modeler DB at startup (needs modeler.enabled: true).
+      # Values are Spring resource locations (globs resolved). Empty by default.
+      # e.g. - "file:/opt/cibseven/element-templates/*.json"
+      templates:
+        paths: []
+    startProcess:
+      # Show a default start form (business key + manual variable creation) when the
+      # process definition has no start form defined.
+      # Disabled by default to preserve existing "instant start" behavior.
+      defaultFormEnabled: false
+    plugins:
+      # Load frontend plugins from the classpath below META-INF/cibseven-plugins/,
+      # one folder per plugin. Plugin code runs inside the webclient page.
       enabled: false
     # Engine rest
     engineRest:
@@ -180,6 +189,13 @@ cibseven:
 #        jackson:
 #          parser:
 #            max-size: 25000000
+#          # DEPRECATED - interim opt-out, will be removed with the Jackson 3 migration.
+#          # Dates are serialized as ISO-8601 by default. Setting this to true restores the
+#          # legacy Jackson output: epoch millis for java.util.Date, numeric arrays for
+#          # java.time types. Prefer adapting the consumer, or annotate the affected field
+#          # with @JsonFormat, instead of switching the whole application back.
+#          serialization:
+#            write-dates-as-timestamps: false
 
 springdoc:
   swagger-ui:

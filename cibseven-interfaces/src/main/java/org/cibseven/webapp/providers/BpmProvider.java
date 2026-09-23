@@ -359,6 +359,10 @@ public interface BpmProvider {
 		getTaskProvider().handleBpmnError(taskId, data, user);
 	}
 
+	default void handleBpmnEscalation(String taskId, Map<String, Object> data, CIBUser user) throws SystemException {
+		getTaskProvider().handleBpmnEscalation(taskId, data, user);
+	}
+
 	default Collection<TaskHistory> findTasksByTaskIdHistory(String taskId, CIBUser user) throws SystemException {
 		return getTaskProvider().findTasksByTaskIdHistory(taskId, user);
 	}
@@ -372,6 +376,11 @@ public interface BpmProvider {
 	}
 	default Integer findHistoryTasksCount(Map<String, Object> filters, CIBUser user) throws SystemException {
 		return getTaskProvider().findHistoryTasksCount(filters, user);
+	}
+
+	default Collection<TaskHistory> findHistoryTasks(Map<String, Object> filters,
+			Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) throws SystemException {
+		return getTaskProvider().findHistoryTasks(filters, firstResult, maxResults, user);
 	}
 
 	default Collection<CandidateGroupTaskCount> getTaskCountByCandidateGroup(CIBUser user)  {
@@ -469,8 +478,8 @@ public interface BpmProvider {
 	 * @return Fetched deployments.
 	 * @throws SystemException in case of any other error.
 	 */
-	default Long countDeployments(CIBUser user, String nameLike) throws SystemException {
-		return getDeploymentProvider().countDeployments(user, nameLike);
+	default Long countDeployments(CIBUser user, MultiValueMap<String, String> queryParams) throws SystemException {
+		return getDeploymentProvider().countDeployments(user, queryParams);
 	}
 
 	/**
@@ -479,8 +488,8 @@ public interface BpmProvider {
 	 * @return Fetched deployments.
 	 * @throws SystemException in case of any other error.
 	 */
-	default Collection<Deployment> findDeployments(CIBUser user, String nameLike, int firstResult, int maxResults, String sortBy, String sortOrder) throws SystemException {
-		return getDeploymentProvider().findDeployments(user, nameLike, firstResult, maxResults, sortBy, sortOrder);
+	default Collection<Deployment> findDeployments(CIBUser user, MultiValueMap<String, String> queryParams, int firstResult, int maxResults, String sortBy, String sortOrder) throws SystemException {
+		return getDeploymentProvider().findDeployments(user, queryParams, firstResult, maxResults, sortBy, sortOrder);
 	}
 
 	/**
@@ -630,13 +639,21 @@ public interface BpmProvider {
 
 	/**
 	 * Get authorizations, filtered by userId and groups in which user belongs.
-	 * @param userId filter user identification (username).
 	 * @param user the user performing the search
 	 * @return Fetched bpmn
      * @throws SystemException in case of an error.
 	 */
-	default Authorizations getUserAuthorization(String userId, CIBUser user) throws SystemException {
-		return getUserProvider().getUserAuthorization(userId, user);
+	default Authorizations getUserAuthorization(CIBUser user) throws SystemException {
+		return getUserProvider().getUserAuthorization(user);
+	}
+
+	/**
+	 * Whether the user holds a permission on a resource, decided by the engine.
+	 * See {@link IUserProvider#isUserAuthorized}.
+	 */
+	default boolean isUserAuthorized(CIBUser user, int resourceType, String resourceId, String permission)
+			throws SystemException {
+		return getUserProvider().isUserAuthorized(user, resourceType, resourceId, permission);
 	}
 
 	default Collection<SevenUser> fetchUsers(CIBUser user) throws SystemException {
@@ -1673,9 +1690,9 @@ public interface BpmProvider {
      * @return Fetched processes instances.
      * @throws SystemException in case of an error.
      */
-	default Collection<ProcessInstance> findCurrentProcessesInstances(Map<String, Object> data, CIBUser user)
+	default Collection<ProcessInstance> findCurrentProcessesInstances(Map<String, Object> data, Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user)
 			throws SystemException {
-		return getProcessProvider().findCurrentProcessesInstances(data, user);
+		return getProcessProvider().findCurrentProcessesInstances(data, firstResult, maxResults, user);
 	}
 
 

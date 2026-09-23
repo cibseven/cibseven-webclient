@@ -42,6 +42,7 @@
 
     <ViewerFrame :resizerMixin="this">
       <component :is="BpmnViewerPlugin" v-if="BpmnViewerPlugin" ref="diagram" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
+        @viewbox-changed="onViewboxChanged"
         :process-definition-id="process.id" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
         :active-tab="activeTab" class="h-100">
       </component>
@@ -54,6 +55,7 @@
         :active-tab="activeTab"
         @task-selected="selectTask($event)"
         @activity-map-ready="activityMap = $event"
+        @viewbox-changed="onViewboxChanged"
         class="h-100">
       </BpmnViewer>
     </ViewerFrame>
@@ -68,7 +70,11 @@
     </div>
 
     <div ref="rContent" class="position-absolute w-100 overflow-hidden border-top" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
-      <div class="overflow-y-scroll bg-white position-absolute w-100" style="top: 0px; left: 0; bottom: 0" @scroll="handleScroll">
+      <div class="bg-white position-absolute w-100" style="top: 0px; left: 0; bottom: 0" @scroll="handleScroll"
+        :class="[
+          (matchedDeepLink || ['incidents', 'jobDefinitions'].includes(activeTab)) ? '' : 'overflow-y-scroll',
+        ]"
+      >
         <template v-if="isInstancesView">
           <div ref="filterTable" class="d-flex w-100">
 
@@ -84,7 +90,8 @@
                   <template #prepend>
                     <b-button :title="$t('searches.search')" aria-hidden="true" size="sm" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
                   </template>
-                  <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="(evt) => onInput(evt.target.value.trim())"></b-form-input>
+                  <label for="process-instances-search" class="visually-hidden">{{ $t('searches.search') }}</label>
+                  <b-form-input id="process-instances-search" :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="(evt) => onInput(evt.target.value.trim())"></b-form-input>
                   <b-button size="sm" variant="light" @click="$refs.sortModal.show()" class="ms-1 border"><span class="mdi mdi-sort" style="line-height: initial"></span></b-button>
                   <b-form-checkbox
                     v-model="unfinishedFilter"
@@ -116,10 +123,14 @@
                 <b-button size="sm" variant="light" @click="downloadBpmn()" :title="$t('process.downloadBpmn')">
                   <span class="mdi mdi-download"></span> {{ collapseButtons  ? '': $t('process.downloadBpmn') }}
                 </b-button>
+                <b-button v-if="permissionsModeler" size="sm" variant="light" @click="openModeler()" :title="$t('process.openModeler')">
+                  <span class="mdi mdi-pencil-outline"></span> {{ collapseButtons  ? '': $t('process.openModeler') }}
+                </b-button>
                 <b-button size="sm" variant="light" @click="viewDeployment()" :title="$t('process.showDeployment')">
                   <span class="mdi mdi-file-eye-outline"></span> {{ collapseButtons  ? '': $t('process.showDeployment') }}
                 </b-button>
                 <component :is="ProcessActionsPlugin" v-if="ProcessActionsPlugin" :process="process" :collapseButtons="collapseButtons"></component>
+                <DeepLinkButtons section="processDefinition" :collapseButtons="collapseButtons" :params="matchedDeepLinkParams" />
               </div>
             </div>
           </div>
@@ -144,7 +155,10 @@
         <JobDefinitionsTable v-else-if="activeTab === 'jobDefinitions'"
           :process="process" />
         <CalledProcessDefinitionsTable v-else-if="activeTab === 'calledProcessDefinitions'" :process="process" />
+        <DeepLinkFrame v-else-if="matchedDeepLink" :link="matchedDeepLink" :params="matchedDeepLinkParams"></DeepLinkFrame>
         <component :is="ProcessInstancesTabsContentPlugin" v-if="ProcessInstancesTabsContentPlugin" :process="process" :active-tab="activeTab"></component>
+        <PluginSlot name="process-definition-tab" :only="activeTab"
+          :params="{ process: process, tenantId: tenantId }"></PluginSlot>
       </div>
     </div>
 
@@ -170,6 +184,7 @@
 <script>
 import { ProcessService, getServicesBasePath } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
+import navigationPermissionsMixin from '@/mixins/navigationPermissionsMixin.js'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 import InstancesTable from '@/components/process/tables/InstancesTable.vue'
 import JobDefinitionsTable from '@/components/process/tables/JobDefinitionsTable.vue'
@@ -179,21 +194,27 @@ import CalledProcessDefinitionsTable from '@/components/process/tables/CalledPro
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import tabUrlMixin from '@/components/process/mixins/tabUrlMixin.js'
+import bpmnViewportPersistenceMixin from '@/components/process/mixins/bpmnViewportPersistenceMixin.js'
+import viewerFrameSizePersistenceMixin from '@/components/process/mixins/viewerFrameSizePersistenceMixin.js'
 import { debounce } from '@/utils/debounce.js'
 import { SuccessAlert, ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
-import ProcessInstancesTabs from '@/components/process/ProcessInstancesTabs.vue'
+import ProcessInstancesTabs, { RESERVED_TAB_IDS } from '@/components/process/ProcessInstancesTabs.vue'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
 import RemovableBadge from '@/components/common-components/RemovableBadge.vue'
+import DeepLinkFrame from '@/components/common-components/DeepLinkFrame.vue'
+import PluginSlot from '@/components/common/PluginSlot.vue'
+import DeepLinkButtons from '@/components/common-components/DeepLinkButtons.vue'
+import { getDeepLinkEntries } from '@/utils/deepLinks.js'
 import { mapGetters, mapActions } from 'vuex'
 
 export default {
   name: 'ProcessInstancesView',
   components: { InstancesTable, JobDefinitionsTable, BpmnViewer, MultisortModal,
      SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable, CalledProcessDefinitionsTable,
-     ProcessInstancesTabs, ScrollableTabsContainer, ViewerFrame, RemovableBadge },
-  inject: ['loadProcesses'],
-  mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin, tabUrlMixin],
+     ProcessInstancesTabs, ScrollableTabsContainer, ViewerFrame, RemovableBadge, DeepLinkFrame, DeepLinkButtons, PluginSlot },
+  inject: ['loadProcesses', 'currentLanguage'],
+  mixins: [permissionsMixin, navigationPermissionsMixin, resizerMixin, copyToClipboardMixin, tabUrlMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
   emits: ['task-selected', 'filter-instances', 'instance-deleted'],
   props: {
     process: Object,
@@ -227,9 +248,12 @@ export default {
       handler: async function(newId, oldId) {
         if (newId && newId !== oldId) {
           this.clearHistoricActivityStatistics()
+          if (!this.isInstancesView) {
+            this.syncStatisticsWithInstances(this.computedFilter)
+          }
           await this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
           ProcessService.fetchDiagram(newId).then(response => {
-            this.$refs.diagram.showDiagram(response.bpmn20Xml, this.selectedActivityId)
+            this.$refs.diagram.showDiagram(response.bpmn20Xml, this.selectedActivityId).then(() => this.restoreViewboxIfSaved())
             this.setDiagramXml(response.bpmn20Xml)
           })
         }
@@ -250,10 +274,13 @@ export default {
   },
   mounted: function() {
     this.clearHistoricActivityStatistics()
+    if (!this.isInstancesView) {
+      this.syncStatisticsWithInstances(this.computedFilter)
+    }
     this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
     ProcessService.fetchDiagram(this.process.id).then(response => {
       setTimeout(() => {
-        this.$refs.diagram.showDiagram(response.bpmn20Xml, this.selectedActivityId)
+        this.$refs.diagram.showDiagram(response.bpmn20Xml, this.selectedActivityId).then(() => this.restoreViewboxIfSaved())
         this.setDiagramXml(response.bpmn20Xml)
       }, 100)
     })
@@ -323,6 +350,22 @@ export default {
         ? this.$options.components.BpmnViewerPlugin
         : null
     },
+    matchedDeepLink() {
+      return getDeepLinkEntries(this.$root.config, 'processDefinition', RESERVED_TAB_IDS)
+        .filter(entry => entry.type === 'tab')
+        .find(entry => entry.id === this.activeTab)
+    },
+    matchedDeepLinkParams() {
+      return {
+        processDefinitionId: this.process?.id,
+        processDefinitionKey: this.process?.key,
+        processDefinitionVersion: this.process?.version,
+        processDefinitionVersionTag: this.process?.versionTag,
+        processDefinitionTenantId: this.process?.tenantId,        
+
+        lang: this.currentLanguage()
+      }
+    },
     processName: function() {
       return this.process.name !== null ? this.process.name : this.process.key
     },
@@ -332,7 +375,7 @@ export default {
     ...mapGetters(['selectedActivityId', 'selectedActivityInstancesListMode']),
     ...mapGetters('instances', ['instances']),
     collapseButtons: function() {
-      return this.ProcessInstancesSearchBoxPlugin || this.selectedActivityId
+      return !!(this.ProcessInstancesSearchBoxPlugin || this.selectedActivityId)
     },
   },
   methods: {
@@ -363,6 +406,10 @@ export default {
       const filename = this.process.resource.substr(this.process.resource.lastIndexOf('/') + 1, this.process.resource.lenght)
       window.location.href = getServicesBasePath() + '/process/' + this.process.id + '/data?filename=' + filename +
         '&token=' + this.$root.user.authToken
+    },
+    
+    openModeler: function() {
+      this.$router.push({ name: 'modeler', query: { processId: this.process.id, type: 'bpmn' } })
     },
     refreshDiagram: function() {
       this.$refs.diagram.cleanDiagramState()

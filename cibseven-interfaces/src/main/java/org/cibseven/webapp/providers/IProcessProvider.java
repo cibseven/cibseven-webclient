@@ -52,7 +52,7 @@ public interface IProcessProvider {
 	public Collection<Process> findProcessVersionsByDefinitionKey(String key, String tenantId, Optional<Boolean> lazyLoad, CIBUser user);
 	public Process findProcessById(String id, Optional<Boolean> extraInfo, CIBUser user) throws SystemException;
 	public Collection<ProcessInstance> findProcessesInstances(String key, CIBUser user);
-	public Collection<ProcessInstance> findCurrentProcessesInstances(Map<String, Object> data, CIBUser user);
+	public Collection<ProcessInstance> findCurrentProcessesInstances(Map<String, Object> data, Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user);
 	public Collection<HistoryProcessInstance> findProcessesInstancesRuntime(Map<String, Object> data, Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user);
 	public ProcessDiagram fetchDiagram(String id, CIBUser user);
 	public StartForm fetchStartForm(String processDefinitionId, CIBUser user);

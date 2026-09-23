@@ -75,7 +75,7 @@
 
     <ViewerFrame :resizerMixin="this">
       <component :is="BpmnViewerPlugin" v-if="BpmnViewerPlugin" ref="diagram" class="h-100"
-        @child-activity="filterByChildActivity($event)" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
+        @child-activity="filterByChildActivity($event)" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event" @viewbox-changed="onViewboxChanged"
         :activityId="selectedActivityId" :activity-instance="activityInstance" :process-definition-id="process.id" :selected-instance="selectedInstance" :activity-instance-history="activityInstanceHistory" 
         :statistics="process.statistics" :active-tab="activeTab" >
       </component>
@@ -88,6 +88,7 @@
         :activityId="selectedActivityId" 
         @task-selected="selectTask($event)"
         @child-activity="filterByChildActivity($event)"
+        @viewbox-changed="onViewboxChanged"
         class="h-100">
       </BpmnViewer>
     </ViewerFrame>
@@ -110,7 +111,10 @@
       <JobsTable v-else-if="activeTab === 'jobs'" :instance="selectedInstance" :process="process"></JobsTable>
       <CalledProcessInstancesTable v-else-if="activeTab === 'calledProcessInstances'" :selected-instance="selectedInstance" :activity-instance-history="activityInstanceHistory"></CalledProcessInstancesTable>
       <ExternalTasksTable v-else-if="activeTab === 'externalTasks'" :instance="selectedInstance"></ExternalTasksTable>
+      <DeepLinkFrame v-else-if="matchedDeepLink" :link="matchedDeepLink" :params="matchedDeepLinkParams"></DeepLinkFrame>
       <component :is="ProcessInstanceTabsContentPlugin" v-if="ProcessInstanceTabsContentPlugin" :instance="selectedInstance" :active-tab="activeTab" :process="process"></component>
+      <PluginSlot name="process-instance-tab" :only="activeTab"
+        :params="{ instance: selectedInstance, process: process, tenantId: tenantId }"></PluginSlot>
     </div>
 
   </div>
@@ -122,6 +126,8 @@ import { mapActions, mapGetters } from 'vuex'
 
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
 import tabUrlMixin from '@/components/process/mixins/tabUrlMixin.js'
+import bpmnViewportPersistenceMixin from '@/components/process/mixins/bpmnViewportPersistenceMixin.js'
+import viewerFrameSizePersistenceMixin from '@/components/process/mixins/viewerFrameSizePersistenceMixin.js'
 
 import VariablesTable from '@/components/process/tables/VariablesTable.vue'
 import IncidentsTable from '@/components/process/tables/IncidentsTable.vue'
@@ -129,16 +135,20 @@ import UserTasksTable from '@/components/process/tables/UserTasksTable.vue'
 import JobsTable from '@/components/process/tables/JobsTable.vue'
 import CalledProcessInstancesTable from '@/components/process/tables/CalledProcessInstancesTable.vue'
 import ExternalTasksTable from '@/components/process/tables/ExternalTasksTable.vue'
-import ProcessInstanceTabs from '@/components/process/ProcessInstanceTabs.vue'
+import ProcessInstanceTabs, { RESERVED_TAB_IDS } from '@/components/process/ProcessInstanceTabs.vue'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
+import DeepLinkFrame from '@/components/common-components/DeepLinkFrame.vue'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
+import PluginSlot from '@/components/common/PluginSlot.vue'
+import { getDeepLinkEntries } from '@/utils/deepLinks.js'
 
 export default {
   name: 'ProcessInstanceView',
-  components: { VariablesTable, IncidentsTable, UserTasksTable, BpmnViewer, 
-    JobsTable, CalledProcessInstancesTable, ExternalTasksTable, ProcessInstanceTabs, ScrollableTabsContainer, ViewerFrame },
-  mixins: [resizerMixin, tabUrlMixin],
+  components: { VariablesTable, IncidentsTable, UserTasksTable, BpmnViewer,
+    JobsTable, CalledProcessInstancesTable, ExternalTasksTable, ProcessInstanceTabs, ScrollableTabsContainer, ViewerFrame, DeepLinkFrame, PluginSlot },
+  mixins: [resizerMixin, tabUrlMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
+  inject: ['currentLanguage'],
   props: {
     process: Object,
     tenantId: String,
@@ -158,7 +168,7 @@ export default {
   watch: {
     'process.id': function() {
       ProcessService.fetchDiagram(this.process.id).then(response => {
-        this.$refs.diagram?.showDiagram(response.bpmn20Xml, this.selectedActivityId)
+        this.$refs.diagram?.showDiagram(response.bpmn20Xml, this.selectedActivityId)?.then(() => this.restoreViewboxIfSaved())
       })
     },
     'selectedInstance.superProcessInstanceId': function(newVal) {
@@ -187,10 +197,30 @@ export default {
         ? this.$options.components.BpmnViewerPlugin
         : null
     },
+    matchedDeepLink() {
+      return getDeepLinkEntries(this.$root.config, 'processInstance', RESERVED_TAB_IDS)
+        .filter(entry => entry.type === 'tab')
+        .find(entry => entry.id === this.activeTab)
+    },
+    matchedDeepLinkParams() {
+      return {
+        processInstanceId: this.selectedInstance?.id,
+        processInstanceTenantId: this.selectedInstance?.tenantId,
+        businessKey: this.selectedInstance?.businessKey,
+
+        processDefinitionId: this.process?.id,
+        processDefinitionKey: this.process?.key,
+        processDefinitionVersion: this.process?.version,
+        processDefinitionVersionTag: this.process?.versionTag,
+        processDefinitionTenantId: this.process?.tenantId,
+
+        lang: this.currentLanguage()
+      }
+    },
   },
   mounted: function() {
     ProcessService.fetchDiagram(this.process.id).then(response => {
-      this.$refs.diagram?.showDiagram(response.bpmn20Xml, this.selectedActivityId)
+      this.$refs.diagram?.showDiagram(response.bpmn20Xml, this.selectedActivityId)?.then(() => this.restoreViewboxIfSaved())
     })
     // Load super process instance if available
     if (this.selectedInstance?.superProcessInstanceId) {

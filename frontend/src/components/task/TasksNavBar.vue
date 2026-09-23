@@ -74,12 +74,14 @@
         <div><h5 class="mt-3">{{ $t('task.showOnlyAddFilters') }}</h5></div>
         <hr class="my-2">
         <div class="mt-2">
-          <b-form-checkbox v-if="$root.config.layout.showFilterReminderDate" v-model="$store.state.filter.settings.reminder">
+          <b-form-checkbox v-if="$root.config.layout.showFilterReminderDate" v-model="$store.state.filter.settings.reminder"
+            @change="$emit('refresh-tasks')">
             <h5 class="d-flex fw-normal"><span class="mdi mdi-16px mdi-alarm align-middle pe-1"></span> {{ $t('nav-bar.reminder') }}</h5>
           </b-form-checkbox>
         </div>
         <div>
-          <b-form-checkbox v-if="$root.config.layout.showFilterDueDate" v-model="$store.state.filter.settings.dueDate">
+          <b-form-checkbox v-if="$root.config.layout.showFilterDueDate" v-model="$store.state.filter.settings.dueDate"
+            @change="$emit('refresh-tasks')">
             <h5 class="d-flex fw-normal"><span class="mdi mdi-16px mdi-calendar-alert align-middle pe-1"></span> {{ $t('nav-bar.dueDate') }}</h5>
           </b-form-checkbox>
         </div>
@@ -88,7 +90,8 @@
             <b-form-checkbox v-model="criteria.check">
               <h5 class="d-flex fw-normal">{{ criteria.displayName }}</h5>
             </b-form-checkbox>
-            <b-form-input v-if="criteria.check && criteria.defaultValue === ''" v-model="criteria.value" size="sm" class="mb-2"></b-form-input>
+            <label v-if="criteria.check && criteria.defaultValue === ''" :for="'tasks-criteria-value-' + index" class="visually-hidden">{{ criteria.displayName }}</label>
+            <b-form-input v-if="criteria.check && criteria.defaultValue === ''" :id="'tasks-criteria-value-' + index" v-model="criteria.value" size="sm" class="mb-2"></b-form-input>
           </div>
         </div>
         <div v-if="filterVariables.length > 0">
@@ -97,7 +100,8 @@
             <b-form-checkbox v-model="criteria.check">
               <h5 class="d-flex fw-normal">{{ criteria.displayName }}</h5>
             </b-form-checkbox>
-            <b-form-input v-if="criteria.check" v-model="criteria.value" size="sm" class="mb-2"></b-form-input>
+            <label v-if="criteria.check" :for="'tasks-fv-value-' + index" class="visually-hidden">{{ criteria.displayName }}</label>
+            <b-form-input v-if="criteria.check" :id="'tasks-fv-value-' + index" v-model="criteria.value" size="sm" class="mb-2"></b-form-input>
           </div>
         </div>
       </b-popover>
@@ -279,10 +283,10 @@ export default {
     'tasksFiltered': {
       immediate: false,
       handler: function () {
-        if (this.pendingScrollToTaskId) {
+        if (this.pendingScrollToTaskId &&
+          this.tasksFiltered.some(t => t.id === this.pendingScrollToTaskId)) {
           this.$nextTick(() => {
             this.scrollToSelectedTask()
-            this.pendingScrollToTaskId = null
           })
         }
       }
@@ -616,7 +620,7 @@ export default {
       const MAX_SCROLL_RETRIES = 5
 	    const taskId = this.$route.params.taskId
 	    const ref = this.$refs['taskItem-' + taskId]
-	    let el = null
+	    let el
 	    if (Array.isArray(ref)) {
 	      el = ref[0]?.$el || ref[0]
 	    } else if (ref && ref.$el) {

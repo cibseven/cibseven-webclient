@@ -22,6 +22,24 @@
 
 <script>
 import { GenericTabs } from '@cib/common-frontend'
+import { defineTabBar } from '@/utils/tabBar.js'
+
+const BUILTIN_TABS = [
+  { id: 'variables', text: 'process.variables' },
+  { id: 'incidents', text: 'process.incidents' },
+  { id: 'usertasks', text: 'process.usertasks' },
+  { id: 'jobs', text: 'process.jobs' },
+  { id: 'calledProcessInstances', text: 'process.calledProcessInstances' },
+  { id: 'externalTasks', text: 'process.externalTasks' }
+]
+
+export const RESERVED_TAB_IDS = BUILTIN_TABS.map(tab => tab.id)
+
+const tabsFor = defineTabBar({
+  deepLinkSection: 'processInstance',
+  pluginSlot: 'process-instance-tab',
+  builtin: BUILTIN_TABS
+})
 
 export default {
   name: 'ProcessInstanceTabs',
@@ -30,16 +48,9 @@ export default {
   },
   props: { modelValue: String },
   emits: ['update:modelValue', 'tab-click'],
-  data: function () {
-    return {
-      tabs: [
-        { id: 'variables', text: 'process.variables' },
-        { id: 'incidents', text: 'process.incidents' },
-        { id: 'usertasks', text: 'process.usertasks' },
-        { id: 'jobs', text: 'process.jobs' },
-        { id: 'calledProcessInstances', text: 'process.calledProcessInstances' },
-        { id: 'externalTasks', text: 'process.externalTasks' }
-      ]
+  computed: {
+    tabs: function() {
+      return tabsFor({ config: this.$root.config, t: this.$t })
     }
   }
 }

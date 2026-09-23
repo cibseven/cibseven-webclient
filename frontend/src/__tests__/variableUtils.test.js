@@ -81,6 +81,25 @@ describe('getFileVariableName', () => {
   })
 })
 
+describe('shortValue', () => {
+  it.each([
+    // dotted value starting with a lowercase letter → substring after the last dot
+    ['de.cib.cibflow.api.files.FileValueDataSource', 'FileValueDataSource'],
+    ['org.apache.commons.Lang', 'Lang'],
+    // starts with an uppercase letter → regex fails, full string returned
+    ['ArrayList.Foo', 'ArrayList.Foo'],
+    // no dot at all → full string returned
+    ['hello', 'hello'],
+    // trailing dot (nothing after the last dot) → full string returned
+    ['abc.', 'abc.'],
+    // non-string input is coerced with string concatenation, and does not match /^[a-z]/
+    [30, '30'],
+    [30.5, '30.5'],
+  ])('shortValue(%j) → "%s"', (value, expected) => {
+    expect(variableUtils.shortValue(value)).toBe(expected)
+  })
+})
+
 describe('displayValue', () => {
   describe('File type', () => {
     it('returns valueInfo.filename', () => {

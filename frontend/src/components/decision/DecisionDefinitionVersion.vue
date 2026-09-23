@@ -19,7 +19,7 @@
 <template>
   <div v-if="decision" class="h-100">
     <ViewerFrame :resizerMixin="this">
-      <DmnViewer ref="diagram" class="h-100" />
+      <DmnViewer ref="diagram" class="h-100" @viewbox-changed="onViewboxChanged" :sidebar-left-open="leftOpen" />
     </ViewerFrame>
 
     <div class="position-absolute w-100" style="left: 0; z-index: 1" :style="'height: '+ tabsAreaHeight +'px; top: ' + (bottomContentPosition - tabsAreaHeight + 1) + 'px; ' + toggleTransition">
@@ -31,6 +31,7 @@
     </div>
 
     <div class="position-absolute w-100 overflow-hidden border-top" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
+      <DeepLinkFrame v-if="matchedDeepLink" :link="matchedDeepLink" :params="matchedDeepLinkParams"></DeepLinkFrame>
       <div v-if="activeTab === 'instances'">
         <div ref="filterTable" class="bg-white d-flex position-absolute w-100">
           <div class="container-fluid p-2">
@@ -55,6 +56,7 @@
               </div>
               <div class="col-4">
                 <component :is="DecisionDefinitionVersionActionsPlugin" v-if="DecisionDefinitionVersionActionsPlugin" :decision="decision" :decision-key="decisionKey"></component>
+                <DeepLinkButtons section="decisionDefinition" :params="matchedDeepLinkParams" />
               </div>
             </div>
           </div>
@@ -69,6 +71,9 @@
           </div>
         </div>
       </div>
+
+      <PluginSlot name="decision-definition-tab" :only="activeTab"
+        :params="{ decision: decision, tenantId: decision?.tenantId }"></PluginSlot>
     </div>
   </div>
 </template>
@@ -79,25 +84,42 @@ import { permissionsMixin } from '@/permissions.js'
 import DmnViewer from '@/components/decision/DmnViewer.vue'
 import DecisionInstancesTable from '@/components/decision/DecisionInstancesTable.vue'
 import resizerMixin from '@/components/process/mixins/resizerMixin.js'
+import bpmnViewportPersistenceMixin from '@/components/process/mixins/bpmnViewportPersistenceMixin.js'
+import viewerFrameSizePersistenceMixin from '@/components/process/mixins/viewerFrameSizePersistenceMixin.js'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
+import DeepLinkFrame from '@/components/common-components/DeepLinkFrame.vue'
 import { BWaitingBox, GenericTabs } from '@cib/common-frontend'
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from '@/utils/debounce.js'
+import { getDeepLinkEntries } from '@/utils/deepLinks.js'
+import { defineTabBar } from '@/utils/tabBar.js'
+import PluginSlot from '@/components/common/PluginSlot.vue'
+import DeepLinkButtons from '@/components/common-components/DeepLinkButtons.vue'
+
+const BUILTIN_TABS = [{ id: 'instances', text: 'decision.instances' }]
+const RESERVED_TAB_IDS = BUILTIN_TABS.map(tab => tab.id)
+
+const tabsFor = defineTabBar({
+  deepLinkSection: 'decisionDefinition',
+  pluginSlot: 'decision-definition-tab',
+  builtin: BUILTIN_TABS
+})
 
 export default {
   name: 'DecisionDefinitionVersion',
-  components: { DmnViewer, DecisionInstancesTable, ViewerFrame, BWaitingBox, GenericTabs, ScrollableTabsContainer },
-  mixins: [permissionsMixin, resizerMixin],
+  components: { DmnViewer, DecisionInstancesTable, ViewerFrame, BWaitingBox, GenericTabs, ScrollableTabsContainer, PluginSlot, DeepLinkFrame, DeepLinkButtons },
+  mixins: [permissionsMixin, resizerMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
+  inject: ['currentLanguage'],
   props: {
     versionIndex: String,
     loading: Boolean,
-    decisionKey: String
+    decisionKey: String,
+    leftOpen: { type: Boolean, default: true }
   },
   data: function() {
     return {
       topBarHeight: 0,
-      tabs: [ { id: 'instances', text: 'decision.instances' } ],
       activeTab: 'instances',
       sortByDefaultKey: 'evaluationTime',
       sorting: false,
@@ -112,6 +134,25 @@ export default {
     ...mapGetters(['getSelectedDecisionVersion']),
     decision: function() {
       return this.getSelectedDecisionVersion()
+    },
+    tabs: function() {
+      return tabsFor({ config: this.$root.config, t: this.$t })
+    },
+    matchedDeepLink() {
+      return getDeepLinkEntries(this.$root.config, 'decisionDefinition', RESERVED_TAB_IDS)
+        .filter(entry => entry.type === 'tab')
+        .find(entry => entry.id === this.activeTab)
+    },
+    matchedDeepLinkParams() {
+      return {
+        decisionDefinitionId: this.decision?.id,
+        decisionDefinitionKey: this.decision?.key,
+        decisionDefinitionTenantId: this.decision?.tenantId,
+        decisionDefinitionVersion: this.decision?.version,
+        decisionDefinitionVersionTag: this.decision?.versionTag,
+
+        lang: this.currentLanguage()
+      }
     },
     DecisionDefinitionVersionActionsPlugin: function() {
       return this.$options.components && this.$options.components.DecisionDefinitionVersionActionsPlugin
@@ -134,12 +175,18 @@ export default {
       this.getXmlById(this.decision.id)
         .then(response => {
           setTimeout(() => {
-            this.$refs.diagram.showDiagram(response.dmnXml)
+            this.$refs.diagram.showDiagram(response.dmnXml).then(() => this.restoreViewboxIfSaved())
           }, 100)
         })
         .catch(error => {
           console.error("Error loading diagram:", error)
         })
+    },
+    viewboxStorageKey() {
+      return `cibseven:dmn-viewbox:${this.decision.id}`
+    },
+    viewerFrameStorageKey() {
+      return 'cibseven:viewer-frame-size:decision'
     },
     handleScrollDecisions: function(el) {
       // TODO: Check method
