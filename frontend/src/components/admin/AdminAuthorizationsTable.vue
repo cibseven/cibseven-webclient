@@ -47,7 +47,8 @@
     </div>
     <div class="container-fluid overflow-auto h-100 g-0" @scroll="showMore">
       <div class="px-4 mb-5">
-        <FlowTable striped thead-class="sticky-header light" :items="authorizations" primary-key="id"
+        <FlowTable striped resizable thead-class="sticky-header light" :items="authorizations" primary-key="id"
+          :native-layout="false"
           :fields="authorizationFields"
           class="shadow-sm border rounded"
         >
@@ -239,16 +240,25 @@ export default {
       return !this.$root.config.authorizationEnabled
     },
     authorizationFields: function() {
+      const hasNameField = this.$route.params.resourceTypeId === '5'
+
       const baseFields = [
-        { label: 'admin.authorizations.type', key: 'type', class: 'col' },
-        { label: 'admin.authorizations.userIdGroupId', key: 'userIdGroupId', class: 'col' },
-        { label: 'admin.authorizations.permissions', key: 'permissions', class: 'col' },
-        { label: 'admin.authorizations.resourceId', key: 'resourceId', class: 'col' },
-        { label: 'admin.authorizations.actions', key: 'actions', class: 'col text-center', sortable: false,
+        { label: 'admin.authorizations.type', key: 'type' },
+        { label: 'admin.authorizations.userIdGroupId', key: 'userIdGroupId' },
+        { label: 'admin.authorizations.permissions', key: 'permissions' },
+        { label: 'admin.authorizations.resourceId', key: 'resourceId' },
+        { label: 'admin.authorizations.actions', key: 'actions', class: 'text-center', sortable: false,
           thClass: 'justify-content-center', tdClass: 'justify-content-center py-0' }
       ]
-      if (this.$route.params.resourceTypeId === '5')
-        baseFields.splice(3, 0, { label: 'admin.authorizations.name', key: 'name', class: 'col' })
+      if (hasNameField)
+        baseFields.splice(3, 0, { label: 'admin.authorizations.name', key: 'name', class: 'col-2' })
+
+      const colSizes = hasNameField ?
+        ['col-1', 'col-2', 'col-2', 'col-3', 'col-3', 'col-1 text-center'] :
+        ['col-1', 'col-3', 'col-4', 'col-3', 'col-1 text-center']
+      baseFields.forEach((field, index) => {
+        field.class = colSizes[index]
+      })
 
       return baseFields
     },

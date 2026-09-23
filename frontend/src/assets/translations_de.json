@@ -745,7 +745,7 @@
 				"property": "Eigenschaft"
 			},
 			"resourcesTypesDescriptions": {
-				"application": "Legt fest, welche Web-Anwendungen ein Benutzer oder eine Gruppe öffnen darf, z. B. <strong>Tasklist</strong>, <strong>Cockpit</strong>, <strong>Admin</strong> oder <strong>Optimize</strong>. Diese Ressource unterstützt nur die Berechtigung <strong>Access</strong>.",
+				"application": "Legt fest, welche Web-Anwendungen ein Benutzer oder eine Gruppe öffnen darf, z. B. <strong>tasklist</strong>, <strong>cockpit</strong>, <strong>admin</strong> oder <strong>modeler</strong>. Diese Ressource unterstützt nur die Berechtigung <strong>Access</strong>.",
 				"user": "Legt fest, wer Benutzerkonten anzeigen, anlegen, bearbeiten oder löschen darf, sowie ob Benutzer die Basisinformationen anderer Benutzer sehen können, z. B. bei der Auswahl eines Bearbeiters.",
 				"group": "Legt fest, wer Gruppen anzeigen, anlegen, bearbeiten oder löschen darf.",
 				"groupMembership": "Legt fest, wer Benutzer zu einer Gruppe hinzufügen oder daraus entfernen darf.",

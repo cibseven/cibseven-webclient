@@ -90,6 +90,8 @@ import { mapGetters, mapActions } from 'vuex'
 import { formatDate } from '@/utils/dates.js'
 import sidebarOpenPersistenceMixin from '@/mixins/sidebarOpenPersistenceMixin.js'
 
+const UNFINISHED_FILTER_PREFERENCE_KEY = 'cibseven:preferences:unfinishedInstancesFilter'
+
 function getStringObjByKeys(keys, obj) { // TODO rewrite to use join()
   let result = ''
   keys.forEach(key => {
@@ -150,7 +152,7 @@ export default {
       task: null,
       activityInstance: null,
       activityInstanceHistory: null,
-      filter: { unfinished: true },
+      filter: localStorage.getItem(UNFINISHED_FILTER_PREFERENCE_KEY) === 'false' ? {} : { unfinished: true },
       loading: false,
       parentProcess: null
     }
@@ -438,6 +440,7 @@ export default {
     },
     filterInstances(filter) {
       this.filter = filter
+      localStorage.setItem(UNFINISHED_FILTER_PREFERENCE_KEY, filter.unfinished === true)
       // InstancesTable will automatically reload when filter changes
     },
     getIconState(state) {

@@ -26,12 +26,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
 import org.springframework.stereotype.Component;
-import org.cibseven.modeler.config.ModelerJpa;
+import org.cibseven.persistence.CibsevenJpa;
 import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
 
 import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.webapp.exception.ValueTooLongException;
 import org.cibseven.modeler.model.FormEntity;
 import org.cibseven.modeler.repository.FormRepository;
 
@@ -61,6 +62,7 @@ public class FormProvider implements IFormProvider {
 	
 	@Override
 	public FormEntity createForm(FormEntity entity) throws SystemException {
+		requireFits(entity);
 		entity.setCreated(Timestamp.valueOf(LocalDateTime.now()));
 		entity.setUpdated(Timestamp.valueOf(LocalDateTime.now()));
 		return formRepositoryDao.save(entity);
@@ -68,15 +70,46 @@ public class FormProvider implements IFormProvider {
 
 	@Override
 	public FormEntity updateForm(FormEntity entity) throws SystemException {
-		FormEntity existing = formRepositoryDao.findById(entity.getId())
+		FormEntity stored = formRepositoryDao.findById(entity.getId())
 			.orElseThrow(() -> new EntityNotFoundException("FormEntity not found"));
-		existing.setFormSchema(entity.getFormSchema());
-		existing.setUpdated(Timestamp.valueOf(LocalDateTime.now()));
-		existing.setUpdatedBy(entity.getUpdatedBy());
-		return formRepositoryDao.save(existing);
+		applyUpdate(entity, stored);
+		return formRepositoryDao.save(stored);
+	}
+
+	/**
+	 * Copies what an update may change onto the stored form, leaving the rest as it is. A
+	 * subclass that writes the row itself calls this instead of repeating the list, so a field
+	 * added here reaches it too.
+	 */
+	protected void applyUpdate(FormEntity source, FormEntity stored) {
+		requireFits(source);
+		stored.setFormSchema(source.getFormSchema());
+		// Only when one is named: an import that replaces the content carries no folder and
+		// has to leave the form in the one it is already in
+		if (source.getFolderId() != null) {
+			stored.setFolderId(source.getFolderId());
+		}
+		stored.setUpdated(Timestamp.valueOf(LocalDateTime.now()));
+		stored.setUpdatedBy(source.getUpdatedBy());
 	}
 	
-	@Transactional(ModelerJpa.TRANSACTION_MANAGER)
+	/**
+	 * Every write goes through here, so a value the column cannot hold is refused as a request
+	 * error naming the field. Left to the database it surfaces as a system error carrying the
+	 * failed SQL, which tells the user nothing and says more than it should.
+	 */
+	private void requireFits(FormEntity entity) {
+		requireFits("formId", entity.getFormId(), 100);
+		requireFits("description", entity.getDescription(), 150);
+	}
+
+	private void requireFits(String field, String value, int limit) {
+		if (value != null && value.length() > limit) {
+			throw new ValueTooLongException(field, limit);
+		}
+	}
+
+	@Transactional(CibsevenJpa.TRANSACTION_MANAGER)
 	@Override
 	public void delete(String id) throws SystemException {
 		formRepositoryDao.deleteById(id);

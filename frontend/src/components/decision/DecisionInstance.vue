@@ -65,6 +65,9 @@
         </div>
       </div>
       <DeepLinkFrame v-else-if="matchedDeepLink" :link="matchedDeepLink" :params="matchedDeepLinkParams"></DeepLinkFrame>
+
+      <PluginSlot name="decision-instance-tab" :only="activeTab"
+        :params="{ instance: instance, decision: decisionDefinition, tenantId: instance?.tenantId }"></PluginSlot>
     </div>
   </div>
 </template>
@@ -81,14 +84,27 @@ import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
 import DeepLinkFrame from '@/components/common-components/DeepLinkFrame.vue'
 import { FlowTable, GenericTabs } from '@cib/common-frontend'
 import { mapActions, mapGetters } from 'vuex'
-import { getDeepLinkEntries, resolveDeepLinkLabel, hasDeepLinks } from '@/utils/deepLinks.js'
+import { getDeepLinkEntries, hasDeepLinks } from '@/utils/deepLinks.js'
 import DeepLinkButtons from '@/components/common-components/DeepLinkButtons.vue'
+import PluginSlot from '@/components/common/PluginSlot.vue'
+import { defineTabBar } from '@/utils/tabBar.js'
 
-const RESERVED_TAB_IDS = ['inputs', 'outputs']
+const BUILTIN_TABS = [
+  { id: 'inputs', text: 'decision.inputs' },
+  { id: 'outputs', text: 'decision.outputs' }
+]
+
+const RESERVED_TAB_IDS = BUILTIN_TABS.map(tab => tab.id)
+
+const tabsFor = defineTabBar({
+  deepLinkSection: 'decisionInstance',
+  pluginSlot: 'decision-instance-tab',
+  builtin: BUILTIN_TABS
+})
 
 export default {
   name: 'DecisionInstance',
-  components: { DmnViewer, FlowTable, GenericTabs, ScrollableTabsContainer, ViewerFrame, DeepLinkFrame, DeepLinkButtons },
+  components: { DmnViewer, FlowTable, GenericTabs, ScrollableTabsContainer, ViewerFrame, DeepLinkFrame, DeepLinkButtons, PluginSlot },
   mixins: [permissionsMixin, resizerMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
   inject: ['currentLanguage'],
   props: {
@@ -110,14 +126,7 @@ export default {
       return this.getSelectedDecisionVersion()
     },
     tabs() {
-      const deepLinkTabs = getDeepLinkEntries(this.$root.config, 'decisionInstance', RESERVED_TAB_IDS)
-        .filter(entry => entry.type === 'tab')
-        .map(entry => ({ id: entry.id, text: resolveDeepLinkLabel(this.$t, entry) }))
-      return [
-        { id: 'inputs', text: 'decision.inputs' },
-        { id: 'outputs', text: 'decision.outputs' },
-        ...deepLinkTabs
-      ]
+      return tabsFor({ config: this.$root.config, t: this.$t })
     },
     hasDeepLinks() {
       return hasDeepLinks(this.$root.config, 'decisionInstance', 'button')

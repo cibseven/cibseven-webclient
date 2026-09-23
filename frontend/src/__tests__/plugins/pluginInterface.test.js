@@ -71,7 +71,10 @@ const MANIFEST_FIELDS = ['apiVersion', 'entry', 'id', 'styles', 'translations']
 /** The slots the application renders, and the props each hands a contribution. */
 const SLOTS = {
   'process-instance-tab': ['instance', 'process', 'tenantId'],
-  'decision-definition-tab': ['decision', 'tenantId']
+  'process-definition-tab': ['process', 'tenantId'],
+  'decision-definition-tab': ['decision', 'tenantId'],
+  'decision-instance-tab': ['instance', 'decision', 'tenantId'],
+  'dmn-viewer': ['viewer', 'container', 'activeView']
 }
 
 const BUMP = 'the plugin interface changed - it may only change in a new webclient minor, and this list has to be updated with it'

@@ -21,8 +21,9 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.cibseven.modeler.config.ModelerJpa;
+import org.cibseven.modeler.config.ModelerPersistence;
 import org.cibseven.modeler.model.ProcessDiagramEntity;
+import org.cibseven.persistence.CibsevenJpa;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.BeanFactoryAnnotationUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -46,17 +47,17 @@ import jakarta.persistence.EntityManagerFactory;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * The modeler runs on its own persistence unit, named after {@link ModelerJpa}, and must never
+ * The modeler stores its entities in the webclient's persistence unit, see {@link CibsevenJpa}, which must never
  * attach itself to the host application's beans — in an embedding application those are the ones
  * called {@code entityManagerFactory} and {@code transactionManager}, and they may well point at a
  * different database (CIB7-1776).
  *
- * <p>{@link ModelerScopedBean} stands for any modeler bean that asks for the qualified factory and
+ * <p>{@link ModelerScopedBean} stands for any webclient bean that asks for the qualified factory and
  * builds a shared entity manager from it.</p>
  *
  * <p>The transaction manager assertions go through {@code BeanFactoryAnnotationUtils.qualifiedBeanOfType},
  * which is the lookup {@code TransactionAspectSupport.determineQualifiedTransactionManager} performs
- * for a {@code @Transactional(ModelerJpa.TRANSACTION_MANAGER)} qualifier.</p>
+ * for a {@code @Transactional(CibsevenJpa.TRANSACTION_MANAGER)} qualifier.</p>
  */
 class ModelerPersistenceUnitResolutionTest {
 
@@ -69,21 +70,21 @@ class ModelerPersistenceUnitResolutionTest {
 			new ApplicationContextRunner().withUserConfiguration(ModelerUnitOnlyConfig.class);
 
 	@Test
-	void aModelerBeanResolvesTheModelersFactoryNotTheHosts() {
+	void aModelerBeanResolvesTheWebclientsFactoryNotTheHosts() {
 		embedded.run(context -> {
 			assertThat(context).hasNotFailed();
 			EntityManager entityManager = context.getBean(ModelerScopedBean.class).entityManager();
 
 			assertThat(entityManager.getEntityManagerFactory())
-					.isSameAs(context.getBean(ModelerJpa.ENTITY_MANAGER_FACTORY, EntityManagerFactory.class))
+					.isSameAs(context.getBean(CibsevenJpa.ENTITY_MANAGER_FACTORY, EntityManagerFactory.class))
 					.isNotSameAs(context.getBean("entityManagerFactory", EntityManagerFactory.class));
 		});
 	}
 
 	@Test
-	void modelerEntitiesLiveInTheModelersUnitOnly() {
+	void modelerEntitiesLiveInTheWebclientsUnitOnly() {
 		embedded.run(context -> {
-			assertThat(context.getBean(ModelerJpa.ENTITY_MANAGER_FACTORY, EntityManagerFactory.class)
+			assertThat(context.getBean(CibsevenJpa.ENTITY_MANAGER_FACTORY, EntityManagerFactory.class)
 					.getMetamodel().getEntities())
 					.anyMatch(entity -> ProcessDiagramEntity.class.equals(entity.getJavaType()));
 			assertThat(context.getBean("entityManagerFactory", EntityManagerFactory.class)
@@ -93,13 +94,13 @@ class ModelerPersistenceUnitResolutionTest {
 	}
 
 	@Test
-	void transactionalQualifierResolvesToTheModelersTransactionManager() {
+	void transactionalQualifierResolvesToTheWebclientsTransactionManager() {
 		embedded.run(context -> {
 			TransactionManager resolved = BeanFactoryAnnotationUtils.qualifiedBeanOfType(
-					context.getBeanFactory(), TransactionManager.class, ModelerJpa.TRANSACTION_MANAGER);
+					context.getBeanFactory(), TransactionManager.class, CibsevenJpa.TRANSACTION_MANAGER);
 
 			assertThat(((JpaTransactionManager) resolved).getEntityManagerFactory())
-					.isSameAs(context.getBean(ModelerJpa.ENTITY_MANAGER_FACTORY, EntityManagerFactory.class))
+					.isSameAs(context.getBean(CibsevenJpa.ENTITY_MANAGER_FACTORY, EntityManagerFactory.class))
 					.isNotSameAs(context.getBean("entityManagerFactory", EntityManagerFactory.class));
 		});
 	}
@@ -109,9 +110,9 @@ class ModelerPersistenceUnitResolutionTest {
 	void hostBeansAreUntouched() {
 		embedded.run(context -> {
 			assertThat(context.getBeanNamesForType(EntityManagerFactory.class))
-					.containsExactlyInAnyOrder("entityManagerFactory", ModelerJpa.ENTITY_MANAGER_FACTORY);
+					.containsExactlyInAnyOrder("entityManagerFactory", CibsevenJpa.ENTITY_MANAGER_FACTORY);
 			assertThat(context.getBeanNamesForType(PlatformTransactionManager.class))
-					.containsExactlyInAnyOrder("transactionManager", ModelerJpa.TRANSACTION_MANAGER);
+					.containsExactlyInAnyOrder("transactionManager", CibsevenJpa.TRANSACTION_MANAGER);
 		});
 	}
 
@@ -121,12 +122,12 @@ class ModelerPersistenceUnitResolutionTest {
 		noDefaultNames.run(context -> {
 			assertThat(context).hasNotFailed();
 			assertThat(context.getBean(ModelerScopedBean.class).entityManager().getEntityManagerFactory())
-					.isSameAs(context.getBean(ModelerJpa.ENTITY_MANAGER_FACTORY, EntityManagerFactory.class));
+					.isSameAs(context.getBean(CibsevenJpa.ENTITY_MANAGER_FACTORY, EntityManagerFactory.class));
 
 			TransactionManager resolved = BeanFactoryAnnotationUtils.qualifiedBeanOfType(
-					context.getBeanFactory(), TransactionManager.class, ModelerJpa.TRANSACTION_MANAGER);
+					context.getBeanFactory(), TransactionManager.class, CibsevenJpa.TRANSACTION_MANAGER);
 			assertThat(((JpaTransactionManager) resolved).getEntityManagerFactory())
-					.isSameAs(context.getBean(ModelerJpa.ENTITY_MANAGER_FACTORY, EntityManagerFactory.class));
+					.isSameAs(context.getBean(CibsevenJpa.ENTITY_MANAGER_FACTORY, EntityManagerFactory.class));
 		});
 	}
 
@@ -135,7 +136,7 @@ class ModelerPersistenceUnitResolutionTest {
 
 		private final EntityManager entityManager;
 
-		ModelerScopedBean(@Qualifier(ModelerJpa.ENTITY_MANAGER_FACTORY) EntityManagerFactory entityManagerFactory) {
+		ModelerScopedBean(@Qualifier(CibsevenJpa.ENTITY_MANAGER_FACTORY) EntityManagerFactory entityManagerFactory) {
 			this.entityManager = SharedEntityManagerCreator.createSharedEntityManager(entityManagerFactory);
 		}
 
@@ -158,22 +159,22 @@ class ModelerPersistenceUnitResolutionTest {
 			return embeddedDatabase();
 		}
 
-		@Bean(ModelerJpa.ENTITY_MANAGER_FACTORY)
+		@Bean(CibsevenJpa.ENTITY_MANAGER_FACTORY)
 		LocalContainerEntityManagerFactoryBean modelerEntityManagerFactory(
 				@Qualifier("modelerDataSource") DataSource dataSource) {
-			return factoryFor(dataSource, ModelerJpa.ENTITY_PACKAGE);
+			return factoryFor(dataSource, ModelerPersistence.ENTITY_PACKAGE);
 		}
 
 		/** Stands in for the host application's factory; deliberately has no modeler entities. */
 		@Bean
 		LocalContainerEntityManagerFactoryBean entityManagerFactory(
 				@Qualifier("appDataSource") DataSource dataSource) {
-			return factoryFor(dataSource, ModelerJpa.REPOSITORY_PACKAGE);
+			return factoryFor(dataSource, ModelerPersistence.REPOSITORY_PACKAGE);
 		}
 
-		@Bean(ModelerJpa.TRANSACTION_MANAGER)
+		@Bean(CibsevenJpa.TRANSACTION_MANAGER)
 		PlatformTransactionManager modelerTransactionManager(
-				@Qualifier(ModelerJpa.ENTITY_MANAGER_FACTORY) EntityManagerFactory entityManagerFactory) {
+				@Qualifier(CibsevenJpa.ENTITY_MANAGER_FACTORY) EntityManagerFactory entityManagerFactory) {
 			return new JpaTransactionManager(entityManagerFactory);
 		}
 
@@ -193,14 +194,14 @@ class ModelerPersistenceUnitResolutionTest {
 			return embeddedDatabase();
 		}
 
-		@Bean(ModelerJpa.ENTITY_MANAGER_FACTORY)
+		@Bean(CibsevenJpa.ENTITY_MANAGER_FACTORY)
 		LocalContainerEntityManagerFactoryBean modelerEntityManagerFactory(DataSource dataSource) {
-			return factoryFor(dataSource, ModelerJpa.ENTITY_PACKAGE);
+			return factoryFor(dataSource, ModelerPersistence.ENTITY_PACKAGE);
 		}
 
-		@Bean(ModelerJpa.TRANSACTION_MANAGER)
+		@Bean(CibsevenJpa.TRANSACTION_MANAGER)
 		PlatformTransactionManager modelerTransactionManager(
-				@Qualifier(ModelerJpa.ENTITY_MANAGER_FACTORY) EntityManagerFactory entityManagerFactory) {
+				@Qualifier(CibsevenJpa.ENTITY_MANAGER_FACTORY) EntityManagerFactory entityManagerFactory) {
 			return new JpaTransactionManager(entityManagerFactory);
 		}
 	}

@@ -55,6 +55,7 @@ export { createProvideObject } from '@/utils/provide.js'
 // library; each supplies its own plugin-runtime entry, since module instances
 // only exist within one build
 export { registerPlugin, getPlugin, resetPlugins, reserveSlotIds, PLUGIN_API_VERSION, getRuntimeInfo } from '@/plugins/pluginsConfig.js'
+export { defineTabBar } from '@/utils/tabBar.js'
 // as one object, so a downstream plugin runtime can hand it over without listing every service
 export * as services from '@/services.js'
 export { setPluginContext, getPluginContext } from '@/plugins/pluginContext.js'
