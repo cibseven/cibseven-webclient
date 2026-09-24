@@ -39,9 +39,9 @@
       </div>
     </div>
 
-    <div class="position-absolute w-100 border-top" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
+    <div ref="rContent" class="position-absolute w-100 border-top" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
       <div v-if="activeTab === 'inputs'">
-        <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 0; left: 0; bottom: 0">
+        <div class="overflow-auto bg-white position-absolute w-100" style="top: 0; left: 0; bottom: 0">
           <div v-if="hasDeepLinks" class="p-2">
             <DeepLinkButtons section="decisionInstance" :params="matchedDeepLinkParams" />
           </div>
@@ -53,7 +53,7 @@
         </div>
       </div>
       <div v-else-if="activeTab === 'outputs'">
-        <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 0; left: 0; bottom: 0">
+        <div class="overflow-auto bg-white position-absolute w-100" style="top: 0; left: 0; bottom: 0">
           <div v-if="hasDeepLinks" class="p-2">
             <DeepLinkButtons section="decisionInstance" :params="matchedDeepLinkParams" />
           </div>
