@@ -125,7 +125,7 @@ public class IEngineProviderTest {
 
 	@Test
 	void getEffectiveDefaultEngineConfiguration_returnsTheConfigurationOfThatEngine() {
-		EngineConfiguration configuration = new EngineConfiguration("default", "full", true, false);
+		EngineConfiguration configuration = new EngineConfiguration("default", "full", true, false, null, null);
 		StubEngineProvider provider = new StubEngineProvider(
 			List.of(engine("alpha", "alpha"), engine("default", "default")),
 			Map.of("default", configuration));

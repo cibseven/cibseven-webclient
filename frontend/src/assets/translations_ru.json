@@ -1330,8 +1330,7 @@
 		"decisionInstanceId": "ID экземпляра решения"
 	},
 	"decision-instance": {
-		"edit": "@:commons.edit",
-		"save": "@:commons.save"
+		"edit": "@:commons.edit"
 	},
 	"human-tasks": {
 		"assignmentsByType": "Назначения по типу",
@@ -1390,5 +1389,16 @@
 	},
 	"deepLink": {
 		"tooltip": "Открыть {text}\n{url}"
+	},
+	"historyTimeToLive": {
+		"title": "Изменить время хранения истории",
+		"choiceDefault": "Системное значение по умолчанию ({value} дн.)",
+		"choiceDefaultUnknown": "Системное значение по умолчанию",
+		"choiceZero": "0 - обработать сегодня",
+		"choiceCustom": "Пользовательское",
+		"days": "дн.",
+		"placeholder": "Введите количество дней (например, 30)",
+		"validation": "Введите допустимое число от 0 до 9999",
+		"enforcedTooltip": "Этот движок требует явного времени хранения истории; \"системное значение по умолчанию\" недоступно."
 	}
 }
