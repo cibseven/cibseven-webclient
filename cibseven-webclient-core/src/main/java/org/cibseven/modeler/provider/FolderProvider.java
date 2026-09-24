@@ -20,6 +20,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
@@ -28,7 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import org.cibseven.modeler.config.ModelerJpa;
+import org.cibseven.persistence.CibsevenJpa;
 import org.cibseven.modeler.model.FolderEntity;
 import org.cibseven.modeler.repository.FolderRepository;
 import org.cibseven.modeler.repository.FormRepository;
@@ -65,12 +66,12 @@ public class FolderProvider {
 		}
 	}
 
-	@Transactional(value = ModelerJpa.TRANSACTION_MANAGER, readOnly = true)
+	@Transactional(value = CibsevenJpa.TRANSACTION_MANAGER, readOnly = true)
 	public List<FolderEntity> findAll() {
 		return folderDao.findAllByOrderByNameAsc();
 	}
 
-	@Transactional(value = ModelerJpa.TRANSACTION_MANAGER, readOnly = true)
+	@Transactional(value = CibsevenJpa.TRANSACTION_MANAGER, readOnly = true)
 	public FolderEntity find(String id) {
 		if (id == null || id.isBlank()) {
 			throw new NoObjectFoundException("No folder id given");
@@ -80,7 +81,7 @@ public class FolderProvider {
 	}
 
 	/** Without a parent the folder is created at the top level. */
-	@Transactional(ModelerJpa.TRANSACTION_MANAGER)
+	@Transactional(CibsevenJpa.TRANSACTION_MANAGER)
 	public FolderEntity create(String parentId, String name, String userId) {
 		FolderEntity parent = parentId == null || parentId.isBlank() ? null : find(parentId);
 		String parentFolderId = parent == null ? null : parent.getId();
@@ -103,7 +104,7 @@ public class FolderProvider {
 	 * Applies both in one transaction, so a move the tree refuses does not leave the folder
 	 * renamed.
 	 */
-	@Transactional(ModelerJpa.TRANSACTION_MANAGER)
+	@Transactional(CibsevenJpa.TRANSACTION_MANAGER)
 	public FolderEntity update(String id, FolderChange change, String userId) {
 		FolderEntity folder = find(id);
 		if (change.renaming()) {
@@ -115,7 +116,7 @@ public class FolderProvider {
 		return folder;
 	}
 
-	@Transactional(ModelerJpa.TRANSACTION_MANAGER)
+	@Transactional(CibsevenJpa.TRANSACTION_MANAGER)
 	public FolderEntity rename(String id, String name, String userId) {
 		FolderEntity folder = find(id);
 		String folderName = validName(name);
@@ -126,7 +127,7 @@ public class FolderProvider {
 	}
 
 	/** Moving keeps the id of the folder and everything below it, so links and deployments hold. */
-	@Transactional(ModelerJpa.TRANSACTION_MANAGER)
+	@Transactional(CibsevenJpa.TRANSACTION_MANAGER)
 	public FolderEntity move(String id, String newParentId, String userId) {
 		FolderEntity folder = find(id);
 		FolderEntity target = newParentId == null || newParentId.isBlank() ? null : find(newParentId);
@@ -141,7 +142,7 @@ public class FolderProvider {
 		return touch(folder, userId);
 	}
 
-	@Transactional(value = ModelerJpa.TRANSACTION_MANAGER, readOnly = true)
+	@Transactional(value = CibsevenJpa.TRANSACTION_MANAGER, readOnly = true)
 	public FolderContents contents(String id) {
 		List<String> ids = subtreeIds(id);
 		return new FolderContents(
@@ -155,7 +156,7 @@ public class FolderProvider {
 	 * contents reports first: the models are removed for good, as deleting one from the list
 	 * has always been.
 	 */
-	@Transactional(ModelerJpa.TRANSACTION_MANAGER)
+	@Transactional(CibsevenJpa.TRANSACTION_MANAGER)
 	public FolderContents delete(String id) {
 		FolderEntity folder = find(id);
 		List<String> ids = subtreeIds(id);
@@ -163,7 +164,11 @@ public class FolderProvider {
 
 		processDiagramDao.deleteAll(processDiagramDao.findByFolderIdIn(ids));
 		formDao.deleteAll(formDao.findByFolderIdIn(ids));
-		folderDao.deleteAllById(ids);
+		// Deepest first: a folder points at its parent, so a parent removed before its children
+		// leaves the database refusing the delete
+		List<String> childrenFirst = new ArrayList<>(ids);
+		Collections.reverse(childrenFirst);
+		folderDao.deleteAllById(childrenFirst);
 
 		log.info("Deleted folder {} with {} folder(s) and {} model(s)",
 			folder.getName(), removed.folders(), removed.models());
@@ -171,7 +176,7 @@ public class FolderProvider {
 	}
 
 	/** The folder a model may be placed in: it has to be named, and it has to exist. */
-	@Transactional(value = ModelerJpa.TRANSACTION_MANAGER, readOnly = true)
+	@Transactional(value = CibsevenJpa.TRANSACTION_MANAGER, readOnly = true)
 	public FolderEntity requireModelFolder(String folderId) {
 		if (folderId == null || folderId.isBlank()) {
 			throw new InvalidFolderException("folderId", "a model needs the folder it goes into");

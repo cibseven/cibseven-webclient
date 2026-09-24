@@ -275,11 +275,23 @@ INFO o.cibseven.webapp.plugin.PluginRegistry : Found 1 frontend plugin(s) on the
 | Slot | Contributes | Props handed to the contribution |
 |---|---|---|
 | `process-instance-tab` | one tab of a process instance; the registered `id` becomes `?tab=<id>` | `instance`, `process`, `tenantId` |
+| `process-definition-tab` | one tab of a process definition | `process`, `tenantId` |
 | `decision-definition-tab` | one tab of a decision definition version | `decision`, `tenantId` |
+| `decision-instance-tab` | one tab of a decision instance | `instance`, `decision`, `tenantId` |
+| `dmn-viewer` | no UI of its own: a contribution works on the rendered DMN viewer | `viewer`, `container`, `activeView` |
 
 One registration carries both the tab label and its content: the tab bar reads
 `id` and `text`, and the view renders whichever contribution matches the active
-tab. Slots are added on demand rather than up front.
+tab. Slots are added on demand rather than up front, and each takes the shape its
+place needs.
+
+A contribution to `dmn-viewer` renders no tab and needs no `text`: it is mounted
+with the dmn-js instance, the element it renders into, and the view that is open,
+and works on those. dmn-js offers no API for changing a rendered read-only table,
+so a contribution that adds to one works on the DOM dmn-js produced - and that
+markup is dmn-js's, not ours, so it can change when dmn-js is upgraded.
+`activeView` changes whenever the user switches between the DRD and a decision,
+which is the signal to apply the work again.
 
 ### Several contributions in one slot
 
@@ -298,6 +310,12 @@ Two things follow from the list being shared:
 - **The order of contributed tabs is not defined.** Plugins are loaded
   concurrently and register when their module has arrived, so with two plugins
   their tabs can appear in either order. The built-in tabs always come first.
+
+Every tab bar builds its tabs with `defineTabBar`, which reserves the bar's own
+ids, appends the tabs a deep link configuration adds, and then the contributed
+ones. A bar that renders elsewhere - the enterprise edition replaces the two
+process bars with longer lists - uses the same helper, which is what keeps a
+slot behaving the same in both editions.
 
 An application embedding this webclient renders the same slots, as long as it
 supplies a `plugin-runtime` entry of its own - module instances only exist within

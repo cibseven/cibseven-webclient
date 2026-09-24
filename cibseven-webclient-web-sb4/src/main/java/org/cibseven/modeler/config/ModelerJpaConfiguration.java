@@ -27,7 +27,8 @@ import org.springframework.context.annotation.Import;
  * and must not be used directly; it is imported exclusively via
  * {@link ModelerAutoConfiguration}.
  *
- * <p>The persistence unit itself lives in {@link ModelerPersistenceConfiguration}.</p>
+ * <p>What the modeler puts into the webclient's persistence unit lives in
+ * {@link ModelerPersistenceConfiguration}; the unit itself belongs to the webclient.</p>
  */
 @Configuration
 @Import(ModelerPersistenceConfiguration.class)
