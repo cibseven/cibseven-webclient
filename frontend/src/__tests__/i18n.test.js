@@ -86,6 +86,9 @@ function skipValue(value, lang) {
       'cockpit',
       'admin',
       'modeler',
+      'builder',
+      'data',
+      'ins7ght',
 
       // authorizations.types:
       'allow',
@@ -123,6 +126,7 @@ function skipValue(value, lang) {
       'business key',
       'variables',
       'total',
+      'dashboard',
     ],
     'ua': [
     ],
