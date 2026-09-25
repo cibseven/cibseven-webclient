@@ -71,6 +71,7 @@ import org.cibseven.bpm.engine.rest.util.ApplicationContextPathUtil;
 import org.cibseven.bpm.engine.rest.util.EncodingUtil;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.bpm.engine.runtime.VariableInstanceQuery;
+import org.cibseven.bpm.engine.task.Comment;
 import org.cibseven.bpm.engine.task.DelegationState;
 import org.cibseven.bpm.engine.task.TaskCountByCandidateGroupResult;
 import org.cibseven.bpm.engine.task.TaskQuery;
@@ -193,6 +194,37 @@ public class DirectTaskProvider implements ITaskProvider {
 		org.cibseven.bpm.engine.task.Task foundTask = getTaskById(taskId, user);
 		foundTask.setAssignee(assignee);
 		directProviderUtil.getProcessEngine(user).getTaskService().saveTask(foundTask);
+	}
+
+	@Override
+	public void claim(String taskId, String userId, CIBUser user) {
+		directProviderUtil.getProcessEngine(user).getTaskService().claim(taskId, userId);
+	}
+
+	@Override
+	public void delegate(String taskId, String userId, CIBUser user) {
+		directProviderUtil.getProcessEngine(user).getTaskService().delegateTask(taskId, userId);
+	}
+
+	@Override
+	public Map<String, Object> findLocalVariables(String taskId, CIBUser user) {
+		return directProviderUtil.getProcessEngine(user).getTaskService().getVariablesLocal(taskId);
+	}
+
+	@Override
+	public Collection<Map<String, Object>> findComments(String taskId, CIBUser user) {
+		List<Map<String, Object>> comments = new ArrayList<>();
+		for (Comment comment : directProviderUtil.getProcessEngine(user).getTaskService().getTaskComments(taskId)) {
+			Map<String, Object> entry = new HashMap<>();
+			entry.put("id", comment.getId());
+			entry.put("userId", comment.getUserId());
+			entry.put("taskId", comment.getTaskId());
+			entry.put("processInstanceId", comment.getProcessInstanceId());
+			entry.put("time", comment.getTime());
+			entry.put("message", comment.getFullMessage());
+			comments.add(entry);
+		}
+		return comments;
 	}
 
 	@Override
