@@ -37,7 +37,7 @@ describe('CibSeven.vue', () => {
           $store: { state: { process: { list: [] } }, getters: {}, dispatch: vi.fn(() => Promise.resolve()) }
         },
         provide: { isMobile: false },
-        stubs: { 'router-view': true, 'b-modal': true, PluginSlot: { name: 'PluginSlot', template: '<div class="plugin-slot"></div>', props: ['name'] } }
+        stubs: { 'router-view': true, 'b-modal': true, PluginSlot: { name: 'PluginSlot', template: '<div class="plugin-slot"></div>', props: ['name', 'params'] } }
       }
     })
 
@@ -47,6 +47,7 @@ describe('CibSeven.vue', () => {
       const slot = wrapper.findComponent({ name: 'PluginSlot' })
       expect(slot.exists()).toBe(true)
       expect(slot.props('name')).toBe('app-banner')
+      expect(slot.props('params')).toEqual({ user: { id: 'demo' } })
       // the banner comes first, so it pushes the page down instead of covering it
       const html = wrapper.html()
       expect(html.indexOf('plugin-slot')).toBeLessThan(html.indexOf('<main'))

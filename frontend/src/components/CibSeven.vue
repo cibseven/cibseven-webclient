@@ -131,7 +131,7 @@
 
     <!-- Messages for every logged-in user, e.g. system notifications of the enterprise edition -->
     <div v-if="$root.user" class="flex-shrink-0">
-      <PluginSlot name="app-banner"></PluginSlot>
+      <PluginSlot name="app-banner" :params="{ user: $root.user }"></PluginSlot>
     </div>
 
     <main class="flex-grow-1 overflow-hidden d-flex flex-column">
