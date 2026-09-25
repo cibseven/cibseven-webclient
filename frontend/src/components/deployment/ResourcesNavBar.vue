@@ -51,6 +51,10 @@
                   tabindex="-1"
                   icon="mdi-download"
                   :title="$t('process-instance.download')"></CellActionButton>
+                <CellActionButton v-if="canDownload(resource) && permissionsModeler" @click.stop="openModeler(resource)"
+                  tabindex="-1"
+                  icon="mdi-pencil-outline"
+                  :title="$t('process.openModeler')"></CellActionButton>
                 <component :is="ResourcesNavBarActionsPlugin" v-if="ResourcesNavBarActionsPlugin" :resource="resource" :deployment="deployment" @deployment-success="$emit('deployment-success')"></component>
               </div>
             </li>
@@ -108,11 +112,14 @@ import CellActionButton from '@/components/common-components/CellActionButton.vu
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import { TaskPopper } from '@cib/common-frontend'
 import { mapActions } from 'vuex'
+import { permissionsMixin } from '@/permissions.js'
+import navigationPermissionsMixin from '@/mixins/navigationPermissionsMixin.js'
 
 export default {
   name: 'ResourcesNavBar',
   emits: ['delete-deployment', 'show-deployment', 'deployment-success'],
   components: { BpmnViewer, DmnViewer, CellActionButton, TaskPopper },
+  mixins: [permissionsMixin, navigationPermissionsMixin],
   props: { resources: Array, deploymentId: String },
   data: function () {
     return {
@@ -210,6 +217,21 @@ export default {
     },
     canDownload(resource) {
       return resource.name.toLowerCase().endsWith('.bpmn') || resource.name.toLowerCase().endsWith('.dmn')
+    },
+    async openModeler(resource) {
+      const isDmn = resource.name.toLowerCase().endsWith('.dmn')
+      let definitionId
+      if (isDmn) {
+        const decisions = await this.getDecisionList({ deploymentId: this.deployment.id, resourceName: resource.name })
+        definitionId = Array.isArray(decisions) ? decisions[0]?.id : null
+      }
+      else {
+        const processesDefinition = await ProcessService.findProcessesWithFilters('deploymentId=' + this.deployment.id + '&resourceName=' + resource.name)
+        definitionId = Array.isArray(processesDefinition) ? processesDefinition[0]?.id : null
+      }
+      if (definitionId) {
+        this.$router.push({ name: 'modeler', query: { processId: definitionId, type: isDmn ? 'dmn' : 'bpmn' } })
+      }
     },
     async getContent(resource) {
       this.diagramLoading = true
