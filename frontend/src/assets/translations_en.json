@@ -1331,8 +1331,7 @@
 		"decisionInstanceId": "Decision Instance ID"
 	},
 	"decision-instance": {
-		"edit": "@:commons.edit",
-		"save": "@:commons.save"
+		"edit": "@:commons.edit"
 	},
 	"human-tasks": {
 		"assignmentsByType": "Assignments by type",
@@ -1391,5 +1390,16 @@
 	},
 	"deepLink": {
 		"tooltip": "Open {text}\n{url}"
+	},
+	"historyTimeToLive": {
+		"title": "Edit History Time To Live",
+		"choiceDefault": "Default to system ({value} days)",
+		"choiceDefaultUnknown": "Default to system",
+		"choiceZero": "0 - process today",
+		"choiceCustom": "Custom",
+		"days": "days",
+		"placeholder": "Enter days (e.g., 30)",
+		"validation": "Please enter a valid number between 0 and 9999",
+		"enforcedTooltip": "This engine requires an explicit history time to live; \"default to system\" is not available."
 	}
 }

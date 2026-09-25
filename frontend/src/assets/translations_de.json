@@ -1331,8 +1331,7 @@
 		"decisionInstanceId": "Entscheidungsinstanz-ID"
 	},
 	"decision-instance": {
-		"edit": "@:commons.edit",
-		"save": "@:commons.save"
+		"edit": "@:commons.edit"
 	},
 	"human-tasks": {
 		"assignmentsByType": "Zuweisungen nach Typ",
@@ -1391,5 +1390,16 @@
 	},
 	"deepLink": {
 		"tooltip": "Öffnen {text}\n{url}"
+	},
+	"historyTimeToLive": {
+		"title": "Verlaufsaufbewahrungsdauer bearbeiten",
+		"choiceDefault": "Systemstandard ({value} Tage)",
+		"choiceDefaultUnknown": "Systemstandard",
+		"choiceZero": "0 - heute verarbeiten",
+		"choiceCustom": "Benutzerdefiniert",
+		"days": "Tage",
+		"placeholder": "Tage eingeben (z. B. 30)",
+		"validation": "Bitte eine gültige Zahl zwischen 0 und 9999 eingeben",
+		"enforcedTooltip": "Diese Engine erfordert eine explizite Verlaufsaufbewahrungsdauer; \"Systemstandard\" ist nicht verfügbar."
 	}
 }

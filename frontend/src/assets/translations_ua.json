@@ -1330,8 +1330,7 @@
 		"decisionInstanceId": "ID екземпляра рішення"
 	},
 	"decision-instance": {
-		"edit": "@:commons.edit",
-		"save": "@:commons.save"
+		"edit": "@:commons.edit"
 	},
 	"human-tasks": {
 		"assignmentsByType": "Призначення за типом",
@@ -1390,5 +1389,16 @@
 	},
 	"deepLink": {
 		"tooltip": "Відкрити {text}\n{url}"
+	},
+	"historyTimeToLive": {
+		"title": "Редагувати термін зберігання історії",
+		"choiceDefault": "Системне значення за замовчуванням ({value} дн.)",
+		"choiceDefaultUnknown": "Системне значення за замовчуванням",
+		"choiceZero": "0 - обробити сьогодні",
+		"choiceCustom": "Користувацьке",
+		"days": "дн.",
+		"placeholder": "Введіть кількість днів (наприклад, 30)",
+		"validation": "Введіть дійсне число від 0 до 9999",
+		"enforcedTooltip": "Цей рушій вимагає явного терміну зберігання історії; \"системне значення за замовчуванням\" недоступне."
 	}
 }

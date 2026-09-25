@@ -1330,8 +1330,7 @@
 		"decisionInstanceId": "ID de instancia de decisión"
 	},
 	"decision-instance": {
-		"edit": "@:commons.edit",
-		"save": "@:commons.save"
+		"edit": "@:commons.edit"
 	},
 	"human-tasks": {
 		"assignmentsByType": "Asignaciones por tipo",
@@ -1390,5 +1389,16 @@
 	},
 	"deepLink": {
 		"tooltip": "Abrir {text}\n{url}"
+	},
+	"historyTimeToLive": {
+		"title": "Editar tiempo de vida del historial",
+		"choiceDefault": "Predeterminado del sistema ({value} días)",
+		"choiceDefaultUnknown": "Predeterminado del sistema",
+		"choiceZero": "0 - procesar hoy",
+		"choiceCustom": "Personalizado",
+		"days": "días",
+		"placeholder": "Introduzca días (p. ej., 30)",
+		"validation": "Introduzca un número válido entre 0 y 9999",
+		"enforcedTooltip": "Este motor requiere un tiempo de vida del historial explícito; \"predeterminado del sistema\" no está disponible."
 	}
 }
