@@ -46,6 +46,7 @@ public class DirectFilterProvider implements IFilterProvider{
 		FilterQuery query = filterQueryDto.toQuery(directProviderUtil.getProcessEngine(user));
 
 		List<org.cibseven.bpm.engine.filter.Filter> matchingFilters = QueryUtil.list(query, null, null);
+		return directProviderUtil.listAndConvert(query, null, null, FilterDto::fromFilter, Filter.class, user);
 
 		List<Filter> filters = new ArrayList<>();
 		for (org.cibseven.bpm.engine.filter.Filter filter : matchingFilters) {
