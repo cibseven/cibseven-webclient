@@ -26,8 +26,10 @@
     @hidden="resetTtlDialog">
 
     <div class="mb-3">
-      <p class="mb-3">
-        {{ descriptionText }}
+      <p class="mb-3" v-if="descriptionItems.length > 0">
+        <template v-for="(item, index) in descriptionItems" :key="item.title">
+          <br v-if="index > 0">{{ item.title }}: <strong>{{ item.value }}</strong>
+        </template>
       </p>
 
       <div class="form-check mb-2">
@@ -109,9 +111,11 @@ export default {
   name: 'EditHistoryTimeToLiveModal',
   emits: ['ttl-updated'],
   props: {
-    descriptionText: {
-      type: String,
-      default: ''
+    // Array of { title, value } pairs, e.g. [{ title: 'Process Name', value: 'Invoice' }].
+    // Titles are expected to already be translated by the caller; rendered one per line.
+    descriptionItems: {
+      type: Array,
+      default: () => []
     }
   },
   data() {

@@ -35,12 +35,15 @@ describe('DecisionDefinitionDetails.vue', () => {
     })
   })
 
-  describe('ttlDescription', () => {
-    it('describes the definition name and version', () => {
-      const { result } = callWith(DecisionDefinitionDetails.computed.ttlDescription, {
+  describe('ttlDescriptionItems', () => {
+    it('describes the definition name and version as title/value pairs', () => {
+      const { result } = callWith(DecisionDefinitionDetails.computed.ttlDescriptionItems, {
         version: { name: 'Discount', version: 3 }
       })
-      expect(result).toBe('decision.details.definitionName: Discount (decision.details.definitionVersion: 3)')
+      expect(result).toEqual([
+        { title: 'decision.details.definitionName', value: 'Discount' },
+        { title: 'decision.details.definitionVersion', value: 3 }
+      ])
     })
   })
 

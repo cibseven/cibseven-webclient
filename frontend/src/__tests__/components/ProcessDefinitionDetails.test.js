@@ -30,12 +30,15 @@ beforeEach(() => {
 })
 
 describe('ProcessDefinitionDetails.vue', () => {
-  describe('ttlDescription', () => {
-    it('describes the definition name and version', () => {
-      const { result } = callWith(ProcessDefinitionDetails.computed.ttlDescription, {
+  describe('ttlDescriptionItems', () => {
+    it('describes the definition name and version as title/value pairs', () => {
+      const { result } = callWith(ProcessDefinitionDetails.computed.ttlDescriptionItems, {
         version: { name: 'Invoice', version: 2 }
       })
-      expect(result).toBe('process.details.definitionName: Invoice (process.details.definitionVersion: 2)')
+      expect(result).toEqual([
+        { title: 'process.details.definitionName', value: 'Invoice' },
+        { title: 'process.details.definitionVersion', value: 2 }
+      ])
     })
   })
 

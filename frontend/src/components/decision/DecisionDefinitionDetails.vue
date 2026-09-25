@@ -74,7 +74,7 @@
     <span class="col-4 text-end">{{ version.allInstances }}</span>
   </div>
 
-  <EditHistoryTimeToLiveModal ref="ttlModal" :description-text="ttlDescription" @ttl-updated="onTtlUpdated" />
+  <EditHistoryTimeToLiveModal ref="ttlModal" :description-items="ttlDescriptionItems" @ttl-updated="onTtlUpdated" />
   <SuccessAlert ref="messageCopy"> {{ $t('decision.copySuccess') }} </SuccessAlert>
 </template>
 
@@ -99,8 +99,11 @@ export default {
     }
   },
   computed: {
-    ttlDescription() {
-      return `${this.$t('decision.details.definitionName')}: ${this.version.name} (${this.$t('decision.details.definitionVersion')}: ${this.version.version})`
+    ttlDescriptionItems() {
+      return [
+        { title: this.$t('decision.details.definitionName'), value: this.version.name },
+        { title: this.$t('decision.details.definitionVersion'), value: this.version.version }
+      ]
     },
     historyTimeToLiveDisplay() {
       if (this.historyTimeToLive === undefined || this.historyTimeToLive === null) {

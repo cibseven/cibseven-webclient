@@ -124,7 +124,7 @@
     <span class="col-4 text-end">{{ version.completedInstances }}</span>
   </div>
 
-  <EditHistoryTimeToLiveModal ref="ttlModal" :description-text="ttlDescription" @ttl-updated="onTtlUpdated" />
+  <EditHistoryTimeToLiveModal ref="ttlModal" :description-items="ttlDescriptionItems" @ttl-updated="onTtlUpdated" />
 
   <SuccessAlert ref="messageCopy"> {{ $t('process.copySuccess') }} </SuccessAlert>
 </template>
@@ -195,8 +195,11 @@ export default {
     hasDeploymentReadPermission() {
       return this.canReadDeployment(this.version.deploymentId)
     },
-    ttlDescription() {
-      return `${this.$t('process.details.definitionName')}: ${this.version.name} (${this.$t('process.details.definitionVersion')}: ${this.version.version})`
+    ttlDescriptionItems() {
+      return [
+        { title: this.$t('process.details.definitionName'), value: this.version.name },
+        { title: this.$t('process.details.definitionVersion'), value: this.version.version }
+      ]
     },
     historyTimeToLiveDisplay() {
       if (this.historyTimeToLive === undefined || this.historyTimeToLive === null) {
