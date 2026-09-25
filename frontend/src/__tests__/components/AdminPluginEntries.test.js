@@ -61,7 +61,7 @@ describe('contributed admin entries', () => {
       const cards = items([notifications])
 
       expect(cards.map(c => c.title)).toEqual(['admin.system.title', 'admin.notifications.title'])
-      expect(cards.at(-1)).toMatchObject({ image: 'notifications.svg', link: '/seven/auth/admin/notifications' })
+      expect(cards.at(-1)).toMatchObject({ image: 'notifications.svg', link: { path: '/seven/auth/admin/notifications' } })
     })
 
     it('shows only the built-in cards when nothing is contributed', () => {

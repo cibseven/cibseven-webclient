@@ -92,7 +92,7 @@ export default {
       const contributed = this.adminPluginEntries.map(entry => ({
         title: entry.text,
         image: entry.image,
-        link: entry.to,
+        link: { path: entry.to },
         hasAccess: true
       }))
       return [...rawItems, ...contributed].filter(item => item.hasAccess)
