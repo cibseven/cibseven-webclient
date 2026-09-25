@@ -129,6 +129,11 @@
       </template>
     </CIBHeaderFlow>
 
+    <!-- Messages for every logged-in user, e.g. system notifications of the enterprise edition -->
+    <div v-if="$root.user" class="flex-shrink-0">
+      <PluginSlot name="app-banner"></PluginSlot>
+    </div>
+
     <main class="flex-grow-1 overflow-hidden d-flex flex-column">
       <router-view class="flex-grow-1 overflow-hidden" ref="down"></router-view>
     </main>
@@ -171,11 +176,12 @@ import AboutModal from '@/components/modals/AboutModal.vue'
 import SupportModal from '@/components/modals/SupportModal.vue'
 import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
 import FeedbackModal from '@/components/modals/FeedbackModal.vue'
+import PluginSlot from '@/components/common/PluginSlot.vue'
 import { updateAppTitle } from '@/utils/init'
 
 export default {
   name: 'CibSeven',
-  components: { ShortcutsModal, AboutModal, SupportModal, CIBHeaderFlow, FeedbackModal },
+  components: { ShortcutsModal, AboutModal, SupportModal, CIBHeaderFlow, FeedbackModal, PluginSlot },
   mixins: [permissionsMixin, navigationPermissionsMixin],
   inject: ['isMobile'],
   data: function() {
@@ -306,7 +312,14 @@ export default {
               active: ['seven/auth/admin/system'],
               tooltip: 'admin.system.tooltip',
               title: 'admin.system.title'
-            }
+            },
+            ...this.adminPluginEntries.map(entry => ({
+              show: true,
+              to: entry.to,
+              active: entry.active ?? [entry.to.replace(/^\//, '')],
+              tooltip: entry.tooltip ?? entry.text,
+              title: entry.text
+            }))
           ]
         }
       ]

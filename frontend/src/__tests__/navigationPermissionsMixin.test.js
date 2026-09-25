@@ -14,8 +14,9 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect, vi } from 'vitest'
-import navigationPermissionsMixin from '@/mixins/navigationPermissionsMixin.js'
+import { describe, it, expect, vi, afterEach } from 'vitest'
+import navigationPermissionsMixin, { ADMIN_ENTRY_SLOT } from '@/mixins/navigationPermissionsMixin.js'
+import { registerPlugin, resetPlugins } from '@/plugins/pluginsConfig.js'
 
 describe('navigationPermissionsMixin', () => {
   describe('permissionsUserProfile', () => {
@@ -153,6 +154,55 @@ describe('navigationPermissionsMixin', () => {
       }
 
       expect(navigationPermissionsMixin.computed.permissionsUsers.call(mockThis)).toBeFalsy()
+    })
+
+    // Someone whose only admin area is a contributed one (e.g. system notifications) must still
+    // reach the admin page, or the entry would be unreachable
+    it('is granted through a contributed admin entry alone', () => {
+      const mockThis = {
+        $root: { user: { id: '1' }, config: { permissions: {} } },
+        hasAdminManagementPermissions: () => false,
+        adminPluginEntries: [{ id: 'notifications' }]
+      }
+
+      expect(navigationPermissionsMixin.computed.permissionsUsers.call(mockThis)).toBe(true)
+    })
+  })
+
+  describe('adminPluginEntries', () => {
+    afterEach(() => resetPlugins())
+
+    const entry = (overrides = {}) => ({
+      id: 'notifications', text: 'admin.notifications.title', to: '/seven/auth/admin/notifications',
+      permissions: { system: ['READ'] }, resource: 'system', ...overrides
+    })
+
+    const context = (applicationPermissions, user = { id: '1' }) => ({ $root: { user }, applicationPermissions })
+
+    it('lists the registered entries the user is allowed to open, in registration order', () => {
+      registerPlugin(ADMIN_ENTRY_SLOT, null, entry())
+      registerPlugin(ADMIN_ENTRY_SLOT, null, entry({ id: 'reports', text: 'admin.reports.title', to: '/seven/auth/admin/reports',
+        permissions: { report: ['READ'] }, resource: 'report' }))
+      registerPlugin(ADMIN_ENTRY_SLOT, null, entry({ id: 'forbidden', permissions: { system: ['ALL'] } }))
+      const applicationPermissions = vi.fn((permissions) => !permissions.system?.includes('ALL'))
+
+      const result = navigationPermissionsMixin.computed.adminPluginEntries.call(context(applicationPermissions))
+
+      expect(result.map(e => e.id)).toEqual(['notifications', 'reports'])
+      expect(applicationPermissions).toHaveBeenCalledWith({ system: ['READ'] }, 'system')
+    })
+
+    it('ignores an entry without a route or a title, which could not be rendered', () => {
+      registerPlugin(ADMIN_ENTRY_SLOT, null, entry({ id: 'no-route', to: undefined }))
+      registerPlugin(ADMIN_ENTRY_SLOT, null, entry({ id: 'no-title', text: undefined }))
+
+      expect(navigationPermissionsMixin.computed.adminPluginEntries.call(context(() => true))).toEqual([])
+    })
+
+    it('is empty without a logged-in user', () => {
+      registerPlugin(ADMIN_ENTRY_SLOT, null, entry())
+
+      expect(navigationPermissionsMixin.computed.adminPluginEntries.call(context(() => true, null))).toEqual([])
     })
   })
 })
