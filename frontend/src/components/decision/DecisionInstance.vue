@@ -186,7 +186,8 @@ export default {
     loadDiagram() {
       this.getXmlById(this.instance.decisionDefinitionId).then(response => {
         setTimeout(() => {
-          this.$refs.diagram.showDiagram(response.dmnXml).then(() => this.restoreViewboxIfSaved())
+          // Gone once the view was left before the timeout
+          this.$refs.diagram?.showDiagram(response.dmnXml).then(() => this.restoreViewboxIfSaved())
         }, 100)
       })
       .catch(error => {
