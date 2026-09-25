@@ -54,7 +54,7 @@
                 <CellActionButton v-if="canDownload(resource) && permissionsModeler" @click.stop="openModeler(resource)"
                   tabindex="-1"
                   icon="mdi-pencil-outline"
-                  :title="$t('process.openModeler')"></CellActionButton>
+                  :title="openModelerTooltip(resource)"></CellActionButton>
                 <component :is="ResourcesNavBarActionsPlugin" v-if="ResourcesNavBarActionsPlugin" :resource="resource" :deployment="deployment" @deployment-success="$emit('deployment-success')"></component>
               </div>
             </li>
@@ -215,11 +215,17 @@ export default {
         }
       }
     },
+    isBpmn(resource) {
+      return resource.name.toLowerCase().endsWith('.bpmn')
+    },
+    isDmn(resource) {
+      return resource.name.toLowerCase().endsWith('.dmn')
+    },
     canDownload(resource) {
-      return resource.name.toLowerCase().endsWith('.bpmn') || resource.name.toLowerCase().endsWith('.dmn')
+      return this.isBpmn(resource) || this.isDmn(resource)
     },
     async openModeler(resource) {
-      const isDmn = resource.name.toLowerCase().endsWith('.dmn')
+      const isDmn = this.isDmn(resource)
       let definitionId
       if (isDmn) {
         const decisions = await this.getDecisionList({ deploymentId: this.deployment.id, resourceName: resource.name })
@@ -233,10 +239,13 @@ export default {
         this.$router.push({ name: 'modeler', query: { processId: definitionId, type: isDmn ? 'dmn' : 'bpmn' } })
       }
     },
+    openModelerTooltip(resource) {
+      return this.isDmn(resource) ? this.$t('process.openModelerDmn') : this.$t('process.openModeler')
+    },
     async getContent(resource) {
       this.diagramLoading = true
       let content
-      const isBpmn = resource.name.toLowerCase().endsWith('.bpmn')
+      const isBpmn = this.isBpmn(resource)
       if (isBpmn) {
         const processesDefinition = await ProcessService.findProcessesWithFilters('deploymentId=' + this.deployment.id + '&resourceName=' + resource.name)
         const processDefinition = Array.isArray(processesDefinition) ? processesDefinition[0] : null

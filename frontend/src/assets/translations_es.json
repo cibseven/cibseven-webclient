@@ -103,6 +103,7 @@
 		"showInstance": "Mostrar instancia",
 		"downloadBpmn": "Descargar fichero BPMN",
 		"openModeler": "Abrir fichero BPMN en el Modeler",
+		"openModelerDmn": "Abrir fichero DMN en el Modeler",
 		"showManagement": "Gestión del proceso",
 		"showHistory": "Historial",
 		"showDeployment": "Ver despliegue",

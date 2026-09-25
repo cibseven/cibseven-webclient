@@ -79,6 +79,23 @@ describe('ResourcesNavBar.vue', () => {
     })
   })
 
+  describe('openModelerTooltip (method)', () => {
+    // Regression test: the template used to wrap this method's already-translated return
+    // value in another $t() call, translating a sentence instead of a key. A stub that
+    // echoes a distinct wrapper per key (rather than the identity `key => key` used
+    // elsewhere) would catch that regression, since $t($t(key)) would then produce
+    // `t:t:<key>` instead of `t:<key>`.
+    it('translates the bpmn-specific key for a bpmn resource', () => {
+      const vm = context({ $t: vi.fn(key => `t:${key}`) })
+      expect(vm.openModelerTooltip({ name: 'invoice.bpmn' })).toBe('t:process.openModeler')
+    })
+
+    it('translates the dmn-specific key for a dmn resource', () => {
+      const vm = context({ $t: vi.fn(key => `t:${key}`) })
+      expect(vm.openModelerTooltip({ name: 'rules.dmn' })).toBe('t:process.openModelerDmn')
+    })
+  })
+
   describe('open-in-modeler action (mounted, permission-gated)', () => {
     const resources = [{ id: 'r1', name: 'invoice.bpmn' }, { id: 'r2', name: 'rules.dmn' }]
 
@@ -99,18 +116,20 @@ describe('ResourcesNavBar.vue', () => {
       })
     }
 
-    it('is shown for each bpmn/dmn resource when the user has modeler permission', async () => {
+    it('is shown for each bpmn/dmn resource, with a type-specific tooltip, when the user has modeler permission', async () => {
       const wrapper = createWrapper()
       await flushPromises()
 
-      const buttons = wrapper.findAll('[title="process.openModeler"]')
-      expect(buttons).toHaveLength(2)
+      const bpmnButton = wrapper.find('[title="process.openModeler"]')
+      const dmnButton = wrapper.find('[title="process.openModelerDmn"]')
+      expect(bpmnButton.exists()).toBe(true)
+      expect(dmnButton.exists()).toBe(true)
 
-      await buttons[0].trigger('click')
+      await bpmnButton.trigger('click')
       await flushPromises()
       expect(wrapper.vm.$router.push).toHaveBeenCalledWith({ name: 'modeler', query: { processId: 'pd1', type: 'bpmn' } })
 
-      await buttons[1].trigger('click')
+      await dmnButton.trigger('click')
       await flushPromises()
       expect(wrapper.vm.$router.push).toHaveBeenCalledWith({ name: 'modeler', query: { processId: 'dd1', type: 'dmn' } })
     })
@@ -119,7 +138,8 @@ describe('ResourcesNavBar.vue', () => {
       const wrapper = createWrapper({ authorizationEnabled: true, permissions: { modeler: undefined } })
       await flushPromises()
 
-      expect(wrapper.findAll('[title="process.openModeler"]')).toHaveLength(0)
+      expect(wrapper.find('[title="process.openModeler"]').exists()).toBe(false)
+      expect(wrapper.find('[title="process.openModelerDmn"]').exists()).toBe(false)
     })
   })
 })

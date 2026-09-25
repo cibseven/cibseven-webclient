@@ -103,6 +103,7 @@
 		"showInstance": "Показати екземпляр",
 		"downloadBpmn": "Завантажити файл BPMN",
 		"openModeler": "Відкрити BPMN файл у Modeler",
+		"openModelerDmn": "Відкрити DMN файл у Modeler",
 		"showManagement": "Керування процесами",
 		"showHistory": "Історія змін",
 		"showDeployment": "Переглянути розгортання процесу",
