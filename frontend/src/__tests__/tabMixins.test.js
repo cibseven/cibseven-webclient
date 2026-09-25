@@ -145,10 +145,10 @@ describe('tabUrlMixin', () => {
 
 describe('resizerMixin', () => {
   /** A component instance with the mixin's methods bound and a stubbed bottom panel. */
-  function instance({ contentHeight = 200 } = {}) {
+  function instance({ contentHeight = 200, rendered = true } = {}) {
     const vm = {
       ...resizerMixin.data(),
-      $refs: { rContent: { offsetHeight: contentHeight } }
+      $refs: { rContent: rendered ? { offsetHeight: contentHeight } : null }
     }
     for (const [key, method] of Object.entries(resizerMixin.methods)) {
       vm[key] = method.bind(vm)
@@ -264,6 +264,17 @@ describe('resizerMixin', () => {
 
       expect(vm.toggleIcon).toBe('mdi-chevron-up')
     })
+
+    // CIB7-2118: a view whose bottom panel is not rendered (e.g. a plugin tab) must not crash
+    it('should keep resizing when the bottom panel ref is missing', () => {
+      const vm = instance({ rendered: false })
+      vm.bpmnViewerHeight = 300
+      vm.mousePosition = 500
+
+      expect(() => vm.resize({ y: 540 })).not.toThrow()
+      expect(vm.bpmnViewerHeight).toBe(340)
+      expect(vm.toggleIcon).toBe('mdi-chevron-up')
+    })
   })
 
   describe('handleMouseUp', () => {
@@ -315,6 +326,18 @@ describe('resizerMixin', () => {
       vi.advanceTimersByTime(400)
 
       expect(vm.toggleTransition).toBe('')
+    })
+
+    // CIB7-2118: without the ref there is nothing to reveal, so the toggle restores the original height
+    it('should collapse to the original height when the bottom panel ref is missing', () => {
+      vi.useFakeTimers()
+      const vm = instance({ rendered: false })
+      vm.bpmnViewerOriginalHeight = 400
+      vm.bpmnViewerHeight = 600
+
+      expect(() => vm.toggleContent()).not.toThrow()
+      expect(vm.bpmnViewerHeight).toBe(400)
+      expect(vm.toggleIcon).toBe('mdi-chevron-down')
     })
   })
 })
