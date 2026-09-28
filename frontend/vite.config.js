@@ -19,7 +19,7 @@
 import { fileURLToPath, URL } from 'node:url'
 import path from 'node:path'
 
-import { defineConfig } from 'vite'
+import { defineCibConfig } from '@cib/frontend-preset/vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import { pluginRuntimeImportMap } from './src/plugins/pluginImportMap.js'
@@ -41,7 +41,52 @@ console.log('isLibrary', isLibrary)
 const pluginRuntimeUrl = isLibrary ? null : './plugin-runtime.js'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineCibConfig({
+  test: {
+    server: {
+      deps: {
+        inline: [/cibseven-modeler/, /@bpmn-io\/form-js/],
+      },
+    },
+    setupFiles: ['src/__tests__/vitest.setup.js'],
+    coverage: {
+      exclude: [
+        // built on its own, against the import map: its imports do not resolve here
+        'plugin-example/**',
+
+        // Entry-point scripts: their module scope boots the application, so importing
+        // them in jsdom has no meaningful unit under test. 'app.js' mounts the SPA
+        // ('createApp(...).mount("#app")'), 'sso-login.js' assigns 'location.href',
+        // which jsdom refuses to navigate. Both are covered by the Playwright E2E suite.
+        'src/app.js',
+        'src/sso-login.js',
+      ],
+      // A floor, not a target. The values sit a couple of points under what the suite
+      // currently achieves so an unrelated change cannot quietly erode coverage, which
+      // is what AGENTS.md asks for ("never reduce overall coverage") but nothing
+      // enforced before.
+      //
+      // Note how Vitest applies these: files matched by a glob key are checked against
+      // that glob and are *excluded* from the global numbers. So the global values below
+      // describe the remainder — src/components, src/embedded-form and the entry-level
+      // modules under src/ — while the well-covered directories are held to 80% each.
+      // 'perFile' is deliberately left off: the thresholds apply to each group as a
+      // whole, so one legitimately hard-to-test file cannot fail the build on its own.
+      thresholds: {
+        lines: 40,
+        statements: 40,
+        functions: 23,
+        branches: 27,
+
+        // Brought to ~99% by the unit tests; 80% is the AGENTS.md bar for changed files.
+        'src/store/**/*.js': { lines: 80, statements: 80, functions: 80, branches: 70 },
+        'src/mixins/**/*.js': { lines: 80, statements: 80, functions: 80, branches: 70 },
+        'src/utils/**/*.js': { lines: 80, statements: 80, functions: 80, branches: 70 },
+        'src/plugins/**/*.js': { lines: 80, statements: 80, functions: 80, branches: 70 },
+        'src/services.js': { lines: 80, statements: 80, functions: 80, branches: 70 },
+      },
+    },
+  },
   base: './',
   plugins: [
     vue(),

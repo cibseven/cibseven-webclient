@@ -12,7 +12,8 @@ neighbours.
 ## Measure first, then write
 
 Coverage is reported by istanbul into `frontend/target/coverage/`. Configuration lives in
-`frontend/vitest.config.js` (jsdom, setup file `src/__tests__/vitest.setup.js`, `@` aliased
+the `test` block of `frontend/vite.config.js`, merged over the `@cib/frontend-preset`
+defaults (jsdom, setup file `src/__tests__/vitest.setup.js`, `@` aliased
 to `frontend/src`).
 
 ```bash
@@ -47,7 +48,7 @@ awk '/^LF:/{lf=substr($0,4)} /^LH:/{lh=substr($0,4); F+=lf; H+=lh} \
 
 ## Thresholds
 
-`vitest.config.js` sets a global floor plus 80% glob thresholds for `src/store/**`,
+`vite.config.js` sets a global floor plus 80% glob thresholds for `src/store/**`,
 `src/mixins/**`, `src/utils/**`, `src/plugins/**` and `src/services.js`. A file matched by
 a glob key is checked against that glob and **excluded from the global numbers**, so the
 global values describe the remainder (`src/components`, `src/embedded-form`, entry
@@ -287,7 +288,7 @@ component's own DOM.
 
 ## Deliberately not unit-tested
 
-`src/app.js` and `src/sso-login.js` are excluded in `vitest.config.js`: their module scope
+`src/app.js` and `src/sso-login.js` are excluded in `vite.config.js`: their module scope
 boots the application (mounting the SPA, assigning `location.href`). They are covered by
 the Playwright suite in `frontend/playwright/`. Also out of reach: the inline anonymous
 `auth` route component in `router.js`, which needs the real component tree.
