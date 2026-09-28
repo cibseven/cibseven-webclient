@@ -28,9 +28,9 @@
     "build:library:watch": "cross-env BUILD_MODE=library vite build --watch",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:report": "cross-env NODE_OPTIONS=--max-old-space-size=4096 vitest run --coverage --reporter=default --reporter=junit --outputFile=target/vitest-reports/TEST-front-end.xml",
+    "test:report": "cross-env NODE_OPTIONS=--max-old-space-size=4096 vitest run --coverage",
     "test:coverage": "vitest run --coverage",
-    "test:unit": "vitest",
+    "test:unit": "vitest run --coverage",
     "lint": "eslint .",
     "format": "eslint . --fix"
   },
@@ -65,22 +65,15 @@
     "vue-router": "^5.0.6"
   },
   "devDependencies": {
-    "@eslint/js": "10.0.1",
+    "@cib/frontend-preset": "0.1.0-dev.0",
     "@vitejs/plugin-vue": "6.0.6",
-    "@vitest/coverage-istanbul": "4.1.11",
-    "@vitest/eslint-plugin": "1.6.27",
     "@vue/compiler-dom": "3.5.33",
     "@vue/server-renderer": "3.5.33",
     "@vue/test-utils": "2.4.9",
     "cross-env": "7.0.3",
-    "eslint": "10.8.1",
-    "eslint-plugin-vue": "10.10.0",
-    "eslint-plugin-vuejs-accessibility": "2.6.0",
-    "jsdom": "29.1.0",
     "sass": "1.89.0",
     "vite": "6.4.3",
-    "vite-plugin-vue-devtools": "8.1.1",
-    "vitest": "4.1.11"
+    "vite-plugin-vue-devtools": "8.1.1"
   },
   "publishConfig": {
     "registry": "https://artifacts.cibseven.org/repository/npm-hosted/"

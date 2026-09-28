@@ -14,47 +14,15 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import js from '@eslint/js'
-import pluginVue from 'eslint-plugin-vue'
-import pluginVitest from '@vitest/eslint-plugin'
-import pluginVueA11y from "eslint-plugin-vuejs-accessibility";
+import { cibEslintConfig } from '@cib/frontend-preset/eslint'
 
 export default [
-  {
-    name: 'app/files-to-lint',
-    files: ['**/*.{js,mjs,jsx,vue}'],
-  },
+  // The webclient does not use the CIB formatting rules (see max-len below).
+  // Vitest rules only for files directly in a __tests__ folder, as before.
+  ...cibEslintConfig({ formatting: false, testFiles: ['src/**/__tests__/*'], ignores: ['**/test-results/**'] }),
 
-  {
-    name: 'app/files-to-ignore',
-    ignores: [
-      '**/dist/**',
-      '**/dist-ssr/**',
-      '**/coverage/**',
-      '**/target/**',
-      '**/test-results/**',
-    ],
-  },
-
-  js.configs.recommended,
-  ...pluginVue.configs['flat/essential'],
-
-  {
-    ...pluginVitest.configs.recommended,
-    files: ['src/**/__tests__/*'],
-  },
-
-  ...pluginVueA11y.configs["flat/recommended"],
   {
     rules: {
-      "vuejs-accessibility/label-has-for": [
-        "error",
-        {
-          "required": {
-            "every": ["id"]
-          },
-        }
-      ],
       // form-control-has-label only recognizes native tags by default; without this,
       // our @cib/common-frontend form wrappers (which render the native control inside
       // a different component) get zero static a11y label coverage. b-form-datepicker and
@@ -84,26 +52,9 @@ export default [
     }
   },
 
-  // CIB formatting rules
   {
     'rules': {
-      //'semi': ['error', 'never'],
-      // 'quotes': ['error', 'single', { 'avoidEscape': true }],
       'max-len': ['error', { 'code': 350 }],
-      //'space-before-function-paren': ['error', {
-      //  'anonymous': 'never',
-      //  'named': 'never',
-      //  'asyncArrow': 'always'
-      //}],
-      // 'object-shorthand': ['error', 'always']
-    },
-  },
-
-  // JSON-specific rules
-  {
-    files: ['translations_*.json'],
-    rules: {
-      'indent': ['error', 'tab']
     },
   },
 ]
