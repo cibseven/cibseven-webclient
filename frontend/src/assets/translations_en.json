@@ -103,6 +103,7 @@
 		"showInstance": "View instance",
 		"downloadBpmn": "Download BPMN file",
 		"openModeler": "Open BPMN file in Modeler",
+		"openModelerDmn": "Open DMN file in Modeler",
 		"showManagement": "Management",
 		"showHistory": "History",
 		"showDeployment": "See deployment",

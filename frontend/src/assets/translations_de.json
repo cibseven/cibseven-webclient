@@ -103,6 +103,7 @@
 		"showInstance": "Instanz anzeigen",
 		"downloadBpmn": "BPMN file herunterladen",
 		"openModeler": "BPMN-Datei im Modeler öffnen",
+		"openModelerDmn": "DMN-Datei im Modeler öffnen",
 		"showManagement": "Verwaltung",
 		"showHistory": "Historie",
 		"showDeployment": "Deployment ansehen",
