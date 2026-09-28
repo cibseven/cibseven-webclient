@@ -192,7 +192,8 @@ public class DirectTaskProvider implements ITaskProvider {
 	@Override
 	public void setAssignee(String taskId, String assignee, CIBUser user) {
 		org.cibseven.bpm.engine.task.Task foundTask = getTaskById(taskId, user);
-		foundTask.setAssignee(assignee);
+		// "null" is how callers ask for no assignee; the REST provider maps it to /unclaim
+		foundTask.setAssignee("null".equals(assignee) ? null : assignee);
 		directProviderUtil.getProcessEngine(user).getTaskService().saveTask(foundTask);
 	}
 
@@ -208,7 +209,9 @@ public class DirectTaskProvider implements ITaskProvider {
 
 	@Override
 	public Map<String, Object> findLocalVariables(String taskId, CIBUser user) {
-		return directProviderUtil.getProcessEngine(user).getTaskService().getVariablesLocal(taskId);
+		// Same shape and default as engine-rest's /localVariables: typed values, objects deserialized
+		VariableMap variables = directProviderUtil.getProcessEngine(user).getTaskService().getVariablesLocalTyped(taskId, true);
+		return new HashMap<>(VariableValueDto.fromMap(variables));
 	}
 
 	@Override

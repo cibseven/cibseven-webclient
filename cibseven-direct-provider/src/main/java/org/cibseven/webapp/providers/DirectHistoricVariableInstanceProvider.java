@@ -78,6 +78,8 @@ public class DirectHistoricVariableInstanceProvider implements IHistoricVariable
 				.convertValue(filters, HistoricVariableInstanceQueryDto.class);
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
 		HistoricVariableInstanceQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
+		// As engine-rest's list endpoint: file and bytes contents are not sent, only their metadata
+		query.disableBinaryFetching();
 		if (Boolean.FALSE.equals(deserializeValues)) {
 			query.disableCustomObjectDeserialization();
 		}

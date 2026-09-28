@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -130,13 +131,14 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	@Override
 	public void claim(String taskId, String userId, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/task/" + taskId + "/claim";
-		doPost(url, Map.of("userId", userId), String.class, user);
+		// singletonMap, not Map.of: engine-rest accepts a null userId, Map.of throws on it
+		doPost(url, Collections.singletonMap("userId", userId), String.class, user);
 	}
 
 	@Override
 	public void delegate(String taskId, String userId, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/task/" + taskId + "/delegate";
-		doPost(url, Map.of("userId", userId), String.class, user);
+		doPost(url, Collections.singletonMap("userId", userId), String.class, user);
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })

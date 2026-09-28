@@ -18,6 +18,7 @@ package org.cibseven.webapp.providers;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -64,10 +65,19 @@ public class DirectActivityProvider implements IActivityProvider {
 
 	@Override
 	public List<ActivityInstanceHistory> findActivitiesInstancesHistory(Map<String, Object> queryParams, CIBUser user) {
-		HistoricActivityInstanceQueryDto queryHistoricActivityInstanceDto = directProviderUtil.getObjectMapper(user).convertValue(queryParams,
+		// Paging is no filter: the query DTO has no field for it, so it is taken out and applied to
+		// the query, the way engine-rest reads it from the request
+		Map<String, Object> filters = new HashMap<>(queryParams);
+		Integer firstResult = toInteger(filters.remove("firstResult"));
+		Integer maxResults = toInteger(filters.remove("maxResults"));
+		HistoricActivityInstanceQueryDto queryHistoricActivityInstanceDto = directProviderUtil.getObjectMapper(user).convertValue(filters,
 				HistoricActivityInstanceQueryDto.class);
-		return queryHistoricActivityInstance(queryHistoricActivityInstanceDto, user);
+		return queryHistoricActivityInstance(queryHistoricActivityInstanceDto, firstResult, maxResults, user);
+	}
 
+	private static Integer toInteger(Object value) {
+		if (value == null || value.toString().isBlank()) return null;
+		return value instanceof Number number ? number.intValue() : Integer.valueOf(value.toString().trim());
 	}
 
 	@Override
@@ -142,9 +152,14 @@ public class DirectActivityProvider implements IActivityProvider {
 
 	private List<ActivityInstanceHistory> queryHistoricActivityInstance(
 			HistoricActivityInstanceQueryDto queryHistoricActivityInstanceDto, CIBUser user) {
+		return queryHistoricActivityInstance(queryHistoricActivityInstanceDto, null, null, user);
+	}
+
+	private List<ActivityInstanceHistory> queryHistoricActivityInstance(
+			HistoricActivityInstanceQueryDto queryHistoricActivityInstanceDto, Integer firstResult, Integer maxResults, CIBUser user) {
 		queryHistoricActivityInstanceDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
 		HistoricActivityInstanceQuery query = queryHistoricActivityInstanceDto.toQuery(directProviderUtil.getProcessEngine(user));
-		List<HistoricActivityInstance> matchingHistoricActivityInstances = QueryUtil.list(query, null, null);
+		List<HistoricActivityInstance> matchingHistoricActivityInstances = QueryUtil.list(query, firstResult, maxResults);
 
 		List<ActivityInstanceHistory> historicActivityInstanceResults = new ArrayList<>();
 		for (HistoricActivityInstance historicActivityInstance : matchingHistoricActivityInstances) {
