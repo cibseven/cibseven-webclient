@@ -116,7 +116,8 @@ export default {
   data() {
     return {
       instance: null,
-      activeTab: 'inputs'
+      activeTab: 'inputs',
+      diagramTimer: null
     }
   },
   computed: {
@@ -178,6 +179,9 @@ export default {
       this.loadDiagram()
     })
   },
+  beforeUnmount() {
+    clearTimeout(this.diagramTimer)
+  },
   methods: {
     ...mapActions(['getXmlById']),
     changeTab(selectedTab) {
@@ -185,8 +189,10 @@ export default {
     },
     loadDiagram() {
       this.getXmlById(this.instance.decisionDefinitionId).then(response => {
-        setTimeout(() => {
-          this.$refs.diagram.showDiagram(response.dmnXml).then(() => this.restoreViewboxIfSaved())
+        clearTimeout(this.diagramTimer)
+        this.diagramTimer = setTimeout(() => {
+          // Gone if the view was left while the diagram loaded, which unmount cannot cancel
+          this.$refs.diagram?.showDiagram(response.dmnXml).then(() => this.restoreViewboxIfSaved())
         }, 100)
       })
       .catch(error => {
