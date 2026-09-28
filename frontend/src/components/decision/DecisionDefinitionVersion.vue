@@ -121,6 +121,7 @@ export default {
     return {
       topBarHeight: 0,
       activeTab: 'instances',
+      diagramTimer: null,
       sortByDefaultKey: 'evaluationTime',
       sorting: false,
       sortDesc: true,
@@ -166,6 +167,9 @@ export default {
       this.loadInstances()
     }
   },
+  beforeUnmount() {
+    clearTimeout(this.diagramTimer)
+  },
   methods: {
     ...mapActions(['getXmlById', 'getHistoricDecisionInstances']),
     changeTab: function(selectedTab) {
@@ -174,8 +178,10 @@ export default {
     loadDiagram() {
       this.getXmlById(this.decision.id)
         .then(response => {
-          setTimeout(() => {
-            this.$refs.diagram.showDiagram(response.dmnXml).then(() => this.restoreViewboxIfSaved())
+          clearTimeout(this.diagramTimer)
+          this.diagramTimer = setTimeout(() => {
+            // Gone if the view was left while the diagram loaded, which unmount cannot cancel
+            this.$refs.diagram?.showDiagram(response.dmnXml).then(() => this.restoreViewboxIfSaved())
           }, 100)
         })
         .catch(error => {
