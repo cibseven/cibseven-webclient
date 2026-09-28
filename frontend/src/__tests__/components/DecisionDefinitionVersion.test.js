@@ -14,10 +14,55 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
+import { flushPromises } from '@vue/test-utils'
 import DecisionDefinitionVersion from '@/components/decision/DecisionDefinitionVersion.vue'
+import { mountWithDefaults } from '../support/mountWithDefaults.js'
+
+function mountView() {
+  const decision = { id: 'dec-1', key: 'myDecision', version: 1 }
+  return mountWithDefaults(DecisionDefinitionVersion, {
+    props: { decisionKey: 'myDecision', versionIndex: '1' },
+    i18nPlugin: false,
+    global: {
+      stubs: {
+        DmnViewer: { template: '<div></div>', methods: { showDiagram: () => Promise.resolve() } },
+        // declared as props, otherwise the stub renders the component proxy as an attribute
+        ViewerFrame: { template: '<div><slot></slot></div>', props: ['resizerMixin'] },
+        PluginSlot: { template: '<div></div>', props: ['name', 'only', 'params'] },
+        GenericTabs: true, ScrollableTabsContainer: true,
+        DeepLinkFrame: true, DeepLinkButtons: true, DecisionInstancesTable: true, BWaitingBox: true
+      },
+      mocks: {
+        config: { maxProcessesResults: 50, camundaHistoryLevel: 'none' },
+        $store: {
+          getters: { getSelectedDecisionVersion: () => decision },
+          dispatch: vi.fn(() => Promise.resolve({ dmnXml: '' }))
+        }
+      },
+      provide: { currentLanguage: () => 'en' }
+    }
+  })
+}
 
 describe('DecisionDefinitionVersion', () => {
+  // CIB7-2118: resizerMixin measures this ref, so it must survive switching to a plugin or deep-link tab
+  describe('bottom panel ref', () => {
+    it('keeps the rContent ref on the bottom container while a plugin tab is active', async () => {
+      const wrapper = mountView()
+      await flushPromises()
+      const panel = wrapper.vm.$refs.rContent
+      expect(panel).toBeTruthy()
+
+      await wrapper.setData({ activeTab: 'decision-insights' })
+
+      expect(wrapper.vm.$refs.rContent).toBe(panel)
+      expect(() => wrapper.vm.toggleContent()).not.toThrow()
+      expect(() => wrapper.vm.resize({ y: 10 })).not.toThrow()
+      wrapper.unmount()
+    })
+  })
+
   describe('viewboxStorageKey', () => {
     it('scopes the persisted viewbox by the decision id', () => {
       const key = DecisionDefinitionVersion.methods.viewboxStorageKey.call({ decision: { id: 'dec-42' } })

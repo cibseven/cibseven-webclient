@@ -44,6 +44,10 @@ export default {
         }
     },
     methods: {
+        // The consuming view provides the rContent ref; 0 when it is not rendered
+        bottomContentHeight: function() {
+            return this.$refs.rContent?.offsetHeight ?? 0
+        },
         handleMouseDown: function(e) {
             if (e.offsetY > this.bpmnViewerHeight - this.dragSelectorHeight) {
                 this.mousePosition = e.y
@@ -56,7 +60,7 @@ export default {
             const dy = e.y - this.mousePosition
             this.mousePosition = e.y
             this.bpmnViewerHeight += dy
-            if (this.bpmnViewerHeight < (this.bpmnViewerHeight + this.$refs.rContent.offsetHeight)) this.toggleIcon = 'mdi-chevron-down'
+            if (this.bpmnViewerHeight < (this.bpmnViewerHeight + this.bottomContentHeight())) this.toggleIcon = 'mdi-chevron-down'
             else this.toggleIcon = 'mdi-chevron-up'
         },
         handleMouseUp: function() {
@@ -66,8 +70,9 @@ export default {
         },
         toggleContent: function() {
             this.toggleTransition = 'transition: top '+ this.transitionTime +'s ease, height '+ this.transitionTime +'s ease'
-            if (this.bpmnViewerHeight < (this.bpmnViewerHeight + this.$refs.rContent.offsetHeight - 1)) {
-                this.bpmnViewerHeight += this.$refs.rContent.offsetHeight
+            const contentHeight = this.bottomContentHeight()
+            if (this.bpmnViewerHeight < (this.bpmnViewerHeight + contentHeight - 1)) {
+                this.bpmnViewerHeight += contentHeight
                 this.toggleIcon = 'mdi-chevron-up'
             }
             else {

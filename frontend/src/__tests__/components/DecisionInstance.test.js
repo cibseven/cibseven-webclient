@@ -14,12 +14,68 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
+import { flushPromises } from '@vue/test-utils'
 import DecisionInstance from '@/components/decision/DecisionInstance.vue'
+import { mountWithDefaults } from '../support/mountWithDefaults.js'
+
+vi.mock('@/services.js', async (importOriginal) => ({
+  ...await importOriginal(),
+  DecisionService: {
+    getHistoricDecisionInstances: vi.fn(() => Promise.resolve([
+      { id: 'inst-1', decisionDefinitionId: 'dec-1', decisionDefinitionKey: 'myDecision', inputs: [], outputs: [] }
+    ]))
+  }
+}))
 
 const { normalizeCell, isDmnStringLiteral } = DecisionInstance.methods
 
+function mountView() {
+  return mountWithDefaults(DecisionInstance, {
+    props: { instanceId: 'inst-1', versionIndex: '1' },
+    i18nPlugin: false,
+    global: {
+      stubs: {
+        DmnViewer: { template: '<div></div>', methods: { showDiagram: () => Promise.resolve() } },
+        // declared as props, otherwise the stub renders the component proxy as an attribute
+        ViewerFrame: { template: '<div><slot></slot></div>', props: ['resizerMixin'] },
+        PluginSlot: { template: '<div></div>', props: ['name', 'only', 'params'] },
+        FlowTable: { template: '<div></div>', inheritAttrs: false },
+        GenericTabs: true, ScrollableTabsContainer: true,
+        DeepLinkFrame: true, DeepLinkButtons: true
+      },
+      mocks: {
+        config: {},
+        $store: {
+          // the namespaced mapGetters('diagram', ...) looks the module up here first
+          _modulesNamespaceMap: { 'diagram/': {} },
+          getters: { 'diagram/isDiagramReady': false, getSelectedDecisionVersion: () => ({ id: 'dec-1' }) },
+          dispatch: vi.fn(() => Promise.resolve({ dmnXml: '' }))
+        }
+      },
+      provide: { currentLanguage: () => 'en' }
+    }
+  })
+}
+
 describe('DecisionInstance', () => {
+  // CIB7-2118: resizerMixin measures this ref, so it must survive switching away from inputs/outputs
+  describe('bottom panel ref', () => {
+    it.each(['outputs', 'decision-insights'])('keeps the rContent ref on the bottom container on the %s tab', async (tab) => {
+      const wrapper = mountView()
+      await flushPromises()
+      const panel = wrapper.vm.$refs.rContent
+      expect(panel).toBeTruthy()
+
+      await wrapper.setData({ activeTab: tab })
+
+      expect(wrapper.vm.$refs.rContent).toBe(panel)
+      expect(() => wrapper.vm.toggleContent()).not.toThrow()
+      expect(() => wrapper.vm.resize({ y: 10 })).not.toThrow()
+      wrapper.unmount()
+    })
+  })
+
   describe('viewboxStorageKey', () => {
     it('scopes the persisted viewbox by the decision definition id', () => {
       const key = DecisionInstance.methods.viewboxStorageKey.call({ instance: { decisionDefinitionId: 'dec-1' } })
