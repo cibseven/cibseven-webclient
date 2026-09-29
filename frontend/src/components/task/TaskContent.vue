@@ -19,26 +19,42 @@
 <template>
   <div class="h-100 d-flex flex-column">
     <div class="visually-hidden" ref="ariaLiveText" aria-live="polite"></div>
-    <div v-if="isMobile()" class="container-fluid border-top-0" style="min-height: 40px;">
-      <div v-if="task" class="row pt-2">
-        <div class="col-12">
-          <b-input-group v-if="task.assignee == null">
-            <b-input-group-prepend>
-              <span><b-button ref="assignToMeButton" variant="link" class="p-0 text-dark me-2"
-                  @click="assignee = $root.user.id"><span class="mdi mdi-18px mdi-account-question mdi-dark"></span> {{
-                  $t('task.assignToMe') }}</b-button></span>
-            </b-input-group-prepend>
-            <FilterableSelect v-model:loading="loadingUsers" @enter="findUsers($event, true)"
-              @clean-elements="resetUsers($event)" v-model="assignee" :elements="$store.state.user.searchUsers"
-              :placeholder="$t('task.assign')" noInvalidValues />
-          </b-input-group>
-          <b-input-group v-else>
-            <b-form-tag variant="secondary" @remove="assignee = null; update()" :key="task.id" :title="getCompleteName"
-              :remove-label="$t('task.assignedUserTitle')" class="mdi mdi-18px mdi-account">
-              {{ ' ' + getCompleteName }}
-            </b-form-tag>
-          </b-input-group>
-        </div>
+    <div v-if="isMobile()" class="border-bottom bg-white">
+      <div v-if="task" class="d-flex align-items-center" style="min-height: 40px;">
+        <b-button variant="link" class="text-dark border-0 border-end rounded-0 align-self-stretch px-2"
+          :title="$t('task.backToTaskList')" :aria-label="$t('task.backToTaskList')" @click="$emit('show-task-list')">
+          <span class="mdi mdi-18px mdi-clipboard-text-outline" aria-hidden="true"></span>
+        </b-button>
+        <h3 ref="titleTask" tabindex="-1" class="h6 fw-bold mb-0 px-2 flex-grow-1 text-truncate">{{ task.name }}</h3>
+        <b-dropdown ref="assigneeMenu" variant="link" toggle-class="text-dark border-0 px-2" no-caret right
+          :label="task.assignee == null ? $t('task.notAssigned') : $t('task.assignedTo', [getCompleteName])">
+          <template #button-content>
+            <span class="mdi mdi-18px" :class="task.assignee == null ? 'mdi-account-question' : 'mdi-account'" aria-hidden="true"></span>
+          </template>
+          <li>
+            <span class="dropdown-item-text text-nowrap">
+              <span class="mdi mdi-18px me-2" :class="task.assignee == null ? 'mdi-account-question' : 'mdi-account-check'" aria-hidden="true"></span>
+              {{ task.assignee == null ? $t('task.notAssigned') : $t('task.assignedTo', [getCompleteName]) }}
+            </span>
+          </li>
+          <b-dropdown-divider></b-dropdown-divider>
+          <b-dropdown-item-button v-if="canAssignToMe" @click="$refs.assigneeMenu.hide(); assignee = $root.user.id">
+            <span class="mdi mdi-18px mdi-account-plus me-2" aria-hidden="true"></span>{{ $t('task.assignToMe') }}
+          </b-dropdown-item-button>
+          <b-dropdown-item-button v-if="task.assignee == null" @click="$refs.assigneeMenu.hide(); $refs.assignUserModal.show()">
+            <span class="mdi mdi-18px mdi-account-search me-2" aria-hidden="true"></span>{{ $t('task.assign') }}
+          </b-dropdown-item-button>
+          <b-dropdown-item-button v-if="task.assignee != null" @click="$refs.assigneeMenu.hide(); assignee = null; update()">
+            <span class="mdi mdi-18px mdi-account-remove me-2" aria-hidden="true"></span>{{ $t('task.unassign') }}
+          </b-dropdown-item-button>
+          <b-dropdown-item-button v-if="canAddCandidateGroups" @click="$refs.assigneeMenu.hide(); openTaskAssignationModal()">
+            <span class="mdi mdi-18px mdi-account-multiple-plus me-2" aria-hidden="true"></span>{{ $t('admin.groups.addCandidateGroups') }}
+          </b-dropdown-item-button>
+        </b-dropdown>
+        <b-button v-if="hasOptions" variant="link" class="text-dark border-0 border-start rounded-0 align-self-stretch px-2"
+          :title="$t('task.options')" :aria-label="$t('task.options')" @click="$emit('show-options')">
+          <span class="mdi mdi-18px mdi-forum-outline" aria-hidden="true"></span>
+        </b-button>
       </div>
     </div>
     <div v-else class="container-fluid border-bottom border-top-0 bg-white" style="min-height: 40px;">
@@ -64,7 +80,7 @@
               <FilterableSelect v-if="task.assignee == null" v-model:loading="loadingUsers" @enter="findUsers($event, true)"
                 @clean-elements="resetUsers($event)" class="w-auto" v-model="assignee"
                 :elements="$store.state.user.searchUsers" :placeholder="$t('task.assign')" noInvalidValues />
-              <b-button v-if="applicationPermissions($root.config.permissions.cockpit, 'cockpit')" @click="openTaskAssignationModal" class="ms-2" variant="light" size="sm" >
+              <b-button v-if="canAddCandidateGroups" @click="openTaskAssignationModal" class="ms-2" variant="light" size="sm" >
                 {{ $t('admin.groups.addCandidateGroups') }}
               </b-button>
             </div>
@@ -104,7 +120,8 @@
     <ConfirmDialog ref="confirmTaskAssign" @ok="update()" @cancel="assignee = null">
       <span>{{ $t('confirm.assignUser') }}</span>
     </ConfirmDialog>
-    <TaskAssignationModal ref="taskAssignationModal" />
+    <TaskAssignationModal ref="taskAssignationModal" :class="{ 'modal-centered': isMobile() }" />
+    <AssignUserModal v-if="isMobile()" ref="assignUserModal" @select="assignee = $event"></AssignUserModal>
   </div>
 </template>
 
@@ -117,15 +134,19 @@ import RenderTemplate from '@/components/render-template/RenderTemplate.vue'
 import { ConfirmDialog, FilterableSelect } from '@cib/common-frontend'
 import assigneeMixin from '@/mixins/assigneeMixin.js'
 import TaskAssignationModal from '@/components/process/modals/TaskAssignationModal.vue'
+import AssignUserModal from '@/components/task/AssignUserModal.vue'
 import { permissionsMixin } from '@/permissions'
 
 export default {
   name: 'TaskContent',
-  components: { RenderTemplate, FilterableSelect, ConfirmDialog, TaskAssignationModal },
+  components: { RenderTemplate, FilterableSelect, ConfirmDialog, TaskAssignationModal, AssignUserModal },
   mixins: [usersMixin, assigneeMixin, permissionsMixin],
   inject: ['isMobile'],
-  props: { task: Object },
-  emits: ['complete-task', 'update-assignee'],
+  props: {
+    task: Object,
+    hasOptions: Boolean
+  },
+  emits: ['complete-task', 'update-assignee', 'show-task-list', 'show-options'],
   setup: function() {
     const POPOVER_DELAY = 1200 // 1.2 seconds
     return { POPOVER_DELAY }
@@ -167,6 +188,12 @@ export default {
     }
   },
   computed: {
+    canAssignToMe: function() {
+      return !this.task?.assignee || this.task.assignee.toLowerCase() !== this.$root.user.id.toLowerCase()
+    },
+    canAddCandidateGroups: function() {
+      return this.applicationPermissions(this.$root.config.permissions.cockpit, 'cockpit')
+    },
     renderTemplateStyles: function() {
       if (this.task) {
         if ((this.task.assignee && this.task.assignee.toLowerCase() !== this.$root.user.id.toLowerCase()) ||

@@ -110,6 +110,13 @@ afterEach(() => {
 })
 
 describe('TasksNavBar - computed', () => {
+  // Desktop leaves room for the header chevrons; mobile has none, so it sits at the edge.
+  it('refreshButtonPosition should leave room for the header chevrons only on desktop', () => {
+    expect(TasksNavBar.computed.refreshButtonPosition.call(context())).toEqual({ top: '3px', right: '30px' })
+    expect(TasksNavBar.computed.refreshButtonPosition.call(context({ isMobile: () => true })))
+      .toEqual({ top: '3px', right: '0.75rem' })
+  })
+
   describe('tasksFiltered', () => {
     const task = (overrides = {}) => ({ id: 't1', due: null, followUp: null, ...overrides })
 
@@ -652,6 +659,27 @@ describe('TasksNavBar - selection and navigation', () => {
     expect(vm.$router.push).not.toHaveBeenCalled()
   })
 
+  // On mobile the list covers the open task, and tapping it again leaves the route unchanged.
+  it('selectedTask should bring back the open task on mobile without reloading it', () => {
+    const vm = context({ isMobile: () => true, $emit: vi.fn() })
+    vm.$route.params.taskId = 't1'
+
+    m.selectedTask.call(vm, { id: 't1' })
+
+    expect(vm.$emit).toHaveBeenCalledWith('show-task')
+    expect(vm.$router.push).not.toHaveBeenCalled()
+  })
+
+  it('selectedTask should navigate to a different task on mobile', () => {
+    const vm = context({ isMobile: () => true, $emit: vi.fn() })
+    vm.$route.params.taskId = 't1'
+
+    m.selectedTask.call(vm, { id: 't2' })
+
+    expect(vm.$emit).not.toHaveBeenCalledWith('show-task')
+    expect(vm.$router.push).toHaveBeenCalledWith('/seven/auth/tasks/f1/t2')
+  })
+
   // Clicking to select text inside a row should not also open the task.
   it('selectedTask should not navigate while text is selected', () => {
     window.getSelection.mockReturnValue({ toString: () => 'copied text' })
@@ -1008,6 +1036,38 @@ describe('TasksNavBar - advanced filters', () => {
   })
 })
 
+describe('TasksNavBar - tasksFiltered watcher', () => {
+  const onTasksFiltered = (vm) => TasksNavBar.watch.tasksFiltered.handler.call(vm)
+
+  it('should scroll once the pending task is loaded', async () => {
+    const vm = context({ pendingScrollToTaskId: 't1', tasksFiltered: [{ id: 't1' }], scrollToSelectedTask: vi.fn() })
+
+    onTasksFiltered(vm)
+    await flush()
+
+    expect(vm.scrollToSelectedTask).toHaveBeenCalled()
+  })
+
+  // Otherwise loading more pages later would suddenly jump the list while the user scrolls.
+  it('should drop the pending scroll when the task is not in the loaded pages', () => {
+    const vm = context({ pendingScrollToTaskId: 't1', tasksFiltered: [{ id: 't2' }], scrollToSelectedTask: vi.fn() })
+
+    onTasksFiltered(vm)
+
+    expect(vm.pendingScrollToTaskId).toBeNull()
+    expect(vm.scrollToSelectedTask).not.toHaveBeenCalled()
+  })
+
+  // An empty list is not a loaded page yet (e.g. while the tasks are being fetched).
+  it('should keep the pending scroll while the list is still empty', () => {
+    const vm = context({ pendingScrollToTaskId: 't1', tasksFiltered: [] })
+
+    onTasksFiltered(vm)
+
+    expect(vm.pendingScrollToTaskId).toBe('t1')
+  })
+})
+
 describe('TasksNavBar - scrollToSelectedTask', () => {
   const withRef = (ref) => {
     const vm = context({ pendingScrollToTaskId: 't1' })
@@ -1031,6 +1091,17 @@ describe('TasksNavBar - scrollToSelectedTask', () => {
 
     expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'center' })
     expect(vm.pendingScrollToTaskId).toBeNull()
+  })
+
+  // scrollIntoView does nothing inside a display:none list, e.g. the list behind a task on mobile.
+  it('should keep the scroll pending while the list is hidden', () => {
+    const scrollIntoView = vi.fn()
+    const vm = withRef({ scrollIntoView, offsetParent: null })
+
+    m.scrollToSelectedTask.call(vm)
+
+    expect(scrollIntoView).not.toHaveBeenCalled()
+    expect(vm.pendingScrollToTaskId).toBe('t1')
   })
 
   // The row may not be rendered yet, so the scroll is retried a bounded number of times.

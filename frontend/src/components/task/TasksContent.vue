@@ -28,6 +28,9 @@
         @selected-filter="selectedFilter()" @set-filter="filter = $event;listTasksWithFilter()" @selected-task="selectedTask($event)"
         @refresh-tasks="listTasksWithFilter()" @refresh-tasks-number="refreshTasksNumber" @n-filters-shown="nFiltersShown = $event" class="border-0 bg-white"></FilterNavBar>
     </template>
+    <template v-if="isMobile()" v-slot:leftIcon>
+      <span class="mdi mdi-18px mdi-close float-end" aria-hidden="true"></span>
+    </template>
     <template v-slot:filter>
       <FilterNavCollapsed v-if="!leftOpenFilter && leftCaptionFilter" v-model:left-open="leftOpenFilter"></FilterNavCollapsed>
     </template>
@@ -38,6 +41,7 @@
       :leftSize="getTasksNavbarSize" :left-caption="leftCaptionTask" :right-caption="TasksRightSidebar ? rightCaptionTask : null">
       <template v-slot:left>
         <TasksNavBar @filter-alert="showFilterAlert($event)" ref="navbar" :tasks="tasks" @selected-task="selectedTask($event)"
+          @show-task="leftOpenTask = false"
           @update-assignee="updateAssignee($event, 'task')" @set-filter="filter = $event; listTasksWithFilter()"
           @open-sidebar-date="rightOpenTask = true" @show-more="showMore()" :taskResultsIndex="taskResultsIndex"
           @process-started="listTasksWithFilter();$refs.processStarted.show(10); checkAndOpenTask($event, true)"
@@ -48,7 +52,8 @@
       <router-view v-if="task !== null" role="region" :aria-label="$t('task.selectedTask')" ref="down" class="h-100" style="overflow-y: auto" v-slot="{ Component }">
         <transition name="slide-in" mode="out-in">
           <component :is="Component" ref="taskComponent" @update-task="updateTask($event)"
-            @update-assignee="updateAssignee($event, 'taskList')" :task="task" @complete-task="completedTask($event)" />
+            @update-assignee="updateAssignee($event, 'taskList')" :task="task" @complete-task="completedTask($event)"
+            :has-options="canOpenRightTask()" @show-task-list="leftOpenTask = true" @show-options="rightOpenTask = true" />
         </transition>
       </router-view>
       <transition name="slide-in" mode="out-in">
@@ -59,7 +64,12 @@
         </div>
       </transition>
       <template v-slot:leftIcon>
-        <div>
+        <b-button v-if="isMobile()" variant="link" size="sm" class="float-start border-0 border-end rounded-0 me-2 py-0 ps-0 pe-2"
+          :title="$t('nav-bar.filtersTitle')" :aria-label="$t('nav-bar.filtersTitle')" :aria-expanded="String(leftOpenFilter)"
+          @click.stop="leftOpenFilter = true">
+          <span class="mdi mdi-18px mdi-filter-outline" aria-hidden="true"></span>
+        </b-button>
+        <div v-else>
           <b-button v-if="tasksNavbarSize !== 2" style="top: 3px; right: 0" :title="$t('task.expand')"
           class="border-0 position-absolute" size="sm" variant="link" @click.stop="tasksNavbarSize++">
             <span class="mdi mdi-18px mdi-chevron-right"></span>
@@ -113,11 +123,11 @@ export default {
     let leftOpenFilter = localStorage.getItem('leftOpenFilter') ?
       localStorage.getItem('leftOpenFilter') === 'true' : true
     const externalMode = window.location.href.includes('externalMode')
-    if (externalMode) leftOpenFilter = false
+    if (externalMode || this.isMobile()) leftOpenFilter = false
     return {
       leftOpenFilter: leftOpenFilter,
       leftOpenTask: !externalMode,
-      rightOpenTask: localStorage.getItem('rightOpenTask') === 'true' && this.canOpenRightTask(),
+      rightOpenTask: !this.isMobile() && localStorage.getItem('rightOpenTask') === 'true' && this.canOpenRightTask(),
       tasks: [],
       task: null,
       processInstanceHistory: null,
@@ -144,14 +154,16 @@ export default {
         : null
     },
     rightCaptionTask: function() {
-      if (this.canOpenRightTask())
+      if (this.canOpenRightTask() && (!this.isMobile() || this.rightOpenTask))
         return this.$t('task.options')
       return null
     },
     leftCaptionTask: function() {
+      if (this.isMobile() && !this.leftOpenTask) return ''
       return this.$store.state.filter.selected.name
     },
     leftCaptionFilter: function() {
+      if (this.isMobile()) return this.leftOpenTask && this.leftOpenFilter ? this.$t('nav-bar.filtersTitle') : ''
       return this.leftOpenTask ? this.$t('nav-bar.filtersTitle') : ''
     },
     getTasksNavbarSize: function() { return this.tasksNavbarSizes[this.tasksNavbarSize] },
@@ -176,17 +188,18 @@ export default {
       immediate: true
     },
     rightOpenTask: function(newVal) {
-      localStorage.setItem('rightOpenTask', newVal)
+      if (!this.isMobile()) localStorage.setItem('rightOpenTask', newVal)
     },
     '$route.params.taskId': function() { if (!this.$route.params.taskId) this.cleanSelectedTask() },
     '$route.params.filterId': function() { if (!this.$route.params.filterId) this.cleanSelectedFilter() },
     leftOpenTask: function(leftOpen) {
-      if (leftOpen) {
+      if (leftOpen && !this.isMobile()) {
         this.leftOpenFilter = !localStorage.getItem('leftOpenFilter') || localStorage.getItem('leftOpenFilter') === 'true'
       } else this.leftOpenFilter = false
+      if (leftOpen) this.$nextTick(() => this.revealSelectedTask())
     },
     leftOpenFilter: function() {
-      if (this.leftOpenTask) localStorage.setItem('leftOpenFilter', this.leftOpenFilter)
+      if (this.leftOpenTask && !this.isMobile()) localStorage.setItem('leftOpenFilter', this.leftOpenFilter)
     },
     '$route.query.tasksFilter': {
       immediate: true,
@@ -408,6 +421,7 @@ export default {
       }
     },
     selectedFilter: function() {
+      if (this.isMobile()) this.leftOpenFilter = false
       this.listTasksWithFilter()
     },
     showFilterAlert: function(evt) {
@@ -480,6 +494,13 @@ export default {
       }
       this.tasks = []
       this.cleanSelectedTask()
+    },
+    // Called once the task list is shown again
+    revealSelectedTask: function() {
+      const navbar = this.$refs.navbar
+      const taskId = this.$route.params.taskId
+      if (!navbar || !taskId || !navbar.tasksFiltered?.some(t => t.id === taskId)) return
+      if (this.isMobile() || navbar.pendingScrollToTaskId) navbar.scrollToSelectedTask()
     },
     collapseNavbar: function () {
       if (this.tasksNavbarSize === 0) this.leftOpenTask = false
