@@ -30,7 +30,7 @@
       </div>
     </div>
 
-    <div class="position-absolute w-100 overflow-hidden border-top" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
+    <div ref="rContent" class="position-absolute w-100 overflow-hidden border-top" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
       <DeepLinkFrame v-if="matchedDeepLink" :link="matchedDeepLink" :params="matchedDeepLinkParams"></DeepLinkFrame>
       <div v-if="activeTab === 'instances'">
         <div ref="filterTable" class="bg-white d-flex position-absolute w-100">
@@ -61,7 +61,7 @@
             </div>
           </div>
         </div>
-        <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 60px; left: 0; bottom: 0" @scroll="handleScrollDecisions">
+        <div class="overflow-auto bg-white position-absolute w-100" style="top: 60px; left: 0; bottom: 0" @scroll="handleScrollDecisions">
           <DecisionInstancesTable ref="instancesTable" v-if="!loading && decisionInstances.length > 0 && !sorting" :instances="decisionInstances" :sortByDefaultKey="sortByDefaultKey" :sortDesc="sortDesc"></DecisionInstancesTable>
           <div v-else-if="loading" class="py-3 text-center w-100">
             <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
@@ -121,6 +121,7 @@ export default {
     return {
       topBarHeight: 0,
       activeTab: 'instances',
+      diagramTimer: null,
       sortByDefaultKey: 'evaluationTime',
       sorting: false,
       sortDesc: true,
@@ -166,6 +167,9 @@ export default {
       this.loadInstances()
     }
   },
+  beforeUnmount() {
+    clearTimeout(this.diagramTimer)
+  },
   methods: {
     ...mapActions(['getXmlById', 'getHistoricDecisionInstances']),
     changeTab: function(selectedTab) {
@@ -174,8 +178,10 @@ export default {
     loadDiagram() {
       this.getXmlById(this.decision.id)
         .then(response => {
-          setTimeout(() => {
-            this.$refs.diagram.showDiagram(response.dmnXml).then(() => this.restoreViewboxIfSaved())
+          clearTimeout(this.diagramTimer)
+          this.diagramTimer = setTimeout(() => {
+            // Gone if the view was left while the diagram loaded, which unmount cannot cancel
+            this.$refs.diagram?.showDiagram(response.dmnXml).then(() => this.restoreViewboxIfSaved())
           }, 100)
         })
         .catch(error => {

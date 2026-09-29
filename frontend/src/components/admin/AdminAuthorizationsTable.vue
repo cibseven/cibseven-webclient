@@ -21,8 +21,24 @@
     <WarningBox v-if="authorizationDisabled" :message="$t('admin.authorizations.authorizationDisabledWarning')"/>
     <div class="container-fluid pb-2 pt-4">
       <h4>{{ $t('admin.authorizations.resourcesTypes.' + resourcesTypes[$route.params.resourceTypeId].key) }}</h4>
-      <div :key="resourcesTypes[$route.params.resourceTypeId].key" class="alert alert-info"
-        v-html="$t('admin.authorizations.resourcesTypesDescriptions.' + resourcesTypes[$route.params.resourceTypeId].key)"></div>
+      <i18n-t :keypath="`admin.authorizations.resourcesTypesDescriptions.${resourcesTypes[$route.params.resourceTypeId].key}`"
+        :key="resourcesTypes[$route.params.resourceTypeId].key" tag="div" scope="global" class="alert alert-info">
+        <template #tasklist><strong>tasklist</strong></template>
+        <template #cockpit><strong>cockpit</strong></template>
+        <template #admin><strong>admin</strong></template>
+        <template #modeler><strong>modeler</strong></template>
+        <template #access><strong>Access</strong></template>
+        <template #all><strong>All</strong></template>
+        <template #bpmn><strong>BPMN</strong></template>
+        <template #dmn><strong>DMN</strong></template>
+        <template #create><strong>CREATE</strong></template>
+        <template #createBatch><strong>CREATE_BATCH_*</strong></template>
+        <template #optimize><strong>Optimize</strong></template>
+        <template #systemSettings><strong>{{ $t('admin.authorizations.resourcesTypesDescriptionsTerms.systemSettings') }}</strong></template>
+        <template #userOperationLog><strong>{{ $t('admin.authorizations.resourcesTypesDescriptionsTerms.userOperationLog') }}</strong></template>
+        <template #operationLog><strong>{{ $t('admin.authorizations.resourcesTypesDescriptionsTerms.operationLog') }}</strong></template>
+        <template #br><br></template>
+      </i18n-t>
       <div class="row align-items-center px-4">
         <div class="col-4">
           <b-input-group size="sm">
