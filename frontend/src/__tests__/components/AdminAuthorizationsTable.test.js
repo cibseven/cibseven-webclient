@@ -17,6 +17,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { reactive, nextTick } from 'vue'
+import { i18n } from '@/i18n'
 import { AdminService } from '@/services.js'
 import AdminAuthorizationsTable from '@/components/admin/AdminAuthorizationsTable.vue'
 
@@ -583,13 +584,39 @@ describe('the configured authorization types', () => {
 
 // CIB7-876: a resource type is often not self-explanatory (e.g. "Batch", "Property"), so the
 // view shows the resource type name together with a description of what it controls.
+// The description is rendered via <i18n-t> with named slots (not v-html), so the bolded
+// terms it contains render as real elements without exposing raw HTML to translators.
 describe('resource type description', () => {
+  const messages = {
+    admin: {
+      authorizations: {
+        resourcesTypes: {
+          application: 'Application',
+          batch: 'Batch',
+          user: 'User',
+          processInstance: 'Process Instance'
+        },
+        resourcesTypesDescriptions: {
+          application: 'Only supports {access}, e.g. {tasklist}.',
+          batch: 'Bulk actions.{br}{create} controls all. {createBatch} overrides {create}.',
+          user: 'Plain user description with no markup.',
+          processInstance: 'Plain process instance description with no markup.'
+        }
+      }
+    }
+  }
+
+  beforeEach(() => {
+    i18n.global.locale = 'en'
+    i18n.global.setLocaleMessage('en', messages)
+  })
+
   function mountTable(resourceTypeId, resourcesTypes) {
     const route = reactive({ params: { resourceTypeId } })
     const wrapper = mount(AdminAuthorizationsTable, {
       global: {
+        plugins: [i18n],
         mocks: {
-          $t: key => key,
           $route: route,
           config: {
             authorizationEnabled: true,
@@ -614,55 +641,36 @@ describe('resource type description', () => {
   }
 
   it.each([
-    ['13', 'batch'],
-    ['1', 'user']
-  ])('shows the resourcesTypes label for resourceTypeId %j as a heading', (resourceTypeId, key) => {
+    ['13', 'batch', 'Batch'],
+    ['1', 'user', 'User']
+  ])('shows the resourcesTypes label for resourceTypeId %j as a heading', (resourceTypeId, key, label) => {
     const { wrapper } = mountTable(resourceTypeId, { [resourceTypeId]: { id: resourceTypeId, key, permissions: ['READ'] } })
 
-    expect(wrapper.find('h4').text()).toBe(`admin.authorizations.resourcesTypes.${key}`)
+    expect(wrapper.find('h4').text()).toBe(label)
   })
 
-  it.each([
-    ['13', 'batch'],
-    ['1', 'user']
-  ])('shows the matching resourcesTypesDescriptions text for resourceTypeId %j', (resourceTypeId, key) => {
-    const { wrapper } = mountTable(resourceTypeId, { [resourceTypeId]: { id: resourceTypeId, key, permissions: ['READ'] } })
+  it('shows the matching resourcesTypesDescriptions text for a resource type with no bolded terms', () => {
+    const { wrapper } = mountTable('1', { '1': { id: '1', key: 'user', permissions: ['READ'] } })
 
-    expect(wrapper.find('.alert-info').text()).toBe(`admin.authorizations.resourcesTypesDescriptions.${key}`)
+    expect(wrapper.find('.alert-info').text()).toBe('Plain user description with no markup.')
   })
 
-  it('renders the description with v-html, so markup in the translation (e.g. <strong>) shows as an actual element and not escaped text', () => {
+  it('renders bolded terms as actual <strong> elements instead of escaped markup', () => {
     const resourcesTypes = { '0': { id: '0', key: 'application', permissions: ['ACCESS'] } }
-    const wrapper = mount(AdminAuthorizationsTable, {
-      global: {
-        mocks: {
-          $t: key => key === 'admin.authorizations.resourcesTypesDescriptions.application'
-            ? 'Only supports the <strong>Access</strong> permission.'
-            : key,
-          $route: { params: { resourceTypeId: '0' } },
-          config: {
-            authorizationEnabled: true,
-            userProvider: 'org.cibseven.webapp.auth.SevenUserProvider',
-            admin: {
-              resourcesTypes,
-              types: { '0': { id: '0', key: 'global' }, '1': { id: '1', key: 'allow' }, '2': { id: '2', key: 'deny' } }
-            }
-          }
-        },
-        stubs: {
-          WarningBox: true,
-          FlowTable: true,
-          TaskPopper: true,
-          ConfirmDialog: true,
-          BWaitingBox: true,
-          CellActionButton: true
-        }
-      }
-    })
+    const { wrapper } = mountTable('0', resourcesTypes)
 
-    const strong = wrapper.find('.alert-info strong')
-    expect(strong.exists()).toBe(true)
-    expect(strong.text()).toBe('Access')
+    const alert = wrapper.find('.alert-info')
+    expect(alert.findAll('strong').map(s => s.text())).toEqual(['Access', 'tasklist'])
+    expect(alert.text()).toBe('Only supports Access, e.g. tasklist.')
+  })
+
+  it('interpolates the CREATE/CREATE_BATCH_* terms and inserts a line break for the batch description', () => {
+    const resourcesTypes = { '13': { id: '13', key: 'batch', permissions: ['READ'] } }
+    const { wrapper } = mountTable('13', resourcesTypes)
+
+    const alert = wrapper.find('.alert-info')
+    expect(alert.find('br').exists()).toBe(true)
+    expect(alert.findAll('strong').map(s => s.text())).toEqual(['CREATE', 'CREATE_BATCH_*', 'CREATE'])
   })
 
   it('updates the heading and description when navigating to another resource type, so the previous type\'s text is not left behind', async () => {
@@ -672,13 +680,13 @@ describe('resource type description', () => {
     }
     const { wrapper, route } = mountTable('13', resourcesTypes)
 
-    expect(wrapper.find('h4').text()).toBe('admin.authorizations.resourcesTypes.batch')
-    expect(wrapper.find('.alert-info').text()).toBe('admin.authorizations.resourcesTypesDescriptions.batch')
+    expect(wrapper.find('h4').text()).toBe('Batch')
+    expect(wrapper.find('.alert-info strong').exists()).toBe(true)
 
     route.params.resourceTypeId = '8'
     await nextTick()
 
-    expect(wrapper.find('h4').text()).toBe('admin.authorizations.resourcesTypes.processInstance')
-    expect(wrapper.find('.alert-info').text()).toBe('admin.authorizations.resourcesTypesDescriptions.processInstance')
+    expect(wrapper.find('h4').text()).toBe('Process Instance')
+    expect(wrapper.find('.alert-info').text()).toBe('Plain process instance description with no markup.')
   })
 })
