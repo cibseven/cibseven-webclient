@@ -184,6 +184,7 @@ export default {
     task: {
       handler(newTask) {
         this.assignee = newTask ? newTask.assignee : null
+        if (!newTask && this.isMobile() && this.$route.query.externalMode === undefined) this.leftOpenTask = true
       },
       immediate: true
     },

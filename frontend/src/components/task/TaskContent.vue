@@ -53,7 +53,7 @@
         </b-dropdown>
         <b-button v-if="hasOptions" variant="link" class="text-dark border-0 border-start rounded-0 align-self-stretch px-2"
           :title="$t('task.options')" :aria-label="$t('task.options')" @click="$emit('show-options')">
-          <span class="mdi mdi-18px mdi-forum-outline" aria-hidden="true"></span>
+          <span class="mdi mdi-18px mdi-dots-vertical" aria-hidden="true"></span>
         </b-button>
       </div>
     </div>

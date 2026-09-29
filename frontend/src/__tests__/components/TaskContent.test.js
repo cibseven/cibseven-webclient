@@ -121,7 +121,9 @@ describe('TaskContent - mobile task header', () => {
   it('should ask to open the options when the right sidebar is available', async () => {
     const wrapper = mountTaskContent({ props: { hasOptions: true } })
 
-    await wrapper.find('button[aria-label="task.options"]').trigger('click')
+    const optionsButton = wrapper.find('button[aria-label="task.options"]')
+    expect(optionsButton.find('.mdi-dots-vertical').exists()).toBe(true)
+    await optionsButton.trigger('click')
 
     expect(wrapper.emitted('show-options')).toHaveLength(1)
   })

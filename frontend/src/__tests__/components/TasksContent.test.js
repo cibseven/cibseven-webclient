@@ -921,6 +921,46 @@ describe('TasksContent - updateAssignee', () => {
   })
 })
 
+describe('TasksContent - task watcher', () => {
+  const onTask = (vm, task) => TasksContent.watch.task.handler.call(vm, task)
+
+  // Regression: leaving a task from the header menu left an empty task pane with no way back.
+  it('should bring the task list back on mobile once no task is open', () => {
+    const vm = context({ isMobile: () => true, leftOpenTask: false })
+
+    onTask(vm, null)
+
+    expect(vm.leftOpenTask).toBe(true)
+  })
+
+  it('should keep the task list collapsed on mobile while a task is open', () => {
+    const vm = context({ isMobile: () => true, leftOpenTask: false })
+
+    onTask(vm, { id: 't1', assignee: 'demo' })
+
+    expect(vm.leftOpenTask).toBe(false)
+    expect(vm.assignee).toBe('demo')
+  })
+
+  // On desktop the list and the empty task pane are both visible, so nothing is stuck.
+  it('should leave a collapsed task list alone on desktop', () => {
+    const vm = context({ leftOpenTask: false })
+
+    onTask(vm, null)
+
+    expect(vm.leftOpenTask).toBe(false)
+  })
+
+  it('should keep the task list hidden in external mode while its task loads', () => {
+    const vm = context({ isMobile: () => true, leftOpenTask: false })
+    vm.$route.query.externalMode = 'true'
+
+    onTask(vm, null)
+
+    expect(vm.leftOpenTask).toBe(false)
+  })
+})
+
 describe('TasksContent - filter sidebar watchers', () => {
   const { leftOpenTask, leftOpenFilter } = TasksContent.watch
 
