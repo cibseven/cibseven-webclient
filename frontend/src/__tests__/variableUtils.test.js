@@ -51,13 +51,51 @@ describe('isFileValueDataSource', () => {
 describe('isFile', () => {
   it.each([
     [makeVar('File', null, { filename: 'doc.pdf' }), true],
-    [makeVar('Bytes', null), true],
+    // 'Bytes' is binary but not a File/FileValueDataSource - isDownloadable() covers it (CIB7-2132)
+    [makeVar('Bytes', null), false],
     [makeVar('Object', { objectTypeName: FILE_TYPE_SOURCE }), true],
     [makeVar('Object', { objectTypeName: 'other.Type' }), false],
     [makeVar('String', 'hello'), false],
     [makeVar('Null', null), false],
   ])('variable %# → %s', (variable, expected) => {
     expect(variableUtils.isFile(variable)).toBe(expected)
+  })
+})
+
+describe('isBytes', () => {
+  it.each([
+    [makeVar('Bytes', null), true],
+    [makeVar('File', null), false],
+    [makeVar('String', 'hello'), false],
+  ])('variable %# → %s', (variable, expected) => {
+    expect(variableUtils.isBytes(variable)).toBe(expected)
+  })
+})
+
+describe('isDownloadable', () => {
+  it.each([
+    [makeVar('File', null, { filename: 'doc.pdf' }), true],
+    // binary value never included in list/history queries by the engine (CIB7-2132)
+    [makeVar('Bytes', null), true],
+    [makeVar('Object', { objectTypeName: FILE_TYPE_SOURCE }), true],
+    [makeVar('Object', { objectTypeName: 'other.Type' }), false],
+    [makeVar('String', 'hello'), false],
+    [makeVar('Null', null), false],
+  ])('variable %# → %s', (variable, expected) => {
+    expect(variableUtils.isDownloadable(variable)).toBe(expected)
+  })
+})
+
+describe('isUploadable', () => {
+  it.each([
+    [makeVar('File', null, {}, { isLive: true }), true],
+    [makeVar('File', null, {}, { isLive: false }), false],
+    // no upload mechanism exists for raw binary values
+    [makeVar('Bytes', null, {}, { isLive: true }), false],
+    [makeVar('Object', { objectTypeName: FILE_TYPE_SOURCE }, {}, { isLive: true }), true],
+    [makeVar('String', 'hello', {}, { isLive: true }), false],
+  ])('variable %# → %s', (variable, expected) => {
+    expect(variableUtils.isUploadable(variable)).toBe(expected)
   })
 })
 
@@ -167,7 +205,7 @@ describe('displayValue', () => {
     // regardless of whether one is actually set - showing the raw (always-null) value
     // as "null" is misleading (CIB7-2132), so a fixed placeholder is shown instead
     it('returns a placeholder instead of the raw (always-null) value', () => {
-      expect(variableUtils.displayValue(makeVar('Bytes', null))).toBe('- Bytes -')
+      expect(variableUtils.displayValue(makeVar('Bytes', null))).toBe('- Bytes Array -')
     })
   })
 

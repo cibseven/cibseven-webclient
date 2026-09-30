@@ -282,7 +282,7 @@ export default {
       return variableUtils.displayValue(variable)
     },
     displayValueTooltip(variable) {
-      if (this.isFile(variable) && variable.existing) {
+      if (this.isDownloadable(variable) && variable.existing) {
         return this.$t('process-instance.download') + ': ' + this.displayVariableValue(variable)
       }
       else {

@@ -356,7 +356,7 @@ describe('processesVariablesMixin', () => {
       wrapper.vm.downloadFile({ id: 'v10', name: 'atisData', type: 'Bytes', isLive: true, executionId: 'ex10', valueInfo: {} })
       await flushPromises()
       expect(ProcessService.fetchVariableDataByExecutionId).toHaveBeenCalledWith('ex10', 'atisData')
-      expect(triggerDownload).toHaveBeenCalledWith(expect.any(Blob), 'atisData')
+      expect(triggerDownload).toHaveBeenCalledWith(expect.any(Blob), 'atisData.dat')
     })
   })
 })
