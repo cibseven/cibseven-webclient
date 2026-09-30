@@ -292,9 +292,6 @@ export default {
     isFile(variable) {
       return variableUtils.isFile(variable)
     },
-    isFileValueDataSource(variable) {
-      return variableUtils.isFileValueDataSource(variable)
-    },
     getFileVariableName(variable) {
       return variableUtils.getFileVariableName(variable)
     },
