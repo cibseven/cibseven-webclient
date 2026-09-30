@@ -254,7 +254,7 @@ export default {
 	  return variableUtils.displayValue(variable)
     },
     displayValueTooltip(item) {
-      if (this.isFile(item)) {
+      if (this.isDownloadable(item)) {
         return this.$t('process-instance.download') + ': ' + this.displayValue(item)
       }
       else {
@@ -263,6 +263,12 @@ export default {
     },
     isFile(variable) {
       return variableUtils.isFile(variable)
+    },
+    isDownloadable(variable) {
+      return variableUtils.isDownloadable(variable)
+    },
+	isUploadable(variable) {
+      return variableUtils.isUploadable(variable)
     },
     isFileValueDataSource(variable) {
       return variableUtils.isFileValueDataSource(variable)
@@ -289,7 +295,9 @@ export default {
 					ProcessService.fetchVariableDataByExecutionId(variable.executionId, variable.name) :
 					HistoryService.fetchHistoryVariableDataById(variable.id)
 				download.then(data => {
-					this.$refs.importPopper.triggerDownload(data, variable.valueInfo.filename)
+					// 'Bytes' variables have no valueInfo.filename, fall back to the variable name (CIB7-2132)
+					const filename = variable.valueInfo?.filename || `${variable.name}.dat`
+					this.$refs.importPopper.triggerDownload(data, filename)
 				})
 			}
 		},

@@ -45,7 +45,7 @@
           <div class="w-100" :class="!row.item.existing || row.item.changed ? 'fw-semibold' : ''">
             <CopyableActionButton
               :displayValue="displayVariableValue(row.item)"
-              :clickable="isFile(row.item) && row.item.existing"
+              :clickable="isDownloadable(row.item) && row.item.existing"
               :title="displayValueTooltip(row.item)"
               @click="downloadFile(row.item)"
               @copy="copyValueToClipboard"
@@ -53,11 +53,11 @@
           </div>
         </template>
         <template v-slot:cell(actions)="row">
-          <CellActionButton v-if="isFile(row.item) && row.item.existing" :title="displayVariableValue(row.item)"
+          <CellActionButton v-if="isDownloadable(row.item) && row.item.existing" :title="displayVariableValue(row.item)"
             icon="mdi-download-outline"
             @click="downloadFile(row.item)">
           </CellActionButton>
-          <CellActionButton v-if="!isFile(row.item)" @click="showEditVariable(row.item, row.index)" icon="mdi-square-edit-outline" :title="$t('task-variables.editVariable.tooltip', { name: row.item.name })"></CellActionButton>
+          <CellActionButton v-if="!isDownloadable(row.item)" @click="showEditVariable(row.item, row.index)" icon="mdi-square-edit-outline" :title="$t('task-variables.editVariable.tooltip', { name: row.item.name })"></CellActionButton>
           <CellActionButton v-if="!row.item.existing || row.item.changed" @click="removeVariable(row.index)" icon="mdi-delete-outline" :title="$t('task-variables.removeVariable.tooltip', { name: row.item.name })"></CellActionButton>
         </template>
       </FlowTable>
@@ -298,6 +298,12 @@ export default {
     getFileVariableName(variable) {
       return variableUtils.getFileVariableName(variable)
     },
+    isDownloadable(variable) {
+      return variableUtils.isDownloadable(variable)
+    },
+    isUploadable(variable) {
+      return variableUtils.isUploadable(variable)
+    },
 
     downloadFile(variable) {
       if (variable.type === 'Object') {
@@ -305,7 +311,9 @@ export default {
         this.$refs.importPopper.triggerDownload(blob, this.getFileVariableName(variable))
       } else {
         ProcessService.fetchVariableDataByExecutionId(this.task.executionId, variable.name).then(data => {
-          this.$refs.importPopper.triggerDownload(data, variable.valueInfo.filename)
+          // 'Bytes' variables have no valueInfo.filename, fall back to the variable name (CIB7-2132)
+          const filename = variable.valueInfo?.filename || `${variable.name}.dat`
+          this.$refs.importPopper.triggerDownload(data, filename)
         })
       }
     },

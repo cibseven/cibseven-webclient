@@ -70,7 +70,7 @@
         <template v-slot:cell(value)="table">
           <CopyableActionButton
             :displayValue="displayValue(table.item)"
-            :clickable="isFile(table.item)"
+            :clickable="isDownloadable(table.item)"
             :title="displayValueTooltip(table.item)"
             @click="downloadFile(table.item)"
             @copy="copyValueToClipboard"
@@ -99,15 +99,15 @@
         <template v-slot:cell(actions)="table">
           <div class="d-flex">
             <component :is="VariablesTableActionsPlugin" v-if="VariablesTableActionsPlugin" :table-item="table.item" :selected-instance="selectedInstance" :file-objects="fileObjects"></component>
-            <CellActionButton v-if="isFile(table.item)" :title="displayValueTooltip(table.item)"
+            <CellActionButton v-if="isDownloadable(table.item)" :title="displayValueTooltip(table.item)"
               icon="mdi-download-outline"
               @click="downloadFile(table.item)">
             </CellActionButton>
-            <CellActionButton v-if="isFile(table.item) && table.item.isLive" :title="$t('process-instance.upload')"
+            <CellActionButton v-if="isUploadable(table.item)" :title="$t('process-instance.upload')"
               icon="mdi-upload-outline"
               @click="selectedVariable = table.item; $refs.uploadFile.show()">
             </CellActionButton>
-            <CellActionButton v-if="'File' !== table.item.type && !isFileValueDataSource(table.item)"
+            <CellActionButton v-if="!isDownloadable(table.item)"
               :title="$t(table.item.isLive ? 'process-instance.edit' : 'process-instance.variables.historicVariable.tooltip')"
               :icon="table.item.isLive ? 'mdi-square-edit-outline' : 'mdi-eye-outline'"
               @click="modifyVariable(table.item)">

@@ -50,6 +50,11 @@ export default {
       case 'Object':
         return this.displayValueObject(variable)
 
+      case 'Bytes':
+        // binary value, never included by the engine in list/history queries (CIB7-2132);
+        // fetched on demand via downloadFile() instead of being shown here
+        return '- Bytes Array -'
+
       case 'Null':
         return ''
 
@@ -103,6 +108,10 @@ export default {
     return '- Object -'
   },
 
+  isBytes(variable) {
+    return variable.type === 'Bytes'
+  },
+
   isFile(variable) {
     return (variable.type === 'File') || this.isFileValueDataSource(variable)
   },
@@ -115,6 +124,15 @@ export default {
       if (objectTypeName && this.getFileObjects().includes(objectTypeName)) return true
     }
     return false
+  },
+
+  isDownloadable(variable) {
+    // 'Bytes' is binary too and gets the same fetch-on-demand/download treatment as 'File' (CIB7-2132)
+    return this.isFile(variable) || this.isBytes(variable) || this.isFileValueDataSource(variable)
+  },
+
+  isUploadable(variable) {
+    return this.isFile(variable) && variable.isLive && 'Bytes' !== variable.type
   },
 
   getFileVariableName(variable) {

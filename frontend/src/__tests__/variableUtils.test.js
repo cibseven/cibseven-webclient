@@ -51,6 +51,7 @@ describe('isFileValueDataSource', () => {
 describe('isFile', () => {
   it.each([
     [makeVar('File', null, { filename: 'doc.pdf' }), true],
+    [makeVar('Bytes', null), true],
     [makeVar('Object', { objectTypeName: FILE_TYPE_SOURCE }), true],
     [makeVar('Object', { objectTypeName: 'other.Type' }), false],
     [makeVar('String', 'hello'), false],
@@ -158,6 +159,15 @@ describe('displayValue', () => {
   describe('Null type', () => {
     it('returns empty string', () => {
       expect(variableUtils.displayValue(makeVar('Null', null))).toBe('')
+    })
+  })
+
+  describe('Bytes type', () => {
+    // the engine never includes the value of binary variables in list/history queries,
+    // regardless of whether one is actually set - showing the raw (always-null) value
+    // as "null" is misleading (CIB7-2132), so a fixed placeholder is shown instead
+    it('returns a placeholder instead of the raw (always-null) value', () => {
+      expect(variableUtils.displayValue(makeVar('Bytes', null))).toBe('- Bytes -')
     })
   })
 

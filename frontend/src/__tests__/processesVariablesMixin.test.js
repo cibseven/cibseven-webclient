@@ -348,5 +348,15 @@ describe('processesVariablesMixin', () => {
       expect(HistoryService.fetchHistoryVariableDataById).toHaveBeenCalledWith('v9')
       expect(ProcessService.fetchVariableDataByExecutionId).not.toHaveBeenCalled()
     })
+
+    // 'Bytes' variables have no valueInfo.filename (CIB7-2132), so the download must fall
+    // back to the variable name instead of passing 'undefined' as the file name
+    it('downloads Bytes variables via the same routing, falling back to the variable name as file name', async () => {
+      const wrapper = createWrapper()
+      wrapper.vm.downloadFile({ id: 'v10', name: 'atisData', type: 'Bytes', isLive: true, executionId: 'ex10', valueInfo: {} })
+      await flushPromises()
+      expect(ProcessService.fetchVariableDataByExecutionId).toHaveBeenCalledWith('ex10', 'atisData')
+      expect(triggerDownload).toHaveBeenCalledWith(expect.any(Blob), 'atisData')
+    })
   })
 })
