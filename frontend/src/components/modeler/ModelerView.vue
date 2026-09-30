@@ -28,6 +28,8 @@ import 'cibseven-modeler/dist/cibseven-modeler.css'
 import { axios } from '@/globals.js'
 import { getServicesBasePath } from '@/services.js'
 
+const ENGINE_REST_PREFIX = '/client/cibseven-engine'
+
 export default {
   name: 'ModelerView',
   components: { CibsevenModeler },
@@ -41,8 +43,17 @@ export default {
     // Configure modeler to use webclient's axios and base path
     setAxiosInstance(axios)
     setServicesBasePath(getServicesBasePath())
+    this.engineRestPathInterceptor = axios.interceptors.request.use(config => {
+      if (config.url && config.url.startsWith(ENGINE_REST_PREFIX)) {
+        config.url = getServicesBasePath() + config.url.slice(ENGINE_REST_PREFIX.length)
+      }
+      return config
+    })
     this.$store.dispatch('modeler/elementTemplates/fetchAllElementTemplates')
       .catch(error => console.warn('Could not load element templates:', error))
+  },
+  beforeUnmount() {
+    axios.interceptors.request.eject(this.engineRestPathInterceptor)
   }
 }
 </script>

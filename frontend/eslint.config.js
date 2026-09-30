@@ -23,7 +23,6 @@ export default [
   {
     name: 'app/files-to-lint',
     files: ['**/*.{js,mjs,jsx,vue}'],
-    ignores: ['playwright/**'],
   },
 
   {
@@ -33,29 +32,16 @@ export default [
       '**/dist-ssr/**',
       '**/coverage/**',
       '**/target/**',
-      '**/playwright-report/**',
       '**/test-results/**',
     ],
   },
 
   js.configs.recommended,
   ...pluginVue.configs['flat/essential'],
-  
+
   {
     ...pluginVitest.configs.recommended,
     files: ['src/**/__tests__/*'],
-  },
-
-  {
-    // Playwright test files
-    files: [
-      'playwright/e2e/**/*.{spec,test}.{js,ts,jsx,tsx}',
-      'playwright/helpers/**/*.{js,ts,jsx,tsx}'
-    ],
-    rules: {
-      // Allow console.log in test files for debugging
-      'no-console': 'off',
-    },
   },
 
   ...pluginVueA11y.configs["flat/recommended"],

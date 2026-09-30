@@ -14,12 +14,115 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
+import { flushPromises } from '@vue/test-utils'
 import DecisionInstance from '@/components/decision/DecisionInstance.vue'
+import { mountWithDefaults } from '../support/mountWithDefaults.js'
+
+vi.mock('@/services.js', async (importOriginal) => ({
+  ...await importOriginal(),
+  DecisionService: {
+    getHistoricDecisionInstances: vi.fn(() => Promise.resolve([
+      { id: 'inst-1', decisionDefinitionId: 'dec-1', decisionDefinitionKey: 'myDecision', inputs: [], outputs: [] }
+    ]))
+  }
+}))
 
 const { normalizeCell, isDmnStringLiteral } = DecisionInstance.methods
 
+function mountView({ dispatch = vi.fn(() => Promise.resolve({ dmnXml: '' })), showDiagram = () => Promise.resolve() } = {}) {
+  return mountWithDefaults(DecisionInstance, {
+    props: { instanceId: 'inst-1', versionIndex: '1' },
+    i18nPlugin: false,
+    global: {
+      stubs: {
+        DmnViewer: { template: '<div></div>', methods: { showDiagram } },
+        // declared as props, otherwise the stub renders the component proxy as an attribute
+        ViewerFrame: { template: '<div><slot></slot></div>', props: ['resizerMixin'] },
+        PluginSlot: { template: '<div></div>', props: ['name', 'only', 'params'] },
+        FlowTable: { template: '<div></div>', inheritAttrs: false },
+        GenericTabs: true, ScrollableTabsContainer: true,
+        DeepLinkFrame: true, DeepLinkButtons: true
+      },
+      mocks: {
+        config: {},
+        $store: {
+          // the namespaced mapGetters('diagram', ...) looks the module up here first
+          _modulesNamespaceMap: { 'diagram/': {} },
+          getters: { 'diagram/isDiagramReady': false, getSelectedDecisionVersion: () => ({ id: 'dec-1' }) },
+          dispatch
+        }
+      },
+      provide: { currentLanguage: () => 'en' }
+    }
+  })
+}
+
 describe('DecisionInstance', () => {
+  // CIB7-2118: resizerMixin measures this ref, so it must survive switching away from inputs/outputs
+  describe('bottom panel ref', () => {
+    it.each(['outputs', 'decision-insights'])('keeps the rContent ref on the bottom container on the %s tab', async (tab) => {
+      const wrapper = mountView()
+      await flushPromises()
+      const panel = wrapper.vm.$refs.rContent
+      expect(panel).toBeTruthy()
+
+      await wrapper.setData({ activeTab: tab })
+
+      expect(wrapper.vm.$refs.rContent).toBe(panel)
+      expect(() => wrapper.vm.toggleContent()).not.toThrow()
+      expect(() => wrapper.vm.resize({ y: 10 })).not.toThrow()
+      wrapper.unmount()
+    })
+  })
+
+  // The diagram is shown 100 ms after its XML arrives. Leaving the view in between must not
+  // reach for a viewer that no longer exists; that surfaced as an uncaught error in CI.
+  describe('leaving the view while the diagram loads', () => {
+    const fakeTimeouts = () => vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+    afterEach(() => { vi.useRealTimers() })
+
+    it('shows the diagram once its XML has arrived', async () => {
+      fakeTimeouts()
+      const showDiagram = vi.fn(() => Promise.resolve())
+      const wrapper = mountView({ dispatch: vi.fn(() => Promise.resolve({ dmnXml: '<dmn/>' })), showDiagram })
+      await flushPromises()
+
+      vi.advanceTimersByTime(100)
+
+      expect(showDiagram).toHaveBeenCalledWith('<dmn/>')
+      wrapper.unmount()
+    })
+
+    it('does nothing when the view is left while the diagram waits to be shown', async () => {
+      fakeTimeouts()
+      const showDiagram = vi.fn(() => Promise.resolve())
+      const wrapper = mountView({ showDiagram })
+      await flushPromises()
+
+      wrapper.unmount()
+
+      expect(() => vi.advanceTimersByTime(100)).not.toThrow()
+      expect(showDiagram).not.toHaveBeenCalled()
+    })
+
+    it('does nothing when the view is left before the XML arrives', async () => {
+      fakeTimeouts()
+      let deliverXml
+      const wrapper = mountView({ dispatch: vi.fn(type => type === 'getXmlById'
+        ? new Promise(resolve => { deliverXml = resolve })
+        : Promise.resolve({ dmnXml: '' })) })
+      await flushPromises()
+
+      // unmount cannot cancel a request that is still running, so the timer starts afterwards
+      wrapper.unmount()
+      deliverXml({ dmnXml: '<dmn/>' })
+      await flushPromises()
+
+      expect(() => vi.advanceTimersByTime(100)).not.toThrow()
+    })
+  })
+
   describe('viewboxStorageKey', () => {
     it('scopes the persisted viewbox by the decision definition id', () => {
       const key = DecisionInstance.methods.viewboxStorageKey.call({ instance: { decisionDefinitionId: 'dec-1' } })
@@ -53,6 +156,118 @@ describe('DecisionInstance', () => {
       ['"a", "b"',      'a", "b'], // ok - only removes surrounding quotes, not inner ones
     ])('normalizeCell(%s) → %s', (input, expected) => {
       expect(normalizeCell(input)).toBe(expected)
+    })
+  })
+
+  describe('tabs', () => {
+    it('includes only the built-in inputs/outputs tabs when no deep links are configured', () => {
+      const tabs = DecisionInstance.computed.tabs.call({ $root: { config: {} } })
+      expect(tabs).toEqual([
+        { id: 'inputs', text: 'decision.inputs' },
+        { id: 'outputs', text: 'decision.outputs' }
+      ])
+    })
+
+    it('appends configured decisionInstance deep links, falling back to the id when untranslated', () => {
+      const context = {
+        $root: { config: { deepLinks: { decisionInstance: [{ id: 'myExternalLinkId', url: 'https://external.example', type: 'tab' }] } } },
+        $t: key => key
+      }
+      const tabs = DecisionInstance.computed.tabs.call(context)
+      expect(tabs).toEqual([
+        { id: 'inputs', text: 'decision.inputs' },
+        { id: 'outputs', text: 'decision.outputs' },
+        { id: 'myExternalLinkId', text: 'myExternalLinkId' }
+      ])
+    })
+
+    it('uses the translated label when a translation exists', () => {
+      const context = {
+        $root: { config: { deepLinks: { decisionInstance: [{ id: 'myExternalLinkId', url: 'https://external.example', type: 'tab' }] } } },
+        $t: () => 'My External Link'
+      }
+      const tabs = DecisionInstance.computed.tabs.call(context)
+      expect(tabs.at(-1)).toEqual({ id: 'myExternalLinkId', text: 'My External Link' })
+    })
+
+    it('ignores a configured deep link whose type is not "tab"', () => {
+      const context = {
+        $root: { config: { deepLinks: { decisionInstance: [{ id: 'myButtonLinkId', url: 'https://external.example', type: 'button' }] } } },
+        $t: key => key
+      }
+      const tabs = DecisionInstance.computed.tabs.call(context)
+      expect(tabs).toEqual([
+        { id: 'inputs', text: 'decision.inputs' },
+        { id: 'outputs', text: 'decision.outputs' }
+      ])
+    })
+
+    it('drops a deep link entry that collides with a built-in tab id', () => {
+      const context = { $root: { config: { deepLinks: { decisionInstance: [
+        { id: 'outputs', url: 'https://external.example', type: 'tab' }
+      ] } } } }
+      const tabs = DecisionInstance.computed.tabs.call(context)
+      expect(tabs).toEqual([
+        { id: 'inputs', text: 'decision.inputs' },
+        { id: 'outputs', text: 'decision.outputs' }
+      ])
+    })
+  })
+
+  describe('hasDeepLinks', () => {
+    it('returns true only when a button-type decisionInstance deep link is configured', () => {
+      const tabOnly = { $root: { config: { deepLinks: { decisionInstance: [{ id: 'tabLink', url: 'https://external.example', type: 'tab' }] } } } }
+      const buttonLink = { $root: { config: { deepLinks: { decisionInstance: [{ id: 'buttonLink', url: 'https://external.example', type: 'button' }] } } } }
+      expect(DecisionInstance.computed.hasDeepLinks.call(tabOnly)).toBe(false)
+      expect(DecisionInstance.computed.hasDeepLinks.call(buttonLink)).toBe(true)
+    })
+  })
+
+  describe('matchedDeepLink', () => {
+    it('returns the deep link entry matching the active tab', () => {
+      const context = {
+        activeTab: 'myExternalLinkId',
+        $root: { config: { deepLinks: { decisionInstance: [{ id: 'myExternalLinkId', url: 'https://external.example', type: 'tab' }] } } }
+      }
+      expect(DecisionInstance.computed.matchedDeepLink.call(context)).toEqual({ id: 'myExternalLinkId', url: 'https://external.example', type: 'tab', text: 'deepLinks.decisionInstance.myExternalLinkId.title' })
+    })
+
+    it('returns undefined when the active tab is a built-in tab', () => {
+      const context = { activeTab: 'inputs', $root: { config: {} } }
+      expect(DecisionInstance.computed.matchedDeepLink.call(context)).toBeUndefined()
+    })
+
+    it('returns undefined when the matching entry is a button-type link', () => {
+      const context = {
+        activeTab: 'myButtonLinkId',
+        $root: { config: { deepLinks: { decisionInstance: [{ id: 'myButtonLinkId', url: 'https://external.example', type: 'button' }] } } }
+      }
+      expect(DecisionInstance.computed.matchedDeepLink.call(context)).toBeUndefined()
+    })
+  })
+
+  describe('matchedDeepLinkParams', () => {
+    it('builds decision instance and decision definition context (with distinct tenant ids) and language params', () => {
+      const context = {
+        instance: {
+          id: 'inst-1',
+          tenantId: 'instance-tenant',
+          processInstanceId: 'pi-1',
+          decisionDefinitionId: 'dec-1',
+          decisionDefinitionKey: 'myDecision'
+        },
+        decisionDefinition: { tenantId: 'definition-tenant' },
+        currentLanguage: () => 'en'
+      }
+      expect(DecisionInstance.computed.matchedDeepLinkParams.call(context)).toEqual({
+        decisionInstanceId: 'inst-1',
+        decisionInstanceTenantId: 'instance-tenant',
+        processInstanceId: 'pi-1',
+        decisionDefinitionId: 'dec-1',
+        decisionDefinitionKey: 'myDecision',
+        decisionDefinitionTenantId: 'definition-tenant',
+        lang: 'en'
+      })
     })
   })
 

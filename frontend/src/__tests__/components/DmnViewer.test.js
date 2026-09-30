@@ -115,3 +115,54 @@ describe('DmnViewer - viewbox-changed emission', () => {
     expect(() => DmnViewer.methods.attachViewboxListener.call({ viewer: { getActiveViewer: () => null } })).not.toThrow()
   })
 })
+
+/**
+ * What the dmn-viewer slot is handed. A contribution works on the table dmn-js rendered, and
+ * dmn-js rebuilds it whenever the view changes, so the active view has to reach the slot.
+ */
+describe('DmnViewer - the view handed to plugins', () => {
+  const context = () => ({
+    activeView: null,
+    isDrdView: true,
+    attachViewboxListener: vi.fn(),
+    $emit: vi.fn()
+  })
+
+  it('hands over the decision that was opened', () => {
+    const ctx = context()
+    const activeView = { type: 'decisionTable', element: { id: 'decision-1' } }
+
+    DmnViewer.methods.onViewsChanged.call(ctx, { activeView })
+
+    expect(ctx.activeView).toBe(activeView)
+    expect(ctx.isDrdView).toBe(false)
+  })
+
+  it('hands over the drd view as well, and attaches the viewbox listener there', () => {
+    const ctx = context()
+
+    DmnViewer.methods.onViewsChanged.call(ctx, { activeView: { type: 'drd' } })
+
+    expect(ctx.activeView).toEqual({ type: 'drd' })
+    expect(ctx.isDrdView).toBe(true)
+    expect(ctx.attachViewboxListener).toHaveBeenCalled()
+  })
+
+  it('clears the view when dmn-js reports none', () => {
+    const ctx = context()
+    ctx.activeView = { type: 'decisionTable' }
+
+    DmnViewer.methods.onViewsChanged.call(ctx, {})
+
+    expect(ctx.activeView).toBeNull()
+  })
+
+  it('still emits the view-changed event the views rely on', () => {
+    const ctx = context()
+
+    DmnViewer.methods.onViewsChanged.call(ctx, { activeView: { type: 'decisionTable' } })
+
+    expect(ctx.$emit).toHaveBeenCalledWith('view-changed',
+      { activeView: { type: 'decisionTable' }, isDrdView: false })
+  })
+})

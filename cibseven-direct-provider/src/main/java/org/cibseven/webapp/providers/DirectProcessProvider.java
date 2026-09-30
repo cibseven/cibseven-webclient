@@ -114,6 +114,8 @@ import jakarta.ws.rs.core.MultivaluedMap;
 
 public class DirectProcessProvider implements IProcessProvider {
 
+	private static final String FETCH_INCIDENTS = "fetchIncidents";
+
 	SevenDirectProvider sevenDirectProvider;
 	DirectProviderUtil directProviderUtil;
 
@@ -562,9 +564,9 @@ public class DirectProcessProvider implements IProcessProvider {
 	@Override
 	public Collection<HistoryProcessInstance> findProcessesInstancesHistory(Map<String, Object> filters,
 			Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) {
-		Boolean fetchIncidents = (Boolean) filters.get("fetchIncidents");
+		Boolean fetchIncidents = (Boolean) filters.get(FETCH_INCIDENTS);
 		if (fetchIncidents != null) {
-			filters.remove("fetchIncidents");
+			filters.remove(FETCH_INCIDENTS);
 		}
 		HistoricProcessInstanceQueryDto historicProcessInstanceQueryDto = directProviderUtil.getObjectMapper(user).convertValue(filters,
 				HistoricProcessInstanceQueryDto.class);
@@ -584,7 +586,14 @@ public class DirectProcessProvider implements IProcessProvider {
 		// Check if caller wants incident handling
 		if (fetchIncidents != null && fetchIncidents) {
 			String processDefinitionId = (String) filters.get("processDefinitionId");
-			if (processDefinitionId != null) {
+			if (processDefinitionId == null) {
+				// No processDefinitionId - fetch incidents per instance (e.g. called from findProcessesInstancesRuntime)
+				if (historicProcessInstanceResults != null) {
+					historicProcessInstanceResults.forEach(p -> {
+						p.setIncidents(sevenDirectProvider.findIncidentByInstanceId(p.getId(), user));
+					});
+				}
+			} else {
 				@SuppressWarnings("unchecked")
 				List<String> activityIdIn = (List<String>) filters.get("activeActivityIdIn");
 
@@ -988,14 +997,15 @@ public class DirectProcessProvider implements IProcessProvider {
 
 		// fetch history for those ids to get full info
 		Map<String, Object> dataHistory = new HashMap<>();
-		dataHistory.put("processInstanceIds", instanceResults);
+		List<String> processInstanceIds = instanceResults.stream().map(ProcessInstance::getId).collect(Collectors.toList());
+		dataHistory.put("processInstanceIds", processInstanceIds);
+		dataHistory.put(FETCH_INCIDENTS, Boolean.TRUE);
 
 		Integer firstResult0 = 0;
-		//TODO: dataHistory as input parameter could be wrong!
 		Collection<HistoryProcessInstance> historicInstances = findProcessesInstancesHistory(dataHistory, Optional.of(firstResult0), maxResults, user);
-	// sort [historicInstances] like they are inside [processInstanceIds]
+		// sort [historicInstances] like they are inside [processInstanceIds]
 		historicInstances = historicInstances.stream()
-				.sorted(Comparator.comparingInt(h -> instanceResults.indexOf(h.getId())))
+				.sorted(Comparator.comparingInt(h -> processInstanceIds.indexOf(h.getId())))
 				.collect(Collectors.toList());
 
 		return historicInstances;

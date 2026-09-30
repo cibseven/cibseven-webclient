@@ -120,7 +120,7 @@ export const createStoreTestSuite = (storeName, storeModule, customTests = {}) =
           })
 
           // Custom action tests
-          const getContext = () => ({ commit: mockCommit, dispatch: mockDispatch, state, getters: mockGetters })
+          const getContext = () => ({ commit: mockCommit, dispatch: mockDispatch, state, getters: mockGetters, rootGetters: mockRootGetters })
           const actionTest = customTests.actions?.[actionName]
           actionTest?.(action, getContext, actionName)          
         })

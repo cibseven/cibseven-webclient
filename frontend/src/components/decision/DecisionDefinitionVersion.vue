@@ -30,7 +30,8 @@
       </div>
     </div>
 
-    <div class="position-absolute w-100 overflow-hidden border-top" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
+    <div ref="rContent" class="position-absolute w-100 overflow-hidden border-top" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
+      <DeepLinkFrame v-if="matchedDeepLink" :link="matchedDeepLink" :params="matchedDeepLinkParams"></DeepLinkFrame>
       <div v-if="activeTab === 'instances'">
         <div ref="filterTable" class="bg-white d-flex position-absolute w-100">
           <div class="container-fluid p-2">
@@ -55,11 +56,12 @@
               </div>
               <div class="col-4">
                 <component :is="DecisionDefinitionVersionActionsPlugin" v-if="DecisionDefinitionVersionActionsPlugin" :decision="decision" :decision-key="decisionKey"></component>
+                <DeepLinkButtons section="decisionDefinition" :params="matchedDeepLinkParams" />
               </div>
             </div>
           </div>
         </div>
-        <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 60px; left: 0; bottom: 0" @scroll="handleScrollDecisions">
+        <div class="overflow-auto bg-white position-absolute w-100" style="top: 60px; left: 0; bottom: 0" @scroll="handleScrollDecisions">
           <DecisionInstancesTable ref="instancesTable" v-if="!loading && decisionInstances.length > 0 && !sorting" :instances="decisionInstances" :sortByDefaultKey="sortByDefaultKey" :sortDesc="sortDesc"></DecisionInstancesTable>
           <div v-else-if="loading" class="py-3 text-center w-100">
             <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
@@ -69,6 +71,9 @@
           </div>
         </div>
       </div>
+
+      <PluginSlot name="decision-definition-tab" :only="activeTab"
+        :params="{ decision: decision, tenantId: decision?.tenantId }"></PluginSlot>
     </div>
   </div>
 </template>
@@ -83,14 +88,29 @@ import bpmnViewportPersistenceMixin from '@/components/process/mixins/bpmnViewpo
 import viewerFrameSizePersistenceMixin from '@/components/process/mixins/viewerFrameSizePersistenceMixin.js'
 import ScrollableTabsContainer from '@/components/common-components/ScrollableTabsContainer.vue'
 import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
+import DeepLinkFrame from '@/components/common-components/DeepLinkFrame.vue'
 import { BWaitingBox, GenericTabs } from '@cib/common-frontend'
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from '@/utils/debounce.js'
+import { getDeepLinkEntries } from '@/utils/deepLinks.js'
+import { defineTabBar } from '@/utils/tabBar.js'
+import PluginSlot from '@/components/common/PluginSlot.vue'
+import DeepLinkButtons from '@/components/common-components/DeepLinkButtons.vue'
+
+const BUILTIN_TABS = [{ id: 'instances', text: 'decision.instances' }]
+const RESERVED_TAB_IDS = BUILTIN_TABS.map(tab => tab.id)
+
+const tabsFor = defineTabBar({
+  deepLinkSection: 'decisionDefinition',
+  pluginSlot: 'decision-definition-tab',
+  builtin: BUILTIN_TABS
+})
 
 export default {
   name: 'DecisionDefinitionVersion',
-  components: { DmnViewer, DecisionInstancesTable, ViewerFrame, BWaitingBox, GenericTabs, ScrollableTabsContainer },
+  components: { DmnViewer, DecisionInstancesTable, ViewerFrame, BWaitingBox, GenericTabs, ScrollableTabsContainer, PluginSlot, DeepLinkFrame, DeepLinkButtons },
   mixins: [permissionsMixin, resizerMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
+  inject: ['currentLanguage'],
   props: {
     versionIndex: String,
     loading: Boolean,
@@ -100,8 +120,8 @@ export default {
   data: function() {
     return {
       topBarHeight: 0,
-      tabs: [ { id: 'instances', text: 'decision.instances' } ],
       activeTab: 'instances',
+      diagramTimer: null,
       sortByDefaultKey: 'evaluationTime',
       sorting: false,
       sortDesc: true,
@@ -116,6 +136,25 @@ export default {
     decision: function() {
       return this.getSelectedDecisionVersion()
     },
+    tabs: function() {
+      return tabsFor({ config: this.$root.config, t: this.$t })
+    },
+    matchedDeepLink() {
+      return getDeepLinkEntries(this.$root.config, 'decisionDefinition', RESERVED_TAB_IDS)
+        .filter(entry => entry.type === 'tab')
+        .find(entry => entry.id === this.activeTab)
+    },
+    matchedDeepLinkParams() {
+      return {
+        decisionDefinitionId: this.decision?.id,
+        decisionDefinitionKey: this.decision?.key,
+        decisionDefinitionTenantId: this.decision?.tenantId,
+        decisionDefinitionVersion: this.decision?.version,
+        decisionDefinitionVersionTag: this.decision?.versionTag,
+
+        lang: this.currentLanguage()
+      }
+    },
     DecisionDefinitionVersionActionsPlugin: function() {
       return this.$options.components && this.$options.components.DecisionDefinitionVersionActionsPlugin
         ? this.$options.components.DecisionDefinitionVersionActionsPlugin
@@ -128,6 +167,9 @@ export default {
       this.loadInstances()
     }
   },
+  beforeUnmount() {
+    clearTimeout(this.diagramTimer)
+  },
   methods: {
     ...mapActions(['getXmlById', 'getHistoricDecisionInstances']),
     changeTab: function(selectedTab) {
@@ -136,8 +178,10 @@ export default {
     loadDiagram() {
       this.getXmlById(this.decision.id)
         .then(response => {
-          setTimeout(() => {
-            this.$refs.diagram.showDiagram(response.dmnXml).then(() => this.restoreViewboxIfSaved())
+          clearTimeout(this.diagramTimer)
+          this.diagramTimer = setTimeout(() => {
+            // Gone if the view was left while the diagram loaded, which unmount cannot cancel
+            this.$refs.diagram?.showDiagram(response.dmnXml).then(() => this.restoreViewboxIfSaved())
           }, 100)
         })
         .catch(error => {
