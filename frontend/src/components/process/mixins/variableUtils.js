@@ -132,7 +132,7 @@ export default {
   },
 
   isUploadable(variable) {
-    return this.isFile(variable) && variable.isLive && 'Bytes' !== variable.type
+    return this.isFile(variable) && variable.isLive
   },
 
   getFileVariableName(variable) {
