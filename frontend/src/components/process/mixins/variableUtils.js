@@ -135,6 +135,11 @@ export default {
     return this.isFile(variable) && variable.isLive
   },
 
+  getFilename(variable) {
+    // 'Bytes' variables have no valueInfo.filename, fall back to the variable name (CIB7-2132)
+    return variable.valueInfo?.filename || `${variable.name}.dat`
+  },
+
   getFileVariableName(variable) {
     // Prioritize valueDeserialized over value
     const targetValue = variable.valueDeserialized || variable.value

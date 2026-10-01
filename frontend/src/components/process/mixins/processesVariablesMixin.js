@@ -255,7 +255,7 @@ export default {
     },
     displayValueTooltip(item) {
       if (this.isDownloadable(item)) {
-        return this.$t('process-instance.download') + ': ' + this.displayValue(item)
+        return this.$t('process-instance.download') + ': ' + variableUtils.getFilename(item)
       }
       else {
         return this.displayValue(item)
@@ -296,7 +296,7 @@ export default {
 					HistoryService.fetchHistoryVariableDataById(variable.id)
 				download.then(data => {
 					// 'Bytes' variables have no valueInfo.filename, fall back to the variable name (CIB7-2132)
-					const filename = variable.valueInfo?.filename || `${variable.name}.dat`
+					const filename = variableUtils.getFilename(variable)
 					this.$refs.importPopper.triggerDownload(data, filename)
 				})
 			}

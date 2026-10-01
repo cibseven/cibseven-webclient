@@ -283,7 +283,7 @@ export default {
     },
     displayValueTooltip(variable) {
       if (this.isDownloadable(variable) && variable.existing) {
-        return this.$t('process-instance.download') + ': ' + this.displayVariableValue(variable)
+        return this.$t('process-instance.download') + ': ' + variableUtils.getFilename(variable)
       }
       else {
         return this.displayVariableValue(variable)
@@ -309,7 +309,7 @@ export default {
       } else {
         ProcessService.fetchVariableDataByExecutionId(this.task.executionId, variable.name).then(data => {
           // 'Bytes' variables have no valueInfo.filename, fall back to the variable name (CIB7-2132)
-          const filename = variable.valueInfo?.filename || `${variable.name}.dat`
+          const filename = variableUtils.getFilename(variable)
           this.$refs.importPopper.triggerDownload(data, filename)
         })
       }

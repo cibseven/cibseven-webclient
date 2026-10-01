@@ -69,8 +69,8 @@ describe('TaskVariables displayValueTooltip', () => {
   // a Bytes variable shows a download icon/click action without a matching tooltip (CIB7-2132)
   it('prefixes the download label for downloadable existing variables, including Bytes', () => {
     const vm = context()
-    const variable = { type: 'Bytes', existing: true, valueInfo: {} }
-    expect(TaskVariables.methods.displayValueTooltip.call(vm, variable)).toBe('process-instance.download: - Bytes Array -')
+    const variable = { name: 'atisData', type: 'Bytes', existing: true, valueInfo: {} }
+    expect(TaskVariables.methods.displayValueTooltip.call(vm, variable)).toBe('process-instance.download: atisData.dat')
   })
 
   it('shows the plain value for non-downloadable variables', () => {

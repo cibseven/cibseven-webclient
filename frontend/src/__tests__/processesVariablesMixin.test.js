@@ -79,6 +79,7 @@ const historyVariables = () => [
 
 function createWrapper({ state = 'ACTIVE', historyLevel = 'full', activityInstance = null, activityInstanceHistory = null } = {}) {
   const wrapper = mount(HostComponent, {
+    global: { mocks: { $t: key => key } },
     props: {
       selectedInstance: { id: 'pi1', state, processDefinitionName: 'My Process' },
       activityInstance,
@@ -357,6 +358,26 @@ describe('processesVariablesMixin', () => {
       await flushPromises()
       expect(ProcessService.fetchVariableDataByExecutionId).toHaveBeenCalledWith('ex10', 'atisData')
       expect(triggerDownload).toHaveBeenCalledWith(expect.any(Blob), 'atisData.dat')
+    })
+  })
+
+  describe('displayValueTooltip', () => {
+
+    it('shows the download file name for Bytes variables', () => {
+      const wrapper = createWrapper()
+      const tooltip = wrapper.vm.displayValueTooltip({ name: 'atisData', type: 'Bytes', valueInfo: {} })
+      expect(tooltip).toMatch(/: atisData\.dat$/)
+    })
+
+    it('shows the file name for File variables', () => {
+      const wrapper = createWrapper()
+      const tooltip = wrapper.vm.displayValueTooltip({ name: 'doc', type: 'File', valueInfo: { filename: 'doc.txt' } })
+      expect(tooltip).toMatch(/: doc\.txt$/)
+    })
+
+    it('falls back to the displayed value for non-downloadable variables', () => {
+      const wrapper = createWrapper()
+      expect(wrapper.vm.displayValueTooltip({ name: 's', type: 'String', value: 'hello', valueInfo: {} })).toBe('hello')
     })
   })
 })

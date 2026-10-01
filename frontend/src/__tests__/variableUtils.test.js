@@ -99,6 +99,19 @@ describe('isUploadable', () => {
   })
 })
 
+describe('getFilename', () => {
+  it.each([
+    [{ name: 'doc', valueInfo: { filename: 'doc.pdf' } }, 'doc.pdf'],
+    // 'Bytes' variables have no filename (CIB7-2132)
+    [{ name: 'atisData', valueInfo: {} }, 'atisData.dat'],
+    [{ name: 'atisData', valueInfo: { filename: '' } }, 'atisData.dat'],
+    [{ name: 'atisData' }, 'atisData.dat'],
+    [{ name: 'atisData', valueInfo: null }, 'atisData.dat'],
+  ])('variable %# → "%s"', (variable, expected) => {
+    expect(variableUtils.getFilename(variable)).toBe(expected)
+  })
+})
+
 describe('getFileVariableName', () => {
   it.each([
     // valueDeserialized object with name wins
