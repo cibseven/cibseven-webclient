@@ -301,47 +301,53 @@ export default {
 				})
 			}
 		},
-		uploadFile: function () {
-			if (this.isFileValueDataSource(this.selectedVariable)) {
-				const reader = new FileReader()
-				reader.onload = event => {
+		uploadFile: async function () {
+			// the dialog clears 'this.file' and may switch 'this.selectedVariable' while we are awaiting,
+			// so keep our own references
+			// resolves to true on success, or to the error message on failure
+			const file = this.file
+			const variable = this.selectedVariable
+			try {
+				if (this.isFileValueDataSource(variable)) {
+					const dataUrl = await new Promise((resolve, reject) => {
+						const reader = new FileReader()
+						reader.onload = event => resolve(event.target.result)
+						reader.onerror = () => reject(reader.error)
+						reader.readAsDataURL(file)
+					})
 					const fileData = {
-						contentType: this.file.type,
-						name: this.file.name,
+						contentType: file.type,
+						name: file.name,
 						encoding: 'UTF-8',
-						data: event.target.result.split(',')[1],
-						objectTypeName: this.selectedVariable.valueInfo.objectTypeName
+						data: dataUrl.split(',')[1],
+						objectTypeName: variable.valueInfo.objectTypeName
 					}
 					const valueInfo = {
-						objectTypeName: this.selectedVariable.valueInfo.objectTypeName,
+						objectTypeName: variable.valueInfo.objectTypeName,
 						serializationDataFormat: 'application/json'
 					}
-					const data = { fileObject: true, processDefinitionId: this.selectedVariable.processDefinitionId, modifications: {} }
-					data.modifications[this.selectedVariable.name] = {
+					const data = { fileObject: true, processDefinitionId: variable.processDefinitionId, modifications: {} }
+					data.modifications[variable.name] = {
 						value: JSON.stringify(fileData),
-						valueInfo: valueInfo, type: this.selectedVariable.type
+						valueInfo: valueInfo, type: variable.type
 					}
-					ProcessService.modifyVariableByExecutionId(this.selectedVariable.executionId, data).then(() => {
-						this.selectedVariable.value = fileData
-					})
+					await ProcessService.modifyVariableByExecutionId(variable.executionId, data)
+					variable.value = fileData
+				} else {
+					const isBytes = variableUtils.isBytes(variable)
+					const formData = new FormData()
+					formData.append('data', file)
+					formData.append('valueType', isBytes ? 'Bytes' : 'File')
+					await ProcessService.modifyVariableDataByExecutionId(variable.executionId, variable.name, formData)
+					// 'Bytes' values carry no file metadata
+					if (!isBytes) {
+						variable.valueInfo.filename = file.name
+						variable.valueInfo.mimeType = file.type
+					}
 				}
-				reader.onerror = () => { }
-				reader.readAsDataURL(this.file)
-			} else {
-				const formData = new FormData()
-				formData.append('data', this.file)
-				const isBytes = variableUtils.isBytes(this.selectedVariable)
-				formData.append('valueType', isBytes ? 'Bytes' : 'File')
-				const fileObj = { name: this.file.name, type: this.file.type }
-				ProcessService.modifyVariableDataByExecutionId(this.selectedVariable.executionId, this.selectedVariable.name, formData)
-					.then(() => {
-						// 'Bytes' values carry no file metadata
-						if (!isBytes) {
-							this.selectedVariable.valueInfo.filename = fileObj.name
-							this.selectedVariable.valueInfo.mimeType = fileObj.type
-						}
-						this.file = null
-					})
+				return true
+			} catch (error) {
+				return error?.message || String(error)
 			}
 		},
 		saveOrEditVariable: function (variable) {

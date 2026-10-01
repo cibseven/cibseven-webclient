@@ -105,7 +105,7 @@
             </CellActionButton>
             <CellActionButton v-if="isUploadable(table.item)" :title="$t('process-instance.upload')"
               icon="mdi-upload-outline"
-              @click="selectedVariable = table.item; $refs.uploadFile.show()">
+              @click="selectedVariable = table.item; file = null; $refs.uploadFile.show()">
             </CellActionButton>
             <CellActionButton v-if="!isDownloadable(table.item)"
               :title="$t(table.item.isLive ? 'process-instance.edit' : 'process-instance.variables.historicVariable.tooltip')"
@@ -131,14 +131,18 @@
     <SuccessAlert ref="messageCopy" style="z-index: 9999"> {{ $t('process.copySuccess') }} </SuccessAlert>
     <TaskPopper ref="importPopper"></TaskPopper>
 
-    <b-modal ref="uploadFile" :title="$t('process-instance.upload')">
+    <b-modal ref="uploadFile" :title="$t('process-instance.upload')" @hidden="file = null; uploadError = null">
       <div>
         <label for="variables-upload-file" class="visually-hidden">{{ $t('process-instance.upload') }}</label>
         <b-form-file id="variables-upload-file" placeholder="" :browse-text="$t('process-instance.selectFile')" v-model="file"></b-form-file>
+        <div v-if="uploadError" class="alert alert-danger text-danger d-flex align-items-center mt-3 mb-0" role="alert">
+          <span class="mdi mdi-alert-octagon-outline text-danger me-3" aria-hidden="true"></span>
+          <span>{{ uploadError }}</span>
+        </div>
       </div>
       <template v-slot:modal-footer>
         <b-button @click="$refs.uploadFile.hide(); file = null" variant="light">{{ $t('confirm.cancel') }}</b-button>
-        <b-button :disabled="!file" @click="uploadFile(); $refs.uploadFile.hide(); file = null" variant="primary">{{ $t('process-instance.upload') }}</b-button>
+        <b-button :disabled="!file" @click="uploadFileClicked()" variant="primary">{{ $t('process-instance.upload') }}</b-button>
       </template>
     </b-modal>
   </div>
@@ -170,6 +174,7 @@ export default {
       filteredVariables: [],
       fileObjects: variableUtils.getFileObjects(),
       selectedScopeInstanceId: null,
+      uploadError: null,
     }
   },
   watch: {
@@ -297,6 +302,18 @@ export default {
       else {
         this.$refs.historicVariableDeleted.show()
       }
+    },
+    async uploadFileClicked() {
+      this.uploadError = null
+      // true on success, otherwise the error message
+      const result = await this.uploadFile()
+      if (result !== true) {
+        // keep the dialog open, so the user sees what went wrong and can retry
+        this.uploadError = result
+        return
+      }
+      this.$refs.uploadFile.hide()
+      this.$refs.success.show()
     },
   },  
 	mounted() {

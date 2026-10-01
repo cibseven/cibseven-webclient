@@ -367,20 +367,71 @@ describe('processesVariablesMixin', () => {
       const wrapper = createWrapper()
       wrapper.vm.selectedVariable = variable
       wrapper.vm.file = new File(['abc'], 'new.bin', { type: 'application/octet-stream' })
-      wrapper.vm.uploadFile()
+      const result = await wrapper.vm.uploadFile()
       await flushPromises()
-      return wrapper
+      return result
     }
 
     it('uploads Bytes variables with valueType Bytes and keeps valueInfo free of file metadata', async () => {
       const variable = { name: 'atisData', type: 'Bytes', isLive: true, executionId: 'ex10', valueInfo: {} }
-      const wrapper = await upload(variable)
+      expect(await upload(variable)).toBe(true)
       const [executionId, name, formData] = ProcessService.modifyVariableDataByExecutionId.mock.calls[0]
       expect([executionId, name]).toEqual(['ex10', 'atisData'])
       expect(formData.get('valueType')).toBe('Bytes')
       expect(formData.get('data').name).toBe('new.bin')
       expect(variable.valueInfo).toEqual({})
-      expect(wrapper.vm.file).toBeNull()
+    })
+
+    const dataSourceVariable = () => ({ name: 'obj', type: 'Object', isLive: true, executionId: 'ex7', processDefinitionId: 'pd1',
+      valueInfo: { objectTypeName: 'de.cib.cibflow.api.files.FileValueDataSource' } })
+
+    it('uploads file-value-data-source variables and resolves only after the request is done', async () => {
+      ProcessService.modifyVariableByExecutionId.mockClear()
+      let finishRequest
+      ProcessService.modifyVariableByExecutionId.mockReturnValueOnce(new Promise(resolve => { finishRequest = resolve }))
+      const variable = dataSourceVariable()
+      const wrapper = createWrapper()
+      wrapper.vm.selectedVariable = variable
+      wrapper.vm.file = new File(['abc'], 'new.bin', { type: 'text/plain' })
+      let done = false
+      let result
+      const pending = wrapper.vm.uploadFile().then(r => { result = r; done = true })
+      // what the dialog does right after calling uploadFile()
+      wrapper.vm.file = null
+      wrapper.vm.selectedVariable = { name: 'other' }
+      await vi.waitFor(() => expect(ProcessService.modifyVariableByExecutionId).toHaveBeenCalled())
+      expect(done).toBe(false)
+      finishRequest()
+      await pending
+      expect(done).toBe(true)
+      expect(result).toBe(true)
+      expect(ProcessService.modifyVariableByExecutionId.mock.calls[0][0]).toBe('ex7')
+      expect(variable.value.name).toBe('new.bin')
+      expect(variable.value.data).toBe(btoa('abc'))
+    })
+
+    it('returns the error message when the file cannot be read', async () => {
+      ProcessService.modifyVariableByExecutionId.mockClear()
+      const readAsDataURL = vi.spyOn(FileReader.prototype, 'readAsDataURL').mockImplementation(function () {
+        Object.defineProperty(this, 'error', { value: new Error('read failed') })
+        this.onerror()
+      })
+      const wrapper = createWrapper()
+      wrapper.vm.selectedVariable = dataSourceVariable()
+      wrapper.vm.file = new File(['abc'], 'new.bin')
+      expect(await wrapper.vm.uploadFile()).toBe('read failed')
+      expect(ProcessService.modifyVariableByExecutionId).not.toHaveBeenCalled()
+      readAsDataURL.mockRestore()
+    })
+
+    it('returns the error message of a failed File/Bytes upload and leaves the metadata untouched', async () => {
+      ProcessService.modifyVariableDataByExecutionId.mockRejectedValueOnce(new Error('boom'))
+      const variable = { name: 'doc', type: 'File', isLive: true, executionId: 'ex9', valueInfo: { filename: 'old.txt' } }
+      const wrapper = createWrapper()
+      wrapper.vm.selectedVariable = variable
+      wrapper.vm.file = new File(['abc'], 'new.bin')
+      expect(await wrapper.vm.uploadFile()).toBe('boom')
+      expect(variable.valueInfo.filename).toBe('old.txt')
     })
 
     it('uploads File variables with valueType File and updates the file metadata', async () => {
