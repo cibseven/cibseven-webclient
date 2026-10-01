@@ -41,19 +41,15 @@ export default {
     }
 
     switch (variable.type) {
+      case 'Bytes':
       case 'File':
-        return variable.valueInfo.filename
+        return this.getFilename(variable)
 
       case 'Json':
         return this.displayValueJson(variable)
 
       case 'Object':
         return this.displayValueObject(variable)
-
-      case 'Bytes':
-        // binary value, never included by the engine in list/history queries (CIB7-2132);
-        // fetched on demand via downloadFile() instead of being shown here
-        return '- Bytes Array -'
 
       case 'Null':
         return ''
@@ -138,12 +134,9 @@ export default {
 
   getFilename(variable) {
     // 'Bytes' variables have no valueInfo.filename, fall back to the variable name (CIB7-2132)
-    let filename = variable.valueInfo?.filename || `${variable.name}.dat`
-
+    const filename = variable.valueInfo?.filename || `${variable.name}.dat`
     // convert forbidden characters in filenames to underscores
-    filename = filename.replace(/[<>:"/\\|?*]/g, '_')
-
-    return filename
+    return filename.replace(/[<>:"/\\|?*]/g, '_')
   },
 
   getFileVariableName(variable) {

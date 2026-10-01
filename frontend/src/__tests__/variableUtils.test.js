@@ -242,11 +242,20 @@ describe('displayValue', () => {
   })
 
   describe('Bytes type', () => {
-    // the engine never includes the value of binary variables in list/history queries,
-    // regardless of whether one is actually set - showing the raw (always-null) value
-    // as "null" is misleading (CIB7-2132), so a fixed placeholder is shown instead
-    it('returns a placeholder instead of the raw (always-null) value', () => {
-      expect(variableUtils.displayValue(makeVar('Bytes', null))).toBe('- Bytes Array -')
+    // the engine never includes the value of binary variables in list/history queries, so the
+    // (always-null) value is not shown; the download file name is displayed instead (CIB7-2132)
+    it('returns the download file name instead of the raw (always-null) value', () => {
+      expect(variableUtils.displayValue({ ...makeVar('Bytes', null), name: 'atisData' })).toBe('atisData.dat')
+    })
+
+    it('sanitizes forbidden characters in the displayed file name', () => {
+      expect(variableUtils.displayValue({ ...makeVar('Bytes', null), name: 'a/b' })).toBe('a_b.dat')
+    })
+  })
+
+  describe('File type without filename', () => {
+    it('falls back to the variable name', () => {
+      expect(variableUtils.displayValue({ ...makeVar('File', null), name: 'doc' })).toBe('doc.dat')
     })
   })
 
