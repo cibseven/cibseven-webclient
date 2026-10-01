@@ -132,7 +132,8 @@ export default {
   },
 
   isUploadable(variable) {
-    return this.isFile(variable) && variable.isLive
+    // raw 'Bytes' values are replaced through the same data endpoint as files (CIB7-2132)
+    return (this.isFile(variable) || this.isBytes(variable)) && variable.isLive
   },
 
   getFilename(variable) {

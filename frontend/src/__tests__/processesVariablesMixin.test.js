@@ -361,6 +361,37 @@ describe('processesVariablesMixin', () => {
     })
   })
 
+  describe('uploadFile', () => {
+
+    const upload = async (variable) => {
+      const wrapper = createWrapper()
+      wrapper.vm.selectedVariable = variable
+      wrapper.vm.file = new File(['abc'], 'new.bin', { type: 'application/octet-stream' })
+      wrapper.vm.uploadFile()
+      await flushPromises()
+      return wrapper
+    }
+
+    it('uploads Bytes variables with valueType Bytes and keeps valueInfo free of file metadata', async () => {
+      const variable = { name: 'atisData', type: 'Bytes', isLive: true, executionId: 'ex10', valueInfo: {} }
+      const wrapper = await upload(variable)
+      const [executionId, name, formData] = ProcessService.modifyVariableDataByExecutionId.mock.calls[0]
+      expect([executionId, name]).toEqual(['ex10', 'atisData'])
+      expect(formData.get('valueType')).toBe('Bytes')
+      expect(formData.get('data').name).toBe('new.bin')
+      expect(variable.valueInfo).toEqual({})
+      expect(wrapper.vm.file).toBeNull()
+    })
+
+    it('uploads File variables with valueType File and updates the file metadata', async () => {
+      const variable = { name: 'doc', type: 'File', isLive: true, executionId: 'ex9', valueInfo: { filename: 'old.txt' } }
+      await upload(variable)
+      expect(ProcessService.modifyVariableDataByExecutionId.mock.calls[0][2].get('valueType')).toBe('File')
+      expect(variable.valueInfo.filename).toBe('new.bin')
+      expect(variable.valueInfo.mimeType).toBe('application/octet-stream')
+    })
+  })
+
   describe('displayValueTooltip', () => {
 
     it('shows the download file name for Bytes variables', () => {

@@ -138,7 +138,7 @@
       </div>
       <template v-slot:modal-footer>
         <b-button @click="$refs.uploadFile.hide(); file = null" variant="light">{{ $t('confirm.cancel') }}</b-button>
-        <b-button :disabled="!file" @click="uploadFile(); $refs.uploadFile.hide()" variant="primary">{{ $t('process-instance.upload') }}</b-button>
+        <b-button :disabled="!file" @click="uploadFile(); $refs.uploadFile.hide(); file = null" variant="primary">{{ $t('process-instance.upload') }}</b-button>
       </template>
     </b-modal>
   </div>

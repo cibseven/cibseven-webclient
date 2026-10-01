@@ -90,8 +90,8 @@ describe('isUploadable', () => {
   it.each([
     [makeVar('File', null, {}, { isLive: true }), true],
     [makeVar('File', null, {}, { isLive: false }), false],
-    // no upload mechanism exists for raw binary values
-    [makeVar('Bytes', null, {}, { isLive: true }), false],
+    [makeVar('Bytes', null, {}, { isLive: true }), true],
+    [makeVar('Bytes', null, {}, { isLive: false }), false],
     [makeVar('Object', { objectTypeName: FILE_TYPE_SOURCE }, {}, { isLive: true }), true],
     [makeVar('String', 'hello', {}, { isLive: true }), false],
   ])('variable %# → %s', (variable, expected) => {

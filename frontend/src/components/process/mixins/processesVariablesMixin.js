@@ -330,12 +330,16 @@ export default {
 			} else {
 				const formData = new FormData()
 				formData.append('data', this.file)
-				formData.append('valueType', 'File')
+				const isBytes = variableUtils.isBytes(this.selectedVariable)
+				formData.append('valueType', isBytes ? 'Bytes' : 'File')
 				const fileObj = { name: this.file.name, type: this.file.type }
 				ProcessService.modifyVariableDataByExecutionId(this.selectedVariable.executionId, this.selectedVariable.name, formData)
 					.then(() => {
-						this.selectedVariable.valueInfo.filename = fileObj.name
-						this.selectedVariable.valueInfo.mimeType = fileObj.type
+						// 'Bytes' values carry no file metadata
+						if (!isBytes) {
+							this.selectedVariable.valueInfo.filename = fileObj.name
+							this.selectedVariable.valueInfo.mimeType = fileObj.type
+						}
 						this.file = null
 					})
 			}
