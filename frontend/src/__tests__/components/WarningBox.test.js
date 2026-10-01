@@ -51,8 +51,8 @@ describe('WarningBox.vue', () => {
   it('wraps quoted words in <strong> tags', () => {
     const wrapper = createWrapper({ message: 'the task "reviewApproval" failed' })
     const span = wrapper.find('p span')
-    expect(span.html()).toContain('<strong>reviewApproval</strong>')
     expect(span.find('strong').text()).toBe('reviewApproval')
+    expect(span.text()).toBe('the task "reviewApproval" failed')
   })
 
   it('wraps multiple quoted words on the same line', () => {
@@ -75,9 +75,31 @@ describe('WarningBox.vue', () => {
     expect(wrapper.find('.extra-action').text()).toBe('Retry')
   })
 
-  it('exposes toHtml as a method that escapes quotes around the strong tag', () => {
-    const wrapper = createWrapper()
-    expect(wrapper.vm.toHtml('say "hello" now')).toBe('say &quot;<strong>hello</strong>&quot; now')
-    expect(wrapper.vm.toHtml('say "hello" now, and "goodbye" after')).toBe('say &quot;<strong>hello</strong>&quot; now, and &quot;<strong>goodbye</strong>&quot; after')
+  it('keeps the quotes around the bolded word', () => {
+    const wrapper = createWrapper({ message: 'say "hello" now' })
+    expect(wrapper.find('p span').text()).toBe('say "hello" now')
+    expect(wrapper.find('p span strong').text()).toBe('hello')
+  })
+
+  // CIB7-2008: a warning message may carry backend detail, which must stay text.
+  it.each([
+    ['a script tag', '<script>alert(1)</script>'],
+    ['an img/onerror payload', '<img src="x" onerror="alert(1)">'],
+    ['an attribute break-out', '"><svg onload="alert(1)">'],
+  ])('renders %s in the message as text, not markup', (_name, message) => {
+    const wrapper = createWrapper({ message })
+    expect(wrapper.element.querySelector('script, img, svg')).toBeNull()
+    expect(wrapper.find('p span').text()).toBe(message)
+  })
+
+  it('still bolds quoted words when the message also contains markup', () => {
+    const wrapper = createWrapper({ message: 'the task "<b>review</b>" failed' })
+    expect(wrapper.find('p span strong').text()).toBe('<b>review</b>')
+    expect(wrapper.element.querySelector('b')).toBeNull()
+  })
+
+  it('keeps an ampersand inside a quoted word intact', () => {
+    const wrapper = createWrapper({ message: 'the task "a & b" failed' })
+    expect(wrapper.find('p span strong').text()).toBe('a & b')
   })
 })

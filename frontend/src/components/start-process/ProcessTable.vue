@@ -36,9 +36,8 @@
         <div class="text-truncate" :title="$t('process.tenant') + ': ' + table.item.tenantId">{{ table.item.tenantId }}</div>
       </template>
       <template v-slot:cell(description)="table">
-        <div v-if="getDescription(table.item)" v-b-popover.hover.left="getDescription(table.item)" v-html="getDescription(table.item)"
-          :class="['inline-description', { 'with-mask': isDescriptionTruncated(table.item) }]" >
-        </div>
+        <div v-if="getDescription(table.item)" v-b-popover.hover.left="getDescription(table.item)"
+          :class="['inline-description', { 'with-mask': isDescriptionTruncated(table.item) }]" >{{ getDescription(table.item) }}</div>
       </template>
       <template v-slot:cell(actions)="table">
         <transition name="fade">
