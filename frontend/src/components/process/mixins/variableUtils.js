@@ -138,7 +138,12 @@ export default {
 
   getFilename(variable) {
     // 'Bytes' variables have no valueInfo.filename, fall back to the variable name (CIB7-2132)
-    return variable.valueInfo?.filename || `${variable.name}.dat`
+    let filename = variable.valueInfo?.filename || `${variable.name}.dat`
+
+    // convert forbidden characters in filenames to underscores
+    filename = filename.replace(/[<>:"/\\|?*]/g, '_')
+
+    return filename
   },
 
   getFileVariableName(variable) {

@@ -110,6 +110,34 @@ describe('getFilename', () => {
   ])('variable %# → "%s"', (variable, expected) => {
     expect(variableUtils.getFilename(variable)).toBe(expected)
   })
+
+  describe('forbidden filename characters', () => {
+    it.each([
+      ['a<b.txt', 'a_b.txt'],
+      ['a>b.txt', 'a_b.txt'],
+      ['a:b.txt', 'a_b.txt'],
+      ['a"b.txt', 'a_b.txt'],
+      ['a/b.txt', 'a_b.txt'],
+      ['a\\b.txt', 'a_b.txt'],
+      ['a|b.txt', 'a_b.txt'],
+      ['a?b.txt', 'a_b.txt'],
+      ['a*b.txt', 'a_b.txt'],
+      // every occurrence is replaced, not just the first
+      ['<>:"/\\|?*.txt', '_________.txt'],
+      // path traversal attempts lose their separators
+      ['../../etc/passwd', '.._.._etc_passwd'],
+      ['C:\\temp\\doc.pdf', 'C__temp_doc.pdf'],
+      // allowed characters stay untouched
+      ['my file (1)-v2_final.tar.gz', 'my file (1)-v2_final.tar.gz'],
+      ['dätä-ü.txt', 'dätä-ü.txt'],
+    ])('valueInfo.filename "%s" → "%s"', (filename, expected) => {
+      expect(variableUtils.getFilename({ name: 'v', valueInfo: { filename } })).toBe(expected)
+    })
+
+    it('sanitizes the variable-name fallback used for Bytes variables as well', () => {
+      expect(variableUtils.getFilename({ name: 'a/b:c', valueInfo: {} })).toBe('a_b_c.dat')
+    })
+  })
 })
 
 describe('getFileVariableName', () => {
