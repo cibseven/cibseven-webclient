@@ -17,10 +17,13 @@
 package org.cibseven.webapp.plugin;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -31,9 +34,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.core.env.StandardEnvironment;
+import org.springframework.core.env.SystemEnvironmentPropertySource;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
+import org.springframework.mock.env.MockEnvironment;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -265,6 +271,95 @@ public class PluginRegistryTest {
 		// And the result is kept, so the first request does not scan again
 		assertEquals(1, registry.getManifests().size());
 		verify(resolver, times(1)).getResources(MANIFESTS);
+	}
+
+	private static ResourcePatternResolver twoPlugins() throws IOException {
+		ResourcePatternResolver resolver = mock(ResourcePatternResolver.class);
+		when(resolver.getResources(MANIFESTS)).thenReturn(new Resource[] {
+			manifest("/app/a.jar!/META-INF/cibseven-plugins/first/plugin.json",
+				"{\"entry\":\"index.js\",\"apiVersion\":\"1\"}"),
+			manifest("/app/b.jar!/META-INF/cibseven-plugins/second/plugin.json",
+				"{\"entry\":\"main.js\",\"apiVersion\":\"1\"}")
+		});
+		return resolver;
+	}
+
+	private static List<String> ids(PluginRegistry registry) {
+		return registry.getManifests().stream().map(manifest -> manifest.get("id").asText()).toList();
+	}
+
+	/** Without a redeploy, a plugin that breaks the page has to be switched off on its own. */
+	@Test
+	public void leavesOutAPluginDisabledByConfiguration() throws IOException {
+		PluginRegistry registry = new PluginRegistry(twoPlugins());
+		registry.setEnvironment(new MockEnvironment().withProperty(PluginRegistry.DISABLED_PROPERTY, "first"));
+
+		assertEquals(List.of("second"), ids(registry));
+		// Its files are not served either
+		assertFalse(registry.getPluginLocations().containsKey("first"));
+		assertTrue(registry.getPluginLocations().containsKey("second"));
+	}
+
+	@Test
+	public void acceptsAYamlListOfDisabledPlugins() throws IOException {
+		PluginRegistry registry = new PluginRegistry(twoPlugins());
+		registry.setEnvironment(new MockEnvironment()
+			.withProperty(PluginRegistry.DISABLED_PROPERTY + "[0]", "first")
+			.withProperty(PluginRegistry.DISABLED_PROPERTY + "[1]", "second"));
+
+		assertTrue(registry.getManifests().isEmpty());
+	}
+
+	@Test
+	public void acceptsACommaSeparatedListWithSpaces() throws IOException {
+		PluginRegistry registry = new PluginRegistry(twoPlugins());
+		registry.setEnvironment(new MockEnvironment().withProperty(PluginRegistry.DISABLED_PROPERTY, " first , second "));
+
+		assertTrue(registry.getManifests().isEmpty());
+	}
+
+	/** Operators of a container image have no YAML to edit. */
+	@Test
+	public void acceptsTheEnvironmentVariable() throws IOException {
+		StandardEnvironment environment = new StandardEnvironment();
+		environment.getPropertySources().replace(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME,
+			new SystemEnvironmentPropertySource(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME,
+				Map.of("CIBSEVEN_WEBCLIENT_PLUGINS_DISABLED", "second")));
+		PluginRegistry registry = new PluginRegistry(twoPlugins());
+		registry.setEnvironment(environment);
+
+		assertEquals(List.of("first"), ids(registry));
+	}
+
+	/** A mistyped id is only logged, it must not keep the other plugins from loading. */
+	@Test
+	public void loadsEveryPluginWhenTheDisabledIdMatchesNone() throws IOException {
+		PluginRegistry registry = new PluginRegistry(twoPlugins());
+		registry.setEnvironment(new MockEnvironment().withProperty(PluginRegistry.DISABLED_PROPERTY, "frist"));
+
+		assertEquals(List.of("first", "second"), ids(registry));
+	}
+
+	@Test
+	public void loadsEveryPluginWhenNoneIsDisabled() throws IOException {
+		PluginRegistry registry = new PluginRegistry(twoPlugins());
+		registry.setEnvironment(new MockEnvironment());
+
+		assertEquals(List.of("first", "second"), ids(registry));
+	}
+
+	/** Switching off a plugin whose manifest is broken must not depend on reading it. */
+	@Test
+	public void doesNotReadTheManifestOfADisabledPlugin() throws IOException {
+		Resource broken = manifest("/app/a.jar!/META-INF/cibseven-plugins/broken/plugin.json", "{}");
+		Resource watched = spy(broken);
+		ResourcePatternResolver resolver = mock(ResourcePatternResolver.class);
+		when(resolver.getResources(MANIFESTS)).thenReturn(new Resource[] { watched });
+		PluginRegistry registry = new PluginRegistry(resolver);
+		registry.setEnvironment(new MockEnvironment().withProperty(PluginRegistry.DISABLED_PROPERTY, "broken"));
+
+		assertTrue(registry.getManifests().isEmpty());
+		verify(watched, never()).getInputStream();
 	}
 
 }

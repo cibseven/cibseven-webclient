@@ -22,12 +22,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.bind.Bindable;
+import org.springframework.boot.context.properties.bind.Binder;
+import org.springframework.context.EnvironmentAware;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -48,12 +53,17 @@ import lombok.extern.slf4j.Slf4j;
  *
  * <p>The folder name is the plugin id and the only source of it, because that is
  * what the frontend builds its URLs from.
+ *
+ * <p>Plugins listed in {@code cibseven.webclient.plugins.disabled} are skipped, so a
+ * plugin that breaks the page can be switched off with a restart, without removing
+ * its jar.
  */
 @Slf4j
-public class PluginRegistry {
+public class PluginRegistry implements EnvironmentAware {
 
 	private static final String PLUGINS_ROOT = "META-INF/cibseven-plugins/";
 	private static final String MANIFESTS_PATTERN = "classpath*:/" + PLUGINS_ROOT + "*/plugin.json";
+	static final String DISABLED_PROPERTY = "cibseven.webclient.plugins.disabled";
 
 	/** Ids end up in URLs, so anything that could leave the plugin folder is rejected */
 	private static final Pattern VALID_ID = Pattern.compile("[A-Za-z0-9][A-Za-z0-9._-]*");
@@ -63,6 +73,7 @@ public class PluginRegistry {
 	private final ResourcePatternResolver resolver;
 	private final ObjectMapper mapper = new ObjectMapper();
 
+	private Set<String> disabled = Collections.emptySet();
 	private List<ObjectNode> manifests;
 	private Map<String, Resource> locations = Collections.emptyMap();
 
@@ -75,6 +86,20 @@ public class PluginRegistry {
 
 	PluginRegistry(ResourcePatternResolver resolver) {
 		this.resolver = resolver;
+	}
+
+	/**
+	 * Bound rather than injected with {@code @Value}, so a YAML list, a comma-separated
+	 * value and the environment variable all work.
+	 */
+	@Override
+	public void setEnvironment(Environment environment) {
+		Set<String> ids = new LinkedHashSet<>();
+		Binder.get(environment).bind(DISABLED_PROPERTY, Bindable.listOf(String.class)).orElse(List.of())
+			.forEach(id -> {
+				if (id != null && !id.isBlank()) ids.add(id.trim());
+			});
+		disabled = Collections.unmodifiableSet(ids);
 	}
 
 	/**
@@ -107,9 +132,16 @@ public class PluginRegistry {
 		List<ObjectNode> found = new ArrayList<>();
 		Set<String> ids = new HashSet<>();
 		Map<String, Resource> folders = new LinkedHashMap<>();
+		Set<String> skipped = new LinkedHashSet<>();
 		try {
 			for (Resource resource : resolver.getResources(MANIFESTS_PATTERN)) {
-				ObjectNode manifest = read(resource);
+				String folderName = pluginId(resource);
+				// Checked before the manifest is read, so a broken one cannot get in the way
+				if (folderName != null && disabled.contains(folderName)) {
+					skipped.add(folderName);
+					continue;
+				}
+				ObjectNode manifest = read(resource, folderName);
 				if (manifest == null) continue;
 				String id = manifest.get("id").asText();
 				// Only one folder per id can be served, so a second one would get the first one's files
@@ -126,12 +158,23 @@ public class PluginRegistry {
 			log.warn("Could not scan for plugins below {}", PLUGINS_ROOT, e);
 		}
 		locations = Collections.unmodifiableMap(folders);
+		logDisabled(skipped);
 		if (folders.isEmpty()) {
 			log.info("No frontend plugin found on the classpath");
 		} else {
 			log.info("Found {} frontend plugin(s) on the classpath: {}", folders.size(), folders.keySet());
 		}
 		return Collections.unmodifiableList(found);
+	}
+
+	/** Tells support whether the switch took effect, and catches a mistyped id. */
+	private void logDisabled(Set<String> skipped) {
+		skipped.forEach(id -> log.info("Plugin \"{}\" is disabled by {}", id, DISABLED_PROPERTY));
+		Set<String> unknown = new LinkedHashSet<>(disabled);
+		unknown.removeAll(skipped);
+		if (!unknown.isEmpty()) {
+			log.warn("{} names no plugin found on the classpath: {}", DISABLED_PROPERTY, unknown);
+		}
 	}
 
 	/** The folder the manifest came from, so files are served from its own jar. */
@@ -144,8 +187,7 @@ public class PluginRegistry {
 		}
 	}
 
-	private ObjectNode read(Resource resource) {
-		String id = pluginId(resource);
+	private ObjectNode read(Resource resource, String id) {
 		if (id == null) {
 			log.warn("Ignoring plugin manifest outside of a plugin folder: {}", resource);
 			return null;

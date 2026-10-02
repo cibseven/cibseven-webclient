@@ -21,6 +21,31 @@ cibseven:
 With the property off the backend wires no plugin beans at all: nothing is
 scanned, the endpoints below do not exist, and the frontend does not even ask.
 
+### Switching off one plugin
+
+A plugin that breaks the page can be switched off on its own, without removing
+its jar, by listing its id:
+
+```yaml
+cibseven:
+  webclient:
+    plugins:
+      enabled: true
+      disabled:
+        - demo-report
+```
+
+A comma-separated value works as well, and so does the environment variable
+`CIBSEVEN_WEBCLIENT_PLUGINS_DISABLED=demo-report,other-plugin`. A disabled plugin
+is not listed to the frontend and its files are not served; the others load as
+usual. It takes a restart, and the log confirms it:
+
+```
+INFO o.cibseven.webapp.plugin.PluginRegistry : Plugin "demo-report" is disabled by cibseven.webclient.plugins.disabled
+```
+
+An id that matches no plugin is logged as a warning, to catch a typo.
+
 ## Deploying a plugin
 
 A plugin is a folder below `META-INF/cibseven-plugins/` on the classpath,
@@ -267,7 +292,7 @@ INFO o.cibseven.webapp.plugin.PluginRegistry : Found 1 frontend plugin(s) on the
 | Change | What is needed |
 |---|---|
 | a plugin added or removed | restart the backend, then reload the page |
-| `plugin.json` changed, or `plugins.enabled` toggled | restart the backend, then reload the page |
+| `plugin.json` changed, or `plugins.enabled` or `plugins.disabled` changed | restart the backend, then reload the page |
 | a deployed plugin's own files edited in place | reload the page; plugin files are served without caching |
 
 ## Slots
