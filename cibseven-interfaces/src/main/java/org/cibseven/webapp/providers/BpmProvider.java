@@ -180,6 +180,26 @@ public interface BpmProvider {
 		getTaskProvider().setAssignee(taskId, assignee, user);
 	}
 
+	/** Takes the task for a user, refused by the engine when someone else holds it. */
+	default void claim(String taskId, String userId, CIBUser user) throws SystemException {
+		getTaskProvider().claim(taskId, userId, user);
+	}
+
+	/** Hands the task to a user to act on behalf of its owner. */
+	default void delegate(String taskId, String userId, CIBUser user) throws SystemException {
+		getTaskProvider().delegate(taskId, userId, user);
+	}
+
+	/** The variables held by the task itself rather than by its process instance. */
+	default Map<String, Object> findLocalVariables(String taskId, CIBUser user) throws SystemException {
+		return getTaskProvider().findLocalVariables(taskId, user);
+	}
+
+	/** The comments written on the task. */
+	default Collection<Map<String, Object>> findComments(String taskId, CIBUser user) throws SystemException {
+		return getTaskProvider().findComments(taskId, user);
+	}
+
 	/**
 	 * Submit task without saving any variables, because that is done by the
 	 * ui-element-template (in ours).
@@ -1319,6 +1339,33 @@ public interface BpmProvider {
 	 */
 	default VariableHistory getHistoricVariableInstance(String id, boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException {
 		return getHistoricVariableInstanceProvider().getHistoricVariableInstance(id, deserializeValue, user);
+	}
+
+	/**
+	 * Queries historic variable instances the way the engine does, with the filters in the body.
+	 * @param filters The query as engine-rest takes it, empty for every instance
+	 * @param firstResult Index of the first result to return
+	 * @param maxResults Maximum number of results to return
+	 * @param deserializeValues Whether the values are deserialized, left to the engine when null
+	 * @param user the user performing the search
+	 * @return the matching historic variable instances
+	 * @throws SystemException in case of an error
+	 */
+	default Collection<VariableHistory> findHistoricVariableInstances(Map<String, Object> filters,
+			Optional<Integer> firstResult, Optional<Integer> maxResults, Boolean deserializeValues,
+			CIBUser user) throws SystemException {
+		return getHistoricVariableInstanceProvider().findHistoricVariableInstances(filters, firstResult, maxResults, deserializeValues, user);
+	}
+
+	/**
+	 * Counts the historic variable instances a query matches.
+	 * @param filters The query as engine-rest takes it, empty for every instance
+	 * @param user the user performing the search
+	 * @return how many instances match
+	 * @throws SystemException in case of an error
+	 */
+	default Integer findHistoricVariableInstancesCount(Map<String, Object> filters, CIBUser user) throws SystemException {
+		return getHistoricVariableInstanceProvider().findHistoricVariableInstancesCount(filters, user);
 	}
 
 /*
