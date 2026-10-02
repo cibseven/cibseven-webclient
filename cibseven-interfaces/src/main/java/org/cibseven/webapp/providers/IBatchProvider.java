@@ -17,6 +17,8 @@
 package org.cibseven.webapp.providers;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
@@ -30,11 +32,27 @@ public interface IBatchProvider {
 	public void deleteBatch(String id, Map<String, Object> queryParams, CIBUser user);
 	public void setBatchSuspensionState(String id, Map<String, Object> queryParams, CIBUser user);
 	public Collection<HistoryBatch> getHistoricBatches(Map<String, Object> queryParams, CIBUser user);
-    public Long getRuntimeBatchCount(Map<String, Object> queryParams, CIBUser user);
-    public Long getHistoricBatchCount(Map<String, Object> queryParams, CIBUser user);
-    public HistoryBatch getHistoricBatchById(String id, CIBUser user);
-    public void deleteHistoricBatch(String id, CIBUser user);
-    public Object setRemovalTime(Map<String, Object> payload, CIBUser user);
-    public Object getCleanableBatchReport(Map<String, Object> queryParams, CIBUser user);
-    public Object getCleanableBatchReportCount(CIBUser user);
+	public Long getRuntimeBatchCount(Map<String, Object> queryParams, CIBUser user);
+	public Long getHistoricBatchCount(Map<String, Object> queryParams, CIBUser user);
+	public HistoryBatch getHistoricBatchById(String id, CIBUser user);
+	public void deleteHistoricBatch(String id, CIBUser user);
+	public Object setRemovalTime(Map<String, Object> payload, CIBUser user);
+	public Object getCleanableBatchReport(Map<String, Object> queryParams, CIBUser user);
+	public Object getCleanableBatchReportCount(CIBUser user);
+
+	default void addBatchStatistics(List<Batch> batches, CIBUser user) {
+		batches.forEach(batch -> {
+			String batchId = batch.getId();
+			Map<String, Object> statParams = new HashMap<>();
+			statParams.put("batchId", batchId);
+
+			Collection<Batch> statList = getBatchStatistics(statParams, user);
+			if (!statList.isEmpty()) {
+				Batch stats = statList.iterator().next();
+				batch.setCompletedJobs(stats.getCompletedJobs());
+				batch.setRemainingJobs(stats.getRemainingJobs());
+				batch.setFailedJobs(stats.getFailedJobs());
+			}
+		});
+	}
 }

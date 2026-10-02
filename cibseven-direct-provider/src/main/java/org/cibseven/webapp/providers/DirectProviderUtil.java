@@ -20,7 +20,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Supplier;
+import java.util.function.Function;
 
 import org.cibseven.bpm.BpmPlatform;
 import org.cibseven.bpm.engine.AuthorizationException;
@@ -43,10 +45,15 @@ import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.cibseven.bpm.engine.rest.util.EngineUtil;
+import org.cibseven.bpm.engine.rest.dto.AbstractQueryDto;
+
+import org.cibseven.bpm.engine.query.Query;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 import lombok.Setter;
 
 public class DirectProviderUtil {
@@ -194,16 +201,8 @@ public class DirectProviderUtil {
 			query.disableCustomObjectDeserialization();
 		}
 
-		List<VariableInstance> matchingInstances = QueryUtil.list(query, firstResult,
-				maxResults);
-
-		List<Variable> instanceResults = new ArrayList<>();
-		for (VariableInstance instance : matchingInstances) {
-			VariableInstanceDto resultInstanceDto = VariableInstanceDto.fromVariableInstance(instance);
-			VariableHistory resultInstance = convertValue(resultInstanceDto, VariableHistory.class, user);
-			instanceResults.add(resultInstance);
-		}
-		return instanceResults;
+		return listAndConvert(query, firstResult, maxResults, 
+				VariableInstanceDto::fromVariableInstance, Variable.class, user);
 	}
 
 	public TypedValue getTypedValueForTaskVariable(String taskId, String variableName, boolean deserializeValue, CIBUser user) {

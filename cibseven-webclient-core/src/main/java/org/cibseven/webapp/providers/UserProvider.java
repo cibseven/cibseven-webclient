@@ -16,8 +16,6 @@
  */
 package org.cibseven.webapp.providers;
 
-import static org.cibseven.webapp.auth.SevenAuthorizationUtils.resourceType;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
