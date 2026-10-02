@@ -79,6 +79,7 @@ const historyVariables = () => [
 
 function createWrapper({ state = 'ACTIVE', historyLevel = 'full', activityInstance = null, activityInstanceHistory = null } = {}) {
   const wrapper = mount(HostComponent, {
+    global: { mocks: { $t: key => key } },
     props: {
       selectedInstance: { id: 'pi1', state, processDefinitionName: 'My Process' },
       activityInstance,
@@ -347,6 +348,118 @@ describe('processesVariablesMixin', () => {
       await flushPromises()
       expect(HistoryService.fetchHistoryVariableDataById).toHaveBeenCalledWith('v9')
       expect(ProcessService.fetchVariableDataByExecutionId).not.toHaveBeenCalled()
+    })
+
+    // 'Bytes' variables have no valueInfo.filename (CIB7-2132), so the download must fall
+    // back to the variable name instead of passing 'undefined' as the file name
+    it('downloads Bytes variables via the same routing, falling back to the variable name as file name', async () => {
+      const wrapper = createWrapper()
+      wrapper.vm.downloadFile({ id: 'v10', name: 'atisData', type: 'Bytes', isLive: true, executionId: 'ex10', valueInfo: {} })
+      await flushPromises()
+      expect(ProcessService.fetchVariableDataByExecutionId).toHaveBeenCalledWith('ex10', 'atisData')
+      expect(triggerDownload).toHaveBeenCalledWith(expect.any(Blob), 'atisData.dat')
+    })
+  })
+
+  describe('uploadFile', () => {
+
+    const upload = async (variable) => {
+      const wrapper = createWrapper()
+      wrapper.vm.selectedVariable = variable
+      wrapper.vm.file = new File(['abc'], 'new.bin', { type: 'application/octet-stream' })
+      const result = await wrapper.vm.uploadFile()
+      await flushPromises()
+      return result
+    }
+
+    it('uploads Bytes variables with valueType Bytes and keeps valueInfo free of file metadata', async () => {
+      const variable = { name: 'atisData', type: 'Bytes', isLive: true, executionId: 'ex10', valueInfo: {} }
+      expect(await upload(variable)).toBe(true)
+      const [executionId, name, formData] = ProcessService.modifyVariableDataByExecutionId.mock.calls[0]
+      expect([executionId, name]).toEqual(['ex10', 'atisData'])
+      expect(formData.get('valueType')).toBe('Bytes')
+      expect(formData.get('data').name).toBe('new.bin')
+      expect(variable.valueInfo).toEqual({})
+    })
+
+    const dataSourceVariable = () => ({ name: 'obj', type: 'Object', isLive: true, executionId: 'ex7', processDefinitionId: 'pd1',
+      valueInfo: { objectTypeName: 'de.cib.cibflow.api.files.FileValueDataSource' } })
+
+    it('uploads file-value-data-source variables and resolves only after the request is done', async () => {
+      ProcessService.modifyVariableByExecutionId.mockClear()
+      let finishRequest
+      ProcessService.modifyVariableByExecutionId.mockReturnValueOnce(new Promise(resolve => { finishRequest = resolve }))
+      const variable = dataSourceVariable()
+      const wrapper = createWrapper()
+      wrapper.vm.selectedVariable = variable
+      wrapper.vm.file = new File(['abc'], 'new.bin', { type: 'text/plain' })
+      let done = false
+      let result
+      const pending = wrapper.vm.uploadFile().then(r => { result = r; done = true })
+      // what the dialog does right after calling uploadFile()
+      wrapper.vm.file = null
+      wrapper.vm.selectedVariable = { name: 'other' }
+      await vi.waitFor(() => expect(ProcessService.modifyVariableByExecutionId).toHaveBeenCalled())
+      expect(done).toBe(false)
+      finishRequest()
+      await pending
+      expect(done).toBe(true)
+      expect(result).toBe(true)
+      expect(ProcessService.modifyVariableByExecutionId.mock.calls[0][0]).toBe('ex7')
+      expect(variable.value.name).toBe('new.bin')
+      expect(variable.value.data).toBe(btoa('abc'))
+    })
+
+    it('returns the error message when the file cannot be read', async () => {
+      ProcessService.modifyVariableByExecutionId.mockClear()
+      const readAsDataURL = vi.spyOn(FileReader.prototype, 'readAsDataURL').mockImplementation(function () {
+        Object.defineProperty(this, 'error', { value: new Error('read failed') })
+        this.onerror()
+      })
+      const wrapper = createWrapper()
+      wrapper.vm.selectedVariable = dataSourceVariable()
+      wrapper.vm.file = new File(['abc'], 'new.bin')
+      expect(await wrapper.vm.uploadFile()).toBe('read failed')
+      expect(ProcessService.modifyVariableByExecutionId).not.toHaveBeenCalled()
+      readAsDataURL.mockRestore()
+    })
+
+    it('returns the error message of a failed File/Bytes upload and leaves the metadata untouched', async () => {
+      ProcessService.modifyVariableDataByExecutionId.mockRejectedValueOnce(new Error('boom'))
+      const variable = { name: 'doc', type: 'File', isLive: true, executionId: 'ex9', valueInfo: { filename: 'old.txt' } }
+      const wrapper = createWrapper()
+      wrapper.vm.selectedVariable = variable
+      wrapper.vm.file = new File(['abc'], 'new.bin')
+      expect(await wrapper.vm.uploadFile()).toBe('boom')
+      expect(variable.valueInfo.filename).toBe('old.txt')
+    })
+
+    it('uploads File variables with valueType File and updates the file metadata', async () => {
+      const variable = { name: 'doc', type: 'File', isLive: true, executionId: 'ex9', valueInfo: { filename: 'old.txt' } }
+      await upload(variable)
+      expect(ProcessService.modifyVariableDataByExecutionId.mock.calls[0][2].get('valueType')).toBe('File')
+      expect(variable.valueInfo.filename).toBe('new.bin')
+      expect(variable.valueInfo.mimeType).toBe('application/octet-stream')
+    })
+  })
+
+  describe('displayValueTooltip', () => {
+
+    it('shows the download file name for Bytes variables', () => {
+      const wrapper = createWrapper()
+      const tooltip = wrapper.vm.displayValueTooltip({ name: 'atisData', type: 'Bytes', valueInfo: {} })
+      expect(tooltip).toMatch(/: atisData\.dat$/)
+    })
+
+    it('shows the file name for File variables', () => {
+      const wrapper = createWrapper()
+      const tooltip = wrapper.vm.displayValueTooltip({ name: 'doc', type: 'File', valueInfo: { filename: 'doc.txt' } })
+      expect(tooltip).toMatch(/: doc\.txt$/)
+    })
+
+    it('falls back to the displayed value for non-downloadable variables', () => {
+      const wrapper = createWrapper()
+      expect(wrapper.vm.displayValueTooltip({ name: 's', type: 'String', value: 'hello', valueInfo: {} })).toBe('hello')
     })
   })
 })

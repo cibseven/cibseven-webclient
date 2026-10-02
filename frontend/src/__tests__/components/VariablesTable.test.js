@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import VariablesTable from '@/components/process/tables/VariablesTable.vue'
 
 describe('VariablesTable', () => {
@@ -60,6 +60,30 @@ describe('VariablesTable', () => {
         processDefinitionTenantId: undefined,
         lang: 'en'
       })
+    })
+  })
+
+  describe('uploadFileClicked', () => {
+    const context = (uploadResult) => ({
+      uploadError: 'stale',
+      uploadFile: vi.fn(() => Promise.resolve(uploadResult)),
+      $refs: { uploadFile: { hide: vi.fn() }, success: { show: vi.fn() } },
+    })
+
+    it('closes the dialog and shows the success alert when the upload succeeds', async () => {
+      const vm = context(true)
+      await VariablesTable.methods.uploadFileClicked.call(vm)
+      expect(vm.uploadError).toBeNull()
+      expect(vm.$refs.uploadFile.hide).toHaveBeenCalled()
+      expect(vm.$refs.success.show).toHaveBeenCalled()
+    })
+
+    it('keeps the dialog open and exposes the error message when the upload fails', async () => {
+      const vm = context('Request failed with status code 500')
+      await VariablesTable.methods.uploadFileClicked.call(vm)
+      expect(vm.uploadError).toBe('Request failed with status code 500')
+      expect(vm.$refs.uploadFile.hide).not.toHaveBeenCalled()
+      expect(vm.$refs.success.show).not.toHaveBeenCalled()
     })
   })
 })
