@@ -83,7 +83,7 @@ public class KeyResolver extends LocatorAdapter<Key> implements Function<Header,
 	private void loadKey(Optional<String> keyId) {
 		RestTemplate rest = new RestTemplate();
 		KeyList list = rest.getForObject(certEndpoint, KeyList.class);
-		if (list == null)
+		if (list == null || list.getKeys() == null || list.getKeys().length == 0)
 			throw new AuthenticationException("Missing KeyList");
 		if (keyId.isPresent())
 			keyData = Stream.of(list.getKeys()).filter(a -> a.getKid().equals(keyId.get())).findFirst()

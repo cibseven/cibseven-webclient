@@ -25,6 +25,10 @@ abstract public class ApplicationException extends RuntimeException {
 	@Getter protected Object[] data;
 	
 	public ApplicationException(Object ...data) {
+		super(data != null && data.length > 0 ? data[0].toString() : "An application error occured");
+		if (data != null && data.length > 1) {
+			this.initCause((Throwable) data[1]);
+		}
 		this.data = data;
 	}	
 	
