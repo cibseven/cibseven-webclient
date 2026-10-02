@@ -18,6 +18,7 @@ package org.cibseven.webapp.plugin;
 
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Import;
 
 /**
@@ -31,6 +32,7 @@ import org.springframework.context.annotation.Import;
  */
 @AutoConfiguration
 @ConditionalOnProperty(prefix = "cibseven.webclient.plugins", name = "enabled")
+@EnableConfigurationProperties(PluginProperties.class)
 @Import({PluginRegistry.class, PluginService.class})
 public class PluginAutoConfiguration {
 }

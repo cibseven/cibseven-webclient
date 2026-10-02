@@ -34,12 +34,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.core.env.StandardEnvironment;
-import org.springframework.core.env.SystemEnvironmentPropertySource;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.mock.env.MockEnvironment;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
@@ -70,7 +67,7 @@ public class PluginRegistryTest {
 	@Test
 	public void findsPluginOnTheClasspath() {
 		// Reads the fixtures below src/test/resources, i.e. a real classpath scan
-		PluginRegistry registry = new PluginRegistry();
+		PluginRegistry registry = new PluginRegistry(new PluginProperties());
 
 		ObjectNode manifest = manifestOf(registry, "test-plugin");
 
@@ -85,7 +82,7 @@ public class PluginRegistryTest {
 	 */
 	@Test
 	public void reportsEveryDocumentedFieldOfTheManifest() {
-		ObjectNode manifest = manifestOf(new PluginRegistry(), "test-plugin");
+		ObjectNode manifest = manifestOf(new PluginRegistry(new PluginProperties()), "test-plugin");
 
 		assertEquals("process-instance-tab", manifest.get("slots").get(0).asText());
 		assertEquals("styles.css", manifest.get("styles").get(0).asText());
@@ -95,7 +92,7 @@ public class PluginRegistryTest {
 	/** Several plugins may share one artifact, each in its own folder. */
 	@Test
 	public void findsEveryPluginOfOneClasspathEntry() {
-		PluginRegistry registry = new PluginRegistry();
+		PluginRegistry registry = new PluginRegistry(new PluginProperties());
 
 		List<ObjectNode> manifests = registry.getManifests();
 
@@ -113,7 +110,7 @@ public class PluginRegistryTest {
 	/** The folders serve the files, so every accepted plugin needs exactly its own. */
 	@Test
 	public void findsAFolderForEveryAcceptedPlugin() {
-		PluginRegistry registry = new PluginRegistry();
+		PluginRegistry registry = new PluginRegistry(new PluginProperties());
 
 		Map<String, Resource> locations = registry.getPluginLocations();
 		assertEquals(registry.getManifests().size(), locations.size());
@@ -291,8 +288,7 @@ public class PluginRegistryTest {
 	/** Without a redeploy, a plugin that breaks the page has to be switched off on its own. */
 	@Test
 	public void leavesOutAPluginDisabledByConfiguration() throws IOException {
-		PluginRegistry registry = new PluginRegistry(twoPlugins());
-		registry.setEnvironment(new MockEnvironment().withProperty(PluginRegistry.DISABLED_PROPERTY, "first"));
+		PluginRegistry registry = new PluginRegistry(twoPlugins(), List.of("first"));
 
 		assertEquals(List.of("second"), ids(registry));
 		// Its files are not served either
@@ -301,51 +297,29 @@ public class PluginRegistryTest {
 	}
 
 	@Test
-	public void acceptsAYamlListOfDisabledPlugins() throws IOException {
-		PluginRegistry registry = new PluginRegistry(twoPlugins());
-		registry.setEnvironment(new MockEnvironment()
-			.withProperty(PluginRegistry.DISABLED_PROPERTY + "[0]", "first")
-			.withProperty(PluginRegistry.DISABLED_PROPERTY + "[1]", "second"));
+	public void leavesOutEveryDisabledPlugin() throws IOException {
+		PluginRegistry registry = new PluginRegistry(twoPlugins(), List.of("first", "second"));
 
 		assertTrue(registry.getManifests().isEmpty());
-	}
-
-	@Test
-	public void acceptsACommaSeparatedListWithSpaces() throws IOException {
-		PluginRegistry registry = new PluginRegistry(twoPlugins());
-		registry.setEnvironment(new MockEnvironment().withProperty(PluginRegistry.DISABLED_PROPERTY, " first , second "));
-
-		assertTrue(registry.getManifests().isEmpty());
-	}
-
-	/** Operators of a container image have no YAML to edit. */
-	@Test
-	public void acceptsTheEnvironmentVariable() throws IOException {
-		StandardEnvironment environment = new StandardEnvironment();
-		environment.getPropertySources().replace(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME,
-			new SystemEnvironmentPropertySource(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME,
-				Map.of("CIBSEVEN_WEBCLIENT_PLUGINS_DISABLED", "second")));
-		PluginRegistry registry = new PluginRegistry(twoPlugins());
-		registry.setEnvironment(environment);
-
-		assertEquals(List.of("first"), ids(registry));
+		assertTrue(registry.getPluginLocations().isEmpty());
 	}
 
 	/** A mistyped id is only logged, it must not keep the other plugins from loading. */
 	@Test
 	public void loadsEveryPluginWhenTheDisabledIdMatchesNone() throws IOException {
-		PluginRegistry registry = new PluginRegistry(twoPlugins());
-		registry.setEnvironment(new MockEnvironment().withProperty(PluginRegistry.DISABLED_PROPERTY, "frist"));
+		PluginRegistry registry = new PluginRegistry(twoPlugins(), List.of("frist"));
 
 		assertEquals(List.of("first", "second"), ids(registry));
 	}
 
 	@Test
 	public void loadsEveryPluginWhenNoneIsDisabled() throws IOException {
-		PluginRegistry registry = new PluginRegistry(twoPlugins());
-		registry.setEnvironment(new MockEnvironment());
+		assertEquals(List.of("first", "second"), ids(new PluginRegistry(twoPlugins())));
+	}
 
-		assertEquals(List.of("first", "second"), ids(registry));
+	@Test
+	public void disablesNothingByDefault() {
+		assertTrue(new PluginProperties().getDisabled().isEmpty());
 	}
 
 	/** Switching off a plugin whose manifest is broken must not depend on reading it. */
@@ -355,8 +329,7 @@ public class PluginRegistryTest {
 		Resource watched = spy(broken);
 		ResourcePatternResolver resolver = mock(ResourcePatternResolver.class);
 		when(resolver.getResources(MANIFESTS)).thenReturn(new Resource[] { watched });
-		PluginRegistry registry = new PluginRegistry(resolver);
-		registry.setEnvironment(new MockEnvironment().withProperty(PluginRegistry.DISABLED_PROPERTY, "broken"));
+		PluginRegistry registry = new PluginRegistry(resolver, List.of("broken"));
 
 		assertTrue(registry.getManifests().isEmpty());
 		verify(watched, never()).getInputStream();

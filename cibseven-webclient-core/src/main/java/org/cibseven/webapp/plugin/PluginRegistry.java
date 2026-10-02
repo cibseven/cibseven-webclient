@@ -29,10 +29,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.bind.Bindable;
-import org.springframework.boot.context.properties.bind.Binder;
-import org.springframework.context.EnvironmentAware;
-import org.springframework.core.env.Environment;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -59,11 +55,11 @@ import lombok.extern.slf4j.Slf4j;
  * its jar.
  */
 @Slf4j
-public class PluginRegistry implements EnvironmentAware {
+public class PluginRegistry {
 
 	private static final String PLUGINS_ROOT = "META-INF/cibseven-plugins/";
 	private static final String MANIFESTS_PATTERN = "classpath*:/" + PLUGINS_ROOT + "*/plugin.json";
-	static final String DISABLED_PROPERTY = "cibseven.webclient.plugins.disabled";
+	private static final String DISABLED_PROPERTY = "cibseven.webclient.plugins.disabled";
 
 	/** Ids end up in URLs, so anything that could leave the plugin folder is rejected */
 	private static final Pattern VALID_ID = Pattern.compile("[A-Za-z0-9][A-Za-z0-9._-]*");
@@ -73,33 +69,24 @@ public class PluginRegistry implements EnvironmentAware {
 	private final ResourcePatternResolver resolver;
 	private final ObjectMapper mapper = new ObjectMapper();
 
-	private Set<String> disabled = Collections.emptySet();
+	private final Set<String> disabled;
 	private List<ObjectNode> manifests;
 	private Map<String, Resource> locations = Collections.emptyMap();
 
-	// Needed because of the second constructor: Spring picks one on its own only when
+	// Needed because of the other constructors: Spring picks one on its own only when
 	// there is exactly one.
 	@Autowired
-	public PluginRegistry() {
-		this(new PathMatchingResourcePatternResolver());
+	public PluginRegistry(PluginProperties properties) {
+		this(new PathMatchingResourcePatternResolver(), properties.getDisabled());
 	}
 
 	PluginRegistry(ResourcePatternResolver resolver) {
-		this.resolver = resolver;
+		this(resolver, List.of());
 	}
 
-	/**
-	 * Bound rather than injected with {@code @Value}, so a YAML list, a comma-separated
-	 * value and the environment variable all work.
-	 */
-	@Override
-	public void setEnvironment(Environment environment) {
-		Set<String> ids = new LinkedHashSet<>();
-		Binder.get(environment).bind(DISABLED_PROPERTY, Bindable.listOf(String.class)).orElse(List.of())
-			.forEach(id -> {
-				if (id != null && !id.isBlank()) ids.add(id.trim());
-			});
-		disabled = Collections.unmodifiableSet(ids);
+	PluginRegistry(ResourcePatternResolver resolver, List<String> disabled) {
+		this.resolver = resolver;
+		this.disabled = new LinkedHashSet<>(disabled);
 	}
 
 	/**

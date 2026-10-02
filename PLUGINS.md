@@ -35,10 +35,8 @@ cibseven:
         - demo-report
 ```
 
-A comma-separated value works as well, and so does the environment variable
-`CIBSEVEN_WEBCLIENT_PLUGINS_DISABLED=demo-report,other-plugin`. A disabled plugin
-is not listed to the frontend and its files are not served; the others load as
-usual. It takes a restart, and the log confirms it:
+A disabled plugin is not listed to the frontend and its files are not served; the
+others load as usual. It takes a restart, and the log confirms it:
 
 ```
 INFO o.cibseven.webapp.plugin.PluginRegistry : Plugin "demo-report" is disabled by cibseven.webclient.plugins.disabled
