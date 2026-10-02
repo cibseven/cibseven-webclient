@@ -38,6 +38,9 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.InvalidKeyException;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
@@ -169,14 +172,14 @@ public class AdfsUserProvider extends BaseUserProvider<SSOLogin> {
 					throw new TokenExpiredException(createToken(effectiveSettings, true, false, user));				
 			}
 			throw new TokenExpiredException();			
-		} catch (JwtException x) {
-			throw new AuthenticationException(token);
-		} catch (IllegalArgumentException e) {
+		} catch (IllegalArgumentException | InvalidKeyException | MalformedJwtException | UnsupportedJwtException e) {
 			Claims claims = ssoHelper.getKeyResolver().checkToken(token);
 			SSOUser user = new SSOUser(technicalUserId);
 			user.setDisplayName(claims.get("appid", String.class));
 			user.setAuthToken(createToken(effectiveSettings, false, false, user));
 			return user;
+		} catch (JwtException x) {
+			throw new AuthenticationException(token);
 		}
 	}
 	
