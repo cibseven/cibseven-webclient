@@ -43,6 +43,9 @@ const ROUTE_PERMISSIONS = {
   'not-found-instanceId': null,
   admin: null,
   usersManagement: null,
+  accessManagement: null,
+  tasksHome: null,
+  builderHome: null,
 
   account: { permission: 'userProfile' },
   'start-process': { permission: 'tasklist' },

@@ -1022,6 +1022,9 @@
 			"title": "@:process.startProcess",
 			"tooltip": "Open Start Process view with search possibility"
 		},
+		"tasks": {
+			"title": "Tasks"
+		},
 		"taskList": {
 			"title": "Tasklist",
 			"tooltip": "Open Tasklist"
@@ -1029,6 +1032,9 @@
 		"cockpit": {
 			"title": "Cockpit",
 			"tooltip": "Open Cockpit",
+			"dashboard": {
+				"title": "Dashboard"
+			},
 			"processes": {
 				"title": "Processes",
 				"tooltip": "Explore available process definitions"
@@ -1063,8 +1069,20 @@
 			}
 		},
 		"admin": {
-			"title": "Admin",
-			"tooltip": "Open Admin"
+			"title": "Admin"
+		},
+		"accessManagement": {
+			"title": "Access management"
+		},
+		"builder": {
+			"title": "Builder"
+		},
+		"data": {
+			"title": "Data"
+		},
+		"ins7ght": {
+			"title": "Ins7ght",
+			"tooltip": "Open Ins7ght"
 		},
 		"modeler": {
 			"title": "Modeler",
@@ -1175,7 +1193,6 @@
 	},
 	"navigation": {
 		"home": "Home",
-		"navigation": "Navigation",
 		"menu": "Navigation menu",
 		"infoAndHelp": "Info & help"
 	},
