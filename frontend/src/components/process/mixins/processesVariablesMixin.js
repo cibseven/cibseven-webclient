@@ -295,7 +295,6 @@ export default {
 					ProcessService.fetchVariableDataByExecutionId(variable.executionId, variable.name) :
 					HistoryService.fetchHistoryVariableDataById(variable.id)
 				download.then(data => {
-					// 'Bytes' variables have no valueInfo.filename, fall back to the variable name (CIB7-2132)
 					const filename = variableUtils.getFilename(variable)
 					this.$refs.importPopper.triggerDownload(data, filename)
 				})

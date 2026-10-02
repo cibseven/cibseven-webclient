@@ -308,7 +308,6 @@ export default {
         this.$refs.importPopper.triggerDownload(blob, this.getFileVariableName(variable))
       } else {
         ProcessService.fetchVariableDataByExecutionId(this.task.executionId, variable.name).then(data => {
-          // 'Bytes' variables have no valueInfo.filename, fall back to the variable name (CIB7-2132)
           const filename = variableUtils.getFilename(variable)
           this.$refs.importPopper.triggerDownload(data, filename)
         })
