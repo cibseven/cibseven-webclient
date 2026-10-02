@@ -74,7 +74,7 @@ export { default as sidebarOpenPersistenceMixin } from '@/mixins/sidebarOpenPers
 export { default as usersMixin } from '@/mixins/usersMixin.js'
 export { default as copyToClipboardMixin } from '@/mixins/copyToClipboardMixin.js'
 export { default as assigneeMixin } from '@/mixins/assigneeMixin.js'
-export { default as navigationPermissionsMixin } from '@/mixins/navigationPermissionsMixin.js'
+export { default as navigationPermissionsMixin, ADMIN_ENTRY_SLOT } from '@/mixins/navigationPermissionsMixin.js'
 
 // components
 export { default as CibSeven } from '@/components/CibSeven.vue'

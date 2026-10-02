@@ -279,6 +279,14 @@ INFO o.cibseven.webapp.plugin.PluginRegistry : Found 1 frontend plugin(s) on the
 | `decision-definition-tab` | one tab of a decision definition version | `decision`, `tenantId` |
 | `decision-instance-tab` | one tab of a decision instance | `instance`, `decision`, `tenantId` |
 | `dmn-viewer` | no UI of its own: a contribution works on the rendered DMN viewer | `viewer`, `container`, `activeView` |
+| `app-banner` | a strip below the header on every page, rendered only while a user is logged in | `user` |
+| `admin-entry` | no component: an entry of the Admin menu, the Admin page and the Start page admin options | none; see below |
+
+An `admin-entry` registers `null` as its component and describes the entry in its
+metadata: `id`, `text` (a translation key), `to` (the route path), `icon`, `image`
+for the Admin page card, and optionally `tooltip` and `active`. `permissions` and
+`resource` are passed to `applicationPermissions`, so the entry only shows for users
+allowed to open it; the route itself still needs a guard of its own.
 
 One registration carries both the tab label and its content: the tab bar reads
 `id` and `text`, and the view renders whichever contribution matches the active
