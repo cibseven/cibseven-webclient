@@ -132,7 +132,12 @@
     <TaskPopper ref="importPopper"></TaskPopper>
 
     <b-modal ref="uploadFile" :title="$t('process-instance.upload')" @hidden="file = null; uploadError = null">
-      <div>
+      <div v-if="selectedVariable">
+        <p class="mb-0">
+          {{ $t('process-instance.variables.name') }}: <strong>{{ selectedVariable.name }}</strong>
+          <br>
+          {{ $t('process-instance.variables.type') }}: <strong>{{ selectedVariable.type }}</strong>
+        </p>
         <label for="variables-upload-file" class="visually-hidden">{{ $t('process-instance.upload') }}</label>
         <b-form-file id="variables-upload-file" placeholder="" :browse-text="$t('process-instance.selectFile')" v-model="file"></b-form-file>
         <div v-if="uploadError" class="alert alert-danger text-danger d-flex align-items-center mt-3 mb-0" role="alert">
