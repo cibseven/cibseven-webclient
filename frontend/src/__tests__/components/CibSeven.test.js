@@ -14,15 +14,17 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
 import CibSeven from '@/components/CibSeven.vue'
+import { AuthService } from '@/services.js'
 
 // Mock services
 vi.mock('@/services.js', () => ({
   EngineService: {
     getEngines: vi.fn(() => Promise.resolve([{ name: 'default' }]))
-  }
+  },
+  AuthService: { logout: vi.fn() }
 }))
 
 describe('CibSeven.vue', () => {
@@ -155,6 +157,59 @@ describe('CibSeven.vue', () => {
       expect(window.location.hash).toBe('#/')
 
       window.location = originalLocation
+    })
+
+    describe('logout with SSO', () => {
+      const originalLocation = window.location
+      const ssoThis = { $root: { config: { ssoActive: true } } }
+
+      beforeEach(() => {
+        AuthService.logout.mockReset()
+        localStorage.setItem('accessToken', 'a')
+        delete window.location
+        window.location = { hash: '#/seven/auth/tasks', href: 'http://localhost/', reload: vi.fn() }
+      })
+
+      afterEach(() => {
+        window.location = originalLocation
+        localStorage.clear()
+      })
+
+      it('should go to the end session URL the backend returns, instead of reloading', async () => {
+        AuthService.logout.mockResolvedValue({ endSessionUrl: 'https://idp/logout?client_id=c' })
+
+        await CibSeven.methods.logout.call(ssoThis)
+
+        expect(window.location.href).toBe('https://idp/logout?client_id=c')
+        expect(window.location.reload).not.toHaveBeenCalled()
+        expect(localStorage.getItem('accessToken')).toBeNull()
+      })
+
+      it('should reload to the start page when the backend names no end session URL', async () => {
+        AuthService.logout.mockResolvedValue({})
+
+        await CibSeven.methods.logout.call(ssoThis)
+
+        expect(window.location.hash).toBe('#/')
+        expect(window.location.reload).toHaveBeenCalled()
+      })
+
+      it('should still log out locally when the backend call fails', async () => {
+        const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+        AuthService.logout.mockRejectedValue(new Error('401'))
+
+        await CibSeven.methods.logout.call(ssoThis)
+
+        expect(localStorage.getItem('accessToken')).toBeNull()
+        expect(window.location.reload).toHaveBeenCalled()
+        error.mockRestore()
+      })
+
+      it('should not call the backend without SSO', async () => {
+        await CibSeven.methods.logout.call({ $root: { config: { ssoActive: false } } })
+
+        expect(AuthService.logout).not.toHaveBeenCalled()
+      })
     })
   })
 

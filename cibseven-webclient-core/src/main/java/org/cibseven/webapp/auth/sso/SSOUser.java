@@ -28,6 +28,10 @@ public class SSOUser extends CIBUser {
 	@Getter @Setter
 	String refreshToken;
 	
+	/** ID token issued at login, kept for the id_token_hint of the RP-initiated logout. */
+	@Getter @Setter
+	String idToken;
+	
 	public SSOUser(String userId) {
 		super(userId);
 	}

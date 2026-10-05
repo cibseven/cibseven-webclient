@@ -83,9 +83,12 @@ cibseven:
     #    jwks: <certsUri>
     #    user: <usersUri>
     #    introspection:
+    #    revocation: <revocationUri>   # RFC 7009; tokens are revoked on logout when set
+    #    endSession: <endSessionUri>   # OIDC RP-Initiated Logout; ends the IdP session on logout when set
     #  clientId: <clientId>
     #  clientSecret: <clientSecret>
     #  scopes: openid email profile
+    #  postLogoutRedirectUri: <uri>    # must be registered at the IdP; where it sends the browser after logout
     #  userIdProperty:
     #  userNameProperty:
     #  accessTokenToEngineRest:

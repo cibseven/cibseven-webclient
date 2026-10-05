@@ -66,6 +66,12 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> {
 	@Value("${cibseven.webclient.sso.endpoints.jwks}") String certEndpoint;
 	@Value("${cibseven.webclient.sso.endpoints.user}") String userEndpoint;
 	@Value("${cibseven.webclient.sso.endpoints.introspection:}") String introspectionEndpoint;
+	/** RFC 7009 token revocation endpoint. When blank, tokens are not revoked on logout. */
+	@Value("${cibseven.webclient.sso.endpoints.revocation:}") String revocationEndpoint;
+	/** OIDC RP-Initiated Logout end_session_endpoint. When blank, the identity provider session is left untouched. */
+	@Value("${cibseven.webclient.sso.endpoints.endSession:}") String endSessionEndpoint;
+	/** Must be registered as a valid post logout redirect URI at the identity provider. */
+	@Value("${cibseven.webclient.sso.postLogoutRedirectUri:}") String postLogoutRedirectUri;
 	@Value("${cibseven.webclient.sso.clientId}") String clientId;
 	@Value("${cibseven.webclient.sso.clientSecret:}") String clientSecret;
 	@Value("${cibseven.webclient.sso.userIdProperty}") String userIdProperty;
@@ -105,7 +111,9 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> {
 			assertionKeyLocation,
 			certEndpoint, 
 			userEndpoint, 
-			introspectionEndpoint);
+			introspectionEndpoint,
+			revocationEndpoint,
+			endSessionEndpoint);
 		checkKey();
 		SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(settings.getSecret()));
 		flowParser = Jwts.parser().verifyWith(key).build();
@@ -203,6 +211,7 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> {
 		SSOUser user = new SSOUser(tokens.getIdClaims().get(userIdProperty, String.class));
 		user.setDisplayName(tokens.getIdClaims().get(userNameProperty, String.class));
 		user.setRefreshToken(tokens.getRefresh_token());
+		user.setIdToken(tokens.getId_token());
 		
 		// Set engine from request header
 		EngineTokenUtils.setEngineFromRequest(user, rq);
@@ -212,6 +221,7 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> {
 			user.getEngine(), engineRestProperties, getSettings(), validMinutes, prolongMinutes);
 		user.setAuthToken(createToken(tokenSettings, true, false, user));
 		user.setRefreshToken(null);
+		user.setIdToken(null);
 		return user;
 	}
 
@@ -219,6 +229,7 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> {
 	public User getUserInfo(User user, String userId) {
 		if (user.getId().equals(userId)) {
 			((SSOUser) user).setRefreshToken(null);
+			((SSOUser) user).setIdToken(null);
 			return user;
 		}
 		else
@@ -260,7 +271,21 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> {
 	}
 
 	@Override
-	public void logout(User user) {	}
+	public void logout(User user) {
+		if (!(user instanceof SSOUser oauthUser)) return;
+		String refreshToken = oauthUser.getRefreshToken();
+		if (forwardToken) {
+			TokenCache entry = cachedAccessToken.remove(user.getId() + refreshToken);
+			if (entry != null) ssoHelper.revokeToken(entry.getAccessToken(), "access_token");
+		}
+		ssoHelper.revokeToken(refreshToken, "refresh_token");
+	}
+
+	@Override
+	public String getEndSessionUrl(User user) {
+		String idToken = user instanceof SSOUser oauthUser ? oauthUser.getIdToken() : null;
+		return ssoHelper.buildEndSessionUrl(idToken, postLogoutRedirectUri);
+	}
 
 	@Override
 	public Object authenticateUser(HttpServletRequest request) {

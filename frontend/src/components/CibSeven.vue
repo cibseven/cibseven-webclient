@@ -178,6 +178,7 @@ import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
 import FeedbackModal from '@/components/modals/FeedbackModal.vue'
 import PluginSlot from '@/components/common/PluginSlot.vue'
 import { updateAppTitle } from '@/utils/init'
+import { AuthService } from '@/services.js'
 
 export default {
   name: 'CibSeven',
@@ -443,7 +444,19 @@ export default {
         return item.active.some(a => this.$route.path.includes(a))
       }
     },
-    logout: function() {
+    logout: async function() {
+      // With SSO the backend revokes the tokens and may name the identity provider's
+      // end session URL. Must run before the cleanup below, which drops the token
+      // from storage (axios keeps sending it from its defaults until the reload).
+      let endSessionUrl
+      if (this.$root?.config?.ssoActive) {
+        try {
+          endSessionUrl = (await AuthService.logout())?.endSessionUrl
+        } catch (error) {
+          // Never block the local logout on a failing identity provider
+          console.error('Logout at the backend failed', error)
+        }
+      }
       //Remove some storage variables when logout
       //https://helpdesk.cib.de/browse/BPM4CIB-3691
       localStorage.removeItem('accessToken')
@@ -451,6 +464,11 @@ export default {
       sessionStorage.removeItem('accessToken')
       sessionStorage.removeItem('tokenModeler')
       // Note: engine token cleanup is handled by CIBHeaderFlow.logout()
+      if (endSessionUrl) {
+        // RP-Initiated Logout: the identity provider ends its session and sends the browser back
+        window.location.href = endSessionUrl
+        return
+      }
       // Set the hash before reload: router.push is async and loses the race, so the
       // reload would otherwise land on the current page instead of the start page.
       window.location.hash = '#/'

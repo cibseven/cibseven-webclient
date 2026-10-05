@@ -46,6 +46,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.QueueDispatcher;
+import okhttp3.mockwebserver.RecordedRequest;
 
 /**
  * The generic OIDC provider. Beyond the ADFS flow it also accepts a third-party access token
@@ -89,6 +90,9 @@ public class OAuth2UserProviderTest {
 		ReflectionTestUtils.setField(created, "certEndpoint", server.url("/certs").toString());
 		ReflectionTestUtils.setField(created, "userEndpoint", server.url("/userinfo").toString());
 		ReflectionTestUtils.setField(created, "introspectionEndpoint", server.url("/introspect").toString());
+		ReflectionTestUtils.setField(created, "revocationEndpoint", server.url("/revoke").toString());
+		ReflectionTestUtils.setField(created, "endSessionEndpoint", "https://idp.example/logout");
+		ReflectionTestUtils.setField(created, "postLogoutRedirectUri", "https://app.example/");
 		ReflectionTestUtils.setField(created, "clientId", "cibseven");
 		ReflectionTestUtils.setField(created, "clientSecret", "s3cret");
 		ReflectionTestUtils.setField(created, "userIdProperty", "sub");
@@ -183,6 +187,25 @@ public class OAuth2UserProviderTest {
 		assertThat(user.getUserID()).isEqualTo("demo");
 		assertThat(user.getDisplayName()).isEqualTo("Demo User");
 		assertThat(user.getRefreshToken()).isNull();
+		assertThat(user.getIdToken()).isNull();
+	}
+
+	@Test
+	void login_keepsTheIdTokenInsideOurTokenForTheLogoutHint() throws Exception {
+		String nonce = "nonce-1";
+		String idToken = idToken(hashed(nonce));
+		enqueueJson("{\"access_token\":\"opaque\",\"id_token\":\"" + idToken + "\"}");
+		SSOLogin login = new SSOLogin();
+		login.setCode("the-code");
+		login.setRedirectUrl("https://app/callback");
+		login.setNonce(nonce);
+		SSOUser user = (SSOUser) provider.login(login, request);
+
+		SSOUser parsed = (SSOUser) provider.parse(bare(user.getAuthToken()), provider.getSettings());
+
+		// not in the user handed to the browser, but recoverable from the token it sends back
+		assertThat(user.getIdToken()).isNull();
+		assertThat(parsed.getIdToken()).isEqualTo(idToken);
 	}
 
 	// ---------- login with a third-party access token ----------
@@ -240,6 +263,14 @@ public class OAuth2UserProviderTest {
 	}
 
 	@Test
+	void getUserInfo_clearsTheIdTokenBeforeHandingTheUserOut() {
+		SSOUser user = new SSOUser("demo");
+		user.setIdToken("the.id.token");
+
+		assertThat(((SSOUser) provider.getUserInfo(user, "demo")).getIdToken()).isNull();
+	}
+
+	@Test
 	void getUserInfo_refusesAnotherUsersInfo() {
 		assertThatThrownBy(() -> provider.getUserInfo(new SSOUser("demo"), "someone-else"))
 			.isInstanceOf(SystemException.class);
@@ -250,9 +281,78 @@ public class OAuth2UserProviderTest {
 		assertThat(provider.getSelfInfoJSessionId("demo", "session", request)).isNull();
 	}
 
+	// ---------- logout ----------
+
 	@Test
-	void logout_isANoOp() {
-		provider.logout(new SSOUser("demo"));
+	void logout_revokesTheRefreshTokenAtTheIdentityProvider() throws Exception {
+		SSOUser user = new SSOUser("demo");
+		user.setRefreshToken("the-refresh");
+		server.enqueue(new MockResponse().setResponseCode(200));
+
+		provider.logout(user);
+
+		RecordedRequest revoke = server.takeRequest();
+		assertThat(revoke.getPath()).isEqualTo("/revoke");
+		assertThat(revoke.getBody().readUtf8()).contains("token=the-refresh").contains("token_type_hint=refresh_token");
+	}
+
+	@Test
+	void logout_alsoRevokesAndForgetsTheForwardedAccessToken() throws Exception {
+		provider.destroy();
+		provider = newProvider(true);
+		SSOUser user = new SSOUser("demo");
+		user.setRefreshToken("the-refresh");
+		enqueueJson("{\"access_token\":\"provider-access\",\"refresh_token\":\"the-refresh\"}");
+		enqueueJson("{\"active\":true,\"exp\":" + (System.currentTimeMillis() / 1000 + 600) + "}");
+		provider.getEngineRestToken(user);
+		server.takeRequest(); // refresh
+		server.takeRequest(); // introspection
+		server.enqueue(new MockResponse().setResponseCode(200));
+		server.enqueue(new MockResponse().setResponseCode(200));
+
+		provider.logout(user);
+
+		assertThat(server.takeRequest().getBody().readUtf8())
+			.contains("token=provider-access").contains("token_type_hint=access_token");
+		assertThat(server.takeRequest().getBody().readUtf8())
+			.contains("token=the-refresh").contains("token_type_hint=refresh_token");
+		// the cached token is gone, so the next call has to ask the provider again
+		int afterLogout = server.getRequestCount();
+		server.enqueue(new MockResponse().setResponseCode(400).setBody("{}"));
+		assertThatThrownBy(() -> provider.getEngineRestToken(user)).isInstanceOf(AuthenticationException.class);
+		assertThat(server.getRequestCount()).isEqualTo(afterLogout + 1);
+	}
+
+	@Test
+	void logout_succeedsWhenTheIdentityProviderFails() {
+		SSOUser user = new SSOUser("demo");
+		user.setRefreshToken("the-refresh");
+		server.enqueue(new MockResponse().setResponseCode(500));
+
+		provider.logout(user);
+	}
+
+	@Test
+	void logout_ignoresAUserThatIsNotAnSsoUser() {
+		int before = server.getRequestCount();
+
+		provider.logout(mock(User.class));
+
+		assertThat(server.getRequestCount()).isEqualTo(before);
+	}
+
+	@Test
+	void getEndSessionUrl_hintsTheIdTokenAndNamesTheRedirect() {
+		SSOUser user = new SSOUser("demo");
+		user.setIdToken("the.id.token");
+
+		assertThat(provider.getEndSessionUrl(user)).isEqualTo(
+			"https://idp.example/logout?client_id=cibseven&id_token_hint=the.id.token&post_logout_redirect_uri=https://app.example/");
+	}
+
+	@Test
+	void getEndSessionUrl_worksWithoutAnIdToken() {
+		assertThat(provider.getEndSessionUrl(mock(User.class))).doesNotContain("id_token_hint");
 	}
 
 	@Test
