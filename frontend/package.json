@@ -65,7 +65,7 @@
     "vue-router": "^5.0.6"
   },
   "devDependencies": {
-    "@cib/frontend-preset": "0.1.0-dev.0",
+    "@cib/frontend-preset": "0.1.0-dev.1",
     "@vitejs/plugin-vue": "6.0.6",
     "@vue/compiler-dom": "3.5.33",
     "@vue/server-renderer": "3.5.33",
