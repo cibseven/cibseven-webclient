@@ -15,6 +15,7 @@
  *  limitations under the License.
  */
 import { describe, it, expect, vi } from 'vitest'
+import { shallowMount } from '@vue/test-utils'
 import CibSeven from '@/components/CibSeven.vue'
 
 // Mock services
@@ -25,6 +26,78 @@ vi.mock('@/services.js', () => ({
 }))
 
 describe('CibSeven.vue', () => {
+  // Contributions to the banner slot (the enterprise edition's system notifications) are for
+  // logged-in users only and sit between the header and the main area
+  describe('app banner slot', () => {
+    const mountShell = (user) => shallowMount(CibSeven, {
+      global: {
+        mocks: {
+          user, header: 'false', $t: key => key, $route: { path: '/seven/auth/start', name: 'start', meta: {} },
+          config: { permissions: {}, layout: {}, supportedLanguages: [] },
+          $store: { state: { process: { list: [] } }, getters: {}, dispatch: vi.fn(() => Promise.resolve()) }
+        },
+        provide: { isMobile: false },
+        stubs: { 'router-view': true, 'b-modal': true, PluginSlot: { name: 'PluginSlot', template: '<div class="plugin-slot"></div>', props: ['name', 'params'] } }
+      }
+    })
+
+    it('offers the app-banner slot to a logged-in user, before the main area', () => {
+      const wrapper = mountShell({ id: 'demo' })
+
+      const slot = wrapper.findComponent({ name: 'PluginSlot' })
+      expect(slot.exists()).toBe(true)
+      expect(slot.props('name')).toBe('app-banner')
+      expect(slot.props('params')).toEqual({ user: { id: 'demo' } })
+      // the banner comes first, so it pushes the page down instead of covering it
+      const html = wrapper.html()
+      expect(html.indexOf('plugin-slot')).toBeLessThan(html.indexOf('<main'))
+    })
+
+    it('offers no banner without a logged-in user', () => {
+      expect(mountShell(null).findComponent({ name: 'PluginSlot' }).exists()).toBe(false)
+    })
+  })
+
+  describe('admin menu', () => {
+    const adminItems = (adminPluginEntries) => {
+      const context = {
+        permissionsTaskList: false, permissionsCockpit: false, permissionsModeler: false, startableProcesses: null,
+        permissionsUsers: true, permissionsUsersManagement: true, permissionsGroupsManagement: false,
+        permissionsTenantsManagement: false, permissionsAuthorizationsManagement: false, permissionsSystemManagement: false,
+        adminPluginEntries
+      }
+      return CibSeven.computed.menuItems.call(context).find(group => group.groupTitle === 'start.admin.title').items
+    }
+
+    // Contributed areas (the enterprise edition's notifications) follow the built-in ones
+    it('appends the contributed admin entries after the built-in ones', () => {
+      const items = adminItems([{
+        id: 'notifications', text: 'admin.notifications.title', tooltip: 'admin.notifications.tooltip',
+        to: '/seven/auth/admin/notifications'
+      }])
+
+      expect(items.at(-1)).toEqual({
+        show: true,
+        to: '/seven/auth/admin/notifications',
+        active: ['seven/auth/admin/notifications'],
+        tooltip: 'admin.notifications.tooltip',
+        title: 'admin.notifications.title'
+      })
+    })
+
+    it('uses the title as tooltip and keeps given active paths', () => {
+      const items = adminItems([{
+        id: 'reports', text: 'admin.reports.title', to: '/seven/auth/admin/reports', active: ['seven/auth/admin/report']
+      }])
+
+      expect(items.at(-1)).toMatchObject({ tooltip: 'admin.reports.title', active: ['seven/auth/admin/report'] })
+    })
+
+    it('adds nothing when no entry is contributed', () => {
+      expect(adminItems([]).at(-1).to).toBe('/seven/auth/admin/system')
+    })
+  })
+
   describe('Methods', () => {
     it('should filter menu items based on show property', () => {
       const items = [

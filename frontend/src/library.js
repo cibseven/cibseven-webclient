@@ -55,6 +55,7 @@ export { createProvideObject } from '@/utils/provide.js'
 // library; each supplies its own plugin-runtime entry, since module instances
 // only exist within one build
 export { registerPlugin, getPlugin, resetPlugins, reserveSlotIds, PLUGIN_API_VERSION, getRuntimeInfo } from '@/plugins/pluginsConfig.js'
+export { defineTabBar } from '@/utils/tabBar.js'
 // as one object, so a downstream plugin runtime can hand it over without listing every service
 export * as services from '@/services.js'
 export { setPluginContext, getPluginContext } from '@/plugins/pluginContext.js'
@@ -73,7 +74,7 @@ export { default as sidebarOpenPersistenceMixin } from '@/mixins/sidebarOpenPers
 export { default as usersMixin } from '@/mixins/usersMixin.js'
 export { default as copyToClipboardMixin } from '@/mixins/copyToClipboardMixin.js'
 export { default as assigneeMixin } from '@/mixins/assigneeMixin.js'
-export { default as navigationPermissionsMixin } from '@/mixins/navigationPermissionsMixin.js'
+export { default as navigationPermissionsMixin, ADMIN_ENTRY_SLOT } from '@/mixins/navigationPermissionsMixin.js'
 
 // components
 export { default as CibSeven } from '@/components/CibSeven.vue'

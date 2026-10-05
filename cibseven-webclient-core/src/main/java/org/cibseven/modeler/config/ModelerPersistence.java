@@ -16,18 +16,22 @@
  */
 package org.cibseven.modeler.config;
 
-import java.util.Collection;
+import org.cibseven.persistence.CibsevenJpa;
 
 /**
- * Contributes entity packages to the modeler's persistence unit.
+ * What the modeler puts into the webclient's persistence unit.
  *
- * <p>Webclient features that keep their data next to the modeler's — the enterprise chat, whose
- * rooms are diagrams — share that persistence unit rather than opening one of their own, so they
- * also share its transaction manager. Declare a bean of this type to add a package to the unit;
- * {@link ModelerJpa#ENTITY_PACKAGE} is always included.</p>
+ * <p>The unit itself belongs to the webclient, see {@link CibsevenJpa}; the modeler is one
+ * contributor to it, on the same footing as any other feature that stores data.</p>
  */
-@FunctionalInterface
-public interface ModelerEntityPackages {
+public final class ModelerPersistence {
 
-	Collection<String> packages();
+	/** Package holding the modeler's JPA entities. */
+	public static final String ENTITY_PACKAGE = "org.cibseven.modeler.model";
+
+	/** Package holding the modeler's Spring Data repositories. */
+	public static final String REPOSITORY_PACKAGE = "org.cibseven.modeler.repository";
+
+	private ModelerPersistence() {
+	}
 }

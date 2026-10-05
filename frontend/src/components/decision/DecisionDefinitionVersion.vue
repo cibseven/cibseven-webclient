@@ -30,7 +30,7 @@
       </div>
     </div>
 
-    <div class="position-absolute w-100 overflow-hidden border-top" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
+    <div ref="rContent" class="position-absolute w-100 overflow-hidden border-top" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
       <DeepLinkFrame v-if="matchedDeepLink" :link="matchedDeepLink" :params="matchedDeepLinkParams"></DeepLinkFrame>
       <div v-if="activeTab === 'instances'">
         <div ref="filterTable" class="bg-white d-flex position-absolute w-100">
@@ -61,7 +61,7 @@
             </div>
           </div>
         </div>
-        <div ref="rContent" class="overflow-auto bg-white position-absolute w-100" style="top: 60px; left: 0; bottom: 0" @scroll="handleScrollDecisions">
+        <div class="overflow-auto bg-white position-absolute w-100" style="top: 60px; left: 0; bottom: 0" @scroll="handleScrollDecisions">
           <DecisionInstancesTable ref="instancesTable" v-if="!loading && decisionInstances.length > 0 && !sorting" :instances="decisionInstances" :sortByDefaultKey="sortByDefaultKey" :sortDesc="sortDesc"></DecisionInstancesTable>
           <div v-else-if="loading" class="py-3 text-center w-100">
             <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
@@ -92,16 +92,19 @@ import DeepLinkFrame from '@/components/common-components/DeepLinkFrame.vue'
 import { BWaitingBox, GenericTabs } from '@cib/common-frontend'
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from '@/utils/debounce.js'
-import { getPlugin, reserveSlotIds } from '@/plugins/pluginsConfig.js'
+import { getDeepLinkEntries } from '@/utils/deepLinks.js'
+import { defineTabBar } from '@/utils/tabBar.js'
 import PluginSlot from '@/components/common/PluginSlot.vue'
-import { getDeepLinkEntries, resolveDeepLinkLabel } from '@/utils/deepLinks.js'
 import DeepLinkButtons from '@/components/common-components/DeepLinkButtons.vue'
 
 const BUILTIN_TABS = [{ id: 'instances', text: 'decision.instances' }]
 const RESERVED_TAB_IDS = BUILTIN_TABS.map(tab => tab.id)
 
-// See ProcessInstanceTabs: the ids of this slot's own tabs are not available to plugins
-reserveSlotIds('decision-definition-tab', BUILTIN_TABS.map(tab => tab.id))
+const tabsFor = defineTabBar({
+  deepLinkSection: 'decisionDefinition',
+  pluginSlot: 'decision-definition-tab',
+  builtin: BUILTIN_TABS
+})
 
 export default {
   name: 'DecisionDefinitionVersion',
@@ -118,6 +121,7 @@ export default {
     return {
       topBarHeight: 0,
       activeTab: 'instances',
+      diagramTimer: null,
       sortByDefaultKey: 'evaluationTime',
       sorting: false,
       sortDesc: true,
@@ -133,19 +137,7 @@ export default {
       return this.getSelectedDecisionVersion()
     },
     tabs: function() {
-      const deepLinkTabs = getDeepLinkEntries(this.$root.config, 'decisionDefinition', RESERVED_TAB_IDS)
-        .filter(entry => entry.type === 'tab')
-        .map(entry => ({ id: entry.id, text: resolveDeepLinkLabel(this.$t, entry) }))
-      // Contributed tabs are appended, so the built-in ones keep their order
-      // whatever is deployed. Their content is rendered by the PluginSlot below.
-      const contributed = getPlugin('decision-definition-tab').value
-        .filter(contribution => contribution.id && contribution.text)
-        .map(({ id, text }) => ({ id, text }))
-      return [
-        ...BUILTIN_TABS,
-        ...deepLinkTabs,
-        ...contributed,
-      ]
+      return tabsFor({ config: this.$root.config, t: this.$t })
     },
     matchedDeepLink() {
       return getDeepLinkEntries(this.$root.config, 'decisionDefinition', RESERVED_TAB_IDS)
@@ -175,6 +167,9 @@ export default {
       this.loadInstances()
     }
   },
+  beforeUnmount() {
+    clearTimeout(this.diagramTimer)
+  },
   methods: {
     ...mapActions(['getXmlById', 'getHistoricDecisionInstances']),
     changeTab: function(selectedTab) {
@@ -183,8 +178,10 @@ export default {
     loadDiagram() {
       this.getXmlById(this.decision.id)
         .then(response => {
-          setTimeout(() => {
-            this.$refs.diagram.showDiagram(response.dmnXml).then(() => this.restoreViewboxIfSaved())
+          clearTimeout(this.diagramTimer)
+          this.diagramTimer = setTimeout(() => {
+            // Gone if the view was left while the diagram loaded, which unmount cannot cancel
+            this.$refs.diagram?.showDiagram(response.dmnXml).then(() => this.restoreViewboxIfSaved())
           }, 100)
         })
         .catch(error => {

@@ -21,8 +21,24 @@
     <WarningBox v-if="authorizationDisabled" :message="$t('admin.authorizations.authorizationDisabledWarning')"/>
     <div class="container-fluid pb-2 pt-4">
       <h4>{{ $t('admin.authorizations.resourcesTypes.' + resourcesTypes[$route.params.resourceTypeId].key) }}</h4>
-      <div :key="resourcesTypes[$route.params.resourceTypeId].key" class="alert alert-info"
-        v-html="$t('admin.authorizations.resourcesTypesDescriptions.' + resourcesTypes[$route.params.resourceTypeId].key)"></div>
+      <i18n-t :keypath="`admin.authorizations.resourcesTypesDescriptions.${resourcesTypes[$route.params.resourceTypeId].key}`"
+        :key="resourcesTypes[$route.params.resourceTypeId].key" tag="div" scope="global" class="alert alert-info">
+        <template #tasklist><strong>tasklist</strong></template>
+        <template #cockpit><strong>cockpit</strong></template>
+        <template #admin><strong>admin</strong></template>
+        <template #modeler><strong>modeler</strong></template>
+        <template #access><strong>Access</strong></template>
+        <template #all><strong>All</strong></template>
+        <template #bpmn><strong>BPMN</strong></template>
+        <template #dmn><strong>DMN</strong></template>
+        <template #create><strong>CREATE</strong></template>
+        <template #createBatch><strong>CREATE_BATCH_*</strong></template>
+        <template #optimize><strong>Optimize</strong></template>
+        <template #systemSettings><strong>{{ $t('admin.authorizations.resourcesTypesDescriptionsTerms.systemSettings') }}</strong></template>
+        <template #userOperationLog><strong>{{ $t('admin.authorizations.resourcesTypesDescriptionsTerms.userOperationLog') }}</strong></template>
+        <template #operationLog><strong>{{ $t('admin.authorizations.resourcesTypesDescriptionsTerms.operationLog') }}</strong></template>
+        <template #br><br></template>
+      </i18n-t>
       <div class="row align-items-center px-4">
         <div class="col-4">
           <b-input-group size="sm">
@@ -47,7 +63,8 @@
     </div>
     <div class="container-fluid overflow-auto h-100 g-0" @scroll="showMore">
       <div class="px-4 mb-5">
-        <FlowTable striped thead-class="sticky-header light" :items="authorizations" primary-key="id"
+        <FlowTable striped resizable thead-class="sticky-header light" :items="authorizations" primary-key="id"
+          :native-layout="false"
           :fields="authorizationFields"
           class="shadow-sm border rounded"
         >
@@ -239,16 +256,25 @@ export default {
       return !this.$root.config.authorizationEnabled
     },
     authorizationFields: function() {
+      const hasNameField = this.$route.params.resourceTypeId === '5'
+
       const baseFields = [
-        { label: 'admin.authorizations.type', key: 'type', class: 'col' },
-        { label: 'admin.authorizations.userIdGroupId', key: 'userIdGroupId', class: 'col' },
-        { label: 'admin.authorizations.permissions', key: 'permissions', class: 'col' },
-        { label: 'admin.authorizations.resourceId', key: 'resourceId', class: 'col' },
-        { label: 'admin.authorizations.actions', key: 'actions', class: 'col text-center', sortable: false,
+        { label: 'admin.authorizations.type', key: 'type' },
+        { label: 'admin.authorizations.userIdGroupId', key: 'userIdGroupId' },
+        { label: 'admin.authorizations.permissions', key: 'permissions' },
+        { label: 'admin.authorizations.resourceId', key: 'resourceId' },
+        { label: 'admin.authorizations.actions', key: 'actions', class: 'text-center', sortable: false,
           thClass: 'justify-content-center', tdClass: 'justify-content-center py-0' }
       ]
-      if (this.$route.params.resourceTypeId === '5')
-        baseFields.splice(3, 0, { label: 'admin.authorizations.name', key: 'name', class: 'col' })
+      if (hasNameField)
+        baseFields.splice(3, 0, { label: 'admin.authorizations.name', key: 'name', class: 'col-2' })
+
+      const colSizes = hasNameField ?
+        ['col-1', 'col-2', 'col-2', 'col-3', 'col-3', 'col-1 text-center'] :
+        ['col-1', 'col-3', 'col-4', 'col-3', 'col-1 text-center']
+      baseFields.forEach((field, index) => {
+        field.class = colSizes[index]
+      })
 
       return baseFields
     },

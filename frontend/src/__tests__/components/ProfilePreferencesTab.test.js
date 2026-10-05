@@ -91,7 +91,10 @@ describe('ProfilePreferencesTab — persists preferences to localStorage', () =>
   })
 
   it('persists the shorten badge numbers checkbox', async () => {
-    const wrapper = createWrapper()
+    // The BPMN preferences block (which holds this checkbox) is gated by cockpit
+    // permission, which in turn requires a logged-in user — see the
+    // "BPMN preferences block respects cockpit permission" tests below.
+    const wrapper = createWrapper({ user: { id: '1' } })
     const checkbox = wrapper.find('input[type="checkbox"]')
     await checkbox.setValue(false)
 
@@ -121,5 +124,54 @@ describe('ProfilePreferencesTab — permission-gated start page options', () => 
     const optionTexts = wrapper.findAll('option').map(o => o.text())
     expect(optionTexts).not.toContain('admin.preferences.general.startPage.options.tasks')
     expect(optionTexts).not.toContain('admin.preferences.general.startPage.options.decisionsList')
+  })
+})
+
+// Regression test: `permissionsCockpit` is a local *method* on this component, not the
+// computed property from navigationPermissionsMixin. The template used to reference it as
+// `v-if="permissionsCockpit"` (no call), which is always a truthy function reference, so the
+// BPMN preferences block rendered for every user regardless of their actual cockpit permission.
+describe('ProfilePreferencesTab — BPMN preferences block respects cockpit permission', () => {
+  afterEach(() => localStorage.clear())
+
+  const authConfig = {
+    authorizationEnabled: true,
+    permissions: {
+      tasklist: { application: ['ACCESS'] },
+      cockpit: { application: ['ACCESS'] }
+    }
+  }
+
+  it('hides the block when a user-specific DENY overrides a group-wide cockpit GRANT', () => {
+    const wrapper = createWrapper({
+      user: {
+        id: 'demo',
+        permissions: {
+          application: [
+            { userId: null, groupId: 'camunda-admin', resourceId: '*', permissions: ['ALL'], type: 1 },
+            { userId: 'demo', groupId: null, resourceId: 'cockpit', permissions: ['ALL'], type: 2 }
+          ]
+        }
+      },
+      config: authConfig
+    })
+
+    expect(wrapper.find('input[type="checkbox"]').exists()).toBe(false)
+  })
+
+  it('shows the block when the user is granted cockpit access', () => {
+    const wrapper = createWrapper({
+      user: {
+        id: 'demo',
+        permissions: {
+          application: [
+            { userId: null, groupId: 'camunda-admin', resourceId: '*', permissions: ['ALL'], type: 1 }
+          ]
+        }
+      },
+      config: authConfig
+    })
+
+    expect(wrapper.find('input[type="checkbox"]').exists()).toBe(true)
   })
 })

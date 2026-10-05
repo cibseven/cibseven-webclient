@@ -33,7 +33,7 @@ public interface IUnifiedDiagramProvider {
 	 * @param firstResult zero-based offset
 	 * @param maxResults  page size
 	 */
-	List<UnifiedDiagram> getDiagrams(String keyword, String type, int firstResult, int maxResults) throws SystemException;
+	List<UnifiedDiagram> getDiagrams(String keyword, String type, String folderId, int firstResult, int maxResults) throws SystemException;
 
 	Optional<UnifiedDiagram> getDiagramById(String id);
 

@@ -134,6 +134,17 @@ describe('applicationPermissions', () => {
     expect(ctx.applicationPermissions(configPermissions.tasklist, 'tasklist')).toBe(false)
     expect(ctx.applicationPermissions(configPermissions.cockpit,  'cockpit')).toBe(true)
   })
+
+  it('returns false when a user-specific DENY on a resource overrides a group-wide wildcard GRANT', () => {
+    const ctx = createContext({
+      application: [
+        allow('*',       ['ALL'], { userId: null,   groupId: 'camunda-admin' }),
+        deny( 'cockpit', ['ALL'], { userId: 'demo',  groupId: null }),
+      ],
+    })
+    expect(ctx.applicationPermissions(configPermissions.cockpit,  'cockpit')).toBe(false)
+    expect(ctx.applicationPermissions(configPermissions.tasklist, 'tasklist')).toBe(true)
+  })
 })
 
 // ---------------------------------------------------------------------------
