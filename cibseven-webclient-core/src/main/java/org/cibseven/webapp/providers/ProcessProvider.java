@@ -688,7 +688,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	@Override
 	public ResponseEntity<String> getRenderedForm(String processDefinitionId, Map<String, Object> params, CIBUser user) {
 		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/process-definition/" + processDefinitionId + "/rendered-form", params);
-		return doGetWithHeader(url, String.class, user, true, MediaType.ALL);
+		return doGetText(url, user);
 	}
 
 	@Override

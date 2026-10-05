@@ -18,6 +18,8 @@ package org.cibseven.webapp.providers;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -215,6 +217,27 @@ public abstract class SevenProviderBase {
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		}        
+	}
+
+	/**
+	 * GETs a text resource such as a rendered form. engine-rest sends some of these without a charset,
+	 * and RestTemplate would then decode them as ISO-8859-1, which garbles every non-ASCII character.
+	 * The body is therefore read as bytes and decoded with the declared charset, or UTF-8 if none is
+	 * declared. Only the Content-Type is passed on, now with an explicit UTF-8 charset: the engine's
+	 * Content-Length no longer matches once the body is re-encoded, and would cut it off.
+	 */
+	protected ResponseEntity<String> doGetText(String url, CIBUser user) {
+		ResponseEntity<byte[]> response = doGetWithHeader(url, byte[].class, user, true, MediaType.ALL);
+		MediaType contentType = response.getHeaders().getContentType();
+		Charset charset = Optional.ofNullable(contentType).map(MediaType::getCharset).orElse(StandardCharsets.UTF_8);
+		byte[] body = response.getBody();
+
+		HttpHeaders headers = new HttpHeaders();
+		if (contentType != null) {
+			headers.setContentType(new MediaType(contentType, StandardCharsets.UTF_8));
+		}
+		return ResponseEntity.status(response.getStatusCode()).headers(headers)
+				.body(body == null ? null : new String(body, charset));
 	}
 
 	// TODO: Replace this get method from the one above - Main difference is that

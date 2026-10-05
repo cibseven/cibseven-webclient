@@ -32,6 +32,7 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.QueueDispatcher;
 import okhttp3.mockwebserver.RecordedRequest;
+import okio.Buffer;
 
 /**
  * Stands in for the engine REST API when testing a {@link SevenProviderBase} subclass.
@@ -88,6 +89,11 @@ final class MockEngineRest implements AutoCloseable {
 
 	void enqueueJson(String body) {
 		server.enqueue(new MockResponse().setBody(body).addHeader("Content-Type", "application/json"));
+	}
+
+	/** Raw bytes, for endpoints that do not answer JSON; MockWebServer sets Content-Length from them. */
+	void enqueueBytes(byte[] body, String contentType) {
+		server.enqueue(new MockResponse().setBody(new Buffer().write(body)).addHeader("Content-Type", contentType));
 	}
 
 	void enqueueEmpty(int status) {

@@ -19,6 +19,7 @@ package org.cibseven.webapp.providers;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +35,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 
 public class ProcessProviderTest {
 
@@ -136,6 +140,32 @@ public class ProcessProviderTest {
 	}
 
 	// ---------- diagrams ----------
+
+	@Test
+	void getRenderedForm_decodesTheStartFormAsUtf8WhenTheEngineDeclaresNoCharset() throws Exception {
+		// engine-rest answers application/xhtml+xml without a charset (CIB7-2204)
+		String form = "<form>\n  <input name=\"reason\" value=\"Die Lieferung kam beschädigt an\" />\n</form>\n";
+		engine.enqueueBytes(form.getBytes(StandardCharsets.UTF_8), "application/xhtml+xml");
+
+		ResponseEntity<String> response = processProvider.getRenderedForm("id-1", new HashMap<>(), user);
+
+		assertThat(response.getBody()).isEqualTo(form);
+		assertThat(response.getHeaders().getContentType())
+			.isEqualTo(MediaType.parseMediaType("application/xhtml+xml;charset=UTF-8"));
+		assertThat(response.getHeaders().containsKey(HttpHeaders.CONTENT_LENGTH)).isFalse();
+		assertThat(engine.takePath()).startsWith("/process-definition/id-1/rendered-form");
+	}
+
+	@Test
+	void getRenderedForm_passesAnEmptyAnswerThrough() throws Exception {
+		engine.enqueueEmpty(200);
+
+		ResponseEntity<String> response = processProvider.getRenderedForm("id-1", new HashMap<>(), user);
+
+		assertThat(response.getStatusCode().value()).isEqualTo(200);
+		assertThat(response.getBody()).isNull();
+		assertThat(response.getHeaders().getContentType()).isNull();
+	}
 
 	@Test
 	void fetchDiagram_readsTheBpmnXml() throws Exception {
