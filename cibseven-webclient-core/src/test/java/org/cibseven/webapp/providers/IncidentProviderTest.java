@@ -31,6 +31,9 @@ import org.junit.jupiter.api.Test;
 
 public class IncidentProviderTest {
 
+	// engine-rest sends text/plain without a charset; this must survive the round trip
+	private static final String NON_ASCII = "Größe ungültig – 姓名 fehlt\nZeile 2: äöüß";
+
 	private MockEngineRest engine;
 	private IncidentProvider incidentProvider;
 	private CIBUser user;
@@ -204,8 +207,6 @@ public class IncidentProviderTest {
 	}
 
 	// ---------- text endpoints: engine-rest sends text/plain without a charset ----------
-
-	private static final String NON_ASCII = "Größe ungültig – 姓名 fehlt\nZeile 2: äöüß";
 
 	@Test
 	void findExternalTaskErrorDetails_decodesUtf8WithoutCharset() throws Exception {

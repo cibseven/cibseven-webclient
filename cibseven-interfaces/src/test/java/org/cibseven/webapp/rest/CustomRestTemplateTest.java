@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
@@ -39,15 +40,19 @@ public class CustomRestTemplateTest {
 	}
 
 	@Test
-	void customStringConverterAddedLater_isKeptAndTakesPrecedence() {
+	void customStringConverterAddedLater_isKeptAndTakesPrecedence() throws Exception {
 		// a customer's own converter must neither be replaced nor switched to UTF-8
 		StringHttpMessageConverter custom = new StringHttpMessageConverter(StandardCharsets.ISO_8859_1);
 		CustomRestTemplate template = new CustomRestTemplate();
 		template.addConverter(custom);
 		template.initialize();
-
-		assertThat(template.getMessageConverters().get(0)).isSameAs(custom);
-		assertThat(custom.getDefaultCharset()).isEqualTo(StandardCharsets.ISO_8859_1);
+		try {
+			assertThat(template.getMessageConverters().get(0)).isSameAs(custom);
+			assertThat(custom.getDefaultCharset()).isEqualTo(StandardCharsets.ISO_8859_1);
+		} finally {
+			// initialize() builds a pooled HttpClient; release it
+			((DisposableBean) template.getRequestFactory()).destroy();
+		}
 	}
 
 	@Test

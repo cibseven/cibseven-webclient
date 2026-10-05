@@ -137,7 +137,7 @@ public class ProcessProviderTest {
 		assertThat(engine.take().getPath()).contains("name=Invoice");
 	}
 
-	// ---------- diagrams ----------
+	// ---------- rendered form ----------
 
 	@Test
 	void getRenderedForm_decodesTheStartFormAsUtf8WhenTheEngineDeclaresNoCharset() throws Exception {
@@ -150,6 +150,18 @@ public class ProcessProviderTest {
 		assertThat(response.getBody()).isEqualTo(form);
 		assertThat(engine.takePath()).startsWith("/process-definition/id-1/rendered-form");
 	}
+
+	@Test
+	void getRenderedForm_honoursACharsetTheEngineDeclares() throws Exception {
+		String form = "<form><input value=\"beschädigt\" /></form>";
+		engine.enqueueBytes(form.getBytes(StandardCharsets.ISO_8859_1), "application/xhtml+xml;charset=ISO-8859-1");
+
+		ResponseEntity<String> response = processProvider.getRenderedForm("id-1", new HashMap<>(), user);
+
+		assertThat(response.getBody()).isEqualTo(form);
+	}
+
+	// ---------- diagrams ----------
 
 	@Test
 	void fetchDiagram_readsTheBpmnXml() throws Exception {

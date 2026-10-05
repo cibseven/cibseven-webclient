@@ -21,6 +21,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
@@ -98,7 +99,7 @@ final class MockEngineRest implements AutoCloseable {
 
 	/** UTF-8 text sent as {@code text/plain} without a charset, the way engine-rest sends stack traces. */
 	void enqueuePlainText(String body) {
-		enqueueBytes(body.getBytes(java.nio.charset.StandardCharsets.UTF_8), "text/plain");
+		enqueueBytes(body.getBytes(StandardCharsets.UTF_8), "text/plain");
 	}
 
 	void enqueueEmpty(int status) {
