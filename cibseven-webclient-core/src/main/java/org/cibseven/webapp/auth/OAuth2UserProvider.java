@@ -70,8 +70,6 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> {
 	@Value("${cibseven.webclient.sso.endpoints.revocation:}") String revocationEndpoint;
 	/** OIDC RP-Initiated Logout end_session_endpoint. When blank, the identity provider session is left untouched. */
 	@Value("${cibseven.webclient.sso.endpoints.endSession:}") String endSessionEndpoint;
-	/** Must be registered as a valid post logout redirect URI at the identity provider. */
-	@Value("${cibseven.webclient.sso.postLogoutRedirectUri:}") String postLogoutRedirectUri;
 	@Value("${cibseven.webclient.sso.clientId}") String clientId;
 	@Value("${cibseven.webclient.sso.clientSecret:}") String clientSecret;
 	@Value("${cibseven.webclient.sso.userIdProperty}") String userIdProperty;
@@ -282,7 +280,7 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> {
 	}
 
 	@Override
-	public String getEndSessionUrl(User user) {
+	public String getEndSessionUrl(User user, String postLogoutRedirectUri) {
 		String idToken = user instanceof SSOUser oauthUser ? oauthUser.getIdToken() : null;
 		return ssoHelper.buildEndSessionUrl(idToken, postLogoutRedirectUri);
 	}

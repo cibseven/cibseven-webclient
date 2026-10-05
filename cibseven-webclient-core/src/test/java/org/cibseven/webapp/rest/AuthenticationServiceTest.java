@@ -21,6 +21,8 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Map;
+
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.User;
@@ -44,9 +46,10 @@ public class AuthenticationServiceTest {
 	@Test
 	void logout_handsTheProvidersEndSessionUrlToTheBrowser() {
 		User user = new CIBUser("demo");
-		when(userProvider.getEndSessionUrl(user)).thenReturn("https://idp.example/logout?client_id=c");
+		when(userProvider.getEndSessionUrl(user, "https://app/logged-out.html")).thenReturn("https://idp.example/logout?client_id=c");
 
-		assertThat(service.logout(user)).containsEntry("endSessionUrl", "https://idp.example/logout?client_id=c");
+		assertThat(service.logout(user, Map.of("postLogoutRedirectUri", "https://app/logged-out.html")))
+			.containsEntry("endSessionUrl", "https://idp.example/logout?client_id=c");
 	}
 
 	// The URL is built from the tokens the provider forgets while logging out
@@ -54,15 +57,15 @@ public class AuthenticationServiceTest {
 	void logout_asksForTheEndSessionUrlBeforeTheProviderLogsTheUserOut() {
 		User user = new CIBUser("demo");
 
-		service.logout(user);
+		service.logout(user, null);
 
 		InOrder order = inOrder(userProvider);
-		order.verify(userProvider).getEndSessionUrl(user);
+		order.verify(userProvider).getEndSessionUrl(user, null);
 		order.verify(userProvider).logout(user);
 	}
 
 	@Test
 	void logout_answersNothingWhenThereIsNoIdentityProviderSessionToEnd() {
-		assertThat(service.logout(new CIBUser("demo"))).isEmpty();
+		assertThat(service.logout(new CIBUser("demo"), Map.of())).isEmpty();
 	}
 }

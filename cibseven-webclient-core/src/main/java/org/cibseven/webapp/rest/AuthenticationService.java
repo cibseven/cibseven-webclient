@@ -55,8 +55,9 @@ public class AuthenticationService extends BaseService {
 	@Operation(summary = "Ends the session of the user; revokes the tokens held for them at an external identity provider")
 	@ApiResponses({@ApiResponse(responseCode = "200", description = "Contains 'endSessionUrl' if the browser must also be sent to the identity provider to end its session") })
 	@RequestMapping(value = "/logout", method = RequestMethod.POST)
-	public Map<String, String> logout(User user) {
-		String endSessionUrl = baseUserProvider.getEndSessionUrl(user);
+	public Map<String, String> logout(User user, @RequestBody(required = false) Map<String, String> data) {
+		String postLogoutRedirectUri = data == null ? null : data.get("postLogoutRedirectUri");
+		String endSessionUrl = baseUserProvider.getEndSessionUrl(user, postLogoutRedirectUri);
 		baseUserProvider.logout(user);
 		return endSessionUrl == null ? Map.of() : Map.of("endSessionUrl", endSessionUrl);
 	}

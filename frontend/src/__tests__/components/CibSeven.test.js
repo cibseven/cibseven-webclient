@@ -18,6 +18,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
 import CibSeven from '@/components/CibSeven.vue'
 import { AuthService } from '@/services.js'
+import { LOGGED_OUT_KEY } from '@/constants.js'
 
 // Mock services
 vi.mock('@/services.js', () => ({
@@ -165,6 +166,7 @@ describe('CibSeven.vue', () => {
 
       beforeEach(() => {
         AuthService.logout.mockReset()
+        sessionStorage.clear()
         localStorage.setItem('accessToken', 'a')
         delete window.location
         window.location = { hash: '#/seven/auth/tasks', href: 'http://localhost/', reload: vi.fn() }
@@ -180,6 +182,9 @@ describe('CibSeven.vue', () => {
 
         await CibSeven.methods.logout.call(ssoThis)
 
+        // asks the identity provider to return to the app, and marks that it should wait for the user
+        expect(AuthService.logout).toHaveBeenCalledWith('http://localhost/')
+        expect(sessionStorage.getItem(LOGGED_OUT_KEY)).toBe('1')
         expect(window.location.href).toBe('https://idp/logout?client_id=c')
         expect(window.location.reload).not.toHaveBeenCalled()
         expect(localStorage.getItem('accessToken')).toBeNull()
@@ -192,6 +197,7 @@ describe('CibSeven.vue', () => {
 
         expect(window.location.hash).toBe('#/')
         expect(window.location.reload).toHaveBeenCalled()
+        expect(sessionStorage.getItem(LOGGED_OUT_KEY)).toBeNull()
       })
 
       it('should still log out locally when the backend call fails', async () => {

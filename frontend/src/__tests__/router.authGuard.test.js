@@ -643,6 +643,17 @@ describe('inline route hooks', () => {
         expect(window.location.href).toBe('./sso-login.html?nextUrl=')
       })
 
+      it('should show the logged-out page, not log in again, when back from the identity provider logout', async () => {
+        setRoot({ config: { ssoActive: true } })
+        SetupService.getStatus.mockClear()
+        sessionStorage.setItem('cibseven:loggedOut', '1')
+
+        await expect(hook()(route({ query: {} }))).resolves.toEqual({ name: 'loggedOut' })
+        expect(SetupService.getStatus).not.toHaveBeenCalled()
+        expect(window.location.href).toBe('')
+        sessionStorage.clear()
+      })
+
       it('should still hand over when the setup check fails', async () => {
         setRoot({ config: { ssoActive: true } })
         SetupService.getStatus.mockRejectedValue(new Error('503'))

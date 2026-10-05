@@ -179,6 +179,7 @@ import FeedbackModal from '@/components/modals/FeedbackModal.vue'
 import PluginSlot from '@/components/common/PluginSlot.vue'
 import { updateAppTitle } from '@/utils/init'
 import { AuthService } from '@/services.js'
+import { LOGGED_OUT_KEY } from '@/constants.js'
 
 export default {
   name: 'CibSeven',
@@ -451,7 +452,9 @@ export default {
       let endSessionUrl
       if (this.$root?.config?.ssoActive) {
         try {
-          endSessionUrl = (await AuthService.logout())?.endSessionUrl
+          // The identity provider returns the browser to the app, without hash or query
+          const appUrl = new URL('./', window.location.href).href
+          endSessionUrl = (await AuthService.logout(appUrl))?.endSessionUrl
         } catch (error) {
           // Never block the local logout on a failing identity provider
           console.error('Logout at the backend failed', error)
@@ -465,7 +468,9 @@ export default {
       sessionStorage.removeItem('tokenModeler')
       // Note: engine token cleanup is handled by CIBHeaderFlow.logout()
       if (endSessionUrl) {
-        // RP-Initiated Logout: the identity provider ends its session and sends the browser back
+        // RP-Initiated Logout: the identity provider ends its session and sends the browser back.
+        // The marker makes the app show the logged-out page rather than log in again on its own.
+        sessionStorage.setItem(LOGGED_OUT_KEY, '1')
         window.location.href = endSessionUrl
         return
       }

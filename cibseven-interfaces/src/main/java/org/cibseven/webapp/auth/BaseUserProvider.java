@@ -50,9 +50,10 @@ public abstract class BaseUserProvider<R extends StandardLogin> implements JwtUs
 	 * URL the browser has to be sent to in order to end the session at an external identity provider
 	 * (OIDC RP-Initiated Logout). Called by the logout service together with {@link #logout(User)}.
 	 *
+	 * @param postLogoutRedirectUri where the identity provider sends the browser afterwards; may be null
 	 * @return the URL, or null if logging out here is all there is to do
 	 */
-	public String getEndSessionUrl(User user) {
+	public String getEndSessionUrl(User user, String postLogoutRedirectUri) {
 		return null;
 	}
 	public abstract User getSelfInfoJSessionId(String userId, String jSessionId, HttpServletRequest rq);

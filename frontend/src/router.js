@@ -45,6 +45,8 @@ import HumanTasksView from '@/components/task/HumanTasksView.vue'
 import TasksView from '@/components/task/TasksView.vue'
 import TaskView from '@/components/task/TaskView.vue'
 import LoginView from '@/components/login/LoginView.vue'
+import LoggedOutView from '@/components/login/LoggedOutView.vue'
+import { LOGGED_OUT_KEY } from '@/constants.js'
 import InitialSetup from '@/components/setup/InitialSetup.vue'
 import { BWaitingBox, TranslationsDownload } from '@cib/common-frontend'
 import DeployedForm from '@/components/forms/DeployedForm.vue'
@@ -70,6 +72,8 @@ const appRoutes = [
     path: '/seven', name: 'seven', component: CibSeven, children: [
       {
         path: 'login', name: 'login', beforeEnter: async function (to) {
+          // Back from the identity provider's logout: wait for the user instead of logging in again
+          if (router.root.config.ssoActive && sessionStorage.getItem(LOGGED_OUT_KEY)) return { name: 'loggedOut' }
           // Check if setup is required first
           try {
             const res = await SetupService.getStatus()
@@ -89,6 +93,8 @@ const appRoutes = [
           }
         }, component: LoginView
       },
+
+      { path: 'logged-out', name: 'loggedOut', component: LoggedOutView },
 
       { path: 'setup', name: 'setup', beforeEnter: setupGuard, component: InitialSetup },
 

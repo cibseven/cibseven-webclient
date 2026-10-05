@@ -92,7 +92,6 @@ public class OAuth2UserProviderTest {
 		ReflectionTestUtils.setField(created, "introspectionEndpoint", server.url("/introspect").toString());
 		ReflectionTestUtils.setField(created, "revocationEndpoint", server.url("/revoke").toString());
 		ReflectionTestUtils.setField(created, "endSessionEndpoint", "https://idp.example/logout");
-		ReflectionTestUtils.setField(created, "postLogoutRedirectUri", "https://app.example/");
 		ReflectionTestUtils.setField(created, "clientId", "cibseven");
 		ReflectionTestUtils.setField(created, "clientSecret", "s3cret");
 		ReflectionTestUtils.setField(created, "userIdProperty", "sub");
@@ -346,13 +345,15 @@ public class OAuth2UserProviderTest {
 		SSOUser user = new SSOUser("demo");
 		user.setIdToken("the.id.token");
 
-		assertThat(provider.getEndSessionUrl(user)).isEqualTo(
-			"https://idp.example/logout?client_id=cibseven&id_token_hint=the.id.token&post_logout_redirect_uri=https://app.example/");
+		assertThat(provider.getEndSessionUrl(user, "https://app.example/logged-out.html")).isEqualTo(
+			"https://idp.example/logout?client_id=cibseven&id_token_hint=the.id.token"
+				+ "&post_logout_redirect_uri=https://app.example/logged-out.html");
 	}
 
 	@Test
 	void getEndSessionUrl_worksWithoutAnIdToken() {
-		assertThat(provider.getEndSessionUrl(mock(User.class))).doesNotContain("id_token_hint");
+		assertThat(provider.getEndSessionUrl(mock(User.class), null))
+			.doesNotContain("id_token_hint").doesNotContain("post_logout_redirect_uri");
 	}
 
 	@Test
