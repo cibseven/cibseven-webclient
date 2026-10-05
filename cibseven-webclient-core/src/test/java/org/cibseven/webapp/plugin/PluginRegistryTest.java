@@ -335,4 +335,112 @@ public class PluginRegistryTest {
 		verify(watched, never()).getInputStream();
 	}
 
+	private static PluginRegistry registryOf(List<String> disabled, Resource... resources) throws IOException {
+		ResourcePatternResolver resolver = mock(ResourcePatternResolver.class);
+		when(resolver.getResources(MANIFESTS)).thenReturn(resources);
+		return new PluginRegistry(resolver, disabled);
+	}
+
+	private static ObjectNode reportOf(PluginRegistry registry, String id) {
+		return registry.getReport().stream()
+			.filter(entry -> id.equals(entry.path("id").asText(null)))
+			.findFirst()
+			.orElseThrow(() -> new AssertionError("no report entry for \"" + id + "\""));
+	}
+
+	/** Name, version and description are what an administrator recognises a plugin by. */
+	@Test
+	public void passesNameVersionAndDescriptionOnToTheFrontend() throws IOException {
+		PluginRegistry registry = registryOf(List.of(),
+			manifest("/app/a.jar!/META-INF/cibseven-plugins/demo/plugin.json",
+				"{\"entry\":\"index.js\",\"apiVersion\":\"2.3\",\"name\":\"Demo\",\"version\":\"1.2.0\",\"description\":\"Shows a demo\"}"));
+
+		ObjectNode manifest = registry.getManifests().get(0);
+		assertEquals("Demo", manifest.get("name").asText());
+		assertEquals("1.2.0", manifest.get("version").asText());
+		assertEquals("Shows a demo", manifest.get("description").asText());
+	}
+
+	@Test
+	public void reportsAnAcceptedPluginWithTheJarItCameFrom() throws IOException {
+		PluginRegistry registry = registryOf(List.of(),
+			manifest("/app/demo-plugin.jar!/META-INF/cibseven-plugins/demo/plugin.json",
+				"{\"entry\":\"index.js\",\"apiVersion\":\"2.3\",\"version\":\"1.2.0\"}"));
+
+		ObjectNode entry = reportOf(registry, "demo");
+		assertEquals("ACCEPTED", entry.get("status").asText());
+		assertEquals("demo-plugin.jar", entry.get("source").asText());
+		assertEquals("1.2.0", entry.get("version").asText());
+		assertFalse(entry.has("reason"));
+	}
+
+	/** The frontend loads from the manifests, which must not pick up the report's fields. */
+	@Test
+	public void keepsTheReportFieldsOutOfTheServedManifest() throws IOException {
+		PluginRegistry registry = registryOf(List.of(),
+			manifest("/app/a.jar!/META-INF/cibseven-plugins/demo/plugin.json", "{\"entry\":\"index.js\",\"apiVersion\":\"2.3\"}"));
+
+		ObjectNode manifest = registry.getManifests().get(0);
+		assertFalse(manifest.has("status"));
+		assertFalse(manifest.has("source"));
+	}
+
+	@Test
+	public void reportsADisabledPlugin() throws IOException {
+		PluginRegistry registry = new PluginRegistry(twoPlugins(), List.of("first"));
+
+		assertEquals("DISABLED", reportOf(registry, "first").get("status").asText());
+		assertEquals("ACCEPTED", reportOf(registry, "second").get("status").asText());
+	}
+
+	@Test
+	public void reportsAManifestWithoutEntryAndKeepsWhatItCouldRead() throws IOException {
+		PluginRegistry registry = registryOf(List.of(),
+			manifest("/app/a.jar!/META-INF/cibseven-plugins/demo/plugin.json", "{\"apiVersion\":\"2.3\",\"version\":\"0.9\"}"));
+
+		ObjectNode entry = reportOf(registry, "demo");
+		assertEquals("REJECTED", entry.get("status").asText());
+		assertEquals("NO_ENTRY", entry.get("reason").asText());
+		assertEquals("0.9", entry.get("version").asText());
+		assertTrue(registry.getManifests().isEmpty());
+	}
+
+	@Test
+	public void reportsAnUnreadableManifest() throws IOException {
+		PluginRegistry registry = registryOf(List.of(),
+			manifest("/app/a.jar!/META-INF/cibseven-plugins/demo/plugin.json", "{ not json"));
+
+		assertEquals("UNREADABLE", reportOf(registry, "demo").get("reason").asText());
+	}
+
+	@Test
+	public void reportsAFolderNameThatIsNoValidId() throws IOException {
+		PluginRegistry registry = registryOf(List.of(),
+			manifest("/app/a.jar!/META-INF/cibseven-plugins/-demo/plugin.json", "{\"entry\":\"index.js\",\"apiVersion\":\"2.3\"}"));
+
+		assertEquals("INVALID_ID", reportOf(registry, "-demo").get("reason").asText());
+	}
+
+	/** The second one is the one an administrator has to find, so both stay in the report. */
+	@Test
+	public void reportsTheSecondOfTwoPluginsSharingAnId() throws IOException {
+		PluginRegistry registry = registryOf(List.of(),
+			manifest("/app/a.jar!/META-INF/cibseven-plugins/demo/plugin.json", "{\"entry\":\"first.js\",\"apiVersion\":\"2.3\"}"),
+			manifest("/app/b.jar!/META-INF/cibseven-plugins/demo/plugin.json", "{\"entry\":\"second.js\",\"apiVersion\":\"2.3\"}"));
+
+		List<ObjectNode> report = registry.getReport();
+		assertEquals(2, report.size());
+		assertEquals("ACCEPTED", report.get(0).get("status").asText());
+		assertEquals("a.jar", report.get(0).get("source").asText());
+		assertEquals("DUPLICATE_ID", report.get(1).get("reason").asText());
+		assertEquals("b.jar", report.get(1).get("source").asText());
+	}
+
+	@Test
+	public void namesTheFolderAPluginOutsideOfAJarCameFrom() {
+		ObjectNode entry = reportOf(new PluginRegistry(new PluginProperties()), "test-plugin");
+
+		assertEquals("test-classes", entry.get("source").asText());
+	}
+
 }

@@ -106,6 +106,24 @@ export function getPlugin(slotName) {
 }
 
 /**
+ * The slots each plugin contributed to, by plugin id, for the administration page.
+ * The application's own contributions carry no plugin id and are left out.
+ *
+ * @returns {Record<string, Array<string>>}
+ */
+export function getSlotsByPlugin() {
+  const slots = {}
+  Object.entries(pluginSlots).forEach(([slotName, slot]) => {
+    slot.value.forEach(({ pluginId }) => {
+      if (!pluginId) return
+      slots[pluginId] = slots[pluginId] ?? []
+      if (!slots[pluginId].includes(slotName)) slots[pluginId].push(slotName)
+    })
+  })
+  return slots
+}
+
+/**
  * Removes all registered contributions. Intended for tests. Reserved ids are kept:
  * they belong to the application, which claims them once while it loads.
  */

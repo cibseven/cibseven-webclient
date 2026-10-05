@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { fetchPluginManifests, loadPlugins, initPlugins, syncPluginTranslations } from '@/plugins/pluginLoader.js'
+import { fetchPluginManifests, loadPlugins, initPlugins, syncPluginTranslations, getPluginOutcomes } from '@/plugins/pluginLoader.js'
 import { setPluginContext } from '@/plugins/pluginContext.js'
 import { getPlugin, resetPlugins, PLUGIN_API_VERSION } from '@/plugins/pluginsConfig.js'
 import { axios } from '@/globals.js'
@@ -327,6 +327,80 @@ describe('pluginLoader', () => {
       await expect(loadPlugins([manifest], 'de', () => Promise.resolve({ register: vi.fn() })))
         .resolves.toEqual(['demo'])
       expect(i18n.global.mergeLocaleMessage).not.toHaveBeenCalled()
+    })
+  })
+
+  // What the administration page shows for each plugin
+  describe('getPluginOutcomes', () => {
+    it('records a plugin that loaded', async () => {
+      mockHttp({})
+
+      await loadPlugins([validManifest], 'en', () => Promise.resolve({ register: vi.fn() }))
+
+      expect(getPluginOutcomes()).toEqual({ demo: { status: 'loaded' } })
+    })
+
+    it('records a plugin built against a different API version', async () => {
+      mockHttp({})
+
+      await loadPlugins([{ ...validManifest, apiVersion: '0.1' }], 'en', vi.fn())
+
+      expect(getPluginOutcomes().demo).toEqual({ status: 'incompatible' })
+    })
+
+    it('records a manifest without entry under its id', async () => {
+      mockHttp({})
+
+      await loadPlugins([{ id: 'demo', apiVersion: PLUGIN_API_VERSION }], 'en', vi.fn())
+
+      expect(getPluginOutcomes().demo).toEqual({ status: 'invalid' })
+    })
+
+    it('records nothing for a manifest without id', async () => {
+      mockHttp({})
+
+      await loadPlugins([{ entry: 'index.js' }], 'en', vi.fn())
+
+      expect(getPluginOutcomes()).toEqual({})
+    })
+
+    it('records a plugin that exports no register function', async () => {
+      mockHttp({})
+
+      await loadPlugins([validManifest], 'en', () => Promise.resolve({}))
+
+      expect(getPluginOutcomes().demo).toEqual({ status: 'no-register' })
+    })
+
+    it('records the error of a plugin that failed', async () => {
+      mockHttp({})
+      const register = vi.fn(() => { throw new Error('boom') })
+
+      await loadPlugins([validManifest], 'en', () => Promise.resolve({ register }))
+
+      expect(getPluginOutcomes().demo).toEqual({ status: 'failed', error: 'boom' })
+    })
+
+    it('records a plugin whose import timed out as failed', async () => {
+      vi.useFakeTimers()
+      mockHttp({})
+
+      const loading = loadPlugins([validManifest], 'en', () => new Promise(() => {}))
+      await vi.advanceTimersByTimeAsync(11000)
+      await loading
+
+      expect(getPluginOutcomes().demo.status).toBe('failed')
+      expect(getPluginOutcomes().demo.error).toContain('timed out')
+      vi.useRealTimers()
+    })
+
+    it('keeps only the outcomes of the last load', async () => {
+      mockHttp({})
+      await loadPlugins([validManifest], 'en', () => Promise.resolve({ register: vi.fn() }))
+
+      await loadPlugins([{ ...validManifest, id: 'other' }], 'en', () => Promise.resolve({ register: vi.fn() }))
+
+      expect(Object.keys(getPluginOutcomes())).toEqual(['other'])
     })
   })
 
