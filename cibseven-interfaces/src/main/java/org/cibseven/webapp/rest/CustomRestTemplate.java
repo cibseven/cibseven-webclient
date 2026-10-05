@@ -17,6 +17,7 @@
 package org.cibseven.webapp.rest;
 
 import java.util.ArrayList;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -44,6 +45,7 @@ import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
 
@@ -79,6 +81,7 @@ public class CustomRestTemplate extends RestTemplate {
      */
     public CustomRestTemplate() {
         super();
+        decodeStringsAsUtf8();
     }
 
     /**
@@ -89,6 +92,19 @@ public class CustomRestTemplate extends RestTemplate {
      */
     public CustomRestTemplate(ClientHttpRequestFactory requestFactory) {
         super(requestFactory);
+        decodeStringsAsUtf8();
+    }
+
+    /**
+     * engine-rest sends its text responses (stack traces, error details, rendered forms) without a
+     * charset, and the default String converter would then decode them as ISO-8859-1, garbling every
+     * non-ASCII character. The engine always writes UTF-8, so make that the fallback; a charset the
+     * response does declare still wins. Templates built by copying these converters inherit this.
+     */
+    private void decodeStringsAsUtf8() {
+        getMessageConverters().replaceAll(converter -> converter instanceof StringHttpMessageConverter
+                ? new StringHttpMessageConverter(StandardCharsets.UTF_8)
+                : converter);
     }
 
     /**

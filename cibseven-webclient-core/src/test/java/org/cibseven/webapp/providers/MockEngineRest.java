@@ -96,6 +96,11 @@ final class MockEngineRest implements AutoCloseable {
 		server.enqueue(new MockResponse().setBody(new Buffer().write(body)).addHeader("Content-Type", contentType));
 	}
 
+	/** UTF-8 text sent as {@code text/plain} without a charset, the way engine-rest sends stack traces. */
+	void enqueuePlainText(String body) {
+		enqueueBytes(body.getBytes(java.nio.charset.StandardCharsets.UTF_8), "text/plain");
+	}
+
 	void enqueueEmpty(int status) {
 		server.enqueue(new MockResponse().setResponseCode(status));
 	}

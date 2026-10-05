@@ -202,4 +202,32 @@ public class IncidentProviderTest {
 		assertThat(incidents).hasSize(1);
 		assertThat(engine.takePath()).isEqualTo("/history/incident");
 	}
+
+	// ---------- text endpoints: engine-rest sends text/plain without a charset ----------
+
+	private static final String NON_ASCII = "Größe ungültig – 姓名 fehlt\nZeile 2: äöüß";
+
+	@Test
+	void findExternalTaskErrorDetails_decodesUtf8WithoutCharset() throws Exception {
+		engine.enqueuePlainText(NON_ASCII);
+
+		assertThat(incidentProvider.findExternalTaskErrorDetails("et-1", user)).isEqualTo(NON_ASCII);
+		assertThat(engine.takePath()).isEqualTo("/external-task/et-1/errorDetails");
+	}
+
+	@Test
+	void findHistoricExternalTaskErrorDetails_decodesUtf8WithoutCharset() throws Exception {
+		engine.enqueuePlainText(NON_ASCII);
+
+		assertThat(incidentProvider.findHistoricExternalTaskErrorDetails("log-1", user)).isEqualTo(NON_ASCII);
+		assertThat(engine.takePath()).isEqualTo("/history/external-task-log/log-1/error-details");
+	}
+
+	@Test
+	void findHistoricStacktraceByJobId_decodesUtf8WithoutCharset() throws Exception {
+		engine.enqueuePlainText(NON_ASCII);
+
+		assertThat(incidentProvider.findHistoricStacktraceByJobId("log-1", user)).isEqualTo(NON_ASCII);
+		assertThat(engine.takePath()).isEqualTo("/history/job-log/log-1/stacktrace");
+	}
 }
