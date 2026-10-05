@@ -71,7 +71,8 @@ The main CIB seven BPM web application: a multi-module Maven project with a Vue 
 - For the house testing recipes (Vuex store, axios service, mixin, component with and without mounting) and the jsdom pitfalls, see the [`frontend-vitest-coverage` skill](.claude/skills/frontend-vitest-coverage/SKILL.md).
 
 ## Git Conventions
-- One-line conventional commit messages: `type(scope): summary` (e.g. `fix(CIBHeaderFlow): …`); no body, no trailers.
+- Branch names always contain the Jira key: `<type>/<JIRA-KEY>-<slug>` (e.g. `fix/CIB7-2204-rendered-form-encoding`). No ticket yet? Ask for one before creating the branch.
+- One-line conventional commit messages: `type(scope): summary` (e.g. `fix(CIBHeaderFlow): …`); no body, no trailers. When the change belongs to a ticket, append the key: `fix(web): … (CIB7-1993)`. The PR title follows the same pattern.
 - Never commit `.npmrc` changes (contains registry credentials).
 - If a dependency was temporarily switched to a local `file:` link for testing, revert it (and the lockfile) before committing.
 
