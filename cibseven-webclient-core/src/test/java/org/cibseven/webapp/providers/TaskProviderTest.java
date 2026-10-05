@@ -127,6 +127,8 @@ public class TaskProviderTest {
 		ResponseEntity<String> response = taskProvider.getRenderedForm("task-1", new HashMap<>(), user);
 
 		assertThat(response.getBody()).isEqualTo(form);
+		// the engine's Content-Length is passed on; the re-encoded body must fit it, or the form is cut off
+		assertThat(response.getHeaders().getContentLength()).isEqualTo(response.getBody().getBytes(StandardCharsets.UTF_8).length);
 		assertThat(engine.takePath()).startsWith("/task/task-1/rendered-form");
 	}
 

@@ -101,9 +101,14 @@ public class CustomRestTemplate extends RestTemplate {
      * character. The engine always writes UTF-8, so make that the fallback; a charset the response does
      * declare still wins. Templates built by copying these converters inherit this.
      * <p>
+     * The fallback applies to every String read through this template, including embedded form HTML
+     * that {@code TaskService} fetches from process applications: a source that is not UTF-8 must
+     * declare its charset.
+     * <p>
      * This runs in the constructor, so it only adjusts Spring's own default converter, in place.
-     * Converters registered later ({@link #addConverter}, {@link #setMessageConverters}) are not
-     * touched, and those added through {@link #addConverter} take precedence.
+     * Converters registered later are not touched: those passed to {@link #addConverter} before
+     * {@link #initialize()} runs are inserted first, and those set through
+     * {@link #setMessageConverters} replace the list.
      */
     private void decodeStringsAsUtf8() {
         getMessageConverters().stream()

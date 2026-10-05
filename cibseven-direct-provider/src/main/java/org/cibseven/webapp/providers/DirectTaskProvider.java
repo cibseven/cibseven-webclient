@@ -723,7 +723,8 @@ private List<VariableInstanceDto> queryVariableInstances(VariableInstanceQueryDt
 
 		Object renderedTaskForm = formService.getRenderedTaskForm(taskId);
 		if(renderedTaskForm != null) {
-			// already a String: re-encoding it through the JVM default charset garbled non-ASCII text (CIB7-2204)
+			// the engine renders the form in memory, so no byte round trip is needed; re-encoding it
+			// through the JVM default charset garbled non-ASCII text (CIB7-2204)
 			return ResponseEntity.ok(renderedTaskForm.toString());
 		}
 

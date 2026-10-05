@@ -955,7 +955,8 @@ public class DirectProcessProvider implements IProcessProvider {
 
 		Object startForm = formService.getRenderedStartForm(processDefinitionId);
 		if (startForm != null) {
-			// already a String: re-encoding it through the JVM default charset garbled non-ASCII text (CIB7-2204)
+			// the engine renders the form in memory, so no byte round trip is needed; re-encoding it
+			// through the JVM default charset garbled non-ASCII text (CIB7-2204)
 			return ResponseEntity.ok(startForm.toString());
 	}
 
