@@ -203,6 +203,7 @@ public class SsoHelper {
 			params.add("token_type_hint", tokenTypeHint);
 			HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, toMultiValueMap(formUrlEncodedHeader));
 			new RestTemplate().postForLocation(revocationEndpoint, request);
+			log.info("Revoked {} at {}", tokenTypeHint, revocationEndpoint);
 			return true;
 		} catch (RuntimeException e) {
 			log.warn("Failed to revoke {}: {}", tokenTypeHint, e.getMessage());
