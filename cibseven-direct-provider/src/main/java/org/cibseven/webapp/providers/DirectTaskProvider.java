@@ -16,7 +16,6 @@
  */
 package org.cibseven.webapp.providers;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLDecoder;
@@ -68,7 +67,6 @@ import org.cibseven.bpm.engine.rest.dto.task.TaskQueryDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskWithAttachmentAndCommentDto;
 import org.cibseven.bpm.engine.rest.exception.RestException;
 import org.cibseven.bpm.engine.rest.util.ApplicationContextPathUtil;
-import org.cibseven.bpm.engine.rest.util.EncodingUtil;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.bpm.engine.runtime.VariableInstanceQuery;
 import org.cibseven.bpm.engine.task.DelegationState;
@@ -725,13 +723,9 @@ private List<VariableInstanceDto> queryVariableInstances(VariableInstanceQueryDt
 
 		Object renderedTaskForm = formService.getRenderedTaskForm(taskId);
 		if(renderedTaskForm != null) {
-			String content = renderedTaskForm.toString();
-			InputStream stream = new ByteArrayInputStream(content.getBytes(EncodingUtil.DEFAULT_ENCODING));
-			try {
-				return ResponseEntity.ok(IOUtils.toString(stream, Charset.defaultCharset()));
-			} catch (IOException e) {
-				throw new SystemException(e.getMessage(), e);
-			}
+			// the engine renders the form in memory, so no byte round trip is needed; re-encoding it
+			// through the JVM default charset garbled non-ASCII text (CIB7-2204)
+			return ResponseEntity.ok(renderedTaskForm.toString());
 		}
 
 		throw new SystemException("No matching rendered form for task with the id " + taskId + " found.");
