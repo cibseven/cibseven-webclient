@@ -258,6 +258,9 @@ export async function loadPlugins(manifests, lang, importer = importModule) {
   return results.filter(Boolean)
 }
 
+/** The load started by 'initPlugins'; settled already when none was started. */
+let pending = Promise.resolve([])
+
 /**
  * Discovers and loads plugins. Called during bootstrap; resolves to an empty
  * array when no plugin is present, which is the default for the webclient.
@@ -266,7 +269,23 @@ export async function loadPlugins(manifests, lang, importer = importModule) {
  * @param {(url: string) => Promise<object>} [importer] - Overridable in tests
  * @returns {Promise<Array<string>>} ids of the plugins that were loaded
  */
-export async function initPlugins(lang, importer = importModule) {
+export function initPlugins(lang, importer = importModule) {
+  pending = discoverAndLoad(lang, importer)
+  return pending
+}
+
+/**
+ * Settles once the plugins started by 'initPlugins' have loaded or failed. The
+ * application starts them without waiting, so a page reporting on them waits here
+ * rather than reading a load still under way. Never rejects.
+ *
+ * @returns {Promise<void>}
+ */
+export async function whenPluginsLoaded() {
+  await pending.catch(() => {})
+}
+
+async function discoverAndLoad(lang, importer) {
   // Only an explicit false skips the request; a backend not reporting the flag is asked
   if (getPluginContext().config?.pluginsEnabled === false) return []
 

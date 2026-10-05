@@ -60,7 +60,7 @@ export { defineTabBar } from '@/utils/tabBar.js'
 export * as services from '@/services.js'
 export { setPluginContext, getPluginContext } from '@/plugins/pluginContext.js'
 export { setPluginRouter, navigation } from '@/plugins/pluginNavigation.js'
-export { initPlugins, loadPlugins, fetchPluginManifests, mergeTranslations, getPluginOutcomes } from '@/plugins/pluginLoader.js'
+export { initPlugins, loadPlugins, fetchPluginManifests, mergeTranslations, getPluginOutcomes, whenPluginsLoaded } from '@/plugins/pluginLoader.js'
 export { default as PluginSlot } from '@/components/common/PluginSlot.vue'
 export { default as PluginBoundary } from '@/components/common/PluginBoundary.vue'
 

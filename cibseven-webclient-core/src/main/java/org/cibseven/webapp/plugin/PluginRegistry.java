@@ -64,8 +64,13 @@ public class PluginRegistry {
 	/** Ids end up in URLs, so anything that could leave the plugin folder is rejected */
 	private static final Pattern VALID_ID = Pattern.compile("[A-Za-z0-9][A-Za-z0-9._-]*");
 
-	private static final List<String> OPTIONAL_FIELDS =
-		List.of("name", "version", "description", "slots", "styles", "translations");
+	private static final List<String> OPTIONAL_FIELDS = List.of("slots", "styles", "translations");
+
+	/**
+	 * Read for the report only: the plugin list is public, and the loader needs none of
+	 * them, so it does not tell anonymous callers which versions are installed.
+	 */
+	private static final List<String> REPORT_FIELDS = List.of("name", "version", "description");
 
 	/** What the scan made of a plugin it found, as reported to administrators. */
 	public enum Status { ACCEPTED, DISABLED, REJECTED }
@@ -164,7 +169,9 @@ public class PluginRegistry {
 					continue;
 				}
 				folders.put(id, folder);
-				found.add(manifest);
+				ObjectNode served = manifest.deepCopy();
+				served.remove(REPORT_FIELDS);
+				found.add(served);
 				entries.add(entry(manifest, Status.ACCEPTED, null, source));
 			}
 		} catch (IOException e) {
@@ -229,6 +236,9 @@ public class PluginRegistry {
 			for (String field : OPTIONAL_FIELDS) {
 				if (json.has(field)) manifest.set(field, json.get(field));
 			}
+			for (String field : REPORT_FIELDS) {
+				if (json.has(field)) manifest.set(field, json.get(field));
+			}
 			if (!hasEntry) {
 				log.warn("Ignoring plugin \"{}\": its manifest declares no entry", id);
 				return Rejection.NO_ENTRY;
@@ -246,7 +256,7 @@ public class PluginRegistry {
 		return manifest;
 	}
 
-	/** A copy, so the manifest the frontend loads from carries no report fields. */
+	/** A copy, so the manifest the frontend loads from carries no status fields. */
 	private static ObjectNode entry(ObjectNode manifest, Status status, Rejection rejection, String source) {
 		ObjectNode entry = manifest.deepCopy();
 		entry.put("status", status.name());

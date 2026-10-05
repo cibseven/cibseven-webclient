@@ -350,15 +350,29 @@ public class PluginRegistryTest {
 
 	/** Name, version and description are what an administrator recognises a plugin by. */
 	@Test
-	public void passesNameVersionAndDescriptionOnToTheFrontend() throws IOException {
+	public void reportsNameVersionAndDescription() throws IOException {
+		PluginRegistry registry = registryOf(List.of(),
+			manifest("/app/a.jar!/META-INF/cibseven-plugins/demo/plugin.json",
+				"{\"entry\":\"index.js\",\"apiVersion\":\"2.3\",\"name\":\"Demo\",\"version\":\"1.2.0\",\"description\":\"Shows a demo\"}"));
+
+		ObjectNode entry = reportOf(registry, "demo");
+		assertEquals("Demo", entry.get("name").asText());
+		assertEquals("1.2.0", entry.get("version").asText());
+		assertEquals("Shows a demo", entry.get("description").asText());
+	}
+
+	/** The plugin list is public, so it must not tell anonymous callers which versions are installed. */
+	@Test
+	public void keepsNameVersionAndDescriptionOutOfThePublicList() throws IOException {
 		PluginRegistry registry = registryOf(List.of(),
 			manifest("/app/a.jar!/META-INF/cibseven-plugins/demo/plugin.json",
 				"{\"entry\":\"index.js\",\"apiVersion\":\"2.3\",\"name\":\"Demo\",\"version\":\"1.2.0\",\"description\":\"Shows a demo\"}"));
 
 		ObjectNode manifest = registry.getManifests().get(0);
-		assertEquals("Demo", manifest.get("name").asText());
-		assertEquals("1.2.0", manifest.get("version").asText());
-		assertEquals("Shows a demo", manifest.get("description").asText());
+		assertFalse(manifest.has("name"));
+		assertFalse(manifest.has("version"));
+		assertFalse(manifest.has("description"));
+		assertEquals("index.js", manifest.get("entry").asText());
 	}
 
 	@Test

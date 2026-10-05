@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { fetchPluginManifests, loadPlugins, initPlugins, syncPluginTranslations, getPluginOutcomes } from '@/plugins/pluginLoader.js'
+import { fetchPluginManifests, loadPlugins, initPlugins, syncPluginTranslations, getPluginOutcomes, whenPluginsLoaded } from '@/plugins/pluginLoader.js'
 import { setPluginContext } from '@/plugins/pluginContext.js'
 import { getPlugin, resetPlugins, PLUGIN_API_VERSION } from '@/plugins/pluginsConfig.js'
 import { axios } from '@/globals.js'
@@ -392,6 +392,32 @@ describe('pluginLoader', () => {
       expect(getPluginOutcomes().demo.status).toBe('failed')
       expect(getPluginOutcomes().demo.error).toContain('timed out')
       vi.useRealTimers()
+    })
+
+    // The application starts loading without waiting, so a page opened early has to
+    it('lets a page wait for the load the application started', async () => {
+      mockHttp({ plugins: { plugins: [validManifest] } })
+      let finishImport
+      const importer = () => new Promise(resolve => { finishImport = resolve })
+
+      initPlugins('en', importer)
+      let settled = false
+      const waiting = whenPluginsLoaded().then(() => { settled = true })
+      await vi.waitFor(() => expect(finishImport).toBeTypeOf('function'))
+      expect(settled).toBe(false)
+
+      finishImport({ register: vi.fn() })
+      await waiting
+
+      expect(getPluginOutcomes().demo).toEqual({ status: 'loaded' })
+    })
+
+    it('settles the wait even when the load itself fails', async () => {
+      mockHttp({ plugins: { plugins: [validManifest] } })
+      registerTranslationLoader.mockImplementationOnce(() => { throw new Error('boom') })
+
+      await expect(initPlugins('en', () => Promise.resolve({ register: vi.fn() }))).rejects.toThrow('boom')
+      await expect(whenPluginsLoaded()).resolves.toBeUndefined()
     })
 
     it('keeps only the outcomes of the last load', async () => {
