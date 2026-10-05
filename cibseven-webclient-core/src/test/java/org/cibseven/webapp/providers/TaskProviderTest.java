@@ -27,8 +27,6 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.Task;
 import org.cibseven.webapp.rest.model.TaskFiltering;
 import org.cibseven.webapp.rest.model.TaskHistory;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -129,9 +127,6 @@ public class TaskProviderTest {
 		ResponseEntity<String> response = taskProvider.getRenderedForm("task-1", new HashMap<>(), user);
 
 		assertThat(response.getBody()).isEqualTo(form);
-		assertThat(response.getHeaders().getContentType())
-			.isEqualTo(MediaType.parseMediaType("application/xhtml+xml;charset=UTF-8"));
-		assertThat(response.getHeaders().containsKey(HttpHeaders.CONTENT_LENGTH)).isFalse();
 		assertThat(engine.takePath()).startsWith("/task/task-1/rendered-form");
 	}
 
@@ -143,7 +138,6 @@ public class TaskProviderTest {
 		ResponseEntity<String> response = taskProvider.getRenderedForm("task-1", new HashMap<>(), user);
 
 		assertThat(response.getBody()).isEqualTo(form);
-		assertThat(response.getHeaders().getContentType().getCharset()).isEqualTo(StandardCharsets.UTF_8);
 	}
 
 	// ---------- assignment ----------

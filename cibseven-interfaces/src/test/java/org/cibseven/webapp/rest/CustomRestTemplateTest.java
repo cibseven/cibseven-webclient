@@ -24,6 +24,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.web.client.RestTemplate;
 
 public class CustomRestTemplateTest {
 
@@ -35,6 +36,30 @@ public class CustomRestTemplateTest {
 	@Test
 	void requestFactoryConstructor_decodesStringsAsUtf8() {
 		assertStringConvertersUseUtf8(new CustomRestTemplate(new SimpleClientHttpRequestFactory()));
+	}
+
+	@Test
+	void customStringConverterAddedLater_isKeptAndTakesPrecedence() {
+		// a customer's own converter must neither be replaced nor switched to UTF-8
+		StringHttpMessageConverter custom = new StringHttpMessageConverter(StandardCharsets.ISO_8859_1);
+		CustomRestTemplate template = new CustomRestTemplate();
+		template.addConverter(custom);
+		template.initialize();
+
+		assertThat(template.getMessageConverters().get(0)).isSameAs(custom);
+		assertThat(custom.getDefaultCharset()).isEqualTo(StandardCharsets.ISO_8859_1);
+	}
+
+	@Test
+	void plainRestTemplates_keepSpringsDefault() {
+		// the change applies to this template's own converter, not to a shared or static default
+		new CustomRestTemplate();
+
+		StringHttpMessageConverter plain = new RestTemplate().getMessageConverters().stream()
+			.filter(StringHttpMessageConverter.class::isInstance)
+			.map(StringHttpMessageConverter.class::cast)
+			.findFirst().orElseThrow();
+		assertThat(plain.getDefaultCharset()).isEqualTo(StringHttpMessageConverter.DEFAULT_CHARSET);
 	}
 
 	private static void assertStringConvertersUseUtf8(CustomRestTemplate template) {

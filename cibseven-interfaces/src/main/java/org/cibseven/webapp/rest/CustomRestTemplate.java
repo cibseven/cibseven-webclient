@@ -97,14 +97,19 @@ public class CustomRestTemplate extends RestTemplate {
 
     /**
      * engine-rest sends its text responses (stack traces, error details, rendered forms) without a
-     * charset, and the default String converter would then decode them as ISO-8859-1, garbling every
-     * non-ASCII character. The engine always writes UTF-8, so make that the fallback; a charset the
-     * response does declare still wins. Templates built by copying these converters inherit this.
+     * charset, and Spring's String converter then decodes them as ISO-8859-1, garbling every non-ASCII
+     * character. The engine always writes UTF-8, so make that the fallback; a charset the response does
+     * declare still wins. Templates built by copying these converters inherit this.
+     * <p>
+     * This runs in the constructor, so it only adjusts Spring's own default converter, in place.
+     * Converters registered later ({@link #addConverter}, {@link #setMessageConverters}) are not
+     * touched, and those added through {@link #addConverter} take precedence.
      */
     private void decodeStringsAsUtf8() {
-        getMessageConverters().replaceAll(converter -> converter instanceof StringHttpMessageConverter
-                ? new StringHttpMessageConverter(StandardCharsets.UTF_8)
-                : converter);
+        getMessageConverters().stream()
+                .filter(StringHttpMessageConverter.class::isInstance)
+                .map(StringHttpMessageConverter.class::cast)
+                .forEach(converter -> converter.setDefaultCharset(StandardCharsets.UTF_8));
     }
 
     /**
