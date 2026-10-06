@@ -73,7 +73,7 @@ export default {
 
         const group = groupedMap.get(key)
 
-        for (const activityId of def.calledFromActivityIds) {
+        for (const activityId of def.calledFromActivityIds || []) {
           const stat = historicStats.find(s => s.id === activityId)
           const ended = stat ? stat.instances === 0 : true
           const name = getActivityName[activityId] || activityId
@@ -117,6 +117,13 @@ export default {
 
         const instanceIds = [...new Set(filtered.map(a => a.calledProcessInstanceId))]
 
+        const activityByInstanceId = new Map()
+        for (const a of filtered) {
+          if (!activityByInstanceId.has(a.calledProcessInstanceId)) {
+            activityByInstanceId.set(a.calledProcessInstanceId, a)
+          }
+        }
+
         let isFirstChunk = true
 
         for (let i = 0; i < instanceIds.length; i += chunkSize) {
@@ -146,7 +153,7 @@ export default {
             const def = groupedMap.get(key)
             def.isRunning = true
 
-            const match = filtered.find(a => a.calledProcessInstanceId === inst.id)
+            const match = activityByInstanceId.get(inst.id)
             if (match) {
               let activity = def.activities.find(a => a.activityId === match.activityId)
               if (!activity) {
@@ -167,7 +174,7 @@ export default {
           }
 
           if (!isFirstChunk || instanceIds.length <= chunkSize) {
-            const merged = mergeAndSplitByDefinition([...groupedMap.values()])
+            const merged = buildSnapshot()
             commit('setCalledProcessDefinitions', merged)
             commit('setAllCalledProcessDefinitions', merged)
           }
@@ -177,27 +184,41 @@ export default {
       }
 
       // 3. Final merge
-      const finalMerged = mergeAndSplitByDefinition([...groupedMap.values()])
-
-      const versionsByKey = {}
-      for (const def of finalMerged) {
-        if (!versionsByKey[def.definitionKey]) {
-          versionsByKey[def.definitionKey] = new Set()
-        }
-        versionsByKey[def.definitionKey].add(def.version)
-      }
-
-      for (const def of finalMerged) {
-        const versions = versionsByKey[def.definitionKey]
-        def.label = versions.size > 1
-          ? `${def.definitionKey}:${def.version}`
-          : def.definitionKey
-      }
+      const finalMerged = buildSnapshot()
 
       commit('setCalledProcessDefinitions', finalMerged)
       commit('setAllCalledProcessDefinitions', finalMerged)
 
-      // Helper
+      // Helpers
+      // Returns detached copies with final labels, so committed state is never mutated afterwards
+      function buildSnapshot() {
+        const snapshot = mergeAndSplitByDefinition([...groupedMap.values()]).map(def => ({
+          ...def,
+          instances: [...def.instances],
+          activities: def.activities.map(a => ({
+            ...a,
+            instances: a.instances.map(i => ({ ...i }))
+          }))
+        }))
+
+        const versionsByKey = {}
+        for (const def of snapshot) {
+          if (!versionsByKey[def.definitionKey]) {
+            versionsByKey[def.definitionKey] = new Set()
+          }
+          versionsByKey[def.definitionKey].add(def.version)
+        }
+
+        for (const def of snapshot) {
+          const versions = versionsByKey[def.definitionKey]
+          def.label = versions.size > 1
+            ? `${def.definitionKey}:${def.version}`
+            : def.definitionKey
+        }
+
+        return snapshot
+      }
+
       function mergeAndSplitByDefinition(definitions) {
         const map = new Map()
 

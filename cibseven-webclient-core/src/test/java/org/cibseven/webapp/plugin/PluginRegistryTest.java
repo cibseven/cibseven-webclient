@@ -17,10 +17,13 @@
 package org.cibseven.webapp.plugin;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -64,7 +67,7 @@ public class PluginRegistryTest {
 	@Test
 	public void findsPluginOnTheClasspath() {
 		// Reads the fixtures below src/test/resources, i.e. a real classpath scan
-		PluginRegistry registry = new PluginRegistry();
+		PluginRegistry registry = new PluginRegistry(new PluginProperties());
 
 		ObjectNode manifest = manifestOf(registry, "test-plugin");
 
@@ -79,7 +82,7 @@ public class PluginRegistryTest {
 	 */
 	@Test
 	public void reportsEveryDocumentedFieldOfTheManifest() {
-		ObjectNode manifest = manifestOf(new PluginRegistry(), "test-plugin");
+		ObjectNode manifest = manifestOf(new PluginRegistry(new PluginProperties()), "test-plugin");
 
 		assertEquals("process-instance-tab", manifest.get("slots").get(0).asText());
 		assertEquals("styles.css", manifest.get("styles").get(0).asText());
@@ -89,7 +92,7 @@ public class PluginRegistryTest {
 	/** Several plugins may share one artifact, each in its own folder. */
 	@Test
 	public void findsEveryPluginOfOneClasspathEntry() {
-		PluginRegistry registry = new PluginRegistry();
+		PluginRegistry registry = new PluginRegistry(new PluginProperties());
 
 		List<ObjectNode> manifests = registry.getManifests();
 
@@ -107,7 +110,7 @@ public class PluginRegistryTest {
 	/** The folders serve the files, so every accepted plugin needs exactly its own. */
 	@Test
 	public void findsAFolderForEveryAcceptedPlugin() {
-		PluginRegistry registry = new PluginRegistry();
+		PluginRegistry registry = new PluginRegistry(new PluginProperties());
 
 		Map<String, Resource> locations = registry.getPluginLocations();
 		assertEquals(registry.getManifests().size(), locations.size());
@@ -265,6 +268,71 @@ public class PluginRegistryTest {
 		// And the result is kept, so the first request does not scan again
 		assertEquals(1, registry.getManifests().size());
 		verify(resolver, times(1)).getResources(MANIFESTS);
+	}
+
+	private static ResourcePatternResolver twoPlugins() throws IOException {
+		ResourcePatternResolver resolver = mock(ResourcePatternResolver.class);
+		when(resolver.getResources(MANIFESTS)).thenReturn(new Resource[] {
+			manifest("/app/a.jar!/META-INF/cibseven-plugins/first/plugin.json",
+				"{\"entry\":\"index.js\",\"apiVersion\":\"1\"}"),
+			manifest("/app/b.jar!/META-INF/cibseven-plugins/second/plugin.json",
+				"{\"entry\":\"main.js\",\"apiVersion\":\"1\"}")
+		});
+		return resolver;
+	}
+
+	private static List<String> ids(PluginRegistry registry) {
+		return registry.getManifests().stream().map(manifest -> manifest.get("id").asText()).toList();
+	}
+
+	/** Without a redeploy, a plugin that breaks the page has to be switched off on its own. */
+	@Test
+	public void leavesOutAPluginDisabledByConfiguration() throws IOException {
+		PluginRegistry registry = new PluginRegistry(twoPlugins(), List.of("first"));
+
+		assertEquals(List.of("second"), ids(registry));
+		// Its files are not served either
+		assertFalse(registry.getPluginLocations().containsKey("first"));
+		assertTrue(registry.getPluginLocations().containsKey("second"));
+	}
+
+	@Test
+	public void leavesOutEveryDisabledPlugin() throws IOException {
+		PluginRegistry registry = new PluginRegistry(twoPlugins(), List.of("first", "second"));
+
+		assertTrue(registry.getManifests().isEmpty());
+		assertTrue(registry.getPluginLocations().isEmpty());
+	}
+
+	/** A mistyped id is only logged, it must not keep the other plugins from loading. */
+	@Test
+	public void loadsEveryPluginWhenTheDisabledIdMatchesNone() throws IOException {
+		PluginRegistry registry = new PluginRegistry(twoPlugins(), List.of("frist"));
+
+		assertEquals(List.of("first", "second"), ids(registry));
+	}
+
+	@Test
+	public void loadsEveryPluginWhenNoneIsDisabled() throws IOException {
+		assertEquals(List.of("first", "second"), ids(new PluginRegistry(twoPlugins())));
+	}
+
+	@Test
+	public void disablesNothingByDefault() {
+		assertTrue(new PluginProperties().getDisabled().isEmpty());
+	}
+
+	/** Switching off a plugin whose manifest is broken must not depend on reading it. */
+	@Test
+	public void doesNotReadTheManifestOfADisabledPlugin() throws IOException {
+		Resource broken = manifest("/app/a.jar!/META-INF/cibseven-plugins/broken/plugin.json", "{}");
+		Resource watched = spy(broken);
+		ResourcePatternResolver resolver = mock(ResourcePatternResolver.class);
+		when(resolver.getResources(MANIFESTS)).thenReturn(new Resource[] { watched });
+		PluginRegistry registry = new PluginRegistry(resolver, List.of("broken"));
+
+		assertTrue(registry.getManifests().isEmpty());
+		verify(watched, never()).getInputStream();
 	}
 
 }

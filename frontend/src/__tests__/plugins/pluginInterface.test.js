@@ -74,7 +74,8 @@ const SLOTS = {
   'process-definition-tab': ['process', 'tenantId'],
   'decision-definition-tab': ['decision', 'tenantId'],
   'decision-instance-tab': ['instance', 'decision', 'tenantId'],
-  'dmn-viewer': ['viewer', 'container', 'activeView']
+  'dmn-viewer': ['viewer', 'container', 'activeView'],
+  'app-banner': ['user']
 }
 
 const BUMP = 'the plugin interface changed - it may only change in a new webclient minor, and this list has to be updated with it'

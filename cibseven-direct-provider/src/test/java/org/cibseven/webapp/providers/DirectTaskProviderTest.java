@@ -370,4 +370,25 @@ public class DirectTaskProviderTest {
 		assertThat(response.getStatusCode().value()).isEqualTo(422);
 		assertThat(response.getBody()).isNull();
 	}
+
+	// ---------- rendered form ----------
+
+	@Test
+	void getRenderedForm_returnsTheFormUnchanged() {
+		// the engine hands over a String; it used to be re-decoded with the JVM default charset (CIB7-2204)
+		String form = "<form><label>Begründung 姓名</label></form>";
+		when(formService.getRenderedTaskForm("task-1")).thenReturn(form);
+
+		ResponseEntity<String> response = taskProvider.getRenderedForm("task-1", Map.of(), user);
+
+		assertThat(response.getBody()).isSameAs(form);
+	}
+
+	@Test
+	void getRenderedForm_failsWhenTheTaskHasNoRenderedForm() {
+		when(formService.getRenderedTaskForm("task-1")).thenReturn(null);
+
+		assertThatThrownBy(() -> taskProvider.getRenderedForm("task-1", Map.of(), user))
+			.isInstanceOf(SystemException.class);
+	}
 }

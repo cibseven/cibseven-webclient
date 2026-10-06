@@ -59,6 +59,13 @@ application:
         # e.g. - "file:/opt/cibseven/element-templates/*.json"
         templates:
           paths: []
+      plugins:
+        # Load frontend plugins from the classpath below META-INF/cibseven-plugins/,
+        # one folder per plugin. Plugin code runs inside the webclient page.
+        enabled: false
+        # Ids of plugins to skip, e.g. one that breaks the page; takes a restart.
+        # e.g. - demo-report
+        disabled: []
       # LDAP
       ldap:
         url: ""

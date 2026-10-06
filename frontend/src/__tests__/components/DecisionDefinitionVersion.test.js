@@ -14,19 +14,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import DecisionDefinitionVersion from '@/components/decision/DecisionDefinitionVersion.vue'
 import { mountWithDefaults } from '../support/mountWithDefaults.js'
 
-function mountView() {
+function mountView({ dispatch = vi.fn(() => Promise.resolve({ dmnXml: '' })), showDiagram = () => Promise.resolve() } = {}) {
   const decision = { id: 'dec-1', key: 'myDecision', version: 1 }
   return mountWithDefaults(DecisionDefinitionVersion, {
     props: { decisionKey: 'myDecision', versionIndex: '1' },
     i18nPlugin: false,
     global: {
       stubs: {
-        DmnViewer: { template: '<div></div>', methods: { showDiagram: () => Promise.resolve() } },
+        DmnViewer: { template: '<div></div>', methods: { showDiagram } },
         // declared as props, otherwise the stub renders the component proxy as an attribute
         ViewerFrame: { template: '<div><slot></slot></div>', props: ['resizerMixin'] },
         PluginSlot: { template: '<div></div>', props: ['name', 'only', 'params'] },
@@ -37,7 +37,7 @@ function mountView() {
         config: { maxProcessesResults: 50, camundaHistoryLevel: 'none' },
         $store: {
           getters: { getSelectedDecisionVersion: () => decision },
-          dispatch: vi.fn(() => Promise.resolve({ dmnXml: '' }))
+          dispatch
         }
       },
       provide: { currentLanguage: () => 'en' }
@@ -60,6 +60,53 @@ describe('DecisionDefinitionVersion', () => {
       expect(() => wrapper.vm.toggleContent()).not.toThrow()
       expect(() => wrapper.vm.resize({ y: 10 })).not.toThrow()
       wrapper.unmount()
+    })
+  })
+
+  // The diagram is shown 100 ms after its XML arrives. Leaving the view in between must not
+  // reach for a viewer that no longer exists; that surfaced as an uncaught error in CI.
+  describe('leaving the view while the diagram loads', () => {
+    const fakeTimeouts = () => vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] })
+    afterEach(() => { vi.useRealTimers() })
+
+    it('shows the diagram once its XML has arrived', async () => {
+      fakeTimeouts()
+      const showDiagram = vi.fn(() => Promise.resolve())
+      const wrapper = mountView({ dispatch: vi.fn(() => Promise.resolve({ dmnXml: '<dmn/>' })), showDiagram })
+      await flushPromises()
+
+      vi.advanceTimersByTime(100)
+
+      expect(showDiagram).toHaveBeenCalledWith('<dmn/>')
+      wrapper.unmount()
+    })
+
+    it('does nothing when the view is left while the diagram waits to be shown', async () => {
+      fakeTimeouts()
+      const showDiagram = vi.fn(() => Promise.resolve())
+      const wrapper = mountView({ showDiagram })
+      await flushPromises()
+
+      wrapper.unmount()
+
+      expect(() => vi.advanceTimersByTime(100)).not.toThrow()
+      expect(showDiagram).not.toHaveBeenCalled()
+    })
+
+    it('does nothing when the view is left before the XML arrives', async () => {
+      fakeTimeouts()
+      let deliverXml
+      const wrapper = mountView({ dispatch: vi.fn(type => type === 'getXmlById'
+        ? new Promise(resolve => { deliverXml = resolve })
+        : Promise.resolve({ dmnXml: '' })) })
+      await flushPromises()
+
+      // unmount cannot cancel a request that is still running, so the timer starts afterwards
+      wrapper.unmount()
+      deliverXml({ dmnXml: '<dmn/>' })
+      await flushPromises()
+
+      expect(() => vi.advanceTimersByTime(100)).not.toThrow()
     })
   })
 
