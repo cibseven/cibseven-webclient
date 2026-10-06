@@ -921,6 +921,36 @@ describe('TasksContent - updateAssignee', () => {
   })
 })
 
+describe('TasksContent - setTaskListOpen', () => {
+  const { setTaskListOpen } = TasksContent.methods
+
+  // Regression: tapping the task list header on mobile showed an empty task pane.
+  it('should ignore header requests to hide the task list on mobile', () => {
+    const vm = context({ isMobile: () => true, leftOpenTask: true })
+
+    setTaskListOpen.call(vm, false)
+
+    expect(vm.leftOpenTask).toBe(true)
+  })
+
+  it('should still show the task list on mobile', () => {
+    const vm = context({ isMobile: () => true, leftOpenTask: false })
+
+    setTaskListOpen.call(vm, true)
+
+    expect(vm.leftOpenTask).toBe(true)
+  })
+
+  // On desktop clicking the header keeps collapsing the list, as before.
+  it('should hide the task list from its header on desktop', () => {
+    const vm = context({ leftOpenTask: true })
+
+    setTaskListOpen.call(vm, false)
+
+    expect(vm.leftOpenTask).toBe(false)
+  })
+})
+
 describe('TasksContent - task watcher', () => {
   const onTask = (vm, task) => TasksContent.watch.task.handler.call(vm, task)
 

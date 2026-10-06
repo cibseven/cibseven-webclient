@@ -37,7 +37,7 @@
     <SidebarsFlow ref="regionTasks" role="region" :aria-label="$t('seven.allTasks')" class="h-100 bg-light"
       :number="totalTasksInFilter"
       :number-tooltip="totalTasksInFilterTooltip"
-      header-margin="55px" v-model:left-open="leftOpenTask" v-model:right-open="rightOpenTask"
+      header-margin="55px" :left-open="leftOpenTask" @update:left-open="setTaskListOpen" v-model:right-open="rightOpenTask"
       :leftSize="getTasksNavbarSize" :left-caption="leftCaptionTask" :right-caption="TasksRightSidebar ? rightCaptionTask : null">
       <template v-slot:left>
         <TasksNavBar @filter-alert="showFilterAlert($event)" ref="navbar" :tasks="tasks" @selected-task="selectedTask($event)"
@@ -495,6 +495,12 @@ export default {
       }
       this.tasks = []
       this.cleanSelectedTask()
+    },
+    // Open/close requests from the task list's SidebarsFlow header
+    setTaskListOpen: function(open) {
+      // On mobile hiding the list without opening a task would leave an empty task pane
+      if (!open && this.isMobile()) return
+      this.leftOpenTask = open
     },
     // Called once the task list is shown again
     revealSelectedTask: function() {
