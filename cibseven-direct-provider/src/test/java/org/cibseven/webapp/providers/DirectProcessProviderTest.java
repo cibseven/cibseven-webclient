@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.cibseven.bpm.engine.FormService;
 import org.cibseven.bpm.engine.HistoryService;
 import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.RuntimeService;
@@ -50,12 +51,14 @@ import org.cibseven.bpm.engine.rest.mapper.JacksonConfigurator;
 import org.cibseven.bpm.engine.runtime.ProcessInstanceQuery;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.NoObjectFoundException;
+import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.ProcessInstance;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.http.ResponseEntity;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -287,5 +290,29 @@ public class DirectProcessProviderTest {
 
 		assertThat(result).isEmpty();
 		verify(historyService, never()).createHistoricProcessInstanceQuery();
+	}
+
+	// ---------- rendered start form ----------
+
+	@Test
+	void getRenderedForm_returnsTheStartFormUnchanged() {
+		// the engine hands over a String; it used to be re-decoded with the JVM default charset (CIB7-2204)
+		FormService formService = mock(FormService.class);
+		when(directProviderUtil.getProcessEngine(user).getFormService()).thenReturn(formService);
+		String form = "<form><input value=\"Die Lieferung kam beschädigt an 姓名\"/></form>";
+		when(formService.getRenderedStartForm("def-1")).thenReturn(form);
+
+		ResponseEntity<String> response = processProvider.getRenderedForm("def-1", Map.of(), user);
+
+		assertThat(response.getBody()).isSameAs(form);
+	}
+
+	@Test
+	void getRenderedForm_failsWhenTheDefinitionHasNoRenderedStartForm() {
+		FormService formService = mock(FormService.class);
+		when(directProviderUtil.getProcessEngine(user).getFormService()).thenReturn(formService);
+
+		assertThatThrownBy(() -> processProvider.getRenderedForm("def-1", Map.of(), user))
+			.isInstanceOf(SystemException.class);
 	}
 }

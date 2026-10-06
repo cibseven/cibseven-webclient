@@ -25,6 +25,7 @@ import org.cibseven.webapp.providers.BpmProvider;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.test.context.support.TestPropertySourceUtils;
 
@@ -36,6 +37,11 @@ import org.springframework.test.context.support.TestPropertySourceUtils;
  */
 public class PluginBeanWiringTest {
 
+	/** What {@link PluginAutoConfiguration} contributes besides the two beans. */
+	@EnableConfigurationProperties(PluginProperties.class)
+	static class Properties {
+	}
+
 	private AnnotationConfigApplicationContext enabledContext() {
 		return context("cibseven.webclient.plugins.enabled=true");
 	}
@@ -46,7 +52,7 @@ public class PluginBeanWiringTest {
 		// The controller extends BaseService, which autowires these
 		context.registerBean(BpmProvider.class, () -> Mockito.mock(BpmProvider.class));
 		context.registerBean(BaseUserProvider.class, () -> Mockito.mock(BaseUserProvider.class));
-		context.register(PluginRegistry.class, PluginService.class);
+		context.register(Properties.class, PluginRegistry.class, PluginService.class);
 		context.refresh();
 		return context;
 	}

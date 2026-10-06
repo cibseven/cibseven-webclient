@@ -19,6 +19,7 @@ package org.cibseven.webapp.providers;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Optional;
@@ -32,6 +33,7 @@ import org.cibseven.webapp.rest.model.ProcessInstance;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.ResponseEntity;
 
 public class ProcessProviderTest {
 
@@ -131,6 +133,32 @@ public class ProcessProviderTest {
 		processProvider.findProcessesWithFilters("name=Invoice%20Receipt", user);
 
 		assertThat(engine.take().getPath()).contains("name=Invoice");
+	}
+
+	// ---------- rendered form ----------
+
+	@Test
+	void getRenderedForm_decodesTheStartFormAsUtf8WhenTheEngineDeclaresNoCharset() throws Exception {
+		// engine-rest answers application/xhtml+xml without a charset (CIB7-2204)
+		String form = "<form>\n  <input name=\"reason\" value=\"Die Lieferung kam beschädigt an\" />\n</form>\n";
+		engine.enqueueBytes(form.getBytes(StandardCharsets.UTF_8), "application/xhtml+xml");
+
+		ResponseEntity<String> response = processProvider.getRenderedForm("id-1", new HashMap<>(), user);
+
+		assertThat(response.getBody()).isEqualTo(form);
+		// the engine's Content-Length is passed on; the re-encoded body must fit it, or the form is cut off
+		assertThat(response.getHeaders().getContentLength()).isEqualTo(response.getBody().getBytes(StandardCharsets.UTF_8).length);
+		assertThat(engine.takePath()).startsWith("/process-definition/id-1/rendered-form");
+	}
+
+	@Test
+	void getRenderedForm_honoursACharsetTheEngineDeclares() throws Exception {
+		String form = "<form><input value=\"beschädigt\" /></form>";
+		engine.enqueueBytes(form.getBytes(StandardCharsets.ISO_8859_1), "application/xhtml+xml;charset=ISO-8859-1");
+
+		ResponseEntity<String> response = processProvider.getRenderedForm("id-1", new HashMap<>(), user);
+
+		assertThat(response.getBody()).isEqualTo(form);
 	}
 
 	// ---------- diagrams ----------
