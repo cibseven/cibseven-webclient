@@ -847,8 +847,8 @@ const DeploymentService = {
     )
   },
   fetchDataFromDeploymentResource: function(deploymentId, resourceId, fileName, token) {
-   return axios.get(getServicesBasePath() + '/process/deployments/' + deploymentId + '/resources/' + resourceId +
-     '/data'+ '?filename=' + fileName + '&token=' + token);
+    return axios.get(getServicesBasePath() + '/process/deployments/' + deploymentId + '/resources/' + resourceId + '/data',
+      { params: { filename: fileName, token: token } })
   }
 }
 

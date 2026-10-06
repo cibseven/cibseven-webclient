@@ -17,16 +17,16 @@
 
 -->
 <template>
-  <div class="form-preview">
+  <div class="form-preview bg-body">
     <div v-if="error" class="form-preview-error d-flex align-items-center">
-      <span class="mdi mdi-48px mdi-file-cancel-outline pe-1 text-warning"></span>
+      <span class="mdi mdi-48px mdi-file-cancel-outline pe-1 text-warning" aria-hidden="true"></span>
       <span>{{ $t('deployment.formPreviewError') }}</span>
     </div>
     <div v-show="!error">
-      <h5 class="form-preview-heading">{{ $t('deployment.formPreviewHeading') }}</h5>
+      <h5 class="form-preview-heading border-bottom">{{ $t('deployment.formPreviewHeading') }}</h5>
       <div ref="container"></div>
-      <h5 class="form-preview-heading mt-3">{{ $t('deployment.formRawDataHeading') }}</h5>
-      <pre class="form-preview-raw">{{ rawData }}</pre>
+      <h5 class="form-preview-heading border-bottom mt-3">{{ $t('deployment.formRawDataHeading') }}</h5>
+      <pre class="form-preview-raw bg-body-tertiary border rounded">{{ rawData }}</pre>
     </div>
   </div>
 </template>
@@ -83,7 +83,7 @@ export default {
         return
       }
       try {
-        this.form = new Form({ container })
+        this.form = new Form({ container, properties: { readOnly: true } })
         await this.form.importSchema(schema)
         this.rawData = JSON.stringify(schema, null, 2)
       } catch (err) {
@@ -99,7 +99,6 @@ export default {
 .form-preview {
   height: 100%;
   overflow: auto;
-  background: #fff;
   padding: 12px 14px;
 }
 .form-preview-error {
@@ -109,12 +108,8 @@ export default {
   font-weight: 600;
   padding-bottom: 6px;
   margin-bottom: 12px;
-  border-bottom: 1px solid #dee2e6;
 }
 .form-preview-raw {
-  background: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
   padding: 10px 12px;
   margin: 0;
   font-size: 12px;

@@ -51,7 +51,7 @@
                   tabindex="-1"
                   icon="mdi-download"
                   :title="$t('process-instance.download')"></CellActionButton>
-                <CellActionButton v-if="canDownload(resource) && permissionsModeler" @click.stop="openModeler(resource)"
+                <CellActionButton v-if="canOpenModeler(resource) && permissionsModeler" @click.stop="openModeler(resource)"
                   tabindex="-1"
                   icon="mdi-pencil-outline"
                   :title="openModelerTooltip(resource)"></CellActionButton>
@@ -73,7 +73,7 @@
             </div>
           </ul>
           <div v-else class="h-100 d-flex flex-column justify-content-center align-items-center text-center">
-            <span class="mdi mdi-48px mdi-file-cancel-outline pe-1 text-warning"></span>
+            <span class="mdi mdi-48px mdi-file-cancel-outline pe-1 text-warning" aria-hidden="true"></span>
             <span>{{ $t('deployment.errorLoading') }}</span>
           </div>
         </div> 
@@ -90,7 +90,7 @@
           <b-waiting-box styling="width: 35px"></b-waiting-box>
         </div>
         <div v-else-if="error" class="d-flex align-items-center">
-          <span class="mdi mdi-48px mdi-file-cancel-outline pe-1 text-warning"></span>
+          <span class="mdi mdi-48px mdi-file-cancel-outline pe-1 text-warning" aria-hidden="true"></span>
           <span>{{ $t('deployment.errorLoading') }}</span>
         </div>
         <div v-show="!diagramLoading && error === false" style="height: calc(100vh - 210px)">
@@ -131,10 +131,7 @@ export default {
       diagramLoading: false,
       error: false,
       deployment: null,
-      toggleIcon: 'mdi-chevron-down',
-      isDmnResource: false,
-      isFormResource: false,
-      isHtmlResource: false
+      toggleIcon: 'mdi-chevron-down'
     }
   },
   watch: {
@@ -156,6 +153,15 @@ export default {
       return this.$options.components && this.$options.components.ResourcesNavBarDeploymentActionsPlugin
         ? this.$options.components.ResourcesNavBarDeploymentActionsPlugin
         : null
+    },
+    isDmnResource: function () {
+      return this.isDmn(this.resource)
+    },
+    isFormResource: function () {
+      return this.isForm(this.resource)
+    },
+    isHtmlResource: function () {
+      return this.isHtml(this.resource)
     }
   },
   created: function () {
@@ -169,11 +175,6 @@ export default {
       this.error = false
       this.diagramLoading = true
       this.resource = resource
-
-      // Determine the resource type based on file extension
-      this.isDmnResource = resource.name.toLowerCase().endsWith('.dmn')
-      this.isFormResource = resource.name.toLowerCase().endsWith('.form')
-      this.isHtmlResource = resource.name.toLowerCase().endsWith('.html')
 
       // Clean diagram state for the appropriate viewer (not needed for forms)
       if (!this.isFormResource && !this.isHtmlResource) {
@@ -229,19 +230,26 @@ export default {
         }
       }
     },
+    hasExtension(resource, ...extensions) {
+      const name = (resource?.name || '').toLowerCase()
+      return extensions.some(extension => name.endsWith(extension))
+    },
     isBpmn(resource) {
-      return resource.name.toLowerCase().endsWith('.bpmn')
+      return this.hasExtension(resource, '.bpmn')
     },
     isDmn(resource) {
-      return resource.name.toLowerCase().endsWith('.dmn')
+      return this.hasExtension(resource, '.dmn')
     },
-	isForm(resource) {
-      return resource.name.toLowerCase().endsWith('.form')
+    isForm(resource) {
+      return this.hasExtension(resource, '.form')
     },
-	isHtml(resource) {
-      return resource.name.toLowerCase().endsWith('.html')
+    isHtml(resource) {
+      return this.hasExtension(resource, '.html', '.htm')
     },
     canDownload(resource) {
+      return this.canOpenModeler(resource) || this.isForm(resource) || this.isHtml(resource)
+    },
+    canOpenModeler(resource) {
       return this.isBpmn(resource) || this.isDmn(resource)
     },
     async openModeler(resource) {
@@ -265,16 +273,13 @@ export default {
     async getContent(resource) {
       this.diagramLoading = true
       let content
-	  const isBpmn = this.isBpmn(resource)
-      const isForm = this.isForm(resource)
-      const isHtml = this.isHtml(resource)
-      if (isBpmn) {
+      if (this.isBpmn(resource)) {
         const processesDefinition = await ProcessService.findProcessesWithFilters('deploymentId=' + this.deployment.id + '&resourceName=' + resource.name)
         const processDefinition = Array.isArray(processesDefinition) ? processesDefinition[0] : null
         const response = processDefinition ? await ProcessService.fetchDiagram(processDefinition.id) : null
         content = response ? response.bpmn20Xml : null
       }
-      else if (isForm || isHtml) {
+      else if (this.isForm(resource) || this.isHtml(resource)) {
         content = await DeploymentService.fetchDataFromDeploymentResource(resource.deploymentId, resource.id, resource.name, this.$root.user.authToken)
       }
       else {
@@ -292,7 +297,10 @@ export default {
       const content = await this.getContent(resource)
       this.diagramLoading = false
       if (content) {
-        const blob = new Blob([content], { type: 'application/xml' })
+        // axios parses .form (JSON) responses, so serialize them back for the file
+        const data = typeof content === 'string' ? content : JSON.stringify(content, null, 2)
+        const type = this.isForm(resource) ? 'application/json' : this.isHtml(resource) ? 'text/html' : 'application/xml'
+        const blob = new Blob([data], { type })
         this.$refs.downloadPopper.triggerDownload(blob, resource.name)
       }
     },

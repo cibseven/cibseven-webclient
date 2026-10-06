@@ -17,16 +17,16 @@
 
 -->
 <template>
-  <div class="html-form-preview">
+  <div class="html-form-preview bg-body">
     <div v-if="error" class="html-form-preview-error d-flex align-items-center">
-      <span class="mdi mdi-48px mdi-file-cancel-outline pe-1 text-warning"></span>
+      <span class="mdi mdi-48px mdi-file-cancel-outline pe-1 text-warning" aria-hidden="true"></span>
       <span>{{ $t('deployment.formPreviewError') }}</span>
     </div>
     <div v-show="!error">
-      <iframe ref="frame" class="html-form-preview-frame" sandbox="allow-same-origin"
+      <iframe ref="frame" class="html-form-preview-frame bg-body border rounded" sandbox="allow-same-origin"
         :title="$t('deployment.formPreviewHeading')"></iframe>
-      <h5 class="html-form-preview-heading mt-3">{{ $t('deployment.formRawDataHeading') }}</h5>
-      <pre class="html-form-preview-raw">{{ rawData }}</pre>
+      <h5 class="html-form-preview-heading border-bottom mt-3">{{ $t('deployment.formRawDataHeading') }}</h5>
+      <pre class="html-form-preview-raw bg-body-tertiary border rounded">{{ rawData }}</pre>
     </div>
   </div>
 </template>
@@ -72,7 +72,6 @@ export default {
 .html-form-preview {
   height: 100%;
   overflow: auto;
-  background: #fff;
   padding: 12px 14px;
 }
 .html-form-preview-error {
@@ -81,20 +80,13 @@ export default {
 .html-form-preview-frame {
   width: 100%;
   min-height: 260px;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
-  background: #fff;
 }
 .html-form-preview-heading {
   font-weight: 600;
   padding-bottom: 6px;
   margin-bottom: 12px;
-  border-bottom: 1px solid #dee2e6;
 }
 .html-form-preview-raw {
-  background: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
   padding: 10px 12px;
   margin: 0;
   font-size: 12px;
