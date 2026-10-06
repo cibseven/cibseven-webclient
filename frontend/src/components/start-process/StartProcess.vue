@@ -19,13 +19,16 @@
 <template>
   <div>
     <GlobalEvents v-if="!hideProcessSelection" @keydown.ctrl.alt.p.prevent="$refs.startProcess.show()"></GlobalEvents>
-    <b-modal body-class="pt-0" size="lg" scrollable ref="startProcess" :hide-footer="!(startParams && !hideProcessSelection)"
+    <b-modal body-class="pt-0" size="lg" :scrollable="!defaultStartFormProcess" ref="startProcess" :hide-footer="!((startParams && !hideProcessSelection) || defaultStartFormProcess)"
       :title="!hideProcessSelection ? $t('start.startProcess.title') : processName" no-close-on-backdrop
-      @hidden="startParams = null" :footer-class="{ 'justify-content-between': startParams && !hideProcessSelection }"
+      @hidden="startParams = null; defaultStartFormProcess = null" :footer-class="{ 'justify-content-between': startParams && !hideProcessSelection }"
       dialog-class="h-100">
       <div v-if="startParams" class="mh-100 h-100" style="height: 70vh">
         <RenderTemplate class="h-100" :task="definitionStartTask"
         @complete-task="$refs.startProcess.hide(); $emit('process-started', $event)"></RenderTemplate>
+      </div>
+      <div v-else-if="defaultStartFormProcess">
+        <StartProcessDefaultForm ref="defaultStartForm" @start="onDefaultStartFormSubmit"></StartProcessDefaultForm>
       </div>
       <div v-else-if="!hideProcessSelection">
         <SearchInput class="my-3" :disabled="isStartingProcess" v-model.trim="processesFilter" :label="$t('searches.filter')"/>
@@ -44,6 +47,13 @@
       </div>
       <template v-slot:modal-footer>
         <b-button v-if="startParams && !hideProcessSelection" @click="startParams = null" class="text-secondary" variant="light">{{ $t('process.back') }}</b-button>
+        <template v-if="defaultStartFormProcess">
+          <b-button variant="light" :disabled="isStartingProcess" @click="onDefaultStartFormCancel">{{ $t('confirm.cancel') }}</b-button>
+          <b-button variant="primary" :disabled="isStartingProcess" @click="$refs.defaultStartForm.onStart()">
+            <BWaitingBox v-if="isStartingProcess" class="d-inline me-2" styling="width: 20px"></BWaitingBox>
+            {{ $t('start.defaultStartForm.start') }}
+          </b-button>
+        </template>
       </template>
     </b-modal>
   </div>
@@ -52,13 +62,14 @@
 <script>
 import { ProcessService } from '@/services.js'
 import RenderTemplate from '@/components/render-template/RenderTemplate.vue'
+import StartProcessDefaultForm from '@/components/start-process/StartProcessDefaultForm.vue'
 import { BWaitingBox, HighlightedText } from '@cib/common-frontend'
 import { permissionsMixin } from '@/permissions.js'
 import SearchInput from '@/components/common-components/SearchInput.vue';
 
 export default {
   name: 'StartProcess',
-  components: { RenderTemplate, BWaitingBox, HighlightedText, SearchInput },
+  components: { RenderTemplate, StartProcessDefaultForm, BWaitingBox, HighlightedText, SearchInput },
   inject: ['loadProcesses', 'currentLanguage'],
   emits: ['process-started'],
   props: { hideProcessSelection: Boolean },
@@ -68,6 +79,7 @@ export default {
       isStartingProcess: false,
       processesFilter: '',
       startParams: null,
+      defaultStartFormProcess: null,
       selectedProcess: {}
     }
   },
@@ -113,14 +125,21 @@ export default {
         this.selectedProcess = processLatest
         ProcessService.startForm(processLatest.id).then(url => {
           if (!url.key && !url.camundaFormRef) {
-            ProcessService.startProcess(processLatest.key, processLatest.tenantId,
-            this.currentLanguage()).then(task => {
-              this.$refs.startProcess.hide()
-              task.processInstanceId = task.id
-              this.$emit('process-started', task)
+            if (this.$root.config.startProcessDefaultFormEnabled) {
+              this.defaultStartFormProcess = processLatest
+              if (this.hideProcessSelection) this.$refs.startProcess.show()
               process.loading = false
               this.isStartingProcess = false
-            }, () => this.isStartingProcess = false)
+            } else {
+              ProcessService.startProcess(processLatest.key, processLatest.tenantId,
+              this.currentLanguage()).then(task => {
+                this.$refs.startProcess.hide()
+                task.processInstanceId = task.id
+                this.$emit('process-started', task)
+                process.loading = false
+                this.isStartingProcess = false
+              }, () => this.isStartingProcess = false)
+            }
           } else {
             this.startParams = {}
             if (url.key && url.key.includes('/rendered-form')) {
@@ -150,6 +169,23 @@ export default {
           }
         }, () => this.isStartingProcess = false)
       })
+    },
+    onDefaultStartFormSubmit: function({ businessKey, variables }) {
+      this.isStartingProcess = true
+      const processLatest = this.defaultStartFormProcess
+      ProcessService.startProcess(processLatest.key, processLatest.tenantId,
+      this.currentLanguage(), businessKey, variables).then(task => {
+        this.defaultStartFormProcess = null
+        this.$refs.startProcess.hide()
+        task.processInstanceId = task.id
+        this.$emit('process-started', task)
+        this.isStartingProcess = false
+      }, () => this.isStartingProcess = false)
+    },
+    onDefaultStartFormCancel: function() {
+      this.defaultStartFormProcess = null
+      if (!this.hideProcessSelection) return
+      this.$refs.startProcess.hide()
     },
     textEmptyProcessesList: function() {
       return this.processesFilter === '' ? 'process.emptyProcessList' : 'process.emptyProcessListFiltered'

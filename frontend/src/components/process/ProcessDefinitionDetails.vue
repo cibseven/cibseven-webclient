@@ -55,7 +55,8 @@
       <button @click="copyValueToClipboard(version.deploymentId)" class="btn btn-sm mdi mdi-content-copy float-end border-0"
         :title="$t('process.details.copyValue')"></button>
     </span>
-    <router-link class="col-12" :to="'/seven/auth/deployments/' + version.deploymentId">{{ version.deploymentId }}</router-link>
+    <router-link v-if="selectedDeployment" class="col-12" :to="'/seven/auth/deployments/' + version.deploymentId">{{ version.deploymentId }}</router-link>
+    <span v-else class="col-12">{{ version.deploymentId }}</span>
   </div>
   <template v-if="selectedDeployment">
     <hr class="my-2">
@@ -146,69 +147,103 @@
 </template>
 
 <script>
-import { moment } from '@/globals.js'
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
-import { ProcessService } from '@/services.js'
+import { ProcessService, HistoryService } from '@/services.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { SuccessAlert } from '@cib/common-frontend'
+import { permissionsMixin } from '@/permissions.js'
 
 export default {
   name: 'ProcessDefinitionDetails',
   components: { SuccessAlert },
-  mixins: [ copyToClipboardMixin ],
+  mixins: [ copyToClipboardMixin, permissionsMixin ],
   props: {
-    instances: Array,
     version: Object,
     selectedInstance: { type: Object, default: null },
-    versionIndex: { type: String, default: '' }
+    versionIndex: { type: String, default: '' },
+    shown: { type: Boolean, default: false }
   },
   data: function() {
     return {
       selectedDeployment: null,
       historyTimeToLive: null,
-      historyTimeToLiveChanged: null
+      historyTimeToLiveChanged: null,
+      minTimestamp: null,
+      maxTimestamp: null,
+      timestampsLoaded: false
     }
   },
   emits: ['onUpdateHistoryTimeToLive'],
   watch: {
-    versionIndex() {
-      if (this.isVersionSelected) {
-        ProcessService.findDeployment(this.version.deploymentId).then(deployment => {
-          this.selectedDeployment = deployment
-        })
+    shown(val) {
+      if (val) this.getTimestamps()
+    },
+    'version.id': function() {
+      this.resetTimestampsCache()
+      if (this.shown) {
+        this.getTimestamps()
       }
-      else {
-        this.selectedDeployment = null
+    },
+    'version.allInstances': function(newVal, oldVal) {
+      if (newVal === oldVal) return
+      this.resetTimestampsCache()
+      if (this.shown) {
+        this.getTimestamps()
       }
+    },
+    versionIndex: {
+      handler() {
+        if (this.isVersionSelected && this.hasDeploymentReadPermission) {
+          ProcessService.findDeployment(this.version.deploymentId).then(deployment => {
+            this.selectedDeployment = deployment
+          })
+        }
+        else {
+          this.selectedDeployment = null
+        }
+      },
+      immediate: true
     }
   },
   computed: {
     isVersionSelected() {
       return this.version.version === this.versionIndex
     },
-    timestamps() {
-      return this.instances
-        .filter(i => i.processDefinitionVersion === this.version.version)
-        .map(i => moment(i.startTime).valueOf())
-    },
-    minTimestamp() {
-      if (this.timestamps.length === 0) return null
-      return Math.min(...this.timestamps)
-    },
-    maxTimestamp() {
-      if (this.timestamps.length === 0) return null
-      return Math.max(...this.timestamps)
+    hasDeploymentReadPermission() {
+      return this.canReadDeployment(this.version.deploymentId)
     }
   },
   mounted() {
     this.historyTimeToLive = this.version.historyTimeToLive
-    if (this.isVersionSelected) {
-      ProcessService.findDeployment(this.version.deploymentId).then(deployment => {
-        this.selectedDeployment = deployment
-      })
-    }
   },
   methods: {
+    resetTimestampsCache() {
+      this.timestampsLoaded = false
+      this.minTimestamp = null
+      this.maxTimestamp = null
+    },
+    async getTimestamps() {
+      if (this.$root.config.camundaHistoryLevel === 'none') return
+      if (this.timestampsLoaded) return
+      this.timestampsLoaded = true
+      const requestedVersionId = this.version.id
+      try {
+        const [first, last] = await Promise.all([
+          HistoryService.findProcessesInstancesHistory({ processDefinitionId: requestedVersionId, sorting: [{ sortBy: 'startTime', sortOrder: 'asc' }] }, 0, 1),
+          HistoryService.findProcessesInstancesHistory({ processDefinitionId: requestedVersionId, sorting: [{ sortBy: 'startTime', sortOrder: 'desc' }] }, 0, 1)
+        ])
+
+        if (this.version.id !== requestedVersionId) return
+        this.minTimestamp = first?.[0]?.startTime ?? null
+        this.maxTimestamp = last?.[0]?.startTime ?? null
+      }
+      catch {
+        if (this.version.id !== requestedVersionId) return
+        this.minTimestamp = null
+        this.maxTimestamp = null
+        this.timestampsLoaded = false
+      }
+    },
     formatDate,
     formatDateForTooltips,
     editHistoryTimeToLive: function() {
@@ -224,6 +259,8 @@ export default {
         this.historyTimeToLive = data.historyTimeToLive
         this.$refs.historyTimeToLive.hide()
         this.$emit('onUpdateHistoryTimeToLive', this.version.id, data.historyTimeToLive);
+      }).catch(error => {
+        this.$root.$refs.error.show(error.response?.data)
       })
     },
     routeToSuperProcessInstance(superProcessInstanceId) {

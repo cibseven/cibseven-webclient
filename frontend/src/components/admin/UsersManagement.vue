@@ -37,6 +37,7 @@
 <script>
 import { permissionsMixin } from '@/permissions.js'
 import StartViewItem from '@/components/start/StartViewItem.vue'
+import navigationPermissionsMixin from '@/mixins/navigationPermissionsMixin.js'
 
 // Import the images to ensure it is bundled with the package
 import adminUsersImage from '@/assets/images/admin/users_admin.svg'
@@ -47,7 +48,7 @@ import systemAdminImage from '@/assets/images/admin/system_admin.svg'
 
 export default {
   name: 'UsersManagement',
-  mixins: [permissionsMixin],
+  mixins: [permissionsMixin, navigationPermissionsMixin],
   components: { StartViewItem },
   computed: {
     productName() {
@@ -59,35 +60,42 @@ export default {
           title: 'admin.users.title',
           image: adminUsersImage,
           link: { name: 'adminUsers' },
-          hasAccess: this.adminManagementPermissions(this.$root.config.permissions.usersManagement, 'user')
+          hasAccess: this.applicationPermissions(this.$root.config.permissions.usersManagement, 'user')
         },
         {
           title: 'admin.groups.title',
           image: groupsAdminImage,
           link: { name: 'adminGroups' },
-          hasAccess: this.adminManagementPermissions(this.$root.config.permissions.groupsManagement, 'group')
+          hasAccess: this.applicationPermissions(this.$root.config.permissions.groupsManagement, 'group')
         },
         {
           title: 'admin.tenants.title',
           image: tenantsAdminImage,
           link: { name: 'adminTenants' },
-          hasAccess: this.adminManagementPermissions(this.$root.config.permissions.tenantsManagement, 'tenant')
+          hasAccess: this.applicationPermissions(this.$root.config.permissions.tenantsManagement, 'tenant')
         },
         {
           title: 'admin.authorizations.title',
           image: authorizationsAdminImage,
           link: { name: 'authorizations' },
-          hasAccess: this.adminManagementPermissions(this.$root.config.permissions.authorizationsManagement, 'authorization')
+          hasAccess: this.applicationPermissions(this.$root.config.permissions.authorizationsManagement, 'authorization')
         },
         {
           title: 'admin.system.title',
           image: systemAdminImage,
           link: { name: 'adminSystem' },
-          hasAccess: this.adminManagementPermissions(this.$root.config.permissions.systemManagement, 'system')
+          hasAccess: this.applicationPermissions(this.$root.config.permissions.systemManagement, 'system')
         },
       ]
 
-      return rawItems.filter(item => item.hasAccess)
+      // Contributed areas come after the built-in ones and are already filtered by permission
+      const contributed = this.adminPluginEntries.map(entry => ({
+        title: entry.text,
+        image: entry.image,
+        link: { path: entry.to },
+        hasAccess: true
+      }))
+      return [...rawItems, ...contributed].filter(item => item.hasAccess)
     },
   }
 }

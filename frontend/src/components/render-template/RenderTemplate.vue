@@ -246,7 +246,7 @@ export default {
       }
 
       // Process HTTP error responses and display corresponding error messages
-      let type = ''
+      let type
       const errorParams = []
         switch (data.status) {
         case 404:

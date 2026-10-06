@@ -45,4 +45,7 @@ public interface UnifiedDiagram {
 
 	Integer getVersion();
 
+	/** The folder it lives in, so a list renders as a tree without a call per node. */
+	String getFolderId();
+
 }

@@ -31,4 +31,5 @@ public class ElementTemplateRequest {
 	@NotNull
 	private String content;
 	private ElementTemplateOrigin origin;
+	private Boolean active;
 }

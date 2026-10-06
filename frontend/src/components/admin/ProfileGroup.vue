@@ -45,12 +45,12 @@
               <b-card class="p-5 shadow-sm border rounded" :title="$t('admin.groups.editMessage', [group.name])">
                 <b-card-text class="border-top pt-4 mt-3">
                   <CIBForm @submitted="update()">
-                    <b-form-group :label="$t('admin.groups.name') + '*'" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
+                    <b-form-group :label="$t('admin.groups.name') + '*'" label-for="profile-group-name" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
                       :invalid-feedback="$t('errors.invalid')">
-                      <b-form-input v-model="group.name" @update:modelValue="dirty=true" :state="notEmpty(group.name)" required></b-form-input>
+                      <b-form-input id="profile-group-name" v-model="group.name" @update:modelValue="dirty=true" :state="notEmpty(group.name)" required></b-form-input>
                     </b-form-group>
-                    <b-form-group :label="$t('admin.groups.type')" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4">
-                      <b-form-input v-model="group.type" @update:modelValue="dirty = true"></b-form-input>
+                    <b-form-group :label="$t('admin.groups.type')" label-for="profile-group-type" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4">
+                      <b-form-input id="profile-group-type" v-model="group.type" @update:modelValue="dirty = true"></b-form-input>
                     </b-form-group>
                     <div class="d-flex justify-content-between" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'">
                       <b-button variant="light" @click="$refs.deleteModal.show()">{{ $t('admin.groups.deleteGroup') }}</b-button>

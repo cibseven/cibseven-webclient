@@ -33,7 +33,8 @@
             <template #prepend>
               <b-button :title="$t('searches.search')" aria-hidden="true" size="sm" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
             </template>
-            <b-form-input :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="(evt) => onInput(evt.target.value.trim())"></b-form-input>
+            <label for="incidents-search" class="visually-hidden">{{ $t('searches.search') }}</label>
+            <b-form-input id="incidents-search" :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="(evt) => onInput(evt.target.value.trim())"></b-form-input>
           </b-input-group>
         </div>
         <div v-if="selectedActivityId" class="col-6 p-3">

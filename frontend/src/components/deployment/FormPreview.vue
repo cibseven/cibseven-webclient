@@ -69,7 +69,7 @@ export default {
       this.error = false
       const container = this.$refs.container
       if (!container) return
-      let schema = null
+      let schema
       try {
         schema = typeof content === 'string' ? JSON.parse(content) : content
       } catch (err) {

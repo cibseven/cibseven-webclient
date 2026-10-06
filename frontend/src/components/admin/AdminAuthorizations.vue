@@ -28,6 +28,7 @@
         <transition name="slide-in" mode="out-in">
           <component v-if="$route.params.resourceTypeId !== undefined" :is="Component" class="h-100" style="overflow-y: auto" />
           <div v-else>
+            <WarningBox v-if="authorizationDisabled" :message="$t('admin.authorizations.authorizationDisabledWarning')"/>
             <div class="text-center text-secondary">
               <img src="@/assets/images/task/no_tasks_pending.svg" class="d-block mx-auto mt-5 mb-3" style="width: 200px" alt="">
               <h5>{{ $t('admin.authorizations.noAuthSelected') }}</h5>
@@ -42,10 +43,16 @@
 <script>
 import AuthorizationsNavBar from '@/components/admin/AuthorizationsNavBar.vue'
 import { SidebarsFlow } from '@cib/common-frontend'
+import WarningBox from '@/components/common-components/WarningBox.vue'
 
 export default {
   name: 'AdminAuthorizations',
-  components: { AuthorizationsNavBar, SidebarsFlow },
+  components: { AuthorizationsNavBar, SidebarsFlow, WarningBox },
+  computed: {
+    authorizationDisabled() {
+      return !this.$root.config.authorizationEnabled
+    },
+  },
   data: function () {
     return {
       leftOpen: true

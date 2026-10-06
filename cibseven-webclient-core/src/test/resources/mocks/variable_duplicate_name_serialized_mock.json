@@ -1,0 +1,14 @@
+[
+    {
+        "name": "dup",
+        "type": "String",
+        "value": "first-serialized",
+        "valueInfo": {}
+    },
+    {
+        "name": "dup",
+        "type": "String",
+        "value": "second-serialized",
+        "valueInfo": {}
+    }
+]

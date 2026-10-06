@@ -15,10 +15,6 @@ coverage
 *.local
 target
 
-/playwright-report/
-/playwright/.cache/
-/test-results/
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

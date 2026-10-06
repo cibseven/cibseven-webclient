@@ -28,9 +28,9 @@
     <div v-else-if="!showOnlyError">
 
       <!-- Name -->
-      <b-form-group>
+      <b-form-group label-for="add-var-name">
         <template #label>{{ $t('process-instance.variables.name') }} <span v-if="!editMode" class="text-danger">*</span></template>
-        <b-form-input ref="variableName" v-model="name"
+        <b-form-input id="add-var-name" ref="variableName" v-model="name"
           @focus="isNameFocused = true, nameFocused++"
           @blur="isNameFocused = false"
           :disabled="!computedAllowEditName"
@@ -39,24 +39,24 @@
       </b-form-group>
 
       <!-- Type -->
-      <b-form-group :label="$t('process-instance.variables.type')">
-        <b-form-select v-model="type" :options="types"  class="mb-0" :disabled="disabled || saving || loading"></b-form-select>
+      <b-form-group :label="$t('process-instance.variables.type')" label-for="add-var-type">
+        <b-form-select id="add-var-type" v-model="type" :options="types"  class="mb-0" :disabled="disabled || saving || loading"></b-form-select>
       </b-form-group>
 
       <!-- Object Type Name -->
       <div v-if="type === 'Object'">
-        <b-form-group>
+        <b-form-group label-for="add-var-object-type">
           <template #label>{{ $t('process-instance.variables.objectTypeName') }} <span class="text-danger">*</span></template>
-          <b-form-input v-model="objectTypeName" :disabled="disabled || saving || loading"></b-form-input>
+          <b-form-input id="add-var-object-type" v-model="objectTypeName" :disabled="disabled || saving || loading"></b-form-input>
         </b-form-group>
-        <b-form-group>
+        <b-form-group label-for="add-var-serialization">
           <template #label>{{ $t('process-instance.variables.serializationDataFormat') }} <span class="text-danger">*</span></template>
-          <b-form-input v-model="serializationDataFormat" :disabled="disabled || saving || loading"></b-form-input>
+          <b-form-input id="add-var-serialization" v-model="serializationDataFormat" :disabled="disabled || saving || loading"></b-form-input>
         </b-form-group>
       </div>
 
       <!-- Value -->
-      <b-form-group class="p-0 mb-0" v-if="type !== 'Null'">
+      <b-form-group class="p-0 mb-0" v-if="type !== 'Null'" label-for="add-var-value">
 
         <!-- Label -->
         <template #label v-if="type !== 'File' && (!editMode || (type !== 'Object'))">
@@ -76,6 +76,7 @@
 
         <!-- Input: Number Types -->
         <b-form-input v-else-if="['Short', 'Integer', 'Long', 'Double'].includes(type)"
+          id="add-var-value"
           ref="numberValue"
           v-model="value" type="number" :class="{ 'is-invalid': valueValidationError !== null }"
           :disabled="disabled || saving || loading"></b-form-input>
@@ -83,6 +84,7 @@
         <!-- Input: Date -->
         <template v-else-if="type === 'Date'">
           <b-form-input v-if="disabled"
+            id="add-var-value"
             v-model="value" type="text" :class="{ 'is-invalid': valueValidationError !== null }"
             :disabled="true"></b-form-input>
           <b-form-datepicker v-else
@@ -95,7 +97,7 @@
 
         <!-- Input: File -->
         <div v-else-if="type === 'File' && allowFileUpload">
-          <b-form-file placeholder="" :browse-text="$t('process-instance.selectFile')" :disabled="disabled || saving || loading" v-model="fileToUpload">
+          <b-form-file id="add-var-file" placeholder="" :browse-text="$t('process-instance.selectFile')" :disabled="disabled || saving || loading" v-model="fileToUpload">
             <template #label>
               {{ $t('process-instance.upload') }} <span class="text-danger">*</span>
             </template>

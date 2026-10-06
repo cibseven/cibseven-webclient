@@ -23,7 +23,6 @@ export default [
   {
     name: 'app/files-to-lint',
     files: ['**/*.{js,mjs,jsx,vue}'],
-    ignores: ['playwright/**'],
   },
 
   {
@@ -33,29 +32,16 @@ export default [
       '**/dist-ssr/**',
       '**/coverage/**',
       '**/target/**',
-      '**/playwright-report/**',
       '**/test-results/**',
     ],
   },
 
   js.configs.recommended,
   ...pluginVue.configs['flat/essential'],
-  
+
   {
     ...pluginVitest.configs.recommended,
     files: ['src/**/__tests__/*'],
-  },
-
-  {
-    // Playwright test files
-    files: [
-      'playwright/e2e/**/*.{spec,test}.{js,ts,jsx,tsx}',
-      'playwright/helpers/**/*.{js,ts,jsx,tsx}'
-    ],
-    rules: {
-      // Allow console.log in test files for debugging
-      'no-console': 'off',
-    },
   },
 
   ...pluginVueA11y.configs["flat/recommended"],
@@ -67,6 +53,22 @@ export default [
           "required": {
             "every": ["id"]
           },
+        }
+      ],
+      // form-control-has-label only recognizes native tags by default; without this,
+      // our @cib/common-frontend form wrappers (which render the native control inside
+      // a different component) get zero static a11y label coverage. b-form-datepicker and
+      // b-form-timepicker are deliberately excluded: they already bind a (generic) internal
+      // aria-label to their real input, so flagging usage sites is a false positive.
+      "vuejs-accessibility/form-control-has-label": [
+        "error",
+        {
+          "controlComponents": [
+            "b-form-select",
+            "b-form-input",
+            "b-form-textarea",
+            "b-form-file"
+          ]
         }
       ],
     }

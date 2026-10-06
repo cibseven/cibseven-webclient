@@ -51,12 +51,92 @@ describe('isFileValueDataSource', () => {
 describe('isFile', () => {
   it.each([
     [makeVar('File', null, { filename: 'doc.pdf' }), true],
+    // 'Bytes' is binary but not a File/FileValueDataSource - isDownloadable() covers it (CIB7-2132)
+    [makeVar('Bytes', null), false],
     [makeVar('Object', { objectTypeName: FILE_TYPE_SOURCE }), true],
     [makeVar('Object', { objectTypeName: 'other.Type' }), false],
     [makeVar('String', 'hello'), false],
     [makeVar('Null', null), false],
   ])('variable %# → %s', (variable, expected) => {
     expect(variableUtils.isFile(variable)).toBe(expected)
+  })
+})
+
+describe('isBytes', () => {
+  it.each([
+    [makeVar('Bytes', null), true],
+    [makeVar('File', null), false],
+    [makeVar('String', 'hello'), false],
+  ])('variable %# → %s', (variable, expected) => {
+    expect(variableUtils.isBytes(variable)).toBe(expected)
+  })
+})
+
+describe('isDownloadable', () => {
+  it.each([
+    [makeVar('File', null, { filename: 'doc.pdf' }), true],
+    // binary value never included in list/history queries by the engine (CIB7-2132)
+    [makeVar('Bytes', null), true],
+    [makeVar('Object', { objectTypeName: FILE_TYPE_SOURCE }), true],
+    [makeVar('Object', { objectTypeName: 'other.Type' }), false],
+    [makeVar('String', 'hello'), false],
+    [makeVar('Null', null), false],
+  ])('variable %# → %s', (variable, expected) => {
+    expect(variableUtils.isDownloadable(variable)).toBe(expected)
+  })
+})
+
+describe('isUploadable', () => {
+  it.each([
+    [makeVar('File', null, {}, { isLive: true }), true],
+    [makeVar('File', null, {}, { isLive: false }), false],
+    [makeVar('Bytes', null, {}, { isLive: true }), true],
+    [makeVar('Bytes', null, {}, { isLive: false }), false],
+    [makeVar('Object', { objectTypeName: FILE_TYPE_SOURCE }, {}, { isLive: true }), true],
+    [makeVar('String', 'hello', {}, { isLive: true }), false],
+  ])('variable %# → %s', (variable, expected) => {
+    expect(variableUtils.isUploadable(variable)).toBe(expected)
+  })
+})
+
+describe('getFilename', () => {
+  it.each([
+    [{ name: 'doc', valueInfo: { filename: 'doc.pdf' } }, 'doc.pdf'],
+    // 'Bytes' variables have no filename (CIB7-2132)
+    [{ name: 'atisData', valueInfo: {} }, 'atisData.dat'],
+    [{ name: 'atisData', valueInfo: { filename: '' } }, 'atisData.dat'],
+    [{ name: 'atisData' }, 'atisData.dat'],
+    [{ name: 'atisData', valueInfo: null }, 'atisData.dat'],
+  ])('variable %# → "%s"', (variable, expected) => {
+    expect(variableUtils.getFilename(variable)).toBe(expected)
+  })
+
+  describe('forbidden filename characters', () => {
+    it.each([
+      ['a<b.txt', 'a_b.txt'],
+      ['a>b.txt', 'a_b.txt'],
+      ['a:b.txt', 'a_b.txt'],
+      ['a"b.txt', 'a_b.txt'],
+      ['a/b.txt', 'a_b.txt'],
+      ['a\\b.txt', 'a_b.txt'],
+      ['a|b.txt', 'a_b.txt'],
+      ['a?b.txt', 'a_b.txt'],
+      ['a*b.txt', 'a_b.txt'],
+      // every occurrence is replaced, not just the first
+      ['<>:"/\\|?*.txt', '_________.txt'],
+      // path traversal attempts lose their separators
+      ['../../etc/passwd', '.._.._etc_passwd'],
+      ['C:\\temp\\doc.pdf', 'C__temp_doc.pdf'],
+      // allowed characters stay untouched
+      ['my file (1)-v2_final.tar.gz', 'my file (1)-v2_final.tar.gz'],
+      ['dätä-ü.txt', 'dätä-ü.txt'],
+    ])('valueInfo.filename "%s" → "%s"', (filename, expected) => {
+      expect(variableUtils.getFilename({ name: 'v', valueInfo: { filename } })).toBe(expected)
+    })
+
+    it('sanitizes the variable-name fallback used for Bytes variables as well', () => {
+      expect(variableUtils.getFilename({ name: 'a/b:c', valueInfo: {} })).toBe('a_b_c.dat')
+    })
   })
 })
 
@@ -78,6 +158,25 @@ describe('getFileVariableName', () => {
     [makeVar('Object', null), ''],
   ])('variable %# → "%s"', (variable, expected) => {
     expect(variableUtils.getFileVariableName(variable)).toBe(expected)
+  })
+})
+
+describe('shortValue', () => {
+  it.each([
+    // dotted value starting with a lowercase letter → substring after the last dot
+    ['de.cib.cibflow.api.files.FileValueDataSource', 'FileValueDataSource'],
+    ['org.apache.commons.Lang', 'Lang'],
+    // starts with an uppercase letter → regex fails, full string returned
+    ['ArrayList.Foo', 'ArrayList.Foo'],
+    // no dot at all → full string returned
+    ['hello', 'hello'],
+    // trailing dot (nothing after the last dot) → full string returned
+    ['abc.', 'abc.'],
+    // non-string input is coerced with string concatenation, and does not match /^[a-z]/
+    [30, '30'],
+    [30.5, '30.5'],
+  ])('shortValue(%j) → "%s"', (value, expected) => {
+    expect(variableUtils.shortValue(value)).toBe(expected)
   })
 })
 
@@ -139,6 +238,24 @@ describe('displayValue', () => {
   describe('Null type', () => {
     it('returns empty string', () => {
       expect(variableUtils.displayValue(makeVar('Null', null))).toBe('')
+    })
+  })
+
+  describe('Bytes type', () => {
+    // the engine never includes the value of binary variables in list/history queries, so the
+    // (always-null) value is not shown; the download file name is displayed instead (CIB7-2132)
+    it('returns the download file name instead of the raw (always-null) value', () => {
+      expect(variableUtils.displayValue({ ...makeVar('Bytes', null), name: 'atisData' })).toBe('atisData.dat')
+    })
+
+    it('sanitizes forbidden characters in the displayed file name', () => {
+      expect(variableUtils.displayValue({ ...makeVar('Bytes', null), name: 'a/b' })).toBe('a_b.dat')
+    })
+  })
+
+  describe('File type without filename', () => {
+    it('falls back to the variable name', () => {
+      expect(variableUtils.displayValue({ ...makeVar('File', null), name: 'doc' })).toBe('doc.dat')
     })
   })
 

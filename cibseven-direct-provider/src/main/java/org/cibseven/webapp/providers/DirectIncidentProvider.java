@@ -70,10 +70,14 @@ public class DirectIncidentProvider implements IIncidentProvider {
 
 	@Override
 	public Collection<Incident> findIncident(Map<String, Object> params, CIBUser user) {
-		IncidentQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(params, IncidentQueryDto.class);
+		Integer firstResult = directProviderUtil.getFirstResult(params);
+		Integer maxResults = directProviderUtil.getMaxResults(params);
+		Map<String, Object> queryParams = directProviderUtil.withoutPagingParams(params);
+
+		IncidentQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(queryParams, IncidentQueryDto.class);
 		IncidentQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 
-		List<org.cibseven.bpm.engine.runtime.Incident> queryResult = QueryUtil.list(query, null, null);
+		List<org.cibseven.bpm.engine.runtime.Incident> queryResult = QueryUtil.list(query, firstResult, maxResults);
 
 		List<Incident> incidents = new ArrayList<>();
 		for (org.cibseven.bpm.engine.runtime.Incident incident : queryResult) {
@@ -167,10 +171,14 @@ public class DirectIncidentProvider implements IIncidentProvider {
 
 	@Override
 	public Collection<Incident> findHistoricIncidents(Map<String, Object> params, CIBUser user) {
-		HistoricIncidentQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(params, HistoricIncidentQueryDto.class);
+		Integer firstResult = directProviderUtil.getFirstResult(params);
+		Integer maxResults = directProviderUtil.getMaxResults(params);
+		Map<String, Object> queryParams = directProviderUtil.withoutPagingParams(params);
+
+		HistoricIncidentQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(queryParams, HistoricIncidentQueryDto.class);
 		HistoricIncidentQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 
-		List<HistoricIncident> queryResult = QueryUtil.list(query, null, null);
+		List<HistoricIncident> queryResult = QueryUtil.list(query, firstResult, maxResults);
 
 		List<HistoricIncidentDto> historicIncidentDtos = new ArrayList<HistoricIncidentDto>();
 		for (HistoricIncident historicIncident : queryResult) {
@@ -258,7 +266,7 @@ public class DirectIncidentProvider implements IIncidentProvider {
 		HistoricIncidentQueryDto queryDto = objectMapper.convertValue(params, HistoricIncidentQueryDto.class);
 		HistoricIncidentQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 
-		List<HistoricIncident> queryResult = QueryUtil.list(query, null, null);
+		List<HistoricIncident> queryResult = QueryUtil.list(query, null, 1);
 
 		for (HistoricIncident historicIncident : queryResult) {
 			HistoricIncidentDto dto = HistoricIncidentDto.fromHistoricIncident(historicIncident);

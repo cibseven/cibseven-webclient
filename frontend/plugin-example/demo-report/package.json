@@ -1,0 +1,15 @@
+{
+  "name": "demo-report-plugin",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "package": "npm run build && jar --create --file demo-report-plugin.jar -C dist META-INF"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.6",
+    "vite": "^6.4.3",
+    "vue": "^3.5.33"
+  }
+}

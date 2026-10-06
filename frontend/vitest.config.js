@@ -29,35 +29,64 @@ export default mergeConfig(
       },
       environment: 'jsdom',
       setupFiles: ['src/__tests__/vitest.setup.js'],
-      exclude: [
-        ...configDefaults.exclude,
-        'playwright/**',
-      ],
+      exclude: configDefaults.exclude,
       root: fileURLToPath(new URL('./', import.meta.url)),
       coverage: {
         provider: 'istanbul',
         reporter: ['text', 'lcov', 'cobertura'], // 'text', 'html', 'lcov', 'cobertura'
         reportsDirectory: './target/coverage',
+        include: ['src/**/*.{js,vue}'],
         exclude: [
           // Build artifacts and minified files
           'dist/**',
           'target/**',
           'node_modules/**',
+          // built on its own, against the import map: its imports do not resolve here
+          'plugin-example/**',
+
+          // Entry-point scripts: their module scope boots the application, so importing
+          // them in jsdom has no meaningful unit under test. 'app.js' mounts the SPA
+          // ('createApp(...).mount("#app")'), 'sso-login.js' assigns 'location.href',
+          // which jsdom refuses to navigate. Both are covered by the Playwright E2E suite.
+          'src/app.js',
+          'src/sso-login.js',
 
           // Exclude test files
           'src/__tests__/**',
 
           // Test and config files
-          'playwright/**', // Exclude Playwright tests
-          'playwright.config.js', // Exclude Playwright config
           'vite.config.js', // Exclude Vite config
           'vitest.config.js', // Exclude this config file itself
           '**/*.config.js', // Exclude all config files
 
           // Exclude Vite internals
-          '**/\0**', // Exclude Vite virtual modules
+          '\0*', // Exclude Vite virtual modules
         ],
         excludeNodeModules: true,
+        // A floor, not a target. The values sit a couple of points under what the suite
+        // currently achieves so an unrelated change cannot quietly erode coverage, which
+        // is what AGENTS.md asks for ("never reduce overall coverage") but nothing
+        // enforced before.
+        //
+        // Note how Vitest applies these: files matched by a glob key are checked against
+        // that glob and are *excluded* from the global numbers. So the global values below
+        // describe the remainder — src/components, src/embedded-form and the entry-level
+        // modules under src/ — while the well-covered directories are held to 80% each.
+        // 'perFile' is deliberately left off: the thresholds apply to each group as a
+        // whole, so one legitimately hard-to-test file cannot fail the build on its own.
+        thresholds: {
+          lines: 40,
+          statements: 40,
+          functions: 23,
+          branches: 27,
+
+          // Brought to ~99% by the unit tests; 80% is the AGENTS.md bar for changed files.
+          'src/store/**/*.js': { lines: 80, statements: 80, functions: 80, branches: 70 },
+          'src/mixins/**/*.js': { lines: 80, statements: 80, functions: 80, branches: 70 },
+          'src/utils/**/*.js': { lines: 80, statements: 80, functions: 80, branches: 70 },
+          'src/plugins/**/*.js': { lines: 80, statements: 80, functions: 80, branches: 70 },
+          'src/services.js': { lines: 80, statements: 80, functions: 80, branches: 70 },
+        },
       },
     },
   }),

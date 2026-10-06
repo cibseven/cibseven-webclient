@@ -102,6 +102,7 @@ import { getTaskEventShortcuts, checkKeyMatch } from '@/utils/shortcuts.js'
 import { mapActions, mapGetters } from 'vuex'
 import assigneeMixin from '@/mixins/assigneeMixin.js'
 import { formatDate } from '@/utils/dates.js'
+import { applyDatePresenceFilters } from '@/utils/taskDatePresenceFilter.js'
 
 export default {
   name: 'TasksContent',
@@ -221,29 +222,36 @@ export default {
         }, this.$root.config.taskListTime)
       }
     },
+    setTaskLoaderDone: function(done) {
+      const loader = this.$refs.navbar?.$refs.taskLoader
+      if (loader) loader.done = done
+    },
     listTasksWithFilter: function() {
       this.taskResultsIndex = this.$root.config.maxTaskResults
       this.tasks = []
       this.processesInstances = []
-      if (this.$refs.navbar.$refs.taskLoader) this.$refs.navbar.$refs.taskLoader.done = false
+      if (!this.$store.state.filter.selected?.id) {
+        this.setTaskLoaderDone(true)
+        return
+      }
+      this.setTaskLoaderDone(false)
       this.fetchTasks(0, this.taskResultsIndex)
     },
     refreshTasksNumber: function() {
       this.$refs.filterNavbar.updateSelectedFilterTasksCountIfNeeded(false)
     },
     listTasksWithFilterAuto: function(showMore) {
-      if (this.$route.params.filterId) {
-        if (showMore) this.$refs.navbar.$refs.taskLoader.done = false
-        const firstResult = showMore ? this.taskResultsIndex : 0
-        const maxResults = showMore ? this.$root.config.maxTaskResults : this.taskResultsIndex
-        if (this.$store.state.filter.selected.id) {
-          this.fetchTasks(firstResult, maxResults, showMore)
-        }
-      } else {
-        if (this.$refs.navbar && this.$refs.navbar.$refs.taskLoader) this.$refs.navbar.$refs.taskLoader.done = true
+      if (!this.$route.params.filterId || !this.$store.state.filter.selected?.id) {
+        this.setTaskLoaderDone(true)
+        return
       }
+      if (showMore) this.setTaskLoaderDone(false)
+      const firstResult = showMore ? this.taskResultsIndex : 0
+      const maxResults = showMore ? this.$root.config.maxTaskResults : this.taskResultsIndex
+      const skipVariables = !showMore
+      this.fetchTasks(firstResult, maxResults, showMore, skipVariables)
     },
-    fetchTasks: function(firstResult, maxResults, showMore) {
+    fetchTasks: function(firstResult, maxResults, showMore, skipVariables) {
       const taskSorting = [JSON.parse(localStorage.getItem('taskSorting'))]
       //If necessary we add the created extra sorting so the data is well sorted
       if (taskSorting[0].sortBy !== 'created') taskSorting.push({ sortBy: 'created', sortOrder: 'desc' })
@@ -280,16 +288,18 @@ export default {
           filters.variableValuesIgnoreCase = true
         }
         const filterVariables = this.$store.state.filter.selected.properties?.variables
-        if (filterVariables && filterVariables.length > 0) {
+        if (!skipVariables && filterVariables && filterVariables.length > 0) {
           filters.variableNames = filterVariables.map(v => v.name)
         }
+        applyDatePresenceFilters(filters, this.$store.state.filter.settings)
         TaskService.findTasksByFilter(this.$store.state.filter.selected.id, filters,
           { firstResult: firstResult, maxResults: maxResults }).then(result => {
           const tasks = this.tasksByPermissions(this.$root.config.permissions.displayTasks, result)
+          if (skipVariables) this.preserveExistingVariables(tasks)
           //Only needed to fetch the businessKey of every instance.
           this.updateProcessesInstances(tasks, showMore)
         }, () => {
-          if (this.$refs.navbar.$refs.taskLoader) this.$refs.navbar.$refs.taskLoader.done = true
+          this.setTaskLoaderDone(true)
         })
       })
     },
@@ -411,6 +421,16 @@ export default {
       this.filterName = evt.filter
       this.$refs.filter.show(2)
     },
+    preserveExistingVariables: function(tasks) {
+      const previous = new Map(this.tasks.map(t => [t.id, t]))
+      tasks.forEach(task => {
+        const old = previous.get(task.id)
+        if (old) {
+          task.variables = old.variables
+          task.variableTypes = old.variableTypes
+        }
+      })
+    },
     updateProcessesInstances: function(tasks, showMore) {
       if (tasks && tasks.length > 0) {
         const processesInstancesIds = []
@@ -429,16 +449,16 @@ export default {
           })
           this.tasks = showMore ? [...this.tasks, ...tasks] : tasks
           this.checkActiveTask()
-          if (this.$refs.navbar && this.$refs.navbar.$refs.taskLoader) this.$refs.navbar.$refs.taskLoader.done = true
+          this.setTaskLoaderDone(true)
         }, () => {
           this.tasks = showMore ? [...this.tasks, ...tasks] : tasks
           this.checkActiveTask()
-          if (this.$refs.navbar && this.$refs.navbar.$refs.taskLoader) this.$refs.navbar.$refs.taskLoader.done = true
+          this.setTaskLoaderDone(true)
         })
       } else {
         this.tasks = showMore ? [...this.tasks, ...tasks] : tasks
         this.checkActiveTask()
-        if (this.$refs.navbar && this.$refs.navbar.$refs.taskLoader) this.$refs.navbar.$refs.taskLoader.done = true
+        this.setTaskLoaderDone(true)
       }
     },
     cleanSelectedTask: function() {

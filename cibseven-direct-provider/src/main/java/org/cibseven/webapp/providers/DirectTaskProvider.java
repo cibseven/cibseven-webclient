@@ -16,7 +16,6 @@
  */
 package org.cibseven.webapp.providers;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLDecoder;
@@ -62,12 +61,12 @@ import org.cibseven.bpm.engine.rest.dto.task.CompleteTaskDto;
 import org.cibseven.bpm.engine.rest.dto.task.FormDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskBpmnErrorDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskCountByCandidateGroupResultDto;
+import org.cibseven.bpm.engine.rest.dto.task.TaskEscalationDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskQueryDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskWithAttachmentAndCommentDto;
 import org.cibseven.bpm.engine.rest.exception.RestException;
 import org.cibseven.bpm.engine.rest.util.ApplicationContextPathUtil;
-import org.cibseven.bpm.engine.rest.util.EncodingUtil;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.bpm.engine.runtime.VariableInstanceQuery;
 import org.cibseven.bpm.engine.task.DelegationState;
@@ -501,6 +500,17 @@ private List<VariableInstanceDto> queryVariableInstances(VariableInstanceQueryDt
 	}
 
 	@Override
+	public void handleBpmnEscalation(String taskId, Map<String, Object> data, CIBUser user) throws SystemException {
+		TaskEscalationDto dto = directProviderUtil.getObjectMapper(user).convertValue(data, TaskEscalationDto.class);
+		try {
+			directProviderUtil.getProcessEngine(user).getTaskService().handleEscalation(taskId, dto.getEscalationCode(),
+					VariableValueDto.toMap(dto.getVariables(), directProviderUtil.getProcessEngine(user), directProviderUtil.getObjectMapper(user)));
+		} catch (NotFoundException e) {
+			throw new SystemException(e.getMessage(), e);
+		}
+	}
+
+	@Override
 	public Collection<TaskHistory> findTasksByTaskIdHistory(String taskId, CIBUser user) {
 		List<TaskHistory> taskHistoryList = new ArrayList<>();
 		List<HistoricTaskInstance> results = directProviderUtil.getProcessEngine(user).getHistoryService().createHistoricTaskInstanceQuery().taskId(taskId).unlimitedList();
@@ -537,6 +547,24 @@ private List<VariableInstanceDto> queryVariableInstances(VariableInstanceQueryDt
 
 		long count = query.count();
 		return (int) count;
+	}
+
+	@Override
+	public Collection<TaskHistory> findHistoryTasks(Map<String, Object> filters,
+			Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user) {
+		HistoricTaskInstanceQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(filters, HistoricTaskInstanceQueryDto.class);
+		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
+		HistoricTaskInstanceQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
+
+		List<HistoricTaskInstance> results = (firstResult.isPresent() || maxResults.isPresent())
+				? query.listPage(firstResult.orElse(0), maxResults.orElse(Integer.MAX_VALUE))
+				: query.unlimitedList();
+
+		List<TaskHistory> taskHistoryList = new ArrayList<>();
+		for (HistoricTaskInstance result : results) {
+			taskHistoryList.add(directProviderUtil.convertValue(HistoricTaskInstanceDto.fromHistoricTaskInstance(result), TaskHistory.class, user));
+		}
+		return taskHistoryList;
 	}
 
 	@Override
@@ -695,13 +723,9 @@ private List<VariableInstanceDto> queryVariableInstances(VariableInstanceQueryDt
 
 		Object renderedTaskForm = formService.getRenderedTaskForm(taskId);
 		if(renderedTaskForm != null) {
-			String content = renderedTaskForm.toString();
-			InputStream stream = new ByteArrayInputStream(content.getBytes(EncodingUtil.DEFAULT_ENCODING));
-			try {
-				return ResponseEntity.ok(IOUtils.toString(stream, Charset.defaultCharset()));
-			} catch (IOException e) {
-				throw new SystemException(e.getMessage(), e);
-			}
+			// the engine renders the form in memory, so no byte round trip is needed; re-encoding it
+			// through the JVM default charset garbled non-ASCII text (CIB7-2204)
+			return ResponseEntity.ok(renderedTaskForm.toString());
 		}
 
 		throw new SystemException("No matching rendered form for task with the id " + taskId + " found.");

@@ -17,7 +17,7 @@
 <template>
   <AddVariableModalUI ref="addVariableModalUI"
     :edit-mode="true"
-    :disabled="historic"
+    :disabled="effectiveHistoric"
     :loading="loading"
     :saving="saving"
     :error="error"
@@ -57,15 +57,24 @@ props: {
        * show only error when load failed, but show error with controls when save failed
        */
       showOnlyError: false,
+      /**
+       * per-call override of the 'historic' prop (third argument of show()),
+       * used when historic/live is decided per variable rather than per table
+       */
+      historicOverride: null,
     }
   },
   computed: {
+    effectiveHistoric() {
+      return this.historicOverride ?? this.historic
+    },
     isHistoricFetch() {
-      return this.historic && this.$root.config.camundaHistoryLevel !== 'none'
+      return this.effectiveHistoric && this.$root.config.camundaHistoryLevel !== 'none'
     }
   },
   methods: {
-    async show(variableId, variableName) {
+    async show(variableId, variableName, historic = null) {
+      this.historicOverride = historic
       this.executionId = null
       this.variableName = variableName
       this.loading = true

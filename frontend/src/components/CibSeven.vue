@@ -122,12 +122,17 @@
       </template>
 
       <template v-slot:userItems>
-        <b-dropdown-item v-if="$root.user && $root.config.layout.showUserSettings && !applicationPermissionsDenied($root.config.permissions.userProfile, 'userProfile')"
+        <b-dropdown-item v-if="$root.config.layout.showUserSettings && permissionsUserProfile"
           :to="'/seven/auth/account/' + $root.user.id"
           :active="isMenuItemActive({active: ['seven/auth/account']})"
           :title="$t('start.account.profile.tooltip')">{{ $t('start.account.profile.title') }}</b-dropdown-item>
       </template>
     </CIBHeaderFlow>
+
+    <!-- Messages for every logged-in user, e.g. system notifications of the enterprise edition -->
+    <div v-if="$root.user" class="flex-shrink-0">
+      <PluginSlot name="app-banner" :params="{ user: $root.user }"></PluginSlot>
+    </div>
 
     <main class="flex-grow-1 overflow-hidden d-flex flex-column">
       <router-view class="flex-grow-1 overflow-hidden" ref="down"></router-view>
@@ -171,11 +176,12 @@ import AboutModal from '@/components/modals/AboutModal.vue'
 import SupportModal from '@/components/modals/SupportModal.vue'
 import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
 import FeedbackModal from '@/components/modals/FeedbackModal.vue'
+import PluginSlot from '@/components/common/PluginSlot.vue'
 import { updateAppTitle } from '@/utils/init'
 
 export default {
   name: 'CibSeven',
-  components: { ShortcutsModal, AboutModal, SupportModal, CIBHeaderFlow, FeedbackModal },
+  components: { ShortcutsModal, AboutModal, SupportModal, CIBHeaderFlow, FeedbackModal, PluginSlot },
   mixins: [permissionsMixin, navigationPermissionsMixin],
   inject: ['isMobile'],
   data: function() {
@@ -306,7 +312,14 @@ export default {
               active: ['seven/auth/admin/system'],
               tooltip: 'admin.system.tooltip',
               title: 'admin.system.title'
-            }
+            },
+            ...this.adminPluginEntries.map(entry => ({
+              show: true,
+              to: entry.to,
+              active: entry.active ?? [entry.to.replace(/^\//, '')],
+              tooltip: entry.tooltip ?? entry.text,
+              title: entry.text
+            }))
           ]
         }
       ]
@@ -431,8 +444,6 @@ export default {
       }
     },
     logout: function() {
-      this.$router.push('/')
-      location.reload() //refresh to empty vuex and axios defaults
       //Remove some storage variables when logout
       //https://helpdesk.cib.de/browse/BPM4CIB-3691
       localStorage.removeItem('accessToken')
@@ -440,6 +451,10 @@ export default {
       sessionStorage.removeItem('accessToken')
       sessionStorage.removeItem('tokenModeler')
       // Note: engine token cleanup is handled by CIBHeaderFlow.logout()
+      // Set the hash before reload: router.push is async and loses the race, so the
+      // reload would otherwise land on the current page instead of the start page.
+      window.location.hash = '#/'
+      window.location.reload() //refresh to empty vuex and axios defaults
     },
     openStartProcess: function() {
       this.$eventBus.emit('openStartProcess')

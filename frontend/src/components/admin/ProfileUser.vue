@@ -24,7 +24,7 @@
         <b-list-group-item v-if="!user.noInfo" class="border-0 px-3 py-2" :active="selectedTab === 'profile'" exact :to="'?tab=profile'">
           <span> {{ $t('admin.users.profile') }}</span>
         </b-list-group-item>
-        <b-list-group-item v-if="!user.noInfo && $root.config.userEditable" class="border-0 px-3 py-2" :active="selectedTab === 'account'" exact :to="'?tab=account'">
+        <b-list-group-item v-if="canChangePassword" class="border-0 px-3 py-2" :active="selectedTab === 'account'" exact :to="'?tab=account'">
           <span> {{ $t('password.recover.changePassword') }}</span>
         </b-list-group-item>
         <b-list-group-item v-if="!user.noInfo" class="border-0 px-3 py-2" :active="selectedTab === 'groups'" exact :to="'?tab=groups'">
@@ -54,19 +54,19 @@
               :title="$t('admin.users.editMessage', [user.firstName + ' ' + user.lastName])"
               class="col-lg-6 col-md-8 col-sm-12">
               <CIBForm @submitted="update()">
-                <b-form-group :label="$t('admin.users.firstName') + '*'" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
+                <b-form-group :label="$t('admin.users.firstName') + '*'" label-for="profile-user-first-name" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
                   :invalid-feedback="$t('errors.invalid')">
-                  <b-form-input v-model="user.firstName"  @update:modelValue="dirty=true"
+                  <b-form-input id="profile-user-first-name" v-model="user.firstName"  @update:modelValue="dirty=true"
                     :state="notEmpty(user.firstName)" :readonly="!$root.config.userEditable || !editMode" required></b-form-input>
                 </b-form-group>
-                <b-form-group :label="$t('admin.users.lastName') + '*'" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
+                <b-form-group :label="$t('admin.users.lastName') + '*'" label-for="profile-user-last-name" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
                   :invalid-feedback="$t('errors.invalid')">
-                  <b-form-input v-model="user.lastName"  @update:modelValue="dirty=true" 
+                  <b-form-input id="profile-user-last-name" v-model="user.lastName"  @update:modelValue="dirty=true"
                     :state="notEmpty(user.lastName)" :readonly="!$root.config.userEditable || !editMode" required></b-form-input>
                 </b-form-group>
-                <b-form-group :label="$t('admin.users.email')" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
+                <b-form-group :label="$t('admin.users.email')" label-for="profile-user-email" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
                   :invalid-feedback="$t('errors.invalid')">
-                  <b-form-input v-model="user.email" type="email" autocomplete="email"  @update:modelValue="dirty = true" :readonly="!$root.config.userEditable || !editMode"></b-form-input>
+                  <b-form-input id="profile-user-email" v-model="user.email" type="email" autocomplete="email"  @update:modelValue="dirty = true" :readonly="!$root.config.userEditable || !editMode"></b-form-input>
                 </b-form-group>
                 <div class="float-end" v-if="$root.config.userEditable">
                   <b-button type="submit" variant="secondary" :disabled="!dirty" >{{ $t('admin.users.update') }}</b-button>
@@ -76,7 +76,7 @@
           </div>
 
           <!-- Account Tab -->
-          <div v-else-if="selectedTab === 'account' && $root.config.userEditable && $root.config.userPasswordChangeEnabled" class="row pt-3 ps-4 pe-4">
+          <div v-else-if="selectedTab === 'account' && canChangePassword" class="row pt-3 ps-4 pe-4">
             <ContentBlock
               :title="$t('password.recover.changePassword')"
               class="col-lg-6 col-md-8 col-sm-12">
@@ -112,9 +112,9 @@
                 </div>
               </b-form-group>
               <b-form-group v-else labels-cols-lg="4" label-size="lg" label-class="fw-bold pt-0 pb-4" class="m-0">
-                <b-form-group :label="$t('password.recover.id') + '*'" label-cols-sm="4"
+                <b-form-group :label="$t('password.recover.id') + '*'" label-for="profile-user-id" label-cols-sm="4"
                   label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
-                  <b-form-input v-model="user.id" :state="notEmpty(user.id)" required readonly></b-form-input>
+                  <b-form-input id="profile-user-id" v-model="user.id" :state="notEmpty(user.id)" required readonly></b-form-input>
                 </b-form-group>
                 <div class="float-end d-flex align-items-center">
                   <b-spinner variant="primary" class="mx-2" v-if="sendingEmail"></b-spinner>
@@ -384,6 +384,9 @@ export default {
         })
       }
       return fields
+    },
+    canChangePassword() {
+      return !this.user.noInfo && this.$root.config.userEditable && this.$root.config.userPasswordChangeEnabled
     }
   },
   created: function () {

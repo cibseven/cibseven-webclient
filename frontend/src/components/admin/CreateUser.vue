@@ -25,15 +25,15 @@
             <b-card-text class="border-top pt-4 mt-3">
               <form @submit.prevent="onSubmit">
                 <b-form-group labels-cols-lg="2" :label="$t('admin.users.account')" label-size="lg" label-class="h6 pt-0 mb-4" class="m-0">
-                  <b-form-group :label="$t('admin.users.id') + '*'" label-cols-sm="2"
+                  <b-form-group :label="$t('admin.users.id') + '*'" label-for="create-user-id" label-cols-sm="2"
                     label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
-                    <b-form-input v-model="profile.id" :state="notEmpty(profile.id) && !userIdError" required></b-form-input>
+                    <b-form-input id="create-user-id" v-model="profile.id" :state="notEmpty(profile.id) && !userIdError" required></b-form-input>
                   </b-form-group>
-                  <b-form-group label-cols-sm="2" label-align-sm="left">
+                  <b-form-group label-for="create-user-password" label-cols-sm="2" label-align-sm="left">
                     <template v-slot:label>
                       {{ $t('admin.users.password') + '*' }}
                     </template>
-                    <b-form-input :type="fieldType(showPassword)" ref="pass" v-model="credentials.password" :state="notEmpty(credentials.password) && passwordValid" @blur="validatePassword" @input="resetPasswordValidation" required>
+                    <b-form-input id="create-user-password" :type="fieldType(showPassword)" ref="pass" v-model="credentials.password" :state="notEmpty(credentials.password) && passwordValid" @blur="validatePassword" @input="resetPasswordValidation" required>
                       <template v-slot:append>
                         <button class="btn btn-outline-secondary rounded-start-0" type="button" @click="showPassword = !showPassword">
                           <span :class="showPassword ? 'mdi mdi-eye-off' : 'mdi mdi-eye'"></span>
@@ -51,8 +51,8 @@
                   </div>
                     <div v-if="passwordPolicyError" class="text-danger">{{ $t('errors.PasswordPolicyException') }}</div>
                   </b-form-group>
-                  <b-form-group :label="$t('admin.users.passwordRepeat') + '*'" label-cols-sm="2" label-align-sm="left">
-                    <b-form-input :type="fieldType(showPassRepeat)" ref="passRepeat" v-model="passwordRepeat" :state="same(credentials.password, passwordRepeat)" required>
+                  <b-form-group :label="$t('admin.users.passwordRepeat') + '*'" label-for="create-user-password-repeat" label-cols-sm="2" label-align-sm="left">
+                    <b-form-input id="create-user-password-repeat" :type="fieldType(showPassRepeat)" ref="passRepeat" v-model="passwordRepeat" :state="same(credentials.password, passwordRepeat)" required>
                       <template v-slot:append>
                         <button class="btn btn-outline-secondary rounded-start-0" type="button" @click="showPassRepeat = !showPassRepeat">
                           <span :class="showPassRepeat ? 'mdi mdi-eye-off' : 'mdi mdi-eye'"></span>
@@ -66,14 +66,14 @@
 
                   <b-form-group :label="$t('admin.users.profile')" label-size="lg" label-class="h6 mt-4"></b-form-group>
 
-                  <b-form-group :label="$t('admin.users.firstName') + '*'" label-cols-sm="2" label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
-                    <b-form-input v-model="profile.firstName" :state="notEmpty(profile.firstName)" required></b-form-input>
+                  <b-form-group :label="$t('admin.users.firstName') + '*'" label-for="create-user-first-name" label-cols-sm="2" label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
+                    <b-form-input id="create-user-first-name" v-model="profile.firstName" :state="notEmpty(profile.firstName)" required></b-form-input>
                   </b-form-group>
-                  <b-form-group :label="$t('admin.users.lastName') + '*'" label-cols-sm="2" label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
-                    <b-form-input v-model="profile.lastName" :state="notEmpty(profile.lastName)" required></b-form-input>
+                  <b-form-group :label="$t('admin.users.lastName') + '*'" label-for="create-user-last-name" label-cols-sm="2" label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
+                    <b-form-input id="create-user-last-name" v-model="profile.lastName" :state="notEmpty(profile.lastName)" required></b-form-input>
                   </b-form-group>
-                  <b-form-group :label="$t('admin.users.email')" label-cols-sm="2" label-align-sm="left" :invalid-feedback="$t('errors.invalid')">
-                    <b-form-input v-model="profile.email" type="email" autocomplete="email" :state="isValidEmail(profile.email)"></b-form-input>
+                  <b-form-group :label="$t('admin.users.email')" label-for="create-user-email" label-cols-sm="2" label-align-sm="left" :invalid-feedback="$t('errors.invalid')">
+                    <b-form-input id="create-user-email" v-model="profile.email" type="email" autocomplete="email" :state="isValidEmail(profile.email)"></b-form-input>
                   </b-form-group>
                   <div class="d-flex justify-content-end gap-2 mt-4">
                     <b-button type="button" @click="onReset()" variant="light">{{ $t('admin.users.cancel') }}</b-button>

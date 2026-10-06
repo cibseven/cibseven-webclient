@@ -19,6 +19,7 @@ package org.cibseven.webapp.providers;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Collection;
 import java.util.Map;
 
@@ -86,31 +87,46 @@ public class DeploymentProvider extends SevenProviderBase implements IDeployment
 		return response.getBody();
 	}
 
+	/**
+	 * Queries for the number of deployments that fulfill given parameters.
+	 * Takes the same parameters as the Get Deployments method.
+	 */
 	@Override
-	public Long countDeployments(CIBUser user, String nameLike) {
+	public Long countDeployments(CIBUser user, MultiValueMap<String, String> queryParams) {
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl(user) + "/deployment/count");
-		if (nameLike != null && !nameLike.isEmpty()) {
-			builder.queryParam("nameLike", nameLike);
+		if (queryParams != null) {
+			builder.queryParams(queryParams);
 		}
-		String url = builder.toUriString();
-		JsonNode response = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, true)).getBody();
+		// "+" is valid unescaped in a URI query per RFC 3986, so encode() leaves it untouched.
+		// The engine decodes query params using x-www-form-urlencoded conventions ("+" = space),
+		// so "+" must become "%2B" as the very last step, after toUriString(), to avoid being
+		// encoded a second time downstream (toUriString() itself calls encode() internally).
+		String url = builder.build().encode().toUriString().replace("+", "%2B");
+		JsonNode response = doGet(url, JsonNode.class, user, true).getBody();
 		return response != null ? response.get("count").asLong() : 0L;
 	}
 
-  @Override
-	public Collection<Deployment> findDeployments(CIBUser user, String nameLike, int firstResult, int maxResults, String sortBy, String sortOrder) {
-		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl(user) + "/deployment")
-			.queryParam("sortBy", sortBy)
-			.queryParam("sortOrder", sortOrder)
-			.queryParam("firstResult", firstResult)
-			.queryParam("maxResults", maxResults);
-		if (nameLike != null && !nameLike.isEmpty()) {
-			builder.queryParam("nameLike", nameLike);
+	/**
+	 * Queries for deployments that fulfill given parameters.
+	 * Parameters may be the properties of deployments, such as the id or name or a range of the deployment time.
+	 * The size of the result set can be retrieved by using the Get Deployment count method.
+	 */
+	@Override
+	public Collection<Deployment> findDeployments(CIBUser user, MultiValueMap<String, String> queryParams, int firstResult, int maxResults, String sortBy, String sortOrder) {
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(getEngineRestUrl(user) + "/deployment");
+		if (queryParams != null) {
+			builder.queryParams(queryParams);
 		}
-		String url = builder.toUriString();
-		return Arrays.asList(((ResponseEntity<Deployment[]>) doGet(url, Deployment[].class, user, true)).getBody());
+		builder
+				.queryParam("sortBy", sortBy)
+				.queryParam("sortOrder", sortOrder)
+				.queryParam("firstResult", firstResult)
+				.queryParam("maxResults", maxResults);
+		// See countDeployments() above for why "+" is replaced as the very last step.
+		String url = builder.build().encode().toUriString().replace("+", "%2B");
+		return Arrays.asList(doGet(url, Deployment[].class, user, true).getBody());
 	}
-  
+
   	@Override
   	public Deployment findDeployment(String deploymentId, CIBUser user) {
   	    String url = getEngineRestUrl(user) + "/deployment/" + deploymentId;

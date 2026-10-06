@@ -133,6 +133,8 @@ export default {
         this.historyTimeToLive = this.version.historyTimeToLive = this.historyTimeToLiveChanged
         this.$emit('updated-history-ttl')
         this.$refs.historyTimeToLive.hide()
+      }).catch(error => {
+        this.$root.$refs.error.show(error.response?.data)
       })
     }
   }

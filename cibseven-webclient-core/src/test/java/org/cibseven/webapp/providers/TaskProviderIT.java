@@ -34,6 +34,7 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.Task;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
 import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 
 @SpringBootTest
@@ -165,6 +166,39 @@ public class TaskProviderIT extends BaseHelper {
         assertThat(task).isNotNull();
         assertThat(task.getId()).isEqualTo("task-1");
         assertThat(task.getName()).isEqualTo("Task One");
+    }
+
+    @Test
+    void testHandleBpmnEscalation() throws Exception {
+        // Arrange
+        CIBUser user = getCibUser();
+
+        mockWebServer.enqueue(new MockResponse().setResponseCode(204));
+
+        // Act
+        taskProvider.handleBpmnEscalation("task-1", Map.of("escalationCode", "esc-1"), user);
+
+        // Assert
+        RecordedRequest request = mockWebServer.takeRequest();
+        assertThat(request.getMethod()).isEqualTo("POST");
+        assertThat(request.getPath()).endsWith("/task/task-1/bpmnEscalation");
+        assertThat(request.getBody().readUtf8()).contains("esc-1");
+    }
+
+    @Test
+    void testHandleBpmnError() throws Exception {
+        // Arrange
+        CIBUser user = getCibUser();
+
+        mockWebServer.enqueue(new MockResponse().setResponseCode(204));
+
+        // Act
+        taskProvider.handleBpmnError("task-1", Map.of("errorCode", "err-1"), user);
+
+        // Assert
+        RecordedRequest request = mockWebServer.takeRequest();
+        assertThat(request.getMethod()).isEqualTo("POST");
+        assertThat(request.getPath()).endsWith("/task/task-1/bpmnError");
     }
 
 }
