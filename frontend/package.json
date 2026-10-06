@@ -37,7 +37,7 @@
   "dependencies": {
     "@bpmn-io/form-js": "1.21.3",
     "@cib/bootstrap-theme": "1.0.3-dev.4",
-    "@cib/common-frontend": "1.0.5-dev.2",
+    "@cib/common-frontend": "1.0.5-dev.3",
     "@mdi/font": "7.4.47",
     "apexcharts": "4.7.0",
     "axios": "1.18.1",
