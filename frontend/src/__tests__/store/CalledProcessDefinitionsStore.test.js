@@ -242,6 +242,55 @@ createStoreTestSuite('CalledProcessDefinitionsStore', CalledProcessDefinitionsSt
         expect(activities[0].instances).toHaveLength(2)
       })
 
+      it('should tolerate a static definition without calledFromActivityIds', async () => {
+        const context = contextWith(getContext, {
+          statics: [staticDef({ calledFromActivityIds: undefined })]
+        })
+
+        await action(context, { processId: null })
+
+        expect(lastGrouping(context)).toEqual([expect.objectContaining({ definitionKey: 'sub', activities: [] })])
+      })
+
+      // Intermediate commits must carry final labels and must not share objects with later commits,
+      // otherwise later in-loop mutations would reach state that was already committed.
+      it('should commit detached snapshots with final labels for every chunk', async () => {
+        const context = contextWith(getContext, {
+          statics: [],
+          historicStats: [{ id: 'call_dyn', instances: 1 }],
+          activityNames: { call_dyn: 'Dynamic call' }
+        })
+        HistoryService.findActivitiesProcessDefinitionHistory.mockResolvedValue([
+          { calledProcessInstanceId: 'pi-a', activityId: 'call_dyn', endTime: null },
+          { calledProcessInstanceId: 'pi-b', activityId: 'call_dyn', endTime: null }
+        ])
+        const info = (id) => ({
+          id,
+          processDefinitionId: 'dyn-1',
+          processDefinitionKey: 'dyn',
+          processDefinitionVersion: 1,
+          processDefinitionName: 'Dynamic',
+          tenantId: null
+        })
+        HistoryService.findProcessesInstancesHistory
+          .mockResolvedValueOnce([info('pi-a')])
+          .mockResolvedValueOnce([info('pi-b')])
+
+        await action(context, { processId: 'pi-1', chunkSize: 1 })
+
+        const commits = context.commit.mock.calls
+          .filter(([name]) => name === 'setCalledProcessDefinitions')
+          .map(([, payload]) => payload)
+          .filter(payload => payload.length > 0)
+        expect(commits).toHaveLength(2)
+        const [afterSecondChunkStart, final] = commits
+        expect(afterSecondChunkStart[0].label).toBe('dyn')
+        expect(afterSecondChunkStart[0]).not.toBe(final[0])
+        expect(afterSecondChunkStart[0].activities[0]).not.toBe(final[0].activities[0])
+        expect(afterSecondChunkStart[0].activities[0].instances).toHaveLength(2)
+        expect(final[0].activities[0].instances).toHaveLength(2)
+      })
+
       // Two versions of the same key must stay distinguishable in the UI, so the label
       // keeps the version suffix; a single version shows the bare key.
       it('should disambiguate labels only when a key has several versions', async () => {
