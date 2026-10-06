@@ -129,6 +129,11 @@
       </template>
     </CIBHeaderFlow>
 
+    <!-- Messages for every logged-in user, e.g. system notifications of the enterprise edition -->
+    <div v-if="$root.user" class="flex-shrink-0">
+      <PluginSlot name="app-banner" :params="{ user: $root.user }"></PluginSlot>
+    </div>
+
     <main class="flex-grow-1 overflow-hidden d-flex flex-column">
       <router-view class="flex-grow-1 overflow-hidden" ref="down"></router-view>
     </main>
@@ -171,11 +176,12 @@ import AboutModal from '@/components/modals/AboutModal.vue'
 import SupportModal from '@/components/modals/SupportModal.vue'
 import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
 import FeedbackModal from '@/components/modals/FeedbackModal.vue'
+import PluginSlot from '@/components/common/PluginSlot.vue'
 import { updateAppTitle } from '@/utils/init'
 
 export default {
   name: 'CibSeven',
-  components: { ShortcutsModal, AboutModal, SupportModal, CIBHeaderFlow, FeedbackModal },
+  components: { ShortcutsModal, AboutModal, SupportModal, CIBHeaderFlow, FeedbackModal, PluginSlot },
   mixins: [permissionsMixin, navigationPermissionsMixin],
   inject: ['isMobile'],
   data: function() {
@@ -306,7 +312,14 @@ export default {
               active: ['seven/auth/admin/system'],
               tooltip: 'admin.system.tooltip',
               title: 'admin.system.title'
-            }
+            },
+            ...this.adminPluginEntries.map(entry => ({
+              show: true,
+              to: entry.to,
+              active: entry.active ?? [entry.to.replace(/^\//, '')],
+              tooltip: entry.tooltip ?? entry.text,
+              title: entry.text
+            }))
           ]
         }
       ]
@@ -402,15 +415,19 @@ export default {
     this.refreshAppTitle(this.pageTitle)
     // Focus the brand-home link for screen reader accessibility when user is logged in
     if (this.$root.user) {
-      this.$nextTick(() => {
-        if (this.$refs.headerFlow && this.$refs.brandHome) {
-          const brandLink = this.$refs.brandHome.$refs.brandLink
-          brandLink?.focus()
-        }
-      })
+      this.$nextTick(() => this.focusBrandLink())
     }
   },
   methods: {
+    // Browsers ring a focus set on load as if it came from the keyboard. The ring stays
+    // hidden until the first key press, so keyboard users still see where they are.
+    focusBrandLink: function() {
+      const brandLink = this.$refs.headerFlow && this.$refs.brandHome?.$refs.brandLink
+      if (!brandLink) return
+      brandLink.classList.add('initial-focus')
+      brandLink.focus()
+      document.addEventListener('keydown', () => brandLink.classList.remove('initial-focus'), { once: true, capture: true })
+    },
     // override this method to add/remove menu items
     getVisibleMenuItems: function(items) {
       return items
@@ -502,5 +519,10 @@ export default {
 .dropdown-divider {
   margin-top: 0.15rem; /* Reduce top gap */
   margin-bottom: 0.15rem; /* Reduce bottom gap */
+}
+/* See focusBrandLink */
+:deep(.navbar-brand.initial-focus:focus) {
+  outline: none;
+  box-shadow: none;
 }
 </style>

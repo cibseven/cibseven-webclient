@@ -16,7 +16,6 @@
  */
 package org.cibseven.webapp.providers;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -82,8 +81,6 @@ import org.cibseven.bpm.engine.rest.dto.task.FormDto;
 import org.cibseven.bpm.engine.rest.exception.RestException;
 import org.cibseven.bpm.engine.rest.impl.history.HistoricActivityStatisticsQueryDto;
 import org.cibseven.bpm.engine.rest.util.ApplicationContextPathUtil;
-import org.cibseven.bpm.engine.rest.util.EncodingUtil;
-import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.bpm.engine.runtime.ProcessInstanceQuery;
 import org.cibseven.bpm.engine.runtime.ProcessInstanceWithVariables;
 import org.cibseven.bpm.engine.runtime.ProcessInstantiationBuilder;
@@ -560,11 +557,8 @@ public class DirectProcessProvider implements IProcessProvider {
 		historicProcessInstanceQueryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
 		HistoricProcessInstanceQuery query = historicProcessInstanceQueryDto.toQuery(directProviderUtil.getProcessEngine(user));
 
-		List<HistoricProcessInstance> matchingHistoricProcessInstances = QueryUtil.list(query,
-				firstResult.isPresent() ? firstResult.get() : null, maxResults.isPresent() ? maxResults.get() : null);
-
 		List<HistoryProcessInstance> historicProcessInstanceResults = directProviderUtil.listAndConvert(query, 
-				firstResult.orElseGet(null), maxResults.orElseGet(null), 
+				firstResult.orElse(null), maxResults.orElse(null), 
 				HistoricProcessInstanceDto::fromHistoricProcessInstance, HistoryProcessInstance.class, user);
 
 		// Check if caller wants incident handling
@@ -787,13 +781,9 @@ public class DirectProcessProvider implements IProcessProvider {
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
 		ProcessInstanceQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 
-		List<org.cibseven.bpm.engine.runtime.ProcessInstance> matchingInstances = QueryUtil.list(query, firstResult.orElse(null), maxResults.orElse(null));
-
-		List<ProcessInstance> instanceResults = new ArrayList<>();
-		for (org.cibseven.bpm.engine.runtime.ProcessInstance instance : matchingInstances) {
-			ProcessInstanceDto resultInstance = ProcessInstanceDto.fromProcessInstance(instance);
-			instanceResults.add(directProviderUtil.convertValue(resultInstance, ProcessInstance.class, user));
-		}
+		List<ProcessInstance> instanceResults = directProviderUtil.listAndConvert(query,
+				firstResult.orElse(null), maxResults.orElse(null),
+				ProcessInstanceDto::fromProcessInstance, ProcessInstance.class, user);
 
 		boolean alreadyAllWithIncident = Boolean.TRUE.equals(data.get("withIncident"));
 		addWithIncidentsInfo(instanceResults, alreadyAllWithIncident, user);
@@ -934,13 +924,9 @@ public class DirectProcessProvider implements IProcessProvider {
 
 		Object startForm = formService.getRenderedStartForm(processDefinitionId);
 		if (startForm != null) {
-			String content = startForm.toString();
-			InputStream stream = new ByteArrayInputStream(content.getBytes(EncodingUtil.DEFAULT_ENCODING));
-			try {
-				return ResponseEntity.ok(IOUtils.toString(stream, Charset.defaultCharset()));
-			} catch (IOException e) {
-				throw new SystemException(e.getMessage(), e);
-			}
+			// the engine renders the form in memory, so no byte round trip is needed; re-encoding it
+			// through the JVM default charset garbled non-ASCII text (CIB7-2204)
+			return ResponseEntity.ok(startForm.toString());
 	}
 
 		throw new SystemException("No matching rendered start form for process definition with the id " + processDefinitionId + " found.");

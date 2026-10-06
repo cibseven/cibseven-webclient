@@ -75,7 +75,7 @@ public class DirectIncidentProvider implements IIncidentProvider {
 		Integer maxResults = directProviderUtil.getMaxResults(params);
 		Map<String, Object> queryParams = directProviderUtil.withoutPagingParams(params);
 
-		IncidentQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(queryParams, IncidentQueryDto.class);
+		IncidentQueryDto queryDto = directProviderUtil.parseQueryDto(queryParams, IncidentQueryDto.class, user);
 		IncidentQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 
 		List<org.cibseven.bpm.engine.runtime.Incident> queryResult = QueryUtil.list(query, firstResult, maxResults);
@@ -173,7 +173,7 @@ public class DirectIncidentProvider implements IIncidentProvider {
 		Integer maxResults = directProviderUtil.getMaxResults(params);
 		Map<String, Object> queryParams = directProviderUtil.withoutPagingParams(params);
 
-		HistoricIncidentQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(queryParams, HistoricIncidentQueryDto.class);
+		HistoricIncidentQueryDto queryDto = directProviderUtil.parseQueryDto(queryParams, HistoricIncidentQueryDto.class, user);
 		HistoricIncidentQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 
 		List<HistoricIncident> queryResult = QueryUtil.list(query, firstResult, maxResults);

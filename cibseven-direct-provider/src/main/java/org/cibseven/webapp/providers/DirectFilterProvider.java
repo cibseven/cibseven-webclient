@@ -16,9 +16,7 @@
  */
 package org.cibseven.webapp.providers;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import org.cibseven.bpm.engine.EntityTypes;
 import org.cibseven.bpm.engine.exception.NotValidException;
@@ -26,7 +24,6 @@ import org.cibseven.bpm.engine.exception.NullValueException;
 import org.cibseven.bpm.engine.filter.FilterQuery;
 import org.cibseven.bpm.engine.rest.dto.runtime.FilterDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.FilterQueryDto;
-import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Filter;
@@ -44,16 +41,7 @@ public class DirectFilterProvider implements IFilterProvider{
 		FilterQueryDto filterQueryDto = new FilterQueryDto();
 		filterQueryDto.setResourceType("Task");
 		FilterQuery query = filterQueryDto.toQuery(directProviderUtil.getProcessEngine(user));
-
-		List<org.cibseven.bpm.engine.filter.Filter> matchingFilters = QueryUtil.list(query, null, null);
 		return directProviderUtil.listAndConvert(query, null, null, FilterDto::fromFilter, Filter.class, user);
-
-		List<Filter> filters = new ArrayList<>();
-		for (org.cibseven.bpm.engine.filter.Filter filter : matchingFilters) {
-			FilterDto filterDto = FilterDto.fromFilter(filter);
-			filters.add(directProviderUtil.convertValue(filterDto, Filter.class, user));
-		}
-		return filters;
 	}
 
 	@Override

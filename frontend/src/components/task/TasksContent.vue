@@ -222,28 +222,34 @@ export default {
         }, this.$root.config.taskListTime)
       }
     },
+    setTaskLoaderDone: function(done) {
+      const loader = this.$refs.navbar?.$refs.taskLoader
+      if (loader) loader.done = done
+    },
     listTasksWithFilter: function() {
       this.taskResultsIndex = this.$root.config.maxTaskResults
       this.tasks = []
       this.processesInstances = []
-      if (this.$refs.navbar.$refs.taskLoader) this.$refs.navbar.$refs.taskLoader.done = false
+      if (!this.$store.state.filter.selected?.id) {
+        this.setTaskLoaderDone(true)
+        return
+      }
+      this.setTaskLoaderDone(false)
       this.fetchTasks(0, this.taskResultsIndex)
     },
     refreshTasksNumber: function() {
       this.$refs.filterNavbar.updateSelectedFilterTasksCountIfNeeded(false)
     },
     listTasksWithFilterAuto: function(showMore) {
-      if (this.$route.params.filterId) {
-        if (showMore) this.$refs.navbar.$refs.taskLoader.done = false
-        const firstResult = showMore ? this.taskResultsIndex : 0
-        const maxResults = showMore ? this.$root.config.maxTaskResults : this.taskResultsIndex
-        const skipVariables = !showMore
-        if (this.$store.state.filter.selected.id) {
-          this.fetchTasks(firstResult, maxResults, showMore, skipVariables)
-        }
-      } else {
-        if (this.$refs.navbar && this.$refs.navbar.$refs.taskLoader) this.$refs.navbar.$refs.taskLoader.done = true
+      if (!this.$route.params.filterId || !this.$store.state.filter.selected?.id) {
+        this.setTaskLoaderDone(true)
+        return
       }
+      if (showMore) this.setTaskLoaderDone(false)
+      const firstResult = showMore ? this.taskResultsIndex : 0
+      const maxResults = showMore ? this.$root.config.maxTaskResults : this.taskResultsIndex
+      const skipVariables = !showMore
+      this.fetchTasks(firstResult, maxResults, showMore, skipVariables)
     },
     fetchTasks: function(firstResult, maxResults, showMore, skipVariables) {
       const taskSorting = [JSON.parse(localStorage.getItem('taskSorting'))]
@@ -293,7 +299,7 @@ export default {
           //Only needed to fetch the businessKey of every instance.
           this.updateProcessesInstances(tasks, showMore)
         }, () => {
-          if (this.$refs.navbar.$refs.taskLoader) this.$refs.navbar.$refs.taskLoader.done = true
+          this.setTaskLoaderDone(true)
         })
       })
     },
@@ -443,16 +449,16 @@ export default {
           })
           this.tasks = showMore ? [...this.tasks, ...tasks] : tasks
           this.checkActiveTask()
-          if (this.$refs.navbar && this.$refs.navbar.$refs.taskLoader) this.$refs.navbar.$refs.taskLoader.done = true
+          this.setTaskLoaderDone(true)
         }, () => {
           this.tasks = showMore ? [...this.tasks, ...tasks] : tasks
           this.checkActiveTask()
-          if (this.$refs.navbar && this.$refs.navbar.$refs.taskLoader) this.$refs.navbar.$refs.taskLoader.done = true
+          this.setTaskLoaderDone(true)
         })
       } else {
         this.tasks = showMore ? [...this.tasks, ...tasks] : tasks
         this.checkActiveTask()
-        if (this.$refs.navbar && this.$refs.navbar.$refs.taskLoader) this.$refs.navbar.$refs.taskLoader.done = true
+        this.setTaskLoaderDone(true)
       }
     },
     cleanSelectedTask: function() {

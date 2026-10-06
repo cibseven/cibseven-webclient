@@ -94,38 +94,7 @@ public class DirectUserProvider implements IUserProvider {
 		Collection<Authorization> userAuthorizations = directProviderUtil
 				.runWithoutAuthorization(() -> fetchOwnAuthorizations(user, authenticatedGroupIds), user);
 
-		Authorizations auths = new Authorizations();
-		auths.setApplication(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.APPLICATION)));
-		auths.setFilter(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.FILTER)));
-		auths.setProcessDefinition(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.PROCESS_DEFINITION)));
-		auths.setProcessInstance(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.PROCESS_INSTANCE)));
-		auths.setTask(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.TASK)));
-		auths.setAuthorization(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.AUTHORIZATION)));
-		auths.setUser(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.USER)));
-		auths.setGroup(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.GROUP)));
-		auths.setDecisionDefinition(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.DECISION_DEFINITION)));
-		auths.setDecisionRequirementsDefinition(
-				SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.DECISION_REQUIREMENTS_DEFINITION)));
-		auths.setDeployment(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.DEPLOYMENT)));
-		// auths.setCaseDefinition(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.CASE_DEFINITION)));
-		// auths.setCaseInstance(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.CASE_INSTANCE)));
-		// auths.setJobDefinition(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.JOB_DEFINITION)));
-		auths.setBatch(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.BATCH)));
-		auths.setGroupMembership(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.GROUP_MEMBERSHIP)));
-		auths.setHistoricTask(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.HISTORIC_TASK)));
-		auths.setHistoricProcessInstance(
-				SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.HISTORIC_PROCESS_INSTANCE)));
-		auths.setTenant(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.TENANT)));
-		auths.setTenantMembership(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.TENANT_MEMBERSHIP)));
-		auths.setReport(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.REPORT)));
-		auths.setDashboard(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.DASHBOARD)));
-		auths.setUserOperationLogCategory(
-				SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.USER_OPERATION_LOG_CATEGORY)));
-		auths.setSystem(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.SYSTEM)));
-		// auths.setMessage(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.MESSAGE)));
-		// auths.setEventSubscription(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.EVENT_SUBSCRIPTION)));
-
-		return auths;
+		return buildAuthorizations(userAuthorizations);
 	}
 
 	/**

@@ -223,6 +223,21 @@ public class DirectProviderUtil {
 		return value;
 	}
 
+	protected <E, D, R> List<R> listAndConvert(Query<?, E> query, Integer firstResult, Integer maxResults,
+			Function<E, D> toIntermediateDto, Class<R> targetClass, CIBUser user) {
+
+		List<E> rawList = QueryUtil.list(query, firstResult, maxResults);
+		List<R> result = new ArrayList<>(rawList.size());
+		for (E item : rawList) {
+			result.add(convertValue(toIntermediateDto.apply(item), targetClass, user));
+		}
+		return result;
+	}
+
+	protected <Q extends AbstractQueryDto<?>> Q parseQueryDto(Object params, Class<Q> queryDtoClass, CIBUser user) {
+		return getObjectMapper(user).convertValue(params, queryDtoClass);
+	}
+
 	protected Integer getFirstResult(Map<String, Object> params) {
 		return getPagingParam(params, FIRST_RESULT_PARAM);
 	}
@@ -254,5 +269,54 @@ public class DirectProviderUtil {
 			return ((Number) value).intValue();
 		String text = value.toString().trim();
 		return text.isEmpty() ? null : Integer.valueOf(text);
+	}
+
+	/**
+	 * Holds the pagination parameters ({@code firstResult}/{@code maxResults}) extracted
+	 * from a request parameter map, together with the remaining parameters as a
+	 * {@link MultivaluedMap} suitable for building a query DTO.
+	 */
+	public static class PagedParams {
+		private final Integer firstResult;
+		private final Integer maxResults;
+		private final MultivaluedMap<String, String> queryParams;
+
+		PagedParams(Integer firstResult, Integer maxResults, MultivaluedMap<String, String> queryParams) {
+			this.firstResult = firstResult;
+			this.maxResults = maxResults;
+			this.queryParams = queryParams;
+		}
+
+		public Integer getFirstResult() {
+			return firstResult;
+		}
+
+		public Integer getMaxResults() {
+			return maxResults;
+		}
+
+		public MultivaluedMap<String, String> getQueryParams() {
+			return queryParams;
+		}
+	}
+
+	/**
+	 * Extracts {@code firstResult}/{@code maxResults} from the given params and collects
+	 * the remaining entries into a {@link MultivaluedMap}.
+	 */
+	protected PagedParams extractPagedParams(Map<String, Object> params) {
+		return new PagedParams(getFirstResult(params), getMaxResults(params),
+				toMultivaluedMap(withoutPagingParams(params)));
+	}
+
+	/**
+	 * Builds a {@link MultivaluedMap} containing all entries of the given params.
+	 */
+	protected MultivaluedMap<String, String> toMultivaluedMap(Map<String, Object> params) {
+		MultivaluedMap<String, String> multiValueMap = new MultivaluedHashMap<>();
+		for (Entry<String, Object> entry : params.entrySet()) {
+			multiValueMap.putSingle(entry.getKey(), String.valueOf(entry.getValue()));
+		}
+		return multiValueMap;
 	}
 }

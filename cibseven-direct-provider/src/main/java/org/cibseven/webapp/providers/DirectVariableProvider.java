@@ -38,7 +38,6 @@ import org.cibseven.bpm.engine.rest.dto.PatchVariablesDto;
 import org.cibseven.bpm.engine.rest.dto.VariableValueDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricVariableInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricVariableInstanceQueryDto;
-import org.cibseven.bpm.engine.rest.dto.history.batch.HistoricBatchQueryDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.ProcessInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.VariableInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.exception.RestException;
