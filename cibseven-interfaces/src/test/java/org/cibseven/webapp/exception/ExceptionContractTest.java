@@ -101,4 +101,17 @@ public class ExceptionContractTest {
 		// the (message, cause) constructor also funnels both into data
 		assertThat(exception.getData()).hasSize(2);
 	}
+
+	@Test
+	void applicationExceptionTakesOnlyAThrowableSecondArgumentAsItsCause() {
+		// subclasses pass plain values as second argument - they must not be cast to a cause
+		InvalidFolderException invalidFolder = new InvalidFolderException("name", "empty");
+		ValueTooLongException tooLong = new ValueTooLongException("description", 255);
+
+		assertThat(invalidFolder.getCause()).isNull();
+		assertThat(invalidFolder.getField()).isEqualTo("name");
+		assertThat(invalidFolder.getReason()).isEqualTo("empty");
+		assertThat(tooLong.getCause()).isNull();
+		assertThat(tooLong.getLimit()).isEqualTo(255);
+	}
 }

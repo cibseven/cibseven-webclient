@@ -415,15 +415,19 @@ export default {
     this.refreshAppTitle(this.pageTitle)
     // Focus the brand-home link for screen reader accessibility when user is logged in
     if (this.$root.user) {
-      this.$nextTick(() => {
-        if (this.$refs.headerFlow && this.$refs.brandHome) {
-          const brandLink = this.$refs.brandHome.$refs.brandLink
-          brandLink?.focus()
-        }
-      })
+      this.$nextTick(() => this.focusBrandLink())
     }
   },
   methods: {
+    // Browsers ring a focus set on load as if it came from the keyboard. The ring stays
+    // hidden until the first key press, so keyboard users still see where they are.
+    focusBrandLink: function() {
+      const brandLink = this.$refs.headerFlow && this.$refs.brandHome?.$refs.brandLink
+      if (!brandLink) return
+      brandLink.classList.add('initial-focus')
+      brandLink.focus()
+      document.addEventListener('keydown', () => brandLink.classList.remove('initial-focus'), { once: true, capture: true })
+    },
     // override this method to add/remove menu items
     getVisibleMenuItems: function(items) {
       return items
@@ -515,5 +519,10 @@ export default {
 .dropdown-divider {
   margin-top: 0.15rem; /* Reduce top gap */
   margin-bottom: 0.15rem; /* Reduce bottom gap */
+}
+/* See focusBrandLink */
+:deep(.navbar-brand.initial-focus:focus) {
+  outline: none;
+  box-shadow: none;
 }
 </style>

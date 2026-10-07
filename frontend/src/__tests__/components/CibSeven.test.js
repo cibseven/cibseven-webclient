@@ -98,6 +98,47 @@ describe('CibSeven.vue', () => {
     })
   })
 
+  // Focused on load for screen readers, but a ring nobody asked for looks like a glitch
+  describe('focusBrandLink', () => {
+    const shell = (brandLink, headerFlow = {}) => ({ $refs: { headerFlow, brandHome: { $refs: { brandLink } } } })
+    const link = () => {
+      const a = document.createElement('a')
+      a.href = '#/seven/auth/start'
+      document.body.appendChild(a)
+      return a
+    }
+
+    it('focuses the brand link without its ring', () => {
+      const brandLink = link()
+
+      CibSeven.methods.focusBrandLink.call(shell(brandLink))
+
+      expect(document.activeElement).toBe(brandLink)
+      expect(brandLink.classList.contains('initial-focus')).toBe(true)
+      brandLink.remove()
+    })
+
+    it('gives the ring back with the first key press', () => {
+      const brandLink = link()
+      CibSeven.methods.focusBrandLink.call(shell(brandLink))
+
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab' }))
+
+      expect(brandLink.classList.contains('initial-focus')).toBe(false)
+      brandLink.remove()
+    })
+
+    it('does nothing without the header', () => {
+      const brandLink = link()
+
+      CibSeven.methods.focusBrandLink.call(shell(brandLink, null))
+
+      expect(document.activeElement).not.toBe(brandLink)
+      expect(brandLink.classList.contains('initial-focus')).toBe(false)
+      brandLink.remove()
+    })
+  })
+
   describe('Methods', () => {
     it('should filter menu items based on show property', () => {
       const items = [
