@@ -262,6 +262,13 @@ component's own DOM.
   snapshot tests, no assertion-free padding — `AGENTS.md` is explicit about this.
 - Helper modules belong in `src/__tests__/support/`; nothing there is collected as a test
   and `src/__tests__/**` is already excluded from coverage.
+- Prefer the specific matcher over a generic one: `expect(wrapper.findAll('input')).toHaveLength(3)`,
+  not `expect(wrapper.findAll('input').length).toBe(3)` (Sonar flags the latter). The same
+  goes for any array or `findAll` result — drop the `.length` and use `toHaveLength(n)`
+  (including `toHaveLength(0)` for "empty"). Likewise `toBeNull()`, `toBeUndefined()`,
+  `toBeTrue`-style checks via `toBe(true)`, `toContain()` for membership and
+  `toHaveBeenCalledWith()` for call arguments beat `toBeTruthy()`/`toBeDefined()`; reserve
+  those two for cases where only presence matters.
 - Explain a non-obvious test in a comment above it — why the branch matters, not what the
   code does. That is the existing style.
 - `npm run lint` must pass. The ESLint flat config declares no Node globals, so `__dirname`
