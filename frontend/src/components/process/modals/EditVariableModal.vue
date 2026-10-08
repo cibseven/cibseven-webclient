@@ -17,7 +17,8 @@
 <template>
   <AddVariableModalUI ref="addVariableModalUI"
     :edit-mode="true"
-    :disabled="effectiveHistoric"
+    :disabled="computedDisabled"
+    :runtimeVariable="!isHistoricFetch"
     :loading="loading"
     :saving="saving"
     :error="error"
@@ -62,9 +63,16 @@ props: {
        * used when historic/live is decided per variable rather than per table
        */
       historicOverride: null,
+      /**
+       * whether the modal is in read-only mode
+       */
+      disabled: false,
     }
   },
   computed: {
+    computedDisabled() {
+      return this.effectiveHistoric || this.disabled
+    },
     effectiveHistoric() {
       return this.historicOverride ?? this.historic
     },
@@ -73,8 +81,9 @@ props: {
     }
   },
   methods: {
-    async show(variableId, variableName, historic = null) {
+    async show(variableId, variableName, historic = null, readOnly = false) {
       this.historicOverride = historic
+      this.disabled = readOnly
       this.executionId = null
       this.variableName = variableName
       this.loading = true
