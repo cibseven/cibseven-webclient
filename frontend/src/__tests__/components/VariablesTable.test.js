@@ -16,6 +16,7 @@
  */
 import { describe, it, expect, vi } from 'vitest'
 import VariablesTable from '@/components/process/tables/VariablesTable.vue'
+import variableUtils from '@/components/process/mixins/variableUtils.js'
 
 describe('VariablesTable', () => {
   describe('hasDeepLinks', () => {
@@ -84,6 +85,116 @@ describe('VariablesTable', () => {
       expect(vm.uploadError).toBe('Request failed with status code 500')
       expect(vm.$refs.uploadFile.hide).not.toHaveBeenCalled()
       expect(vm.$refs.success.show).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('variable action buttons', () => {
+    const FILE_OBJECT = 'org.example.FileValueDataSource'
+    const live = (extra) => ({ name: 'v', isLive: true, ...extra })
+    const historic = (extra) => ({ name: 'v', isLive: false, ...extra })
+    const string = { type: 'String', value: 'x' }
+    const file = { type: 'File' }
+    const bytes = { type: 'Bytes' }
+    const fileDataSource = { type: 'Object', valueInfo: { objectTypeName: FILE_OBJECT } }
+
+    const context = (overrides = {}) => {
+      const vm = {
+        ...variableUtils,
+        getFileObjects: () => [FILE_OBJECT],
+        processByPermissions: vi.fn(() => true),
+        selectedInstance: { id: 'pi-1' },
+        $root: { config: { permissions: { deleteProcessInstance: ['rt'], deleteHistoricProcessInstance: ['hist'] } } },
+        ...overrides,
+      }
+      for (const name of ['hasEditVariableButton', 'hasViewVariableButton', 'hasDownloadVariableButton', 'hasUploadVariableButton', 'hasDeleteVariableButton']) {
+        vm[name] = VariablesTable.methods[name].bind(vm)
+      }
+      return vm
+    }
+    const buttons = (variable) => {
+      const vm = context()
+      return {
+        edit: vm.hasEditVariableButton(variable),
+        view: vm.hasViewVariableButton(variable),
+        download: vm.hasDownloadVariableButton(variable),
+        upload: vm.hasUploadVariableButton(variable),
+      }
+    }
+
+    it.each([
+      ['live string', live(string), { edit: true, view: false, download: false, upload: false }],
+      ['historic string', historic(string), { edit: false, view: true, download: false, upload: false }],
+      ['live file', live(file), { edit: false, view: false, download: true, upload: true }],
+      ['historic file', historic(file), { edit: false, view: false, download: true, upload: false }],
+      ['live bytes', live(bytes), { edit: false, view: false, download: true, upload: true }],
+      ['historic bytes', historic(bytes), { edit: false, view: false, download: true, upload: false }],
+      // isFile() covers file-value-datasource objects, so they are uploadable as well
+      ['live file-value-datasource object', live(fileDataSource), { edit: false, view: false, download: true, upload: true }],
+      ['historic file-value-datasource object', historic(fileDataSource), { edit: false, view: false, download: true, upload: false }],
+    ])('%s shows %o buttons', (_, variable, expected) => {
+      expect(buttons(variable)).toEqual(expected)
+    })
+
+    it('never offers edit and view at the same time', () => {
+      for (const v of [string, file, bytes, fileDataSource]) {
+        for (const state of [live(v), historic(v)]) {
+          const { edit, view } = buttons(state)
+          expect(edit && view).toBe(false)
+        }
+      }
+    })
+
+    describe('hasDeleteVariableButton', () => {
+      it('checks the runtime permission for live variables', () => {
+        const vm = context()
+        expect(vm.hasDeleteVariableButton(live(string))).toBe(true)
+        expect(vm.processByPermissions).toHaveBeenCalledWith(['rt'], vm.selectedInstance)
+      })
+
+      it('checks the historic permission for historic variables', () => {
+        const vm = context()
+        expect(vm.hasDeleteVariableButton(historic(string))).toBe(true)
+        expect(vm.processByPermissions).toHaveBeenCalledWith(['hist'], vm.selectedInstance)
+      })
+
+      it('is hidden when the permission is missing, for every variable type', () => {
+        const vm = context({ processByPermissions: vi.fn(() => false) })
+        expect(vm.hasDeleteVariableButton(live(string))).toBe(false)
+        expect(vm.hasDeleteVariableButton(historic(file))).toBe(false)
+      })
+
+      it('is offered for downloadable variables too', () => {
+        expect(context().hasDeleteVariableButton(live(file))).toBe(true)
+      })
+    })
+  })
+
+  describe('hasAddVariableButton', () => {
+    it('follows the active state of the process instance', () => {
+      expect(VariablesTable.computed.hasAddVariableButton.call({ isActiveInstance: true })).toBe(true)
+      expect(VariablesTable.computed.hasAddVariableButton.call({ isActiveInstance: false })).toBe(false)
+    })
+  })
+
+  describe('modifyVariable', () => {
+    const context = () => ({ $refs: { editVariableModal: { show: vi.fn() } } })
+
+    it('opens the modal in edit mode for a live variable', async () => {
+      const vm = context()
+      await VariablesTable.methods.modifyVariable.call(vm, { id: 'a', name: 'n', isLive: true }, false)
+      expect(vm.$refs.editVariableModal.show).toHaveBeenCalledWith('a', 'n', false, false)
+    })
+
+    it('opens the modal read-only for a historic variable', async () => {
+      const vm = context()
+      await VariablesTable.methods.modifyVariable.call(vm, { id: 'a', name: 'n', isLive: false }, true)
+      expect(vm.$refs.editVariableModal.show).toHaveBeenCalledWith('a', 'n', true, true)
+    })
+
+    it('can open a live variable read-only', async () => {
+      const vm = context()
+      await VariablesTable.methods.modifyVariable.call(vm, { id: 'a', name: 'n', isLive: true }, true)
+      expect(vm.$refs.editVariableModal.show).toHaveBeenCalledWith('a', 'n', false, true)
     })
   })
 })
