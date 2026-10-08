@@ -18,7 +18,7 @@
   <AddVariableModalUI ref="addVariableModalUI"
     :edit-mode="true"
     :disabled="computedDisabled"
-    :runtimeVariable="!isHistoricFetch"
+    :runtime-variable="!isHistoricFetch"
     :loading="loading"
     :saving="saving"
     :error="error"

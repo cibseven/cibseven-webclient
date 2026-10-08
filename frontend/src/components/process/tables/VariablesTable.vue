@@ -370,7 +370,7 @@ export default {
      * @returns {boolean} Whether the button should be shown based on permissions, variable type, and process instance state.
     */
     hasUploadVariableButton(variable) {
-      const downloadableCheck = this.isDownloadable(variable)
+      const downloadableCheck = this.isUploadable(variable)
       const stateCheck = variable.isLive
       const permissionCheck = true // TODO
       return downloadableCheck && stateCheck && permissionCheck
@@ -383,7 +383,7 @@ export default {
       const downloadableCheck = true // always (all variables types could be deleted)
       const stateCheck = true // always (enabled for runtime and historic data)
       const isRuntime = variable.isLive
-      const permissionCheck = isRuntime ? 
+      const permissionCheck = isRuntime ?
         this.processByPermissions(this.$root.config.permissions.deleteProcessInstance, this.selectedInstance) : // TODO
         this.processByPermissions(this.$root.config.permissions.deleteHistoricProcessInstance, this.selectedInstance) // TODO
       return downloadableCheck && stateCheck && permissionCheck
