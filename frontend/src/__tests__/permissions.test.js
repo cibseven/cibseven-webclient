@@ -401,3 +401,76 @@ describe('tasksByPermissions', () => {
   })
 })
 
+// ---------------------------------------------------------------------------
+// canUpdateProcessInstanceVariables
+// ---------------------------------------------------------------------------
+describe('canUpdateProcessInstanceVariables', () => {
+  const PI = 'pi-1'
+  const KEY = 'order-process'
+
+  it.each([
+    ['UPDATE_VARIABLE on the process instance', { processInstance: [allow(PI, ['UPDATE_VARIABLE'])] }],
+    ['UPDATE on the process instance', { processInstance: [allow(PI, ['UPDATE'])] }],
+    ['UPDATE_INSTANCE_VARIABLE on the process definition', { processDefinition: [allow(KEY, ['UPDATE_INSTANCE_VARIABLE'])] }],
+    ['UPDATE_INSTANCE on the process definition', { processDefinition: [allow(KEY, ['UPDATE_INSTANCE'])] }],
+    ['ALL on any process instance', { processInstance: [allow('*', ['ALL'])] }],
+    ['UPDATE_INSTANCE_VARIABLE on any process definition', { processDefinition: [allow('*', ['UPDATE_INSTANCE_VARIABLE'])] }],
+  ])('is granted by %s alone', (_, userPermissions) => {
+    expect(createContext(userPermissions).canUpdateProcessInstanceVariables(PI, KEY)).toBe(true)
+  })
+
+  it('is denied with read permissions only', () => {
+    const ctx = createContext({
+      processInstance: [allow(PI, ['READ'])],
+      processDefinition: [allow(KEY, ['READ', 'READ_INSTANCE', 'READ_INSTANCE_VARIABLE'])],
+    })
+    expect(ctx.canUpdateProcessInstanceVariables(PI, KEY)).toBe(false)
+  })
+
+  it('is denied when the grants belong to another instance or definition', () => {
+    const ctx = createContext({
+      processInstance: [allow('pi-2', ['UPDATE_VARIABLE'])],
+      processDefinition: [allow('invoice-process', ['UPDATE_INSTANCE_VARIABLE'])],
+    })
+    expect(ctx.canUpdateProcessInstanceVariables(PI, KEY)).toBe(false)
+  })
+
+  it('is denied when the only grant is revoked', () => {
+    const ctx = createContext({
+      processDefinition: [allow('*', ['UPDATE_INSTANCE_VARIABLE']), deny(KEY, ['UPDATE_INSTANCE_VARIABLE'])],
+    })
+    expect(ctx.canUpdateProcessInstanceVariables(PI, KEY)).toBe(false)
+  })
+
+  it('is granted through another permission when one of them is revoked (any one is enough)', () => {
+    const ctx = createContext({
+      processInstance: [deny(PI, ['UPDATE_VARIABLE'])],
+      processDefinition: [allow(KEY, ['UPDATE_INSTANCE'])],
+    })
+    expect(ctx.canUpdateProcessInstanceVariables(PI, KEY)).toBe(true)
+  })
+
+  it('is denied without any authorization', () => {
+    expect(createContext({}).canUpdateProcessInstanceVariables(PI, KEY)).toBe(false)
+  })
+
+  it('is granted when authorization is disabled', () => {
+    expect(createContext({}, { authorizationEnabled: false }).canUpdateProcessInstanceVariables(PI, KEY)).toBe(true)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// canDeleteHistoryProcessInstance
+// ---------------------------------------------------------------------------
+describe('canDeleteHistoryProcessInstance', () => {
+  it('requires DELETE_HISTORY on the given process definition', () => {
+    const ctx = createContext({ processDefinition: [allow('order-process', ['DELETE_HISTORY'])] })
+    expect(ctx.canDeleteHistoryProcessInstance({ key: 'order-process' })).toBe(true)
+    expect(ctx.canDeleteHistoryProcessInstance({ key: 'invoice-process' })).toBe(false)
+  })
+
+  it('is not granted by other history permissions', () => {
+    const ctx = createContext({ processDefinition: [allow('*', ['READ_HISTORY', 'UPDATE_HISTORY'])] })
+    expect(ctx.canDeleteHistoryProcessInstance({ key: 'order-process' })).toBe(false)
+  })
+})

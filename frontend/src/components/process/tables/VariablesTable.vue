@@ -239,13 +239,25 @@ export default {
         : null
     },
 
+    processDefinitionKey() {
+      return this.process?.key ?? this.selectedInstance?.processDefinitionKey
+    },
+
+    /**
+     * Adding, editing, uploading and deleting a runtime variable are all the same engine operation.
+     * @returns {boolean} Whether the user may change the variables of the selected process instance.
+     */
+    canUpdateVariables() {
+      return this.canUpdateProcessInstanceVariables(this.selectedInstance?.id, this.processDefinitionKey)
+    },
+
     /**
      * @returns {boolean} Whether the button should be shown based on permissions, and process instance state.
     */
     hasAddVariableButton() {
-      const isLive = this.isActiveInstance
-      const permission = true // TODO
-      return isLive && permission
+      const stateCheck = this.isActiveInstance
+      const permissionCheck = this.canUpdateVariables
+      return stateCheck && permissionCheck
     },
 
     hasDeepLinks() {
@@ -342,7 +354,8 @@ export default {
       // variable cannot be edited, so the `view` button still might be shown
       const downloadableCheck = !this.isDownloadable(variable)
       const stateCheck = true // always (enabled for runtime and historic data)
-      const permissionCheck = true // always
+      // always: the engine returns only the variables the user may read, so a listed variable is readable
+      const permissionCheck = true
       return downloadableCheck && stateCheck && permissionCheck
     },
 
@@ -352,7 +365,7 @@ export default {
     hasEditVariableButton(variable) {
       const downloadableCheck = !this.isDownloadable(variable)
       const stateCheck = variable.isLive
-      const permissionCheck = true // TODO
+      const permissionCheck = this.canUpdateVariables
       return downloadableCheck && stateCheck && permissionCheck
     },
 
@@ -362,7 +375,8 @@ export default {
     hasDownloadVariableButton(variable) {
       const downloadableCheck = this.isDownloadable(variable)
       const stateCheck = true // always (enabled for runtime and historic data)
-      const permissionCheck = true // always
+      // always: the engine returns only the variables the user may read, so a listed variable is readable
+      const permissionCheck = true
       return downloadableCheck && stateCheck && permissionCheck
     },
 
@@ -372,7 +386,7 @@ export default {
     hasUploadVariableButton(variable) {
       const downloadableCheck = this.isUploadable(variable)
       const stateCheck = variable.isLive
-      const permissionCheck = true // TODO
+      const permissionCheck = this.canUpdateVariables
       return downloadableCheck && stateCheck && permissionCheck
     },
 
@@ -382,10 +396,14 @@ export default {
     hasDeleteVariableButton(variable) {
       const downloadableCheck = true // always (all variables types could be deleted)
       const stateCheck = true // always (enabled for runtime and historic data)
-      const isRuntime = variable.isLive
-      const permissionCheck = isRuntime ?
-        this.processByPermissions(this.$root.config.permissions.deleteProcessInstance, this.selectedInstance) : // TODO
-        this.processByPermissions(this.$root.config.permissions.deleteHistoricProcessInstance, this.selectedInstance) // TODO
+      // the configured global check, plus the permission the engine requires for the deletion itself:
+      // removing a runtime variable is an update of the process instance variables,
+      // removing a historic variable needs DELETE_HISTORY on the process definition
+      const permissionCheck = variable.isLive ?
+        this.processByPermissions(this.$root.config.permissions.deleteProcessInstance, this.selectedInstance) &&
+          this.canUpdateVariables :
+        this.processByPermissions(this.$root.config.permissions.deleteHistoricProcessInstance, this.selectedInstance) &&
+          this.canDeleteHistoryProcessInstance({ key: this.processDefinitionKey })
       return downloadableCheck && stateCheck && permissionCheck
     },
   },  

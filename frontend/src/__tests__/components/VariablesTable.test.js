@@ -102,6 +102,9 @@ describe('VariablesTable', () => {
         ...variableUtils,
         getFileObjects: () => [FILE_OBJECT],
         processByPermissions: vi.fn(() => true),
+        canDeleteHistoryProcessInstance: vi.fn(() => true),
+        canUpdateVariables: true,
+        processDefinitionKey: 'proc-key',
         selectedInstance: { id: 'pi-1' },
         $root: { config: { permissions: { deleteProcessInstance: ['rt'], deleteHistoricProcessInstance: ['hist'] } } },
         ...overrides,
@@ -111,8 +114,8 @@ describe('VariablesTable', () => {
       }
       return vm
     }
-    const buttons = (variable) => {
-      const vm = context()
+    const buttons = (variable, overrides) => {
+      const vm = context(overrides)
       return {
         edit: vm.hasEditVariableButton(variable),
         view: vm.hasViewVariableButton(variable),
@@ -135,11 +138,24 @@ describe('VariablesTable', () => {
       expect(buttons(variable)).toEqual(expected)
     })
 
+    // read-only user: no right to change the variables of the instance (CIB7-1986)
+    it.each([
+      ['live string', live(string), { edit: false, view: true, download: false, upload: false }],
+      ['historic string', historic(string), { edit: false, view: true, download: false, upload: false }],
+      ['live file', live(file), { edit: false, view: false, download: true, upload: false }],
+      ['live bytes', live(bytes), { edit: false, view: false, download: true, upload: false }],
+      ['live file-value-datasource object', live(fileDataSource), { edit: false, view: false, download: true, upload: false }],
+    ])('without update permission, %s shows %o buttons', (_, variable, expected) => {
+      expect(buttons(variable, { canUpdateVariables: false })).toEqual(expected)
+    })
+
     it('never offers edit and view at the same time', () => {
-      for (const v of [string, file, bytes, fileDataSource]) {
-        for (const state of [live(v), historic(v)]) {
-          const { edit, view } = buttons(state)
-          expect(edit && view).toBe(false)
+      for (const canUpdateVariables of [true, false]) {
+        for (const v of [string, file, bytes, fileDataSource]) {
+          for (const state of [live(v), historic(v)]) {
+            const { edit, view } = buttons(state, { canUpdateVariables })
+            expect(edit && view).toBe(false)
+          }
         }
       }
     })
@@ -149,12 +165,28 @@ describe('VariablesTable', () => {
         const vm = context()
         expect(vm.hasDeleteVariableButton(live(string))).toBe(true)
         expect(vm.processByPermissions).toHaveBeenCalledWith(['rt'], vm.selectedInstance)
+        expect(vm.canDeleteHistoryProcessInstance).not.toHaveBeenCalled()
       })
 
       it('checks the historic permission for historic variables', () => {
         const vm = context()
         expect(vm.hasDeleteVariableButton(historic(string))).toBe(true)
         expect(vm.processByPermissions).toHaveBeenCalledWith(['hist'], vm.selectedInstance)
+        expect(vm.canDeleteHistoryProcessInstance).toHaveBeenCalledWith({ key: 'proc-key' })
+      })
+
+      it('hides the runtime delete without the engine permission to change variables', () => {
+        const vm = context({ canUpdateVariables: false })
+        expect(vm.hasDeleteVariableButton(live(string))).toBe(false)
+        // the historic deletion does not depend on it
+        expect(vm.hasDeleteVariableButton(historic(string))).toBe(true)
+      })
+
+      it('hides the historic delete without DELETE_HISTORY on the process definition', () => {
+        const vm = context({ canDeleteHistoryProcessInstance: vi.fn(() => false) })
+        expect(vm.hasDeleteVariableButton(historic(string))).toBe(false)
+        // the runtime deletion does not depend on it
+        expect(vm.hasDeleteVariableButton(live(string))).toBe(true)
       })
 
       it('is hidden when the permission is missing, for every variable type', () => {
@@ -170,9 +202,37 @@ describe('VariablesTable', () => {
   })
 
   describe('hasAddVariableButton', () => {
-    it('follows the active state of the process instance', () => {
-      expect(VariablesTable.computed.hasAddVariableButton.call({ isActiveInstance: true })).toBe(true)
-      expect(VariablesTable.computed.hasAddVariableButton.call({ isActiveInstance: false })).toBe(false)
+    const { hasAddVariableButton } = VariablesTable.computed
+
+    it('requires an active process instance and the permission to change its variables', () => {
+      expect(hasAddVariableButton.call({ isActiveInstance: true, canUpdateVariables: true })).toBe(true)
+      expect(hasAddVariableButton.call({ isActiveInstance: false, canUpdateVariables: true })).toBe(false)
+      expect(hasAddVariableButton.call({ isActiveInstance: true, canUpdateVariables: false })).toBe(false)
+    })
+  })
+
+  describe('processDefinitionKey', () => {
+    const { processDefinitionKey } = VariablesTable.computed
+
+    it('prefers the key of the process definition', () => {
+      expect(processDefinitionKey.call({ process: { key: 'def' }, selectedInstance: { processDefinitionKey: 'inst' } })).toBe('def')
+    })
+
+    it('falls back to the key stored on the (historic) process instance', () => {
+      expect(processDefinitionKey.call({ process: undefined, selectedInstance: { processDefinitionKey: 'inst' } })).toBe('inst')
+      expect(processDefinitionKey.call({ process: undefined, selectedInstance: null })).toBeUndefined()
+    })
+  })
+
+  describe('canUpdateVariables', () => {
+    it('checks the selected process instance and its process definition', () => {
+      const vm = {
+        selectedInstance: { id: 'pi-1' },
+        processDefinitionKey: 'def',
+        canUpdateProcessInstanceVariables: vi.fn(() => true),
+      }
+      expect(VariablesTable.computed.canUpdateVariables.call(vm)).toBe(true)
+      expect(vm.canUpdateProcessInstanceVariables).toHaveBeenCalledWith('pi-1', 'def')
     })
   })
 
