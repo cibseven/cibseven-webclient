@@ -506,6 +506,15 @@ describe('DecisionService', () => {
   ])
 })
 
+describe('DecisionService historic instance list parameters', () => {
+  // axios would send an array as 'decisionDefinitionKeyIn[]=...', which the backend rejects (CIB7-1924)
+  itMatchesEndpoints([
+    { name: 'getHistoricDecisionInstances joins list values with commas', verb: 'get', call: () => DecisionService.getHistoricDecisionInstances({ decisionDefinitionKeyIn: ['invoice', 'dish'], maxResults: 10 }), args: [`${BASE}/decision/history/instances`, { params: { decisionDefinitionKeyIn: 'invoice,dish', maxResults: 10 } }] },
+    { name: 'getHistoricDecisionInstanceCount joins list values with commas', verb: 'get', call: () => DecisionService.getHistoricDecisionInstanceCount({ decisionDefinitionKeyIn: ['invoice'], tenantIdIn: ['t1', 't2'] }), args: [`${BASE}/decision/history/instances/count`, { params: { decisionDefinitionKeyIn: 'invoice', tenantIdIn: 't1,t2' } }] },
+    { name: 'getHistoricDecisionInstanceCount without params', verb: 'get', call: () => DecisionService.getHistoricDecisionInstanceCount(), args: [`${BASE}/decision/history/instances/count`, { params: undefined }] }
+  ])
+})
+
 const SUBMIT_TASK = {
   id: 't1',
   name: 'Approve',
