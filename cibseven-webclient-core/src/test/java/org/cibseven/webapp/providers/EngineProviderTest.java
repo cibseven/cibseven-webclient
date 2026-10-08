@@ -138,6 +138,40 @@ public class EngineProviderTest {
 	}
 
 	@Test
+	public void testGetEngineConfiguration_missingNewFields_deserializeToNull() {
+		// The stock engine-rest configuration endpoint doesn't report these two fields yet -
+		// they must come through as unknown (null), not as false/absent-looking-like-known.
+		mockWebServer.enqueue(new MockResponse()
+				.setBody(ENGINE_CONFIG_JSON)
+				.addHeader("Content-Type", "application/json"));
+
+		EngineConfiguration result = provider.getEngineConfiguration("default");
+
+		assertNotNull(result);
+		assertNull(result.getHistoryTimeToLive());
+		assertNull(result.getEnforceHistoryTimeToLive());
+	}
+
+	@Test
+	public void testGetEngineConfiguration_onlyOneNewFieldReported_normalizesBothToNull() {
+		// historyTimeToLive and enforceHistoryTimeToLive are only ever meaningfully known
+		// together. A partial report (e.g. an engine-rest version that added one field but
+		// not the other) must not let one leak through as "known" while the other is missing.
+		String partialJson =
+				"{\"engineName\":\"default\",\"historyLevel\":\"full\",\"authorizationEnabled\":true,"
+				+ "\"enablePasswordPolicy\":false,\"historyTimeToLive\":\"30\"}";
+		mockWebServer.enqueue(new MockResponse()
+				.setBody(partialJson)
+				.addHeader("Content-Type", "application/json"));
+
+		EngineConfiguration result = provider.getEngineConfiguration("default");
+
+		assertNotNull(result);
+		assertNull(result.getHistoryTimeToLive());
+		assertNull(result.getEnforceHistoryTimeToLive());
+	}
+
+	@Test
 	void testGetEngineConfiguration_notFound_returnsNull() {
 		mockWebServer.enqueue(new MockResponse().setResponseCode(404));
 

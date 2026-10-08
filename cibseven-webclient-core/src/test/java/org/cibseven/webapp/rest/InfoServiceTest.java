@@ -83,7 +83,7 @@ public class InfoServiceTest {
 
 	@Test
 	public void testGetConfig_reportsWhetherPluginsAreEnabled() {
-		EngineConfiguration config = new EngineConfiguration("default", "full", true, false);
+		EngineConfiguration config = new EngineConfiguration("default", "full", true, false, null, null);
 		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
 
 		// the frontend skips asking for plugins when this is false
@@ -95,7 +95,7 @@ public class InfoServiceTest {
 
 	@Test
 	public void testGetConfig_withNoEngineName_usesDefaultEngineConfiguration() {
-		EngineConfiguration config = new EngineConfiguration("default", "full", true, false);
+		EngineConfiguration config = new EngineConfiguration("default", "full", true, false, null, null);
 		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
 
 		infoService.getConfig(null);
@@ -106,7 +106,7 @@ public class InfoServiceTest {
 
 	@Test
 	public void testGetConfig_withEmptyEngineName_usesDefaultEngineConfiguration() {
-		EngineConfiguration config = new EngineConfiguration("default", "full", true, false);
+		EngineConfiguration config = new EngineConfiguration("default", "full", true, false, null, null);
 		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
 
 		infoService.getConfig("");
@@ -184,7 +184,7 @@ public class InfoServiceTest {
 
 	@Test
 	public void testGetConfig_withEngineName_usesNamedEngineConfiguration() {
-		EngineConfiguration config = new EngineConfiguration("myEngine", "audit", true, false);
+		EngineConfiguration config = new EngineConfiguration("myEngine", "audit", true, false, null, null);
 		when(bpmProvider.getEngineConfiguration("myEngine")).thenReturn(config);
 
 		infoService.getConfig("myEngine");
@@ -197,7 +197,7 @@ public class InfoServiceTest {
 	public void testGetConfig_withLiteralDefaultEngineName_usesNamedEngineConfiguration() {
 		// The engine literally named "default" is a specified engine, so it returns its own
 		// configuration rather than the effective default.
-		EngineConfiguration config = new EngineConfiguration("default", "full", true, false);
+		EngineConfiguration config = new EngineConfiguration("default", "full", true, false, null, null);
 		when(bpmProvider.getEngineConfiguration("default")).thenReturn(config);
 
 		infoService.getConfig("default");
@@ -211,7 +211,7 @@ public class InfoServiceTest {
 		// An external "url|path|name" reference is a specified engine, so it returns its own
 		// configuration rather than the effective default.
 		String externalEngine = "http://other-host|/engine-rest|remote";
-		EngineConfiguration config = new EngineConfiguration("remote", "audit", false, false);
+		EngineConfiguration config = new EngineConfiguration("remote", "audit", false, false, null, null);
 		when(bpmProvider.getEngineConfiguration(externalEngine)).thenReturn(config);
 
 		infoService.getConfig(externalEngine);
@@ -232,7 +232,7 @@ public class InfoServiceTest {
 
 	@Test
 	public void testGetConfig_historyLevelMappedToCamundaHistoryLevel() {
-		EngineConfiguration config = new EngineConfiguration("default", "audit", true, false);
+		EngineConfiguration config = new EngineConfiguration("default", "audit", true, false, null, null);
 		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
 
 		ObjectNode result = infoService.getConfig(null);
@@ -241,8 +241,41 @@ public class InfoServiceTest {
 	}
 
 	@Test
+	public void testGetConfig_historyTimeToLiveFromEngineConfig() {
+		EngineConfiguration config = new EngineConfiguration("default", "full", true, false, "30", false);
+		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
+
+		ObjectNode result = infoService.getConfig(null);
+
+		assertEquals("30", result.get("historyTimeToLive").asText());
+	}
+
+	@Test
+	public void testGetConfig_enforceHistoryTimeToLiveFromEngineConfig() {
+		EngineConfiguration config = new EngineConfiguration("default", "full", true, false, "30", true);
+		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
+
+		ObjectNode result = infoService.getConfig(null);
+
+		assertTrue(result.get("enforceHistoryTimeToLive").asBoolean());
+	}
+
+	@Test
+	public void testGetConfig_enforceHistoryTimeToLive_nullWhenEngineDoesNotReportIt() {
+		// The engine config didn't report it (e.g. an older engine-rest) - must stay null,
+		// never silently coerced to false, since false would wrongly imply "not enforced".
+		EngineConfiguration config = new EngineConfiguration("default", "full", true, false, null, null);
+		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
+
+		ObjectNode result = infoService.getConfig(null);
+
+		assertTrue(result.get("historyTimeToLive").isNull());
+		assertTrue(result.get("enforceHistoryTimeToLive").isNull());
+	}
+
+	@Test
 	public void testGetConfig_authorizationEnabledFromEngineConfig() {
-		EngineConfiguration config = new EngineConfiguration("default", "full", false, false);
+		EngineConfiguration config = new EngineConfiguration("default", "full", false, false, null, null);
 		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
 		ReflectionTestUtils.setField(infoService, "legacyAuthorizationEnabled", false);
 
@@ -253,7 +286,7 @@ public class InfoServiceTest {
 
 	@Test
 	public void testGetConfig_authorizationEnabled_trueWhenLegacyOverrides() {
-		EngineConfiguration config = new EngineConfiguration("default", "full", false, false);
+		EngineConfiguration config = new EngineConfiguration("default", "full", false, false, null, null);
 		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
 		ReflectionTestUtils.setField(infoService, "legacyAuthorizationEnabled", true);
 
@@ -264,7 +297,7 @@ public class InfoServiceTest {
 
 	@Test
 	public void testGetConfig_passwordPolicyEnabledFromEngineConfig() {
-		EngineConfiguration config = new EngineConfiguration("default", "full", true, true);
+		EngineConfiguration config = new EngineConfiguration("default", "full", true, true, null, null);
 		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
 
 		ObjectNode result = infoService.getConfig(null);
@@ -274,7 +307,7 @@ public class InfoServiceTest {
 
 	@Test
 	public void testGetConfig_passwordPolicyDisabledFromEngineConfig() {
-		EngineConfiguration config = new EngineConfiguration("default", "full", true, false);
+		EngineConfiguration config = new EngineConfiguration("default", "full", true, false, null, null);
 		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
 
 		ObjectNode result = infoService.getConfig(null);

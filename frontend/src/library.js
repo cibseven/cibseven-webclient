@@ -83,6 +83,7 @@ export { default as SearchInput } from '@/components/common-components/SearchInp
 export { default as AboutModal } from '@/components/modals/AboutModal.vue'
 export { default as FeedbackModal } from '@/components/modals/FeedbackModal.vue'
 export { default as FeedbackScreenshot } from '@/components/modals/FeedbackScreenshot.vue'
+export { default as EditHistoryTimeToLiveModal } from '@/components/modals/EditHistoryTimeToLiveModal.vue'
 export { default as TaskList } from '@/components/common-components/TaskList.vue'
 export { default as CIBHeaderFlow } from '@/components/common-components/CIBHeaderFlow.vue'
 export { default as ResetDialog } from '@/components/login/ResetDialog.vue'

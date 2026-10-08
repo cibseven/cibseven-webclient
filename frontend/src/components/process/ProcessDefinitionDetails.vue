@@ -96,7 +96,7 @@
       <button @click="editHistoryTimeToLive()" class="btn btn-sm mdi mdi-pencil float-end border-0"
         :title="$t('process-instance.edit')"></button>
     </span>
-    <span class="col-12">{{ historyTimeToLive !== 0 ? historyTimeToLive : '∞' }}{{ ' ' + $t('process.days') }}</span>
+    <span class="col-12">{{ historyTimeToLiveDisplay }}</span>
   </div>
   <hr class="my-2">
   <div class="row">
@@ -124,24 +124,7 @@
     <span class="col-4 text-end">{{ version.completedInstances }}</span>
   </div>
 
-  <b-modal ref="historyTimeToLive" :title="$t('process.details.historyTimeToLive')">
-    <p>
-      <span>{{ $t('process.details.definitionName') }}: </span>
-      <strong>{{ version.name }}</strong>
-      <br>
-      <span class="">{{ $t('process.details.definitionVersion') }}: </span>
-      <strong>{{ version.version }}</strong>
-    </p>
-    <label class="form-check-label pb-2" for="historyTimeToLiveInput">{{ $t('process.details.historyTimeToLive') }}</label>
-    <div class="input-group">
-      <input id="historyTimeToLiveInput" class="form-control" min="0" max="9999" type="number" v-model="historyTimeToLiveChanged">
-      <span class="input-group-text">{{ $t('process.days') }}</span>
-    </div>
-    <template v-slot:modal-footer>
-      <b-button @click="$refs.historyTimeToLive.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
-      <b-button @click="updateHistoryTimeToLive()" variant="primary">{{ $t('process-instance.save') }}</b-button>
-    </template>
-  </b-modal>
+  <EditHistoryTimeToLiveModal ref="ttlModal" :description-items="ttlDescriptionItems" @ttl-updated="onTtlUpdated" />
 
   <SuccessAlert ref="messageCopy"> {{ $t('process.copySuccess') }} </SuccessAlert>
 </template>
@@ -152,10 +135,11 @@ import { ProcessService, HistoryService } from '@/services.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { SuccessAlert } from '@cib/common-frontend'
 import { permissionsMixin } from '@/permissions.js'
+import EditHistoryTimeToLiveModal from '@/components/modals/EditHistoryTimeToLiveModal.vue'
 
 export default {
   name: 'ProcessDefinitionDetails',
-  components: { SuccessAlert },
+  components: { SuccessAlert, EditHistoryTimeToLiveModal },
   mixins: [ copyToClipboardMixin, permissionsMixin ],
   props: {
     version: Object,
@@ -167,7 +151,6 @@ export default {
     return {
       selectedDeployment: null,
       historyTimeToLive: null,
-      historyTimeToLiveChanged: null,
       minTimestamp: null,
       maxTimestamp: null,
       timestampsLoaded: false
@@ -211,6 +194,34 @@ export default {
     },
     hasDeploymentReadPermission() {
       return this.canReadDeployment(this.version.deploymentId)
+    },
+    ttlDescriptionItems() {
+      return [
+        { title: this.$t('process.details.definitionName'), value: this.version.name },
+        { title: this.$t('process.details.definitionVersion'), value: this.version.version }
+      ]
+    },
+    historyTimeToLiveDisplay() {
+      if (this.historyTimeToLive === undefined || this.historyTimeToLive === null) {
+        // If 'historyTimeToLive' is undefined or null, we need to check the engine configuration to determine the default TTL.
+        // enforceHistoryTimeToLive is only ever a known boolean when the engine actually
+        // reported its config (see EngineConfiguration.java's "atomic pair" contract) -
+        // null/undefined means unknown, so check against both true and false explicitly.
+        const hasEngineTTLSetup = (this.$root.config.enforceHistoryTimeToLive === true || this.$root.config.enforceHistoryTimeToLive === false)
+        if (hasEngineTTLSetup) {
+          if (this.$root.config.historyTimeToLive === null) {
+            // null means unlimited retention (never cleaned up)
+            return '∞'
+          }
+          // any other number represents the number of days for history retention (including 0)
+          return this.$t('historyTimeToLive.choiceDefault', { value: this.$root.config.historyTimeToLive })
+        }
+        else {
+          return this.$t('historyTimeToLive.choiceDefaultUnknown')
+        }
+      }
+      // any other number represents the number of days for history retention (including 0)
+      return `${this.historyTimeToLive} ${this.$t('process.days')}`
     }
   },
   mounted() {
@@ -247,18 +258,13 @@ export default {
     formatDate,
     formatDateForTooltips,
     editHistoryTimeToLive: function() {
-      this.historyTimeToLiveChanged = this.historyTimeToLive
-      this.$refs.historyTimeToLive.show()
+      this.$refs.ttlModal.show({ historyTimeToLive: this.historyTimeToLive })
     },
-    updateHistoryTimeToLive: function() {
-      if (this.historyTimeToLiveChanged === '') {
-        this.historyTimeToLiveChanged = 0
-      }
-      const data = { historyTimeToLive: this.historyTimeToLiveChanged }
+    onTtlUpdated({ ttlValue }) {
+      const data = { historyTimeToLive: ttlValue }
       ProcessService.updateHistoryTimeToLive(this.version.id, data).then(() => {
-        this.historyTimeToLive = data.historyTimeToLive
-        this.$refs.historyTimeToLive.hide()
-        this.$emit('onUpdateHistoryTimeToLive', this.version.id, data.historyTimeToLive);
+        this.historyTimeToLive = ttlValue
+        this.$emit('onUpdateHistoryTimeToLive', this.version.id, ttlValue)
       }).catch(error => {
         this.$root.$refs.error.show(error.response?.data)
       })

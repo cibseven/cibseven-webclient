@@ -88,6 +88,12 @@ public class DirectEngineProvider implements IEngineProvider {
 		result.setHistoryLevel(config.getHistory());
 		result.setAuthorizationEnabled(config.isAuthorizationEnabled());
 		result.setEnablePasswordPolicy(config.isEnablePasswordPolicy());
+		// getHistoryTimeToLive()/isEnforceHistoryTimeToLive() are declared on the impl class,
+		// not the public ProcessEngineConfiguration interface.
+		if (config instanceof org.cibseven.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl impl) {
+			result.setHistoryTimeToLive(impl.getHistoryTimeToLive());
+			result.setEnforceHistoryTimeToLive(impl.isEnforceHistoryTimeToLive());
+		}
 		return result;
 	}
 
