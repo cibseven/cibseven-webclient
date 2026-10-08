@@ -61,16 +61,16 @@ public class AuthenticationServiceTest {
 			.containsEntry("logoutRedirectUrl", "https://idp.example/logout?client_id=c");
 	}
 
-	// The URL is built from the tokens the provider forgets while logging out
+	// The provider picks up what the URL needs while logging the user out
 	@Test
-	void logout_asksForTheRedirectUrlBeforeTheProviderLogsTheUserOut() {
+	void logout_asksForTheRedirectUrlAfterTheProviderLoggedTheUserOut() {
 		User user = new CIBUser("demo");
 
 		service.logout(user, null);
 
 		InOrder order = inOrder(userProvider, redirectingProvider);
-		order.verify(redirectingProvider).getLogoutRedirectUrl(user, null);
 		order.verify(userProvider).logout(user);
+		order.verify(redirectingProvider).getLogoutRedirectUrl(user, null);
 	}
 
 	@Test

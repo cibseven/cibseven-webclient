@@ -25,9 +25,8 @@ package org.cibseven.webapp.auth;
 public interface LogoutRedirectProvider {
 
 	/**
-	 * Where the browser has to go to end the session at the external system. Asked for together with
-	 * {@link BaseUserProvider#logout(User)}, before it, because the logout forgets what the URL is
-	 * built from.
+	 * Where the browser has to go to end the session at the external system. Asked for after
+	 * {@link BaseUserProvider#logout(User)}, in which the provider may pick up what the URL needs.
 	 *
 	 * @param returnUrl where the external system should send the browser afterwards (for OIDC the
 	 *        post logout redirect URI); may be null

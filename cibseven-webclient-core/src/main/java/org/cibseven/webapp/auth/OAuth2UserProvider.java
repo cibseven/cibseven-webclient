@@ -19,7 +19,9 @@ package org.cibseven.webapp.auth;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
@@ -209,7 +211,6 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> implements Lo
 		SSOUser user = new SSOUser(tokens.getIdClaims().get(userIdProperty, String.class));
 		user.setDisplayName(tokens.getIdClaims().get(userNameProperty, String.class));
 		user.setRefreshToken(tokens.getRefresh_token());
-		user.setIdToken(tokens.getId_token());
 		
 		// Set engine from request header
 		EngineTokenUtils.setEngineFromRequest(user, rq);
@@ -219,7 +220,6 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> implements Lo
 			user.getEngine(), engineRestProperties, getSettings(), validMinutes, prolongMinutes);
 		user.setAuthToken(createToken(tokenSettings, true, false, user));
 		user.setRefreshToken(null);
-		user.setIdToken(null);
 		return user;
 	}
 
@@ -227,7 +227,6 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> implements Lo
 	public User getUserInfo(User user, String userId) {
 		if (user.getId().equals(userId)) {
 			((SSOUser) user).setRefreshToken(null);
-			((SSOUser) user).setIdToken(null);
 			return user;
 		}
 		else
@@ -276,7 +275,25 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> implements Lo
 			TokenCache entry = cachedAccessToken.remove(user.getId() + refreshToken);
 			if (entry != null) ssoHelper.revokeToken(entry.getAccessToken(), "access_token");
 		}
-		ssoHelper.revokeToken(refreshToken, "refresh_token");
+		Set<String> refreshTokens = new LinkedHashSet<>();
+		if (refreshToken != null && !refreshToken.isBlank()) {
+			refreshTokens.add(refreshToken);
+			if (ssoHelper.isEndSessionConfigured()) {
+				// The ID token for the end session request is not kept in our token (it would make it
+				// large); the identity provider issues a fresh one with every refresh.
+				try {
+					TokenResponse tokens = ssoHelper.refreshToken(refreshToken);
+					if (tokens != null) {
+						oauthUser.setIdToken(tokens.getId_token());
+						// A provider that rotates refresh tokens issued a new one, which has to go too
+						if (tokens.getRefresh_token() != null) refreshTokens.add(tokens.getRefresh_token());
+					}
+				} catch (RuntimeException e) {
+					log.warn("Could not get an ID token for the end session request: {}", e.getMessage());
+				}
+			}
+		}
+		refreshTokens.forEach(token -> ssoHelper.revokeToken(token, "refresh_token"));
 	}
 
 	@Override

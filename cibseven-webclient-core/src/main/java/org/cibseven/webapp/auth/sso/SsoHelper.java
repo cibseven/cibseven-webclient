@@ -181,6 +181,10 @@ public class SsoHelper {
 		}
 	}
 
+	public boolean isEndSessionConfigured() {
+		return endSessionEndpoint != null && !endSessionEndpoint.isBlank();
+	}
+
 	public boolean isRevocationConfigured() {
 		return revocationEndpoint != null && !revocationEndpoint.isBlank();
 	}
@@ -215,12 +219,12 @@ public class SsoHelper {
 	 * Builds the OIDC RP-Initiated Logout request URL.
 	 * See https://openid.net/specs/openid-connect-rpinitiated-1_0.html
 	 *
-	 * @param idToken the ID token issued at login, sent as {@code id_token_hint}; may be null
+	 * @param idToken the user's ID token, sent as {@code id_token_hint}; may be null
 	 * @param postLogoutRedirectUri where the identity provider sends the browser afterwards; may be null
 	 * @return the URL to redirect the browser to, or null if no end session endpoint is configured
 	 */
 	public String buildEndSessionUrl(String idToken, String postLogoutRedirectUri) {
-		if (endSessionEndpoint == null || endSessionEndpoint.isBlank()) return null;
+		if (!isEndSessionConfigured()) return null;
 		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(endSessionEndpoint)
 			.queryParam("client_id", clientId);
 		if (idToken != null && !idToken.isBlank()) builder.queryParam("id_token_hint", idToken);

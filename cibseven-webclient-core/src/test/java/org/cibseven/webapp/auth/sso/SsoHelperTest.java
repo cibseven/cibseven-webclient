@@ -546,6 +546,12 @@ public class SsoHelperTest {
 	}
 
 	@Test
+	void isEndSessionConfigured_followsTheEndpoint() throws Exception {
+		assertThat(logoutHelper().isEndSessionConfigured()).isTrue();
+		assertThat(helper().isEndSessionConfigured()).isFalse();
+	}
+
+	@Test
 	void buildEndSessionUrl_isNullWithoutAnEndSessionEndpoint() throws Exception {
 		SsoHelper helper = helper();
 

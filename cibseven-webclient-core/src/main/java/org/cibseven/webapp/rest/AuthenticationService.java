@@ -58,10 +58,10 @@ public class AuthenticationService extends BaseService {
 	@RequestMapping(value = "/logout", method = RequestMethod.POST)
 	public Map<String, String> logout(User user, @RequestBody(required = false) Map<String, String> data) {
 		String returnUrl = data == null ? null : data.get("returnUrl");
-		// Asked for before the logout, which forgets what the URL is built from
+		baseUserProvider.logout(user);
+		// Asked for after the logout, which is where the provider may pick up what the URL needs
 		String redirectUrl = baseUserProvider instanceof LogoutRedirectProvider provider
 			? provider.getLogoutRedirectUrl(user, returnUrl) : null;
-		baseUserProvider.logout(user);
 		return redirectUrl == null ? Map.of() : Map.of("logoutRedirectUrl", redirectUrl);
 	}
 	
