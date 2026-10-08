@@ -254,6 +254,25 @@ describe('TaskContent - mobile task header', () => {
   })
 })
 
+describe('TaskContent - assigneeStatus', () => {
+  const { assigneeStatus } = TaskContent.computed
+  const $t = (key, params) => (params ? `${key}:${params.join(',')}` : key)
+
+  it('should name the assignee of an assigned task', () => {
+    const vm = { $t, task: { assignee: 'lucash' }, getCompleteName: 'Lucas H' }
+
+    expect(assigneeStatus.call(vm)).toBe('task.assignedTo:Lucas H')
+  })
+
+  // getCompleteName dereferences the assignee, so it must not be read for an unassigned task.
+  it('should say the task is not assigned without reading the assignee name', () => {
+    const vm = { $t, task: { assignee: null } }
+    Object.defineProperty(vm, 'getCompleteName', { get: () => { throw new Error('read without assignee') } })
+
+    expect(assigneeStatus.call(vm)).toBe('task.notAssigned')
+  })
+})
+
 describe('TaskView', () => {
   const TaskContentStub = {
     name: 'TaskContent',

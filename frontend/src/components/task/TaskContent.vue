@@ -27,14 +27,14 @@
         </b-button>
         <h3 ref="titleTask" tabindex="-1" class="h6 fw-bold mb-0 px-2 flex-grow-1 text-truncate">{{ task.name }}</h3>
         <b-dropdown ref="assigneeMenu" variant="link" toggle-class="text-dark border-0 px-2" no-caret right
-          :label="task.assignee == null ? $t('task.notAssigned') : $t('task.assignedTo', [getCompleteName])">
+          :label="assigneeStatus">
           <template #button-content>
             <span class="mdi mdi-18px" :class="task.assignee == null ? 'mdi-account-question' : 'mdi-account'" aria-hidden="true"></span>
           </template>
           <li>
             <span class="dropdown-item-text text-nowrap">
               <span class="mdi mdi-18px me-2" :class="task.assignee == null ? 'mdi-account-question' : 'mdi-account-check'" aria-hidden="true"></span>
-              {{ task.assignee == null ? $t('task.notAssigned') : $t('task.assignedTo', [getCompleteName]) }}
+              {{ assigneeStatus }}
             </span>
           </li>
           <b-dropdown-divider></b-dropdown-divider>
@@ -188,6 +188,9 @@ export default {
     }
   },
   computed: {
+    assigneeStatus: function() {
+      return this.task?.assignee == null ? this.$t('task.notAssigned') : this.$t('task.assignedTo', [this.getCompleteName])
+    },
     canAssignToMe: function() {
       return !this.task?.assignee || this.task.assignee.toLowerCase() !== this.$root.user.id.toLowerCase()
     },
