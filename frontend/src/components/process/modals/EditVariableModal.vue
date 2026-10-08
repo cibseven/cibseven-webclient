@@ -70,6 +70,10 @@ props: {
     }
   },
   computed: {
+    historyLevel() {
+      // keep 'config?' for proper unit tests run
+      return this.$root.config?.camundaHistoryLevel || 'full'
+    },
     computedDisabled() {
       return this.effectiveHistoric || this.disabled
     },
@@ -77,7 +81,7 @@ props: {
       return this.historicOverride ?? this.historic
     },
     isHistoricFetch() {
-      return this.effectiveHistoric && this.$root.config.camundaHistoryLevel !== 'none'
+      return this.effectiveHistoric && this.historyLevel !== 'none'
     }
   },
   methods: {
