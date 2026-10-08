@@ -178,6 +178,7 @@ described above.
 | `slots` | documentation only; what is rendered is decided by `registerPlugin` |
 | `translations` | per language, merged under `plugins.<id>.*` |
 | `styles` | stylesheets of the plugin, added to the page before it registers |
+| `name`, `version`, `description` | optional; describe the plugin to administrators |
 
 Translations are loaded per language, as the application loads its own, and a
 plugin's file for a language is fetched before the application switches to it. A
@@ -286,6 +287,10 @@ is where an operator checks that a jar was picked up:
 ```
 INFO o.cibseven.webapp.plugin.PluginRegistry : Found 1 frontend plugin(s) on the classpath: [demo-report]
 ```
+
+For an overview, `PluginRegistry.getReport()` lists every plugin found, including
+the ones it does not serve and why, and the frontend's `getPluginOutcomes()` and
+`getSlotsByPlugin()` tell what the browser made of each one.
 
 | Change | What is needed |
 |---|---|

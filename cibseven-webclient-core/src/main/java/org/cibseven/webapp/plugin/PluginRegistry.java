@@ -66,11 +66,24 @@ public class PluginRegistry {
 
 	private static final List<String> OPTIONAL_FIELDS = List.of("slots", "styles", "translations");
 
+	/**
+	 * Read for the report only: the plugin list is public, and the loader needs none of
+	 * them, so it does not tell anonymous callers which versions are installed.
+	 */
+	private static final List<String> REPORT_FIELDS = List.of("name", "version", "description");
+
+	/** What the scan made of a plugin it found, as reported to administrators. */
+	public enum Status { ACCEPTED, DISABLED, REJECTED }
+
+	/** Why a plugin was rejected. */
+	public enum Rejection { OUTSIDE_FOLDER, INVALID_ID, NO_ENTRY, UNREADABLE, DUPLICATE_ID, FOLDER_UNRESOLVED }
+
 	private final ResourcePatternResolver resolver;
 	private final ObjectMapper mapper = new ObjectMapper();
 
 	private final Set<String> disabled;
 	private List<ObjectNode> manifests;
+	private List<ObjectNode> report = Collections.emptyList();
 	private Map<String, Resource> locations = Collections.emptyMap();
 
 	// Needed because of the other constructors: Spring picks one on its own only when
@@ -115,36 +128,57 @@ public class PluginRegistry {
 		return locations;
 	}
 
+	/**
+	 * Every plugin the scan found, served or not, with its {@link Status}, the
+	 * {@link Rejection} if there is one, and the classpath entry it came from - what the
+	 * server log says, for the administration page.
+	 */
+	public synchronized List<ObjectNode> getReport() {
+		getManifests();
+		return report;
+	}
+
 	private List<ObjectNode> scan() {
 		List<ObjectNode> found = new ArrayList<>();
+		List<ObjectNode> entries = new ArrayList<>();
 		Set<String> ids = new HashSet<>();
 		Map<String, Resource> folders = new LinkedHashMap<>();
 		Set<String> skipped = new LinkedHashSet<>();
 		try {
 			for (Resource resource : resolver.getResources(MANIFESTS_PATTERN)) {
 				String folderName = pluginId(resource);
+				String source = sourceOf(resource);
 				// Checked before the manifest is read, so a broken one cannot get in the way
 				if (folderName != null && disabled.contains(folderName)) {
 					skipped.add(folderName);
+					entries.add(entry(idOnly(folderName), Status.DISABLED, null, source));
 					continue;
 				}
-				ObjectNode manifest = read(resource, folderName);
-				if (manifest == null) continue;
-				String id = manifest.get("id").asText();
+				ObjectNode manifest = idOnly(folderName);
+				Rejection rejection = read(resource, folderName, manifest);
+				String id = folderName;
 				// Only one folder per id can be served, so a second one would get the first one's files
-				if (!ids.add(id)) {
+				if (rejection == null && !ids.add(id)) {
 					log.warn("Ignoring a second plugin with id \"{}\" found at {}", id, resource);
+					rejection = Rejection.DUPLICATE_ID;
+				}
+				Resource folder = rejection == null ? folderOf(resource, id) : null;
+				if (rejection == null && folder == null) rejection = Rejection.FOLDER_UNRESOLVED;
+				if (rejection != null) {
+					entries.add(entry(manifest, Status.REJECTED, rejection, source));
 					continue;
 				}
-				Resource folder = folderOf(resource, id);
-				if (folder == null) continue;
 				folders.put(id, folder);
-				found.add(manifest);
+				ObjectNode served = manifest.deepCopy();
+				served.remove(REPORT_FIELDS);
+				found.add(served);
+				entries.add(entry(manifest, Status.ACCEPTED, null, source));
 			}
 		} catch (IOException e) {
 			log.warn("Could not scan for plugins below {}", PLUGINS_ROOT, e);
 		}
 		locations = Collections.unmodifiableMap(folders);
+		report = Collections.unmodifiableList(entries);
 		logDisabled(skipped);
 		if (folders.isEmpty()) {
 			log.info("No frontend plugin found on the classpath");
@@ -174,25 +208,26 @@ public class PluginRegistry {
 		}
 	}
 
-	private ObjectNode read(Resource resource, String id) {
+	/**
+	 * Reads the manifest into {@code manifest}, which holds the id already. What could be
+	 * read is kept even for a rejected plugin, so the report can still name its version.
+	 *
+	 * @return why the plugin is rejected, or null when it is accepted
+	 */
+	private Rejection read(Resource resource, String id, ObjectNode manifest) {
 		if (id == null) {
 			log.warn("Ignoring plugin manifest outside of a plugin folder: {}", resource);
-			return null;
+			return Rejection.OUTSIDE_FOLDER;
 		}
 		if (!VALID_ID.matcher(id).matches()) {
 			log.warn("Ignoring plugin \"{}\": the folder name is not a valid plugin id", id);
-			return null;
+			return Rejection.INVALID_ID;
 		}
 		try (InputStream in = resource.getInputStream()) {
 			JsonNode json = mapper.readTree(in);
 			String entry = json.path("entry").asText(null);
-			if (entry == null || entry.isBlank()) {
-				log.warn("Ignoring plugin \"{}\": its manifest declares no entry", id);
-				return null;
-			}
-			ObjectNode manifest = JsonNodeFactory.instance.objectNode();
-			manifest.put("id", id);
-			manifest.put("entry", entry);
+			boolean hasEntry = entry != null && !entry.isBlank();
+			if (hasEntry) manifest.put("entry", entry);
 			// Passed on as declared: a plugin may name several versions it was tested against
 			if (json.has("apiVersion")) manifest.set("apiVersion", json.get("apiVersion"));
 			else manifest.put("apiVersion", "");
@@ -201,11 +236,51 @@ public class PluginRegistry {
 			for (String field : OPTIONAL_FIELDS) {
 				if (json.has(field)) manifest.set(field, json.get(field));
 			}
-			return manifest;
+			for (String field : REPORT_FIELDS) {
+				if (json.has(field)) manifest.set(field, json.get(field));
+			}
+			if (!hasEntry) {
+				log.warn("Ignoring plugin \"{}\": its manifest declares no entry", id);
+				return Rejection.NO_ENTRY;
+			}
+			return null;
 		} catch (IOException e) {
 			log.warn("Ignoring plugin \"{}\": its manifest could not be read", id, e);
-			return null;
+			return Rejection.UNREADABLE;
 		}
+	}
+
+	private static ObjectNode idOnly(String id) {
+		ObjectNode manifest = JsonNodeFactory.instance.objectNode();
+		if (id != null) manifest.put("id", id);
+		return manifest;
+	}
+
+	/** A copy, so the manifest the frontend loads from carries no status fields. */
+	private static ObjectNode entry(ObjectNode manifest, Status status, Rejection rejection, String source) {
+		ObjectNode entry = manifest.deepCopy();
+		entry.put("status", status.name());
+		if (rejection != null) entry.put("reason", rejection.name());
+		if (source != null) entry.put("source", source);
+		return entry;
+	}
+
+	/**
+	 * Names the classpath entry a manifest was found in - a jar's file name, or the last
+	 * folder of a directory - so an administrator can tell which jar to look at.
+	 */
+	private static String sourceOf(Resource resource) {
+		String location;
+		try {
+			location = resource.getURL().toString();
+		} catch (IOException e) {
+			location = resource.getDescription();
+		}
+		int end = location.indexOf("/" + PLUGINS_ROOT);
+		if (end <= 0) return null;
+		String root = location.substring(0, end);
+		if (root.endsWith("!")) root = root.substring(0, root.length() - 1);
+		return root.substring(root.lastIndexOf('/') + 1);
 	}
 
 	/**

@@ -54,13 +54,13 @@ export { createProvideObject } from '@/utils/provide.js'
 // plugins — the mechanism is shared with the applications embedding this
 // library; each supplies its own plugin-runtime entry, since module instances
 // only exist within one build
-export { registerPlugin, getPlugin, resetPlugins, reserveSlotIds, PLUGIN_API_VERSION, getRuntimeInfo } from '@/plugins/pluginsConfig.js'
+export { registerPlugin, getPlugin, resetPlugins, reserveSlotIds, getSlotsByPlugin, PLUGIN_API_VERSION, getRuntimeInfo } from '@/plugins/pluginsConfig.js'
 export { defineTabBar } from '@/utils/tabBar.js'
 // as one object, so a downstream plugin runtime can hand it over without listing every service
 export * as services from '@/services.js'
 export { setPluginContext, getPluginContext } from '@/plugins/pluginContext.js'
 export { setPluginRouter, navigation } from '@/plugins/pluginNavigation.js'
-export { initPlugins, loadPlugins, fetchPluginManifests, mergeTranslations } from '@/plugins/pluginLoader.js'
+export { initPlugins, loadPlugins, fetchPluginManifests, mergeTranslations, getPluginOutcomes, whenPluginsLoaded } from '@/plugins/pluginLoader.js'
 export { default as PluginSlot } from '@/components/common/PluginSlot.vue'
 export { default as PluginBoundary } from '@/components/common/PluginBoundary.vue'
 
