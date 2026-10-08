@@ -48,7 +48,7 @@ const DEFAULT_CONFIG = {
     systemManagement: { system: ["ALL"] },
     tenantsManagement: { tenant: ["ALL"] },
     userProfile: { application: ["ALL"] },
-    udpateInstanceProcessDefinition: { processDefinition: ["UPDATE_INSTANCE"] },
+    updateInstanceProcessDefinition: { processDefinition: ["UPDATE_INSTANCE"] },
     updateProcessDefinition : { processDefinition: ["UPDATE"] },
     deleteProcessDefinition: { processDefinition: ["DELETE"] },
     suspendProcessInstance: {processInstance: ["SUSPEND"] },
