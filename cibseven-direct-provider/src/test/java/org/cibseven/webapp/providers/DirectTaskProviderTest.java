@@ -41,7 +41,9 @@ import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.TaskService;
 import org.cibseven.bpm.engine.task.IdentityLinkType;
 import org.cibseven.bpm.engine.task.TaskQuery;
+import org.cibseven.bpm.engine.rest.dto.VariableValueDto;
 import org.cibseven.bpm.engine.rest.mapper.JacksonConfigurator;
+import org.cibseven.bpm.engine.variable.Variables;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
@@ -178,6 +180,37 @@ public class DirectTaskProviderTest {
 
 		verify(engineTask).setAssignee("demo");
 		verify(taskService).saveTask(engineTask);
+	}
+
+	@Test
+	void setAssignee_clearsTheAssigneeForTheNullConvention() {
+		org.cibseven.bpm.engine.task.Task engineTask = mockEngineTask("task-1", "Approve invoice");
+		when(taskQuery.singleResult()).thenReturn(engineTask);
+
+		// what unassigning in the task list and the SDK's unclaim both send; it must not
+		// become a user called "null", who would hide the task from every candidate list
+		taskProvider.setAssignee("task-1", "null", user);
+
+		verify(engineTask).setAssignee(null);
+		verify(taskService).saveTask(engineTask);
+	}
+
+	// ---------- local variables ----------
+
+	@Test
+	void findLocalVariables_answersInTheShapeEngineRestUses() {
+		when(taskService.getVariablesLocalTyped("task-1", true)).thenReturn(Variables.createVariables()
+			.putValueTyped("amount", Variables.integerValue(42))
+			.putValueTyped("note", Variables.stringValue("urgent")));
+
+		Map<String, Object> variables = taskProvider.findLocalVariables("task-1", user);
+
+		// a form reads vars.amount.value, as it does against the REST provider
+		assertThat(variables).containsOnlyKeys("amount", "note");
+		VariableValueDto amount = (VariableValueDto) variables.get("amount");
+		assertThat(amount.getType()).isEqualTo("Integer");
+		assertThat(amount.getValue()).isEqualTo(42);
+		assertThat(((VariableValueDto) variables.get("note")).getValue()).isEqualTo("urgent");
 	}
 
 	@Test
