@@ -64,7 +64,8 @@
 		     for the wire layer and don't pull Jackson 2 in transitively. The shared core compiles
 		     against com.fasterxml.jackson.* (Jackson 2) directly, so the SB4 module overrides SB4's
 		     own Jackson 2 BOM version explicitly to this patched release. -->
-		<version.jackson2>2.21.5</version.jackson2>
+		<version.jackson2>2.21.7</version.jackson2>
+		<version.jackson3>3.1.7</version.jackson3>
 
 		<!-- ============================================================================
 		     CVE overrides. This project imports spring-boot-dependencies as a BOM (not as the
