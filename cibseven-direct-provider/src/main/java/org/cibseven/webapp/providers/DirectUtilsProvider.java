@@ -192,15 +192,7 @@ public class DirectUtilsProvider implements IUtilsProvider {
 			queryDto.setEventName(eventName.get());
 		EventSubscriptionQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 
-		List<org.cibseven.bpm.engine.runtime.EventSubscription> matchingEventSubscriptions = QueryUtil.list(query, null,
-				null);
-
-		List<EventSubscription> eventSubscriptionResults = new ArrayList<>();
-		for (org.cibseven.bpm.engine.runtime.EventSubscription eventSubscription : matchingEventSubscriptions) {
-			EventSubscriptionDto resultEventSubscription = EventSubscriptionDto.fromEventSubscription(eventSubscription);
-			eventSubscriptionResults.add(directProviderUtil.convertValue(resultEventSubscription, EventSubscription.class, user));
-		}
-		return eventSubscriptionResults;
+		return directProviderUtil.listAndConvert(query, null, null, EventSubscriptionDto::fromEventSubscription, EventSubscription.class, user);
 	}
 
 	private List<MessageCorrelationResultDto> correlate(CorrelationMessageDto messageDto,
