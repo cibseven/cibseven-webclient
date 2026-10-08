@@ -26,33 +26,38 @@ function buildPayload(currentY, delta) {
 }
 
 const scrollOnMobile = {
-    mounted(el, binding) {
-        let lastY = el.scrollTop ?? 0
-    
-        const onScroll = () => {
-          if (window.innerWidth > 768) return
-          const currentY = el.scrollTop ?? 0
-          const delta = currentY - lastY
-          const threshold = 8
-          if (Math.abs(delta) < threshold) {
-            return
-          }
-          const payload = buildPayload(currentY, delta)
-          binding.instance?.$eventBus.emit('scrollOnMobile', payload)
-          lastY = currentY
+  mounted(el, binding) {
+    let lastY = el.scrollTop ?? 0
+    let lastMax = el.scrollHeight - el.clientHeight
 
+    const onScroll = () => {
+      const max = el.scrollHeight - el.clientHeight
+      const currentY = Math.min(Math.max(el.scrollTop, 0), max)
+      if (window.innerWidth > 768 || max !== lastMax) {
+        lastMax = max
+        lastY = currentY
+        return
+      }
+      const delta = currentY - lastY
+      const threshold = 8
+      if (Math.abs(delta) < threshold) {
+        return
+      }
+      const payload = buildPayload(currentY, delta)
+      binding.instance?.$eventBus.emit('scrollOnMobile', payload)
+      lastY = currentY
     }
     el.addEventListener('scroll', onScroll, { passive: true })
+    el[STATE_KEY] = { onScroll }
+  },
 
-    el[STATE_KEY] = { onScroll}
-},
-
-  beforeUnmount(el) {
+  beforeUnmount(el, binding) {
     const state = el[STATE_KEY]
     if (state?.onScroll) {
       el.removeEventListener('scroll', state.onScroll)
     }
     delete el[STATE_KEY]
+    binding.instance?.$eventBus?.emit('scrollOnMobileReset')
   }
 }
 export default scrollOnMobile

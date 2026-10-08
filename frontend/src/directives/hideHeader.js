@@ -16,23 +16,45 @@
  */
 const STATE_KEY = '__hideHeaderDirectiveState__'
 
+function restoreOriginal(el, original) {
+  el.style.height = original.height
+  el.style.overflow = original.overflow
+  el.style.opacity = original.opacity
+  el.style.pointerEvents = original.pointerEvents
+  if (original.ariaHidden !== null) {
+    el.setAttribute('aria-hidden', original.ariaHidden)
+  } else {
+    el.removeAttribute('aria-hidden')
+  }
+  if ('inert' in el) {
+    el.inert = original.inert
+  }
+}
+
 const hideHeader = {
   mounted(el, binding) {
-    let ticking = false
-    const originalHeight = el.style.height || `${el.getBoundingClientRect().height}px`
+    const original = {
+      height: el.style.height,
+      overflow: el.style.overflow,
+      opacity: el.style.opacity,
+      pointerEvents: el.style.pointerEvents,
+      transition: el.style.transition,
+      ariaHidden: el.getAttribute('aria-hidden'),
+      inert: 'inert' in el ? el.inert : undefined
+    }
 
     function applyHeaderVisibility(shouldHide) {
-      el.style.overflow = shouldHide ? 'hidden' : ''
-      el.style.height = shouldHide ? '0px' : (originalHeight || '')
-      el.style.opacity = shouldHide ? '0' : '1'
-      el.style.pointerEvents = shouldHide ? 'none' : ''
-      if (shouldHide) {
-        el.setAttribute('aria-hidden', 'true')
-      } else {
-        el.removeAttribute('aria-hidden')
+      if (!shouldHide) {
+        restoreOriginal(el, original)
+        return
       }
+      el.style.overflow = 'hidden'
+      el.style.height = '0px'
+      el.style.opacity = '0'
+      el.style.pointerEvents = 'none'
+      el.setAttribute('aria-hidden', 'true')
       if ('inert' in el) {
-        el.inert = shouldHide
+        el.inert = true
       }
     }
 
@@ -41,39 +63,51 @@ const hideHeader = {
     function handleScroll(payload) {
       const { y, delta, direction } = payload
 
-      if (binding.instance?.isCollapsed) {
-        binding.instance.hideHeader = false
+      if (el[STATE_KEY]?.suspended) {
         applyHeaderVisibility(false)
-        ticking = false
         return
       }
 
-      if (ticking) return
-      ticking = true
-
       if (Math.abs(delta) < 8) {
-        ticking = false
         return
       }
 
       const shouldHide = y < 40 ? false : direction === 'down'
-      binding.instance.hideHeader = shouldHide
       applyHeaderVisibility(shouldHide)
-      ticking = false
+    }
+
+    let lastWidth = window.innerWidth
+    function handleResize() {
+      if (window.innerWidth === lastWidth) return
+      lastWidth = window.innerWidth
+      applyHeaderVisibility(false)
+    }
+
+    function handleReset() {
+      applyHeaderVisibility(false)
     }
 
     binding.instance.$eventBus.on('scrollOnMobile', handleScroll)
-    el[STATE_KEY] = { handleScroll, originalHeight }
+    binding.instance.$eventBus.on('scrollOnMobileReset', handleReset)
+    window.addEventListener('resize', handleResize, { passive: true })
+    el[STATE_KEY] = { handleScroll, handleResize, handleReset, original, applyHeaderVisibility, suspended: !!binding.value }
+  },
+  updated(el, binding) {
+    const state = el[STATE_KEY]
+    if (!state) return
+    state.suspended = !!binding.value
+    if (state.suspended) {
+      state.applyHeaderVisibility(false)
+    }
   },
   unmounted(el, binding) {
     const state = el[STATE_KEY]
     if (!state) return
-    el.style.height = state.originalHeight
-    el.style.overflow = ''
-    el.style.opacity = ''
-    el.style.pointerEvents = ''
-    el.style.transition = ''
+    restoreOriginal(el, state.original)
+    el.style.transition = state.original.transition
     binding.instance?.$eventBus?.off('scrollOnMobile', state.handleScroll)
+    binding.instance?.$eventBus?.off('scrollOnMobileReset', state.handleReset)
+    window.removeEventListener('resize', state.handleResize)
     delete el[STATE_KEY]
   }
 }
