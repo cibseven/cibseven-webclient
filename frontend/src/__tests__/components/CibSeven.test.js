@@ -141,16 +141,18 @@ describe('CibSeven.vue', () => {
       expect(CibSeven.methods.isMenuItemActive.call(mockThis, exactItem)).toBe(false)
     })
 
-    it('should navigate to the start page before reloading on logout', () => {
+    it('should navigate to the start page before reloading on logout', async () => {
       const originalLocation = window.location
       const reloadOrder = []
       delete window.location
       window.location = {
         hash: '#/seven/auth/processes/123',
+        href: 'http://localhost/',
         reload: vi.fn(() => reloadOrder.push(window.location.hash))
       }
+      AuthService.logout.mockResolvedValue({})
 
-      CibSeven.methods.logout.call({})
+      await CibSeven.methods.logout.call({})
 
       // reload must fire AFTER the hash moves to the start page, else login returns
       // to the (now-stale) previous page
@@ -160,9 +162,9 @@ describe('CibSeven.vue', () => {
       window.location = originalLocation
     })
 
-    describe('logout with SSO', () => {
+    describe('logout redirect', () => {
       const originalLocation = window.location
-      const ssoThis = { $root: { config: { ssoActive: true } } }
+      const logoutThis = {}
 
       beforeEach(() => {
         AuthService.logout.mockReset()
@@ -177,12 +179,12 @@ describe('CibSeven.vue', () => {
         localStorage.clear()
       })
 
-      it('should go to the end session URL the backend returns, instead of reloading', async () => {
-        AuthService.logout.mockResolvedValue({ endSessionUrl: 'https://idp/logout?client_id=c' })
+      it('should go to the logout redirect URL the backend returns, instead of reloading', async () => {
+        AuthService.logout.mockResolvedValue({ logoutRedirectUrl: 'https://idp/logout?client_id=c' })
 
-        await CibSeven.methods.logout.call(ssoThis)
+        await CibSeven.methods.logout.call(logoutThis)
 
-        // asks the identity provider to return to the app, and marks that it should wait for the user
+        // asks the external system to return to the app, and marks that it should wait for the user
         expect(AuthService.logout).toHaveBeenCalledWith('http://localhost/')
         expect(sessionStorage.getItem(LOGGED_OUT_KEY)).toBe('1')
         expect(window.location.href).toBe('https://idp/logout?client_id=c')
@@ -190,10 +192,10 @@ describe('CibSeven.vue', () => {
         expect(localStorage.getItem('accessToken')).toBeNull()
       })
 
-      it('should reload to the start page when the backend names no end session URL', async () => {
+      it('should reload to the start page when the backend names no redirect URL', async () => {
         AuthService.logout.mockResolvedValue({})
 
-        await CibSeven.methods.logout.call(ssoThis)
+        await CibSeven.methods.logout.call(logoutThis)
 
         expect(window.location.hash).toBe('#/')
         expect(window.location.reload).toHaveBeenCalled()
@@ -204,17 +206,20 @@ describe('CibSeven.vue', () => {
         const error = vi.spyOn(console, 'error').mockImplementation(() => {})
         AuthService.logout.mockRejectedValue(new Error('401'))
 
-        await CibSeven.methods.logout.call(ssoThis)
+        await CibSeven.methods.logout.call(logoutThis)
 
         expect(localStorage.getItem('accessToken')).toBeNull()
         expect(window.location.reload).toHaveBeenCalled()
         error.mockRestore()
       })
 
-      it('should not call the backend without SSO', async () => {
+      // No provider-specific switch: the backend decides whether there is anything to finish elsewhere
+      it('should ask the backend whatever the configuration', async () => {
+        AuthService.logout.mockResolvedValue({})
+
         await CibSeven.methods.logout.call({ $root: { config: { ssoActive: false } } })
 
-        expect(AuthService.logout).not.toHaveBeenCalled()
+        expect(AuthService.logout).toHaveBeenCalledWith('http://localhost/')
       })
     })
   })

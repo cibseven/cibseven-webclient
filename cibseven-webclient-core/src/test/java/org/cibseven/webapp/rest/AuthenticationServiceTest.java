@@ -19,12 +19,15 @@ package org.cibseven.webapp.rest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 import java.util.Map;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.LogoutRedirectProvider;
 import org.cibseven.webapp.auth.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,38 +37,55 @@ import org.springframework.test.util.ReflectionTestUtils;
 public class AuthenticationServiceTest {
 
 	private BaseUserProvider<?> userProvider;
+	private LogoutRedirectProvider redirectingProvider;
 	private AuthenticationService service;
 
 	@BeforeEach
 	void setUp() {
-		userProvider = mock(BaseUserProvider.class);
 		service = new AuthenticationService();
-		ReflectionTestUtils.setField(service, "baseUserProvider", userProvider);
+		useProvider(mock(BaseUserProvider.class, withSettings().extraInterfaces(LogoutRedirectProvider.class)));
+		redirectingProvider = (LogoutRedirectProvider) userProvider;
+	}
+
+	private void useProvider(BaseUserProvider<?> provider) {
+		userProvider = provider;
+		ReflectionTestUtils.setField(service, "baseUserProvider", provider);
 	}
 
 	@Test
-	void logout_handsTheProvidersEndSessionUrlToTheBrowser() {
+	void logout_handsTheProvidersLogoutRedirectUrlToTheBrowser() {
 		User user = new CIBUser("demo");
-		when(userProvider.getEndSessionUrl(user, "https://app/logged-out.html")).thenReturn("https://idp.example/logout?client_id=c");
+		when(redirectingProvider.getLogoutRedirectUrl(user, "https://app/")).thenReturn("https://idp.example/logout?client_id=c");
 
-		assertThat(service.logout(user, Map.of("postLogoutRedirectUri", "https://app/logged-out.html")))
-			.containsEntry("endSessionUrl", "https://idp.example/logout?client_id=c");
+		assertThat(service.logout(user, Map.of("returnUrl", "https://app/")))
+			.containsEntry("logoutRedirectUrl", "https://idp.example/logout?client_id=c");
 	}
 
 	// The URL is built from the tokens the provider forgets while logging out
 	@Test
-	void logout_asksForTheEndSessionUrlBeforeTheProviderLogsTheUserOut() {
+	void logout_asksForTheRedirectUrlBeforeTheProviderLogsTheUserOut() {
 		User user = new CIBUser("demo");
 
 		service.logout(user, null);
 
-		InOrder order = inOrder(userProvider);
-		order.verify(userProvider).getEndSessionUrl(user, null);
+		InOrder order = inOrder(userProvider, redirectingProvider);
+		order.verify(redirectingProvider).getLogoutRedirectUrl(user, null);
 		order.verify(userProvider).logout(user);
 	}
 
 	@Test
-	void logout_answersNothingWhenThereIsNoIdentityProviderSessionToEnd() {
+	void logout_answersNothingWhenTheProviderHasNothingToFinishExternally() {
 		assertThat(service.logout(new CIBUser("demo"), Map.of())).isEmpty();
+	}
+
+	// Most providers have no external session; they just log the user out
+	@Test
+	void logout_stillLogsOutAProviderWithoutLogoutRedirect() {
+		useProvider(mock(BaseUserProvider.class));
+		User user = new CIBUser("demo");
+
+		assertThat(service.logout(user, Map.of("returnUrl", "https://app/"))).isEmpty();
+
+		verify(userProvider).logout(user);
 	}
 }

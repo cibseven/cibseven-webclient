@@ -341,18 +341,18 @@ public class OAuth2UserProviderTest {
 	}
 
 	@Test
-	void getEndSessionUrl_hintsTheIdTokenAndNamesTheRedirect() {
+	void getLogoutRedirectUrl_hintsTheIdTokenAndNamesTheReturnUrl() {
 		SSOUser user = new SSOUser("demo");
 		user.setIdToken("the.id.token");
 
-		assertThat(provider.getEndSessionUrl(user, "https://app.example/logged-out.html")).isEqualTo(
+		assertThat(provider.getLogoutRedirectUrl(user, "https://app.example/")).isEqualTo(
 			"https://idp.example/logout?client_id=cibseven&id_token_hint=the.id.token"
-				+ "&post_logout_redirect_uri=https://app.example/logged-out.html");
+				+ "&post_logout_redirect_uri=https://app.example/");
 	}
 
 	@Test
-	void getEndSessionUrl_worksWithoutAnIdToken() {
-		assertThat(provider.getEndSessionUrl(mock(User.class), null))
+	void getLogoutRedirectUrl_worksWithoutAnIdToken() {
+		assertThat(provider.getLogoutRedirectUrl(mock(User.class), null))
 			.doesNotContain("id_token_hint").doesNotContain("post_logout_redirect_uri");
 	}
 

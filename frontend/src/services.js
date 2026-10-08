@@ -552,8 +552,8 @@ const IncidentService = {
 }
 
 const AuthService = {
-  logout: function(postLogoutRedirectUri) {
-    return axios.post(getServicesBasePath() + "/auth/logout", { postLogoutRedirectUri })
+  logout: function(returnUrl) {
+    return axios.post(getServicesBasePath() + "/auth/logout", { returnUrl })
   },
   fetchAuths: function() { return axios.get(getServicesBasePath() + "/auth/authorizations") },
   passwordRecover: function(data) { return axios.post(getServicesBasePath() + "/auth/password-recover", data) },

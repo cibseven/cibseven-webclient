@@ -72,8 +72,8 @@ const appRoutes = [
     path: '/seven', name: 'seven', component: CibSeven, children: [
       {
         path: 'login', name: 'login', beforeEnter: async function (to) {
-          // Back from the identity provider's logout: wait for the user instead of logging in again
-          if (router.root.config.ssoActive && sessionStorage.getItem(LOGGED_OUT_KEY)) return { name: 'loggedOut' }
+          // Back from an external system's logout: wait for the user instead of logging in again
+          if (sessionStorage.getItem(LOGGED_OUT_KEY)) return { name: 'loggedOut' }
           // Check if setup is required first
           try {
             const res = await SetupService.getStatus()

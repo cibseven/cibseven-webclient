@@ -18,6 +18,7 @@ package org.cibseven.webapp.rest;
 
 import java.util.Map;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.LogoutRedirectProvider;
 import org.cibseven.webapp.auth.User;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.rest.model.Authorizations;
@@ -52,14 +53,16 @@ public class AuthenticationService extends BaseService {
 	    return baseUserProvider.login(standardLogin, rq);
 	}	
 	
-	@Operation(summary = "Ends the session of the user; revokes the tokens held for them at an external identity provider")
-	@ApiResponses({@ApiResponse(responseCode = "200", description = "Contains 'endSessionUrl' if the browser must also be sent to the identity provider to end its session") })
+	@Operation(summary = "Ends the session of the user; a provider with a session at an external system also ends it there")
+	@ApiResponses({@ApiResponse(responseCode = "200", description = "Contains 'logoutRedirectUrl' if the browser must also be sent to an external system to finish the logout") })
 	@RequestMapping(value = "/logout", method = RequestMethod.POST)
 	public Map<String, String> logout(User user, @RequestBody(required = false) Map<String, String> data) {
-		String postLogoutRedirectUri = data == null ? null : data.get("postLogoutRedirectUri");
-		String endSessionUrl = baseUserProvider.getEndSessionUrl(user, postLogoutRedirectUri);
+		String returnUrl = data == null ? null : data.get("returnUrl");
+		// Asked for before the logout, which forgets what the URL is built from
+		String redirectUrl = baseUserProvider instanceof LogoutRedirectProvider provider
+			? provider.getLogoutRedirectUrl(user, returnUrl) : null;
 		baseUserProvider.logout(user);
-		return endSessionUrl == null ? Map.of() : Map.of("endSessionUrl", endSessionUrl);
+		return redirectUrl == null ? Map.of() : Map.of("logoutRedirectUrl", redirectUrl);
 	}
 	
 	@RequestMapping(method = RequestMethod.GET)

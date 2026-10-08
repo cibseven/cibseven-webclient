@@ -1,0 +1,37 @@
+/*
+ * Copyright CIB software GmbH and/or licensed to CIB software GmbH
+ * under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright
+ * ownership. CIB software licenses this file to you under the Apache License,
+ * Version 2.0; you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+package org.cibseven.webapp.auth;
+
+/**
+ * Implemented by user providers whose session also lives at an external system (an OIDC identity
+ * provider, a SAML IdP, ...) and that therefore need the browser to be sent there to finish the
+ * logout. Providers with nothing to do after {@link BaseUserProvider#logout(User)} do not
+ * implement it.
+ */
+public interface LogoutRedirectProvider {
+
+	/**
+	 * Where the browser has to go to end the session at the external system. Asked for together with
+	 * {@link BaseUserProvider#logout(User)}, before it, because the logout forgets what the URL is
+	 * built from.
+	 *
+	 * @param returnUrl where the external system should send the browser afterwards (for OIDC the
+	 *        post logout redirect URI); may be null
+	 * @return the URL, or null if there is nothing to finish at the external system
+	 */
+	String getLogoutRedirectUrl(User user, String returnUrl);
+}

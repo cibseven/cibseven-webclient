@@ -60,7 +60,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> {
+public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> implements LogoutRedirectProvider {
 	
 	@Value("${cibseven.webclient.sso.endpoints.token}") String tokenEndpoint;
 	@Value("${cibseven.webclient.sso.endpoints.jwks}") String certEndpoint;
@@ -280,9 +280,9 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> {
 	}
 
 	@Override
-	public String getEndSessionUrl(User user, String postLogoutRedirectUri) {
+	public String getLogoutRedirectUrl(User user, String returnUrl) {
 		String idToken = user instanceof SSOUser oauthUser ? oauthUser.getIdToken() : null;
-		return ssoHelper.buildEndSessionUrl(idToken, postLogoutRedirectUri);
+		return ssoHelper.buildEndSessionUrl(idToken, returnUrl);
 	}
 
 	@Override

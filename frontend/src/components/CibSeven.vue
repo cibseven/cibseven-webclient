@@ -446,19 +446,18 @@ export default {
       }
     },
     logout: async function() {
-      // With SSO the backend revokes the tokens and may name the identity provider's
-      // end session URL. Must run before the cleanup below, which drops the token
-      // from storage (axios keeps sending it from its defaults until the reload).
-      let endSessionUrl
-      if (this.$root?.config?.ssoActive) {
-        try {
-          // The identity provider returns the browser to the app, without hash or query
-          const appUrl = new URL('./', window.location.href).href
-          endSessionUrl = (await AuthService.logout(appUrl))?.endSessionUrl
-        } catch (error) {
-          // Never block the local logout on a failing identity provider
-          console.error('Logout at the backend failed', error)
-        }
+      // The backend ends the session on its side (e.g. revokes tokens) and may name an external
+      // URL to finish the logout at, such as an identity provider. Must run before the cleanup
+      // below, which drops the token from storage (axios keeps sending it from its defaults
+      // until the reload).
+      let logoutRedirectUrl
+      try {
+        // The external system returns the browser to the app, without hash or query
+        const appUrl = new URL('./', window.location.href).href
+        logoutRedirectUrl = (await AuthService.logout(appUrl))?.logoutRedirectUrl
+      } catch (error) {
+        // Never block the local logout on the backend or an external system failing
+        console.error('Logout at the backend failed', error)
       }
       //Remove some storage variables when logout
       //https://helpdesk.cib.de/browse/BPM4CIB-3691
@@ -467,11 +466,11 @@ export default {
       sessionStorage.removeItem('accessToken')
       sessionStorage.removeItem('tokenModeler')
       // Note: engine token cleanup is handled by CIBHeaderFlow.logout()
-      if (endSessionUrl) {
-        // RP-Initiated Logout: the identity provider ends its session and sends the browser back.
-        // The marker makes the app show the logged-out page rather than log in again on its own.
+      if (logoutRedirectUrl) {
+        // The external system (e.g. OIDC RP-Initiated Logout) ends its session and sends the browser
+        // back. The marker makes the app show the logged-out page rather than log in again on its own.
         sessionStorage.setItem(LOGGED_OUT_KEY, '1')
-        window.location.href = endSessionUrl
+        window.location.href = logoutRedirectUrl
         return
       }
       // Set the hash before reload: router.push is async and loses the race, so the
