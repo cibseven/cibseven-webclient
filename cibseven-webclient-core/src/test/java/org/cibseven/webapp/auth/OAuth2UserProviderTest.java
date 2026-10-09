@@ -265,8 +265,6 @@ public class OAuth2UserProviderTest {
 
 	@Test
 	void logout_revokesTheRefreshTokenAtTheIdentityProvider() throws Exception {
-		provider.destroy();
-		provider = newProvider(false, "");
 		SSOUser user = new SSOUser("demo");
 		user.setRefreshToken("the-refresh");
 		server.enqueue(new MockResponse().setResponseCode(200));
@@ -277,15 +275,31 @@ public class OAuth2UserProviderTest {
 		RecordedRequest revoke = server.takeRequest();
 		assertThat(revoke.getPath()).isEqualTo("/revoke");
 		assertThat(revoke.getBody().readUtf8()).contains("token=the-refresh").contains("token_type_hint=refresh_token");
-		// without an end session endpoint there is no use for an ID token, so no refresh either
+		// the one request: getting the ID token for the end session is the redirect URL's business
 		assertThat(server.getRequestCount()).isEqualTo(before + 1);
 	}
 
-	// The refresh token's revocation takes the access tokens of its grant along (RFC 7009), so only the local copy goes
+	// The refresh for the hint issues another refresh token; the one to revoke is the one our token carries
+	@Test
+	void logout_revokesTheOriginalRefreshTokenAfterTheRedirectUrlWasBuilt() throws Exception {
+		SSOUser user = new SSOUser("demo");
+		user.setRefreshToken("the-refresh");
+		enqueueJson("{\"access_token\":\"a\",\"id_token\":\"the.id.token\",\"refresh_token\":\"new-refresh\"}");
+		server.enqueue(new MockResponse().setResponseCode(200));
+
+		provider.getLogoutRedirectUrl(user, null);
+		provider.logout(user);
+
+		server.takeRequest(); // the refresh
+		String revoke = server.takeRequest().getBody().readUtf8();
+		assertThat(revoke).contains("token=the-refresh").doesNotContain("new-refresh");
+		assertThat(user.getRefreshToken()).isEqualTo("the-refresh");
+	}
+
 	@Test
 	void logout_forgetsTheCachedForwardedAccessTokenAndRevokesTheRefreshToken() throws Exception {
 		provider.destroy();
-		provider = newProvider(true, "");
+		provider = newProvider(true);
 		SSOUser user = new SSOUser("demo");
 		user.setRefreshToken("the-refresh");
 		enqueueJson("{\"access_token\":\"provider-access\",\"refresh_token\":\"the-refresh\"}");
@@ -298,6 +312,7 @@ public class OAuth2UserProviderTest {
 
 		provider.logout(user);
 
+		// the refresh token's revocation takes the access tokens of its grant along (RFC 7009), so only the local copy goes
 		assertThat(server.getRequestCount()).isEqualTo(before + 1);
 		assertThat(server.takeRequest().getBody().readUtf8())
 			.contains("token=the-refresh").contains("token_type_hint=refresh_token");
@@ -306,87 +321,6 @@ public class OAuth2UserProviderTest {
 		server.enqueue(new MockResponse().setResponseCode(400).setBody("{}"));
 		assertThatThrownBy(() -> provider.getEngineRestToken(user)).isInstanceOf(AuthenticationException.class);
 		assertThat(server.getRequestCount()).isEqualTo(afterLogout + 1);
-	}
-
-	// Our token does not carry the ID token, so the end session hint comes from a refresh
-	@Test
-	void logout_getsTheIdTokenForTheHintFromARefreshAndRevokesTheLatestRefreshToken() throws Exception {
-		SSOUser user = new SSOUser("demo");
-		user.setRefreshToken("the-refresh");
-		enqueueJson("{\"access_token\":\"a\",\"id_token\":\"the.id.token\",\"refresh_token\":\"new-refresh\"}");
-		server.enqueue(new MockResponse().setResponseCode(200));
-		int before = server.getRequestCount();
-
-		provider.logout(user);
-
-		RecordedRequest refresh = server.takeRequest();
-		assertThat(refresh.getPath()).isEqualTo("/token");
-		assertThat(refresh.getBody().readUtf8()).contains("grant_type=refresh_token").contains("refresh_token=the-refresh");
-		String revoke = server.takeRequest().getBody().readUtf8();
-		assertThat(revoke).contains("token=new-refresh").doesNotContain("token=the-refresh");
-		// one refresh and one revocation, nothing more
-		assertThat(server.getRequestCount()).isEqualTo(before + 2);
-		assertThat(provider.getLogoutRedirectUrl(user, "https://app.example/")).isEqualTo(
-			"https://idp.example/logout?client_id=cibseven&id_token_hint=the.id.token"
-				+ "&post_logout_redirect_uri=https://app.example/");
-	}
-
-	@Test
-	void logout_revokesTheTokenItHoldsWhenTheProviderIssuesNoNewRefreshToken() throws Exception {
-		SSOUser user = new SSOUser("demo");
-		user.setRefreshToken("the-refresh");
-		enqueueJson("{\"access_token\":\"a\",\"id_token\":\"the.id.token\"}");
-		server.enqueue(new MockResponse().setResponseCode(200));
-
-		provider.logout(user);
-
-		server.takeRequest(); // the refresh
-		assertThat(server.takeRequest().getBody().readUtf8()).contains("token=the-refresh");
-	}
-
-	// Wanting the hint and being able to revoke are independent: an end session endpoint is enough for the hint
-	@Test
-	void logout_stillGetsTheHintWhenThereIsNoRevocationEndpoint() throws Exception {
-		provider.destroy();
-		provider = newProvider(false, "https://idp.example/logout", false);
-		SSOUser user = new SSOUser("demo");
-		user.setRefreshToken("the-refresh");
-		enqueueJson("{\"access_token\":\"a\",\"id_token\":\"the.id.token\",\"refresh_token\":\"new-refresh\"}");
-		int before = server.getRequestCount();
-
-		provider.logout(user);
-
-		// the refresh only, there is nothing to revoke with
-		assertThat(server.getRequestCount()).isEqualTo(before + 1);
-		assertThat(server.takeRequest().getPath()).isEqualTo("/token");
-		assertThat(provider.getLogoutRedirectUrl(user, null)).contains("id_token_hint=the.id.token");
-	}
-
-	@Test
-	void logout_doesNotRefreshWithoutAnEndSessionEndpoint() throws Exception {
-		provider.destroy();
-		provider = newProvider(false, "", false);
-		SSOUser user = new SSOUser("demo");
-		user.setRefreshToken("the-refresh");
-		int before = server.getRequestCount();
-
-		provider.logout(user);
-
-		assertThat(server.getRequestCount()).isEqualTo(before);
-	}
-
-	@Test
-	void logout_stillRevokesAndEndsWithoutAHintWhenTheRefreshFails() throws Exception {
-		SSOUser user = new SSOUser("demo");
-		user.setRefreshToken("the-refresh");
-		server.enqueue(new MockResponse().setResponseCode(400).setBody("{}"));
-		server.enqueue(new MockResponse().setResponseCode(200));
-
-		provider.logout(user);
-
-		server.takeRequest(); // the failed refresh
-		assertThat(server.takeRequest().getBody().readUtf8()).contains("token=the-refresh");
-		assertThat(provider.getLogoutRedirectUrl(user, null)).doesNotContain("id_token_hint");
 	}
 
 	@Test
@@ -407,29 +341,69 @@ public class OAuth2UserProviderTest {
 		assertThat(server.getRequestCount()).isEqualTo(before);
 	}
 
-	@Test
-	void getLogoutRedirectUrl_hintsTheIdTokenAndNamesTheReturnUrl() {
-		SSOUser user = new SSOUser("demo");
-		user.setIdToken("the.id.token");
+	// ---------- logout redirect URL ----------
 
-		assertThat(provider.getLogoutRedirectUrl(user, "https://app.example/")).isEqualTo(
-			"https://idp.example/logout?client_id=cibseven&id_token_hint=the.id.token"
-				+ "&post_logout_redirect_uri=https://app.example/");
+	// Our token does not carry the ID token, so the end session hint comes from a refresh
+	@Test
+	void getLogoutRedirectUrl_hintsTheIdTokenOfARefresh() throws Exception {
+		SSOUser user = new SSOUser("demo");
+		user.setRefreshToken("the-refresh");
+		enqueueJson("{\"access_token\":\"a\",\"id_token\":\"the.id.token\",\"refresh_token\":\"new-refresh\"}");
+		int before = server.getRequestCount();
+
+		String url = provider.getLogoutRedirectUrl(user, "https://app.example/");
+
+		assertThat(url).isEqualTo("https://idp.example/logout?client_id=cibseven&id_token_hint=the.id.token"
+			+ "&post_logout_redirect_uri=https://app.example/");
+		RecordedRequest refresh = server.takeRequest();
+		assertThat(refresh.getPath()).isEqualTo("/token");
+		assertThat(refresh.getBody().readUtf8()).contains("grant_type=refresh_token").contains("refresh_token=the-refresh");
+		assertThat(server.getRequestCount()).isEqualTo(before + 1);
+		// nothing is kept on the user
+		assertThat(user.getRefreshToken()).isEqualTo("the-refresh");
 	}
 
 	@Test
-	void getLogoutRedirectUrl_worksWithoutAnIdToken() {
-		assertThat(provider.getLogoutRedirectUrl(mock(User.class), null))
-			.doesNotContain("id_token_hint").doesNotContain("post_logout_redirect_uri");
+	void getLogoutRedirectUrl_goesWithoutAHintWhenTheRefreshFails() {
+		SSOUser user = new SSOUser("demo");
+		user.setRefreshToken("the-refresh");
+		server.enqueue(new MockResponse().setResponseCode(400).setBody("{}"));
+
+		assertThat(provider.getLogoutRedirectUrl(user, "https://app.example/"))
+			.isEqualTo("https://idp.example/logout?client_id=cibseven&post_logout_redirect_uri=https://app.example/");
 	}
 
-	// It would make our token large, and it is only needed for the redirect at logout
+	// Wanting the hint and being able to revoke are independent: an end session endpoint is enough for the hint
 	@Test
-	void serialize_neverWritesTheIdTokenIntoOurToken() {
+	void getLogoutRedirectUrl_stillGetsTheHintWithoutARevocationEndpoint() throws Exception {
+		provider.destroy();
+		provider = newProvider(false, "https://idp.example/logout", false);
 		SSOUser user = new SSOUser("demo");
-		user.setIdToken("the.id.token");
+		user.setRefreshToken("the-refresh");
+		enqueueJson("{\"access_token\":\"a\",\"id_token\":\"the.id.token\"}");
 
-		assertThat(provider.serialize(user)).doesNotContain("the.id.token").doesNotContain("idToken");
+		assertThat(provider.getLogoutRedirectUrl(user, null)).contains("id_token_hint=the.id.token");
+	}
+
+	@Test
+	void getLogoutRedirectUrl_doesNotRefreshWithoutAnEndSessionEndpoint() throws Exception {
+		provider.destroy();
+		provider = newProvider(false, "");
+		SSOUser user = new SSOUser("demo");
+		user.setRefreshToken("the-refresh");
+		int before = server.getRequestCount();
+
+		assertThat(provider.getLogoutRedirectUrl(user, "https://app.example/")).isNull();
+		assertThat(server.getRequestCount()).isEqualTo(before);
+	}
+
+	@Test
+	void getLogoutRedirectUrl_doesNotRefreshWithoutARefreshToken() {
+		int before = server.getRequestCount();
+
+		assertThat(provider.getLogoutRedirectUrl(new SSOUser("demo"), null)).doesNotContain("id_token_hint");
+		assertThat(provider.getLogoutRedirectUrl(mock(User.class), null)).doesNotContain("id_token_hint");
+		assertThat(server.getRequestCount()).isEqualTo(before);
 	}
 
 	@Test

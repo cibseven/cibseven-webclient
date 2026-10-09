@@ -272,30 +272,32 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> implements Lo
 		// Only forgotten locally: revoking the refresh token invalidates the access tokens of the
 		// same grant (RFC 7009, 2.1), and a stateless resource server accepts a JWT until it expires anyway
 		if (forwardToken) cachedAccessToken.remove(user.getId() + refreshToken);
-		if (refreshToken == null || refreshToken.isBlank()) return;
-
-		String latestRefreshToken = refreshToken;
-		// The ID token for the end session request is not kept in our token (it would make it large);
-		// the identity provider issues a fresh one with every refresh.
-		if (ssoHelper.isEndSessionConfigured()) {
-			try {
-				TokenResponse tokens = ssoHelper.refreshToken(refreshToken);
-				if (tokens != null) {
-					oauthUser.setIdToken(tokens.getId_token());
-					// Whether the old refresh token stays valid depends on the provider, the newest one is the one to revoke
-					if (tokens.getRefresh_token() != null) latestRefreshToken = tokens.getRefresh_token();
-				}
-			} catch (RuntimeException e) {
-				log.warn("Could not get an ID token for the end session request: {}", e.getMessage());
-			}
-		}
-		ssoHelper.revokeToken(latestRefreshToken, "refresh_token");
+		// The one our token carries, so the one that has to stop working
+		ssoHelper.revokeToken(refreshToken, "refresh_token");
 	}
 
+	/** Has to be asked for before {@link #logout(User)}, which revokes the refresh token it needs. */
 	@Override
 	public String getLogoutRedirectUrl(User user, String returnUrl) {
-		String idToken = user instanceof SSOUser oauthUser ? oauthUser.getIdToken() : null;
-		return ssoHelper.buildEndSessionUrl(idToken, returnUrl);
+		return ssoHelper.buildEndSessionUrl(freshIdToken(user), returnUrl);
+	}
+
+	/**
+	 * The ID token for the end session request is not kept in our token (it would make it large);
+	 * the identity provider issues a fresh one with every refresh. The refresh token that comes
+	 * along is dropped: it never leaves the server.
+	 */
+	private String freshIdToken(User user) {
+		if (!ssoHelper.isEndSessionConfigured() || !(user instanceof SSOUser oauthUser)) return null;
+		String refreshToken = oauthUser.getRefreshToken();
+		if (refreshToken == null || refreshToken.isBlank()) return null;
+		try {
+			TokenResponse tokens = ssoHelper.refreshToken(refreshToken);
+			return tokens == null ? null : tokens.getId_token();
+		} catch (RuntimeException e) {
+			log.warn("Could not get an ID token for the end session request: {}", e.getMessage());
+			return null;
+		}
 	}
 
 	@Override

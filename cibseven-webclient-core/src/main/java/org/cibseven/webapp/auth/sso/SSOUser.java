@@ -18,8 +18,6 @@ package org.cibseven.webapp.auth.sso;
 
 import org.cibseven.webapp.auth.CIBUser;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -29,14 +27,7 @@ public class SSOUser extends CIBUser {
 	
 	@Getter @Setter
 	String refreshToken;
-	
-	/**
-	 * ID token for the id_token_hint of the RP-initiated logout. Set while logging out only, to
-	 * be picked up for the redirect URL; never part of our token or of a response.
-	 */
-	@Getter @Setter @JsonIgnore
-	String idToken;
-	
+		
 	public SSOUser(String userId) {
 		super(userId);
 	}
