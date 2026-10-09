@@ -84,6 +84,19 @@ const permissionsMixin = {
 			})
 		},
 		/**
+		 * @param {string} processInstanceId
+		 * @param {string} processDefinitionKey
+		 * @param {boolean} isRuntime `true` for a variable of the running process instance, `false` for a historic one
+		 * @returns {boolean} for a runtime variable, `true` if the user has `DELETE` on the process instance and may change
+		 * its variables (for the engine, removing a variable is an update, see `canUpdateProcessInstanceVariables`);
+		 * for a historic variable, `true` if the user has `DELETE_HISTORY` on the process definition, as the engine requires
+		 */
+		canDeleteProcessInstanceVariable(processInstanceId, processDefinitionKey, isRuntime) {
+			if (!isRuntime) return this.canDeleteHistoryProcessInstance({ key: processDefinitionKey })
+			return this.processByPermissions({ processInstance: ['DELETE'] }, { key: processInstanceId }) &&
+				this.canUpdateProcessInstanceVariables(processInstanceId, processDefinitionKey)
+		},
+		/**
 		 * @param {string} deploymentId
 		 * @returns {boolean} `true` if the user has `READ` permission for the given deploymentId, `false` otherwise
 		 */

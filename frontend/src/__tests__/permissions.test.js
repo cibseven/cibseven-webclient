@@ -473,3 +473,66 @@ describe('canDeleteHistoryProcessInstance', () => {
     expect(ctx.canDeleteHistoryProcessInstance({ key: 'order-process' })).toBe(false)
   })
 })
+
+// ---------------------------------------------------------------------------
+// canDeleteProcessInstanceVariable
+// ---------------------------------------------------------------------------
+describe('canDeleteProcessInstanceVariable', () => {
+  const PI = 'pi-1'
+  const KEY = 'order-process'
+
+  describe('runtime variable', () => {
+    it('needs DELETE on the process instance and the permission to change its variables', () => {
+      const ctx = createContext({ processInstance: [allow(PI, ['DELETE', 'UPDATE_VARIABLE'])] })
+      expect(ctx.canDeleteProcessInstanceVariable(PI, KEY, true)).toBe(true)
+    })
+
+    it('accepts the update permission from the process definition', () => {
+      const ctx = createContext({
+        processInstance: [allow('*', ['DELETE'])],
+        processDefinition: [allow(KEY, ['UPDATE_INSTANCE_VARIABLE'])],
+      })
+      expect(ctx.canDeleteProcessInstanceVariable(PI, KEY, true)).toBe(true)
+    })
+
+    it('is denied with DELETE alone', () => {
+      const ctx = createContext({ processInstance: [allow(PI, ['DELETE'])] })
+      expect(ctx.canDeleteProcessInstanceVariable(PI, KEY, true)).toBe(false)
+    })
+
+    it('is denied with the update permission alone', () => {
+      const ctx = createContext({ processInstance: [allow(PI, ['UPDATE_VARIABLE'])] })
+      expect(ctx.canDeleteProcessInstanceVariable(PI, KEY, true)).toBe(false)
+    })
+
+    it('matches DELETE against the process instance id', () => {
+      const ctx = createContext({ processInstance: [allow('pi-2', ['DELETE']), allow('*', ['UPDATE_VARIABLE'])] })
+      expect(ctx.canDeleteProcessInstanceVariable(PI, KEY, true)).toBe(false)
+      expect(ctx.canDeleteProcessInstanceVariable('pi-2', KEY, true)).toBe(true)
+    })
+
+    it('does not accept DELETE_HISTORY', () => {
+      const ctx = createContext({ processDefinition: [allow(KEY, ['DELETE_HISTORY'])] })
+      expect(ctx.canDeleteProcessInstanceVariable(PI, KEY, true)).toBe(false)
+    })
+  })
+
+  describe('historic variable', () => {
+    it('needs DELETE_HISTORY on the process definition', () => {
+      const ctx = createContext({ processDefinition: [allow(KEY, ['DELETE_HISTORY'])] })
+      expect(ctx.canDeleteProcessInstanceVariable(PI, KEY, false)).toBe(true)
+      expect(ctx.canDeleteProcessInstanceVariable(PI, 'invoice-process', false)).toBe(false)
+    })
+
+    it('does not accept the runtime permissions', () => {
+      const ctx = createContext({ processInstance: [allow('*', ['ALL'])] })
+      expect(ctx.canDeleteProcessInstanceVariable(PI, KEY, false)).toBe(false)
+    })
+  })
+
+  it('is granted for both when authorization is disabled', () => {
+    const ctx = createContext({}, { authorizationEnabled: false })
+    expect(ctx.canDeleteProcessInstanceVariable(PI, KEY, true)).toBe(true)
+    expect(ctx.canDeleteProcessInstanceVariable(PI, KEY, false)).toBe(true)
+  })
+})

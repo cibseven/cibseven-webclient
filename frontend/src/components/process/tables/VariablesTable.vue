@@ -396,13 +396,7 @@ export default {
     hasDeleteVariableButton(variable) {
       const downloadableCheck = true // always (all variables types could be deleted)
       const stateCheck = true // always (enabled for runtime and historic data)
-      // runtime: DELETE on the process instance, plus the engine's own check -
-      //   removing a runtime variable is an update of the process instance variables
-      // historic: the engine needs DELETE_HISTORY on the process definition
-      const permissionCheck = variable.isLive ?
-        this.processByPermissions({ processInstance: ['DELETE'] }, { key: this.selectedInstance?.id }) &&
-          this.canUpdateVariables :
-        this.canDeleteHistoryProcessInstance({ key: this.processDefinitionKey })
+      const permissionCheck = this.canDeleteProcessInstanceVariable(this.selectedInstance?.id, this.processDefinitionKey, variable.isLive)
       return downloadableCheck && stateCheck && permissionCheck
     },
   },  
