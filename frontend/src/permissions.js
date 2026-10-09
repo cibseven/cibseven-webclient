@@ -56,6 +56,20 @@ const permissionsMixin = {
 			return this.$_permissionsMixin_checkPermissionsAllowed(process, 'key', permissionsCheck)
 		},
 		/**
+		 * Mirrors the engine check for deleting a running process instance
+		 * (`AuthorizationCommandChecker.checkDeleteProcessInstance`): any one of the permissions is enough.
+		 * @param {string} processInstanceId
+		 * @param {string} processDefinitionKey
+		 * @returns {boolean} `true` if the user has `DELETE` on the process instance
+		 * or `DELETE_INSTANCE` on its process definition, `false` otherwise
+		 */
+		canDeleteRuntimeProcessInstance(processInstanceId, processDefinitionKey) {
+			return this.$_permissionsMixin_checkAnyAllowed([
+				['processInstance', 'DELETE', processInstanceId],
+				['processDefinition', 'DELETE_INSTANCE', processDefinitionKey],
+			])
+		},
+		/**
 		 * @param {Object} processDefinition 
 		 * @returns {boolean} `true` if the user has `DELETE_HISTORY` permission for the given processDefinition (delete historic process instances), `false` otherwise
 		 */
@@ -65,7 +79,37 @@ const permissionsMixin = {
 			return this.$_permissionsMixin_checkPermissionsAllowed(processDefinition, 'key', permissionsCheck)
 		},
 		/**
-		 * @param {string} deploymentId 
+		 * Mirrors the engine check for adding, changing and removing variables of a running process instance
+		 * (`AuthorizationCommandChecker.checkUpdateProcessInstanceVariables`): any one of the permissions is enough.
+		 * @param {string} processInstanceId
+		 * @param {string} processDefinitionKey
+		 * @returns {boolean} `true` if the user has `UPDATE_VARIABLE` or `UPDATE` on the process instance,
+		 * or `UPDATE_INSTANCE_VARIABLE` or `UPDATE_INSTANCE` on its process definition, `false` otherwise
+		 */
+		canUpdateProcessInstanceVariables(processInstanceId, processDefinitionKey) {
+			return this.$_permissionsMixin_checkAnyAllowed([
+				['processInstance', 'UPDATE_VARIABLE', processInstanceId],
+				['processDefinition', 'UPDATE_INSTANCE_VARIABLE', processDefinitionKey],
+				['processInstance', 'UPDATE', processInstanceId],
+				['processDefinition', 'UPDATE_INSTANCE', processDefinitionKey],
+			])
+		},
+		/**
+		 * @param {string} processInstanceId
+		 * @param {string} processDefinitionKey
+		 * @param {boolean} isRuntime `true` for a variable of the running process instance, `false` for a historic one
+		 * @returns {boolean} for a runtime variable, `true` if the user may delete the process instance
+		 * (see `canDeleteRuntimeProcessInstance`) and may change its variables
+		 * (for the engine, removing a variable is an update, see `canUpdateProcessInstanceVariables`);
+		 * for a historic variable, `true` if the user has `DELETE_HISTORY` on the process definition, as the engine requires
+		 */
+		canDeleteProcessInstanceVariable(processInstanceId, processDefinitionKey, isRuntime) {
+			if (!isRuntime) return this.canDeleteHistoryProcessInstance({ key: processDefinitionKey })
+			return this.canDeleteRuntimeProcessInstance(processInstanceId, processDefinitionKey) &&
+				this.canUpdateProcessInstanceVariables(processInstanceId, processDefinitionKey)
+		},
+		/**
+		 * @param {string} deploymentId
 		 * @returns {boolean} `true` if the user has `READ` permission for the given deploymentId, `false` otherwise
 		 */
 		canReadDeployment(deploymentId) {
@@ -143,6 +187,16 @@ const permissionsMixin = {
 			return permissionsCheck.some(permission =>
 				permission.revoked.includes(val) || permission.revoked.includes('*')
 			)
+		},
+		/**
+		 * @param {Array<[string, string, string]>} alternatives `[resource, permission, resourceId]` triples
+		 * @returns {boolean} `true` if any one of them is allowed, like the engine's disjunctive permission checks
+		 */
+		$_permissionsMixin_checkAnyAllowed: function(alternatives) {
+			return alternatives.some(([resource, permission, resourceId]) => {
+				const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject({ [resource]: [permission] })
+				return this.$_permissionsMixin_checkPermissionsAllowed({ id: resourceId }, 'id', permissionsCheck)
+			})
 		}
 	}
 }

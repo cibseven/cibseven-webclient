@@ -692,4 +692,17 @@ describe('AddVariableModal.vue UI interactions', () => {
     // Null conversions
     testTypeConversion('Null', [null, ''], zeroValues)
   })
+
+  describe('computedTitle', () => {
+    it.each([
+      [{ disabled: true, runtimeVariable: true }, 'Runtime variable'],
+      [{ disabled: true, runtimeVariable: false }, 'Historic variable'],
+      [{ disabled: true }, 'Historic variable'],
+      [{ editMode: true }, 'Edit variable'],
+      [{ editMode: true, runtimeVariable: true }, 'Edit variable'],
+      [{}, 'Add variable'],
+    ])('%o -> "%s"', (props, expected) => {
+      expect(createWrapper(props).vm.computedTitle).toBe(expected)
+    })
+  })
 })
