@@ -19,9 +19,7 @@ package org.cibseven.webapp.auth;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.Date;
-import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
@@ -271,29 +269,28 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> implements Lo
 	public void logout(User user) {
 		if (!(user instanceof SSOUser oauthUser)) return;
 		String refreshToken = oauthUser.getRefreshToken();
-		if (forwardToken) {
-			TokenCache entry = cachedAccessToken.remove(user.getId() + refreshToken);
-			if (entry != null) ssoHelper.revokeToken(entry.getAccessToken(), "access_token");
-		}
-		Set<String> refreshTokens = new LinkedHashSet<>();
-		if (refreshToken != null && !refreshToken.isBlank()) {
-			refreshTokens.add(refreshToken);
-			if (ssoHelper.isEndSessionConfigured()) {
-				// The ID token for the end session request is not kept in our token (it would make it
-				// large); the identity provider issues a fresh one with every refresh.
-				try {
-					TokenResponse tokens = ssoHelper.refreshToken(refreshToken);
-					if (tokens != null) {
-						oauthUser.setIdToken(tokens.getId_token());
-						// A provider that rotates refresh tokens issued a new one, which has to go too
-						if (tokens.getRefresh_token() != null) refreshTokens.add(tokens.getRefresh_token());
-					}
-				} catch (RuntimeException e) {
-					log.warn("Could not get an ID token for the end session request: {}", e.getMessage());
+		// Only forgotten locally: revoking the refresh token invalidates the access tokens of the
+		// same grant (RFC 7009, 2.1), and a stateless resource server accepts a JWT until it expires anyway
+		if (forwardToken) cachedAccessToken.remove(user.getId() + refreshToken);
+		if (refreshToken == null || refreshToken.isBlank()) return;
+
+		String latestRefreshToken = refreshToken;
+		// The ID token for the end session request is not kept in our token (it would make it large);
+		// the identity provider issues a fresh one with every refresh. Only done when the refresh token
+		// it may issue along can be revoked again, otherwise it would leave one behind.
+		if (ssoHelper.isEndSessionConfigured() && ssoHelper.isRevocationConfigured()) {
+			try {
+				TokenResponse tokens = ssoHelper.refreshToken(refreshToken);
+				if (tokens != null) {
+					oauthUser.setIdToken(tokens.getId_token());
+					// Whether the old refresh token stays valid depends on the provider, the newest one is the one to revoke
+					if (tokens.getRefresh_token() != null) latestRefreshToken = tokens.getRefresh_token();
 				}
+			} catch (RuntimeException e) {
+				log.warn("Could not get an ID token for the end session request: {}", e.getMessage());
 			}
 		}
-		refreshTokens.forEach(token -> ssoHelper.revokeToken(token, "refresh_token"));
+		ssoHelper.revokeToken(latestRefreshToken, "refresh_token");
 	}
 
 	@Override
