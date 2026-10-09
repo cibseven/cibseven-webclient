@@ -17,6 +17,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import VariablesTable from '@/components/process/tables/VariablesTable.vue'
 import variableUtils from '@/components/process/mixins/variableUtils.js'
+import { permissionsMixin } from '@/permissions.js'
 
 describe('VariablesTable', () => {
   describe('hasDeepLinks', () => {
@@ -106,7 +107,6 @@ describe('VariablesTable', () => {
         canUpdateVariables: true,
         processDefinitionKey: 'proc-key',
         selectedInstance: { id: 'pi-1' },
-        $root: { config: { permissions: { deleteProcessInstance: ['rt'], deleteHistoricProcessInstance: ['hist'] } } },
         ...overrides,
       }
       for (const name of ['hasEditVariableButton', 'hasViewVariableButton', 'hasDownloadVariableButton', 'hasUploadVariableButton', 'hasDeleteVariableButton']) {
@@ -161,18 +161,25 @@ describe('VariablesTable', () => {
     })
 
     describe('hasDeleteVariableButton', () => {
-      it('checks the runtime permission for live variables', () => {
+      it('needs DELETE on the process instance and the permission to change its variables for a live variable', () => {
         const vm = context()
         expect(vm.hasDeleteVariableButton(live(string))).toBe(true)
-        expect(vm.processByPermissions).toHaveBeenCalledWith(['rt'], vm.selectedInstance)
+        expect(vm.processByPermissions).toHaveBeenCalledWith({ processInstance: ['DELETE'] }, { key: 'pi-1' })
         expect(vm.canDeleteHistoryProcessInstance).not.toHaveBeenCalled()
       })
 
-      it('checks the historic permission for historic variables', () => {
+      it('needs DELETE_HISTORY on the process definition for a historic variable', () => {
         const vm = context()
         expect(vm.hasDeleteVariableButton(historic(string))).toBe(true)
-        expect(vm.processByPermissions).toHaveBeenCalledWith(['hist'], vm.selectedInstance)
         expect(vm.canDeleteHistoryProcessInstance).toHaveBeenCalledWith({ key: 'proc-key' })
+        expect(vm.processByPermissions).not.toHaveBeenCalled()
+      })
+
+      it('hides the runtime delete without DELETE on the process instance', () => {
+        const vm = context({ processByPermissions: vi.fn(() => false) })
+        expect(vm.hasDeleteVariableButton(live(string))).toBe(false)
+        // the historic deletion does not depend on it
+        expect(vm.hasDeleteVariableButton(historic(file))).toBe(true)
       })
 
       it('hides the runtime delete without the engine permission to change variables', () => {
@@ -189,10 +196,18 @@ describe('VariablesTable', () => {
         expect(vm.hasDeleteVariableButton(live(string))).toBe(true)
       })
 
-      it('is hidden when the permission is missing, for every variable type', () => {
-        const vm = context({ processByPermissions: vi.fn(() => false) })
-        expect(vm.hasDeleteVariableButton(live(string))).toBe(false)
-        expect(vm.hasDeleteVariableButton(historic(file))).toBe(false)
+      it('matches a DELETE grant against the id of the selected process instance', () => {
+        const grant = (resourceId) => ({ userId: 'demo', groupId: null, resourceId, permissions: ['DELETE'], type: 1 })
+        const withGrantOn = (resourceId) => {
+          const vm = context({ $root: { config: { authorizationEnabled: true }, user: { permissions: { processInstance: [grant(resourceId)] } } } })
+          for (const [name, fn] of Object.entries(permissionsMixin.methods)) {
+            if (name !== 'canDeleteHistoryProcessInstance') vm[name] = fn.bind(vm)
+          }
+          return vm
+        }
+        expect(withGrantOn('pi-1').hasDeleteVariableButton(live(string))).toBe(true)
+        expect(withGrantOn('*').hasDeleteVariableButton(live(string))).toBe(true)
+        expect(withGrantOn('pi-2').hasDeleteVariableButton(live(string))).toBe(false)
       })
 
       it('is offered for downloadable variables too', () => {

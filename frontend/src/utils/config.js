@@ -54,7 +54,6 @@ const DEFAULT_CONFIG = {
     suspendProcessInstance: {processInstance: ["SUSPEND"] },
 	  updateProcessInstance: { processInstance: ["UPDATE"] },
     deleteProcessInstance: { processInstance: ["DELETE"] },
-    deleteHistoricProcessInstance: { historicProcessInstance: ["DELETE"] },
   },
   taskSorting: {
     fields: ["created", "dueDate", "name", "assignee", "priority"],

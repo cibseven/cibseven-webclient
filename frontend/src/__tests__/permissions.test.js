@@ -39,7 +39,6 @@ const configPermissions = {
   tenantsManagement:             { tenant: ['ALL'] },
   userProfile:                   { application: ['ALL'] },
   deleteProcessInstance:         { processInstance: ['DELETE'] },
-  deleteHistoricProcessInstance: { historicProcessInstance: ['DELETE'] },
 }
 
 // ---------------------------------------------------------------------------
