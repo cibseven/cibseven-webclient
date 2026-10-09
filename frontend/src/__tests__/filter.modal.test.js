@@ -151,4 +151,28 @@ describe('FilterModal', () => {
   await wrapper.vm.createFilter()
   expect(wrapper.emitted('new-filter-tasks-count')).toHaveLength(1)
 })
+
+  describe('multi-value criteria (backend String[] fields)', () => {
+    const config = JSON.parse(
+      // eslint-disable-next-line no-undef
+      readFileSync(resolve(__dirname, '../../public/config.json'), 'utf-8')
+    )
+    // FilterCriterias.java declares these as String[]; a plain string makes POST /filter fail with a 500
+    const arrayKeys = ['candidateGroups', 'processDefinitionKeyIn', 'activityInstanceIdIn', 'assigneeIn',
+      'taskDefinitionKeyIn', 'tenantIdIn']
+
+    it.each(arrayKeys)('config.json declares "%s" as type array', (key) => {
+      expect(config.filters.find(filter => filter.key === key).type).toBe('array')
+    })
+
+    it('splits candidateGroups into an array when the criteria is added', () => {
+      const wrapper = getWrapper()
+      wrapper.vm.criterias = config.filters.map(filter => ({ value: filter.key, type: filter.type }))
+      wrapper.vm.selectedCriteriaKey = 'candidateGroups'
+      wrapper.vm.selectCriteria('candidateGroups')
+      wrapper.vm.selectedCriteriaValue = 'a, b,c'
+      wrapper.vm.addCriteria()
+      expect(wrapper.vm.criteriasToAdd[0].value).toEqual(['a', 'b', 'c'])
+    })
+  })
 })

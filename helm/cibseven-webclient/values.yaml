@@ -369,7 +369,7 @@ configmaps:
             { "key": "ownerExpression", "text": "ownerExpression", "type": "text", "group": "usersGroup" },
             { "key": "candidateGroup", "text": "candidateGroup", "type": "text", "group": "usersGroup" },
             { "key": "candidateGroupExpression", "text": "candidateGroupExpression", "type": "text", "group": "usersGroup" },
-            { "key": "candidateGroups", "text": "candidateGroups", "type": "text", "group": "usersGroup" },
+            { "key": "candidateGroups", "text": "candidateGroups", "type": "array", "group": "usersGroup" },
             { "key": "candidateGroupsExpression", "text": "candidateGroupsExpression", "type": "text", "group": "usersGroup" },
             { "key": "candidateUser", "text": "candidateUser", "type": "text", "group": "usersGroup" },
             { "key": "candidateUserExpression", "text": "candidateUserExpression", "type": "text", "group": "usersGroup" },
