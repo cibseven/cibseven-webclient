@@ -276,9 +276,8 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> implements Lo
 
 		String latestRefreshToken = refreshToken;
 		// The ID token for the end session request is not kept in our token (it would make it large);
-		// the identity provider issues a fresh one with every refresh. Only done when the refresh token
-		// it may issue along can be revoked again, otherwise it would leave one behind.
-		if (ssoHelper.isEndSessionConfigured() && ssoHelper.isRevocationConfigured()) {
+		// the identity provider issues a fresh one with every refresh.
+		if (ssoHelper.isEndSessionConfigured()) {
 			try {
 				TokenResponse tokens = ssoHelper.refreshToken(refreshToken);
 				if (tokens != null) {

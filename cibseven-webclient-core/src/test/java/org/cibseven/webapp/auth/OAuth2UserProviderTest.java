@@ -344,12 +344,28 @@ public class OAuth2UserProviderTest {
 		assertThat(server.takeRequest().getBody().readUtf8()).contains("token=the-refresh");
 	}
 
-	// A provider like Entra ID has an end session endpoint but no revocation endpoint: a refresh
-	// would only leave one more valid refresh token behind, and it does not need the hint
+	// Wanting the hint and being able to revoke are independent: an end session endpoint is enough for the hint
 	@Test
-	void logout_doesNotRefreshWhenTheResultCouldNotBeRevoked() throws Exception {
+	void logout_stillGetsTheHintWhenThereIsNoRevocationEndpoint() throws Exception {
 		provider.destroy();
 		provider = newProvider(false, "https://idp.example/logout", false);
+		SSOUser user = new SSOUser("demo");
+		user.setRefreshToken("the-refresh");
+		enqueueJson("{\"access_token\":\"a\",\"id_token\":\"the.id.token\",\"refresh_token\":\"new-refresh\"}");
+		int before = server.getRequestCount();
+
+		provider.logout(user);
+
+		// the refresh only, there is nothing to revoke with
+		assertThat(server.getRequestCount()).isEqualTo(before + 1);
+		assertThat(server.takeRequest().getPath()).isEqualTo("/token");
+		assertThat(provider.getLogoutRedirectUrl(user, null)).contains("id_token_hint=the.id.token");
+	}
+
+	@Test
+	void logout_doesNotRefreshWithoutAnEndSessionEndpoint() throws Exception {
+		provider.destroy();
+		provider = newProvider(false, "", false);
 		SSOUser user = new SSOUser("demo");
 		user.setRefreshToken("the-refresh");
 		int before = server.getRequestCount();
@@ -357,7 +373,6 @@ public class OAuth2UserProviderTest {
 		provider.logout(user);
 
 		assertThat(server.getRequestCount()).isEqualTo(before);
-		assertThat(provider.getLogoutRedirectUrl(user, "https://app.example/")).doesNotContain("id_token_hint");
 	}
 
 	@Test
