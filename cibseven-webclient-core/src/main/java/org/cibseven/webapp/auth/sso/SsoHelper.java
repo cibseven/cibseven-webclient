@@ -44,6 +44,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.DefaultResourceLoader;
 
@@ -57,6 +58,7 @@ public class SsoHelper {
 	private static final String ASSERTION_TYPE = "urn:ietf:params:oauth:client-assertion-type:jwt-bearer";
 
 	String tokenEndpoint, clientId, clientSecret, userInfoEndpoint, introspectionEndpoint, assertionKeyLocation;
+	String revocationEndpoint, endSessionEndpoint;
 	AssertionType assertionType;
 	AssertionProvider assertionProvider;
 
@@ -83,7 +85,24 @@ public class SsoHelper {
 		String certEndpoint, 
 		String userInfoEndpoint, 
 		String introspectionEndpoint) throws Exception {
+		this(tokenEndpoint, clientId, clientSecret, assertionType, assertionKeyLocation, certEndpoint,
+			userInfoEndpoint, introspectionEndpoint, null, null);
+	}
 
+	public SsoHelper(
+		String tokenEndpoint, 
+		String clientId, 
+		String clientSecret,
+		AssertionType assertionType,
+		String assertionKeyLocation,
+		String certEndpoint, 
+		String userInfoEndpoint, 
+		String introspectionEndpoint,
+		String revocationEndpoint,
+		String endSessionEndpoint) throws Exception {
+
+		this.revocationEndpoint = revocationEndpoint;
+		this.endSessionEndpoint = endSessionEndpoint;
 		this.tokenEndpoint = tokenEndpoint;
 		this.clientId = clientId;
 		this.clientSecret = clientSecret;
@@ -102,12 +121,7 @@ public class SsoHelper {
 	public TokenResponse codeExchange(String code, String redirectUrl, String nonce, boolean nonceInAccess, boolean nonceInId) {
 		MultiValueMap<String, String> rqParams = new LinkedMultiValueMap<>();
 		rqParams.add("client_id", clientId);
-		if (clientSecret != null && !clientSecret.isBlank()) {
-			rqParams.add("client_secret", clientSecret);
-		} else {
-			rqParams.add("client_assertion_type", ASSERTION_TYPE);
-			rqParams.add("client_assertion", assertionProvider.getAssertion());
-		}
+		addClientAuthentication(rqParams);
 		rqParams.add("code", code);
 		rqParams.add("grant_type", "authorization_code");
 		rqParams.add("redirect_uri", redirectUrl); //https://openid.net/specs/openid-connect-core-1_0.html#rfc.section.3.1.3.2
@@ -146,12 +160,7 @@ public class SsoHelper {
 		
 		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 		params.add("client_id", clientId);
-		if (clientSecret != null && !clientSecret.isBlank()) {
-			params.add("client_secret", clientSecret);
-		} else {
-			params.add("client_assertion_type", ASSERTION_TYPE);
-			params.add("client_assertion", assertionProvider.getAssertion());
-		}
+		addClientAuthentication(params);
 		params.add("grant_type", "refresh_token");
 		params.add("refresh_token", refreshToken);
 		try {
@@ -161,6 +170,67 @@ public class SsoHelper {
 		} catch (RestClientResponseException e) {
 			throw new AuthenticationException(e.getResponseBodyAsString());
 		}
+	}
+
+	private void addClientAuthentication(MultiValueMap<String, String> params) {
+		if (clientSecret != null && !clientSecret.isBlank()) {
+			params.add("client_secret", clientSecret);
+		} else {
+			params.add("client_assertion_type", ASSERTION_TYPE);
+			params.add("client_assertion", assertionProvider.getAssertion());
+		}
+	}
+
+	public boolean isEndSessionConfigured() {
+		return endSessionEndpoint != null && !endSessionEndpoint.isBlank();
+	}
+
+	public boolean isRevocationConfigured() {
+		return revocationEndpoint != null && !revocationEndpoint.isBlank();
+	}
+
+	/**
+	 * Revokes a token at the revocation endpoint (RFC 7009). Logout must not fail because the
+	 * identity provider is unreachable or rejects the request, so errors are logged, not thrown.
+	 *
+	 * @param token the access or refresh token to revoke
+	 * @param tokenTypeHint {@code access_token} or {@code refresh_token}
+	 * @return true if the identity provider accepted the revocation
+	 */
+	public boolean revokeToken(String token, String tokenTypeHint) {
+		if (!isRevocationConfigured() || token == null || token.isBlank()) return false;
+		try {
+			MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+			params.add("client_id", clientId);
+			addClientAuthentication(params);
+			params.add("token", token);
+			params.add("token_type_hint", tokenTypeHint);
+			HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, toMultiValueMap(formUrlEncodedHeader));
+			new RestTemplate().postForLocation(revocationEndpoint, request);
+			log.info("Revoked {} at {}", tokenTypeHint, revocationEndpoint);
+			return true;
+		} catch (RuntimeException e) {
+			log.warn("Failed to revoke {}: {}", tokenTypeHint, e.getMessage());
+			return false;
+		}
+	}
+
+	/**
+	 * Builds the OIDC RP-Initiated Logout request URL.
+	 * See https://openid.net/specs/openid-connect-rpinitiated-1_0.html
+	 *
+	 * @param idToken the user's ID token, sent as {@code id_token_hint}; may be null
+	 * @param postLogoutRedirectUri where the identity provider sends the browser afterwards; may be null
+	 * @return the URL to redirect the browser to, or null if no end session endpoint is configured
+	 */
+	public String buildEndSessionUrl(String idToken, String postLogoutRedirectUri) {
+		if (!isEndSessionConfigured()) return null;
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(endSessionEndpoint)
+			.queryParam("client_id", clientId);
+		if (idToken != null && !idToken.isBlank()) builder.queryParam("id_token_hint", idToken);
+		if (postLogoutRedirectUri != null && !postLogoutRedirectUri.isBlank())
+			builder.queryParam("post_logout_redirect_uri", postLogoutRedirectUri);
+		return builder.encode().build().toUriString();
 	}
 
 	protected AssertionProvider buildAssertionProvider() throws Exception {

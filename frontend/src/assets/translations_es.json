@@ -17,6 +17,8 @@
 	"login": {
 		"productName": "CIB seven",
 		"productSlogan": "Plataforma para la gestión de procesos",
+		"loggedOutText": "Ha cerrado la sesión correctamente.",
+		"loggedOutAgain": "Iniciar sesión de nuevo",
 		"username": "Nombre de usuario",
 		"password": "Contraseña",
 		"rememberMe": "Recuérdame",

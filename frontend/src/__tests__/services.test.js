@@ -469,6 +469,7 @@ describe('small services', () => {
     { name: 'DeploymentService.redeployDeployment', verb: 'post', call: () => DeploymentService.redeployDeployment('d1', { resourceIds: ['r1'] }), args: [`${BASE}/deployment/d1/redeploy`, { resourceIds: ['r1'] }] },
     { name: 'DeploymentService.fetchDataFromDeploymentResource passes filename and token as query params', verb: 'get', call: () => DeploymentService.fetchDataFromDeploymentResource('d1', 'r1', 'a&b #1+c.form', 'tok'), args: [`${BASE}/process/deployments/d1/resources/r1/data`, { params: { filename: 'a&b #1+c.form', token: 'tok' } }] },
     { name: 'TemplateService.getTemplate sends the token as an Authorization header', verb: 'get', call: () => TemplateService.getTemplate('el1', 't1', 'en', 'Bearer abc'), args: [`${BASE}/template/el1/t1?locale=en`, { headers: { Authorization: 'Bearer abc' } }] },
+    { name: 'AuthService.logout', verb: 'post', call: () => AuthService.logout('http://app/'), args: [`${BASE}/auth/logout`, { returnUrl: 'http://app/' }] },
     { name: 'AuthService.fetchAuths', verb: 'get', call: () => AuthService.fetchAuths(), args: [`${BASE}/auth/authorizations`] },
     { name: 'AuthService.passwordRecover', verb: 'post', call: () => AuthService.passwordRecover({ email: 'a@b.c' }), args: [`${BASE}/auth/password-recover`, { email: 'a@b.c' }] },
     { name: 'AuthService.passwordRecoverCheck sends the recovery token as the header', verb: 'get', call: () => AuthService.passwordRecoverCheck('tok'), args: [`${BASE}/auth/password-recover-check`, { headers: { authorization: 'tok' } }] },

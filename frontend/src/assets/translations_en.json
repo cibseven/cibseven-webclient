@@ -17,6 +17,8 @@
 	"login": {
 		"productName": "CIB seven",
 		"productSlogan": "Process Management Platform",
+		"loggedOutText": "You have been logged out successfully.",
+		"loggedOutAgain": "Log in again",
 		"username": "Username",
 		"password": "Password",
 		"rememberMe": "Remember me",

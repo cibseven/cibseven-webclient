@@ -14,15 +14,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
 import CibSeven from '@/components/CibSeven.vue'
+import { AuthService } from '@/services.js'
+import { LOGGED_OUT_KEY } from '@/constants.js'
 
 // Mock services
 vi.mock('@/services.js', () => ({
   EngineService: {
     getEngines: vi.fn(() => Promise.resolve([{ name: 'default' }]))
-  }
+  },
+  AuthService: { logout: vi.fn() }
 }))
 
 describe('CibSeven.vue', () => {
@@ -179,16 +182,18 @@ describe('CibSeven.vue', () => {
       expect(CibSeven.methods.isMenuItemActive.call(mockThis, exactItem)).toBe(false)
     })
 
-    it('should navigate to the start page before reloading on logout', () => {
+    it('should navigate to the start page before reloading on logout', async () => {
       const originalLocation = window.location
       const reloadOrder = []
       delete window.location
       window.location = {
         hash: '#/seven/auth/processes/123',
+        href: 'http://localhost/',
         reload: vi.fn(() => reloadOrder.push(window.location.hash))
       }
+      AuthService.logout.mockResolvedValue({})
 
-      CibSeven.methods.logout.call({})
+      await CibSeven.methods.logout.call({})
 
       // reload must fire AFTER the hash moves to the start page, else login returns
       // to the (now-stale) previous page
@@ -196,6 +201,67 @@ describe('CibSeven.vue', () => {
       expect(window.location.hash).toBe('#/')
 
       window.location = originalLocation
+    })
+
+    describe('logout redirect', () => {
+      const originalLocation = window.location
+      const logoutThis = {}
+
+      beforeEach(() => {
+        AuthService.logout.mockReset()
+        sessionStorage.clear()
+        localStorage.setItem('accessToken', 'a')
+        delete window.location
+        window.location = { hash: '#/seven/auth/tasks', href: 'http://localhost/', reload: vi.fn() }
+      })
+
+      afterEach(() => {
+        window.location = originalLocation
+        localStorage.clear()
+      })
+
+      it('should go to the logout redirect URL the backend returns, instead of reloading', async () => {
+        AuthService.logout.mockResolvedValue({ logoutRedirectUrl: 'https://idp/logout?client_id=c' })
+
+        await CibSeven.methods.logout.call(logoutThis)
+
+        // asks the external system to return to the app, and marks that it should wait for the user
+        expect(AuthService.logout).toHaveBeenCalledWith('http://localhost/')
+        expect(sessionStorage.getItem(LOGGED_OUT_KEY)).toBe('1')
+        expect(window.location.href).toBe('https://idp/logout?client_id=c')
+        expect(window.location.reload).not.toHaveBeenCalled()
+        expect(localStorage.getItem('accessToken')).toBeNull()
+      })
+
+      it('should reload to the start page when the backend names no redirect URL', async () => {
+        AuthService.logout.mockResolvedValue({})
+
+        await CibSeven.methods.logout.call(logoutThis)
+
+        expect(window.location.hash).toBe('#/')
+        expect(window.location.reload).toHaveBeenCalled()
+        expect(sessionStorage.getItem(LOGGED_OUT_KEY)).toBeNull()
+      })
+
+      it('should still log out locally when the backend call fails', async () => {
+        const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+        AuthService.logout.mockRejectedValue(new Error('401'))
+
+        await CibSeven.methods.logout.call(logoutThis)
+
+        expect(localStorage.getItem('accessToken')).toBeNull()
+        expect(window.location.reload).toHaveBeenCalled()
+        error.mockRestore()
+      })
+
+      // No provider-specific switch: the backend decides whether there is anything to finish elsewhere
+      it('should ask the backend whatever the configuration', async () => {
+        AuthService.logout.mockResolvedValue({})
+
+        await CibSeven.methods.logout.call({ $root: { config: { ssoActive: false } } })
+
+        expect(AuthService.logout).toHaveBeenCalledWith('http://localhost/')
+      })
     })
   })
 

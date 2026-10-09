@@ -178,6 +178,8 @@ import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
 import FeedbackModal from '@/components/modals/FeedbackModal.vue'
 import PluginSlot from '@/components/common/PluginSlot.vue'
 import { updateAppTitle } from '@/utils/init'
+import { AuthService } from '@/services.js'
+import { LOGGED_OUT_KEY } from '@/constants.js'
 
 export default {
   name: 'CibSeven',
@@ -447,7 +449,20 @@ export default {
         return item.active.some(a => this.$route.path.includes(a))
       }
     },
-    logout: function() {
+    logout: async function() {
+      // The backend ends the session on its side (e.g. revokes tokens) and may name an external
+      // URL to finish the logout at, such as an identity provider. Must run before the cleanup
+      // below, which drops the token from storage (axios keeps sending it from its defaults
+      // until the reload).
+      let logoutRedirectUrl
+      try {
+        // The external system returns the browser to the app, without hash or query
+        const appUrl = new URL('./', window.location.href).href
+        logoutRedirectUrl = (await AuthService.logout(appUrl))?.logoutRedirectUrl
+      } catch (error) {
+        // Never block the local logout on the backend or an external system failing
+        console.error('Logout at the backend failed', error)
+      }
       //Remove some storage variables when logout
       //https://helpdesk.cib.de/browse/BPM4CIB-3691
       localStorage.removeItem('accessToken')
@@ -455,6 +470,13 @@ export default {
       sessionStorage.removeItem('accessToken')
       sessionStorage.removeItem('tokenModeler')
       // Note: engine token cleanup is handled by CIBHeaderFlow.logout()
+      if (logoutRedirectUrl) {
+        // The external system (e.g. OIDC RP-Initiated Logout) ends its session and sends the browser
+        // back. The marker makes the app show the logged-out page rather than log in again on its own.
+        sessionStorage.setItem(LOGGED_OUT_KEY, '1')
+        window.location.href = logoutRedirectUrl
+        return
+      }
       // Set the hash before reload: router.push is async and loses the race, so the
       // reload would otherwise land on the current page instead of the start page.
       window.location.hash = '#/'
