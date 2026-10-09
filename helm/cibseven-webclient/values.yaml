@@ -475,9 +475,6 @@ configmaps:
             },
             "updateProcessInstance": {
               "processInstance": ["UPDATE"]
-            },
-            "deleteProcessInstance": {
-              "processInstance": ["DELETE"]
             }
           },
           "taskSorting": {

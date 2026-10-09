@@ -38,7 +38,6 @@ const configPermissions = {
   systemManagement:              { system: ['ALL'] },
   tenantsManagement:             { tenant: ['ALL'] },
   userProfile:                   { application: ['ALL'] },
-  deleteProcessInstance:         { processInstance: ['DELETE'] },
 }
 
 // ---------------------------------------------------------------------------
@@ -475,6 +474,61 @@ describe('canDeleteHistoryProcessInstance', () => {
 })
 
 // ---------------------------------------------------------------------------
+// canDeleteRuntimeProcessInstance
+// ---------------------------------------------------------------------------
+describe('canDeleteRuntimeProcessInstance', () => {
+  const PI = 'pi-1'
+  const KEY = 'order-process'
+
+  it.each([
+    ['DELETE on the process instance', { processInstance: [allow(PI, ['DELETE'])] }],
+    ['DELETE on any process instance', { processInstance: [allow('*', ['DELETE'])] }],
+    ['DELETE_INSTANCE on the process definition', { processDefinition: [allow(KEY, ['DELETE_INSTANCE'])] }],
+    ['ALL on any process definition', { processDefinition: [allow('*', ['ALL'])] }],
+  ])('is granted by %s alone', (_, userPermissions) => {
+    expect(createContext(userPermissions).canDeleteRuntimeProcessInstance(PI, KEY)).toBe(true)
+  })
+
+  it('matches DELETE against the process instance id, not the definition key', () => {
+    const ctx = createContext({ processInstance: [allow(KEY, ['DELETE'])] })
+    expect(ctx.canDeleteRuntimeProcessInstance(PI, KEY)).toBe(false)
+  })
+
+  it('is denied when the grants belong to another instance or definition', () => {
+    const ctx = createContext({
+      processInstance: [allow('pi-2', ['DELETE'])],
+      processDefinition: [allow('invoice-process', ['DELETE_INSTANCE'])],
+    })
+    expect(ctx.canDeleteRuntimeProcessInstance(PI, KEY)).toBe(false)
+  })
+
+  it('is denied by other process permissions', () => {
+    const ctx = createContext({
+      processInstance: [allow(PI, ['UPDATE', 'SUSPEND'])],
+      processDefinition: [allow(KEY, ['DELETE', 'DELETE_HISTORY', 'UPDATE_INSTANCE'])],
+    })
+    expect(ctx.canDeleteRuntimeProcessInstance(PI, KEY)).toBe(false)
+  })
+
+  it('is granted through the definition when DELETE is revoked on the instance (any one is enough)', () => {
+    const ctx = createContext({
+      processInstance: [deny(PI, ['DELETE'])],
+      processDefinition: [allow(KEY, ['DELETE_INSTANCE'])],
+    })
+    expect(ctx.canDeleteRuntimeProcessInstance(PI, KEY)).toBe(true)
+  })
+
+  it('is denied when the only grant is revoked', () => {
+    const ctx = createContext({ processInstance: [allow('*', ['DELETE']), deny(PI, ['DELETE'])] })
+    expect(ctx.canDeleteRuntimeProcessInstance(PI, KEY)).toBe(false)
+  })
+
+  it('is granted when authorization is disabled', () => {
+    expect(createContext({}, { authorizationEnabled: false }).canDeleteRuntimeProcessInstance(PI, KEY)).toBe(true)
+  })
+})
+
+// ---------------------------------------------------------------------------
 // canDeleteProcessInstanceVariable
 // ---------------------------------------------------------------------------
 describe('canDeleteProcessInstanceVariable', () => {
@@ -484,6 +538,14 @@ describe('canDeleteProcessInstanceVariable', () => {
   describe('runtime variable', () => {
     it('needs DELETE on the process instance and the permission to change its variables', () => {
       const ctx = createContext({ processInstance: [allow(PI, ['DELETE', 'UPDATE_VARIABLE'])] })
+      expect(ctx.canDeleteProcessInstanceVariable(PI, KEY, true)).toBe(true)
+    })
+
+    it('accepts DELETE_INSTANCE on the process definition instead of DELETE on the instance', () => {
+      const ctx = createContext({
+        processInstance: [allow(PI, ['UPDATE_VARIABLE'])],
+        processDefinition: [allow(KEY, ['DELETE_INSTANCE'])],
+      })
       expect(ctx.canDeleteProcessInstanceVariable(PI, KEY, true)).toBe(true)
     })
 
