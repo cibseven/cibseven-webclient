@@ -30,7 +30,7 @@ const {
   AdminService, JobService, JobDefinitionService, SystemService, HistoryService, IncidentService,
   AuthService, InfoService, FormsService, TemplateService, DecisionService, AnalyticsService,
   BatchService, TenantService, ExternalTaskService, DeploymentService, EngineService, SetupService,
-  getServicesBasePath, setServicesBasePath, createDocumentEndpointUrl
+  getServicesBasePath, setServicesBasePath, createDocumentEndpointUrl, joinArrayParams
 } = await import('@/services.js')
 
 const BASE = '/services/v1'
@@ -504,6 +504,21 @@ describe('DecisionService', () => {
     { name: 'deleteHistoricDecisionInstances', verb: 'post', call: () => DecisionService.deleteHistoricDecisionInstances({ ids: ['di1'] }), args: [`${BASE}/decision/history/instances/delete`, { ids: ['di1'] }] },
     { name: 'setHistoricDecisionInstanceRemovalTime', verb: 'post', call: () => DecisionService.setHistoricDecisionInstanceRemovalTime({ calculatedRemovalTime: true }), args: [`${BASE}/decision/history/instances/set-removal-time`, { calculatedRemovalTime: true }] }
   ])
+})
+
+describe('joinArrayParams', () => {
+  it.each([
+    ['undefined', undefined, undefined],
+    ['null', null, null],
+    ['an empty object', {}, {}],
+    ['an empty array', { tenantIdIn: [] }, { tenantIdIn: '' }],
+    ['a single-value array', { decisionDefinitionKeyIn: ['invoice'] }, { decisionDefinitionKeyIn: 'invoice' }],
+    ['a multi-value array', { decisionDefinitionKeyIn: ['invoice', 'dish'] }, { decisionDefinitionKeyIn: 'invoice,dish' }],
+    ['mixed array and scalar values', { tenantIdIn: ['t1', 't2'], sortBy: 'evaluationTime' }, { tenantIdIn: 't1,t2', sortBy: 'evaluationTime' }],
+    ['numbers and booleans', { maxResults: 10, firstResult: 0, includeInputs: true }, { maxResults: 10, firstResult: 0, includeInputs: true }]
+  ])('should handle %s', (_, params, expected) => {
+    expect(joinArrayParams(params)).toEqual(expected)
+  })
 })
 
 describe('DecisionService historic instance list parameters', () => {

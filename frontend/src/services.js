@@ -695,9 +695,11 @@ const DecisionService = {
     return axios.put(getServicesBasePath() + "/decision/id/" + id + "/history-ttl", data)
   },
   getHistoricDecisionInstances: function (params) {
+    // send list params comma-separated (key=a,b) instead of axios' key[]=a&key[]=b, see joinArrayParams
     return axios.get(getServicesBasePath() + "/decision/history/instances", { params: joinArrayParams(params) })
   },
   getHistoricDecisionInstanceCount: function (params) {
+    // send list params comma-separated (key=a,b) instead of axios' key[]=a&key[]=b, see joinArrayParams
     return axios.get(getServicesBasePath() + "/decision/history/instances/count", { params: joinArrayParams(params) })
   },
   getHistoricDecisionInstanceById: function (id, params) {
@@ -891,5 +893,6 @@ const SetupService = {
 export {
   TaskService, FilterService, ProcessService, VariableInstanceService, HistoricVariableInstanceService, AdminService, JobService, JobDefinitionService, SystemService,
   HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService,
-  AnalyticsService, BatchService, TenantService, ExternalTaskService, DeploymentService, EngineService, SetupService, getServicesBasePath, setServicesBasePath, createDocumentEndpointUrl
+  AnalyticsService, BatchService, TenantService, ExternalTaskService, DeploymentService, EngineService, SetupService, getServicesBasePath, setServicesBasePath, createDocumentEndpointUrl,
+  joinArrayParams
 }
