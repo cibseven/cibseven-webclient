@@ -27,6 +27,13 @@ function filterToUrlParams(filters) {
   return filter
 }
 
+// axios sends arrays as 'key[]=a&key[]=b', which the backend can neither forward nor keep in full;
+// the engine expects list parameters ('...In') as one comma-separated value
+function joinArrayParams(params) {
+  if (!params) return params
+  return Object.fromEntries(Object.entries(params).map(([key, value]) => [key, Array.isArray(value) ? value.join(',') : value]))
+}
+
 let servicesBasePath = ''
 
 function getServicesBasePath() {
@@ -688,10 +695,12 @@ const DecisionService = {
     return axios.put(getServicesBasePath() + "/decision/id/" + id + "/history-ttl", data)
   },
   getHistoricDecisionInstances: function (params) {
-    return axios.get(getServicesBasePath() + "/decision/history/instances", { params })
+    // send list params comma-separated (key=a,b) instead of axios' key[]=a&key[]=b, see joinArrayParams
+    return axios.get(getServicesBasePath() + "/decision/history/instances", { params: joinArrayParams(params) })
   },
   getHistoricDecisionInstanceCount: function (params) {
-    return axios.get(getServicesBasePath() + "/decision/history/instances/count", { params })
+    // send list params comma-separated (key=a,b) instead of axios' key[]=a&key[]=b, see joinArrayParams
+    return axios.get(getServicesBasePath() + "/decision/history/instances/count", { params: joinArrayParams(params) })
   },
   getHistoricDecisionInstanceById: function (id, params) {
     return axios.get(getServicesBasePath() + "/decision/history/instances/" + id, { params })
@@ -884,5 +893,6 @@ const SetupService = {
 export {
   TaskService, FilterService, ProcessService, VariableInstanceService, HistoricVariableInstanceService, AdminService, JobService, JobDefinitionService, SystemService,
   HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService,
-  AnalyticsService, BatchService, TenantService, ExternalTaskService, DeploymentService, EngineService, SetupService, getServicesBasePath, setServicesBasePath, createDocumentEndpointUrl
+  AnalyticsService, BatchService, TenantService, ExternalTaskService, DeploymentService, EngineService, SetupService, getServicesBasePath, setServicesBasePath, createDocumentEndpointUrl,
+  joinArrayParams
 }
