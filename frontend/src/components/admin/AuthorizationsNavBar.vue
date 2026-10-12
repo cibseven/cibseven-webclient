@@ -18,32 +18,100 @@
 -->
 <template>
   <b-list-group>
-    <b-list-group-item
-      v-for="resourceType in $root.config.admin.resourcesTypes"
-      :key="resourceType.id"
-      class="border-0 px-3 py-2 no-radius-right"
-      action
-      :active="isActive(resourceType)"
-      :to="editRoute(resourceType)"
-      @click="$emit('middle')">
-      <span>{{ $t(`admin.authorizations.resourcesTypes.${resourceType.key}`) }}</span>
-    </b-list-group-item>
+    <template v-for="(group, groupIndex) in groups" :key="group.name">
+      <b-list-group-item v-if="groupIndex > 0" class="border-0 px-3 py-2 fw-bold text-capitalize no-radius-right">
+        <hr class="p-0 m-0"/>
+      </b-list-group-item>
+      <b-list-group-item
+        v-for="resourceType in group.resourceTypes"
+        :key="resourceType.id"
+        class="border-0 px-3 py-2 no-radius-right"
+        action
+        :active="isActive(resourceType)"
+        :to="editRoute(resourceType)"
+        @click="$emit('middle')">
+        <span>{{ $t(`admin.authorizations.resourcesTypes.${resourceType.key}`) }}</span>
+      </b-list-group-item>
+    </template>
     <component v-if="ExtendedAuthorizations" :is="ExtendedAuthorizations"></component>
   </b-list-group>
 </template>
 
 <script>
+// Mapping of resource types to their respective groups
+// Array is sorted by in order how items should appear in the navigation bar
+const RESOURCE_TYPE_GROUPS = [
+  { name: 'application', group: 'application' },
+ 
+  { name: 'user', group: 'admin' },
+  { name: 'group', group: 'admin' },
+  { name: 'tenant', group: 'admin' },
+
+  { name: 'authorization', group: 'authorizations' },
+  { name: 'groupMembership', group: 'authorizations' },
+  { name: 'tenantMembership', group: 'authorizations' },
+
+  { name: 'processDefinition', group: 'processes' },
+  { name: 'processInstance', group: 'processes' },
+  { name: 'historicProcessInstance', group: 'processes' },
+  { name: 'decisionDefinition', group: 'processes' },
+  { name: 'decisionRequirements', group: 'processes' },
+  { name: 'deployment', group: 'processes' },
+  { name: 'batch', group: 'processes' },
+  { name: 'userOperationLogCategory', group: 'processes' },
+  { name: 'operationLogCategory', group: 'processes' },
+
+  { name: 'task', group: 'tasks' },
+  { name: 'historicTask', group: 'tasks' },
+  { name: 'filter', group: 'tasks' },
+
+  { name: 'optimize', group: 'other' },
+  // Keep this as placeholder for any other resource types that don't fit into existing groups
+  { name: 'other', group: 'other' },
+
+  { name: 'system', group: 'system' },
+]
+
+const GROUPS = RESOURCE_TYPE_GROUPS.reduce((acc, entry) => {
+  if (!acc.includes(entry.group)) {
+    acc.push(entry.group)
+  }
+  return acc
+}, [])
+
 export default {
   name: 'AuthorizationsNavBar',
   emits: ['middle'],
   computed: {
-    ExtendedAuthorizations: function() {
+    resourceTypes() {
+      return this.$root.config.admin.resourcesTypes
+    },
+    groups() {
+      const resourceTypes = Object.values(this.resourceTypes ?? {})
+      return GROUPS
+        .map(name => ({
+          name,
+          resourceTypes: resourceTypes
+            .filter(resourceType => this.getResourceTypeGroup(resourceType.key) === name)
+            .sort((a, b) => this.getResourceIndex(a.key) - this.getResourceIndex(b.key))
+        }))
+        .filter(group => group.resourceTypes.length > 0)
+    },
+    ExtendedAuthorizations() {
       return this.$options.components && this.$options.components.ExtendedAuthorizations
         ? this.$options.components.ExtendedAuthorizations
         : null
     }
   },
   methods: {
+    getResourceTypeGroup(resourceTypeKey) {
+      const group = RESOURCE_TYPE_GROUPS.find(entry => entry.name === resourceTypeKey)
+      return group ? group.group : 'other'
+    },
+    getResourceIndex(resourceTypeKey) {
+      const index = RESOURCE_TYPE_GROUPS.findIndex(entry => entry.name === resourceTypeKey)
+      return index === -1 ? Number.MAX_SAFE_INTEGER : index
+    },
     isActive: function(resourceType) {
       return this.$route.path.endsWith(`/${resourceType.id}/${resourceType.key}`)
     },
