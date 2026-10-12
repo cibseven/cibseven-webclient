@@ -15,63 +15,159 @@
  *  limitations under the License.
  */
 import { describe, it, expect } from 'vitest'
+import { mount } from '@vue/test-utils'
 import AuthorizationsNavBar from '@/components/admin/AuthorizationsNavBar.vue'
 
-const { getResourceTypeGroup } = AuthorizationsNavBar.methods
-const { groupedResourceTypes } = AuthorizationsNavBar.computed
+const { getResourceTypeGroup, getResourceIndex, isActive, editRoute } = AuthorizationsNavBar.methods
+const { groups } = AuthorizationsNavBar.computed
 
 function grouped(resourcesTypes) {
-  return groupedResourceTypes.call({ resourceTypes: resourcesTypes, getResourceTypeGroup })
+  return groups.call({ resourceTypes: resourcesTypes, getResourceTypeGroup, getResourceIndex })
+}
+
+function type(id, key) {
+  return { id: String(id), key }
+}
+
+const slotStub = { template: '<div><slot /></div>' }
+
+// VTU wraps the component in its own root, so $root.config is not reachable;
+// override the single computed that reads it instead.
+function mountNavBar(resourcesTypes, path = '/seven/auth/admin/authorizations') {
+  const NavBar = {
+    ...AuthorizationsNavBar,
+    computed: { ...AuthorizationsNavBar.computed, resourceTypes: () => resourcesTypes }
+  }
+  return mount(NavBar, {
+    global: {
+      mocks: { $t: key => key, $route: { path } },
+      stubs: { BListGroup: slotStub, BListGroupItem: slotStub }
+    }
+  })
 }
 
 describe('AuthorizationsNavBar', () => {
   describe('getResourceTypeGroup', () => {
     it.each([
+      ['application', 'application'],
       ['user', 'admin'],
-      ['authorization', 'admin'],
-      ['processDefinition', 'cockpit'],
-      ['batch', 'cockpit'],
-      ['task', 'tasklist'],
-      ['filter', 'tasklist'],
-      ['optimize', 'optimize'],
-      ['report', 'optimize']
+      ['group', 'admin'],
+      ['tenant', 'admin'],
+      ['authorization', 'authorizations'],
+      ['groupMembership', 'authorizations'],
+      ['tenantMembership', 'authorizations'],
+      ['processDefinition', 'processes'],
+      ['batch', 'processes'],
+      ['task', 'tasks'],
+      ['filter', 'tasks'],
+      ['optimize', 'other'],
+      ['system', 'system']
     ])('maps %s to %s', (key, expected) => {
-      expect(getResourceTypeGroup({ key })).toBe(expected)
+      expect(getResourceTypeGroup(key)).toBe(expected)
     })
 
-    it('falls back to admin for unknown keys', () => {
-      expect(getResourceTypeGroup({ key: 'somethingNew' })).toBe('other')
+    it('falls back to other for unknown keys', () => {
+      expect(getResourceTypeGroup('somethingNew')).toBe('other')
     })
   })
 
-  describe('groupedResourceTypes', () => {
-    it('orders groups as admin, cockpit, tasklist, modeler, optimize', () => {
+  describe('getResourceIndex', () => {
+    it('follows the declaration order of the mapping', () => {
+      expect(getResourceIndex('application')).toBeLessThan(getResourceIndex('user'))
+      expect(getResourceIndex('user')).toBeLessThan(getResourceIndex('system'))
+    })
+
+    it('puts unknown keys last', () => {
+      expect(getResourceIndex('somethingNew')).toBe(Number.MAX_SAFE_INTEGER)
+    })
+  })
+
+  describe('groups', () => {
+    it('orders groups as application, admin, authorizations, processes, tasks, other, system', () => {
       const result = grouped({
-        '0': { id: '0', key: 'optimize' },
-        '1': { id: '1', key: 'task' },
-        '2': { id: '2', key: 'processDefinition' },
-        '3': { id: '3', key: 'user' }
+        '1': type(1, 'system'),
+        '2': type(2, 'optimize'),
+        '3': type(3, 'task'),
+        '4': type(4, 'processDefinition'),
+        '5': type(5, 'authorization'),
+        '6': type(6, 'user'),
+        '7': type(7, 'application')
       })
-      expect(result.map(group => group.name)).toEqual(['admin', 'cockpit', 'tasklist', 'optimize'])
+      expect(result.map(group => group.name))
+        .toEqual(['application', 'admin', 'authorizations', 'processes', 'tasks', 'other', 'system'])
     })
 
     it('omits groups without resource types', () => {
-      const result = grouped({ '1': { id: '1', key: 'user' } })
+      const result = grouped({ '1': type(1, 'user') })
       expect(result.map(group => group.name)).toEqual(['admin'])
     })
 
-    it('keeps the config order of resource types inside a group', () => {
+    it('sorts resource types inside a group by the mapping order, not the config order', () => {
       const result = grouped({
-        '1': { id: '1', key: 'user' },
-        '2': { id: '2', key: 'group' },
-        '3': { id: '3', key: 'task' }
+        '1': type(1, 'filter'),
+        '2': type(2, 'historicTask'),
+        '3': type(3, 'task')
       })
-      expect(result[0].resourceTypes.map(resourceType => resourceType.key)).toEqual(['user', 'group'])
-      expect(result[1].resourceTypes.map(resourceType => resourceType.key)).toEqual(['task'])
+      expect(result).toHaveLength(1)
+      expect(result[0].resourceTypes.map(resourceType => resourceType.key)).toEqual(['task', 'historicTask', 'filter'])
+    })
+
+    it('places unknown keys in other after the known members of that group', () => {
+      const result = grouped({
+        '1': type(1, 'somethingNew'),
+        '2': type(2, 'optimize')
+      })
+      expect(result[0].name).toBe('other')
+      expect(result[0].resourceTypes.map(resourceType => resourceType.key)).toEqual(['optimize', 'somethingNew'])
     })
 
     it('returns no groups when no resource types are configured', () => {
       expect(grouped(undefined)).toEqual([])
+    })
+  })
+
+  describe('route helpers', () => {
+    it('isActive matches the id and key at the end of the path', () => {
+      const ctx = { $route: { path: '/seven/auth/admin/authorizations/2/group' } }
+      expect(isActive.call(ctx, type(2, 'group'))).toBe(true)
+      expect(isActive.call(ctx, type(1, 'user'))).toBe(false)
+    })
+
+    it('editRoute targets the authorizationType route', () => {
+      expect(editRoute(type(2, 'group'))).toEqual({
+        name: 'authorizationType',
+        params: { resourceTypeId: '2', resourceTypeKey: 'group' }
+      })
+    })
+  })
+
+  describe('rendering', () => {
+    const resourcesTypes = {
+      '1': type(1, 'user'),
+      '2': type(2, 'group'),
+      '8': type(8, 'task'),
+      '12': type(12, 'system')
+    }
+
+    it('renders one item per resource type', () => {
+      const wrapper = mountNavBar(resourcesTypes)
+      const labels = wrapper.findAll('span').map(span => span.text())
+      expect(labels).toEqual([
+        'admin.authorizations.resourcesTypes.user',
+        'admin.authorizations.resourcesTypes.group',
+        'admin.authorizations.resourcesTypes.task',
+        'admin.authorizations.resourcesTypes.system'
+      ])
+    })
+
+    it('renders a separator between groups but not before the first one', () => {
+      const wrapper = mountNavBar(resourcesTypes)
+      expect(wrapper.findAll('hr')).toHaveLength(2)
+    })
+
+    it('renders no separator for a single group', () => {
+      const wrapper = mountNavBar({ '1': type(1, 'user'), '2': type(2, 'group') })
+      expect(wrapper.findAll('hr')).toHaveLength(0)
     })
   })
 })

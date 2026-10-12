@@ -19,7 +19,7 @@
 <template>
   <b-list-group>
     <template v-for="(group, groupIndex) in groups" :key="group.name">
-      <b-list-group-item v-if="groupIndex > 0" class="border-0 px-3 py-2 fw-bold text-capitalize no-radius-right">
+      <b-list-group-item v-if="groupIndex > 0" class="border-0 px-3 py-2 no-radius-right">
         <hr class="p-0 m-0"/>
       </b-list-group-item>
       <b-list-group-item
@@ -39,10 +39,10 @@
 
 <script>
 // Mapping of resource types to their respective groups
-// Array is sorted by in order how items should appear in the navigation bar
+// Array is sorted in order how items should appear in the navigation bar
 const RESOURCE_TYPE_GROUPS = [
   { name: 'application', group: 'application' },
- 
+
   { name: 'user', group: 'admin' },
   { name: 'group', group: 'admin' },
   { name: 'tenant', group: 'admin' },
@@ -66,8 +66,8 @@ const RESOURCE_TYPE_GROUPS = [
   { name: 'filter', group: 'tasks' },
 
   { name: 'optimize', group: 'other' },
-  // Keep this as placeholder for any other resource types that don't fit into existing groups
-  { name: 'other', group: 'other' },
+  { name: 'report', group: 'other' },
+  { name: 'dashboard', group: 'other' },
 
   { name: 'system', group: 'system' },
 ]
