@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -417,7 +418,7 @@ public class DirectProcessProvider implements IProcessProvider {
 	public Data downloadBpmn(String id, String fileName, CIBUser user) {
 
 		ProcessDiagram diagram = fetchDiagram(id, user);
-		ByteArrayResource resource = new ByteArrayResource(diagram.getBpmn20Xml().getBytes());
+		ByteArrayResource resource = new ByteArrayResource(diagram.getBpmn20Xml().getBytes(StandardCharsets.UTF_8));
 		return new Data(fileName, "application/bpmn+xml", resource, resource.contentLength());
 	}
 

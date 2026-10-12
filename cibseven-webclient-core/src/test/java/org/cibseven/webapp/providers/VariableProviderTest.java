@@ -31,6 +31,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockMultipartFile;
 
 public class VariableProviderTest {
 
@@ -48,6 +49,23 @@ public class VariableProviderTest {
 	@AfterEach
 	void tearDown() throws Exception {
 		engine.close();
+	}
+
+	// ---------- execution variables ----------
+
+	@Test
+	void modifyVariableDataByExecutionId_sendsAnUploadedJsonVariableAsUtf8() throws Exception {
+		// JSON is UTF-8 by definition, so the upload must not be decoded with the JVM default charset (CIB7-2206)
+		String json = "{\"customer\":\"Müller 審査\"}";
+		engine.enqueueEmpty(204);
+		MockMultipartFile upload = new MockMultipartFile("data", "payload.json", "application/json",
+			json.getBytes(StandardCharsets.UTF_8));
+
+		variableProvider.modifyVariableDataByExecutionId("exec-1", "payload", upload, "Object", user);
+
+		var request = engine.take();
+		assertThat(request.getPath()).endsWith("/execution/exec-1/localVariables/payload/data");
+		assertThat(request.getBody().readUtf8()).contains(json);
 	}
 
 	// ---------- task variables ----------

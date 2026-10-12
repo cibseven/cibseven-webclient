@@ -18,6 +18,7 @@ package org.cibseven.webapp.providers;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -399,13 +400,20 @@ public abstract class SevenProviderBase {
 	 *    when the RestTemplate tries to iterate through its converters while another thread is modifying them
 	 * 
 	 * By creating a new RestTemplate instance for each call, we avoid shared state modification
-	 * while still benefiting from the configuration of the customRestTemplate by copying its converters.
+	 * while still benefiting from the configuration of the customRestTemplate by copying its converters
+	 * and its request factory.
 	 * 
 	 * @return A newly configured RestTemplate instance
 	 */
 	protected RestTemplate createPatchRestTemplate() {
         // Create a new RestTemplate instance instead of modifying the shared one
         RestTemplate restTemplate = new RestTemplate();
+
+        // Share the request factory, so these calls run on the pooled HTTP client with the configured
+        // timeouts instead of a plain HttpURLConnection, whose read timeout is infinite (CIB7-2206).
+        // When the customRestTemplate has interceptors, its getRequestFactory() already wraps them,
+        // so they apply here too; setting them again on this template would run them twice.
+        restTemplate.setRequestFactory(customRestTemplate.getRequestFactory());
 
         // Configure the ObjectMapper for this specific use case
         ObjectMapper objectMapper = new ObjectMapper();
@@ -427,6 +435,19 @@ public abstract class SevenProviderBase {
         restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter(objectMapper));
 
         return restTemplate;
+	}
+
+	/**
+	 * Answers a rendered form fetched from engine-rest as {@code text/html;charset=UTF-8}, the way the
+	 * direct provider does. engine-rest sends {@code application/xhtml+xml} without a charset, so a client
+	 * reading this endpoint into a String would fall back to ISO-8859-1. Its headers are not forwarded:
+	 * the body is a decoded String by now, so the engine's Content-Length no longer has to match the bytes
+	 * Spring writes, and Spring computes the length itself when it is absent (CIB7-2206).
+	 */
+	protected static ResponseEntity<String> renderedFormResponse(ResponseEntity<String> engineResponse) {
+		return ResponseEntity.status(engineResponse.getStatusCode())
+				.contentType(new MediaType(MediaType.TEXT_HTML, StandardCharsets.UTF_8))
+				.body(engineResponse.getBody());
 	}
 
 

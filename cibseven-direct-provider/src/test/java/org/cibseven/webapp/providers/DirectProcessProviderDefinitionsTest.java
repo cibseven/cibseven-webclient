@@ -340,6 +340,19 @@ public class DirectProcessProviderDefinitionsTest {
 	}
 
 	@Test
+	void downloadBpmn_returnsTheModelBytesUnchanged() throws Exception {
+		// the XML declaration promises UTF-8, so the bytes must not follow the JVM default charset (CIB7-2206)
+		byte[] model = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><definitions name=\"Prüfung 審査\"/>"
+			.getBytes(StandardCharsets.UTF_8);
+		when(repositoryService.getProcessModel("id-1")).thenReturn(new ByteArrayInputStream(model));
+
+		Data data = processProvider.downloadBpmn("id-1", "invoice.bpmn", user);
+
+		assertThat(data.getSize()).isEqualTo(model.length);
+		assertThat(data.getInputStream().readAllBytes()).isEqualTo(model);
+	}
+
+	@Test
 	void deleteProcessInstance_delegatesToTheRuntimeService() {
 		processProvider.deleteProcessInstance("instance-1", user);
 

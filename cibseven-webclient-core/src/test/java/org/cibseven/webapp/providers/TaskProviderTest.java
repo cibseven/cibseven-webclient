@@ -31,6 +31,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 public class TaskProviderTest {
@@ -127,9 +130,21 @@ public class TaskProviderTest {
 		ResponseEntity<String> response = taskProvider.getRenderedForm("task-1", new HashMap<>(), user);
 
 		assertThat(response.getBody()).isEqualTo(form);
-		// the engine's Content-Length is passed on; the re-encoded body must fit it, or the form is cut off
-		assertThat(response.getHeaders().getContentLength()).isEqualTo(response.getBody().getBytes(StandardCharsets.UTF_8).length);
 		assertThat(engine.takePath()).startsWith("/task/task-1/rendered-form");
+	}
+
+	@Test
+	void getRenderedForm_answersUtf8HtmlLikeTheDirectProvider() throws Exception {
+		// CIB7-2206: the engine's media type and Content-Length are not forwarded
+		String form = "<form><label>Begründung</label></form>";
+		engine.enqueueBytes(form.getBytes(StandardCharsets.UTF_8), "application/xhtml+xml");
+
+		ResponseEntity<String> response = taskProvider.getRenderedForm("task-1", new HashMap<>(), user);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.parseMediaType("text/html;charset=UTF-8"));
+		// Spring computes the length of the bytes it writes when the header is absent
+		assertThat(response.getHeaders().containsKey(HttpHeaders.CONTENT_LENGTH)).isFalse();
 	}
 
 	@Test
