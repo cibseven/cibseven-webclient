@@ -273,6 +273,14 @@
 			"deleteHistoryInstance": "¿Realmente quieres borrar la siguiente instancia histórica del proceso?"
 		},
 		"variables": {
+			"editVariable": {
+				"title": "Editar variable",
+				"tooltip": "Editar variable"
+			},
+			"runtimeVariable": {
+				"title": "Variable en tiempo de ejecución",
+				"tooltip": "Ver variable en tiempo de ejecución"
+			},
 			"historicVariable": {
 				"title": "Variable histórica",
 				"tooltip": "Ver detalles de la variable histórica"
