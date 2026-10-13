@@ -33,7 +33,6 @@
 
 <script>
 import { Form } from '@bpmn-io/form-js'
-// The same stylesheet as the task forms: anything more would apply to every page, not only here
 import '@bpmn-io/form-js/dist/assets/form-js.css'
 
 export default {

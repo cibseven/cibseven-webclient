@@ -23,8 +23,6 @@
       <span>{{ $t('deployment.formPreviewError') }}</span>
     </div>
     <div v-show="!error">
-      <!-- An empty sandbox gives the deployed HTML an origin of its own and no scripts. A frame
-        sandboxed from the start does not render a srcdoc that changes later, so each form gets a new frame -->
       <iframe v-if="rawData" :key="frameKey" class="html-form-preview-frame bg-body border rounded" sandbox=""
         :srcdoc="rawData" :title="$t('deployment.formPreviewHeading')"></iframe>
       <h5 class="html-form-preview-heading border-bottom mt-3">{{ $t('deployment.formRawDataHeading') }}</h5>
