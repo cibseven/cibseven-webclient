@@ -30,7 +30,6 @@ const DEFAULT_CONFIG = {
     tasklist: { application: ["ACCESS"] },
     cockpit: { application: ["ACCESS"] },
     modeler: { application: ["ACCESS"] },
-    displayTasks: { task: ["READ", "UPDATE"] },
     displayFilter: { filter: ["READ"] },
     editFilter: { filter: ["UPDATE"] },
     deleteFilter: { filter: ["DELETE"] },

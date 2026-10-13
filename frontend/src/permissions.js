@@ -35,14 +35,6 @@ const permissionsMixin = {
 			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
 			return this.$_permissionsMixin_checkPermissionsDenied(access, null, permissionsCheck)
 		},
-		tasksByPermissions: function(permissionsRequired, tasks) {
-			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
-			const tmpTasks = []
-			tasks.forEach(function(t) {
-				if (this.$_permissionsMixin_checkPermissionsAllowed(t, 'id', permissionsCheck)) tmpTasks.push(t)
-			}.bind(this))
-			return tmpTasks
-		},
 		processesByPermissions: function(permissionsRequired, processes) {
 			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
 			processes.forEach(function(p) {
@@ -70,7 +62,31 @@ const permissionsMixin = {
 			])
 		},
 		/**
-		 * @param {Object} processDefinition 
+		 * Mirrors the engine check for assigning or claiming a task
+		 * (`AuthorizationCommandChecker.checkTaskAssign`): any one of the permissions is enough.
+		 * @param {Object} task a task with `id` and, if it belongs to a process, `processDefinitionId`
+		 * (`key:version:uuid`, the process definition authorizations are given by key)
+		 * @returns {boolean} `true` if the user has `TASK_ASSIGN` or `UPDATE` on the task,
+		 * or `TASK_ASSIGN` or `UPDATE_TASK` on its process definition, `false` otherwise
+		 */
+		canAssignUserTask(task) {
+			const processDefinitionKey = task?.processDefinitionId?.split(':')[0]
+			const alternatives = [
+				['task', 'TASK_ASSIGN', task?.id],
+				['task', 'UPDATE', task?.id],
+			]
+			// Like the engine, a task outside a process is not checked against process definitions
+			// (otherwise a grant on "*" would match the missing key).
+			if (processDefinitionKey) {
+				alternatives.push(
+					['processDefinition', 'TASK_ASSIGN', processDefinitionKey],
+					['processDefinition', 'UPDATE_TASK', processDefinitionKey],
+				)
+			}
+			return this.$_permissionsMixin_checkAnyAllowed(alternatives)
+		},
+		/**
+		 * @param {Object} processDefinition
 		 * @returns {boolean} `true` if the user has `DELETE_HISTORY` permission for the given processDefinition (delete historic process instances), `false` otherwise
 		 */
 		canDeleteHistoryProcessInstance(processDefinition) {

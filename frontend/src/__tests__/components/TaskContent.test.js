@@ -37,7 +37,11 @@ const stubs = {
   'b-popover': true,
   'b-input-group': { template: '<div><slot></slot></div>' },
   'b-input-group-prepend': { template: '<div><slot></slot></div>' },
-  'b-form-tag': { template: '<span><slot></slot></span>' },
+  'b-form-tag': {
+    props: ['disabled'],
+    emits: ['remove'],
+    template: `<span><slot></slot><button v-if="!disabled" class="tag-remove" @click="$emit('remove')"></button></span>`
+  },
   'b-form-checkbox': true,
   AssignUserModal: {
     name: 'AssignUserModal',
@@ -54,7 +58,7 @@ const stubs = {
   }
 }
 
-function mountTaskContent({ task = { id: 't1', name: 'Prepare bank transfer', assignee: null }, mobile = true, props = {}, authorizationEnabled = false } = {}) {
+function mountTaskContent({ task = { id: 't1', name: 'Prepare bank transfer', assignee: null }, mobile = true, props = {}, authorizationEnabled = false, permissions = {}, configPermissions = {} } = {}) {
   return mountWithDefaults(TaskContent, {
     props: { task, ...props },
     global: {
@@ -62,8 +66,8 @@ function mountTaskContent({ task = { id: 't1', name: 'Prepare bank transfer', as
       provide: { isMobile: () => mobile },
       mocks: {
         // Mounted standalone, $root is the component itself, so `$root.user`/`$root.config` resolve to these
-        user: { id: 'demo', permissions: {} },
-        config: { layout: {}, permissions: {}, authorizationEnabled }
+        user: { id: 'demo', permissions },
+        config: { layout: {}, permissions: configPermissions, authorizationEnabled }
       },
       plugins: [createTestStore()]
     }
@@ -251,6 +255,105 @@ describe('TaskContent - mobile task header', () => {
 
     expect(wrapper.find('button[aria-label="task.backToTaskList"]').exists()).toBe(false)
     expect(wrapper.find('.assign-user-modal').exists()).toBe(false)
+  })
+})
+
+// CIB7-2260: a user who can read every task, but holds no assign permission, must not be offered
+// controls the engine would answer with a 403.
+describe('TaskContent - assigning needs permission', () => {
+  const task = { id: 't1', name: 'Prepare bank transfer', assignee: null, processDefinitionId: 'order-process:1:abc' }
+  const readOnly = { task: [{ userId: 'demo', groupId: null, resourceId: '*', permissions: ['READ'], type: 1 }] }
+  const canAssign = { task: [{ userId: 'demo', groupId: null, resourceId: 't1', permissions: ['READ', 'TASK_ASSIGN'], type: 1 }] }
+
+  it.each([
+    ['mobile', true],
+    ['desktop', false],
+  ])('should not offer to assign the task to me on %s without the permission', (_, mobile) => {
+    const wrapper = mountTaskContent({ task, mobile, authorizationEnabled: true, permissions: readOnly })
+
+    expect(wrapper.text()).not.toContain('task.assignToMe')
+    expect(wrapper.findComponent({ name: 'FilterableSelect' }).exists()).toBe(false)
+  })
+
+  it('should not offer to pick another assignee or to remove the assignment in the mobile menu', () => {
+    const unassigned = mountTaskContent({ task, authorizationEnabled: true, permissions: readOnly })
+    const assigned = mountTaskContent({ task: { ...task, assignee: 'lucash' }, authorizationEnabled: true, permissions: readOnly })
+
+    expect(unassigned.text()).not.toContain('task.assign')
+    expect(assigned.text()).not.toContain('task.unassign')
+  })
+
+  it('should still say that an unassigned task has no assignee on desktop', () => {
+    const wrapper = mountTaskContent({ task, mobile: false, authorizationEnabled: true, permissions: readOnly })
+
+    expect(wrapper.text()).toContain('task.notAssigned')
+  })
+
+  it.each([
+    ['mobile', true],
+    ['desktop', false],
+  ])('should offer to assign the task to me on %s with the permission', (_, mobile) => {
+    const wrapper = mountTaskContent({ task, mobile, authorizationEnabled: true, permissions: canAssign })
+
+    expect(wrapper.text()).toContain('task.assignToMe')
+  })
+
+  it('should not offer to remove the assignee of a desktop task without the permission', () => {
+    const wrapper = mountTaskContent({ task: { ...task, assignee: 'lucash' }, mobile: false, authorizationEnabled: true, permissions: readOnly })
+
+    expect(wrapper.find('.tag-remove').exists()).toBe(false)
+  })
+
+  it('should remove the assignee of a desktop task with the permission', async () => {
+    const wrapper = mountTaskContent({ task: { ...task, assignee: 'lucash' }, mobile: false, authorizationEnabled: true, permissions: canAssign })
+    const setSelectedAssignee = vi.spyOn(wrapper.vm, 'setSelectedAssignee')
+    vi.spyOn(wrapper.vm, 'update').mockImplementation(() => {})
+
+    await wrapper.find('.tag-remove').trigger('click')
+
+    expect(setSelectedAssignee).toHaveBeenCalledWith({ taskId: 't1', assignee: null })
+  })
+
+  describe('candidate groups', () => {
+    const cockpit = { userId: 'demo', groupId: null, resourceId: 'cockpit', permissions: ['ACCESS'], type: 1 }
+    const configPermissions = { cockpit: { application: ['ACCESS'] } }
+    const mount = (permissions, mobile) => mountTaskContent({ task, mobile, authorizationEnabled: true, permissions, configPermissions })
+
+    it.each([
+      ['mobile', true],
+      ['desktop', false],
+    ])('should hide the candidate group button on %s with cockpit access but without the assign permission', (_, mobile) => {
+      const wrapper = mount({ ...readOnly, application: [cockpit] }, mobile)
+
+      expect(wrapper.text()).not.toContain('admin.groups.addCandidateGroups')
+    })
+
+    it.each([
+      ['mobile', true],
+      ['desktop', false],
+    ])('should show the candidate group button on %s with cockpit access and the assign permission', (_, mobile) => {
+      const wrapper = mount({ ...canAssign, application: [cockpit] }, mobile)
+
+      expect(wrapper.text()).toContain('admin.groups.addCandidateGroups')
+    })
+  })
+
+  it('should not claim the task from the keyboard shortcut without the permission', () => {
+    const wrapper = mountTaskContent({ task, authorizationEnabled: true, permissions: readOnly })
+    const setSelectedAssignee = vi.spyOn(wrapper.vm, 'setSelectedAssignee')
+
+    wrapper.vm.claimCurrentTask()
+
+    expect(setSelectedAssignee).not.toHaveBeenCalled()
+  })
+
+  it('should claim the task from the keyboard shortcut with the permission', () => {
+    const wrapper = mountTaskContent({ task, authorizationEnabled: true, permissions: canAssign })
+    const setSelectedAssignee = vi.spyOn(wrapper.vm, 'setSelectedAssignee')
+
+    wrapper.vm.claimCurrentTask()
+
+    expect(setSelectedAssignee).toHaveBeenCalledWith({ taskId: 't1', assignee: 'demo' })
   })
 })
 

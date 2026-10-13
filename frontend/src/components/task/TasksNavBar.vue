@@ -146,7 +146,7 @@
                   <div class="h6 text-end p-0 fw-normal m-0" v-if="task.assignee != null">
                     <HighlightedText :text="getCompleteName(task)" :keyword="search" class="mdi mdi-18px mdi-account text-secondary p-1"></HighlightedText>
                   </div>
-                  <div class="h6 text-end p-0 fw-normal n-0" v-if="task.assignee == null">
+                  <div class="h6 text-end p-0 fw-normal n-0" v-if="hasAssignToMeButton(task)">
                     <b-button variant="link" class="p-0 lh-1 text-dark" @click.stop="checkAssignee(task)" @keydown.enter.stop="checkAssignee(task)" @keyup.enter.stop.prevent @keydown.space.prevent.stop="checkAssignee(task)">
                       <span class="mdi mdi-18px mdi-account-question text-secondary"></span>
                       {{ $t('task.assignToMe') }}
@@ -242,10 +242,12 @@ import SmartSearch from '@/components/task/SmartSearch.vue'
 import { ConfirmDialog, BWaitingBox, HighlightedText } from '@cib/common-frontend'
 import { mapActions } from 'vuex'
 import variableUtils from '@/components/process/mixins/variableUtils.js'
+import { permissionsMixin } from '@/permissions.js'
 
 export default {
   name: 'TasksNavBar',
   components: { StartProcess, AdvancedSearchModal, SmartSearch, ConfirmDialog, BWaitingBox, HighlightedText },
+  mixins: [permissionsMixin],
   props: { tasks: Array, taskResultsIndex: Number, search: String },
   inject: ['currentLanguage','isMobile'],
   emits: ['search-filter', 'process-started', 'selected-task', 'update-assignee', 'show-more', 'refresh-tasks', 'refresh-tasks-number', 'show-task'],
@@ -515,6 +517,9 @@ export default {
       const classes = []
       if (!this.isMobile() && task !== this.focused && task.id !== this.selectedDateT.id && !task.followUp) classes.push('action-button-hidden')
       return classes
+    },
+    hasAssignToMeButton: function(task) {
+      return task.assignee == null && this.canAssignUserTask(task)
     },
     claim: function(task) {
       TaskService.setAssignee(task.id, this.$root.user.id).then(() => {

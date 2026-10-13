@@ -308,10 +308,10 @@ export default {
         applyDatePresenceFilters(filters, this.$store.state.filter.settings)
         TaskService.findTasksByFilter(this.$store.state.filter.selected.id, filters,
           { firstResult: firstResult, maxResults: maxResults }).then(result => {
-          const tasks = this.tasksByPermissions(this.$root.config.permissions.displayTasks, result)
-          if (skipVariables) this.preserveExistingVariables(tasks)
+          // The engine already applies the user's authorizations, and the filter counter relies on the same query.
+          if (skipVariables) this.preserveExistingVariables(result)
           //Only needed to fetch the businessKey of every instance.
-          this.updateProcessesInstances(tasks, showMore)
+          this.updateProcessesInstances(result, showMore)
         }, () => {
           this.setTaskLoaderDone(true)
         })
