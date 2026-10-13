@@ -17,7 +17,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import ResourcesNavBar from '@/components/deployment/ResourcesNavBar.vue'
-import { ProcessService } from '@/services.js'
+import { ProcessService, DeploymentService } from '@/services.js'
 import { mountWithDefaults } from '../support/mountWithDefaults.js'
 
 vi.mock('@/services.js', async (importOriginal) => {
@@ -30,6 +30,10 @@ vi.mock('@/services.js', async (importOriginal) => {
       })),
       findProcessesWithFilters: vi.fn(() => Promise.resolve([{ id: 'pd1' }])),
       fetchDiagram: vi.fn()
+    },
+    DeploymentService: {
+      ...actual.DeploymentService,
+      fetchDataFromDeploymentResource: vi.fn()
     }
   }
 })
@@ -140,6 +144,165 @@ describe('ResourcesNavBar.vue', () => {
 
       expect(wrapper.find('[title="process.openModeler"]').exists()).toBe(false)
       expect(wrapper.find('[title="process.openModelerDmn"]').exists()).toBe(false)
+    })
+  })
+
+  describe('resource types (methods)', () => {
+    const vm = context()
+
+    it('recognises an extension in any case', () => {
+      expect(vm.hasExtension({ name: 'Invoice.FORM' }, '.form')).toBe(true)
+      expect(vm.hasExtension({ name: 'invoice.form' }, '.html', '.htm')).toBe(false)
+    })
+
+    it('has no extension for a resource without a name', () => {
+      expect(vm.hasExtension({}, '.form')).toBe(false)
+      expect(vm.hasExtension(null, '.form')).toBe(false)
+    })
+
+    it('takes .html and .htm as HTML forms', () => {
+      expect(vm.isHtml({ name: 'start.html' })).toBe(true)
+      expect(vm.isHtml({ name: 'start.htm' })).toBe(true)
+      expect(vm.isForm({ name: 'start.form' })).toBe(true)
+    })
+
+    it('downloads diagrams and forms, and opens only diagrams in the modeler', () => {
+      expect(['a.bpmn', 'a.dmn', 'a.form', 'a.html'].map(name => vm.canDownload({ name }))).toEqual([true, true, true, true])
+      expect(vm.canDownload({ name: 'logo.png' })).toBe(false)
+      expect(['a.bpmn', 'a.dmn', 'a.form', 'a.html'].map(name => vm.canOpenModeler({ name }))).toEqual([true, true, false, false])
+    })
+  })
+
+  describe('form resources (methods)', () => {
+    afterEach(() => vi.clearAllMocks())
+
+    const FORM_FILE = '{\n    "type": "default",\n    "components": []\n}'
+    const formResource = { id: 'r1', deploymentId: 'd1', name: 'invoice.form' }
+
+    it('reads a form from the deployment resource data, with the user\'s token', async () => {
+      DeploymentService.fetchDataFromDeploymentResource.mockResolvedValueOnce(FORM_FILE)
+      const vm = context({ $root: { user: { authToken: 'tok' } } })
+
+      const content = await vm.getContent(formResource)
+
+      expect(DeploymentService.fetchDataFromDeploymentResource).toHaveBeenCalledWith('d1', 'r1', 'invoice.form', 'tok')
+      expect(content).toBe(FORM_FILE)
+    })
+
+    it('reads an HTML form the same way', async () => {
+      DeploymentService.fetchDataFromDeploymentResource.mockResolvedValueOnce('<form></form>')
+      const vm = context({ $root: { user: { authToken: 'tok' } } })
+
+      expect(await vm.getContent({ id: 'r2', deploymentId: 'd1', name: 'start.html' })).toBe('<form></form>')
+    })
+
+    const downloaded = async (resource, content) => {
+      DeploymentService.fetchDataFromDeploymentResource.mockResolvedValueOnce(content)
+      const triggerDownload = vi.fn()
+      const vm = context({ $root: { user: { authToken: 'tok' } }, $refs: { downloadPopper: { triggerDownload } } })
+      await vm.download(resource)
+      const [blob, name] = triggerDownload.mock.calls[0]
+      return { blob, name, text: await blob.text() }
+    }
+
+    // A downloaded file has to be the deployed one, not a re-serialised copy
+    it('downloads a form exactly as it was deployed', async () => {
+      const { blob, name, text } = await downloaded(formResource, FORM_FILE)
+
+      expect(text).toBe(FORM_FILE)
+      expect(blob.type).toBe('application/json')
+      expect(name).toBe('invoice.form')
+    })
+
+    it('downloads an HTML form as HTML', async () => {
+      const { blob, text } = await downloaded({ id: 'r2', deploymentId: 'd1', name: 'start.html' }, '<form></form>')
+
+      expect(text).toBe('<form></form>')
+      expect(blob.type).toBe('text/html')
+    })
+
+    describe('showResource', () => {
+      const viewers = () => ({
+        diagramModal: { show: vi.fn() },
+        formPreview: { showForm: vi.fn() },
+        htmlFormPreview: { showForm: vi.fn() },
+        diagram: { cleanDiagramState: vi.fn(), drawDiagramState: vi.fn(), showDiagram: vi.fn() },
+        dmnDiagram: { cleanDiagramState: vi.fn(), showDiagram: vi.fn() }
+      })
+      const show = async (resource, type, content) => {
+        vi.useFakeTimers()
+        DeploymentService.fetchDataFromDeploymentResource.mockResolvedValueOnce(content)
+        const $refs = viewers()
+        const vm = context({
+          $root: { user: { authToken: 'tok' } }, $refs,
+          isFormResource: type === 'form', isHtmlResource: type === 'html', isDmnResource: false
+        })
+        await vm.showResource(resource)
+        vi.advanceTimersByTime(500)
+        vi.useRealTimers()
+        return { vm, $refs }
+      }
+
+      it('opens a form in the form preview, leaving the diagram viewers alone', async () => {
+        const { vm, $refs } = await show(formResource, 'form', FORM_FILE)
+
+        expect($refs.diagramModal.show).toHaveBeenCalled()
+        expect($refs.formPreview.showForm).toHaveBeenCalledWith(FORM_FILE)
+        expect($refs.diagram.cleanDiagramState).not.toHaveBeenCalled()
+        expect($refs.dmnDiagram.cleanDiagramState).not.toHaveBeenCalled()
+        expect(vm.diagramLoading).toBe(false)
+      })
+
+      it('opens an HTML form in the HTML preview', async () => {
+        const { $refs } = await show({ id: 'r2', deploymentId: 'd1', name: 'start.html' }, 'html', '<form></form>')
+
+        expect($refs.htmlFormPreview.showForm).toHaveBeenCalledWith('<form></form>')
+        expect($refs.formPreview.showForm).not.toHaveBeenCalled()
+      })
+
+      // The diagram paths share the method with the forms, so they are checked alongside
+      it('opens a bpmn diagram in the diagram viewer after resetting it', async () => {
+        ProcessService.fetchDiagram.mockResolvedValueOnce({ bpmn20Xml: '<bpmn/>' })
+        const { $refs } = await show({ id: 'r3', deploymentId: 'd1', name: 'invoice.bpmn' }, 'bpmn')
+
+        expect($refs.diagram.cleanDiagramState).toHaveBeenCalled()
+        expect($refs.diagram.drawDiagramState).toHaveBeenCalled()
+        expect($refs.diagram.showDiagram).toHaveBeenCalledWith('<bpmn/>')
+      })
+
+      it('opens a dmn diagram in the dmn viewer after resetting it', async () => {
+        vi.useFakeTimers()
+        const $refs = viewers()
+        const vm = context({
+          $refs, isFormResource: false, isHtmlResource: false, isDmnResource: true,
+          getXmlById: vi.fn(() => Promise.resolve({ dmnXml: '<dmn/>' }))
+        })
+        await vm.showResource({ id: 'r4', deploymentId: 'd1', name: 'rules.dmn' })
+        vi.advanceTimersByTime(500)
+        vi.useRealTimers()
+
+        expect(vm.getDecisionList).toHaveBeenCalledWith({ deploymentId: 'd1', resourceName: 'rules.dmn' })
+        expect($refs.dmnDiagram.cleanDiagramState).toHaveBeenCalled()
+        expect($refs.dmnDiagram.showDiagram).toHaveBeenCalledWith('<dmn/>')
+      })
+
+      it('reports an error when the form has no content', async () => {
+        const { vm, $refs } = await show(formResource, 'form', '')
+
+        expect(vm.error).toBe(true)
+        expect(vm.diagramLoading).toBe(false)
+        expect($refs.formPreview.showForm).not.toHaveBeenCalled()
+      })
+    })
+
+    it('downloads nothing when the resource has no content', async () => {
+      DeploymentService.fetchDataFromDeploymentResource.mockResolvedValueOnce('')
+      const triggerDownload = vi.fn()
+      const vm = context({ $root: { user: { authToken: 'tok' } }, $refs: { downloadPopper: { triggerDownload } } })
+
+      await vm.download(formResource)
+
+      expect(triggerDownload).not.toHaveBeenCalled()
     })
   })
 })

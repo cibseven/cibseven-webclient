@@ -33,9 +33,8 @@
 
 <script>
 import { Form } from '@bpmn-io/form-js'
-import '@bpmn-io/form-js/dist/assets/form-js-base.css'
+// The same stylesheet as the task forms: anything more would apply to every page, not only here
 import '@bpmn-io/form-js/dist/assets/form-js.css'
-import '@bpmn-io/form-js/dist/assets/flatpickr/light.css'
 
 export default {
   name: 'FormPreview',

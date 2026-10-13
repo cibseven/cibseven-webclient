@@ -847,8 +847,9 @@ const DeploymentService = {
     )
   },
   fetchDataFromDeploymentResource: function(deploymentId, resourceId, fileName, token) {
+    // As text: axios would parse a .form file's JSON, and a download has to stay byte for byte the deployed file
     return axios.get(getServicesBasePath() + '/process/deployments/' + deploymentId + '/resources/' + resourceId + '/data',
-      { params: { filename: fileName, token: token } })
+      { params: { filename: fileName, token: token }, responseType: 'text' })
   }
 }
 

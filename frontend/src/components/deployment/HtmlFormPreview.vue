@@ -23,8 +23,10 @@
       <span>{{ $t('deployment.formPreviewError') }}</span>
     </div>
     <div v-show="!error">
-      <iframe ref="frame" class="html-form-preview-frame bg-body border rounded" sandbox="allow-same-origin"
-        :title="$t('deployment.formPreviewHeading')"></iframe>
+      <!-- An empty sandbox gives the deployed HTML an origin of its own and no scripts. A frame
+        sandboxed from the start does not render a srcdoc that changes later, so each form gets a new frame -->
+      <iframe v-if="rawData" :key="frameKey" class="html-form-preview-frame bg-body border rounded" sandbox=""
+        :srcdoc="rawData" :title="$t('deployment.formPreviewHeading')"></iframe>
       <h5 class="html-form-preview-heading border-bottom mt-3">{{ $t('deployment.formRawDataHeading') }}</h5>
       <pre class="html-form-preview-raw bg-body-tertiary border rounded">{{ rawData }}</pre>
     </div>
@@ -38,7 +40,8 @@ export default {
   data: function () {
     return {
       error: false,
-      rawData: ''
+      rawData: '',
+      frameKey: 0
     }
   },
   methods: {
@@ -51,18 +54,9 @@ export default {
         this.error = true
         return
       }
+      // The frame renders it through srcdoc, the source shows below it
       this.rawData = html
-      const frame = this.$refs.frame
-      if (!frame) return
-      try {
-        const doc = frame.contentDocument || frame.contentWindow?.document
-        doc.open()
-        doc.write(html)
-        doc.close()
-      } catch (err) {
-        console.error('HtmlFormPreview: failed to render html form', err)
-        this.error = true
-      }
+      this.frameKey++
     }
   }
 }
