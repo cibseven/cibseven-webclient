@@ -98,15 +98,14 @@ const permissionsMixin = {
 		 * @param {string} processInstanceId
 		 * @param {string} processDefinitionKey
 		 * @param {boolean} isRuntime `true` for a variable of the running process instance, `false` for a historic one
-		 * @returns {boolean} for a runtime variable, `true` if the user may delete the process instance
-		 * (see `canDeleteRuntimeProcessInstance`) and may change its variables
-		 * (for the engine, removing a variable is an update, see `canUpdateProcessInstanceVariables`);
+		 * @returns {boolean} for a runtime variable, `true` if the user may change the variables of the process instance:
+		 * for the engine, removing a variable is an update (`RemoveExecutionVariablesCmd` only runs
+		 * `checkUpdateProcessInstanceVariables`), see `canUpdateProcessInstanceVariables`;
 		 * for a historic variable, `true` if the user has `DELETE_HISTORY` on the process definition, as the engine requires
 		 */
 		canDeleteProcessInstanceVariable(processInstanceId, processDefinitionKey, isRuntime) {
 			if (!isRuntime) return this.canDeleteHistoryProcessInstance({ key: processDefinitionKey })
-			return this.canDeleteRuntimeProcessInstance(processInstanceId, processDefinitionKey) &&
-				this.canUpdateProcessInstanceVariables(processInstanceId, processDefinitionKey)
+			return this.canUpdateProcessInstanceVariables(processInstanceId, processDefinitionKey)
 		},
 		/**
 		 * @param {string} deploymentId
