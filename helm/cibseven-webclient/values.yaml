@@ -415,9 +415,6 @@ configmaps:
             "modeler": {
               "application": ["ACCESS"]
             },
-            "displayTasks": {
-              "task": ["READ", "UPDATE"]
-            },
             "displayFilter": {
               "filter": ["READ"]
             },

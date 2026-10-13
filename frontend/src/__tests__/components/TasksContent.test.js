@@ -52,7 +52,6 @@ const DEFAULT_CONFIG = {
   automaticallyOpenTask: false,
   productNamePageTitle: 'CIB seven',
   layout: { showTaskDetailsSidebar: false, showChat: false, showStatusBar: false },
-  permissions: { displayTasks: { user: ['*'] } },
   taskFilter: { advancedSearch: { filterEnabled: false } },
   taskSorting: { default: { sortBy: 'created', sortOrder: 'desc' } }
 }
@@ -91,7 +90,8 @@ function context(overrides = {}) {
     },
     isMobile: () => false,
     AuthService: { fetchAuths: vi.fn(() => Promise.resolve(['READ'])) },
-    tasksByPermissions: vi.fn((_permissions, tasks) => tasks),
+    // A user that holds READ but not UPDATE on tasks: a client-side permission filter would hide every task.
+    tasksByPermissions: vi.fn(() => []),
     TasksRightSidebar: {},
     tasks: [],
     task: null,
@@ -559,15 +559,15 @@ describe('TasksContent - fetchTasks', () => {
     })
   })
 
-  it('should filter the result by the display-tasks permission', async () => {
+  it('should list every task returned by the engine without filtering it client-side (CIB7-2260)', async () => {
     const vm = context({ updateProcessesInstances: vi.fn() })
-    TaskService.findTasksByFilter.mockResolvedValue([{ id: 't1' }])
+    TaskService.findTasksByFilter.mockResolvedValue([{ id: 't1' }, { id: 't2' }])
 
     fetchTasks.call(vm, 0, 20)
     await flush()
 
-    expect(vm.tasksByPermissions).toHaveBeenCalledWith({ user: ['*'] }, [{ id: 't1' }])
-    expect(vm.updateProcessesInstances).toHaveBeenCalledWith([{ id: 't1' }], undefined)
+    expect(vm.tasksByPermissions).not.toHaveBeenCalled()
+    expect(vm.updateProcessesInstances).toHaveBeenCalledWith([{ id: 't1' }, { id: 't2' }], undefined)
   })
 
   it('should preserve already loaded variables on a background refresh', async () => {
