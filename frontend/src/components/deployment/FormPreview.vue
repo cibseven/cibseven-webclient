@@ -33,9 +33,7 @@
 
 <script>
 import { Form } from '@bpmn-io/form-js'
-import '@bpmn-io/form-js/dist/assets/form-js-base.css'
 import '@bpmn-io/form-js/dist/assets/form-js.css'
-import '@bpmn-io/form-js/dist/assets/flatpickr/light.css'
 
 export default {
   name: 'FormPreview',
