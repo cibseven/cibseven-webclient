@@ -78,7 +78,7 @@
           <CellActionButton v-else-if="table.item.state === 'SUSPENDED' && processByPermissions($root.config.permissions.suspendProcessInstance, table.item)" @click="confirmActivate(table.item)"
           icon="mdi-play-circle-outline" :title="$t('process.activateInstance')"></CellActionButton>
           <CellActionButton :to="selectInstanceRoute(table.item)" icon="mdi-eye-outline" :title="$t('process.showInstance')"></CellActionButton>
-          <CellActionButton v-if="['ACTIVE', 'SUSPENDED'].includes(table.item.state) && processByPermissions($root.config.permissions.deleteProcessInstance, table.item)"
+          <CellActionButton v-if="hasStopInstanceButton(table.item)"
           @click="confirmStopInstance(table.item)"
           icon="mdi-stop-circle-outline" :title="$t('process.stopInstance')"></CellActionButton>
           <CellActionButton v-else-if="['COMPLETED', 'EXTERNALLY_TERMINATED', 'INTERNALLY_TERMINATED'].includes(table.item.state) && hasDeleteHistoryProcessInstancePermission"
@@ -268,6 +268,10 @@ export default {
       this.$router.push(this.selectInstanceRoute(instance))
     },
     // "Stop Instance" button
+    hasStopInstanceButton: function(instance) {
+      return ['ACTIVE', 'SUSPENDED'].includes(instance.state) &&
+        this.canDeleteRuntimeProcessInstance(instance.id, instance.processDefinitionKey)
+    },
     confirmStopInstance: function(instance) {
       this.$refs.confirm.show({
         ok: this.stopInstance,

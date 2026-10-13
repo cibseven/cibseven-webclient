@@ -475,12 +475,6 @@ configmaps:
             },
             "updateProcessInstance": {
               "processInstance": ["UPDATE"]
-            },
-            "deleteProcessInstance": {
-              "processInstance": ["DELETE"]
-            },
-            "deleteHistoricProcessInstance": {
-              "historicProcessInstance": ["DELETE"]
             }
           },
           "taskSorting": {
