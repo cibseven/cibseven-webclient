@@ -331,9 +331,8 @@ function authGuard(strict) {
       const headers = { authorization: token }
       const inst = axios.create() // bypass standard error handling
       const res = await inst.get(router.root.config.servicesBasePath + '/auth', { headers: headers })
-      const { authToken, urlToken, refreshToken, ...safe } = res.data // eslint-disable-line no-unused-vars
-      console?.info('auth successful', safe)
-      axios.defaults.headers.common.authorization = authToken
+      console?.info('auth successful', res.data)
+      axios.defaults.headers.common.authorization = res.data.authToken
       const permissions = await AuthService.fetchAuths()
       router.root.user = { ...res.data, permissions }
     }
