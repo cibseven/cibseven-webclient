@@ -90,8 +90,6 @@ function context(overrides = {}) {
     },
     isMobile: () => false,
     AuthService: { fetchAuths: vi.fn(() => Promise.resolve(['READ'])) },
-    // A user that holds READ but not UPDATE on tasks: a client-side permission filter would hide every task.
-    tasksByPermissions: vi.fn(() => []),
     TasksRightSidebar: {},
     tasks: [],
     task: null,
@@ -566,7 +564,6 @@ describe('TasksContent - fetchTasks', () => {
     fetchTasks.call(vm, 0, 20)
     await flush()
 
-    expect(vm.tasksByPermissions).not.toHaveBeenCalled()
     expect(vm.updateProcessesInstances).toHaveBeenCalledWith([{ id: 't1' }, { id: 't2' }], undefined)
   })
 

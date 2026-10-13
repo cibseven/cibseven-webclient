@@ -38,16 +38,16 @@
             </span>
           </li>
           <b-dropdown-divider></b-dropdown-divider>
-          <b-dropdown-item-button v-if="canAssignToMe" @click="$refs.assigneeMenu.hide(); assignee = $root.user.id">
+          <b-dropdown-item-button v-if="hasAssignToMeButton" @click="$refs.assigneeMenu.hide(); assignee = $root.user.id">
             <span class="mdi mdi-18px mdi-account-plus me-2" aria-hidden="true"></span>{{ $t('task.assignToMe') }}
           </b-dropdown-item-button>
-          <b-dropdown-item-button v-if="task.assignee == null" @click="$refs.assigneeMenu.hide(); $refs.assignUserModal.show()">
+          <b-dropdown-item-button v-if="hasAssignUserButton" @click="$refs.assigneeMenu.hide(); $refs.assignUserModal.show()">
             <span class="mdi mdi-18px mdi-account-search me-2" aria-hidden="true"></span>{{ $t('task.assign') }}
           </b-dropdown-item-button>
-          <b-dropdown-item-button v-if="task.assignee != null" @click="$refs.assigneeMenu.hide(); assignee = null; update()">
+          <b-dropdown-item-button v-if="hasUnassignButton" @click="$refs.assigneeMenu.hide(); assignee = null; update()">
             <span class="mdi mdi-18px mdi-account-remove me-2" aria-hidden="true"></span>{{ $t('task.unassign') }}
           </b-dropdown-item-button>
-          <b-dropdown-item-button v-if="canAddCandidateGroups" @click="$refs.assigneeMenu.hide(); openTaskAssignationModal()">
+          <b-dropdown-item-button v-if="hasAddCandidateGroupsButton" @click="$refs.assigneeMenu.hide(); openTaskAssignationModal()">
             <span class="mdi mdi-18px mdi-account-multiple-plus me-2" aria-hidden="true"></span>{{ $t('admin.groups.addCandidateGroups') }}
           </b-dropdown-item-button>
         </b-dropdown>
@@ -64,23 +64,24 @@
             <div class="form-group d-flex align-items-center mb-0">
               <h3 ref="titleTask" class="mb-0 me-4 d-inline" :class="isMobile() ? 'h6' : 'h5'">{{ task.name }}</h3>
               <span v-if="task.assignee != null">
-                <b-form-tag variant="secondary" @remove="assignee = null; update()" :key="task.id"
+                <b-form-tag variant="secondary" :disabled="!hasUnassignButton" @remove="assignee = null; update()" :key="task.id"
                   :title="getCompleteName" :remove-label="$t('task.assignedUserTitle')"
                   class="mdi mdi-18px mdi-account">
                   {{ ' ' + getCompleteName }}
                 </b-form-tag>
               </span>
-              <span v-else>
+              <span v-else-if="hasAssignToMeButton">
                 <b-button ref="assignToMeButton" variant="link" class="p-0 text-dark me-2"
                   @click="assignee = $root.user.id" :title="$t('infoAndHelp.shortcuts.shortcuts.claimTask')">
                   <span class="mdi mdi-18px mdi-account-question mdi-dark"></span>
                   {{ $t('task.assignToMe') }}
                 </b-button>
               </span>
-              <FilterableSelect v-if="task.assignee == null" v-model:loading="loadingUsers" @enter="findUsers($event, true)"
+              <span v-else class="text-secondary me-2">{{ assigneeStatus }}</span>
+              <FilterableSelect v-if="hasAssignUserButton" v-model:loading="loadingUsers" @enter="findUsers($event, true)"
                 @clean-elements="resetUsers($event)" class="w-auto" v-model="assignee"
                 :elements="$store.state.user.searchUsers" :placeholder="$t('task.assign')" noInvalidValues />
-              <b-button v-if="canAddCandidateGroups" @click="openTaskAssignationModal" class="ms-2" variant="light" size="sm" >
+              <b-button v-if="hasAddCandidateGroupsButton" @click="openTaskAssignationModal" class="ms-2" variant="light" size="sm" >
                 {{ $t('admin.groups.addCandidateGroups') }}
               </b-button>
             </div>
@@ -191,11 +192,22 @@ export default {
     assigneeStatus: function() {
       return this.task?.assignee == null ? this.$t('task.notAssigned') : this.$t('task.assignedTo', [this.getCompleteName])
     },
-    canAssignToMe: function() {
-      return !this.task?.assignee || this.task.assignee.toLowerCase() !== this.$root.user.id.toLowerCase()
+    canAssign: function() {
+      return this.canAssignUserTask(this.task)
     },
-    canAddCandidateGroups: function() {
-      return this.applicationPermissions(this.$root.config.permissions.cockpit, 'cockpit')
+    hasAssignToMeButton: function() {
+      const assigneeCheck = !this.task?.assignee || this.task.assignee.toLowerCase() !== this.$root.user.id.toLowerCase()
+      return assigneeCheck && this.canAssign
+    },
+    hasAssignUserButton: function() {
+      return this.task?.assignee == null && this.canAssign
+    },
+    hasUnassignButton: function() {
+      return this.task?.assignee != null && this.canAssign
+    },
+    hasAddCandidateGroupsButton: function() {
+      const cockpitCheck = this.applicationPermissions(this.$root.config.permissions.cockpit, 'cockpit')
+      return cockpitCheck && this.canAssign
     },
     renderTemplateStyles: function() {
       if (this.task) {
@@ -222,7 +234,7 @@ export default {
   methods: {
     ...mapActions('task', ['setSelectedAssignee']),
     claimCurrentTask: function() {
-      if (!this.task.assignee) {
+      if (!this.task.assignee && this.canAssign) {
         this.assignee = this.$root.user.id
       }
     },

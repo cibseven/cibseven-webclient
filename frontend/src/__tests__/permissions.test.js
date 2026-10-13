@@ -23,7 +23,6 @@ import { permissionsMixin } from '../permissions.js'
 const configPermissions = {
   tasklist:                      { application: ['ACCESS'] },
   cockpit:                       { application: ['ACCESS'] },
-  displayTasks:                  { task: ['READ', 'UPDATE'] },
   displayFilter:                 { filter: ['READ'] },
   editFilter:                    { filter: ['UPDATE'] },
   deleteFilter:                  { filter: ['DELETE'] },
@@ -358,48 +357,6 @@ describe('filtersByPermissions / filterByPermissions', () => {
 })
 
 // ---------------------------------------------------------------------------
-// tasksByPermissions
-// ---------------------------------------------------------------------------
-describe('tasksByPermissions', () => {
-  const tasks = [
-    { id: 'task-1', name: 'Review Invoice' },
-    { id: 'task-2', name: 'Approve Order' },
-    { id: 'task-3', name: 'Sign Contract' },
-  ]
-
-  it('returns only tasks the user has READ+UPDATE permission on', () => {
-    const ctx = createContext({
-      task: [
-        allow('task-1', ['READ', 'UPDATE']),
-        allow('task-3', ['READ', 'UPDATE']),
-      ],
-    })
-    const result = ctx.tasksByPermissions(configPermissions.displayTasks, tasks)
-    expect(result.map(t => t.id)).toEqual(['task-1', 'task-3'])
-  })
-
-  it('returns all tasks when user has wildcard ALL', () => {
-    const ctx = createContext({
-      task: [allow('*', ['ALL'])],
-    })
-    const result = ctx.tasksByPermissions(configPermissions.displayTasks, tasks)
-    expect(result).toHaveLength(tasks.length)
-  })
-
-  it('returns empty array when user has no permissions', () => {
-    const ctx = createContext({ task: [] })
-    const result = ctx.tasksByPermissions(configPermissions.displayTasks, tasks)
-    expect(result).toHaveLength(0)
-  })
-
-  it('returns all tasks when authorizationEnabled is false', () => {
-    const ctx = createContext({}, { authorizationEnabled: false })
-    const result = ctx.tasksByPermissions(configPermissions.displayTasks, tasks)
-    expect(result).toHaveLength(tasks.length)
-  })
-})
-
-// ---------------------------------------------------------------------------
 // canUpdateProcessInstanceVariables
 // ---------------------------------------------------------------------------
 describe('canUpdateProcessInstanceVariables', () => {
@@ -454,6 +411,68 @@ describe('canUpdateProcessInstanceVariables', () => {
 
   it('is granted when authorization is disabled', () => {
     expect(createContext({}, { authorizationEnabled: false }).canUpdateProcessInstanceVariables(PI, KEY)).toBe(true)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// canAssignUserTask
+// ---------------------------------------------------------------------------
+describe('canAssignUserTask', () => {
+  const TASK = { id: 'task-1', processDefinitionId: 'order-process:3:0a1b2c3d' }
+
+  it.each([
+    ['TASK_ASSIGN on the task', { task: [allow(TASK.id, ['TASK_ASSIGN'])] }],
+    ['UPDATE on the task', { task: [allow(TASK.id, ['UPDATE'])] }],
+    ['TASK_ASSIGN on the process definition', { processDefinition: [allow('order-process', ['TASK_ASSIGN'])] }],
+    ['UPDATE_TASK on the process definition', { processDefinition: [allow('order-process', ['UPDATE_TASK'])] }],
+    ['ALL on any task', { task: [allow('*', ['ALL'])] }],
+    ['TASK_ASSIGN on any process definition', { processDefinition: [allow('*', ['TASK_ASSIGN'])] }],
+  ])('is granted by %s alone', (_, userPermissions) => {
+    expect(createContext(userPermissions).canAssignUserTask(TASK)).toBe(true)
+  })
+
+  it('is denied with read permissions only', () => {
+    const ctx = createContext({
+      task: [allow('*', ['READ'])],
+      processDefinition: [allow('*', ['READ', 'READ_TASK'])],
+    })
+    expect(ctx.canAssignUserTask(TASK)).toBe(false)
+  })
+
+  it('is denied with TASK_WORK only, which lets the user complete a task but not assign it', () => {
+    expect(createContext({ task: [allow(TASK.id, ['READ', 'TASK_WORK'])] }).canAssignUserTask(TASK)).toBe(false)
+  })
+
+  it('is denied when the grants belong to another task or process definition', () => {
+    const ctx = createContext({
+      task: [allow('task-2', ['TASK_ASSIGN'])],
+      processDefinition: [allow('invoice-process', ['UPDATE_TASK'])],
+    })
+    expect(ctx.canAssignUserTask(TASK)).toBe(false)
+  })
+
+  it('matches the process definition by key, ignoring the version and the deployment id', () => {
+    const ctx = createContext({ processDefinition: [allow('order-process', ['UPDATE_TASK'])] })
+    expect(ctx.canAssignUserTask({ id: 'task-9', processDefinitionId: 'order-process:12:ffff' })).toBe(true)
+  })
+
+  it('only looks at the task permissions for a task without process', () => {
+    const standalone = { id: 'task-1', processDefinitionId: null }
+    expect(createContext({ processDefinition: [allow('*', ['ALL'])] }).canAssignUserTask(standalone)).toBe(false)
+    expect(createContext({ task: [allow('task-1', ['TASK_ASSIGN'])] }).canAssignUserTask(standalone)).toBe(true)
+  })
+
+  it('is denied when the only grant is revoked', () => {
+    const ctx = createContext({ task: [allow('*', ['TASK_ASSIGN']), deny(TASK.id, ['TASK_ASSIGN'])] })
+    expect(ctx.canAssignUserTask(TASK)).toBe(false)
+  })
+
+  it('is denied without any authorization', () => {
+    expect(createContext({}).canAssignUserTask(TASK)).toBe(false)
+  })
+
+  it('is granted when authorization is disabled', () => {
+    expect(createContext({}, { authorizationEnabled: false }).canAssignUserTask(TASK)).toBe(true)
   })
 })
 

@@ -457,6 +457,18 @@ describe('TasksNavBar - date editing', () => {
 })
 
 describe('TasksNavBar - claiming', () => {
+  it.each([
+    ['an unassigned task the user may assign', null, true, true],
+    ['an unassigned task the user may not assign', null, false, false],
+    ['an assigned task the user may assign', 'lucash', true, false],
+  ])('hasAssignToMeButton for %s', (_, assignee, allowed, expected) => {
+    const task = { id: 't1', assignee }
+    const vm = context({ canAssignUserTask: vi.fn(() => allowed) })
+
+    expect(m.hasAssignToMeButton.call(vm, task)).toBe(expected)
+    expect(vm.canAssignUserTask).toHaveBeenCalledTimes(assignee == null ? 1 : 0)
+  })
+
   it('claim should assign the task to the current user and announce it', async () => {
     const vm = context()
     const task = { id: 't1', assignee: null }
