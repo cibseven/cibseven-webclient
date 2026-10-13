@@ -28,6 +28,7 @@ import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.Date;
 
@@ -47,6 +48,7 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.QueueDispatcher;
 import okhttp3.mockwebserver.RecordedRequest;
+import okhttp3.mockwebserver.SocketPolicy;
 
 /**
  * The generic OIDC provider. Beyond the ADFS flow it also accepts a third-party access token
@@ -371,6 +373,20 @@ public class OAuth2UserProviderTest {
 
 		assertThat(provider.getLogoutRedirectUrl(user, "https://app.example/"))
 			.isEqualTo("https://idp.example/logout?client_id=cibseven&post_logout_redirect_uri=https://app.example/");
+	}
+
+	// The user waits for the logout: a provider that does not answer is given up on, not waited for
+	@Test
+	void getLogoutRedirectUrl_goesWithoutAHintWhenTheIdentityProviderStalls() {
+		SSOUser user = new SSOUser("demo");
+		user.setRefreshToken("the-refresh");
+		server.enqueue(new MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE));
+		long start = System.nanoTime();
+
+		String url = provider.getLogoutRedirectUrl(user, null);
+
+		assertThat(url).doesNotContain("id_token_hint");
+		assertThat(Duration.ofNanos(System.nanoTime() - start)).isLessThan(Duration.ofSeconds(8));
 	}
 
 	// Wanting the hint and being able to revoke are independent: an end session endpoint is enough for the hint

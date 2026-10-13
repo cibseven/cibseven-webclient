@@ -89,7 +89,8 @@ export function handleAxiosError(router, root, error) {
         console && console.info('Prolonged token')
         if (sessionStorage.getItem('token')) sessionStorage.setItem('token', res.data.params[0])
         else if (localStorage.getItem('token')) localStorage.setItem('token', res.data.params[0])
-        axios.defaults.headers.common.authorization = root.user.authToken = res.data.params[0]
+        axios.defaults.headers.common.authorization = res.data.params[0]
+        if (root.user) root.user.authToken = res.data.params[0] // not there once the logout has cleared it
         // Repeat last request
         error.config.headers.authorization = res.data.params[0]
         return axios.request(error.config)

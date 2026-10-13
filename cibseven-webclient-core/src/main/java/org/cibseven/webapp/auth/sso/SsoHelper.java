@@ -40,6 +40,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientResponseException;
@@ -157,6 +158,15 @@ public class SsoHelper {
 	}
 	
 	public TokenResponse refreshToken(String refreshToken) {
+		return refresh(refreshToken, new RestTemplate());
+	}
+
+	/** For the logout, which must not wait for ever on an identity provider that does not answer. */
+	public TokenResponse refreshTokenForLogout(String refreshToken) {
+		return refresh(refreshToken, quickTemplate());
+	}
+
+	private TokenResponse refresh(String refreshToken, RestTemplate template) {
 		
 		MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 		params.add("client_id", clientId);
@@ -165,7 +175,6 @@ public class SsoHelper {
 		params.add("refresh_token", refreshToken);
 		try {
 			HttpEntity<MultiValueMap<String, String>> tokenRequest = new HttpEntity<>(params, toMultiValueMap(formUrlEncodedHeader));
-			RestTemplate template = new RestTemplate();
 			return template.postForObject(tokenEndpoint, tokenRequest, TokenResponse.class);
 		} catch (RestClientResponseException e) {
 			throw new AuthenticationException(e.getResponseBodyAsString());
@@ -179,6 +188,17 @@ public class SsoHelper {
 			params.add("client_assertion_type", ASSERTION_TYPE);
 			params.add("client_assertion", assertionProvider.getAssertion());
 		}
+	}
+
+	// The logout is waited for by the user, so its calls to the identity provider are bounded
+	private static final int LOGOUT_CONNECT_TIMEOUT_MS = 2000;
+	private static final int LOGOUT_READ_TIMEOUT_MS = 3000;
+
+	private static RestTemplate quickTemplate() {
+		SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+		factory.setConnectTimeout(LOGOUT_CONNECT_TIMEOUT_MS);
+		factory.setReadTimeout(LOGOUT_READ_TIMEOUT_MS);
+		return new RestTemplate(factory);
 	}
 
 	public boolean isEndSessionConfigured() {
@@ -206,7 +226,7 @@ public class SsoHelper {
 			params.add("token", token);
 			params.add("token_type_hint", tokenTypeHint);
 			HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, toMultiValueMap(formUrlEncodedHeader));
-			new RestTemplate().postForLocation(revocationEndpoint, request);
+			quickTemplate().postForLocation(revocationEndpoint, request);
 			log.info("Revoked {} at {}", tokenTypeHint, revocationEndpoint);
 			return true;
 		} catch (RuntimeException e) {

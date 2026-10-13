@@ -14,20 +14,34 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount } from '@vue/test-utils'
+import { nextTick } from 'vue'
 import LoggedOutView from '@/components/login/LoggedOutView.vue'
 import { LOGGED_OUT_KEY } from '@/constants.js'
+import { logoutState } from '@/utils/logoutState.js'
 
 describe('LoggedOutView', () => {
   const push = vi.fn()
-  const mountView = (config = {}) => mount(LoggedOutView, {
-    global: { mocks: { $t: key => key, $router: { push }, config } }
-  })
+  let wrappers = []
+  const mountView = (config = {}) => {
+    const wrapper = mount(LoggedOutView, {
+      global: { mocks: { $t: key => key, $router: { push }, config } }
+    })
+    wrappers.push(wrapper)
+    return wrapper
+  }
 
   beforeEach(() => {
     push.mockReset()
     sessionStorage.clear()
+    logoutState.busy = false
+  })
+
+  // The page listens on the window: a wrapper left mounted would answer the events of later tests
+  afterEach(() => {
+    wrappers.forEach(wrapper => { if (wrapper.exists()) wrapper.unmount() })
+    wrappers = []
   })
 
   // Same frame as the login page, so the user knows where they are
@@ -43,6 +57,7 @@ describe('LoggedOutView', () => {
     const wrapper = mount(LoggedOutView, {
       global: { mocks: { $t: key => key, $router: { push }, config: {}, loginImgPath: 'login.png' } }
     })
+    wrappers.push(wrapper)
 
     expect(wrapper.find('img').attributes('src')).toBe('login.png')
   })
@@ -59,5 +74,63 @@ describe('LoggedOutView', () => {
 
     expect(sessionStorage.getItem(LOGGED_OUT_KEY)).toBeNull()
     expect(push).toHaveBeenCalledWith({ name: 'login' })
+  })
+
+  describe('while the logout is under way', () => {
+    it('should show a spinner and no button', () => {
+      logoutState.busy = true
+      const wrapper = mountView()
+
+      expect(wrapper.find('[role=status]').text()).toContain('login.loggingOut')
+      expect(wrapper.find('button').exists()).toBe(false)
+      expect(wrapper.text()).not.toContain('login.loggedOutText')
+    })
+
+    it('should switch to the message when the logout is over', async () => {
+      logoutState.busy = true
+      const wrapper = mountView()
+
+      logoutState.busy = false
+      await nextTick()
+
+      expect(wrapper.find('[role=status]').exists()).toBe(false)
+      expect(wrapper.find('button').exists()).toBe(true)
+    })
+
+    // The browser froze the page while it left for the identity provider
+    it('should be over when the page is restored from the back/forward cache', async () => {
+      logoutState.busy = true
+      const wrapper = mountView()
+      const restored = new Event('pageshow')
+      restored.persisted = true
+
+      window.dispatchEvent(restored)
+      await nextTick()
+
+      expect(logoutState.busy).toBe(false)
+      expect(wrapper.find('button').exists()).toBe(true)
+    })
+
+    it('should stay busy when the page was not restored from the cache', () => {
+      logoutState.busy = true
+      mountView()
+      const shown = new Event('pageshow')
+      shown.persisted = false
+
+      window.dispatchEvent(shown)
+
+      expect(logoutState.busy).toBe(true)
+    })
+
+    it('should stop listening once it is gone', () => {
+      logoutState.busy = true
+      mountView().unmount()
+      const restored = new Event('pageshow')
+      restored.persisted = true
+
+      window.dispatchEvent(restored)
+
+      expect(logoutState.busy).toBe(true)
+    })
   })
 })

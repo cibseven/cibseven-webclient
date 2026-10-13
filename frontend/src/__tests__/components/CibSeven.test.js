@@ -19,6 +19,8 @@ import { shallowMount } from '@vue/test-utils'
 import CibSeven from '@/components/CibSeven.vue'
 import { AuthService } from '@/services.js'
 import { LOGGED_OUT_KEY } from '@/constants.js'
+import { logoutState } from '@/utils/logoutState.js'
+import { axios } from '@/globals.js'
 
 // Mock services
 vi.mock('@/services.js', () => ({
@@ -141,35 +143,17 @@ describe('CibSeven.vue', () => {
       expect(CibSeven.methods.isMenuItemActive.call(mockThis, exactItem)).toBe(false)
     })
 
-    it('should navigate to the start page before reloading on logout', async () => {
+    describe('logout', () => {
       const originalLocation = window.location
-      const reloadOrder = []
-      delete window.location
-      window.location = {
-        hash: '#/seven/auth/processes/123',
-        href: 'http://localhost/',
-        reload: vi.fn(() => reloadOrder.push(window.location.hash))
-      }
-      AuthService.logout.mockResolvedValue({})
-
-      await CibSeven.methods.logout.call({})
-
-      // reload must fire AFTER the hash moves to the start page, else login returns
-      // to the (now-stale) previous page
-      expect(reloadOrder).toEqual(['#/'])
-      expect(window.location.hash).toBe('#/')
-
-      window.location = originalLocation
-    })
-
-    describe('logout redirect', () => {
-      const originalLocation = window.location
-      const logoutThis = {}
+      let context
 
       beforeEach(() => {
         AuthService.logout.mockReset()
         sessionStorage.clear()
         localStorage.setItem('accessToken', 'a')
+        axios.defaults.headers.common.authorization = 'Bearer old'
+        logoutState.busy = false
+        context = { $router: { replace: vi.fn().mockResolvedValue() }, $root: { user: { id: 'demo' } } }
         delete window.location
         window.location = { hash: '#/seven/auth/tasks', href: 'http://localhost/', reload: vi.fn() }
       })
@@ -177,37 +161,76 @@ describe('CibSeven.vue', () => {
       afterEach(() => {
         window.location = originalLocation
         localStorage.clear()
+        delete axios.defaults.headers.common.authorization
+      })
+
+      it('should show the logged-out page at once, before the backend is asked', async () => {
+        AuthService.logout.mockResolvedValue({})
+
+        await CibSeven.methods.logout.call(context)
+
+        expect(context.$router.replace).toHaveBeenCalledWith({ name: 'loggedOut' })
+        expect(context.$router.replace.mock.invocationCallOrder[0])
+          .toBeLessThan(AuthService.logout.mock.invocationCallOrder[0])
+      })
+
+      it('should still have the user and the token while the backend is asked', async () => {
+        let seen
+        AuthService.logout.mockImplementation(async () => {
+          seen = { busy: logoutState.busy, user: context.$root.user, header: axios.defaults.headers.common.authorization }
+          return {}
+        })
+
+        await CibSeven.methods.logout.call(context)
+
+        expect(seen).toEqual({ busy: true, user: { id: 'demo' }, header: 'Bearer old' })
+      })
+
+      it('should clear the user, the header and the stored tokens afterwards', async () => {
+        AuthService.logout.mockResolvedValue({})
+
+        await CibSeven.methods.logout.call(context)
+
+        expect(context.$root.user).toBeNull()
+        expect(axios.defaults.headers.common.authorization).toBeUndefined()
+        expect(localStorage.getItem('accessToken')).toBeNull()
       })
 
       it('should go to the logout redirect URL the backend returns, instead of reloading', async () => {
         AuthService.logout.mockResolvedValue({ logoutRedirectUrl: 'https://idp/logout?client_id=c' })
 
-        await CibSeven.methods.logout.call(logoutThis)
+        await CibSeven.methods.logout.call(context)
 
         // asks the external system to return to the app, and marks that it should wait for the user
         expect(AuthService.logout).toHaveBeenCalledWith('http://localhost/')
         expect(sessionStorage.getItem(LOGGED_OUT_KEY)).toBe('1')
         expect(window.location.href).toBe('https://idp/logout?client_id=c')
         expect(window.location.reload).not.toHaveBeenCalled()
-        expect(localStorage.getItem('accessToken')).toBeNull()
+        // the spinner stays until the browser has left
+        expect(logoutState.busy).toBe(true)
       })
 
-      it('should reload to the start page when the backend names no redirect URL', async () => {
+      it('should navigate to the start page before reloading when the backend names no redirect URL', async () => {
+        const reloadOrder = []
+        window.location.reload = vi.fn(() => reloadOrder.push(window.location.hash))
         AuthService.logout.mockResolvedValue({})
 
-        await CibSeven.methods.logout.call(logoutThis)
+        await CibSeven.methods.logout.call(context)
 
+        // reload must fire AFTER the hash moves to the start page, else login returns
+        // to the (now-stale) previous page
+        expect(reloadOrder).toEqual(['#/'])
         expect(window.location.hash).toBe('#/')
-        expect(window.location.reload).toHaveBeenCalled()
         expect(sessionStorage.getItem(LOGGED_OUT_KEY)).toBeNull()
       })
 
       it('should still log out locally when the backend call fails', async () => {
         const error = vi.spyOn(console, 'error').mockImplementation(() => {})
-        AuthService.logout.mockRejectedValue(new Error('401'))
+        AuthService.logout.mockRejectedValue(new Error('timeout'))
 
-        await CibSeven.methods.logout.call(logoutThis)
+        await CibSeven.methods.logout.call(context)
 
+        expect(context.$root.user).toBeNull()
         expect(localStorage.getItem('accessToken')).toBeNull()
         expect(window.location.reload).toHaveBeenCalled()
         error.mockRestore()
@@ -216,8 +239,9 @@ describe('CibSeven.vue', () => {
       // No provider-specific switch: the backend decides whether there is anything to finish elsewhere
       it('should ask the backend whatever the configuration', async () => {
         AuthService.logout.mockResolvedValue({})
+        context.$root.config = { ssoActive: false }
 
-        await CibSeven.methods.logout.call({ $root: { config: { ssoActive: false } } })
+        await CibSeven.methods.logout.call(context)
 
         expect(AuthService.logout).toHaveBeenCalledWith('http://localhost/')
       })

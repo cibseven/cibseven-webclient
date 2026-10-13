@@ -180,6 +180,8 @@ import PluginSlot from '@/components/common/PluginSlot.vue'
 import { updateAppTitle } from '@/utils/init'
 import { AuthService } from '@/services.js'
 import { LOGGED_OUT_KEY } from '@/constants.js'
+import { logoutState } from '@/utils/logoutState.js'
+import { axios } from '@/globals.js'
 
 export default {
   name: 'CibSeven',
@@ -446,10 +448,14 @@ export default {
       }
     },
     logout: async function() {
+      // Show the logged-out page at once, as "signing out": the user sees a reaction to the click, and
+      // the authenticated views are gone before the user is cleared below. Replaced, so that going
+      // back does not return to a page that shows nothing but a spinner.
+      logoutState.busy = true
+      await this.$router.replace({ name: 'loggedOut' })
       // The backend ends the session on its side (e.g. revokes tokens) and may name an external
       // URL to finish the logout at, such as an identity provider. Must run before the cleanup
-      // below, which drops the token from storage (axios keeps sending it from its defaults
-      // until the reload).
+      // below, which drops the token the request is sent with.
       let logoutRedirectUrl
       try {
         // The external system returns the browser to the app, without hash or query
@@ -459,6 +465,10 @@ export default {
         // Never block the local logout on the backend or an external system failing
         console.error('Logout at the backend failed', error)
       }
+      // Only the logged-out page is left, which is like the login page: nothing here needs the user,
+      // and a page the browser restores later is not left looking logged in
+      this.$root.user = null
+      delete axios.defaults.headers.common.authorization
       //Remove some storage variables when logout
       //https://helpdesk.cib.de/browse/BPM4CIB-3691
       localStorage.removeItem('accessToken')
@@ -469,6 +479,7 @@ export default {
       if (logoutRedirectUrl) {
         // The external system (e.g. OIDC RP-Initiated Logout) ends its session and sends the browser
         // back. The marker makes the app show the logged-out page rather than log in again on its own.
+        // The spinner stays until the browser has left.
         sessionStorage.setItem(LOGGED_OUT_KEY, '1')
         window.location.href = logoutRedirectUrl
         return

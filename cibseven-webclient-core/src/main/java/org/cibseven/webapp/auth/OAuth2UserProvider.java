@@ -292,7 +292,7 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> implements Lo
 		String refreshToken = oauthUser.getRefreshToken();
 		if (refreshToken == null || refreshToken.isBlank()) return null;
 		try {
-			TokenResponse tokens = ssoHelper.refreshToken(refreshToken);
+			TokenResponse tokens = ssoHelper.refreshTokenForLogout(refreshToken);
 			return tokens == null ? null : tokens.getId_token();
 		} catch (RuntimeException e) {
 			log.warn("Could not get an ID token for the end session request: {}", e.getMessage());

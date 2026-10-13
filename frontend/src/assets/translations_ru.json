@@ -18,6 +18,7 @@
 		"productName": "CIB seven",
 		"productSlogan": "Платформа для управления процессами",
 		"loggedOutText": "Вы успешно вышли из системы.",
+		"loggingOut": "Выход из системы…",
 		"loggedOutAgain": "Войти снова",
 		"username": "Имя пользователя",
 		"password": "Пароль",

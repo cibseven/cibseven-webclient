@@ -26,6 +26,7 @@ import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Map;
@@ -36,12 +37,14 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.web.client.ResourceAccessException;
 
 import io.jsonwebtoken.Jwts;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.QueueDispatcher;
 import okhttp3.mockwebserver.RecordedRequest;
+import okhttp3.mockwebserver.SocketPolicy;
 
 /**
  * Drives {@link SsoHelper} - and through its constructor {@link KeyResolver} - against a stand-in
@@ -556,5 +559,39 @@ public class SsoHelperTest {
 		SsoHelper helper = helper();
 
 		assertThat(helper.buildEndSessionUrl("the.id.token", "https://app.example")).isNull();
+	}
+
+	// ---------- logout: a provider that stalls ----------
+
+	@Test
+	void revokeToken_givesUpOnAProviderThatStalls() throws Exception {
+		SsoHelper helper = logoutHelper();
+		server.enqueue(new MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE));
+		long start = System.nanoTime();
+
+		assertThat(helper.revokeToken("the-refresh", "refresh_token")).isFalse();
+
+		assertThat(Duration.ofNanos(System.nanoTime() - start)).isLessThan(Duration.ofSeconds(8));
+	}
+
+	@Test
+	void refreshTokenForLogout_givesUpOnAProviderThatStalls() throws Exception {
+		SsoHelper helper = logoutHelper();
+		server.enqueue(new MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE));
+		long start = System.nanoTime();
+
+		assertThatThrownBy(() -> helper.refreshTokenForLogout("the-refresh")).isInstanceOf(ResourceAccessException.class);
+
+		assertThat(Duration.ofNanos(System.nanoTime() - start)).isLessThan(Duration.ofSeconds(8));
+	}
+
+	@Test
+	void refreshTokenForLogout_asksLikeTheRegularRefresh() throws Exception {
+		SsoHelper helper = logoutHelper();
+		enqueueJson("{\"access_token\":\"a\",\"id_token\":\"the.id.token\"}");
+
+		assertThat(helper.refreshTokenForLogout("the-refresh").getId_token()).isEqualTo("the.id.token");
+
+		assertThat(server.takeRequest().getBody().readUtf8()).contains("grant_type=refresh_token").contains("refresh_token=the-refresh");
 	}
 }
