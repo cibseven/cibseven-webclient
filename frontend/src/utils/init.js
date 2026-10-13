@@ -115,6 +115,10 @@ export function handleAxiosError(router, root, error) {
         root.$refs.error.show(res.data)
       //root.$refs.report.show(res.data)
       return Promise.reject(error)
+    } else if (res.data?.type === 'EngineRestClientException') {
+      // The engine rejected the request (4xx); its status is forwarded, so it no longer arrives as 500
+      if (!isDeployedForm) root.$refs.error.show(res.data)
+      return Promise.reject(error)
     } else {
       //root.$refs.error.show(res.data || res.statusText)
       return Promise.reject(error)

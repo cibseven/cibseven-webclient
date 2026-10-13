@@ -21,12 +21,14 @@ import java.util.Arrays;
 import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.exception.ApplicationException;
+import org.cibseven.webapp.exception.EngineRestClientException;
 import org.cibseven.webapp.exception.ErrorMessage;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.rest.BaseService;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -55,6 +57,13 @@ public class ExceptionConverter {
 	public ErrorMessage application(ApplicationException x) {
 		log.info("Application error occured " + Arrays.toString(x.getData()), x);
 		return new ErrorMessage(x.getClass().getSimpleName(), x.getData());
+	}
+	
+	@ExceptionHandler
+	public ResponseEntity<ErrorMessage> engineRestClientError(EngineRestClientException x) {
+		log.info("Engine-rest rejected the request with status " + x.getStatus(), x);
+		return ResponseEntity.status(x.getStatus())
+			.body(new ErrorMessage(x.getClass().getSimpleName(), new Object[] { x.getMessage() }));
 	}
 	
 	@ExceptionHandler @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)

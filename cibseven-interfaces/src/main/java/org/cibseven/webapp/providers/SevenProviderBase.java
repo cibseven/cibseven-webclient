@@ -34,6 +34,7 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.BatchOperationException;
 import org.cibseven.webapp.exception.DmnTransformationException;
+import org.cibseven.webapp.exception.EngineRestClientException;
 import org.cibseven.webapp.exception.ExistingGroupRequestException;
 import org.cibseven.webapp.exception.ExistingUserRequestException;
 import org.cibseven.webapp.exception.ExpressionEvaluationException;
@@ -497,8 +498,15 @@ public abstract class SevenProviderBase {
 		} else if (technicalErrorMsg.matches(".*Unable to transform DMN resource.*")) {
 			wrapperException = new DmnTransformationException(cause);
 		}
+		if (wrapperException == null && cause.getStatusCode().is4xxClientError()
+				&& cause.getStatusCode().value() != 401) {
+			// the engine rejected the request itself - forward its client error instead of a 500.
+			// A 401 stays a SystemException: it means the webclient's own engine credentials were
+			// refused, and the frontend would read a 401 as its session having expired.
+			wrapperException = new EngineRestClientException(cause);
+		}
 		if (wrapperException == null) wrapperException = new SystemException(technicalErrorMsg, cause);
-		if (wrapperException instanceof NoObjectFoundException) {
+		if (wrapperException instanceof NoObjectFoundException || wrapperException instanceof EngineRestClientException) {
 			log.debug("Exception when calling engine-rest:", wrapperException);	
 		} else if (!(wrapperException instanceof MissingVariableException)){
 			log.error("Exception when calling engine-rest:", wrapperException);	

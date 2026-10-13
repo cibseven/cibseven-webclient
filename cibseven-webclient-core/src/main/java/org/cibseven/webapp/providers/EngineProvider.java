@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.cibseven.webapp.config.EngineRestProperties;
 import org.cibseven.webapp.config.EngineRestSource;
+import org.cibseven.webapp.exception.EngineRestClientException;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Engine;
@@ -179,7 +180,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 		String url = getNamedEngineRestUrl(engineId) + "/configuration";
 		try {
 			return doGet(url, EngineConfiguration.class, null, false).getBody();
-		} catch (SystemException e) {
+		} catch (SystemException | EngineRestClientException e) {
 			if (e.getCause() instanceof HttpClientErrorException.NotFound ||
 				// for CIB seven before 2.2.0, with auth enabled, the endpoint returns 401 instead of 404 when not found
 				e.getCause() instanceof HttpClientErrorException.Unauthorized) {

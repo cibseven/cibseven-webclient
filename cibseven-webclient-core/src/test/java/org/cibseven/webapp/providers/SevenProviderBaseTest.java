@@ -23,12 +23,15 @@ import static org.mockito.Mockito.when;
 import java.nio.charset.StandardCharsets;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.exception.EngineRestClientException;
 import org.cibseven.webapp.exception.InvalidValueHistoryTimeToLive;
+import org.cibseven.webapp.exception.PasswordPolicyException;
 import org.cibseven.webapp.exception.SystemException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
 /**
@@ -78,8 +81,51 @@ public class SevenProviderBaseTest {
         assertEquals(SystemException.class, wrapped.getClass());
     }
 
+    /**
+     * CIB7-2158: an unmapped client error from the engine is the caller's mistake and keeps its
+     * status, so the webclient can answer with the same 4xx instead of a 500.
+     */
+    @Test
+    public void wrapException_unmappedClientErrorKeepsItsStatus() {
+        RuntimeException wrapped = SevenProviderBase.wrapException(
+            clientError(HttpStatus.BAD_REQUEST, "{\"type\":\"InvalidRequestException\",\"message\":\"bad date\"}"), null);
+
+        assertEquals(EngineRestClientException.class, wrapped.getClass());
+        assertEquals(400, ((EngineRestClientException) wrapped).getStatus());
+        assertEquals("bad date", wrapped.getMessage());
+    }
+
+    @Test
+    public void wrapException_unmappedNotFoundKeepsItsStatus() {
+        RuntimeException wrapped = SevenProviderBase.wrapException(clientError(HttpStatus.NOT_FOUND, ""), null);
+
+        assertEquals(404, ((EngineRestClientException) wrapped).getStatus());
+    }
+
+    /** A specific mapping still wins over the generic client error. */
+    @Test
+    public void wrapException_mappedClientErrorKeepsItsSpecificException() {
+        RuntimeException wrapped = SevenProviderBase.wrapException(
+            clientError(HttpStatus.BAD_REQUEST, "Password does not match policy"), null);
+
+        assertEquals(PasswordPolicyException.class, wrapped.getClass());
+    }
+
+    /** A 401 means the webclient's own engine credentials were refused - a server-side problem. */
+    @Test
+    public void wrapException_unauthorizedStaysASystemException() {
+        RuntimeException wrapped = SevenProviderBase.wrapException(clientError(HttpStatus.UNAUTHORIZED, ""), null);
+
+        assertEquals(SystemException.class, wrapped.getClass());
+    }
+
     private static HttpServerErrorException serverError(String body) {
         return HttpServerErrorException.create(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error",
+            HttpHeaders.EMPTY, body.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
+    }
+
+    private static HttpClientErrorException clientError(HttpStatus status, String body) {
+        return HttpClientErrorException.create(status, status.getReasonPhrase(),
             HttpHeaders.EMPTY, body.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
     }
 
