@@ -15,122 +15,198 @@
  *  limitations under the License.
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import LoggedOutView from '@/components/login/LoggedOutView.vue'
+import { AuthService } from '@/services.js'
+import { axios } from '@/globals.js'
 import { LOGGED_OUT_KEY } from '@/constants.js'
-import { logoutState } from '@/utils/logoutState.js'
+
+vi.mock('@/services.js', () => ({ AuthService: { logout: vi.fn() } }))
 
 describe('LoggedOutView', () => {
   const push = vi.fn()
+  const originalLocation = window.location
   let wrappers = []
-  const mountView = (config = {}) => {
+  const mountView = (mocks = {}) => {
     const wrapper = mount(LoggedOutView, {
-      global: { mocks: { $t: key => key, $router: { push }, config } }
+      global: { mocks: { $t: key => key, $router: { push }, config: {}, ...mocks } }
     })
     wrappers.push(wrapper)
     return wrapper
   }
+  // With the session still loaded: reached from inside the application, which is the logout itself
+  const mountSignedIn = (mocks = {}) => mountView({ user: { id: 'demo' }, ...mocks })
+  const pageshow = (persisted) => {
+    const event = new Event('pageshow')
+    event.persisted = persisted
+    window.dispatchEvent(event)
+  }
 
   beforeEach(() => {
     push.mockReset()
+    AuthService.logout.mockReset()
     sessionStorage.clear()
-    logoutState.busy = false
+    localStorage.setItem('accessToken', 'a')
+    axios.defaults.headers.common.authorization = 'Bearer old'
+    delete window.location
+    window.location = { hash: '#/seven/logged-out', href: 'http://localhost/', reload: vi.fn() }
   })
 
   // The page listens on the window: a wrapper left mounted would answer the events of later tests
   afterEach(() => {
     wrappers.forEach(wrapper => { if (wrapper.exists()) wrapper.unmount() })
     wrappers = []
+    window.location = originalLocation
+    localStorage.clear()
+    delete axios.defaults.headers.common.authorization
   })
 
-  // Same frame as the login page, so the user knows where they are
-  it('should tell the user they are logged out under the product name and slogan', () => {
-    const wrapper = mountView({ productNamePageTitle: 'My Flow' })
+  describe('without a session (the identity provider sent the browser back, a reload, going back)', () => {
+    // Same frame as the login page, so the user knows where they are
+    it('should tell the user they are logged out under the product name and slogan', () => {
+      const wrapper = mountView({ config: { productNamePageTitle: 'My Flow' } })
 
-    expect(wrapper.find('h1').text()).toBe('My Flow')
-    expect(wrapper.find('h2').text()).toBe('login.productSlogan')
-    expect(wrapper.text()).toContain('login.loggedOutText')
-  })
-
-  it('should show the login page image like the login page does', () => {
-    const wrapper = mount(LoggedOutView, {
-      global: { mocks: { $t: key => key, $router: { push }, config: {}, loginImgPath: 'login.png' } }
+      expect(wrapper.find('h1').text()).toBe('My Flow')
+      expect(wrapper.find('h2').text()).toBe('login.productSlogan')
+      expect(wrapper.text()).toContain('login.loggedOutText')
     })
-    wrappers.push(wrapper)
 
-    expect(wrapper.find('img').attributes('src')).toBe('login.png')
-  })
+    it('should show the login page image like the login page does', () => {
+      expect(mountView({ loginImgPath: 'login.png' }).find('img').attributes('src')).toBe('login.png')
+    })
 
-  it('should fall back to the translated product name', () => {
-    expect(mountView().find('h1').text()).toBe('login.productName')
-  })
+    it('should fall back to the translated product name', () => {
+      expect(mountView().find('h1').text()).toBe('login.productName')
+    })
 
-  it('should clear the logged-out marker and go to the login on the button', async () => {
-    sessionStorage.setItem(LOGGED_OUT_KEY, '1')
-    const wrapper = mountView()
-
-    await wrapper.find('button').trigger('click')
-
-    expect(sessionStorage.getItem(LOGGED_OUT_KEY)).toBeNull()
-    expect(push).toHaveBeenCalledWith({ name: 'login' })
-  })
-
-  describe('while the logout is under way', () => {
-    it('should show a spinner and no button', () => {
-      logoutState.busy = true
+    it('should clear the logged-out marker and go to the login on the button', async () => {
+      sessionStorage.setItem(LOGGED_OUT_KEY, '1')
       const wrapper = mountView()
+
+      await wrapper.find('button').trigger('click')
+
+      expect(sessionStorage.getItem(LOGGED_OUT_KEY)).toBeNull()
+      expect(push).toHaveBeenCalledWith({ name: 'login' })
+    })
+
+    it('should not ask the backend or touch anything, nobody is signed in', async () => {
+      mountView()
+      await flushPromises()
+
+      expect(AuthService.logout).not.toHaveBeenCalled()
+      expect(axios.defaults.headers.common.authorization).toBe('Bearer old')
+      expect(window.location.reload).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('with a session (the logout)', () => {
+    it('should show the spinner, not the message, while the backend is asked', () => {
+      AuthService.logout.mockReturnValue(new Promise(() => {}))
+      const wrapper = mountSignedIn()
 
       expect(wrapper.find('[role=status]').text()).toContain('login.loggingOut')
       expect(wrapper.find('button').exists()).toBe(false)
       expect(wrapper.text()).not.toContain('login.loggedOutText')
     })
 
-    it('should switch to the message when the logout is over', async () => {
-      logoutState.busy = true
-      const wrapper = mountView()
+    it('should ask the backend to return to the app, with the token still set', async () => {
+      let headerWhenAsked
+      AuthService.logout.mockImplementation(async () => {
+        headerWhenAsked = axios.defaults.headers.common.authorization
+        return {}
+      })
 
-      logoutState.busy = false
+      mountSignedIn()
+      await flushPromises()
+
+      expect(AuthService.logout).toHaveBeenCalledWith('http://localhost/')
+      expect(headerWhenAsked).toBe('Bearer old')
+    })
+
+    it('should clear the user, the header and the stored tokens afterwards', async () => {
+      AuthService.logout.mockResolvedValue({})
+      const wrapper = mountSignedIn()
+
+      await flushPromises()
+
+      expect(wrapper.vm.$root.user).toBeNull()
+      expect(axios.defaults.headers.common.authorization).toBeUndefined()
+      expect(localStorage.getItem('accessToken')).toBeNull()
+    })
+
+    it('should go to the logout redirect URL the backend returns, instead of reloading', async () => {
+      AuthService.logout.mockResolvedValue({ logoutRedirectUrl: 'https://idp/logout?client_id=c' })
+      const wrapper = mountSignedIn()
+
+      await flushPromises()
+
+      // the marker makes the app show this page again when the identity provider sends the browser back
+      expect(sessionStorage.getItem(LOGGED_OUT_KEY)).toBe('1')
+      expect(window.location.href).toBe('https://idp/logout?client_id=c')
+      expect(window.location.reload).not.toHaveBeenCalled()
+      // the spinner stays until the browser has left
+      expect(wrapper.find('[role=status]').exists()).toBe(true)
+    })
+
+    it('should navigate to the start page before reloading when the backend names no redirect URL', async () => {
+      const reloadOrder = []
+      window.location.reload = vi.fn(() => reloadOrder.push(window.location.hash))
+      AuthService.logout.mockResolvedValue({})
+
+      mountSignedIn()
+      await flushPromises()
+
+      // reload must fire AFTER the hash moves to the start page, else login returns
+      // to the (now-stale) previous page
+      expect(reloadOrder).toEqual(['#/'])
+      expect(window.location.hash).toBe('#/')
+      expect(sessionStorage.getItem(LOGGED_OUT_KEY)).toBeNull()
+    })
+
+    it('should still log out locally when the backend call fails', async () => {
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+      AuthService.logout.mockRejectedValue(new Error('timeout'))
+      const wrapper = mountSignedIn()
+
+      await flushPromises()
+
+      expect(wrapper.vm.$root.user).toBeNull()
+      expect(localStorage.getItem('accessToken')).toBeNull()
+      expect(window.location.reload).toHaveBeenCalled()
+      error.mockRestore()
+    })
+
+    // The browser froze the page while it left for the identity provider
+    it('should be over when the page is restored from the back/forward cache', async () => {
+      AuthService.logout.mockReturnValue(new Promise(() => {}))
+      const wrapper = mountSignedIn()
+
+      pageshow(true)
       await nextTick()
 
       expect(wrapper.find('[role=status]').exists()).toBe(false)
       expect(wrapper.find('button').exists()).toBe(true)
     })
 
-    // The browser froze the page while it left for the identity provider
-    it('should be over when the page is restored from the back/forward cache', async () => {
-      logoutState.busy = true
-      const wrapper = mountView()
-      const restored = new Event('pageshow')
-      restored.persisted = true
+    it('should stay busy when the page was not restored from the cache', async () => {
+      AuthService.logout.mockReturnValue(new Promise(() => {}))
+      const wrapper = mountSignedIn()
 
-      window.dispatchEvent(restored)
+      pageshow(false)
       await nextTick()
 
-      expect(logoutState.busy).toBe(false)
-      expect(wrapper.find('button').exists()).toBe(true)
-    })
-
-    it('should stay busy when the page was not restored from the cache', () => {
-      logoutState.busy = true
-      mountView()
-      const shown = new Event('pageshow')
-      shown.persisted = false
-
-      window.dispatchEvent(shown)
-
-      expect(logoutState.busy).toBe(true)
+      expect(wrapper.find('[role=status]').exists()).toBe(true)
     })
 
     it('should stop listening once it is gone', () => {
-      logoutState.busy = true
-      mountView().unmount()
-      const restored = new Event('pageshow')
-      restored.persisted = true
+      AuthService.logout.mockReturnValue(new Promise(() => {}))
+      const wrapper = mountSignedIn()
+      wrapper.unmount()
 
-      window.dispatchEvent(restored)
+      pageshow(true)
 
-      expect(logoutState.busy).toBe(true)
+      expect(wrapper.vm.signingOut).toBe(true)
     })
   })
 })
