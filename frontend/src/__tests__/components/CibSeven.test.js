@@ -140,12 +140,12 @@ describe('CibSeven.vue', () => {
 
     // The logged-out page does the logout: the header's logout only hands over to it
     describe('logout', () => {
-      it('should hand over to the logged-out page, replacing the current page', () => {
-        const replace = vi.fn()
+      it('should hand over to the logged-out page', () => {
+        const push = vi.fn()
 
-        CibSeven.methods.logout.call({ $router: { replace } })
+        CibSeven.methods.logout.call({ $router: { push } })
 
-        expect(replace).toHaveBeenCalledWith({ name: 'loggedOut' })
+        expect(push).toHaveBeenCalledWith({ name: 'loggedOut' })
       })
     })
   })

@@ -65,18 +65,9 @@ export default {
     },
   },
   mounted: function() {
-    window.addEventListener('pageshow', this.onPageShow)
     if (this.signingOut) this.signOut()
   },
-  beforeUnmount: function() {
-    window.removeEventListener('pageshow', this.onPageShow)
-  },
   methods: {
-    // Restored from the back/forward cache after the browser left for the identity provider: the
-    // logout is over, whatever state the page was frozen in
-    onPageShow: function(event) {
-      if (event.persisted) this.signingOut = false
-    },
     signOut: async function() {
       // The backend ends the session on its side (e.g. revokes tokens) and may name an external
       // URL to finish the logout at, such as an identity provider. Must run before the cleanup
@@ -91,7 +82,7 @@ export default {
         console.error('Logout at the backend failed', error)
       }
       // Nothing on this page needs the user, it is like the login page; and a page the browser
-      // restores later is not left looking logged in
+      // restores from its cache later is not left looking logged in
       this.$root.user = null
       delete axios.defaults.headers.common.authorization
       //Remove some storage variables when logout

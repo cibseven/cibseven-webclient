@@ -444,9 +444,8 @@ export default {
       }
     },
     logout: function() {
-      // The logged-out page signs the user out, while it shows what is going on. Replaced, so that
-      // going back does not return to a page that is only a spinner.
-      this.$router.replace({ name: 'loggedOut' })
+      // The logged-out page signs the user out, while it shows what is going on
+      this.$router.push({ name: 'loggedOut' })
     },
     openStartProcess: function() {
       this.$eventBus.emit('openStartProcess')

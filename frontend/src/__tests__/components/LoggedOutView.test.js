@@ -16,7 +16,6 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
-import { nextTick } from 'vue'
 import LoggedOutView from '@/components/login/LoggedOutView.vue'
 import { AuthService } from '@/services.js'
 import { axios } from '@/globals.js'
@@ -37,11 +36,6 @@ describe('LoggedOutView', () => {
   }
   // With the session still loaded: reached from inside the application, which is the logout itself
   const mountSignedIn = (mocks = {}) => mountView({ user: { id: 'demo' }, ...mocks })
-  const pageshow = (persisted) => {
-    const event = new Event('pageshow')
-    event.persisted = persisted
-    window.dispatchEvent(event)
-  }
 
   beforeEach(() => {
     push.mockReset()
@@ -53,7 +47,7 @@ describe('LoggedOutView', () => {
     window.location = { hash: '#/seven/logged-out', href: 'http://localhost/', reload: vi.fn() }
   })
 
-  // The page listens on the window: a wrapper left mounted would answer the events of later tests
+  // Unmount what a test mounted
   afterEach(() => {
     wrappers.forEach(wrapper => { if (wrapper.exists()) wrapper.unmount() })
     wrappers = []
@@ -175,38 +169,6 @@ describe('LoggedOutView', () => {
       expect(localStorage.getItem('accessToken')).toBeNull()
       expect(window.location.reload).toHaveBeenCalled()
       error.mockRestore()
-    })
-
-    // The browser froze the page while it left for the identity provider
-    it('should be over when the page is restored from the back/forward cache', async () => {
-      AuthService.logout.mockReturnValue(new Promise(() => {}))
-      const wrapper = mountSignedIn()
-
-      pageshow(true)
-      await nextTick()
-
-      expect(wrapper.find('[role=status]').exists()).toBe(false)
-      expect(wrapper.find('button').exists()).toBe(true)
-    })
-
-    it('should stay busy when the page was not restored from the cache', async () => {
-      AuthService.logout.mockReturnValue(new Promise(() => {}))
-      const wrapper = mountSignedIn()
-
-      pageshow(false)
-      await nextTick()
-
-      expect(wrapper.find('[role=status]').exists()).toBe(true)
-    })
-
-    it('should stop listening once it is gone', () => {
-      AuthService.logout.mockReturnValue(new Promise(() => {}))
-      const wrapper = mountSignedIn()
-      wrapper.unmount()
-
-      pageshow(true)
-
-      expect(wrapper.vm.signingOut).toBe(true)
     })
   })
 })
