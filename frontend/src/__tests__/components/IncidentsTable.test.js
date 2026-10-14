@@ -28,47 +28,26 @@ vi.mock('@/services.js', () => ({
 }))
 
 describe('IncidentsTable - filtering by the selected activity', () => {
-  // The engine leaves failedActivityId empty in the incidents of external tasks, so selecting an
-  // external task in the diagram emptied the list. Everything else keeps matching by failedActivityId.
-  describe('activityFilterKey', () => {
-    const key = (selectedActivityId, externalTaskActivityIds) =>
-      IncidentsTable.computed.activityFilterKey.call({ selectedActivityId, externalTaskActivityIds })
-
-    it('is activityId for an external task', () => {
-      expect(key('charge', ['charge', 'ship'])).toBe('activityId')
-    })
-
-    it.each([
-      ['a job activity', 'approve', ['charge']],
-      ['a diagram without external tasks', 'approve', []],
-    ])('is failedActivityId for %s', (_, selectedActivityId, externalTaskActivityIds) => {
-      expect(key(selectedActivityId, externalTaskActivityIds)).toBe('failedActivityId')
-    })
+  const context = (overrides = {}) => ({
+    firstResult: 0,
+    maxResults: 50,
+    currentSortBy: 'incidentType',
+    currentSortDesc: false,
+    freeText: '',
+    selectedActivityId: '',
+    externalTaskActivityIds: [],
+    isInstanceView: true,
+    incidents: [],
+    setIncidents: vi.fn(),
+    fetchCount: vi.fn(async () => 1),
+    fetch: vi.fn(async () => []),
+    ...overrides
   })
+  const sentParams = (vm) => vm.fetch.mock.calls[0][0]
 
   describe('loadIncidentsData', () => {
-    const context = (overrides = {}) => {
-      const vm = {
-        firstResult: 0,
-        maxResults: 50,
-        currentSortBy: 'incidentType',
-        currentSortDesc: false,
-        freeText: '',
-        selectedActivityId: '',
-        activityFilterKey: 'failedActivityId',
-        isInstanceView: true,
-        incidents: [],
-        setIncidents: vi.fn(),
-        fetchCount: vi.fn(async () => 1),
-        fetch: vi.fn(async () => []),
-        ...overrides
-      }
-      return vm
-    }
-    const sentParams = (vm) => vm.fetch.mock.calls[0][0]
-
     it('sends no activity filter when no activity is selected', async () => {
-      const vm = context()
+      const vm = context({ externalTaskActivityIds: ['charge'] })
 
       await IncidentsTable.methods.loadIncidentsData.call(vm, 'pi1', true)
 
@@ -77,8 +56,10 @@ describe('IncidentsTable - filtering by the selected activity', () => {
       })
     })
 
+    // The engine leaves failedActivityId empty in the incidents of external tasks, so selecting an
+    // external task in the diagram emptied the list. Everything else keeps matching by failedActivityId.
     it('filters by activityId when an external task is selected', async () => {
-      const vm = context({ selectedActivityId: 'charge', activityFilterKey: 'activityId' })
+      const vm = context({ selectedActivityId: 'charge', externalTaskActivityIds: ['charge', 'ship'] })
 
       await IncidentsTable.methods.loadIncidentsData.call(vm, 'pi1', true)
 
@@ -88,13 +69,17 @@ describe('IncidentsTable - filtering by the selected activity', () => {
       expect(vm.fetchCount.mock.calls[0][0]).toMatchObject({ activityId: 'charge' })
     })
 
-    it('filters by failedActivityId when any other activity is selected', async () => {
-      const vm = context({ selectedActivityId: 'approve' })
+    it.each([
+      ['an activity that is not an external task', ['charge']],
+      ['a diagram without external tasks', []],
+    ])('filters by failedActivityId for %s', async (_, externalTaskActivityIds) => {
+      const vm = context({ selectedActivityId: 'approve', externalTaskActivityIds, isInstanceView: false })
 
       await IncidentsTable.methods.loadIncidentsData.call(vm, 'def1', false)
 
       expect(sentParams(vm)).toMatchObject({ failedActivityId: 'approve', processDefinitionId: 'def1' })
       expect(sentParams(vm)).not.toHaveProperty('activityId')
+      expect(vm.fetchCount.mock.calls[0][0]).toMatchObject({ failedActivityId: 'approve' })
     })
   })
 })

@@ -253,10 +253,6 @@ export default {
     ...mapGetters('incidents', ['incidents']),
     ...mapGetters('instances', ['instances']),
     ...mapGetters(['selectedActivityId', 'externalTaskActivityIds']),
-    activityFilterKey() {
-      // the engine leaves failedActivityId empty in external task incidents, so those are matched by activityId
-      return this.externalTaskActivityIds.includes(this.selectedActivityId) ? 'activityId' : 'failedActivityId'
-    },
     isHistoricView() {
       switch (this.$root.config.camundaHistoryLevel) {
         case 'none':
@@ -363,13 +359,17 @@ export default {
     async loadIncidentsData(id, isInstance = true) {
       this.loading = true
 
+      // the engine leaves failedActivityId empty in external task incidents, so those are matched by activityId
+      const isExternalTask = this.externalTaskActivityIds.includes(this.selectedActivityId)
+
       const params = {
         firstResult: this.firstResult,
         maxResults: this.maxResults,
         sortBy: this.currentSortBy,
         sortOrder: this.currentSortDesc ? 'asc' : 'desc',
         ...(isInstance ? { processInstanceId: id } : { processDefinitionId: id }),
-        ...(this.selectedActivityId ? { [this.activityFilterKey]: this.selectedActivityId } : {} ),
+        ...(this.selectedActivityId && isExternalTask ? { activityId: this.selectedActivityId } : {} ),
+        ...(this.selectedActivityId && !isExternalTask ? { failedActivityId: this.selectedActivityId } : {} ),
         ...(this.freeText ? { incidentMessageLike: `%${this.freeText}%` } : {} ),
       }
 
