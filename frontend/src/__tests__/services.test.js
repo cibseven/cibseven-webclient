@@ -30,7 +30,7 @@ const {
   AdminService, JobService, JobDefinitionService, SystemService, HistoryService, IncidentService,
   AuthService, InfoService, FormsService, TemplateService, DecisionService, AnalyticsService,
   BatchService, TenantService, ExternalTaskService, DeploymentService, EngineService, SetupService,
-  getServicesBasePath, setServicesBasePath, createDocumentEndpointUrl
+  getServicesBasePath, setServicesBasePath, createDocumentEndpointUrl, joinArrayParams
 } = await import('@/services.js')
 
 const BASE = '/services/v1'
@@ -503,6 +503,30 @@ describe('DecisionService', () => {
     { name: 'getHistoricDecisionInstanceById', verb: 'get', call: () => DecisionService.getHistoricDecisionInstanceById('di1', { includeInputs: true }), args: [`${BASE}/decision/history/instances/di1`, { params: { includeInputs: true } }] },
     { name: 'deleteHistoricDecisionInstances', verb: 'post', call: () => DecisionService.deleteHistoricDecisionInstances({ ids: ['di1'] }), args: [`${BASE}/decision/history/instances/delete`, { ids: ['di1'] }] },
     { name: 'setHistoricDecisionInstanceRemovalTime', verb: 'post', call: () => DecisionService.setHistoricDecisionInstanceRemovalTime({ calculatedRemovalTime: true }), args: [`${BASE}/decision/history/instances/set-removal-time`, { calculatedRemovalTime: true }] }
+  ])
+})
+
+describe('joinArrayParams', () => {
+  it.each([
+    ['undefined', undefined, undefined],
+    ['null', null, null],
+    ['an empty object', {}, {}],
+    ['an empty array', { tenantIdIn: [] }, { tenantIdIn: '' }],
+    ['a single-value array', { decisionDefinitionKeyIn: ['invoice'] }, { decisionDefinitionKeyIn: 'invoice' }],
+    ['a multi-value array', { decisionDefinitionKeyIn: ['invoice', 'dish'] }, { decisionDefinitionKeyIn: 'invoice,dish' }],
+    ['mixed array and scalar values', { tenantIdIn: ['t1', 't2'], sortBy: 'evaluationTime' }, { tenantIdIn: 't1,t2', sortBy: 'evaluationTime' }],
+    ['numbers and booleans', { maxResults: 10, firstResult: 0, includeInputs: true }, { maxResults: 10, firstResult: 0, includeInputs: true }]
+  ])('should handle %s', (_, params, expected) => {
+    expect(joinArrayParams(params)).toEqual(expected)
+  })
+})
+
+describe('DecisionService historic instance list parameters', () => {
+  // axios would send an array as 'decisionDefinitionKeyIn[]=...', which the backend rejects (CIB7-1924)
+  itMatchesEndpoints([
+    { name: 'getHistoricDecisionInstances joins list values with commas', verb: 'get', call: () => DecisionService.getHistoricDecisionInstances({ decisionDefinitionKeyIn: ['invoice', 'dish'], maxResults: 10 }), args: [`${BASE}/decision/history/instances`, { params: { decisionDefinitionKeyIn: 'invoice,dish', maxResults: 10 } }] },
+    { name: 'getHistoricDecisionInstanceCount joins list values with commas', verb: 'get', call: () => DecisionService.getHistoricDecisionInstanceCount({ decisionDefinitionKeyIn: ['invoice'], tenantIdIn: ['t1', 't2'] }), args: [`${BASE}/decision/history/instances/count`, { params: { decisionDefinitionKeyIn: 'invoice', tenantIdIn: 't1,t2' } }] },
+    { name: 'getHistoricDecisionInstanceCount without params', verb: 'get', call: () => DecisionService.getHistoricDecisionInstanceCount(), args: [`${BASE}/decision/history/instances/count`, { params: undefined }] }
   ])
 })
 
