@@ -253,6 +253,8 @@ export default {
           this.$router.replace(path)
         }
         this.updateSelectedFilterTasksCountIfNeeded(false)
+      } else {
+        this.$emit('selected-filter', null)
       }
     },
     updateSelectedFilterTasksCountIfNeeded(newFilter) {

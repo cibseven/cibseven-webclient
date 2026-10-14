@@ -18,6 +18,7 @@ package org.cibseven.webapp.providers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Optional;
@@ -30,6 +31,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.ResponseEntity;
 
 public class TaskProviderTest {
 
@@ -114,6 +116,32 @@ public class TaskProviderTest {
 		assertThat(path).contains("processInstanceId=pi-1");
 	}
 
+	// ---------- rendered form ----------
+
+	@Test
+	void getRenderedForm_decodesUtf8WhenTheEngineDeclaresNoCharset() throws Exception {
+		// engine-rest answers application/xhtml+xml without a charset (CIB7-2204)
+		String form = "<form>\n  <label for=\"reason\">Begründung 姓名</label>\n</form>\n";
+		engine.enqueueBytes(form.getBytes(StandardCharsets.UTF_8), "application/xhtml+xml");
+
+		ResponseEntity<String> response = taskProvider.getRenderedForm("task-1", new HashMap<>(), user);
+
+		assertThat(response.getBody()).isEqualTo(form);
+		// the engine's Content-Length is passed on; the re-encoded body must fit it, or the form is cut off
+		assertThat(response.getHeaders().getContentLength()).isEqualTo(response.getBody().getBytes(StandardCharsets.UTF_8).length);
+		assertThat(engine.takePath()).startsWith("/task/task-1/rendered-form");
+	}
+
+	@Test
+	void getRenderedForm_honoursACharsetTheEngineDeclares() throws Exception {
+		String form = "<form><label>Begründung</label></form>";
+		engine.enqueueBytes(form.getBytes(StandardCharsets.ISO_8859_1), "application/xhtml+xml;charset=ISO-8859-1");
+
+		ResponseEntity<String> response = taskProvider.getRenderedForm("task-1", new HashMap<>(), user);
+
+		assertThat(response.getBody()).isEqualTo(form);
+	}
+
 	// ---------- assignment ----------
 
 	@Test
@@ -138,6 +166,38 @@ public class TaskProviderTest {
 		var request = engine.take();
 		assertThat(request.getPath()).endsWith("/task/task-1/unclaim");
 		assertThat(request.getBody().readUtf8()).isEqualTo("{}");
+	}
+
+	@Test
+	void claim_postsTheUserToTheEngine() throws Exception {
+		engine.enqueueJson("");
+
+		taskProvider.claim("task-1", "demo", user);
+
+		var request = engine.take();
+		assertThat(request.getPath()).endsWith("/task/task-1/claim");
+		assertThat(request.getBody().readUtf8()).contains("\"userId\":\"demo\"");
+	}
+
+	@Test
+	void claim_passesAMissingUserOnInsteadOfFailing() throws Exception {
+		engine.enqueueJson("");
+
+		// engine-rest accepts a null userId; failing here would turn a form's call into a 500
+		taskProvider.claim("task-1", null, user);
+
+		assertThat(engine.take().getBody().readUtf8()).contains("\"userId\":null");
+	}
+
+	@Test
+	void delegate_passesAMissingUserOnInsteadOfFailing() throws Exception {
+		engine.enqueueJson("");
+
+		taskProvider.delegate("task-1", null, user);
+
+		var request = engine.take();
+		assertThat(request.getPath()).endsWith("/task/task-1/delegate");
+		assertThat(request.getBody().readUtf8()).contains("\"userId\":null");
 	}
 
 	/**

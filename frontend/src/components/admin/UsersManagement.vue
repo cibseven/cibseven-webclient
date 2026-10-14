@@ -37,6 +37,7 @@
 <script>
 import { permissionsMixin } from '@/permissions.js'
 import StartViewItem from '@/components/start/StartViewItem.vue'
+import navigationPermissionsMixin from '@/mixins/navigationPermissionsMixin.js'
 
 // Import the images to ensure it is bundled with the package
 import adminUsersImage from '@/assets/images/admin/users_admin.svg'
@@ -47,7 +48,7 @@ import systemAdminImage from '@/assets/images/admin/system_admin.svg'
 
 export default {
   name: 'UsersManagement',
-  mixins: [permissionsMixin],
+  mixins: [permissionsMixin, navigationPermissionsMixin],
   components: { StartViewItem },
   computed: {
     productName() {
@@ -87,7 +88,14 @@ export default {
         },
       ]
 
-      return rawItems.filter(item => item.hasAccess)
+      // Contributed areas come after the built-in ones and are already filtered by permission
+      const contributed = this.adminPluginEntries.map(entry => ({
+        title: entry.text,
+        image: entry.image,
+        link: { path: entry.to },
+        hasAccess: true
+      }))
+      return [...rawItems, ...contributed].filter(item => item.hasAccess)
     },
   }
 }

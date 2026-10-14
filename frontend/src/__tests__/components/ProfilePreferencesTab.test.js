@@ -59,7 +59,7 @@ describe('ProfilePreferencesTab — settings selects have accessible names', () 
     const wrapper = createWrapper()
     const selects = wrapper.findAll('select')
 
-    expect(selects.length).toBe(3)
+    expect(selects).toHaveLength(3)
     selects.forEach(select => {
       const id = select.attributes('id')
       expect(id).toBeTruthy()

@@ -21,6 +21,29 @@ cibseven:
 With the property off the backend wires no plugin beans at all: nothing is
 scanned, the endpoints below do not exist, and the frontend does not even ask.
 
+### Switching off one plugin
+
+A plugin that breaks the page can be switched off on its own, without removing
+its jar, by listing its id:
+
+```yaml
+cibseven:
+  webclient:
+    plugins:
+      enabled: true
+      disabled:
+        - demo-report
+```
+
+A disabled plugin is not listed to the frontend and its files are not served; the
+others load as usual. It takes a restart, and the log confirms it:
+
+```
+INFO o.cibseven.webapp.plugin.PluginRegistry : Plugin "demo-report" is disabled by cibseven.webclient.plugins.disabled
+```
+
+An id that matches no plugin is logged as a warning, to catch a typo.
+
 ## Deploying a plugin
 
 A plugin is a folder below `META-INF/cibseven-plugins/` on the classpath,
@@ -267,7 +290,7 @@ INFO o.cibseven.webapp.plugin.PluginRegistry : Found 1 frontend plugin(s) on the
 | Change | What is needed |
 |---|---|
 | a plugin added or removed | restart the backend, then reload the page |
-| `plugin.json` changed, or `plugins.enabled` toggled | restart the backend, then reload the page |
+| `plugin.json` changed, or `plugins.enabled` or `plugins.disabled` changed | restart the backend, then reload the page |
 | a deployed plugin's own files edited in place | reload the page; plugin files are served without caching |
 
 ## Slots
@@ -279,6 +302,14 @@ INFO o.cibseven.webapp.plugin.PluginRegistry : Found 1 frontend plugin(s) on the
 | `decision-definition-tab` | one tab of a decision definition version | `decision`, `tenantId` |
 | `decision-instance-tab` | one tab of a decision instance | `instance`, `decision`, `tenantId` |
 | `dmn-viewer` | no UI of its own: a contribution works on the rendered DMN viewer | `viewer`, `container`, `activeView` |
+| `app-banner` | a strip below the header on every page, rendered only while a user is logged in | `user` |
+| `admin-entry` | no component: an entry of the Admin menu, the Admin page and the Start page admin options | none; see below |
+
+An `admin-entry` registers `null` as its component and describes the entry in its
+metadata: `id`, `text` (a translation key), `to` (the route path), `icon`, `image`
+for the Admin page card, and optionally `tooltip` and `active`. `permissions` and
+`resource` are passed to `applicationPermissions`, so the entry only shows for users
+allowed to open it; the route itself still needs a guard of its own.
 
 One registration carries both the tab label and its content: the tab bar reads
 `id` and `text`, and the view renders whichever contribution matches the active

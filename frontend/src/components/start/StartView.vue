@@ -99,6 +99,9 @@ export default {
         options.push({ to: '/seven/auth/admin/authorizations', icon: 'mdi-account-key-outline', title: this.$t('admin.authorizations.title'), tooltip: this.$t('admin.authorizations.title') })
       if (this.permissionsSystemManagement)
         options.push({ to: '/seven/auth/admin/system', icon: 'mdi-cog-outline', title: this.$t('admin.system.title'), tooltip: this.$t('admin.system.tooltip') })
+      this.adminPluginEntries.forEach(entry => options.push({
+        to: entry.to, icon: entry.icon, title: this.$t(entry.text), tooltip: this.$t(entry.tooltip ?? entry.text)
+      }))
       return options
     },
     tiles() {

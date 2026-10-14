@@ -322,7 +322,7 @@ describe('i18n', () => {
       stringLongKeys = stringLongKeys.sort((a, b) => a.localeCompare(b))
       const message = (stringLongKeys.length > 0) ? `Unused ${stringLongKeys.length} translation keys in en (checked ${vueFiles.length} .vue files):\n` + stringLongKeys.map(k => `- ${k}`).join('\n') : ''
       expect(message).toBe('')
-      expect(stringLongKeys.length).toBe(0)
+      expect(stringLongKeys).toHaveLength(0)
     })
 
     it('all used keys should be declared in en', () => {
@@ -383,7 +383,7 @@ describe('i18n', () => {
       notDeclaredKeys = notDeclaredKeys.sort((a, b) => a.localeCompare(b))
       const message = (notDeclaredKeys.length > 0) ? `Next translation keys are missing in en, but used in checked ${vueFiles.length} .vue files:\n` + notDeclaredKeys.map(k => `- ${k}`).join('\n') : ''
       expect(message).toBe('')
-      expect(notDeclaredKeys.length).toBe(0)
+      expect(notDeclaredKeys).toHaveLength(0)
     })
   })
 
@@ -407,6 +407,6 @@ describe('i18n', () => {
     const redeclaredKeys = ownLongKeys.filter(k => parentLongKeys.includes(k))
     const message = (redeclaredKeys.length > 0) ? 'Next translation keys are redeclaring keys from @cib/common-frontend:\n' + redeclaredKeys.map(k => `- ${k}`).join('\n') : ''
     expect(message).toBe('')
-    expect(redeclaredKeys.length).toBe(0)
+    expect(redeclaredKeys).toHaveLength(0)
   })
 })

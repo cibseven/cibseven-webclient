@@ -35,14 +35,6 @@ const permissionsMixin = {
 			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
 			return this.$_permissionsMixin_checkPermissionsDenied(access, null, permissionsCheck)
 		},
-		tasksByPermissions: function(permissionsRequired, tasks) {
-			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
-			const tmpTasks = []
-			tasks.forEach(function(t) {
-				if (this.$_permissionsMixin_checkPermissionsAllowed(t, 'id', permissionsCheck)) tmpTasks.push(t)
-			}.bind(this))
-			return tmpTasks
-		},
 		processesByPermissions: function(permissionsRequired, processes) {
 			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(permissionsRequired)
 			processes.forEach(function(p) {
@@ -56,7 +48,45 @@ const permissionsMixin = {
 			return this.$_permissionsMixin_checkPermissionsAllowed(process, 'key', permissionsCheck)
 		},
 		/**
-		 * @param {Object} processDefinition 
+		 * Mirrors the engine check for deleting a running process instance
+		 * (`AuthorizationCommandChecker.checkDeleteProcessInstance`): any one of the permissions is enough.
+		 * @param {string} processInstanceId
+		 * @param {string} processDefinitionKey
+		 * @returns {boolean} `true` if the user has `DELETE` on the process instance
+		 * or `DELETE_INSTANCE` on its process definition, `false` otherwise
+		 */
+		canDeleteRuntimeProcessInstance(processInstanceId, processDefinitionKey) {
+			return this.$_permissionsMixin_checkAnyAllowed([
+				['processInstance', 'DELETE', processInstanceId],
+				['processDefinition', 'DELETE_INSTANCE', processDefinitionKey],
+			])
+		},
+		/**
+		 * Mirrors the engine check for assigning or claiming a task
+		 * (`AuthorizationCommandChecker.checkTaskAssign`): any one of the permissions is enough.
+		 * @param {Object} task a task with `id` and, if it belongs to a process, `processDefinitionId`
+		 * (`key:version:uuid`, the process definition authorizations are given by key)
+		 * @returns {boolean} `true` if the user has `TASK_ASSIGN` or `UPDATE` on the task,
+		 * or `TASK_ASSIGN` or `UPDATE_TASK` on its process definition, `false` otherwise
+		 */
+		canAssignUserTask(task) {
+			const processDefinitionKey = task?.processDefinitionId?.split(':')[0]
+			const alternatives = [
+				['task', 'TASK_ASSIGN', task?.id],
+				['task', 'UPDATE', task?.id],
+			]
+			// Like the engine, a task outside a process is not checked against process definitions
+			// (otherwise a grant on "*" would match the missing key).
+			if (processDefinitionKey) {
+				alternatives.push(
+					['processDefinition', 'TASK_ASSIGN', processDefinitionKey],
+					['processDefinition', 'UPDATE_TASK', processDefinitionKey],
+				)
+			}
+			return this.$_permissionsMixin_checkAnyAllowed(alternatives)
+		},
+		/**
+		 * @param {Object} processDefinition
 		 * @returns {boolean} `true` if the user has `DELETE_HISTORY` permission for the given processDefinition (delete historic process instances), `false` otherwise
 		 */
 		canDeleteHistoryProcessInstance(processDefinition) {
@@ -65,7 +95,36 @@ const permissionsMixin = {
 			return this.$_permissionsMixin_checkPermissionsAllowed(processDefinition, 'key', permissionsCheck)
 		},
 		/**
-		 * @param {string} deploymentId 
+		 * Mirrors the engine check for adding, changing and removing variables of a running process instance
+		 * (`AuthorizationCommandChecker.checkUpdateProcessInstanceVariables`): any one of the permissions is enough.
+		 * @param {string} processInstanceId
+		 * @param {string} processDefinitionKey
+		 * @returns {boolean} `true` if the user has `UPDATE_VARIABLE` or `UPDATE` on the process instance,
+		 * or `UPDATE_INSTANCE_VARIABLE` or `UPDATE_INSTANCE` on its process definition, `false` otherwise
+		 */
+		canUpdateProcessInstanceVariables(processInstanceId, processDefinitionKey) {
+			return this.$_permissionsMixin_checkAnyAllowed([
+				['processInstance', 'UPDATE_VARIABLE', processInstanceId],
+				['processDefinition', 'UPDATE_INSTANCE_VARIABLE', processDefinitionKey],
+				['processInstance', 'UPDATE', processInstanceId],
+				['processDefinition', 'UPDATE_INSTANCE', processDefinitionKey],
+			])
+		},
+		/**
+		 * @param {string} processInstanceId
+		 * @param {string} processDefinitionKey
+		 * @param {boolean} isRuntime `true` for a variable of the running process instance, `false` for a historic one
+		 * @returns {boolean} for a runtime variable, `true` if the user may change the variables of the process instance:
+		 * for the engine, removing a variable is an update (`RemoveExecutionVariablesCmd` only runs
+		 * `checkUpdateProcessInstanceVariables`), see `canUpdateProcessInstanceVariables`;
+		 * for a historic variable, `true` if the user has `DELETE_HISTORY` on the process definition, as the engine requires
+		 */
+		canDeleteProcessInstanceVariable(processInstanceId, processDefinitionKey, isRuntime) {
+			if (!isRuntime) return this.canDeleteHistoryProcessInstance({ key: processDefinitionKey })
+			return this.canUpdateProcessInstanceVariables(processInstanceId, processDefinitionKey)
+		},
+		/**
+		 * @param {string} deploymentId
 		 * @returns {boolean} `true` if the user has `READ` permission for the given deploymentId, `false` otherwise
 		 */
 		canReadDeployment(deploymentId) {
@@ -143,6 +202,16 @@ const permissionsMixin = {
 			return permissionsCheck.some(permission =>
 				permission.revoked.includes(val) || permission.revoked.includes('*')
 			)
+		},
+		/**
+		 * @param {Array<[string, string, string]>} alternatives `[resource, permission, resourceId]` triples
+		 * @returns {boolean} `true` if any one of them is allowed, like the engine's disjunctive permission checks
+		 */
+		$_permissionsMixin_checkAnyAllowed: function(alternatives) {
+			return alternatives.some(([resource, permission, resourceId]) => {
+				const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject({ [resource]: [permission] })
+				return this.$_permissionsMixin_checkPermissionsAllowed({ id: resourceId }, 'id', permissionsCheck)
+			})
 		}
 	}
 }

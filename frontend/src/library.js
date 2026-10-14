@@ -74,7 +74,7 @@ export { default as sidebarOpenPersistenceMixin } from '@/mixins/sidebarOpenPers
 export { default as usersMixin } from '@/mixins/usersMixin.js'
 export { default as copyToClipboardMixin } from '@/mixins/copyToClipboardMixin.js'
 export { default as assigneeMixin } from '@/mixins/assigneeMixin.js'
-export { default as navigationPermissionsMixin } from '@/mixins/navigationPermissionsMixin.js'
+export { default as navigationPermissionsMixin, ADMIN_ENTRY_SLOT } from '@/mixins/navigationPermissionsMixin.js'
 
 // components
 export { default as CibSeven } from '@/components/CibSeven.vue'
@@ -107,6 +107,8 @@ export { default as UsersManagement } from '@/components/admin/UsersManagement.v
 export { default as DeploymentList } from '@/components/deployment/DeploymentList.vue'
 export { default as DeploymentsView } from '@/components/deployment/DeploymentsView.vue'
 export { default as ResourcesNavBar } from '@/components/deployment/ResourcesNavBar.vue'
+export { default as FormPreview } from '@/components/deployment/FormPreview.vue'
+export { default as HtmlFormPreview } from '@/components/deployment/HtmlFormPreview.vue'
 export { default as FilterModal } from '@/components/task/filter/FilterModal.vue'
 export { default as FilterNavBar } from '@/components/task/filter/FilterNavBar.vue'
 export { default as FilterNavCollapsed } from '@/components/task/filter/FilterNavCollapsed.vue'
@@ -142,6 +144,7 @@ export { default as UserTasksTable } from '@/components/process/tables/UserTasks
 export { default as ExternalTasksTable } from '@/components/process/tables/ExternalTasksTable.vue'
 export { default as RenderTemplate } from '@/components/render-template/RenderTemplate.vue'
 export { default as AdvancedSearchModal } from '@/components/task/AdvancedSearchModal.vue'
+export { default as AssignUserModal } from '@/components/task/AssignUserModal.vue'
 export { default as TaskContent } from '@/components/task/TaskContent.vue'
 export { default as TaskVariables } from '@/components/render-template/TaskVariables.vue'
 export { default as TaskView } from '@/components/task/TaskView.vue'

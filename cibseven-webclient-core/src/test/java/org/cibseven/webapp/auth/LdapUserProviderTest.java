@@ -18,12 +18,28 @@ package org.cibseven.webapp.auth;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.util.ArrayDeque;
 import java.util.Base64;
+import java.util.Date;
+import java.util.Deque;
+import java.util.Hashtable;
 import java.util.List;
 
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.directory.BasicAttributes;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.SearchControls;
+import javax.naming.directory.SearchResult;
+
 import org.cibseven.webapp.auth.exception.AuthenticationException;
+import org.cibseven.webapp.auth.exception.LoginException;
 import org.cibseven.webapp.auth.exception.TokenExpiredException;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.SystemException;
@@ -39,10 +55,10 @@ import jakarta.servlet.http.HttpServletRequest;
  * be reached.
  * <p>
  * The authenticated search paths ({@code login}, {@code getFullUserDN},
- * {@code verify(Claims, Date)}) build their {@code InitialDirContext} inline from a Hashtable, so
- * there is no seam to substitute and covering them would mean adding an in-process LDAP server
- * (for example unboundid-ldapsdk) as a new test dependency. That is deliberately not done here;
- * the unreachable-server tests below at least pin how those paths report failure.
+ * {@code verify(Claims, Date)}) open their directory context through {@code openContext}, which
+ * the "directory resources" tests replace with mocks to check that every context and search
+ * result is closed (CIB7-2211). The unreachable-server tests pin how those paths report failure
+ * against a real, unreachable directory.
  */
 public class LdapUserProviderTest {
 
@@ -51,9 +67,24 @@ public class LdapUserProviderTest {
 	private LdapUserProvider provider;
 	private HttpServletRequest request;
 
+	/** Answers every {@code openContext} call with the next prepared context. */
+	private static class StubDirectoryProvider extends LdapUserProvider {
+
+		private final Deque<DirContext> contexts = new ArrayDeque<>();
+
+		@Override
+		DirContext openContext(Hashtable<String, String> environment) {
+			return contexts.pop();
+		}
+	}
+
 	@BeforeEach
 	void setUp() {
-		provider = new LdapUserProvider();
+		provider = configure(new LdapUserProvider());
+		request = mock(HttpServletRequest.class);
+	}
+
+	private static <P extends LdapUserProvider> P configure(P provider) {
 		// a port nothing listens on, so every directory call fails the same way
 		ReflectionTestUtils.setField(provider, "serverURL", "ldap://127.0.0.1:1");
 		ReflectionTestUtils.setField(provider, "ldapUser", "cn=admin");
@@ -70,8 +101,32 @@ public class LdapUserProviderTest {
 		ReflectionTestUtils.setField(provider, "validMinutes", 60L);
 		ReflectionTestUtils.setField(provider, "prolongMinutes", 30L);
 		provider.init();
+		return provider;
+	}
 
-		request = mock(HttpServletRequest.class);
+	private static SearchResult entry(String dn, String... attributePairs) {
+		BasicAttributes attributes = new BasicAttributes(true);
+		for (int i = 0; i < attributePairs.length; i += 2) {
+			attributes.put(attributePairs[i], attributePairs[i + 1]);
+		}
+		SearchResult result = new SearchResult(dn, null, attributes);
+		result.setNameInNamespace(dn);
+		return result;
+	}
+
+	@SuppressWarnings("unchecked")
+	private static NamingEnumeration<SearchResult> results(SearchResult... entries) throws NamingException {
+		NamingEnumeration<SearchResult> results = mock(NamingEnumeration.class);
+		Deque<SearchResult> remaining = new ArrayDeque<>(List.of(entries));
+		when(results.hasMore()).thenAnswer(invocation -> !remaining.isEmpty());
+		when(results.next()).thenAnswer(invocation -> remaining.pop());
+		return results;
+	}
+
+	private static DirContext contextReturning(NamingEnumeration<SearchResult> results) throws NamingException {
+		DirContext context = mock(DirContext.class);
+		when(context.search(anyString(), anyString(), any(SearchControls.class))).thenReturn(results);
+		return context;
 	}
 
 	private static String bare(String authToken) {
@@ -212,5 +267,90 @@ public class LdapUserProviderTest {
 
 		assertThatThrownBy(() -> provider.parse(token, provider.getSettings()))
 			.isInstanceOf(AuthenticationException.class);
+	}
+
+	// ---------- directory resources (CIB7-2211) ----------
+
+	@Test
+	void login_closesBothContextsAndTheirSearchResults() throws NamingException {
+		StubDirectoryProvider stub = configure(new StubDirectoryProvider());
+		String dn = "uid=demo,ou=people,dc=example,dc=com";
+		NamingEnumeration<SearchResult> dnResults = results(entry(dn));
+		NamingEnumeration<SearchResult> userResults = results(entry(dn, "uid", "demo", "cn", "Demo User"));
+		DirContext serviceContext = contextReturning(dnResults);
+		DirContext userContext = contextReturning(userResults);
+		stub.contexts.add(serviceContext);
+		stub.contexts.add(userContext);
+
+		CIBUser user = stub.login(new StandardLogin("demo", "secret"), request);
+
+		assertThat(user.getUserID()).isEqualTo("demo");
+		assertThat(user.getDisplayName()).isEqualTo("Demo User");
+		verify(dnResults).close();
+		verify(serviceContext).close();
+		verify(userResults).close();
+		verify(userContext).close();
+	}
+
+	@Test
+	void login_closesTheServiceContextWhenTheUserIsUnknown() throws NamingException {
+		StubDirectoryProvider stub = configure(new StubDirectoryProvider());
+		NamingEnumeration<SearchResult> noResults = results();
+		DirContext serviceContext = contextReturning(noResults);
+		stub.contexts.add(serviceContext);
+
+		assertThatThrownBy(() -> stub.login(new StandardLogin("nobody", "secret"), request))
+			.isInstanceOf(LoginException.class);
+		verify(noResults).close();
+		verify(serviceContext).close();
+	}
+
+	@Test
+	void login_closesTheUserContextWhenTheUserEntryDoesNotMatch() throws NamingException {
+		StubDirectoryProvider stub = configure(new StubDirectoryProvider());
+		String dn = "uid=demo,ou=people,dc=example,dc=com";
+		DirContext serviceContext = contextReturning(results(entry(dn)));
+		NamingEnumeration<SearchResult> noUser = results();
+		DirContext userContext = contextReturning(noUser);
+		stub.contexts.add(serviceContext);
+		stub.contexts.add(userContext);
+
+		assertThatThrownBy(() -> stub.login(new StandardLogin("demo", "secret"), request))
+			.isInstanceOf(LoginException.class);
+		verify(serviceContext).close();
+		verify(noUser).close();
+		verify(userContext).close();
+	}
+
+	@Test
+	void login_closesTheContextWhenTheSearchFails() throws NamingException {
+		StubDirectoryProvider stub = configure(new StubDirectoryProvider());
+		DirContext serviceContext = mock(DirContext.class);
+		when(serviceContext.search(anyString(), anyString(), any(SearchControls.class)))
+			.thenThrow(new NamingException("directory unavailable"));
+		stub.contexts.add(serviceContext);
+
+		assertThatThrownBy(() -> stub.login(new StandardLogin("demo", "secret"), request))
+			.isInstanceOf(SystemException.class);
+		verify(serviceContext).close();
+	}
+
+	@Test
+	void verifyWithIssuedAt_closesTheContextAndItsSearchResults() throws NamingException {
+		StubDirectoryProvider stub = configure(new StubDirectoryProvider());
+		NamingEnumeration<SearchResult> userResults = results(entry("uid=demo,ou=people,dc=example,dc=com",
+				"modifyTimestamp", "20200101000000Z", "cn", "Demo User"));
+		DirContext context = contextReturning(userResults);
+		stub.contexts.add(context);
+		io.jsonwebtoken.Claims claims = mock(io.jsonwebtoken.Claims.class);
+		when(claims.getSubject()).thenReturn("demo");
+		when(claims.get("user")).thenReturn(stub.serialize(new CIBUser("demo")));
+
+		CIBUser user = (CIBUser) stub.verify(claims, new Date());
+
+		assertThat(user.getUserID()).isEqualTo("demo");
+		assertThat(user.getDisplayName()).isEqualTo("Demo User");
+		verify(userResults).close();
+		verify(context).close();
 	}
 }

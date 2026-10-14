@@ -71,3 +71,10 @@ thead.resizable tr, thead.resizable + tbody tr {
 .bjs-breadcrumbs li:last-of-type a {
   text-decoration: none !important;
 }
+
+/* BModal has no "centered" prop: add this class to a <b-modal> to mirror Bootstrap's .modal-dialog-centered */
+.modal-centered .modal-dialog {
+  display: flex;
+  align-items: center;
+  min-height: calc(100% - var(--bs-modal-margin) * 2);
+}
