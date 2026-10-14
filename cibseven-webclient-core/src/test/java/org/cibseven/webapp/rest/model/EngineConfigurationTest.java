@@ -76,6 +76,24 @@ public class EngineConfigurationTest {
 	}
 
 	@Test
+	public void testHistoryTimeToLive_withoutEnforceFlag_reportedAsUnknown() {
+		EngineConfiguration config = new EngineConfiguration();
+		config.setHistoryTimeToLive("30");
+
+		assertNull(config.getHistoryTimeToLive());
+		assertNull(config.getEnforceHistoryTimeToLive());
+	}
+
+	@Test
+	public void testHistoryTimeToLive_nullWithKnownEnforceFlag_staysKnown() {
+		EngineConfiguration config = new EngineConfiguration();
+		config.setEnforceHistoryTimeToLive(false);
+
+		assertNull(config.getHistoryTimeToLive());
+		assertFalse(config.getEnforceHistoryTimeToLive());
+	}
+
+	@Test
 	public void testSetters_overrideValues() {
 		EngineConfiguration config = new EngineConfiguration();
 		config.setEngineName("test");

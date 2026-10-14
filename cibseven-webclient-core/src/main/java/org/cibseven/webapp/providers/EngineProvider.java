@@ -178,7 +178,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 	public EngineConfiguration getEngineConfiguration(String engineId) {
 		String url = getNamedEngineRestUrl(engineId) + "/configuration";
 		try {
-			return doGet(url, EngineConfiguration.class, null, false).getBody();
+			return normalizeTimeToLive(doGet(url, EngineConfiguration.class, null, false).getBody());
 		} catch (SystemException e) {
 			if (e.getCause() instanceof HttpClientErrorException.NotFound ||
 				// for CIB seven before 2.2.0, with auth enabled, the endpoint returns 401 instead of 404 when not found
@@ -188,6 +188,15 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 			}
 			throw e;
 		}
+	}
+
+	// Keep the stored state consistent with what EngineConfiguration#getHistoryTimeToLive reports:
+	// a TTL without a known enforceHistoryTimeToLive flag is a partial report, so drop it.
+	private EngineConfiguration normalizeTimeToLive(EngineConfiguration config) {
+		if (config != null && config.getEnforceHistoryTimeToLive() == null) {
+			config.setHistoryTimeToLive(null);
+		}
+		return config;
 	}
 
 	@Override

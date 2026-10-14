@@ -46,4 +46,11 @@ public class EngineConfiguration {
 	public String getHistoryLevel() {
 		return historyLevel != null ? historyLevel.toLowerCase() : DEFAULT_HISTORY_LEVEL;
 	}
+
+	// historyTimeToLive is only meaningful when enforceHistoryTimeToLive is known (a null TTL
+	// with a known flag means "keep indefinitely"). A partial report, where only the TTL came
+	// through, is therefore normalized to unknown (null) for both fields.
+	public String getHistoryTimeToLive() {
+		return enforceHistoryTimeToLive != null ? historyTimeToLive : null;
+	}
 }
