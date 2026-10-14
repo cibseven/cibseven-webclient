@@ -252,7 +252,11 @@ export default {
   computed: {
     ...mapGetters('incidents', ['incidents']),
     ...mapGetters('instances', ['instances']),
-    ...mapGetters(['selectedActivityId']),
+    ...mapGetters(['selectedActivityId', 'externalTaskActivityIds']),
+    activityFilterKey() {
+      // the engine leaves failedActivityId empty in external task incidents, so those are matched by activityId
+      return this.externalTaskActivityIds.includes(this.selectedActivityId) ? 'activityId' : 'failedActivityId'
+    },
     isHistoricView() {
       switch (this.$root.config.camundaHistoryLevel) {
         case 'none':
@@ -365,7 +369,7 @@ export default {
         sortBy: this.currentSortBy,
         sortOrder: this.currentSortDesc ? 'asc' : 'desc',
         ...(isInstance ? { processInstanceId: id } : { processDefinitionId: id }),
-        ...(this.selectedActivityId ? { failedActivityId: this.selectedActivityId } : {} ),
+        ...(this.selectedActivityId ? { [this.activityFilterKey]: this.selectedActivityId } : {} ),
         ...(this.freeText ? { incidentMessageLike: `%${this.freeText}%` } : {} ),
       }
 
