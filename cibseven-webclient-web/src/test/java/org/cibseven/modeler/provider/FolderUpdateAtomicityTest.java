@@ -57,7 +57,7 @@ class FolderUpdateAtomicityTest {
 			FolderEntity folder = folders.create(null, "Drafts", "tester");
 
 			FolderEntity updated = folders.update(folder.getId(),
-				new FolderChange(true, "Old drafts", true, target.getId()), "tester");
+				new FolderChange(true, "Old drafts", true, target.getId()), "tester", () -> false);
 
 			assertThat(updated.getName()).isEqualTo("Old drafts");
 			assertThat(updated.getParentId()).isEqualTo(target.getId());
@@ -75,7 +75,7 @@ class FolderUpdateAtomicityTest {
 			FolderEntity folder = folders.create(null, "Sketches", "tester");
 
 			assertThatThrownBy(() -> folders.update(folder.getId(),
-					new FolderChange(true, "Billing", true, target.getId()), "tester"))
+					new FolderChange(true, "Billing", true, target.getId()), "tester", () -> false))
 				.isInstanceOf(InvalidFolderException.class);
 
 			FolderEntity unchanged = folders.find(folder.getId());
