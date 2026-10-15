@@ -78,7 +78,7 @@ class FolderMigrationTest {
 		runner.run(context -> {
 			FolderRepository folders = context.getBean(FolderRepository.class);
 
-			FolderEntity general = folders.findByParentIdIsNullAndName("General").orElseThrow();
+			FolderEntity general = folders.findFirstByParentIdIsNullAndNameOrderByCreatedAsc("General").orElseThrow();
 
 			assertThat(general.getId()).isEqualTo(GENERAL);
 			assertThat(general.getParentId()).isNull();

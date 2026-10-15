@@ -33,7 +33,9 @@ import org.cibseven.modeler.model.FolderEntity;
 import org.cibseven.modeler.provider.FolderProvider;
 import org.cibseven.modeler.provider.FolderProvider.FolderChange;
 import org.cibseven.modeler.provider.FolderProvider.FolderContents;
+import org.cibseven.webapp.auth.AuthorizationChecker;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.SevenResourceType;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -56,6 +58,16 @@ public class FolderService extends ModelerBaseService {
 
 	@Autowired
 	private FolderProvider folderProvider;
+
+	@Autowired
+	private AuthorizationChecker authorizationChecker;
+
+	/**
+	 * The caller's folder, and whether the caller may rename, move or delete user folders:
+	 * administrators may, so the folder of somebody who left can be cleaned up.
+	 */
+	public record UserFolder(FolderEntity folder, boolean manageUserFolders) {
+	}
 
 	@Operation(
 		summary = "Get the folders",
@@ -82,6 +94,15 @@ public class FolderService extends ModelerBaseService {
 		return folderProvider.contents(id);
 	}
 
+	@Operation(
+		summary = "Get the caller's user folder",
+		description = "<strong>Return: the caller's folder, created on the first call, and whether the caller may rename, move or delete user folders")
+	@PostMapping("/user-folder")
+	public UserFolder userFolder(HttpServletRequest rq) {
+		CIBUser user = checkModelerAccess(rq);
+		return new UserFolder(folderProvider.userFolder(user.getUserID()), mayManageUserFolders(user));
+	}
+
 	@Operation(summary = "Create a folder", description = "<strong>Return: the created folder")
 	@PostMapping
 	public FolderEntity create(@RequestBody Map<String, String> folder, HttpServletRequest rq) {
@@ -100,7 +121,7 @@ public class FolderService extends ModelerBaseService {
 		// to the top level
 		FolderChange change = new FolderChange(folder.containsKey("name"), folder.get("name"),
 			folder.containsKey("parentId"), folder.get("parentId"));
-		return folderProvider.update(id, change, user.getUserID());
+		return folderProvider.update(id, change, user.getUserID(), () -> mayManageUserFolders(user));
 	}
 
 	@Operation(
@@ -108,7 +129,11 @@ public class FolderService extends ModelerBaseService {
 		description = "<strong>Return: what was removed. The models are gone for good, as deleting one has always been")
 	@DeleteMapping("/{id}")
 	public FolderContents delete(@PathVariable String id, HttpServletRequest rq) {
-		checkModelerAccess(rq);
-		return folderProvider.delete(id);
+		CIBUser user = checkModelerAccess(rq);
+		return folderProvider.delete(id, () -> mayManageUserFolders(user));
+	}
+
+	private boolean mayManageUserFolders(CIBUser user) {
+		return authorizationChecker.isAuthorized(user, SevenResourceType.SYSTEM, "*", "ALL");
 	}
 }

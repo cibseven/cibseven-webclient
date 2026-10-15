@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -34,6 +35,7 @@ import org.cibseven.modeler.model.FolderEntity;
 import org.cibseven.modeler.repository.FolderRepository;
 import org.cibseven.modeler.repository.FormRepository;
 import org.cibseven.modeler.repository.ProcessDiagramRepository;
+import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.exception.InvalidFolderException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 
@@ -96,17 +98,31 @@ public class FolderProvider {
 		return folderDao.save(folder);
 	}
 
+	/**
+	 * The folder of the user, created the first time it is asked for. A folder at the top level that
+	 * already carries the user's name is taken as it is. Two first visits at once can store it
+	 * twice, since no key covers the top level; the oldest is the one used from then on.
+	 */
+	@Transactional(CibsevenJpa.TRANSACTION_MANAGER)
+	public FolderEntity userFolder(String userId) {
+		String name = validName(userId);
+		return folderDao.findFirstByParentIdIsNullAndNameOrderByCreatedAsc(name)
+			.orElseGet(() -> create(null, name, userId));
+	}
+
 	/** What a request changes about a folder: it may rename it, move it, or both at once. */
 	public record FolderChange(boolean renaming, String name, boolean moving, String parentId) {
 	}
 
 	/**
 	 * Applies both in one transaction, so a move the tree refuses does not leave the folder
-	 * renamed.
+	 * renamed. A user folder stays where and what it is unless the caller may manage user folders,
+	 * which is only asked for a user folder.
 	 */
 	@Transactional(CibsevenJpa.TRANSACTION_MANAGER)
-	public FolderEntity update(String id, FolderChange change, String userId) {
+	public FolderEntity update(String id, FolderChange change, String userId, BooleanSupplier manageUserFolders) {
 		FolderEntity folder = find(id);
+		requireChangeable(folder, manageUserFolders);
 		if (change.renaming()) {
 			folder = rename(id, change.name(), userId);
 		}
@@ -154,11 +170,12 @@ public class FolderProvider {
 	/**
 	 * Deletes the folder with everything below it. Callers are expected to have shown what
 	 * contents reports first: the models are removed for good, as deleting one from the list
-	 * has always been.
+	 * has always been. A user folder is only deleted for a caller who may manage user folders.
 	 */
 	@Transactional(CibsevenJpa.TRANSACTION_MANAGER)
-	public FolderContents delete(String id) {
+	public FolderContents delete(String id, BooleanSupplier manageUserFolders) {
 		FolderEntity folder = find(id);
+		requireChangeable(folder, manageUserFolders);
 		List<String> ids = subtreeIds(id);
 		FolderContents removed = contents(id);
 
@@ -197,6 +214,14 @@ public class FolderProvider {
 		return ids;
 	}
 
+	/** Renamed or moved, a user folder would stop being one, and the next visit would create another. */
+	private static void requireChangeable(FolderEntity folder, BooleanSupplier manageUserFolders) {
+		if (folder.isUserFolder() && !manageUserFolders.getAsBoolean()) {
+			throw new AccessDeniedException("The folder of user " + folder.getName()
+				+ " can only be renamed, moved or deleted by an administrator");
+		}
+	}
+
 	private FolderEntity touch(FolderEntity folder, String userId) {
 		folder.setUpdated(Timestamp.valueOf(LocalDateTime.now()));
 		folder.setUpdatedBy(userId);
@@ -221,7 +246,7 @@ public class FolderProvider {
 	 */
 	private void requireFreeName(String parentId, String name, String allowedId) {
 		Optional<FolderEntity> taken = parentId == null
-			? folderDao.findByParentIdIsNullAndName(name)
+			? folderDao.findFirstByParentIdIsNullAndNameOrderByCreatedAsc(name)
 			: folderDao.findByParentIdAndName(parentId, name);
 		if (taken.isPresent() && !taken.get().getId().equals(allowedId)) {
 			throw new InvalidFolderException("name", "a folder with that name is already there");

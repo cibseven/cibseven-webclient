@@ -26,7 +26,7 @@ import org.cibseven.modeler.model.FolderEntity;
 public interface FolderRepository extends JpaRepository<FolderEntity, String> {
 
 	/** A folder at the top level, where the name is not scoped by a parent. */
-	Optional<FolderEntity> findByParentIdIsNullAndName(String name);
+	Optional<FolderEntity> findFirstByParentIdIsNullAndNameOrderByCreatedAsc(String name);
 
 	List<FolderEntity> findByParentIdOrderByNameAsc(String parentId);
 
