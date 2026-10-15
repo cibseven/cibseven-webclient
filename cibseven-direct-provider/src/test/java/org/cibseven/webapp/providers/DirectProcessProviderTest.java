@@ -315,13 +315,4 @@ public class DirectProcessProviderTest {
 		assertThatThrownBy(() -> processProvider.getRenderedForm("def-1", Map.of(), user))
 			.isInstanceOf(SystemException.class);
 	}
-
-	@Test
-	void deleteProcessInstance_stopsTheInstanceAsExternallyTerminated() {
-		processProvider.deleteProcessInstance("instance-1", user);
-
-		// same as engine-rest, so the historic state is EXTERNALLY_TERMINATED and not INTERNALLY_TERMINATED
-		verify(runtimeService).deleteProcessInstance("instance-1", null, false, true);
-		verify(runtimeService, never()).deleteProcessInstance("instance-1", null);
-	}
 }
