@@ -40,6 +40,10 @@ createStoreTestSuite('ActivityStore', ActivityStore, {
       expect(getState().selectedActivityInstancesListMode).toBe('all')
     })
 
+    it('should have empty externalTaskActivityIds array', () => {
+      expect(getState().externalTaskActivityIds).toEqual([])
+    })
+
     it('should have null highlightedElement', () => {
       expect(getState().highlightedElement).toBeNull()
     })
@@ -72,6 +76,17 @@ createStoreTestSuite('ActivityStore', ActivityStore, {
         
         mutation(state, newActivities)
         expect(state.processActivities).toEqual(newActivities)
+      })
+    },
+
+    setExternalTaskActivityIds: (mutation, getState) => {
+      it('should replace the external task activity ids', () => {
+        const state = getState()
+        state.externalTaskActivityIds = ['old']
+
+        mutation(state, ['task_1', 'task_2'])
+
+        expect(state.externalTaskActivityIds).toEqual(['task_1', 'task_2'])
       })
     },
 
@@ -181,6 +196,14 @@ createStoreTestSuite('ActivityStore', ActivityStore, {
         const element = { id: 'element-1', type: 'activity' }
         state.highlightedElement = element
         expect(getter(state)).toEqual(element)
+      })
+    },
+
+    externalTaskActivityIds: (getter, getState) => {
+      it('should return the external task activity ids', () => {
+        const state = getState()
+        state.externalTaskActivityIds = ['task_1']
+        expect(getter(state)).toEqual(['task_1'])
       })
     },
 
