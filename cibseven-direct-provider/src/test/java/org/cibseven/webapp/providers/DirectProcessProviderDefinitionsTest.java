@@ -22,6 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.RETURNS_SELF;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
@@ -340,10 +341,12 @@ public class DirectProcessProviderDefinitionsTest {
 	}
 
 	@Test
-	void deleteProcessInstance_delegatesToTheRuntimeService() {
+	void deleteProcessInstance_stopsTheInstanceAsExternallyTerminated() {
 		processProvider.deleteProcessInstance("instance-1", user);
 
-		verify(runtimeService).deleteProcessInstance("instance-1", null);
+		// same as engine-rest, so the historic state is EXTERNALLY_TERMINATED and not INTERNALLY_TERMINATED
+		verify(runtimeService).deleteProcessInstance("instance-1", null, false, true);
+		verify(runtimeService, never()).deleteProcessInstance("instance-1", null);
 	}
 
 	@Test
