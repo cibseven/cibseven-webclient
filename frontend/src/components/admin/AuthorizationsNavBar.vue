@@ -19,7 +19,7 @@
 <template>
   <b-list-group>
     <template v-for="(group, groupIndex) in groups" :key="group.name">
-      <b-list-group-item v-if="groupIndex > 0" class="border-0 px-3 py-1 no-radius-right">
+      <b-list-group-item v-if="groupIndex > 0" class="border-0 p-0 no-radius-right">
         <hr class="p-0 m-0"/>
       </b-list-group-item>
       <b-list-group-item
