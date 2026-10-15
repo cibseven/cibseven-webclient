@@ -63,10 +63,10 @@ public class FolderService extends ModelerBaseService {
 	private AuthorizationChecker authorizationChecker;
 
 	/**
-	 * The caller's home, and whether the caller may rename, move or delete homes: administrators
-	 * may, so the home of somebody who left can be cleaned up.
+	 * The caller's folder, and whether the caller may rename, move or delete user folders:
+	 * administrators may, so the folder of somebody who left can be cleaned up.
 	 */
-	public record Home(FolderEntity folder, boolean manageHomes) {
+	public record UserFolder(FolderEntity folder, boolean manageUserFolders) {
 	}
 
 	@Operation(
@@ -95,12 +95,12 @@ public class FolderService extends ModelerBaseService {
 	}
 
 	@Operation(
-		summary = "Get the caller's home folder",
-		description = "<strong>Return: the home folder, created on the first call, and whether the caller may rename, move or delete home folders")
-	@PostMapping("/home")
-	public Home home(HttpServletRequest rq) {
+		summary = "Get the caller's user folder",
+		description = "<strong>Return: the caller's folder, created on the first call, and whether the caller may rename, move or delete user folders")
+	@PostMapping("/user-folder")
+	public UserFolder userFolder(HttpServletRequest rq) {
 		CIBUser user = checkModelerAccess(rq);
-		return new Home(folderProvider.home(user.getUserID()), mayManageHomes(user));
+		return new UserFolder(folderProvider.userFolder(user.getUserID()), mayManageUserFolders(user));
 	}
 
 	@Operation(summary = "Create a folder", description = "<strong>Return: the created folder")
@@ -121,7 +121,7 @@ public class FolderService extends ModelerBaseService {
 		// to the top level
 		FolderChange change = new FolderChange(folder.containsKey("name"), folder.get("name"),
 			folder.containsKey("parentId"), folder.get("parentId"));
-		return folderProvider.update(id, change, user.getUserID(), () -> mayManageHomes(user));
+		return folderProvider.update(id, change, user.getUserID(), () -> mayManageUserFolders(user));
 	}
 
 	@Operation(
@@ -130,10 +130,10 @@ public class FolderService extends ModelerBaseService {
 	@DeleteMapping("/{id}")
 	public FolderContents delete(@PathVariable String id, HttpServletRequest rq) {
 		CIBUser user = checkModelerAccess(rq);
-		return folderProvider.delete(id, () -> mayManageHomes(user));
+		return folderProvider.delete(id, () -> mayManageUserFolders(user));
 	}
 
-	private boolean mayManageHomes(CIBUser user) {
+	private boolean mayManageUserFolders(CIBUser user) {
 		return authorizationChecker.isAuthorized(user, SevenResourceType.SYSTEM, "*", "ALL");
 	}
 }

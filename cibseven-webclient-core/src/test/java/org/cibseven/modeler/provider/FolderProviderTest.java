@@ -234,28 +234,28 @@ class FolderProviderTest {
 		assertThatThrownBy(() -> provider.find(null)).isInstanceOf(NoObjectFoundException.class);
 	}
 
-	private FolderEntity home(String user) {
-		FolderEntity home = folder("home-" + user, null, user);
-		home.setCreatedBy(user);
-		return home;
+	private FolderEntity userFolder(String user) {
+		FolderEntity userFolder = folder("user-" + user, null, user);
+		userFolder.setCreatedBy(user);
+		return userFolder;
 	}
 
 	@Test
-	void createsTheHomeOfAUserOnTheFirstVisit() {
-		FolderEntity created = provider.home("demo");
+	void createsTheFolderOfAUserOnTheFirstVisit() {
+		FolderEntity created = provider.userFolder("demo");
 
 		assertThat(created.getParentId()).isNull();
 		assertThat(created.getName()).isEqualTo("demo");
 		assertThat(created.getCreatedBy()).isEqualTo("demo");
-		assertThat(created.isHome()).isTrue();
+		assertThat(created.isUserFolder()).isTrue();
 	}
 
 	@Test
-	void findsTheHomeOnLaterVisitsInsteadOfCreatingAnother() {
-		FolderEntity existing = home("demo");
+	void findsTheUserFolderOnLaterVisitsInsteadOfCreatingAnother() {
+		FolderEntity existing = userFolder("demo");
 		when(folders.findFirstByParentIdIsNullAndNameOrderByCreatedAsc("demo")).thenReturn(Optional.of(existing));
 
-		assertThat(provider.home("demo")).isSameAs(existing);
+		assertThat(provider.userFolder("demo")).isSameAs(existing);
 		verify(folders, never()).save(any());
 	}
 
@@ -266,64 +266,64 @@ class FolderProviderTest {
 		named.setCreatedBy("someone-else");
 		when(folders.findFirstByParentIdIsNullAndNameOrderByCreatedAsc("demo")).thenReturn(Optional.of(named));
 
-		FolderEntity home = provider.home("demo");
+		FolderEntity userFolder = provider.userFolder("demo");
 
-		assertThat(home).isSameAs(named);
-		assertThat(home.isHome()).isFalse();
+		assertThat(userFolder).isSameAs(named);
+		assertThat(userFolder.isUserFolder()).isFalse();
 	}
 
 	@Test
-	void isAHomeOnlyAtTheTopLevelAndUnderTheNameOfItsCreator() {
+	void isAUserFolderOnlyAtTheTopLevelAndUnderTheNameOfItsCreator() {
 		FolderEntity nested = folder("nested", "project", "demo");
 		nested.setCreatedBy("demo");
 		project.setCreatedBy("demo");
 
-		assertThat(home("demo").isHome()).isTrue();
-		assertThat(nested.isHome()).isFalse();
-		assertThat(project.isHome()).isFalse();
+		assertThat(userFolder("demo").isUserFolder()).isTrue();
+		assertThat(nested.isUserFolder()).isFalse();
+		assertThat(project.isUserFolder()).isFalse();
 	}
 
 	@Test
-	void refusesToDeleteAHomeForAUserWhoMayNotManageHomes() {
-		home("demo");
+	void refusesToDeleteAUserFolderForAUserWhoMayNotManageUserFolders() {
+		userFolder("demo");
 
-		assertThatThrownBy(() -> provider.delete("home-demo", () -> false))
+		assertThatThrownBy(() -> provider.delete("user-demo", () -> false))
 			.isInstanceOf(AccessDeniedException.class);
 		verify(folders, never()).deleteAllById(any());
 	}
 
 	@Test
-	void refusesToRenameOrMoveAHomeForAUserWhoMayNotManageHomes() {
-		FolderEntity home = home("demo");
+	void refusesToRenameOrMoveAUserFolderForAUserWhoMayNotManageUserFolders() {
+		FolderEntity userFolder = userFolder("demo");
 
-		assertThatThrownBy(() -> provider.update("home-demo", new FolderChange(true, "Mine", false, null), "demo", () -> false))
+		assertThatThrownBy(() -> provider.update("user-demo", new FolderChange(true, "Mine", false, null), "demo", () -> false))
 			.isInstanceOf(AccessDeniedException.class);
-		assertThatThrownBy(() -> provider.update("home-demo", new FolderChange(false, null, true, "project"), "demo", () -> false))
+		assertThatThrownBy(() -> provider.update("user-demo", new FolderChange(false, null, true, "project"), "demo", () -> false))
 			.isInstanceOf(AccessDeniedException.class);
-		assertThat(home.getName()).isEqualTo("demo");
-		assertThat(home.getParentId()).isNull();
+		assertThat(userFolder.getName()).isEqualTo("demo");
+		assertThat(userFolder.getParentId()).isNull();
 		verify(folders, never()).save(any());
 	}
 
-	/** An administrator cleans up the home of somebody who left. */
+	/** An administrator cleans up the folder of somebody who left. */
 	@Test
-	void letsAnAdministratorDeleteAHome() {
-		home("demo");
+	void letsAnAdministratorDeleteAUserFolder() {
+		userFolder("demo");
 		when(diagrams.findByFolderIdIn(anyList())).thenReturn(List.of());
 		when(forms.findByFolderIdIn(anyList())).thenReturn(List.of());
 
-		provider.delete("home-demo", () -> true);
+		provider.delete("user-demo", () -> true);
 
-		verify(folders).deleteAllById(List.of("home-demo"));
+		verify(folders).deleteAllById(List.of("user-demo"));
 	}
 
-	/** Whether the caller is an administrator costs a call to the engine, so only a home asks. */
+	/** Whether the caller is an administrator costs a call to the engine, so only a user folder asks. */
 	@Test
-	void keepsWhatIsInsideAHomeChangeableWithoutAskingForAdministrators() {
-		folder("drafts", "home-demo", "Drafts");
-		home("demo");
+	void keepsWhatIsInsideAUserFolderChangeableWithoutAskingForAdministrators() {
+		folder("drafts", "user-demo", "Drafts");
+		userFolder("demo");
 		BooleanSupplier notToBeAsked = () -> {
-			throw new AssertionError("asked whether the caller may manage homes for an ordinary folder");
+			throw new AssertionError("asked whether the caller may manage user folders for an ordinary folder");
 		};
 		when(diagrams.findByFolderIdIn(anyList())).thenReturn(List.of());
 		when(forms.findByFolderIdIn(anyList())).thenReturn(List.of());

@@ -39,10 +39,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * at once can store it twice; only a real schema shows that the second row does not break the
  * lookups that follow.
  */
-class FolderHomeTest {
+class UserFolderTest {
 
 	private final ApplicationContextRunner runner = new ApplicationContextRunner()
-		.withPropertyValues("spring.datasource.url=jdbc:h2:mem:folderhome;DB_CLOSE_DELAY=-1",
+		.withPropertyValues("spring.datasource.url=jdbc:h2:mem:userfolder;DB_CLOSE_DELAY=-1",
 			"spring.datasource.driver-class-name=org.h2.Driver",
 			"spring.sql.init.mode=always",
 			"spring.sql.init.schema-locations=classpath:modeler-folders-before.sql,classpath:modeler-folders-migration.sql",
@@ -53,35 +53,35 @@ class FolderHomeTest {
 		.withUserConfiguration(ModelerPersistenceConfiguration.class, FolderProvider.class);
 
 	@Test
-	void createsTheHomeOnceAndFindsItAfterwards() {
+	void createsTheUserFolderOnceAndFindsItAfterwards() {
 		runner.run(context -> {
 			FolderProvider folders = context.getBean(FolderProvider.class);
 
-			FolderEntity first = folders.home("anna");
-			FolderEntity second = folders.home("anna");
+			FolderEntity first = folders.userFolder("anna");
+			FolderEntity second = folders.userFolder("anna");
 
 			assertThat(second.getId()).isEqualTo(first.getId());
-			assertThat(second.isHome()).isTrue();
+			assertThat(second.isUserFolder()).isTrue();
 		});
 	}
 
 	@Test
-	void usesTheOldestWhenAHomeWasStoredTwice() {
+	void usesTheOldestWhenAUserFolderWasStoredTwice() {
 		runner.run(context -> {
 			FolderProvider folders = context.getBean(FolderProvider.class);
 			FolderRepository repository = context.getBean(FolderRepository.class);
 			LocalDateTime now = LocalDateTime.now();
-			FolderEntity oldest = repository.save(home("bert", now.minusMinutes(1)));
-			repository.save(home("bert", now));
+			FolderEntity oldest = repository.save(userFolder("bert", now.minusMinutes(1)));
+			repository.save(userFolder("bert", now));
 
-			assertThat(folders.home("bert").getId()).isEqualTo(oldest.getId());
+			assertThat(folders.userFolder("bert").getId()).isEqualTo(oldest.getId());
 			// The name is still taken, and reported as such rather than failing on the second row
 			assertThatThrownBy(() -> folders.create(null, "bert", "someone-else"))
 				.isInstanceOf(InvalidFolderException.class);
 		});
 	}
 
-	private static FolderEntity home(String user, LocalDateTime created) {
+	private static FolderEntity userFolder(String user, LocalDateTime created) {
 		FolderEntity folder = new FolderEntity();
 		folder.setName(user);
 		folder.setCreatedBy(user);

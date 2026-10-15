@@ -75,10 +75,10 @@ public class FolderEntity {
 	private String updatedBy;
 
 	/**
-	 * A user's home: a folder at the top level named after the user it was created by. A folder
+	 * A user folder: a folder at the top level named after the user it was created by. A folder
 	 * somebody else named after the user is not one, so it stays an ordinary folder.
 	 */
-	public boolean isHome() {
+	public boolean isUserFolder() {
 		return parentId == null && name != null && name.equals(createdBy);
 	}
 }

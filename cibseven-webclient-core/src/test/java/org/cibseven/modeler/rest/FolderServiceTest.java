@@ -138,33 +138,33 @@ class FolderServiceTest {
 	}
 
 	@Test
-	void handsTheCallerTheirHome() {
-		FolderEntity home = new FolderEntity();
-		when(folderProvider.home("demo")).thenReturn(home);
+	void handsTheCallerTheirFolder() {
+		FolderEntity userFolder = new FolderEntity();
+		when(folderProvider.userFolder("demo")).thenReturn(userFolder);
 
-		FolderService.Home result = service.home(request);
+		FolderService.UserFolder result = service.userFolder(request);
 
-		assertThat(result.folder()).isSameAs(home);
-		assertThat(result.manageHomes()).isFalse();
+		assertThat(result.folder()).isSameAs(userFolder);
+		assertThat(result.manageUserFolders()).isFalse();
 	}
 
 	/** Holding ALL on the system resource is what makes an administrator here. */
 	@Test
-	void letsAnAdministratorManageHomes() {
+	void letsAnAdministratorManageUserFolders() {
 		when(authorizationChecker.isAuthorized(USER, SevenResourceType.SYSTEM, "*", "ALL")).thenReturn(true);
 
-		assertThat(service.home(request).manageHomes()).isTrue();
+		assertThat(service.userFolder(request).manageUserFolders()).isTrue();
 		assertThat(askedOnDelete().getAsBoolean()).isTrue();
 		assertThat(askedOnUpdate().getAsBoolean()).isTrue();
 	}
 
 	@Test
-	void tellsTheProviderWhenTheCallerMayNotManageHomes() {
+	void tellsTheProviderWhenTheCallerMayNotManageUserFolders() {
 		assertThat(askedOnDelete().getAsBoolean()).isFalse();
 		assertThat(askedOnUpdate().getAsBoolean()).isFalse();
 	}
 
-	/** Asking the engine is left to the provider, which only does it for a home. */
+	/** Asking the engine is left to the provider, which only does it for a user folder. */
 	@Test
 	void doesNotAskTheEngineBeforeTheProviderNeedsIt() {
 		service.delete("folder-1", request);
@@ -174,18 +174,18 @@ class FolderServiceTest {
 	}
 
 	private BooleanSupplier askedOnDelete() {
-		ArgumentCaptor<BooleanSupplier> manageHomes = ArgumentCaptor.forClass(BooleanSupplier.class);
+		ArgumentCaptor<BooleanSupplier> manageUserFolders = ArgumentCaptor.forClass(BooleanSupplier.class);
 		service.delete("folder-1", request);
-		verify(folderProvider).delete(eq("folder-1"), manageHomes.capture());
-		return manageHomes.getValue();
+		verify(folderProvider).delete(eq("folder-1"), manageUserFolders.capture());
+		return manageUserFolders.getValue();
 	}
 
 	private BooleanSupplier askedOnUpdate() {
-		ArgumentCaptor<BooleanSupplier> manageHomes = ArgumentCaptor.forClass(BooleanSupplier.class);
+		ArgumentCaptor<BooleanSupplier> manageUserFolders = ArgumentCaptor.forClass(BooleanSupplier.class);
 		service.update("folder-1", body("name", "Billing"), request);
 		verify(folderProvider).update(eq("folder-1"), eq(new FolderChange(true, "Billing", false, null)), eq("demo"),
-			manageHomes.capture());
-		return manageHomes.getValue();
+			manageUserFolders.capture());
+		return manageUserFolders.getValue();
 	}
 
 	@Test
