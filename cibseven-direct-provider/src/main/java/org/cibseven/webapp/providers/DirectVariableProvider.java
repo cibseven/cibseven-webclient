@@ -537,12 +537,7 @@ public class DirectVariableProvider implements IVariableProvider {
 		List<String> deletions = new ArrayList<>();
 		Map<String, VariableValueDto> modifications = new HashMap<>();
 		for (Variable variable : formResult) {
-			VariableValueDto variableValueDto = directProviderUtil.convertValue(variable, VariableValueDto.class, user);
-			variableValueDto.setType(variable.getType());
-			variableValueDto.setValue(variable.getValue());
-			if (variable.getValueInfo() != null)
-				variableValueDto.setValueInfo(new HashMap<>(variable.getValueInfo()));
-			modifications.put(variable.getName(), variableValueDto);
+			modifications.put(variable.getName(), directProviderUtil.toVariableValueDto(variable, user));
 		}
 
 		updateVariableEntities(processInstanceId, modifications, deletions, user);

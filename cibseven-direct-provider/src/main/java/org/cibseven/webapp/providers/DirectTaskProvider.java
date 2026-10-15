@@ -238,12 +238,7 @@ public class DirectTaskProvider implements ITaskProvider {
 	public void submit(Task task, List<Variable> formResult, CIBUser user) {
 		Map<String, VariableValueDto> variables = new HashMap<>();
 		for (Variable variable : formResult) {
-			VariableValueDto variableValueDto = directProviderUtil.convertValue(variable, VariableValueDto.class, user);
-			variableValueDto.setType(variable.getType());
-			variableValueDto.setValue(variable.getValue());
-			if (variable.getValueInfo() != null)
-				variableValueDto.setValueInfo(new HashMap<>(variable.getValueInfo()));
-			variables.put(variable.getName(), variableValueDto);
+			variables.put(variable.getName(), directProviderUtil.toVariableValueDto(variable, user));
 		}
 		CompleteTaskDto completeTaskDto = new CompleteTaskDto();
 		completeTaskDto.setVariables(variables);
