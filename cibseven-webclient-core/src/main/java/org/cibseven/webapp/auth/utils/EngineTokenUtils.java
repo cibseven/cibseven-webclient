@@ -16,6 +16,7 @@
  */
 package org.cibseven.webapp.auth.utils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 import org.cibseven.webapp.auth.CIBUser;
@@ -156,7 +157,7 @@ public class EngineTokenUtils {
 			}
 			
 			// Decode the payload (middle part)
-			String payload = new String(Base64.getUrlDecoder().decode(parts[1]));
+			String payload = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
 			ObjectMapper mapper = new ObjectMapper();
 			var claims = mapper.readTree(payload);
 			

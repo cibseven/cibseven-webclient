@@ -416,7 +416,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	@Override
 	public Data downloadBpmn(String id, String fileName, CIBUser user) {
 		ProcessDiagram diagram = fetchDiagram(id, user);
-			ByteArrayResource resource = new ByteArrayResource(diagram.getBpmn20Xml().getBytes());
+			ByteArrayResource resource = new ByteArrayResource(diagram.getBpmn20Xml().getBytes(StandardCharsets.UTF_8));
 			return new Data(fileName, "application/bpmn+xml", resource, resource.contentLength());
 	}
 
@@ -688,7 +688,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	@Override
 	public ResponseEntity<String> getRenderedForm(String processDefinitionId, Map<String, Object> params, CIBUser user) {
 		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/process-definition/" + processDefinitionId + "/rendered-form", params);
-		return doGetWithHeader(url, String.class, user, true, MediaType.ALL);
+		return renderedFormResponse(doGetWithHeader(url, String.class, user, true, MediaType.ALL));
 	}
 
 	@Override

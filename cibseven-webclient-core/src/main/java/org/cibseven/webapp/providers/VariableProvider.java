@@ -17,6 +17,7 @@
 package org.cibseven.webapp.providers;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -81,7 +82,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 				body.add("valueType", valueType);
 			} else {
 				// Handle JSON/serialized data
-				String jsonContent = new String(data.getBytes());
+				String jsonContent = new String(data.getBytes(), StandardCharsets.UTF_8);
 				HttpHeaders jsonHeaders = new HttpHeaders();
 				jsonHeaders.setContentType(MediaType.APPLICATION_JSON);
 				LinkedMultiValueMap<String, String> jsonHeaderMap = new LinkedMultiValueMap<>();

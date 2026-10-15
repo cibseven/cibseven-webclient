@@ -35,6 +35,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 public class ProcessProviderTest {
@@ -148,9 +151,21 @@ public class ProcessProviderTest {
 		ResponseEntity<String> response = processProvider.getRenderedForm("id-1", new HashMap<>(), user);
 
 		assertThat(response.getBody()).isEqualTo(form);
-		// the engine's Content-Length is passed on; the re-encoded body must fit it, or the form is cut off
-		assertThat(response.getHeaders().getContentLength()).isEqualTo(response.getBody().getBytes(StandardCharsets.UTF_8).length);
 		assertThat(engine.takePath()).startsWith("/process-definition/id-1/rendered-form");
+	}
+
+	@Test
+	void getRenderedForm_answersUtf8HtmlLikeTheDirectProvider() throws Exception {
+		// CIB7-2206: the engine's media type and Content-Length are not forwarded
+		String form = "<form><input value=\"beschädigt\" /></form>";
+		engine.enqueueBytes(form.getBytes(StandardCharsets.UTF_8), "application/xhtml+xml");
+
+		ResponseEntity<String> response = processProvider.getRenderedForm("id-1", new HashMap<>(), user);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.parseMediaType("text/html;charset=UTF-8"));
+		// Spring computes the length of the bytes it writes when the header is absent
+		assertThat(response.getHeaders().containsKey(HttpHeaders.CONTENT_LENGTH)).isFalse();
 	}
 
 	@Test
@@ -184,6 +199,20 @@ public class ProcessProviderTest {
 		assertThat(data.getName()).isEqualTo("invoice.bpmn");
 		assertThat(data.getContentType()).isEqualTo("application/bpmn+xml");
 		assertThat(data.getSize()).isEqualTo("<definitions/>".length());
+	}
+
+	@Test
+	void downloadBpmn_encodesTheXmlAsUtf8() throws Exception {
+		// the XML declaration promises UTF-8, so the bytes must not follow the JVM default charset (CIB7-2206)
+		String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><definitions name=\"Prüfung 審査\"/>";
+		engine.enqueueBytes(("{\"id\":\"id-1\",\"bpmn20Xml\":\"" + xml.replace("\"", "\\\"") + "\"}")
+			.getBytes(StandardCharsets.UTF_8), "application/json");
+
+		Data data = processProvider.downloadBpmn("id-1", "invoice.bpmn", user);
+
+		byte[] expected = xml.getBytes(StandardCharsets.UTF_8);
+		assertThat(data.getSize()).isEqualTo(expected.length);
+		assertThat(data.getInputStream().readAllBytes()).isEqualTo(expected);
 	}
 
 	// ---------- instances ----------
