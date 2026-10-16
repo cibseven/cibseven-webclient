@@ -16,6 +16,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import TasksNavBar from '@/components/task/TasksNavBar.vue'
+import { mountWithDefaults } from '../support/mountWithDefaults.js'
 import { TaskService, AdminService } from '@/services.js'
 
 vi.mock('@/services.js', async (importOriginal) => {
@@ -70,8 +71,8 @@ function context(overrides = {}) {
     },
     $refs: {
       confirmTaskAssign: { show: vi.fn() },
-      due: { hide: vi.fn() },
-      followUp: { hide: vi.fn() }
+      due: { hide: vi.fn(), show: vi.fn() },
+      followUp: { hide: vi.fn(), show: vi.fn() }
     },
     isMobile: () => false,
     tasks: [],
@@ -453,6 +454,100 @@ describe('TasksNavBar - date editing', () => {
     m.setTime.call(vm, null, 'due')
 
     expect(vm.selectedDateT.due.getHours()).toBe(due.getHours())
+  })
+})
+
+describe('TasksNavBar - opening the date dialogs', () => {
+  it.each(['followUp', 'due'])('openDateDialog should snapshot the task and open the %s dialog', (type) => {
+    const vm = context()
+    const task = { id: 't2', [type]: '2026-01-15T10:30:00Z' }
+
+    m.openDateDialog.call(vm, task, type)
+
+    expect(vm.taskToEdit).toBe(task)
+    expect(vm.selectedDateT.id).toBe('t2')
+    expect(vm.$refs[type].show).toHaveBeenCalled()
+  })
+
+  /**
+   * CIB7-2300: Space used to open the dialog without telling it which task, so it edited the
+   * task edited last. Mounted, because the bug was in the key binding of the template.
+   */
+  describe('from the keyboard', () => {
+    // Assigned already, so the row offers no 'assign to me' and needs no permissions
+    const taskA = { id: 'a', name: 'Task A', created: '2026-01-01T10:00:00Z', followUp: null, due: null, assignee: 'demo' }
+    const taskB = { id: 'b', name: 'Task B', created: '2026-01-02T10:00:00Z', followUp: null, due: null, assignee: 'demo' }
+
+    // Each dialog keeps its own flag, so a test can tell which of the two was opened
+    const modalStub = {
+      template: '<div><slot></slot></div>',
+      data: () => ({ shown: false }),
+      methods: { show() { this.shown = true }, hide() { this.shown = false } }
+    }
+
+    function mountNavBar() {
+      return mountWithDefaults(TasksNavBar, {
+        props: { tasks: [taskA, taskB], taskResultsIndex: 20, search: '' },
+        global: {
+          provide: { isMobile: () => false, currentLanguage: () => 'en' },
+          mocks: {
+            // Mounted standalone, $root is the component itself, so $root.config resolves to this
+            config: {
+              ...structuredClone(DEFAULT_CONFIG),
+              taskFilter: { advancedSearch: { filterEnabled: false, processVariables: [] }, smartSearch: { options: [] } }
+            },
+            user: { id: 'demo', userID: 'demo' },
+            $route: { params: {}, query: {} },
+            $router: { push: vi.fn() },
+            $store: {
+              state: {
+                filter: { selected: { id: 'f1', properties: {} }, settings: { reminder: false, dueDate: false } },
+                advancedSearch: { criterias: [], matchAllCriteria: true },
+                user: { listCandidates: [] },
+                process: { list: [] }
+              },
+              getters: {},
+              dispatch: vi.fn(() => Promise.resolve())
+            }
+          },
+          stubs: {
+            StartProcess: true, AdvancedSearchModal: true, SmartSearch: true, ConfirmDialog: true,
+            BWaitingBox: true, HighlightedText: true,
+            'b-modal': modalStub,
+            'b-list-group': { template: '<ul><slot></slot></ul>' },
+            'b-list-group-item': { template: '<li><slot></slot></li>' },
+            'b-popover': true, 'b-form-checkbox': true, 'b-form-input': true, 'b-input-group': true,
+            'b-calendar': true, 'b-form-timepicker': true
+          }
+        }
+      })
+    }
+
+    const buttons = (wrapper, icon) => wrapper.findAll(`button.${icon}`)
+
+    it.each([
+      ['followUp', 'mdi-alarm'],
+      ['due', 'mdi-calendar-alert'],
+    ])('Space opens the %s dialog for the task of the button, not the one edited before', async (type, icon) => {
+      const wrapper = mountNavBar()
+      // Edit task A first, so a stale dialog would still point at it
+      await buttons(wrapper, icon)[0].trigger('click')
+      expect(wrapper.vm.taskToEdit).toStrictEqual(taskA)
+
+      await buttons(wrapper, icon)[1].trigger('keydown', { key: ' ' })
+
+      expect(wrapper.vm.taskToEdit).toStrictEqual(taskB)
+      expect(wrapper.vm.selectedDateT.id).toBe('b')
+      expect(wrapper.vm.$refs[type].shown).toBe(true)
+    })
+
+    it('Space on a fresh page opens the dialog with the task of the button', async () => {
+      const wrapper = mountNavBar()
+
+      await buttons(wrapper, 'mdi-alarm')[1].trigger('keydown', { key: ' ' })
+
+      expect(wrapper.vm.taskToEdit).toStrictEqual(taskB)
+    })
   })
 })
 
