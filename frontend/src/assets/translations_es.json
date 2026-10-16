@@ -505,6 +505,10 @@
 		"completedTasks": "Tareas finalizada",
 		"notStarted": "La tarea seleccionada aún ha sido iniciada.",
 		"setDeadline": "Establecer fecha límite",
+		"reminderLabel": "Recordatorio: {date}",
+		"dueLabel": "Fecha límite: {date}",
+		"dueSoonLabel": "Fecha límite: {date}, vence pronto",
+		"dueOverdueLabel": "Fecha límite: {date}, vencida",
 		"setReminder": "Establecer recordatorio",
 		"selectedTask": "Tarea seleccionada",
 		"details": {

@@ -505,6 +505,10 @@
 		"completedTasks": "Abgeschlossene Aufgaben",
 		"notStarted": "Die ausgewählte Aufgabe wurde noch nicht gestartet.",
 		"setDeadline": "Fälligkeitsdatum setzen",
+		"reminderLabel": "Wiedervorlage: {date}",
+		"dueLabel": "Fälligkeitsdatum: {date}",
+		"dueSoonLabel": "Fälligkeitsdatum: {date}, bald fällig",
+		"dueOverdueLabel": "Fälligkeitsdatum: {date}, überfällig",
 		"setReminder": "Wiedervorlagedatum einstellen",
 		"selectedTask": "Ausgewählte Aufgabe",
 		"details": {

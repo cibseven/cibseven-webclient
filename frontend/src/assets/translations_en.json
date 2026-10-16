@@ -505,6 +505,10 @@
 		"completedTasks": "Completed tasks",
 		"notStarted": "The selected task has not been started yet.",
 		"setDeadline": "Set deadline",
+		"reminderLabel": "Reminder: {date}",
+		"dueLabel": "Deadline: {date}",
+		"dueSoonLabel": "Deadline: {date}, due soon",
+		"dueOverdueLabel": "Deadline: {date}, overdue",
 		"setReminder": "Set reminder",
 		"selectedTask": "Selected task",
 		"details": {

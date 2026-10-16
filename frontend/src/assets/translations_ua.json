@@ -505,6 +505,10 @@
 			"completedTasks": "Завершені завдання",
 			"notStarted": "Вибране завдання ще не почато.",
 			"setDeadline": "Встановити термін виконання завдання",
+			"reminderLabel": "Нагадування: {date}",
+			"dueLabel": "Термін виконання: {date}",
+			"dueSoonLabel": "Термін виконання: {date}, скоро спливає",
+			"dueOverdueLabel": "Термін виконання: {date}, прострочено",
 			"setReminder": "Встановити дату нагадування",
 			"selectedTask": "Вибране завдання",
 			"details": {
