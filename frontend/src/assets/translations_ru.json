@@ -505,6 +505,10 @@
 		"completedTasks": "Завершённая Задачи",
 		"notStarted": "Выбраннаяя задача ещё не запущена.",
 		"setDeadline": "Установить срок исполнения задачи",
+		"reminderLabel": "Напоминание: {date}",
+		"dueLabel": "Срок исполнения: {date}",
+		"dueSoonLabel": "Срок исполнения: {date}, скоро истекает",
+		"dueOverdueLabel": "Срок исполнения: {date}, просрочен",
 		"setReminder": "Установить дату напоминания",
 		"selectedTask": "Выбранная задача",
 		"details": {
