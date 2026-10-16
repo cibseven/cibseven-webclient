@@ -559,6 +559,10 @@ const IncidentService = {
 }
 
 const AuthService = {
+  // Bounded: a stalled identity provider must not leave the user waiting for the logout
+  logout: function(returnUrl) {
+    return axios.post(getServicesBasePath() + "/auth/logout", { returnUrl }, { timeout: 6000 })
+  },
   fetchAuths: function() { return axios.get(getServicesBasePath() + "/auth/authorizations") },
   passwordRecover: function(data) { return axios.post(getServicesBasePath() + "/auth/password-recover", data) },
   passwordRecoverCheck: function(recoverToken) { return axios.get(getServicesBasePath() + "/auth/password-recover-check",

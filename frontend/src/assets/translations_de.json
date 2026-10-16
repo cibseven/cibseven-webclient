@@ -17,6 +17,9 @@
 	"login": {
 		"productName": "CIB seven",
 		"productSlogan": "Prozess Management Plattform",
+		"loggedOutText": "Sie wurden erfolgreich abgemeldet.",
+		"loggingOut": "Abmeldung läuft…",
+		"loggedOutAgain": "Erneut anmelden",
 		"username": "Benutzername",
 		"password": "Passwort",
 		"rememberMe": "Angemeldet bleiben",
