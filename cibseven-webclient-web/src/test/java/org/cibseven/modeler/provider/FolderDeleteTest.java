@@ -59,7 +59,7 @@ class FolderDeleteTest {
 			FolderEntity grandchild = folders.create(child.getId(), "Drafts", "tester");
 			folders.create(root.getId(), "Archive", "tester");
 
-			FolderProvider.FolderContents removed = folders.delete(root.getId());
+			FolderProvider.FolderContents removed = folders.delete(root.getId(), () -> false);
 
 			assertThat(removed.folders()).isEqualTo(3);
 			assertThat(repository.findById(root.getId())).isEmpty();
@@ -78,7 +78,7 @@ class FolderDeleteTest {
 			folders.create(removed.getId(), "Below", "tester");
 			FolderEntity kept = folders.create(null, "Staying", "tester");
 
-			folders.delete(removed.getId());
+			folders.delete(removed.getId(), () -> false);
 
 			assertThat(repository.findById(kept.getId())).isPresent();
 		});

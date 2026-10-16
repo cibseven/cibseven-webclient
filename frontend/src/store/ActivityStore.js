@@ -20,6 +20,7 @@ import { HistoryService } from '@/services.js'
 const ActivityStore = {
   state: { 
     processActivities: [],
+    externalTaskActivityIds: [],
     selectedActivityId: '',
     selectedActivityInstancesListMode: 'all', // all | executed | active
     highlightedElement: null,
@@ -29,6 +30,9 @@ const ActivityStore = {
   mutations: {
     setProcessActivities: function (state, activities) {
       state.processActivities = activities
+    },
+    setExternalTaskActivityIds: function (state, activityIds) {
+      state.externalTaskActivityIds = activityIds
     },
     setSelectedActivityId: function (state, { activityId = '', listMode = 'all' } = {}) {
       state.selectedActivityId = activityId
@@ -54,6 +58,7 @@ const ActivityStore = {
     selectedActivityInstancesListMode: (state) => state.selectedActivityInstancesListMode,
     highlightedElement: (state) => state.highlightedElement,
     getProcessActivities: (state) => state.processActivities,
+    externalTaskActivityIds: (state) => state.externalTaskActivityIds,
     activitiesInstanceHistory: (state) => state.activitiesInstanceHistory,
     diagramXml: (state) => state.diagramXml
   },

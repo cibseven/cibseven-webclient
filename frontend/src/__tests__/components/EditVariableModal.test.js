@@ -35,7 +35,7 @@ vi.mock('@/services.js', () => ({
 
 const AddVariableModalUIStub = {
   template: '<div></div>',
-  props: ['disabled'],
+  props: ['disabled', 'runtimeVariable'],
   methods: {
     show: vi.fn(),
     hide: vi.fn()
@@ -95,5 +95,61 @@ describe('EditVariableModal.vue', () => {
     expect(VariableInstanceService.getVariableInstance).toHaveBeenCalledWith('v1', false)
     expect(HistoricVariableInstanceService.getHistoricVariableInstance).not.toHaveBeenCalled()
     expect(wrapper.vm.effectiveHistoric).toBe(false)
+  })
+
+  describe('read-only mode', () => {
+    const uiProps = (wrapper) => wrapper.findComponent(AddVariableModalUIStub).props()
+
+    it('is editable for a runtime variable by default', async () => {
+      const wrapper = createWrapper()
+      await wrapper.vm.show('v1', 'var', false)
+      await flushPromises()
+      expect(uiProps(wrapper)).toMatchObject({ disabled: false, runtimeVariable: true })
+    })
+
+    it('is read-only for a historic variable', async () => {
+      const wrapper = createWrapper()
+      await wrapper.vm.show('v1', 'var', true)
+      await flushPromises()
+      expect(uiProps(wrapper)).toMatchObject({ disabled: true, runtimeVariable: false })
+    })
+
+    it('can show a runtime variable read-only via the readOnly argument', async () => {
+      const wrapper = createWrapper()
+      await wrapper.vm.show('v1', 'var', false, true)
+      await flushPromises()
+      expect(VariableInstanceService.getVariableInstance).toHaveBeenCalledWith('v1', false)
+      expect(uiProps(wrapper)).toMatchObject({ disabled: true, runtimeVariable: true })
+    })
+
+    it('resets read-only mode on the next show() call', async () => {
+      const wrapper = createWrapper()
+      await wrapper.vm.show('v1', 'var', false, true)
+      await wrapper.vm.show('v1', 'var', false)
+      await flushPromises()
+      expect(uiProps(wrapper).disabled).toBe(false)
+    })
+  })
+
+  describe('history level', () => {
+    const { historyLevel, isHistoricFetch } = EditVariableModal.computed
+
+    it('defaults to full history when the root config is not available', () => {
+      expect(historyLevel.call({ $root: {} })).toBe('full')
+      expect(historyLevel.call({ $root: { config: {} } })).toBe('full')
+    })
+
+    it('uses the configured history level', () => {
+      expect(historyLevel.call({ $root: { config: { camundaHistoryLevel: 'none' } } })).toBe('none')
+    })
+
+    it.each([
+      [true, 'full', true],
+      [true, 'none', false],
+      [false, 'full', false],
+      [false, 'none', false],
+    ])('isHistoricFetch(effectiveHistoric=%s, level=%s) is %s', (effectiveHistoric, level, expected) => {
+      expect(isHistoricFetch.call({ effectiveHistoric, historyLevel: level })).toBe(expected)
+    })
   })
 })

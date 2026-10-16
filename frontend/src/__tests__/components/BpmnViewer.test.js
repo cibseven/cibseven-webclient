@@ -849,6 +849,36 @@ describe('BpmnViewer - buildActivityMap', () => {
 
     expect(commit).toHaveBeenCalledWith('setProcessActivities', { task_1: 'Approve' })
   })
+
+  // The incident list filters external task incidents differently: the engine decides it the same
+  // way (camunda:type="external", case-insensitive).
+  it('should publish the ids of the external tasks, named or not', () => {
+    const commit = vi.fn()
+    // a business object reads its attributes through get(), as in bpmn-js
+    const shape = (properties) => ({ businessObject: { ...properties, get: (key) => ({ 'camunda:type': properties.type })[key] } })
+    const elementRegistry = {
+      getAll: () => [
+        shape({ id: 'external_1', name: 'Charge', type: 'external' }),
+        shape({ id: 'external_2', type: 'External' }),
+        shape({ id: 'mail_1', name: 'Mail', type: 'mail' }),
+        shape({ id: 'task_1', name: 'Approve' }),
+        { businessObject: { id: 'task_2', name: 'Reject' } },
+        shape({ type: 'external' })
+      ]
+    }
+
+    BpmnViewer.methods.buildActivityMap.call({ $store: { commit } }, elementRegistry)
+
+    expect(commit).toHaveBeenCalledWith('setExternalTaskActivityIds', ['external_1', 'external_2'])
+  })
+
+  it('should publish no external tasks when the diagram has none', () => {
+    const commit = vi.fn()
+
+    BpmnViewer.methods.buildActivityMap.call({ $store: { commit } }, { getAll: () => [] })
+
+    expect(commit).toHaveBeenCalledWith('setExternalTaskActivityIds', [])
+  })
 })
 
 describe('BpmnViewer - setSelectableOnAllowedElements', () => {

@@ -273,6 +273,14 @@
 			"deleteHistoryInstance": "¿Realmente quieres borrar la siguiente instancia histórica del proceso?"
 		},
 		"variables": {
+			"editVariable": {
+				"title": "Editar variable",
+				"tooltip": "Editar variable"
+			},
+			"runtimeVariable": {
+				"title": "Variable en tiempo de ejecución",
+				"tooltip": "Ver variable en tiempo de ejecución"
+			},
 			"historicVariable": {
 				"title": "Variable histórica",
 				"tooltip": "Ver detalles de la variable histórica"
@@ -478,6 +486,16 @@
 		"taskId": "Identificador de tarea",
 		"assign": "Asignar a alguien",
 		"assignToMe": "Asignarme",
+		"backToTaskList": "Volver a la lista de tareas",
+		"assignedTo": "Asignada a {0}",
+		"notAssigned": "Sin asignar",
+		"unassign": "Quitar asignación",
+		"searchUserLabel": "Buscar usuario",
+		"searchUserPlaceholder": "Nombre o ID de usuario",
+		"searchUserHint": "Escribe al menos 3 caracteres para buscar",
+		"searchResults": "Resultados de la búsqueda",
+		"candidateUsers": "Usuarios candidatos",
+		"noUsersFound": "No se han encontrado usuarios",
 		"assignPopoverTitle": "Ud. no tiene esta tarea asignada",
 		"assignPopoverContent": "Asígnese la tarea para poder comenzar a trabajar.",
 		"assignPopoverContent2": "Recuerda que también puedes asignarlo a otra persona, para ello ve a la sección de acciones en la parte superior de la barra lateral derecha.",

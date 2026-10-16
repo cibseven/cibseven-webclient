@@ -168,6 +168,45 @@ public class TaskProviderTest {
 	}
 
 	@Test
+	void claim_postsTheUserToTheEngine() throws Exception {
+		engine.enqueueJson("");
+
+		taskProvider.claim("task-1", "demo", user);
+
+		var request = engine.take();
+		assertThat(request.getPath()).endsWith("/task/task-1/claim");
+		assertThat(request.getBody().readUtf8()).contains("\"userId\":\"demo\"");
+	}
+
+	@Test
+	void claim_passesAMissingUserOnInsteadOfFailing() throws Exception {
+		engine.enqueueJson("");
+
+		// engine-rest accepts a null userId; failing here would turn a form's call into a 500
+		taskProvider.claim("task-1", null, user);
+
+		assertThat(engine.take().getBody().readUtf8()).contains("\"userId\":null");
+	}
+
+	@Test
+	void delegate_passesAMissingUserOnInsteadOfFailing() throws Exception {
+		engine.enqueueJson("");
+
+		taskProvider.delegate("task-1", null, user);
+
+		var request = engine.take();
+		assertThat(request.getPath()).endsWith("/task/task-1/delegate");
+		assertThat(request.getBody().readUtf8()).contains("\"userId\":null");
+	}
+
+	/**
+	 * TODO KNOWN BUG (not fixed): the unclaim path is chosen by comparing the assignee to the
+	 * string "null", so an actual null reference reaches {@code assignee.equals(...)} and throws a
+	 * {@link NullPointerException} instead of unclaiming the task. This test asserts that a null
+	 * assignee unclaims like the literal "null" does; it fails until the comparison is
+	 * null-safe.
+	 */
+	@Test
 	void setAssignee_unclaimsOnANullAssigneeReference() throws Exception {
 		engine.enqueueJson("");
 

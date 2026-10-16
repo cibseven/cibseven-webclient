@@ -148,7 +148,7 @@ describe('CibSeven.vue', () => {
       ]
       
       const result = CibSeven.methods.getVisibleMenuItems(items)
-      expect(result.length).toBe(2)
+      expect(result).toHaveLength(2)
       expect(result[0].groupTitle).toBe('Group 1')
       expect(result[1].groupTitle).toBe('Group 3')
     })

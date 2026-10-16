@@ -25,8 +25,8 @@
         variant="btn-outline-primary" size="sm"
         :title="$t('nav-bar.refresh')"
         :aria-label="$t('nav-bar.refresh')"
-        style="top: 3px; right: 30px" class="border-0 position-absolute" 
-        :style="pauseRefreshButton ? 'opacity: 0.5' : ''">
+        class="border-0 position-absolute" :class="{ 'px-0': isMobile() }"
+        :style="[refreshButtonPosition, pauseRefreshButton ? 'opacity: 0.5' : '']">
         <span class="mdi mdi-18px mdi-refresh" aria-hidden="true"></span>
       </b-button>
 
@@ -146,7 +146,7 @@
                   <div class="h6 text-end p-0 fw-normal m-0" v-if="task.assignee != null">
                     <HighlightedText :text="getCompleteName(task)" :keyword="search" class="mdi mdi-18px mdi-account text-secondary p-1"></HighlightedText>
                   </div>
-                  <div class="h6 text-end p-0 fw-normal n-0" v-if="task.assignee == null">
+                  <div class="h6 text-end p-0 fw-normal n-0" v-if="hasAssignToMeButton(task)">
                     <b-button variant="link" class="p-0 lh-1 text-dark" @click.stop="checkAssignee(task)" @keydown.enter.stop="checkAssignee(task)" @keyup.enter.stop.prevent @keydown.space.prevent.stop="checkAssignee(task)">
                       <span class="mdi mdi-18px mdi-account-question text-secondary"></span>
                       {{ $t('task.assignToMe') }}
@@ -242,13 +242,15 @@ import SmartSearch from '@/components/task/SmartSearch.vue'
 import { ConfirmDialog, BWaitingBox, HighlightedText } from '@cib/common-frontend'
 import { mapActions } from 'vuex'
 import variableUtils from '@/components/process/mixins/variableUtils.js'
+import { permissionsMixin } from '@/permissions.js'
 
 export default {
   name: 'TasksNavBar',
   components: { StartProcess, AdvancedSearchModal, SmartSearch, ConfirmDialog, BWaitingBox, HighlightedText },
+  mixins: [permissionsMixin],
   props: { tasks: Array, taskResultsIndex: Number, search: String },
   inject: ['currentLanguage','isMobile'],
-  emits: ['search-filter', 'process-started', 'selected-task', 'update-assignee', 'show-more', 'refresh-tasks', 'refresh-tasks-number'],
+  emits: ['search-filter', 'process-started', 'selected-task', 'update-assignee', 'show-more', 'refresh-tasks', 'refresh-tasks-number', 'show-task'],
   data: function () {
     return {
       currentSorting: {},
@@ -283,11 +285,15 @@ export default {
     'tasksFiltered': {
       immediate: false,
       handler: function () {
-        if (this.pendingScrollToTaskId &&
-          this.tasksFiltered.some(t => t.id === this.pendingScrollToTaskId)) {
+        if (!this.pendingScrollToTaskId || this.tasksFiltered.length === 0) return
+        if (this.tasksFiltered.some(t => t.id === this.pendingScrollToTaskId)) {
           this.$nextTick(() => {
             this.scrollToSelectedTask()
           })
+        } else {
+          // The task is beyond the loaded pages: give up rather than jump to it later while
+          // the user scrolls through more results
+          this.pendingScrollToTaskId = null
         }
       }
     },
@@ -311,6 +317,11 @@ export default {
     }
   },
   computed: {
+    // On desktop the header chevrons sit either side of the button; mobile has none,
+    // so align it with the header's own padding
+    refreshButtonPosition: function() {
+      return { top: '3px', right: this.isMobile() ? '0.75rem' : '30px' }
+    },
     tasksFiltered: function() {
       let tasks = []
       if (this.tasks) {
@@ -507,6 +518,9 @@ export default {
       if (!this.isMobile() && task !== this.focused && task.id !== this.selectedDateT.id && !task.followUp) classes.push('action-button-hidden')
       return classes
     },
+    hasAssignToMeButton: function(task) {
+      return task.assignee == null && this.canAssignUserTask(task)
+    },
     claim: function(task) {
       TaskService.setAssignee(task.id, this.$root.user.id).then(() => {
         task.assignee = this.$root.user.id
@@ -525,6 +539,9 @@ export default {
       const filterId = this.$store.state.filter.selected ?
         this.$store.state.filter.selected.id : this.$route.params.filterId
       if (!selection.toString()) {
+        // On mobile the list covers the open task; tapping it again must bring it back
+        // without reloading it, since the route does not change
+        if (this.isMobile() && task.id === this.$route.params.taskId) return this.$emit('show-task')
         const route = '/seven/auth/tasks/' + filterId + '/' + task.id
         if (this.$router.currentRoute.path !== route){
           this.$router.push(route)
@@ -628,7 +645,11 @@ export default {
 	    } else {
 	      el = ref
 	    }
-	    if (el && typeof el.scrollIntoView === 'function') {
+	    if (el && el.offsetParent === null) {
+	      // The list is hidden (e.g. behind the task on mobile), so scrolling now has no effect:
+	      // keep it pending until the list is shown again
+	      this.pendingScrollToTaskId = taskId
+	    } else if (el && typeof el.scrollIntoView === 'function') {
 	      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
 	      this.pendingScrollToTaskId = null
 	    } else if (retryCount < MAX_SCROLL_RETRIES){

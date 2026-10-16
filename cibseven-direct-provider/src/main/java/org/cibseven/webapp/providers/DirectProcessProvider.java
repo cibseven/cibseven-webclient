@@ -429,7 +429,7 @@ public class DirectProcessProvider implements IProcessProvider {
 
 	@Override
 	public void deleteProcessInstance(String processInstanceId, CIBUser user) {
-		directProviderUtil.getProcessEngine(user).getRuntimeService().deleteProcessInstance(processInstanceId, null);
+		directProviderUtil.getProcessEngine(user).getRuntimeService().deleteProcessInstance(processInstanceId, null, false, true);
 	}
 
 	@Override
@@ -1005,12 +1005,9 @@ public class DirectProcessProvider implements IProcessProvider {
 
 	@Override
 	public Long countProcessesInstancesRuntime(Map<String, Object> filters, CIBUser user) {
-		ObjectMapper objectMapper = directProviderUtil.getObjectMapper(user);
-		HistoricProcessInstanceQueryDto historicProcessInstanceQueryDto = objectMapper.convertValue(filters,
-				HistoricProcessInstanceQueryDto.class);
-    ProcessEngine engine = directProviderUtil.getProcessEngine(user);
-    historicProcessInstanceQueryDto.setObjectMapper(objectMapper);
-    HistoricProcessInstanceQuery query = historicProcessInstanceQueryDto.toQuery(engine);
+		ProcessInstanceQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(filters, ProcessInstanceQueryDto.class);
+		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
+		ProcessInstanceQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
     return query.count();
 	}
 
