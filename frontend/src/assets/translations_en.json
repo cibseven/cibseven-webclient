@@ -1107,6 +1107,7 @@
 		"Network_Error": "There is a connection problem",
 		"FolderUploadError": "Upload folders is not allowed, please upload files only.",
 		"SystemException": "An unexpected technical error occurred. Do you want to send a report?",
+		"EngineRestClientException": "The request was rejected: {0}",
 		"DoxichangeException": "The preview can’t be generated. Do you want to send the affected document for analysis?",
 		"AccessDeniedException": "No Permission ({0})",
 		"NoPermission": "You do not have the necessary permissions to perform this action.\nRequired persmission: \"{permission}\".\nReferenced from: {refPath}",

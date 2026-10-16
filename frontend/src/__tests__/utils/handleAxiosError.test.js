@@ -55,6 +55,35 @@ describe('handleAxiosError', () => {
     await expect(handleAxiosError(router, rootWithErrorDialog(), error)).rejects.toBe(error)
   })
 
+  // CIB7-2158: the webclient now forwards the engine's client error instead of answering 500
+  it('opens the error dialog for a forwarded engine client error', async () => {
+    const root = rootWithErrorDialog()
+    const data = { type: 'EngineRestClientException', params: ['bad date'] }
+
+    await expect(handleAxiosError(router, root, { response: { status: 400, data } })).rejects.toBeDefined()
+
+    expect(root.$refs.error.show).toHaveBeenCalledWith(data)
+  })
+
+  it('leaves a forwarded engine client error inside a deployed form to the form', async () => {
+    const root = rootWithErrorDialog()
+    const formRouter = { currentRoute: { value: { name: 'deployed-form' } } }
+    const error = { response: { status: 404, data: { type: 'EngineRestClientException', params: ['gone'] } } }
+
+    await expect(handleAxiosError(formRouter, root, error)).rejects.toBe(error)
+
+    expect(root.$refs.error.show).not.toHaveBeenCalled()
+  })
+
+  it('opens no dialog for any other client error', async () => {
+    const root = rootWithErrorDialog()
+
+    await expect(handleAxiosError(router, root, { response: { status: 400, data: { type: 'Other' } } }))
+      .rejects.toBeDefined()
+
+    expect(root.$refs.error.show).not.toHaveBeenCalled()
+  })
+
   it('opens no dialog for an unknown type either', async () => {
     const root = rootWithErrorDialog()
 

@@ -1107,6 +1107,7 @@
 		"Network_Error": "Hay un problema de conexión",
 		"FolderUploadError": "No es posible subir carpetas, por favor sube solo archivos.",
 		"SystemException": "Se ha producido un problema técnico inesperado. ¿Deseas enviar un informe?",
+		"EngineRestClientException": "La solicitud fue rechazada: {0}",
 		"DoxichangeException": "No se ha podido generar la vista previa. ¿Deseas enviar el documento afectado para su análisis?",
 		"AccessDeniedException": "Sin autorización ({0})",
 		"NoPermission": "No tienes los permisos necesarios para realizar esta acción.\nPermiso requerido: \"{permission}\".\nReferenciado desde: {refPath}",

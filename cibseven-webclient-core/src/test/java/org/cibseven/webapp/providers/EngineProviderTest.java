@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -28,6 +29,7 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 
+import org.cibseven.webapp.exception.EngineRestClientException;
 import org.cibseven.webapp.rest.CustomRestTemplate;
 import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.junit.jupiter.api.AfterEach;
@@ -146,8 +148,29 @@ public class EngineProviderTest {
 		assertNull(result);
 	}
 
+	/** Engines before 2.2.0 secure the missing endpoint with a 401; that falls back too. */
 	@Test
-	public void testRequiresSetup_withDefaultEngine_callsCorrectUrl() throws InterruptedException {
+	void testGetEngineConfiguration_unauthorized_returnsNull() {
+		mockWebServer.enqueue(new MockResponse().setResponseCode(401));
+
+		EngineConfiguration result = provider.getEngineConfiguration("default");
+
+		assertNull(result);
+	}
+
+	/** Any other client error is not a missing endpoint and still reaches the caller. */
+	@Test
+	void testGetEngineConfiguration_otherClientError_isRethrown() {
+		mockWebServer.enqueue(new MockResponse().setResponseCode(400));
+
+		EngineRestClientException thrown = assertThrows(EngineRestClientException.class,
+				() -> provider.getEngineConfiguration("default"));
+
+		assertEquals(400, thrown.getStatus());
+	}
+
+	@Test
+	public void testRequiresSetup_withDefaultEngine_callsCorrectUrl()throws InterruptedException {
 		mockWebServer.enqueue(new MockResponse()
 				.setBody("false")
 				.addHeader("Content-Type", "application/json"));
