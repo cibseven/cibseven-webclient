@@ -119,17 +119,17 @@
                 </h3>
                 <div class="d-flex ms-auto">
                   <b-button
-                    @click.stop="copyTaskForDateManagement(task, 'followUp'); $refs.followUp.show()"
-                    @keydown.enter.stop.prevent="copyTaskForDateManagement(task, 'followUp'); $refs.followUp.show()"
-                    @keyup.enter.stop.prevent 
-                    @keydown.space.stop.prevent="$refs.followUp.show()"
+                    @click.stop="openDateDialog(task, 'followUp')"
+                    @keydown.enter.stop.prevent="openDateDialog(task, 'followUp')"
+                    @keyup.enter.stop.prevent
+                    @keydown.space.stop.prevent="openDateDialog(task, 'followUp')"
                     v-if="$root.config.layout.showFilterReminderDate"
                     size="sm" :class="getReminderClasses(task)" variant="light" class="mdi mdi-18px mdi-alarm border-0 me-1" :title="getDateFormatted(task.followUp, 'L', 'setReminder')"></b-button>
                   <b-button
-                    @click.stop="copyTaskForDateManagement(task, 'due'); $refs.due.show()"
-                    @keydown.enter.stop.prevent="copyTaskForDateManagement(task, 'due'); $refs.due.show()"
-                    @keyup.enter.stop.prevent 
-                    @keydown.space.stop.prevent="$refs.due.show()"
+                    @click.stop="openDateDialog(task, 'due')"
+                    @keydown.enter.stop.prevent="openDateDialog(task, 'due')"
+                    @keyup.enter.stop.prevent
+                    @keydown.space.stop.prevent="openDateDialog(task, 'due')"
                     v-if="$root.config.layout.showFilterDueDate"
                     size="sm" :class="getDueClasses(task)" variant="light" class="mdi mdi-18px mdi-calendar-alert border-0" :title="getDateFormatted(task.due, 'L', 'setDeadline')"></b-button>
                 </div>
@@ -602,6 +602,12 @@ export default {
           this.selectedDateT.followUp.setHours(0,0,0,0)
         }
       }
+    },
+    // Mouse, Enter and Space all go through here, so every way of opening the dialog edits the
+    // task the button belongs to
+    openDateDialog: function(task, type) {
+      this.copyTaskForDateManagement(task, type)
+      this.$refs[type].show()
     },
     copyTaskForDateManagement: function(task, type) {
       this.taskToEdit = task
