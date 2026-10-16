@@ -77,7 +77,7 @@
           </ResourcesNavBar>
           <b-waiting-box v-else styling="width: 35px" class="h-100 d-flex justify-content-center"></b-waiting-box>
         </template>
-        <div ref="scrollableArea" class="w-100 h-100 d-flex flex-column overflow-auto overflow-y-scroll">
+        <div ref="scrollableArea" class="w-100 h-100 d-flex flex-column overflow-auto overflow-y-scroll" v-scroll-on-mobile>
 
           <PagedScrollableContent :loading="loading" :loaded-count="deployments.length" :total-count="totalCount"
             :chunk-size="maxResults" :scrollable-area="$refs.scrollableArea" @load-next-page="loadNextPage"
