@@ -1,4 +1,7 @@
 {
+	"name": "Demo report",
+	"version": "1.0.0",
+	"description": "Adds a report tab to the process instance view.",
 	"entry": "index.js",
 	"apiVersion": ["2.2", "2.3"],
 	"slots": ["process-instance-tab"],
