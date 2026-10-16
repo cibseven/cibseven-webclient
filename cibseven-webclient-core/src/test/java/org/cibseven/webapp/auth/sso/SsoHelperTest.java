@@ -141,16 +141,7 @@ public class SsoHelperTest {
 		assertThat(server.takeRequest().getPath()).isEqualTo("/certs");
 	}
 
-	/**
-	 * TODO KNOWN BUG (not fixed): {@code KeyResolver.loadKey} guards against a null {@code KeyList}
-	 * but not against a {@code KeyList} whose "keys" array is absent, so a JWKS document that
-	 * parses but has no keys - a misconfigured or half-migrated identity provider - dereferences
-	 * null and fails with a bare {@link NullPointerException}. This test asserts the
-	 * {@code AuthenticationException} the guard is meant to produce; it fails until the empty-key
-	 * case is guarded too.
-	 */
 	@Test
-	@Disabled("KNOWN BUG: KeyResolver.loadKey does not guard an empty JWKS, so it NPEs instead of failing authentication")
 	void construction_failsWhenTheProviderPublishesNoKeys() {
 		enqueueJson("{}");
 
