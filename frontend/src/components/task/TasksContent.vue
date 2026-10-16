@@ -63,21 +63,26 @@
           <h3 class="h5">{{ $t('seven.selectTask') }}</h3>
         </div>
       </transition>
-      <template v-slot:leftIcon>
-        <b-button v-if="isMobile()" variant="link" size="sm" class="float-start border-0 border-end rounded-0 me-2 py-0 ps-0 pe-2"
+      <!-- The header shows no chevron of its own: the buttons below resize and collapse the list -->
+      <template v-slot:leftIcon><span></span></template>
+      <!-- Next to the header toggle, not inside it: a button may not contain other buttons -->
+      <template v-slot:leftActions>
+        <b-button v-if="isMobile()" variant="link" size="sm" class="order-first border-0 border-end rounded-0 me-2 py-0 ps-0 pe-2"
           :title="$t('nav-bar.filtersTitle')" :aria-label="$t('nav-bar.filtersTitle')" :aria-expanded="String(leftOpenFilter)"
           @click.stop="leftOpenFilter = true">
           <span class="mdi mdi-18px mdi-filter-outline" aria-hidden="true"></span>
         </b-button>
-        <div v-else>
-          <b-button v-if="tasksNavbarSize !== 2" style="top: 3px; right: 0" :title="$t('task.expand')"
-          class="border-0 position-absolute" size="sm" variant="link" @click.stop="tasksNavbarSize++">
-            <span class="mdi mdi-18px mdi-chevron-right"></span>
+        <!-- In the order they show, left to right, so Tab follows the screen -->
+        <template v-else>
+          <b-button style="top: 3px; right: 60px" class="border-0 position-absolute" variant="link" size="sm" :title="$t('task.collapse')" :aria-label="$t('task.collapse')"
+            @click.stop="collapseNavbar()">
+            <span class="mdi mdi-18px mdi-chevron-left" aria-hidden="true"></span>
           </b-button>
-          <b-button style="top: 3px; right: 60px" class="border-0 position-absolute" variant="link" size="sm" :title="$t('task.collapse')" @click.stop="collapseNavbar()">
-            <span class="mdi mdi-18px mdi-chevron-left"></span>
+          <b-button v-if="tasksNavbarSize !== 2" style="top: 3px; right: 0" :title="$t('task.expand')" :aria-label="$t('task.expand')"
+            class="border-0 position-absolute" size="sm" variant="link" @click.stop="tasksNavbarSize++">
+            <span class="mdi mdi-18px mdi-chevron-right" aria-hidden="true"></span>
           </b-button>
-        </div>
+        </template>
       </template>
       <template v-slot:right>
         <component :is="TasksRightSidebar" v-if="TasksRightSidebar"
