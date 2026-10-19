@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.providers.PermissionConstants;
 import org.cibseven.webapp.rest.model.Incident;
@@ -47,7 +48,7 @@ import jakarta.servlet.http.HttpServletRequest;
 		@ApiResponse(responseCode = "401", description = "Unauthorized")
 })
 @RestController
-@RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/incident")
+@RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH + "/incident")
 public class IncidentService extends BaseService implements InitializingBean {
 
 	@Autowired

@@ -18,6 +18,7 @@ package org.cibseven.modeler.config;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.core.Ordered;
@@ -31,7 +32,7 @@ import org.springframework.core.env.MapPropertySource;
  */
 public class ModelerEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
 
-    private static final String MODELER_ENABLED_PROPERTY = "cibseven.webclient.modeler.enabled";
+    private static final String MODELER_ENABLED_PROPERTY = SevenWebclientProperties.MODELER_PREFIX + ".enabled";
     private static final String DATASOURCE_URL_PROPERTY = "spring.datasource.url";
     private static final String EXCLUDE_PROPERTY = "spring.autoconfigure.exclude";
 

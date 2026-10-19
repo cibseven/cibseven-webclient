@@ -19,6 +19,7 @@ package org.cibseven.modeler.provider;
 import org.cibseven.modeler.config.ModelerPersistenceConfiguration;
 import org.cibseven.modeler.model.FolderEntity;
 import org.cibseven.modeler.repository.FolderRepository;
+import org.cibseven.webapp.config.SevenWebclientPropertiesAutoConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -38,6 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class FolderDeleteTest {
 
 	private final ApplicationContextRunner runner = new ApplicationContextRunner()
+		.withConfiguration(AutoConfigurations.of(SevenWebclientPropertiesAutoConfiguration.class))
 		.withPropertyValues("spring.datasource.url=jdbc:h2:mem:folderdelete;DB_CLOSE_DELAY=-1",
 			"spring.datasource.driver-class-name=org.h2.Driver",
 			"spring.sql.init.mode=always",

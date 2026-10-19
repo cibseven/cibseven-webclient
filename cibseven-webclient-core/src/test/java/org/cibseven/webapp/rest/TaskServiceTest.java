@@ -76,7 +76,7 @@ public class TaskServiceTest {
 		taskService = new TaskService();
 		ReflectionTestUtils.setField(taskService, "bpmProvider", bpmProvider);
 		ReflectionTestUtils.setField(taskService, "baseUserProvider", baseUserProvider);
-		ReflectionTestUtils.setField(taskService, "authorizationEnabled", false);
+		taskService.properties.getDeprecated().getAuthorization().setEnabled(false);
 		user = new CIBUser("demo");
 	}
 
@@ -314,7 +314,7 @@ public class TaskServiceTest {
 		// process applications often serve the embedded form HTML without a charset (CIB7-2204)
 		CustomRestTemplate restTemplate = new CustomRestTemplate();
 		ReflectionTestUtils.setField(taskService, "restTemplate", restTemplate);
-		ReflectionTestUtils.setField(taskService, "cibsevenUrl", "http://process-app/");
+		taskService.properties.getEngineRest().setUrl("http://process-app/");
 		when(bpmProvider.form("task-1", user)).thenReturn(new TaskForm("embedded:app:forms/review.html", "/invoice", null));
 		String html = "<form><label>Begründung 姓名</label></form>";
 		MockRestServiceServer processApp = MockRestServiceServer.bindTo(restTemplate).build();

@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.rest.StandardLogin;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.exception.BatchOperationException;
 import org.cibseven.webapp.exception.DmnTransformationException;
 import org.cibseven.webapp.exception.ExistingGroupRequestException;
@@ -52,7 +53,6 @@ import org.cibseven.webapp.exception.VariableModificationException;
 import org.cibseven.webapp.exception.WrongDeploymenIdException;
 import org.cibseven.webapp.exception.InvalidGroupIdException;
 import org.cibseven.webapp.rest.model.Authorization;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -78,9 +78,8 @@ public abstract class SevenProviderBase {
 
   protected static final String USER_ID_HEADER = "Context-User-ID";
 
-	@Value("${cibseven.webclient.custom.spring.jackson.parser.max-size:20000000}") int jacksonParserMaxSize;
-	@Value("${cibseven.webclient.engineRest.url:./}") protected String cibsevenUrl;
-	@Value("${cibseven.webclient.engineRest.path:/engine-rest}") protected String engineRestPath;
+	@Autowired(required = false)
+	protected SevenWebclientProperties properties = new SevenWebclientProperties();
 
 	@Autowired
 	protected CustomRestTemplate customRestTemplate;
@@ -122,8 +121,8 @@ public abstract class SevenProviderBase {
 		}
 		
 		// Fall back to default configuration (for legacy engine names or when no engine specified)
-		String baseUrl = cibsevenUrl.endsWith("/") ? cibsevenUrl.substring(0, cibsevenUrl.length() - 1) : cibsevenUrl;
-		String restPath = engineRestPath.startsWith("/") ? engineRestPath : "/" + engineRestPath;
+		String baseUrl = getEngineRestBaseUrl();
+		String restPath = getEngineRestPath();
 		
 		// If engine identifier is provided and not 'default', add it to the path
 		// Only use legacy format if engineId doesn't contain pipe (avoid treating malformed pipe format as legacy)
@@ -141,10 +140,26 @@ public abstract class SevenProviderBase {
 	 * @return the base engine REST URL
 	 */
 	protected String getEngineRestUrl() {
-		String baseUrl = cibsevenUrl.endsWith("/") ? cibsevenUrl.substring(0, cibsevenUrl.length() - 1) : cibsevenUrl;
-		String restPath = engineRestPath.startsWith("/") ? engineRestPath : "/" + engineRestPath;
+		String baseUrl = getEngineRestBaseUrl();
+		String restPath = getEngineRestPath();
 		
 		return baseUrl + restPath;
+	}
+
+	/**
+	 * @return the configured engine REST url without trailing slash
+	 */
+	private String getEngineRestBaseUrl() {
+		String url = properties.getEngineRest().getUrl();
+		return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+	}
+
+	/**
+	 * @return the configured engine REST path with leading slash
+	 */
+	private String getEngineRestPath() {
+		String path = properties.getEngineRest().getPath();
+		return path.startsWith("/") ? path : "/" + path;
 	}
 
 	/**
@@ -412,7 +427,7 @@ public abstract class SevenProviderBase {
 
         StreamReadConstraints streamReadConstraints = StreamReadConstraints
                 .builder()
-                .maxStringLength(jacksonParserMaxSize)
+                .maxStringLength(properties.getCustom().getSpring().getJackson().getParser().getMaxSize())
                 .build();
         objectMapper.getFactory().setStreamReadConstraints(streamReadConstraints);
 

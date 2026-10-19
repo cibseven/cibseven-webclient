@@ -27,6 +27,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.w3c.dom.Document;
@@ -85,7 +86,7 @@ import java.io.ByteArrayInputStream;
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
 	@ApiResponse(responseCode = "401", description = "Unauthorized")
 })
-@RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}/modeler")
+@RestController @RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH + "/modeler")
 public class ModelerService extends ModelerBaseService {
 
 	@Autowired DBProcessDiagramProvider dbProcessDiagramProvider;

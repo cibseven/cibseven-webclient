@@ -31,6 +31,7 @@ import org.cibseven.webapp.auth.assertion.AssertionType;
 import org.cibseven.webapp.auth.assertion.AzureWorkloadIdentityAssertionProvider;
 import org.cibseven.webapp.auth.assertion.JjwtAssertionProvider;
 import org.cibseven.webapp.auth.exception.AuthenticationException;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.exception.SystemException;
 import org.springframework.boot.ssl.pem.PemContent;
 import org.springframework.core.ParameterizedTypeReference;
@@ -257,7 +258,7 @@ public class SsoHelper {
 		if (clientSecret != null && !clientSecret.isBlank()) return null;
 		if (assertionType == null) {
 			throw new IllegalStateException(
-				"cibseven.webclient.sso.assertion.type must be set to enable client assertion authentication");
+				SevenWebclientProperties.PREFIX + ".sso.assertion.type must be set to enable client assertion authentication");
 		}
 
 		if (assertionType == AssertionType.AZURE_WORKLOAD_IDENTITY) {
@@ -266,7 +267,7 @@ public class SsoHelper {
 
 		if (assertionKeyLocation == null || assertionKeyLocation.isBlank()) {
 			throw new IllegalStateException(
-				"cibseven.webclient.sso.assertion.keyLocation must be set for assertion type " + assertionType);
+				SevenWebclientProperties.PREFIX + ".sso.assertion.keyLocation must be set for assertion type " + assertionType);
 		}
 
 		Resource resource = new DefaultResourceLoader().getResource(assertionKeyLocation);

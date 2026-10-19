@@ -16,7 +16,10 @@
  */
 package org.cibseven.webapp.rest;
 
+import java.util.Objects;
+
 import org.cibseven.webapp.auth.SevenUserProvider;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.providers.IEngineProvider;
 import org.cibseven.webapp.rest.model.EngineConfiguration;
@@ -27,8 +30,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import jakarta.annotation.PostConstruct;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -46,37 +47,6 @@ import lombok.extern.slf4j.Slf4j;
 @RestController @RequestMapping("/info") @Slf4j
 public class InfoService extends BaseService {	
 	
-	@Value("${cibseven.webclient.theme:cib}") private String theme;
-	@Value("${cibseven.webclient.sso.active:false}") private boolean ssoActive;
-	@Value("${cibseven.webclient.sso.endpoints.authorization:}") private String authorizationEndpoint;
-	@Value("${cibseven.webclient.sso.clientId:}") private String clientId;
-	@Value("${cibseven.webclient.sso.scopes:}") private String scopes;
-	/**
-	 * Legacy fallback used only with engine-rest versions prior to 2.2.0.
-	 *
-	 * Since 2.2.0, the history level is exposed by the engine configuration endpoint,
-	 * allowing it to be resolved dynamically. This property is therefore used only
-	 * when communicating with older engine-rest versions that do not support that endpoint,
-	 * keeping the "/info" endpoint backward-compatible without requiring the history level
-	 * to be maintained in the application configuration.
-	 */
-	@Value("${cibseven.webclient.historyLevel:full}") private String camundaHistoryLevel;
-	@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") private String userProvider;
-	@Value("${cibseven.webclient.user.editable:#{null}}") private Boolean userEditable;
-	@Value("${cibseven.webclient.user.userPasswordChangeEnabled:}") private Boolean userPasswordChangeEnabled;
-	
-	@Value("${cibseven.webclient.productNamePageTitle:CIB seven}") private String productNamePageTitle;
-	
-	@Value("${cibseven.webclient.services.basePath:services/v1}") private String servicesBasePath;
-	
-	@Value("${cibseven.webclient.link.terms:}") private String flowLinkTerms;
-	@Value("${cibseven.webclient.link.privacy:}") private String flowLinkPrivacy;
-	@Value("${cibseven.webclient.link.imprint:}") private String flowLinkImprint;
-	@Value("${cibseven.webclient.link.accessibility:}") private String flowLinkAccessibility;
-	@Value("${cibseven.webclient.link.help:}") private String flowLinkHelp;
-	@Value("${cibseven.webclient.support-dialog:}") private String supportDialog;
-	@Value("${cibseven.webclient.engineRest.path:/engine-rest}") private String engineRestPath;
-	@Value("${cibseven.webclient.engineRest.url:./}") private String engineRestUrl;
 	/**
 	 * Legacy fallback used only with engine-rest versions prior to 2.2.0.
 	 *
@@ -87,10 +57,6 @@ public class InfoService extends BaseService {
 	 * to be maintained in the application configuration.
 	 */
 	@Value("${camunda.bpm.authorization.enabled:true}") private boolean authorizationEnabled;
-	@Value("${cibseven.webclient.legacy.authorization.enabled:false}") private boolean legacyAuthorizationEnabled;
-	@Value("${cibseven.webclient.modeler.enabled:false}") private boolean modelerEnabled;
-	@Value("${cibseven.webclient.plugins.enabled:false}") private boolean pluginsEnabled;
-	@Value("${cibseven.webclient.startProcess.defaultFormEnabled:false}") private boolean startProcessDefaultFormEnabled;
 	
 	@Autowired
 	InfoVersion infoVersion;
@@ -98,14 +64,6 @@ public class InfoService extends BaseService {
 	@Autowired
 	BpmProvider bpmProvider;
 
-	@PostConstruct
-	public void init() {
-		// If userEditable is not set in yaml, set it based on userProvider
-		if (userEditable == null) {
-			userEditable = SevenUserProvider.class.getName().equals(userProvider);
-		}
-	}
-	
 	@Operation(
 			summary = "Get info version",
 			description = "<strong>Return: Info version")
@@ -139,7 +97,7 @@ public class InfoService extends BaseService {
 			);
 
 			engineConfig = new EngineConfiguration();
-			engineConfig.setHistoryLevel(camundaHistoryLevel);
+			engineConfig.setHistoryLevel(properties.getHistoryLevel());
 			engineConfig.setAuthorizationEnabled(authorizationEnabled);
 			// Before 2.2.0 passwordPolicyEnabled was specified inside the config.json.
 			// Since 2.2.0, it is available only in the engine configuration endpoint.
@@ -150,42 +108,50 @@ public class InfoService extends BaseService {
 			// `engineConfig.setEnablePasswordPolicy(false);`
 		}
 
+		SevenWebclientProperties.User user = properties.getUser();
+		SevenWebclientProperties.Link link = properties.getLink();
+		SevenWebclientProperties.Sso sso = properties.getSso();
+		// If userEditable is not configured, set it based on userProvider
+		Boolean userEditable = user.getEditable() != null
+			? user.getEditable()
+			: SevenUserProvider.class.getName().equals(user.getProvider());
+
 		ObjectNode configJson = JsonNodeFactory.instance.objectNode();
-		configJson.put("theme", theme);
-		configJson.put("ssoActive", ssoActive);
+		configJson.put("theme", properties.getTheme());
+		configJson.put("ssoActive", sso.isActive());
 		configJson.put("camundaHistoryLevel", engineConfig.getHistoryLevel());
-		configJson.put("userProvider", userProvider);
+		configJson.put("userProvider", user.getProvider());
 		configJson.put("userEditable", userEditable);
-		configJson.put("userPasswordChangeEnabled", userPasswordChangeEnabled);
+		configJson.put("userPasswordChangeEnabled", user.getUserPasswordChangeEnabled());
 		// disabled (no need right now):
 		// `configJson.put("passwordPolicyEnabled", engineConfig.isEnablePasswordPolicy());`
-		configJson.put("flowLinkTerms", flowLinkTerms);
-		configJson.put("flowLinkPrivacy", flowLinkPrivacy);
-		configJson.put("flowLinkImprint", flowLinkImprint);
-		configJson.put("flowLinkAccessibility", flowLinkAccessibility);
-		configJson.put("flowLinkHelp", flowLinkHelp);
-		configJson.put("productNamePageTitle", productNamePageTitle);
-		configJson.put("servicesBasePath", servicesBasePath);
-		
-		configJson.put("engineRestPath", engineRestPath);
-		configJson.put("engineRestUrl", engineRestUrl);
-		configJson.put("authorizationEnabled", engineConfig.isAuthorizationEnabled() || legacyAuthorizationEnabled);
-		configJson.put("modelerEnabled", modelerEnabled);
-		configJson.put("pluginsEnabled", pluginsEnabled);
-		configJson.put("startProcessDefaultFormEnabled", startProcessDefaultFormEnabled);
+		configJson.put("flowLinkTerms", link.getTerms());
+		configJson.put("flowLinkPrivacy", link.getPrivacy());
+		configJson.put("flowLinkImprint", link.getImprint());
+		configJson.put("flowLinkAccessibility", link.getAccessibility());
+		configJson.put("flowLinkHelp", link.getHelp());
+		configJson.put("productNamePageTitle", properties.getProductNamePageTitle());
+		configJson.put("servicesBasePath", properties.getServices().getBasePath());
+
+		configJson.put("engineRestPath", properties.getEngineRest().getPath());
+		configJson.put("engineRestUrl", properties.getEngineRest().getUrl());
+		configJson.put("authorizationEnabled", engineConfig.isAuthorizationEnabled() || properties.getLegacy().getAuthorization().isEnabled());
+		configJson.put("modelerEnabled", properties.getModeler().isEnabled());
+		configJson.put("pluginsEnabled", properties.getPlugins().isEnabled());
+		configJson.put("startProcessDefaultFormEnabled", properties.getStartProcess().isDefaultFormEnabled());
 		
         try {
             ObjectMapper mapper = new ObjectMapper();
-        	JsonNode supportDialogJson = mapper.readTree(supportDialog);
+        	JsonNode supportDialogJson = mapper.readTree(properties.getSupportDialog());
 			configJson.set("supportDialog", supportDialogJson);
 		} catch (JsonProcessingException e) {
 			log.warn("Property support dialog is not set or incorrect");
 		}
        
-		if (ssoActive) {
-			configJson.put("authorizationEndpoint", authorizationEndpoint);
-			configJson.put("clientId", clientId);
-			configJson.put("scopes", scopes);
+		if (sso.isActive()) {
+			configJson.put("authorizationEndpoint", sso.getEndpoints().getAuthorization());
+			configJson.put("clientId", Objects.toString(sso.getClientId(), ""));
+			configJson.put("scopes", sso.getScopes());
 		}
 		return configJson;
 	}

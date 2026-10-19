@@ -21,6 +21,7 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.LogoutRedirectProvider;
 import org.cibseven.webapp.auth.User;
 import org.cibseven.webapp.auth.rest.StandardLogin;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.rest.model.Authorizations;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,7 +37,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotNull;
 
 @ApiResponses({ @ApiResponse(responseCode  = "500", description = "An unexpected system error occured") })
-@RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/auth")
+@RestController @RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH + "/auth")
 public class AuthenticationService extends BaseService {
 	
 	@Operation(summary  = "Authenticates a user and returns (among other things) a token to be passed with other services")

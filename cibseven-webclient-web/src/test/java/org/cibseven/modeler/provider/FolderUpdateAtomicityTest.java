@@ -19,6 +19,7 @@ package org.cibseven.modeler.provider;
 import org.cibseven.modeler.config.ModelerPersistenceConfiguration;
 import org.cibseven.modeler.model.FolderEntity;
 import org.cibseven.modeler.provider.FolderProvider.FolderChange;
+import org.cibseven.webapp.config.SevenWebclientPropertiesAutoConfiguration;
 import org.cibseven.webapp.exception.InvalidFolderException;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -39,6 +40,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class FolderUpdateAtomicityTest {
 
 	private final ApplicationContextRunner runner = new ApplicationContextRunner()
+		.withConfiguration(AutoConfigurations.of(SevenWebclientPropertiesAutoConfiguration.class))
 		.withPropertyValues("spring.datasource.url=jdbc:h2:mem:folderupdate;DB_CLOSE_DELAY=-1",
 			"spring.datasource.driver-class-name=org.h2.Driver",
 			"spring.sql.init.mode=always",

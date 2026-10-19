@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.providers.PermissionConstants;
@@ -45,7 +46,7 @@ import jakarta.servlet.http.HttpServletRequest;
 	@ApiResponse(responseCode= "500", description = "An unexpected system error occured"),
 	@ApiResponse(responseCode= "401", description = "Unauthorized")
 })
-@RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/job-definition")
+@RestController @RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH + "/job-definition")
 public class JobDefinitionService extends BaseService implements InitializingBean {
 
 	@Autowired BpmProvider bpmProvider;

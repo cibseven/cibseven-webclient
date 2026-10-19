@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -38,7 +39,7 @@ import org.springframework.test.context.support.TestPropertySourceUtils;
 public class PluginBeanWiringTest {
 
 	/** What {@link PluginAutoConfiguration} contributes besides the two beans. */
-	@EnableConfigurationProperties(PluginProperties.class)
+	@EnableConfigurationProperties(SevenWebclientProperties.class)
 	static class Properties {
 	}
 

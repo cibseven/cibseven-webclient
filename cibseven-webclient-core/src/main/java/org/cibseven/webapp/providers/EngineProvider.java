@@ -28,7 +28,6 @@ import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Engine;
 import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.cibseven.webapp.rest.model.NewUser;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
@@ -45,9 +44,6 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 	private static final String ENGINE_SUB_PATH = "/engine";
 
 	private String effectiveDefaultEngineName = null;
-
-	@Autowired(required = false)
-	private EngineRestProperties engineRestProperties;
 
 	private String getNamedEngineRestUrl(String engine) {
 		String url = getEngineRestUrl();
@@ -74,15 +70,11 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 	public Collection<Engine> getProcessEngineDefinitions() {
 		List<Engine> allEngines = new ArrayList<>();
 		
-		// Get default URL and path from properties, fallback to @Value fields from parent if not configured
-		String defaultUrl = engineRestProperties != null && engineRestProperties.getUrl() != null 
-			? engineRestProperties.getUrl() 
-			: cibsevenUrl;
-		String defaultPath = engineRestProperties != null && engineRestProperties.getPath() != null && !engineRestProperties.getPath().isEmpty()
-			? engineRestProperties.getPath() 
-			: engineRestPath;
-		String defaultDisplayName = engineRestProperties != null ? engineRestProperties.getDisplayName() : null;
-		String defaultTooltip = engineRestProperties != null ? engineRestProperties.getTooltip() : null;
+		EngineRestProperties engineRestProperties = properties.getEngineRest();
+		String defaultUrl = engineRestProperties.getUrl();
+		String defaultPath = engineRestProperties.getPath();
+		String defaultDisplayName = engineRestProperties.getDisplayName();
+		String defaultTooltip = engineRestProperties.getTooltip();
 		
 		try {
 			String fullUrl = buildUrl(defaultUrl, defaultPath) + ENGINE_SUB_PATH;
@@ -102,7 +94,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 		}
 		
 		// Fetch engines from additional URLs
-		if (engineRestProperties != null && engineRestProperties.getAdditionalEngineRest() != null) {
+		if (engineRestProperties.getAdditionalEngineRest() != null) {
 			for (EngineRestSource additional : engineRestProperties.getAdditionalEngineRest()) {
 				try {
 					String additionalPath = additional.getPath() != null && !additional.getPath().isEmpty() 

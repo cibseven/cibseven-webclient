@@ -16,9 +16,9 @@
  */
 package org.cibseven.webapp.plugin;
 
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Import;
 
 /**
@@ -31,8 +31,7 @@ import org.springframework.context.annotation.Import;
  * packages, and this module is the one they all depend on.
  */
 @AutoConfiguration
-@ConditionalOnProperty(prefix = "cibseven.webclient.plugins", name = "enabled")
-@EnableConfigurationProperties(PluginProperties.class)
+@ConditionalOnProperty(prefix = SevenWebclientProperties.PLUGINS_PREFIX, name = "enabled")
 @Import({PluginRegistry.class, PluginService.class})
 public class PluginAutoConfiguration {
 }

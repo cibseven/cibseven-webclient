@@ -22,6 +22,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 import java.nio.charset.StandardCharsets;
 
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.rest.CustomRestTemplate;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -63,7 +64,7 @@ class SevenWebclientContextRestTemplateTest {
 
 	private static CustomRestTemplate customRestTemplate() {
 		SevenWebclientContext context = new SevenWebclientContext();
-		context.jacksonParserMaxSize = 20000000;
+		context.properties = new SevenWebclientProperties();
 		return context.customRestTemplate();
 	}
 }

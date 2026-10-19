@@ -22,7 +22,6 @@ import java.text.SimpleDateFormat;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Hashtable;
-import java.util.List;
 
 import javax.crypto.SecretKey;
 import javax.naming.NamingEnumeration;
@@ -38,8 +37,8 @@ import org.cibseven.webapp.auth.exception.TokenExpiredException;
 import org.cibseven.webapp.auth.providers.JwtUserProvider;
 import org.cibseven.webapp.auth.utils.EngineTokenUtils;
 import org.cibseven.webapp.auth.rest.StandardLogin;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.exception.SystemException;
-import org.springframework.beans.factory.annotation.Value;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -55,26 +54,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 	
-	@Value("${cibseven.webclient.ldap.url:}") String serverURL;
-	@Value("${cibseven.webclient.ldap.user:}") String ldapUser;
-	@Value("${cibseven.webclient.ldap.password:}") String ldapPassword;
-	@Value("${cibseven.webclient.ldap.folder:}") String ldapFolder;
-	@Value("${cibseven.webclient.ldap.userNameAttribute:}") String ldapNameAttribute;
-	@Value("${cibseven.webclient.ldap.userDisplayNameAttribute:}") String ldapDisplayNameAttribute;
-	@Value("${cibseven.webclient.ldap.userClass:person}") String ldapUserClass;
-	@Value("#{'${cibseven.webclient.ldap.attributes.filters:samAccountName;name}'.split(';\\s*')}") List<String> ldapAttributesFilters;
-	@Value("${cibseven.webclient.ldap.modifiedDateFormat:}") String ldapModifiedDateFormat;
-	@Value("${cibseven.webclient.ldap.countLimit:400}") int ldapCountLimit;
-	@Value("${cibseven.webclient.ldap.followReferrals:}") String ldapFollowReferrals;
-	
-	@Value("${cibseven.webclient.authentication.jwtSecret:}") String secret;
-
 	// Thread-safe once configured; replaces a new ObjectMapper per authenticated request (CIB7-2211).
 	private static final ObjectMapper MAPPER = new ObjectMapper().addMixIn(CIBUser.class, UserSerialization.class);
 	
+	private SevenWebclientProperties.Ldap ldap() {
+		return properties.getLdap();
+	}
+
 	@PostConstruct
 	public void init() {
-		settings = new JwtTokenSettings(secret, validMinutes, prolongMinutes);		
+		settings = new JwtTokenSettings(properties.getAuthentication().getJwtSecret(), getValidMinutes(), getProlongMinutes());		
 	}
 
 	@Override
@@ -85,25 +74,25 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 			String fullUserDN = getFullUserDN(login.getUsername());
 			Hashtable<String, String> environment = new Hashtable<String, String>();
 	        environment.put(javax.naming.Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-	        environment.put(javax.naming.Context.PROVIDER_URL, serverURL);
+	        environment.put(javax.naming.Context.PROVIDER_URL, ldap().getUrl());
 	        environment.put(javax.naming.Context.SECURITY_PRINCIPAL, fullUserDN);
 	        environment.put(javax.naming.Context.SECURITY_CREDENTIALS, login.getPassword());
-	        environment.put(javax.naming.Context.REFERRAL, ldapFollowReferrals);
+	        environment.put(javax.naming.Context.REFERRAL, ldap().getFollowReferrals());
 			initialDirContext = openContext(environment);
 			// do not use configured LDAP base, but full DN of logging in user, because normal users generally are not allowed to do LDAP searches
 			SearchControls searchControls = new SearchControls();
-			searchControls.setCountLimit(ldapCountLimit);
+			searchControls.setCountLimit(ldap().getCountLimit());
 			searchControls.setSearchScope(SearchControls.OBJECT_SCOPE);
-			results = initialDirContext.search(fullUserDN, "(&(" + ldapNameAttribute + "=" + login.getUsername() + ")(objectClass=" + ldapUserClass + "))", searchControls);
+			results = initialDirContext.search(fullUserDN, "(&(" + ldap().getUserNameAttribute() + "=" + login.getUsername() + ")(objectClass=" + ldap().getUserClass() + "))", searchControls);
 			if(!results.hasMore()) {
-				throw new LoginException("[ERROR][LdapUserProvider] login not user found with the following username: " + login.getUsername() + " and object class: " + ldapUserClass);
+				throw new LoginException("[ERROR][LdapUserProvider] login not user found with the following username: " + login.getUsername() + " and object class: " + ldap().getUserClass());
 			}
 			SearchResult result = results.next();
-			CIBUser user =  new CIBUser(result.getAttributes().get(ldapNameAttribute).get().toString());
-			if (result.getAttributes().get(ldapDisplayNameAttribute) != null) {
-				user.setDisplayName(result.getAttributes().get(ldapDisplayNameAttribute).get().toString());
+			CIBUser user =  new CIBUser(result.getAttributes().get(ldap().getUserNameAttribute()).get().toString());
+			if (result.getAttributes().get(ldap().getUserDisplayNameAttribute()) != null) {
+				user.setDisplayName(result.getAttributes().get(ldap().getUserDisplayNameAttribute()).get().toString());
 			} else {
-				log.debug("User " + login.getUsername() + " does not have attribute " + ldapDisplayNameAttribute + " defined.");
+				log.debug("User " + login.getUsername() + " does not have attribute " + ldap().getUserDisplayNameAttribute() + " defined.");
 			}
 			
 			// Set engine from request header
@@ -111,7 +100,7 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 			
 			// Get the appropriate token settings for this engine
 			TokenSettings tokenSettings = EngineTokenUtils.getSettingsForEngine(
-				user.getEngine(), engineRestProperties, getSettings(), validMinutes, prolongMinutes);
+				user.getEngine(), getEngineRestProperties(), getSettings(), getValidMinutes(), getProlongMinutes());
 			user.setAuthToken(createToken(tokenSettings, true, false, user));
 	        
 	        return user;
@@ -139,14 +128,14 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 			log.debug("Searching full DN name of user " + userName);
 			Hashtable<String, String> environment = new Hashtable<String, String>();
 	        environment.put(javax.naming.Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-	        environment.put(javax.naming.Context.PROVIDER_URL, serverURL);
-	        environment.put(javax.naming.Context.SECURITY_PRINCIPAL, ldapUser);
-	        environment.put(javax.naming.Context.SECURITY_CREDENTIALS, ldapPassword);
+	        environment.put(javax.naming.Context.PROVIDER_URL, ldap().getUrl());
+	        environment.put(javax.naming.Context.SECURITY_PRINCIPAL, ldap().getUser());
+	        environment.put(javax.naming.Context.SECURITY_CREDENTIALS, ldap().getPassword());
 			initialDirContext = openContext(environment);
 			SearchControls searchControls = new SearchControls();
-			searchControls.setCountLimit(ldapCountLimit);
+			searchControls.setCountLimit(ldap().getCountLimit());
 			searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-			results = initialDirContext.search(ldapFolder, "(&(" + ldapNameAttribute + "=" + userName + "))", searchControls);
+			results = initialDirContext.search(ldap().getFolder(), "(&(" + ldap().getUserNameAttribute() + "=" + userName + "))", searchControls);
 			if(!results.hasMore()) {
 				log.debug("No DN found for user {}", userName);
 				throw new LoginException();
@@ -211,25 +200,25 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 	public User verify(Claims userClaims, Date issuedAt) {
 		Hashtable<String, String> environment = new Hashtable<String, String>();
         environment.put(javax.naming.Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-        environment.put(javax.naming.Context.PROVIDER_URL, serverURL);
-        environment.put(javax.naming.Context.SECURITY_PRINCIPAL, ldapUser);
-        environment.put(javax.naming.Context.SECURITY_CREDENTIALS, ldapPassword);
-        environment.put(javax.naming.Context.REFERRAL, ldapFollowReferrals);
+        environment.put(javax.naming.Context.PROVIDER_URL, ldap().getUrl());
+        environment.put(javax.naming.Context.SECURITY_PRINCIPAL, ldap().getUser());
+        environment.put(javax.naming.Context.SECURITY_CREDENTIALS, ldap().getPassword());
+        environment.put(javax.naming.Context.REFERRAL, ldap().getFollowReferrals());
 		DirContext initialDirContext = null;
 		NamingEnumeration<SearchResult> results = null;
         try {
 			initialDirContext = openContext(environment);
 			SearchControls searchControls = new SearchControls();
-			searchControls.setReturningAttributes(new String[] {"modifyTimestamp", ldapDisplayNameAttribute});
-			searchControls.setCountLimit(ldapCountLimit);
+			searchControls.setReturningAttributes(new String[] {"modifyTimestamp", ldap().getUserDisplayNameAttribute()});
+			searchControls.setCountLimit(ldap().getCountLimit());
 			searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-			results = initialDirContext.search(ldapFolder, "(&(" + ldapNameAttribute + "=" + userClaims.getSubject() + "))", searchControls);
+			results = initialDirContext.search(ldap().getFolder(), "(&(" + ldap().getUserNameAttribute() + "=" + userClaims.getSubject() + "))", searchControls);
 			if(!results.hasMore()) {
 				return null;
 			}
 			SearchResult result = results.next();
 			String changed = result.getAttributes().get("modifyTimestamp").get().toString();
-			SimpleDateFormat dateFormatter = new SimpleDateFormat(ldapModifiedDateFormat);
+			SimpleDateFormat dateFormatter = new SimpleDateFormat(ldap().getModifiedDateFormat());
 			try {
 				if(dateFormatter.parse(changed).after(issuedAt)) {
 					return null;
@@ -238,11 +227,11 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 				return null;
 			}
 			CIBUser user =  (CIBUser) deserialize(userClaims.get("user").toString(), null);
-			user.setDisplayName(result.getAttributes().get(ldapDisplayNameAttribute).get().toString());
+			user.setDisplayName(result.getAttributes().get(ldap().getUserDisplayNameAttribute()).get().toString());
 			
 			// Get the appropriate token settings for this engine
 			TokenSettings tokenSettings = EngineTokenUtils.getSettingsForEngine(
-				user.getEngine(), engineRestProperties, getSettings(), validMinutes, prolongMinutes);
+				user.getEngine(), getEngineRestProperties(), getSettings(), getValidMinutes(), getProlongMinutes());
 	        user.setAuthToken(createToken(tokenSettings, true, false, user));
 	        
 	        return user;
@@ -257,7 +246,7 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 	public User parse(String token, TokenSettings settings) {
 		// Determine the correct settings based on the engine in the token
 		TokenSettings effectiveSettings = EngineTokenUtils.getEffectiveSettingsForToken(
-			token, engineRestProperties, settings, validMinutes, prolongMinutes);
+			token, getEngineRestProperties(), settings, getValidMinutes(), getProlongMinutes());
 		
 		try {			
 			SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(effectiveSettings.getSecret()));

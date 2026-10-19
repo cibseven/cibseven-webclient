@@ -16,7 +16,8 @@
  */
 package org.cibseven.webapp.providers;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.cibseven.webapp.config.SevenWebclientProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
@@ -24,8 +25,8 @@ import lombok.Getter;
 @Getter
 public class SevenDirectProvider implements BpmProvider {
     //decides about ldap/adfs
-	@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") String sevenUserProvider;
-	@Value("${cibseven.webclient.users.search.wildcard:}") String wildcard;
+	@Autowired
+	SevenWebclientProperties properties;
 	
 	// base project providers
 	private ITaskProvider taskProvider = null;
@@ -75,7 +76,7 @@ public class SevenDirectProvider implements BpmProvider {
 		utilsProvider = authorizing(new DirectUtilsProvider(getDirectProviderUtil()), IUtilsProvider.class);
 		incidentProvider = authorizing(new DirectIncidentProvider(getDirectProviderUtil()), IIncidentProvider.class);
 		jobDefinitionProvider = authorizing(new DirectJobDefinitionProvider(getDirectProviderUtil()), IJobDefinitionProvider.class);
-		userProvider = authorizing(new DirectUserProvider(getDirectProviderUtil(), sevenUserProvider, wildcard), IUserProvider.class);
+		userProvider = authorizing(new DirectUserProvider(getDirectProviderUtil(), properties.getUser().getProvider(), properties.getUsers().getSearch().getWildcard()), IUserProvider.class);
 		decisionProvider = authorizing(new DirectDecisionProvider(getDirectProviderUtil()), IDecisionProvider.class);
 		jobProvider = authorizing(new DirectJobProvider(getDirectProviderUtil()), IJobProvider.class);
 		batchProvider = authorizing(new DirectBatchProvider(getDirectProviderUtil()), IBatchProvider.class);

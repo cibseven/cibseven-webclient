@@ -18,6 +18,7 @@ package org.cibseven.webapp.rest;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.providers.PermissionConstants;
 import org.cibseven.webapp.rest.model.VariableInstance;
 import org.springframework.beans.factory.InitializingBean;
@@ -47,7 +48,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 	@ApiResponse(responseCode = "403", description = "Forbidden - insufficient permissions")
 })
 @RestController("WebclientVariableInstanceService") 
-@RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/variable-instance")
+@RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH + "/variable-instance")
 public class VariableInstanceService extends BaseService implements InitializingBean {
 	
 	public void afterPropertiesSet() {

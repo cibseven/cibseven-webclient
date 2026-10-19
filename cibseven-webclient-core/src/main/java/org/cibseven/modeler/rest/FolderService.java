@@ -19,6 +19,7 @@ package org.cibseven.modeler.rest;
 import java.util.List;
 import java.util.Map;
 
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -53,7 +54,7 @@ import lombok.extern.slf4j.Slf4j;
 	@ApiResponse(responseCode = "403", description = "The user may not use the modeler")
 })
 @RestController @Slf4j
-@RequestMapping("${cibseven.webclient.services.basePath:/services/v1}/modeler/folders")
+@RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH + "/modeler/folders")
 public class FolderService extends ModelerBaseService {
 
 	@Autowired

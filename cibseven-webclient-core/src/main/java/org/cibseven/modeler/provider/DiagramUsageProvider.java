@@ -22,18 +22,19 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.modeler.model.DiagramUsageEntity;
 import org.cibseven.modeler.repository.DiagramUsageRepository;
 import org.cibseven.modeler.repository.UserSessionRepository;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 
 @Component
 public class DiagramUsageProvider implements IDiagramUsageProvider {
 
-	@Value("${cibseven.webclient.modeler.deleteUsages.usageLimit:50}") private Integer usageLimit;
+	@Autowired
+	private SevenWebclientProperties properties;
 	
 	@Autowired
 	private DiagramUsageRepository processDiagramDao;
@@ -46,13 +47,10 @@ public class DiagramUsageProvider implements IDiagramUsageProvider {
 		processDiagramDao.deleteById(id);
 	}
 	
-	@Scheduled(cron = "${cibseven.webclient.modeler.deleteUsages.cron: 0 0 0 * * ?}")
+	@Scheduled(cron = SevenWebclientProperties.MODELER_DELETE_USAGES_CRON)
 	void removeOldVersions() {		
-		userSessionRepository.removeOldSessions(usageLimit);
+		userSessionRepository.removeOldSessions(properties.getModeler().getDeleteUsages().getUsageLimit());
 	}
-	
-	@Value("${cibseven.webclient.modeler.session.expiresAfterMin:10}")
-	private int sessionExpiresAfter;
 	
 	@Override
 	public Optional<DiagramUsageEntity> getSessionById(String id) throws SystemException {
@@ -86,7 +84,7 @@ public class DiagramUsageProvider implements IDiagramUsageProvider {
 
 	    for (DiagramUsageEntity diagramUsage : diagramUsages) {
 	        long openedAt = diagramUsage.getOpenedAt().getTime();
-	        long expirationTime = sessionExpiresAfter * 60 * 1000;
+	        long expirationTime = properties.getModeler().getSession().getExpiresAfterMin() * 60 * 1000;
 	        long now = System.currentTimeMillis();
 	        long result = now - openedAt;
 

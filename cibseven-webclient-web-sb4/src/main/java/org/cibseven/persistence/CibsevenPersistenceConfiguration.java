@@ -21,6 +21,7 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.jpa.EntityManagerFactoryBuilder;
@@ -60,13 +61,15 @@ public class CibsevenPersistenceConfiguration {
 	 * @param cibsevenDataSource a data source dedicated to the webclient, if the application defines
 	 *        one under {@link CibsevenJpa#DATA_SOURCE}
 	 * @param dataSource the application's data source, used when there is no dedicated one
+	 * @param properties supplies the Hibernate settings of this unit
 	 */
 	@Bean(name = CibsevenJpa.ENTITY_MANAGER_FACTORY, defaultCandidate = false)
 	LocalContainerEntityManagerFactoryBean cibsevenEntityManagerFactory(
 			EntityManagerFactoryBuilder builder,
 			@Qualifier(CibsevenJpa.DATA_SOURCE) ObjectProvider<DataSource> cibsevenDataSource,
 			ObjectProvider<DataSource> dataSource,
-			ObjectProvider<CibsevenEntityPackages> contributedPackages) {
+			ObjectProvider<CibsevenEntityPackages> contributedPackages,
+			SevenWebclientProperties properties) {
 		Set<String> packages = new LinkedHashSet<>();
 		contributedPackages.forEach(contributor -> packages.addAll(contributor.packages()));
 		// A feature that imports this without contributing its entities would get a unit that maps
@@ -76,6 +79,8 @@ public class CibsevenPersistenceConfiguration {
 			.dataSource(cibsevenDataSource.getIfAvailable(dataSource::getObject))
 			.packages(packages.toArray(String[]::new))
 			.persistenceUnit(CibsevenJpa.PERSISTENCE_UNIT)
+			// Independent of the application's global spring.jpa.* settings, see SevenWebclientProperties.Persistence
+			.properties(properties.getPersistence().effectiveProperties())
 			.build();
 	}
 

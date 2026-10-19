@@ -57,7 +57,7 @@ public class IncidentProviderIT extends BaseHelper {
         mockWebServer.start();
 
         String mockBaseUrl = mockWebServer.url("/").toString();
-        ReflectionTestUtils.setField(incidentProvider, "cibsevenUrl", mockBaseUrl);
+        incidentProvider.properties.getEngineRest().setUrl(mockBaseUrl);
     }
 
     @AfterEach

@@ -23,6 +23,7 @@ import java.util.Optional;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.template.StartFormTemplate;
@@ -40,7 +41,7 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.servlet.http.HttpServletRequest;
 
 @Service
-@RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/template")
+@RestController @RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH + "/template")
 public class TemplateService extends BaseService implements InitializingBean {
 
 	@Autowired

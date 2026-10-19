@@ -86,20 +86,19 @@ public class LdapUserProviderTest {
 
 	private static <P extends LdapUserProvider> P configure(P provider) {
 		// a port nothing listens on, so every directory call fails the same way
-		ReflectionTestUtils.setField(provider, "serverURL", "ldap://127.0.0.1:1");
-		ReflectionTestUtils.setField(provider, "ldapUser", "cn=admin");
-		ReflectionTestUtils.setField(provider, "ldapPassword", "secret");
-		ReflectionTestUtils.setField(provider, "ldapFolder", "ou=people,dc=example,dc=com");
-		ReflectionTestUtils.setField(provider, "ldapNameAttribute", "uid");
-		ReflectionTestUtils.setField(provider, "ldapDisplayNameAttribute", "cn");
-		ReflectionTestUtils.setField(provider, "ldapUserClass", "person");
-		ReflectionTestUtils.setField(provider, "ldapAttributesFilters", List.of("samAccountName", "name"));
-		ReflectionTestUtils.setField(provider, "ldapModifiedDateFormat", "yyyyMMddHHmmss'Z'");
-		ReflectionTestUtils.setField(provider, "ldapCountLimit", 400);
-		ReflectionTestUtils.setField(provider, "ldapFollowReferrals", "follow");
-		ReflectionTestUtils.setField(provider, "secret", SECRET);
-		ReflectionTestUtils.setField(provider, "validMinutes", 60L);
-		ReflectionTestUtils.setField(provider, "prolongMinutes", 30L);
+		provider.properties.getLdap().setUrl("ldap://127.0.0.1:1");
+		provider.properties.getLdap().setUser("cn=admin");
+		provider.properties.getLdap().setPassword("secret");
+		provider.properties.getLdap().setFolder("ou=people,dc=example,dc=com");
+		provider.properties.getLdap().setUserNameAttribute("uid");
+		provider.properties.getLdap().setUserDisplayNameAttribute("cn");
+		provider.properties.getLdap().setUserClass("person");
+		provider.properties.getLdap().setModifiedDateFormat("yyyyMMddHHmmss'Z'");
+		provider.properties.getLdap().setCountLimit(400);
+		provider.properties.getLdap().setFollowReferrals("follow");
+		provider.properties.getAuthentication().setJwtSecret(SECRET);
+		provider.properties.getAuthentication().setTokenValidMinutes(60L);
+		provider.properties.getAuthentication().setTokenProlongMinutes(30L);
 		provider.init();
 		return provider;
 	}

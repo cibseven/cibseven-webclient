@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
@@ -37,8 +38,8 @@ import org.cibseven.webapp.auth.sso.SSOUser;
 import org.cibseven.webapp.auth.sso.SsoHelper;
 import org.cibseven.webapp.auth.sso.TokenCache;
 import org.cibseven.webapp.auth.sso.TokenResponse;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.exception.SystemException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
@@ -62,29 +63,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> implements LogoutRedirectProvider {
 	
-	@Value("${cibseven.webclient.sso.endpoints.token}") String tokenEndpoint;
-	@Value("${cibseven.webclient.sso.endpoints.jwks}") String certEndpoint;
-	@Value("${cibseven.webclient.sso.endpoints.user}") String userEndpoint;
-	@Value("${cibseven.webclient.sso.endpoints.introspection:}") String introspectionEndpoint;
-	/** RFC 7009 token revocation endpoint. When blank, tokens are not revoked on logout. */
-	@Value("${cibseven.webclient.sso.endpoints.revocation:}") String revocationEndpoint;
-	/** OIDC RP-Initiated Logout end_session_endpoint. When blank, the identity provider session is left untouched. */
-	@Value("${cibseven.webclient.sso.endpoints.endSession:}") String endSessionEndpoint;
-	@Value("${cibseven.webclient.sso.clientId}") String clientId;
-	@Value("${cibseven.webclient.sso.clientSecret:}") String clientSecret;
-	@Value("${cibseven.webclient.sso.userIdProperty}") String userIdProperty;
-	@Value("${cibseven.webclient.sso.userNameProperty}") String userNameProperty;
-	@Value("${cibseven.webclient.sso.accessTokenToEngineRest:false}") boolean forwardToken;
-	@Value("${cibseven.webclient.authentication.jwtSecret}") String secret;
-	@Value("${cibseven.webclient.sso.assertion.type:}") AssertionType assertionType;
-	 /**
-     * Location of the PEM-encoded PKCS#8 private key file.
-     * Supports Spring resource prefixes: {@code classpath:}, {@code file:}.
-     * Required for {@link AssertionType#JJWT}.
-     * Not used for {@link AssertionType#AZURE_WORKLOAD_IDENTITY}.
-     */
-	@Value("${cibseven.webclient.sso.assertion.keyLocation:}") String assertionKeyLocation;
-	
 	@Getter private SsoHelper ssoHelper;
 	@Getter private JwtTokenSettings settings;
 	HttpHeaders formUrlEncodedHeader = new HttpHeaders();
@@ -97,32 +75,51 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> implements Lo
 	
 	@PostConstruct
 	public void init() throws Exception {
+		SevenWebclientProperties.Sso sso = properties.getSso();
+		String clientSecret = Objects.requireNonNullElse(sso.getClientSecret(), "");
+		AssertionType assertionType = getAssertionType();
 		if (clientSecret.isBlank() && assertionType == null) {
 			throw new IllegalStateException("Either clientSecret must be provided or an assertion must be specified.");
 		}
-		settings = new JwtTokenSettings(secret, validMinutes, prolongMinutes);		
+		required(sso.getUserIdProperty(), "sso.userIdProperty");
+		required(sso.getUserNameProperty(), "sso.userNameProperty");
+		settings = new JwtTokenSettings(properties.getAuthentication().getJwtSecret(), getValidMinutes(), getProlongMinutes());
 		ssoHelper = new SsoHelper(
-			tokenEndpoint,
-			clientId, 
-			clientSecret, 
+			required(sso.getEndpoints().getToken(), "sso.endpoints.token"),
+			required(sso.getClientId(), "sso.clientId"),
+			clientSecret,
 			assertionType,
-			assertionKeyLocation,
-			certEndpoint, 
-			userEndpoint, 
-			introspectionEndpoint,
-			revocationEndpoint,
-			endSessionEndpoint);
+			sso.getAssertion().getKeyLocation(),
+			required(sso.getEndpoints().getJwks(), "sso.endpoints.jwks"),
+			required(sso.getEndpoints().getUser(), "sso.endpoints.user"),
+			sso.getEndpoints().getIntrospection(),
+			sso.getEndpoints().getRevocation(),
+			sso.getEndpoints().getEndSession());
 		checkKey();
 		SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(settings.getSecret()));
 		flowParser = Jwts.parser().verifyWith(key).build();
-		
-		if (forwardToken) {
+
+		if (isForwardToken()) {
 			// Schedule cleanup of expired tokens every 10 minutes
 			scheduler = Executors.newSingleThreadScheduledExecutor();
 			scheduler.scheduleAtFixedRate(this::cleanup, 10, 10, java.util.concurrent.TimeUnit.MINUTES);
 		}
 	}
 	
+	/**
+	 * Client assertion used instead of a client secret, see {@code cibseven.webclient.sso.assertion}.
+	 * The key location is required for {@link AssertionType#JJWT} and not used for
+	 * {@link AssertionType#AZURE_WORKLOAD_IDENTITY}.
+	 */
+	private AssertionType getAssertionType() {
+		String type = properties.getSso().getAssertion().getType();
+		return type == null || type.isEmpty() ? null : AssertionType.valueOf(type.trim());
+	}
+
+	private boolean isForwardToken() {
+		return properties.getSso().isAccessTokenToEngineRest();
+	}
+
 	@PreDestroy
 	public void destroy() {
 		if (scheduler != null) scheduler.shutdownNow();
@@ -142,7 +139,7 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> implements Lo
 	
 	@Override
 	public String getEngineRestToken(CIBUser user) {
-		if (forwardToken) {
+		if (isForwardToken()) {
 			SSOUser oauthUser = (SSOUser) user;
 			String refreshToken = oauthUser.getRefreshToken();
 			String cacheKey = user.getId() + refreshToken;
@@ -192,7 +189,7 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> implements Lo
 			
 			// Get the appropriate token settings for this engine
 			TokenSettings tokenSettings = EngineTokenUtils.getSettingsForEngine(
-				user.getEngine(), engineRestProperties, getSettings(), validMinutes, prolongMinutes);
+				user.getEngine(), getEngineRestProperties(), getSettings(), getValidMinutes(), getProlongMinutes());
 			if (expiration != null) {
 				// Create a custom token settings with the expiration from the third-party token
 				long tokenValidMinutes = (expiration.getTime() - System.currentTimeMillis()) / 60000; // Convert to minutes
@@ -206,8 +203,8 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> implements Lo
 		}
 		TokenResponse tokens = ssoHelper.codeExchange(params.getCode(), params.getRedirectUrl(), params.getNonce(), false, true);
 		
-		SSOUser user = new SSOUser(tokens.getIdClaims().get(userIdProperty, String.class));
-		user.setDisplayName(tokens.getIdClaims().get(userNameProperty, String.class));
+		SSOUser user = new SSOUser(tokens.getIdClaims().get(properties.getSso().getUserIdProperty(), String.class));
+		user.setDisplayName(tokens.getIdClaims().get(properties.getSso().getUserNameProperty(), String.class));
 		user.setRefreshToken(tokens.getRefresh_token());
 		
 		// Set engine from request header
@@ -215,7 +212,7 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> implements Lo
 		
 		// Get the appropriate token settings for this engine
 		TokenSettings tokenSettings = EngineTokenUtils.getSettingsForEngine(
-			user.getEngine(), engineRestProperties, getSettings(), validMinutes, prolongMinutes);
+			user.getEngine(), getEngineRestProperties(), getSettings(), getValidMinutes(), getProlongMinutes());
 		user.setAuthToken(createToken(tokenSettings, true, false, user));
 		user.setRefreshToken(null);
 		return user;
@@ -271,7 +268,7 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> implements Lo
 		String refreshToken = oauthUser.getRefreshToken();
 		// Only forgotten locally: revoking the refresh token invalidates the access tokens of the
 		// same grant (RFC 7009, 2.1), and a stateless resource server accepts a JWT until it expires anyway
-		if (forwardToken) cachedAccessToken.remove(user.getId() + refreshToken);
+		if (isForwardToken()) cachedAccessToken.remove(user.getId() + refreshToken);
 		// The one our token carries, so the one that has to stop working
 		ssoHelper.revokeToken(refreshToken, "refresh_token");
 	}
@@ -310,7 +307,7 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> implements Lo
 		try {
 			// Get effective settings based on engine from token
 			TokenSettings effectiveSettings = EngineTokenUtils.getEffectiveSettingsForToken(
-				token, engineRestProperties, settings, validMinutes, prolongMinutes);
+				token, getEngineRestProperties(), settings, getValidMinutes(), getProlongMinutes());
 			SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(effectiveSettings.getSecret()));
 			JwtParser parser = Jwts.parser().verifyWith(key).build();
 			
@@ -322,7 +319,7 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> implements Lo
 		} catch (ExpiredJwtException x) {
 			// Get effective settings based on engine from token
 			TokenSettings effectiveSettings = EngineTokenUtils.getEffectiveSettingsForToken(
-				token, engineRestProperties, settings, validMinutes, prolongMinutes);
+				token, getEngineRestProperties(), settings, getValidMinutes(), getProlongMinutes());
 			
 			long ageMillis = System.currentTimeMillis() - x.getClaims().getExpiration().getTime();
 			if ((boolean) x.getClaims().get("prolongable") && (ageMillis < effectiveSettings.getProlong().toMillis())) {
@@ -351,8 +348,8 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> implements Lo
 				user.setUserID((String) introspectionResult.getOrDefault("sub", introspectionResult.get("username")));
 			}
 		} else {
-			user.setDisplayName(userInfo.get(userNameProperty));
-			user.setUserID(userInfo.get(userIdProperty));
+			user.setDisplayName(userInfo.get(properties.getSso().getUserNameProperty()));
+			user.setUserID(userInfo.get(properties.getSso().getUserIdProperty()));
 		}
 		if (user.getUserID() == null || user.getDisplayName() == null) {
 			throw new AuthenticationException("Invalid token");

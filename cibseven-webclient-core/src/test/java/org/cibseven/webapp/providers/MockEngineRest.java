@@ -74,9 +74,8 @@ final class MockEngineRest implements AutoCloseable {
 
 		ReflectionTestUtils.setField(provider, "customRestTemplate", new CustomRestTemplate());
 		ReflectionTestUtils.setField(provider, "baseUserProvider", userProvider);
-		ReflectionTestUtils.setField(provider, "cibsevenUrl", "http://localhost:" + server.getPort());
-		ReflectionTestUtils.setField(provider, "engineRestPath", ENGINE_REST_PATH);
-		ReflectionTestUtils.setField(provider, "jacksonParserMaxSize", 20_000_000);
+		provider.properties.getEngineRest().setUrl("http://localhost:" + server.getPort());
+		provider.properties.getEngineRest().setPath(ENGINE_REST_PATH);
 		return provider;
 	}
 

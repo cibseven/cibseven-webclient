@@ -20,6 +20,7 @@ import org.cibseven.modeler.config.ModelerPersistenceConfiguration;
 import org.cibseven.modeler.model.FolderEntity;
 import org.cibseven.modeler.model.FormEntity;
 import org.cibseven.modeler.model.ProcessDiagramEntity;
+import org.cibseven.webapp.config.SevenWebclientPropertiesAutoConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -39,6 +40,7 @@ class FolderMigrationTest {
 	private static final String GENERAL = "00000000-0000-0000-0000-0000000000d1";
 
 	private final ApplicationContextRunner runner = new ApplicationContextRunner()
+		.withConfiguration(AutoConfigurations.of(SevenWebclientPropertiesAutoConfiguration.class))
 		.withPropertyValues("spring.datasource.url=jdbc:h2:mem:foldermigration;DB_CLOSE_DELAY=-1",
 			"spring.datasource.driver-class-name=org.h2.Driver",
 			"spring.sql.init.mode=always",
