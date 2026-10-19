@@ -113,7 +113,7 @@ export default {
         // null/undefined means unknown, so check against both true and false explicitly.
         const hasEngineTTLSetup = (this.$root.config.enforceHistoryTimeToLive === true || this.$root.config.enforceHistoryTimeToLive === false)
         if (hasEngineTTLSetup) {
-          if (this.$root.config.historyTimeToLive === null) {
+          if (this.$root.config.historyTimeToLive === null || this.$root.config.historyTimeToLive === undefined) {
             // null means unlimited retention (never cleaned up)
             return '∞'
           }
