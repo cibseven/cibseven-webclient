@@ -25,8 +25,8 @@
         variant="btn-outline-primary" size="sm"
         :title="$t('nav-bar.refresh')"
         :aria-label="$t('nav-bar.refresh')"
-        style="top: 3px; right: 30px" class="border-0 position-absolute" 
-        :style="pauseRefreshButton ? 'opacity: 0.5' : ''">
+        class="border-0 position-absolute" :class="{ 'px-0': isMobile() }"
+        :style="[refreshButtonPosition, pauseRefreshButton ? 'opacity: 0.5' : '']">
         <span class="mdi mdi-18px mdi-refresh" aria-hidden="true"></span>
       </b-button>
 
@@ -63,8 +63,8 @@
           <div v-if="$root.config.layout.showFilterReminderDate || $root.config.layout.showFilterDueDate ||
             ($root.config.taskFilter.advancedSearch.processVariables.length > 0 && $root.config.taskFilter.advancedSearch.filterEnabled) ||
             filterVariables.length > 0" class="ms-auto col-auto">
-            <b-button ref="filters" variant="link" :title="$t('nav-bar.filtersAdditionalsTitle')">
-              <span class="mdi mdi-18px"
+            <b-button ref="filters" variant="link" :title="$t('nav-bar.filtersAdditionalsTitle')" :aria-label="$t('nav-bar.filtersAdditionalsTitle')">
+              <span class="mdi mdi-18px" aria-hidden="true"
                 :class="$store.state.filter.settings.reminder || $store.state.filter.settings.dueDate || $store.state.advancedSearch.criterias.length > 0 ? 'mdi-filter-menu text-primary' : 'mdi-filter-menu-outline'"></span>
             </b-button>
           </div>
@@ -76,19 +76,19 @@
         <div class="mt-2">
           <b-form-checkbox v-if="$root.config.layout.showFilterReminderDate" v-model="$store.state.filter.settings.reminder"
             @change="$emit('refresh-tasks')">
-            <h5 class="d-flex fw-normal"><span class="mdi mdi-16px mdi-alarm align-middle pe-1"></span> {{ $t('nav-bar.reminder') }}</h5>
+            <span class="h5 d-flex fw-normal"><span class="mdi mdi-16px mdi-alarm align-middle pe-1" aria-hidden="true"></span> {{ $t('nav-bar.reminder') }}</span>
           </b-form-checkbox>
         </div>
         <div>
           <b-form-checkbox v-if="$root.config.layout.showFilterDueDate" v-model="$store.state.filter.settings.dueDate"
             @change="$emit('refresh-tasks')">
-            <h5 class="d-flex fw-normal"><span class="mdi mdi-16px mdi-calendar-alert align-middle pe-1"></span> {{ $t('nav-bar.dueDate') }}</h5>
+            <span class="h5 d-flex fw-normal"><span class="mdi mdi-16px mdi-calendar-alert align-middle pe-1" aria-hidden="true"></span> {{ $t('nav-bar.dueDate') }}</span>
           </b-form-checkbox>
         </div>
         <div v-if="$root.config.taskFilter.advancedSearch.filterEnabled">
           <div v-for="(criteria, index) in advancedFilter.filter(c => c.source !== 'filter')" :key="index">
             <b-form-checkbox v-model="criteria.check">
-              <h5 class="d-flex fw-normal">{{ criteria.displayName }}</h5>
+              <span class="h5 d-flex fw-normal">{{ criteria.displayName }}</span>
             </b-form-checkbox>
             <label v-if="criteria.check && criteria.defaultValue === ''" :for="'tasks-criteria-value-' + index" class="visually-hidden">{{ criteria.displayName }}</label>
             <b-form-input v-if="criteria.check && criteria.defaultValue === ''" :id="'tasks-criteria-value-' + index" v-model="criteria.value" size="sm" class="mb-2"></b-form-input>
@@ -98,7 +98,7 @@
           <hr class="my-2">
           <div v-for="(criteria, index) in advancedFilter.filter(c => c.source === 'filter')" :key="'fv-' + index">
             <b-form-checkbox v-model="criteria.check">
-              <h5 class="d-flex fw-normal">{{ criteria.displayName }}</h5>
+              <span class="h5 d-flex fw-normal">{{ criteria.displayName }}</span>
             </b-form-checkbox>
             <label v-if="criteria.check" :for="'tasks-fv-value-' + index" class="visually-hidden">{{ criteria.displayName }}</label>
             <b-form-input v-if="criteria.check" :id="'tasks-fv-value-' + index" v-model="criteria.value" size="sm" class="mb-2"></b-form-input>
@@ -119,19 +119,19 @@
                 </h3>
                 <div class="d-flex ms-auto">
                   <b-button
-                    @click.stop="copyTaskForDateManagement(task, 'followUp'); $refs.followUp.show()"
-                    @keydown.enter.stop.prevent="copyTaskForDateManagement(task, 'followUp'); $refs.followUp.show()"
-                    @keyup.enter.stop.prevent 
-                    @keydown.space.stop.prevent="$refs.followUp.show()"
+                    @click.stop="openDateDialog(task, 'followUp')"
+                    @keydown.enter.stop.prevent="openDateDialog(task, 'followUp')"
+                    @keyup.enter.stop.prevent
+                    @keydown.space.stop.prevent="openDateDialog(task, 'followUp')"
                     v-if="$root.config.layout.showFilterReminderDate"
-                    size="sm" :class="getReminderClasses(task)" variant="light" class="mdi mdi-18px mdi-alarm border-0 me-1" :title="getDateFormatted(task.followUp, 'L', 'setReminder')"></b-button>
+                    size="sm" :class="getReminderClasses(task)" variant="light" class="mdi mdi-18px mdi-alarm border-0 me-1" :title="dateButtonLabel(task, 'followUp')" :aria-label="dateButtonLabel(task, 'followUp')"></b-button>
                   <b-button
-                    @click.stop="copyTaskForDateManagement(task, 'due'); $refs.due.show()"
-                    @keydown.enter.stop.prevent="copyTaskForDateManagement(task, 'due'); $refs.due.show()"
-                    @keyup.enter.stop.prevent 
-                    @keydown.space.stop.prevent="$refs.due.show()"
+                    @click.stop="openDateDialog(task, 'due')"
+                    @keydown.enter.stop.prevent="openDateDialog(task, 'due')"
+                    @keyup.enter.stop.prevent
+                    @keydown.space.stop.prevent="openDateDialog(task, 'due')"
                     v-if="$root.config.layout.showFilterDueDate"
-                    size="sm" :class="getDueClasses(task)" variant="light" class="mdi mdi-18px mdi-calendar-alert border-0" :title="getDateFormatted(task.due, 'L', 'setDeadline')"></b-button>
+                    size="sm" :class="getDueClasses(task)" variant="light" class="mdi mdi-18px mdi-calendar-alert border-0" :title="dateButtonLabel(task, 'due')" :aria-label="dateButtonLabel(task, 'due')"></b-button>
                 </div>
               </div>
               <div v-if="task.businessKey && $root.config.layout.showBusinessKey" class="d-flex align-items-center mb-1">
@@ -146,7 +146,7 @@
                   <div class="h6 text-end p-0 fw-normal m-0" v-if="task.assignee != null">
                     <HighlightedText :text="getCompleteName(task)" :keyword="search" class="mdi mdi-18px mdi-account text-secondary p-1"></HighlightedText>
                   </div>
-                  <div class="h6 text-end p-0 fw-normal n-0" v-if="task.assignee == null">
+                  <div class="h6 text-end p-0 fw-normal n-0" v-if="hasAssignToMeButton(task)">
                     <b-button variant="link" class="p-0 lh-1 text-dark" @click.stop="checkAssignee(task)" @keydown.enter.stop="checkAssignee(task)" @keyup.enter.stop.prevent @keydown.space.prevent.stop="checkAssignee(task)">
                       <span class="mdi mdi-18px mdi-account-question text-secondary"></span>
                       {{ $t('task.assignToMe') }}
@@ -242,13 +242,15 @@ import SmartSearch from '@/components/task/SmartSearch.vue'
 import { ConfirmDialog, BWaitingBox, HighlightedText } from '@cib/common-frontend'
 import { mapActions } from 'vuex'
 import variableUtils from '@/components/process/mixins/variableUtils.js'
+import { permissionsMixin } from '@/permissions.js'
 
 export default {
   name: 'TasksNavBar',
   components: { StartProcess, AdvancedSearchModal, SmartSearch, ConfirmDialog, BWaitingBox, HighlightedText },
+  mixins: [permissionsMixin],
   props: { tasks: Array, taskResultsIndex: Number, search: String },
   inject: ['currentLanguage','isMobile'],
-  emits: ['search-filter', 'process-started', 'selected-task', 'update-assignee', 'show-more', 'refresh-tasks', 'refresh-tasks-number'],
+  emits: ['search-filter', 'process-started', 'selected-task', 'update-assignee', 'show-more', 'refresh-tasks', 'refresh-tasks-number', 'show-task'],
   data: function () {
     return {
       currentSorting: {},
@@ -283,11 +285,15 @@ export default {
     'tasksFiltered': {
       immediate: false,
       handler: function () {
-        if (this.pendingScrollToTaskId &&
-          this.tasksFiltered.some(t => t.id === this.pendingScrollToTaskId)) {
+        if (!this.pendingScrollToTaskId || this.tasksFiltered.length === 0) return
+        if (this.tasksFiltered.some(t => t.id === this.pendingScrollToTaskId)) {
           this.$nextTick(() => {
             this.scrollToSelectedTask()
           })
+        } else {
+          // The task is beyond the loaded pages: give up rather than jump to it later while
+          // the user scrolls through more results
+          this.pendingScrollToTaskId = null
         }
       }
     },
@@ -311,6 +317,11 @@ export default {
     }
   },
   computed: {
+    // On desktop the header chevrons sit either side of the button; mobile has none,
+    // so align it with the header's own padding
+    refreshButtonPosition: function() {
+      return { top: '3px', right: this.isMobile() ? '0.75rem' : '30px' }
+    },
     tasksFiltered: function() {
       let tasks = []
       if (this.tasks) {
@@ -495,10 +506,32 @@ export default {
       if (format) return moment(date).format(format)
       else return moment(date).fromNow()
     },
+    // Overdue, due within the warning window, or neither; the colour and the label both follow it
+    dueState: function(due) {
+      if (moment(due).isBefore(moment())) return 'overdue'
+      if (moment().add(this.$root.config.warnOnDueExpirationIn, 'hours').isAfter(moment(due))) return 'soon'
+      return null
+    },
+    /**
+     * What a reminder or due date button is called, for screen readers and the tooltip alike: the
+     * action while no date is set, else the date and what it is, and for a due date whether it is
+     * close, which otherwise only its colour tells.
+     */
+    dateButtonLabel: function(task, type) {
+      const date = task[type]
+      if (!date) return this.$t(type === 'due' ? 'task.setDeadline' : 'task.setReminder')
+      const formatted = moment(date).format('L')
+      if (type === 'followUp') return this.$t('task.reminderLabel', { date: formatted })
+      const state = this.dueState(date)
+      if (state === 'overdue') return this.$t('task.dueOverdueLabel', { date: formatted })
+      if (state === 'soon') return this.$t('task.dueSoonLabel', { date: formatted })
+      return this.$t('task.dueLabel', { date: formatted })
+    },
     getDueClasses: function(task) {
       const classes = []
-      if (moment(task.due).isBefore(moment())) classes.push('text-danger')
-      else if (moment().add(this.$root.config.warnOnDueExpirationIn, 'hours').isAfter(moment(task.due))) classes.push('text-warning')
+      const state = this.dueState(task.due)
+      if (state === 'overdue') classes.push('text-danger')
+      else if (state === 'soon') classes.push('text-warning')
       if (!this.isMobile() && task !== this.focused && task.id !== this.selectedDateT.id && !task.due) classes.push('action-button-hidden')
       return classes
     },
@@ -506,6 +539,9 @@ export default {
       const classes = []
       if (!this.isMobile() && task !== this.focused && task.id !== this.selectedDateT.id && !task.followUp) classes.push('action-button-hidden')
       return classes
+    },
+    hasAssignToMeButton: function(task) {
+      return task.assignee == null && this.canAssignUserTask(task)
     },
     claim: function(task) {
       TaskService.setAssignee(task.id, this.$root.user.id).then(() => {
@@ -525,6 +561,9 @@ export default {
       const filterId = this.$store.state.filter.selected ?
         this.$store.state.filter.selected.id : this.$route.params.filterId
       if (!selection.toString()) {
+        // On mobile the list covers the open task; tapping it again must bring it back
+        // without reloading it, since the route does not change
+        if (this.isMobile() && task.id === this.$route.params.taskId) return this.$emit('show-task')
         const route = '/seven/auth/tasks/' + filterId + '/' + task.id
         if (this.$router.currentRoute.path !== route){
           this.$router.push(route)
@@ -586,6 +625,12 @@ export default {
         }
       }
     },
+    // Mouse, Enter and Space all go through here, so every way of opening the dialog edits the
+    // task the button belongs to
+    openDateDialog: function(task, type) {
+      this.copyTaskForDateManagement(task, type)
+      this.$refs[type].show()
+    },
     copyTaskForDateManagement: function(task, type) {
       this.taskToEdit = task
       this.selectedDateT = JSON.parse(JSON.stringify(task))
@@ -628,7 +673,11 @@ export default {
 	    } else {
 	      el = ref
 	    }
-	    if (el && typeof el.scrollIntoView === 'function') {
+	    if (el && el.offsetParent === null) {
+	      // The list is hidden (e.g. behind the task on mobile), so scrolling now has no effect:
+	      // keep it pending until the list is shown again
+	      this.pendingScrollToTaskId = taskId
+	    } else if (el && typeof el.scrollIntoView === 'function') {
 	      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
 	      this.pendingScrollToTaskId = null
 	    } else if (retryCount < MAX_SCROLL_RETRIES){

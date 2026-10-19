@@ -87,7 +87,9 @@ describe('library.js', () => {
       'initPlugins', 'loadPlugins', 'fetchPluginManifests',
       // Handed to plugins by the runtime an embedding application supplies
       'mergeTranslations', 'getRuntimeInfo',
-      'PluginSlot', 'PluginBoundary'
+      'PluginSlot', 'PluginBoundary',
+      // The slot the enterprise edition adds its admin areas through
+      'ADMIN_ENTRY_SLOT'
     ]
 
     it('exports the plugin API', () => {

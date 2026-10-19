@@ -27,6 +27,10 @@
     <div :class="loader ? 'invisible' : 'visible'" class="h-100">
       <div class="h-100" ref="diagram"></div>
 
+      <!-- Renders nothing of its own: a contribution works on the viewer it is handed -->
+      <PluginSlot v-if="viewerReady" name="dmn-viewer"
+        :params="{ viewer: viewer, container: $refs.diagram, activeView: activeView }"></PluginSlot>
+
       <!-- Zoom Controls -->
       <div v-if="isDrdView" class="btn-group-vertical position-absolute" style="right:15px; bottom:140px;">
         <b-button size="sm" variant="light" :title="$t('dmn-viewer.zoomIn')" @click="zoomIn">
@@ -49,6 +53,7 @@ import DmnJS from 'dmn-js'
 
 // UI loading indicator
 import { BWaitingBox } from '@cib/common-frontend'
+import PluginSlot from '@/components/common/PluginSlot.vue'
 import { mapActions } from 'vuex'
 
 // Required styles
@@ -65,7 +70,7 @@ import moveCanvasModule from 'diagram-js/lib/navigation/movecanvas'
 
 export default {
   name: 'DmnViewer',
-  components: { BWaitingBox },
+  components: { BWaitingBox, PluginSlot },
   props: {
     sidebarLeftOpen: { type: Boolean, default: true }
   },
@@ -82,7 +87,11 @@ export default {
       isDrdView: true,
       overlayList: [],
       viewboxChangeTimer: null,
-      viewboxListenerViewer: null
+      viewboxListenerViewer: null,
+      // What the dmn-viewer slot is handed: the viewer exists only after mount, and the view
+      // changes as the user moves between the DRD and a decision
+      viewerReady: false,
+      activeView: null
     }
   },
   mounted() {
@@ -95,22 +104,26 @@ export default {
       }
     })
     // Listen for view changes
-    this.viewer.on('views.changed', data => {
+    this.viewer.on('views.changed', data => this.onViewsChanged(data))
+    this.viewerReady = true
+  },
+  methods: {
+    ...mapActions('diagram', ['setDiagramReady']),
+    onViewsChanged(data) {
       if (data?.activeView?.type === 'drd') {
         this.isDrdView = true
         this.attachViewboxListener()
       } else {
         this.isDrdView = false
       }
+      // A contribution of the dmn-viewer slot re-applies itself when this changes
+      this.activeView = data?.activeView ?? null
       // Emit the view change event so plugins can react
       this.$emit('view-changed', {
         activeView: data?.activeView,
         isDrdView: this.isDrdView
       })
-    })
-  },
-  methods: {
-    ...mapActions('diagram', ['setDiagramReady']),
+    },
     showDiagram(xml) {
       this.setDiagramReady(false)
       this.loader = true

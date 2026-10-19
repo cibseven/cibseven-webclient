@@ -59,6 +59,13 @@ application:
         # e.g. - "file:/opt/cibseven/element-templates/*.json"
         templates:
           paths: []
+      plugins:
+        # Load frontend plugins from the classpath below META-INF/cibseven-plugins/,
+        # one folder per plugin. Plugin code runs inside the webclient page.
+        enabled: false
+        # Ids of plugins to skip, e.g. one that breaks the page; takes a restart.
+        # e.g. - demo-report
+        disabled: []
       # LDAP
       ldap:
         url: ""
@@ -80,6 +87,9 @@ application:
       #    jwks: <certsUri>
       #    user: <usersUri>
       #    introspection:
+      #    revocation: <revocationUri>   # RFC 7009; tokens are revoked on logout when set
+      #    endSession: <endSessionUri>   # OIDC RP-Initiated Logout; ends the IdP session on logout when set.
+      #                                     # Register <app url>/ as a valid post logout redirect URI at the IdP
       #  clientId: <clientId>
       #  clientSecret: <clientSecret>
       #  scopes: openid email profile
@@ -228,6 +238,13 @@ ui:
   pauseButtonTime: "5000"
   lazyLoadHistory: true
   filtersSearch: false
+  # Deep links shown as extra tabs/buttons on process and decision views.
+  # Each entry: { id, url, type: tab|button, icon (button only), target (button only) }
+  deepLinks:
+    processDefinition: []
+    processInstance: []
+    decisionDefinition: []
+    decisionInstance: []
 
 logging:
   consoleAppenderLayout: >-
@@ -319,7 +336,10 @@ configmaps:
         </Configuration>
 
     config.json:
-      path: /usr/local/tomcat/webapps/seven/config.json
+      # Spring Boot serves the frontend from classpath:/public/, which in the
+      # exploded war is WEB-INF/classes/public/. A file mounted at the war root
+      # is never read, so the ConfigMap has to replace the classpath copy.
+      path: /usr/local/tomcat/webapps/seven/WEB-INF/classes/public/config.json
       value: |-
         {
           "supportedLanguages": {{ toJson .Values.ui.supportedLanguages }},
@@ -352,7 +372,7 @@ configmaps:
             { "key": "ownerExpression", "text": "ownerExpression", "type": "text", "group": "usersGroup" },
             { "key": "candidateGroup", "text": "candidateGroup", "type": "text", "group": "usersGroup" },
             { "key": "candidateGroupExpression", "text": "candidateGroupExpression", "type": "text", "group": "usersGroup" },
-            { "key": "candidateGroups", "text": "candidateGroups", "type": "text", "group": "usersGroup" },
+            { "key": "candidateGroups", "text": "candidateGroups", "type": "array", "group": "usersGroup" },
             { "key": "candidateGroupsExpression", "text": "candidateGroupsExpression", "type": "text", "group": "usersGroup" },
             { "key": "candidateUser", "text": "candidateUser", "type": "text", "group": "usersGroup" },
             { "key": "candidateUserExpression", "text": "candidateUserExpression", "type": "text", "group": "usersGroup" },
@@ -397,9 +417,6 @@ configmaps:
             },
             "modeler": {
               "application": ["ACCESS"]
-            },
-            "displayTasks": {
-              "task": ["READ", "UPDATE"]
             },
             "displayFilter": {
               "filter": ["READ"]
@@ -458,12 +475,6 @@ configmaps:
             },
             "updateProcessInstance": {
               "processInstance": ["UPDATE"]
-            },
-            "deleteProcessInstance": {
-              "processInstance": ["DELETE"]
-            },
-            "deleteHistoricProcessInstance": {
-              "historicProcessInstance": ["DELETE"]
             }
           },
           "taskSorting": {
@@ -610,7 +621,8 @@ configmaps:
               { "name": "Call Activity", "type": "bpmn:CallActivity", "color": "#059DBB" }
             ],
             "filterBpmnOpacity": "0.4"
-          }
+          },
+          "deepLinks": {{ .Values.ui.deepLinks | toPrettyJson | indent 2 }}
         }
 
 secrets:

@@ -36,6 +36,9 @@ function evaluateUsersManagement(overrides = {}) {
   Object.defineProperty(vm, 'showSystem', {
     get: () => UsersManagement.computed.showSystem.call(vm)
   })
+  Object.defineProperty(vm, 'pluginItems', {
+    get: () => UsersManagement.computed.pluginItems.call(vm)
+  })
   Object.defineProperty(vm, 'hasTiles', {
     get: () => UsersManagement.computed.hasTiles.call(vm)
   })

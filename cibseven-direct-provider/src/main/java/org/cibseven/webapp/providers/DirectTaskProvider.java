@@ -16,7 +16,6 @@
  */
 package org.cibseven.webapp.providers;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLDecoder;
@@ -68,9 +67,9 @@ import org.cibseven.bpm.engine.rest.dto.task.TaskQueryDto;
 import org.cibseven.bpm.engine.rest.dto.task.TaskWithAttachmentAndCommentDto;
 import org.cibseven.bpm.engine.rest.exception.RestException;
 import org.cibseven.bpm.engine.rest.util.ApplicationContextPathUtil;
-import org.cibseven.bpm.engine.rest.util.EncodingUtil;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.bpm.engine.runtime.VariableInstanceQuery;
+import org.cibseven.bpm.engine.task.Comment;
 import org.cibseven.bpm.engine.task.DelegationState;
 import org.cibseven.bpm.engine.task.TaskCountByCandidateGroupResult;
 import org.cibseven.bpm.engine.task.TaskQuery;
@@ -191,8 +190,42 @@ public class DirectTaskProvider implements ITaskProvider {
 	@Override
 	public void setAssignee(String taskId, String assignee, CIBUser user) {
 		org.cibseven.bpm.engine.task.Task foundTask = getTaskById(taskId, user);
-		foundTask.setAssignee(assignee);
+		// "null" is how callers ask for no assignee; the REST provider maps it to /unclaim
+		foundTask.setAssignee("null".equals(assignee) ? null : assignee);
 		directProviderUtil.getProcessEngine(user).getTaskService().saveTask(foundTask);
+	}
+
+	@Override
+	public void claim(String taskId, String userId, CIBUser user) {
+		directProviderUtil.getProcessEngine(user).getTaskService().claim(taskId, userId);
+	}
+
+	@Override
+	public void delegate(String taskId, String userId, CIBUser user) {
+		directProviderUtil.getProcessEngine(user).getTaskService().delegateTask(taskId, userId);
+	}
+
+	@Override
+	public Map<String, Object> findLocalVariables(String taskId, CIBUser user) {
+		// Same shape and default as engine-rest's /localVariables: typed values, objects deserialized
+		VariableMap variables = directProviderUtil.getProcessEngine(user).getTaskService().getVariablesLocalTyped(taskId, true);
+		return new HashMap<>(VariableValueDto.fromMap(variables));
+	}
+
+	@Override
+	public Collection<Map<String, Object>> findComments(String taskId, CIBUser user) {
+		List<Map<String, Object>> comments = new ArrayList<>();
+		for (Comment comment : directProviderUtil.getProcessEngine(user).getTaskService().getTaskComments(taskId)) {
+			Map<String, Object> entry = new HashMap<>();
+			entry.put("id", comment.getId());
+			entry.put("userId", comment.getUserId());
+			entry.put("taskId", comment.getTaskId());
+			entry.put("processInstanceId", comment.getProcessInstanceId());
+			entry.put("time", comment.getTime());
+			entry.put("message", comment.getFullMessage());
+			comments.add(entry);
+		}
+		return comments;
 	}
 
 	@Override
@@ -205,12 +238,7 @@ public class DirectTaskProvider implements ITaskProvider {
 	public void submit(Task task, List<Variable> formResult, CIBUser user) {
 		Map<String, VariableValueDto> variables = new HashMap<>();
 		for (Variable variable : formResult) {
-			VariableValueDto variableValueDto = directProviderUtil.convertValue(variable, VariableValueDto.class, user);
-			variableValueDto.setType(variable.getType());
-			variableValueDto.setValue(variable.getValue());
-			if (variable.getValueInfo() != null)
-				variableValueDto.setValueInfo(new HashMap<>(variable.getValueInfo()));
-			variables.put(variable.getName(), variableValueDto);
+			variables.put(variable.getName(), directProviderUtil.toVariableValueDto(variable, user));
 		}
 		CompleteTaskDto completeTaskDto = new CompleteTaskDto();
 		completeTaskDto.setVariables(variables);
@@ -725,13 +753,9 @@ private List<VariableInstanceDto> queryVariableInstances(VariableInstanceQueryDt
 
 		Object renderedTaskForm = formService.getRenderedTaskForm(taskId);
 		if(renderedTaskForm != null) {
-			String content = renderedTaskForm.toString();
-			InputStream stream = new ByteArrayInputStream(content.getBytes(EncodingUtil.DEFAULT_ENCODING));
-			try {
-				return ResponseEntity.ok(IOUtils.toString(stream, Charset.defaultCharset()));
-			} catch (IOException e) {
-				throw new SystemException(e.getMessage(), e);
-			}
+			// the engine renders the form in memory, so no byte round trip is needed; re-encoding it
+			// through the JVM default charset garbled non-ASCII text (CIB7-2204)
+			return ResponseEntity.ok(renderedTaskForm.toString());
 		}
 
 		throw new SystemException("No matching rendered form for task with the id " + taskId + " found.");

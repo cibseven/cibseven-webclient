@@ -16,16 +16,16 @@
 -->
 <template>
   <div class="d-flex flex-column h-100">
-    <div v-if="isActiveInstance || hasDeepLinks || ProcessVariablesSearchBoxPlugin || selectedActivityId || selectedScopeInstanceId" class="bg-white d-flex w-100 flex-wrap">
-      <div v-if="ProcessVariablesSearchBoxPlugin" :class="(isActiveInstance || hasDeepLinks) ? 'col-10 p-2' : 'col-12 p-2'">
+    <div v-if="hasAddVariableButton || hasDeepLinks || ProcessVariablesSearchBoxPlugin || (selectedActivityId || selectedScopeInstanceId)" class="bg-white d-flex w-100 flex-wrap">
+      <div v-if="ProcessVariablesSearchBoxPlugin" :class="(hasAddVariableButton || hasDeepLinks) ? 'col-10 p-2' : 'col-12 p-2'">
         <component :is="ProcessVariablesSearchBoxPlugin"
           :query="filter"
           @change-query-object="changeFilter"
           :total-count="filteredVariables.length"
         ></component>
       </div>
-      <div v-if="isActiveInstance || hasDeepLinks" :class="ProcessVariablesSearchBoxPlugin ? 'col-2 p-3' : 'p-3'">
-        <b-button v-if="isActiveInstance" class="border" size="sm" variant="light" @click="addNewVariable" :title="$t('process-instance.addVariable')">
+      <div v-if="hasAddVariableButton || hasDeepLinks" :class="ProcessVariablesSearchBoxPlugin ? 'col-2 p-3' : 'p-3'">
+        <b-button v-if="hasAddVariableButton" class="border" size="sm" variant="light" @click="addNewVariable" :title="$t('process-instance.addVariable')">
           <span class="mdi mdi-plus"></span> {{ $t('process-instance.addVariable') }}
         </b-button>
         <DeepLinkButtons v-if="hasDeepLinks" section="processInstance" :params="matchedDeepLinkParams" />
@@ -70,7 +70,7 @@
         <template v-slot:cell(value)="table">
           <CopyableActionButton
             :displayValue="displayValue(table.item)"
-            :clickable="isFile(table.item)"
+            :clickable="hasDownloadVariableButton(table.item)"
             :title="displayValueTooltip(table.item)"
             @click="downloadFile(table.item)"
             @copy="copyValueToClipboard"
@@ -99,21 +99,29 @@
         <template v-slot:cell(actions)="table">
           <div class="d-flex">
             <component :is="VariablesTableActionsPlugin" v-if="VariablesTableActionsPlugin" :table-item="table.item" :selected-instance="selectedInstance" :file-objects="fileObjects"></component>
-            <CellActionButton v-if="isFile(table.item)" :title="displayValueTooltip(table.item)"
+            <CellActionButton v-if="hasDownloadVariableButton(table.item)"
+              :title="displayValueTooltip(table.item)"
               icon="mdi-download-outline"
-              @click="downloadFile(table.item)">
-            </CellActionButton>
-            <CellActionButton v-if="isFile(table.item) && table.item.isLive" :title="$t('process-instance.upload')"
+              @click="downloadFile(table.item)"/>
+
+            <!-- single button: upload or view or edit -->
+            <CellActionButton v-if="hasUploadVariableButton(table.item)"
+              :title="$t('process-instance.upload')"
               icon="mdi-upload-outline"
-              @click="selectedVariable = table.item; $refs.uploadFile.show()">
-            </CellActionButton>
-            <CellActionButton v-if="'File' !== table.item.type && !isFileValueDataSource(table.item)"
-              :title="$t(table.item.isLive ? 'process-instance.edit' : 'process-instance.variables.historicVariable.tooltip')"
-              :icon="table.item.isLive ? 'mdi-square-edit-outline' : 'mdi-eye-outline'"
-              @click="modifyVariable(table.item)">
-            </CellActionButton>
-            <CellActionButton v-if="hasDeletionPermissionFor(table.item)" :title="$t('confirm.delete')"
-              icon="mdi-delete-outline" @click="deleteVariable(table.item)"></CellActionButton>
+              @click="selectedVariable = table.item; file = null; $refs.uploadFile.show()"/>
+            <CellActionButton v-else-if="hasEditVariableButton(table.item)"
+              :title="$t('process-instance.variables.editVariable.tooltip')"
+              icon="mdi-square-edit-outline"
+              @click="modifyVariable(table.item, false)"/>
+            <CellActionButton v-else-if="hasViewVariableButton(table.item)"
+              :title="$t(table.item.isLive ? 'process-instance.variables.runtimeVariable.tooltip' : 'process-instance.variables.historicVariable.tooltip')"
+              icon="mdi-eye-outline"
+              @click="modifyVariable(table.item, true)"/>
+
+            <CellActionButton v-if="hasDeleteVariableButton(table.item)"
+              :title="$t('confirm.delete')"
+              icon="mdi-delete-outline"
+              @click="deleteVariable(table.item)"/>
           </div>
         </template>
       </FlowTable>
@@ -131,14 +139,23 @@
     <SuccessAlert ref="messageCopy" style="z-index: 9999"> {{ $t('process.copySuccess') }} </SuccessAlert>
     <TaskPopper ref="importPopper"></TaskPopper>
 
-    <b-modal ref="uploadFile" :title="$t('process-instance.upload')">
-      <div>
+    <b-modal ref="uploadFile" :title="$t('process-instance.upload')" @hidden="file = null; uploadError = null">
+      <div v-if="selectedVariable">
+        <p class="mb-0">
+          {{ $t('process-instance.variables.name') }}: <strong>{{ selectedVariable.name }}</strong>
+          <br>
+          {{ $t('process-instance.variables.type') }}: <strong>{{ selectedVariable.type }}</strong>
+        </p>
         <label for="variables-upload-file" class="visually-hidden">{{ $t('process-instance.upload') }}</label>
         <b-form-file id="variables-upload-file" placeholder="" :browse-text="$t('process-instance.selectFile')" v-model="file"></b-form-file>
+        <div v-if="uploadError" class="alert alert-danger text-danger d-flex align-items-center mt-3 mb-0" role="alert">
+          <span class="mdi mdi-alert-octagon-outline text-danger me-3" aria-hidden="true"></span>
+          <span>{{ uploadError }}</span>
+        </div>
       </div>
       <template v-slot:modal-footer>
         <b-button @click="$refs.uploadFile.hide(); file = null" variant="light">{{ $t('confirm.cancel') }}</b-button>
-        <b-button :disabled="!file" @click="uploadFile(); $refs.uploadFile.hide()" variant="primary">{{ $t('process-instance.upload') }}</b-button>
+        <b-button :disabled="!file" @click="uploadFileClicked()" variant="primary">{{ $t('process-instance.upload') }}</b-button>
       </template>
     </b-modal>
   </div>
@@ -170,6 +187,7 @@ export default {
       filteredVariables: [],
       fileObjects: variableUtils.getFileObjects(),
       selectedScopeInstanceId: null,
+      uploadError: null,
     }
   },
   watch: {
@@ -220,6 +238,28 @@ export default {
         ? this.$options.components.VariablesTableActionsPlugin
         : null
     },
+
+    processDefinitionKey() {
+      return this.process?.key ?? this.selectedInstance?.processDefinitionKey
+    },
+
+    /**
+     * Adding, editing, uploading and deleting a runtime variable are all the same engine operation.
+     * @returns {boolean} Whether the user may change the variables of the selected process instance.
+     */
+    canUpdateVariables() {
+      return this.canUpdateProcessInstanceVariables(this.selectedInstance?.id, this.processDefinitionKey)
+    },
+
+    /**
+     * @returns {boolean} Whether the button should be shown based on permissions, and process instance state.
+    */
+    hasAddVariableButton() {
+      const stateCheck = this.isActiveInstance
+      const permissionCheck = this.canUpdateVariables
+      return stateCheck && permissionCheck
+    },
+
     hasDeepLinks() {
       return hasDeepLinks(this.$root.config, 'processInstance', 'button')
     },
@@ -275,16 +315,8 @@ export default {
     async addNewVariable() {
       this.$refs.addVariableModal.show()
     },
-    hasDeletionPermissionFor(variable) {
-      if (variable.isLive) {
-        return this.processByPermissions(this.$root.config.permissions.deleteProcessInstance, this.selectedInstance)
-      }
-      else {
-        return this.processByPermissions(this.$root.config.permissions.deleteHistoricProcessInstance, this.selectedInstance)
-      }
-    },
-    async modifyVariable(variable) {
-      this.$refs.editVariableModal.show(variable.id, variable.name, !variable.isLive)
+    async modifyVariable(variable, readOnly) {
+      this.$refs.editVariableModal.show(variable.id, variable.name, !variable.isLive, readOnly)
     },
     async deleteVariable(variable) {
       this.$refs.deleteVariableModal.show(variable.isLive === true, variable)
@@ -297,6 +329,75 @@ export default {
       else {
         this.$refs.historicVariableDeleted.show()
       }
+    },
+    async uploadFileClicked() {
+      this.uploadError = null
+      // true on success, otherwise the error message
+      const result = await this.uploadFile()
+      if (result !== true) {
+        // keep the dialog open, so the user sees what went wrong and can retry
+        this.uploadError = result
+        return
+      }
+      this.$refs.uploadFile.hide()
+      this.$refs.success.show()
+    },
+
+    /**
+     * @returns {boolean} Whether the button should be shown based on permissions, variable type, and process instance state.
+    */
+    hasViewVariableButton(variable) {
+      // No need both `Edit` and `View` buttons at once
+      // `Edit` button takes precedence
+      if (this.hasEditVariableButton(variable)) return false
+
+      // variable cannot be edited, so the `view` button still might be shown
+      const downloadableCheck = !this.isDownloadable(variable)
+      const stateCheck = true // always (enabled for runtime and historic data)
+      // always: the engine returns only the variables the user may read, so a listed variable is readable
+      const permissionCheck = true
+      return downloadableCheck && stateCheck && permissionCheck
+    },
+
+    /**
+     * @returns {boolean} Whether the button should be shown based on permissions, variable type, and process instance state.
+    */
+    hasEditVariableButton(variable) {
+      const downloadableCheck = !this.isDownloadable(variable)
+      const stateCheck = variable.isLive
+      const permissionCheck = this.canUpdateVariables
+      return downloadableCheck && stateCheck && permissionCheck
+    },
+
+    /**
+     * @returns {boolean} Whether the button should be shown based on permissions, variable type, and process instance state.
+    */
+    hasDownloadVariableButton(variable) {
+      const downloadableCheck = this.isDownloadable(variable)
+      const stateCheck = true // always (enabled for runtime and historic data)
+      // always: the engine returns only the variables the user may read, so a listed variable is readable
+      const permissionCheck = true
+      return downloadableCheck && stateCheck && permissionCheck
+    },
+
+    /**
+     * @returns {boolean} Whether the button should be shown based on permissions, variable type, and process instance state.
+    */
+    hasUploadVariableButton(variable) {
+      const downloadableCheck = this.isUploadable(variable)
+      const stateCheck = variable.isLive
+      const permissionCheck = this.canUpdateVariables
+      return downloadableCheck && stateCheck && permissionCheck
+    },
+
+    /**
+     * @returns {boolean} Whether the button should be shown based on permissions, variable type, and process instance state.
+    */
+    hasDeleteVariableButton(variable) {
+      const downloadableCheck = true // always (all variables types could be deleted)
+      const stateCheck = true // always (enabled for runtime and historic data)
+      const permissionCheck = this.canDeleteProcessInstanceVariable(this.selectedInstance?.id, this.processDefinitionKey, variable.isLive)
+      return downloadableCheck && stateCheck && permissionCheck
     },
   },  
 	mounted() {

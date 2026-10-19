@@ -44,6 +44,15 @@ public class PluginAutoConfigurationTest {
 		.withBean(BaseUserProvider.class, () -> Mockito.mock(BaseUserProvider.class))
 		.withConfiguration(AutoConfigurations.of(PluginAutoConfiguration.class));
 
+	/** The way application.yaml writes a list. */
+	@Test
+	public void readsTheDisabledPluginsAsAYamlList() {
+		runner.withPropertyValues("cibseven.webclient.plugins.enabled=true",
+				"cibseven.webclient.plugins.disabled[0]=first", "cibseven.webclient.plugins.disabled[1]=second")
+			.run(context -> assertThat(context.getBean(PluginProperties.class).getDisabled())
+				.containsExactly("first", "second"));
+	}
+
 	@Test
 	public void contributesThePluginBeansWhenPluginsAreEnabled() {
 		runner.withPropertyValues("cibseven.webclient.plugins.enabled=true")

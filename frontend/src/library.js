@@ -55,6 +55,7 @@ export { createProvideObject } from '@/utils/provide.js'
 // library; each supplies its own plugin-runtime entry, since module instances
 // only exist within one build
 export { registerPlugin, getPlugin, resetPlugins, reserveSlotIds, PLUGIN_API_VERSION, getRuntimeInfo } from '@/plugins/pluginsConfig.js'
+export { defineTabBar } from '@/utils/tabBar.js'
 // as one object, so a downstream plugin runtime can hand it over without listing every service
 export * as services from '@/services.js'
 export { setPluginContext, getPluginContext } from '@/plugins/pluginContext.js'
@@ -73,7 +74,7 @@ export { default as sidebarOpenPersistenceMixin } from '@/mixins/sidebarOpenPers
 export { default as usersMixin } from '@/mixins/usersMixin.js'
 export { default as copyToClipboardMixin } from '@/mixins/copyToClipboardMixin.js'
 export { default as assigneeMixin } from '@/mixins/assigneeMixin.js'
-export { default as navigationPermissionsMixin } from '@/mixins/navigationPermissionsMixin.js'
+export { default as navigationPermissionsMixin, ADMIN_ENTRY_SLOT } from '@/mixins/navigationPermissionsMixin.js'
 export { default as startTileOptionsMixin } from '@/mixins/startTileOptionsMixin.js'
 export {
   SURFACES,
@@ -121,6 +122,8 @@ export { default as UsersManagement } from '@/components/admin/UsersManagement.v
 export { default as DeploymentList } from '@/components/deployment/DeploymentList.vue'
 export { default as DeploymentsView } from '@/components/deployment/DeploymentsView.vue'
 export { default as ResourcesNavBar } from '@/components/deployment/ResourcesNavBar.vue'
+export { default as FormPreview } from '@/components/deployment/FormPreview.vue'
+export { default as HtmlFormPreview } from '@/components/deployment/HtmlFormPreview.vue'
 export { default as FilterModal } from '@/components/task/filter/FilterModal.vue'
 export { default as FilterNavBar } from '@/components/task/filter/FilterNavBar.vue'
 export { default as FilterNavCollapsed } from '@/components/task/filter/FilterNavCollapsed.vue'
@@ -156,6 +159,7 @@ export { default as UserTasksTable } from '@/components/process/tables/UserTasks
 export { default as ExternalTasksTable } from '@/components/process/tables/ExternalTasksTable.vue'
 export { default as RenderTemplate } from '@/components/render-template/RenderTemplate.vue'
 export { default as AdvancedSearchModal } from '@/components/task/AdvancedSearchModal.vue'
+export { default as AssignUserModal } from '@/components/task/AssignUserModal.vue'
 export { default as TaskContent } from '@/components/task/TaskContent.vue'
 export { default as TaskVariables } from '@/components/render-template/TaskVariables.vue'
 export { default as TaskView } from '@/components/task/TaskView.vue'
@@ -194,6 +198,7 @@ export { default as TasksStartView } from '@/components/start/TasksStartView.vue
 export { default as BuilderStartView } from '@/components/start/BuilderStartView.vue'
 export { default as AccessManagement } from '@/components/admin/AccessManagement.vue'
 export { default as LoginView } from '@/components/login/LoginView.vue'
+export { default as LoggedOutView } from '@/components/login/LoggedOutView.vue'
 export { default as InitialSetup } from '@/components/setup/InitialSetup.vue'
 export { default as ModelerView } from '@/components/modeler/ModelerView.vue'
 export { default as StackTraceModal } from '@/components/process/modals/StackTraceModal.vue'

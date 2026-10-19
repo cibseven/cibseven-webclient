@@ -26,6 +26,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -39,6 +41,7 @@ import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Task;
+import org.cibseven.webapp.rest.model.TaskForm;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,8 +50,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.test.web.client.MockRestServiceServer;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -300,5 +305,26 @@ public class TaskServiceTest {
 
 		assertThat(taskService.findIdentityLink("task-1", Optional.empty(), Locale.ENGLISH, user))
 			.singleElement().extracting(IdentityLink::getUserId).isEqualTo("demo");
+	}
+
+	// ---------- form proxy ----------
+
+	@Test
+	void proxyFormContent_decodesAFormServedWithoutCharsetAsUtf8() {
+		// process applications often serve the embedded form HTML without a charset (CIB7-2204)
+		CustomRestTemplate restTemplate = new CustomRestTemplate();
+		ReflectionTestUtils.setField(taskService, "restTemplate", restTemplate);
+		ReflectionTestUtils.setField(taskService, "cibsevenUrl", "http://process-app/");
+		when(bpmProvider.form("task-1", user)).thenReturn(new TaskForm("embedded:app:forms/review.html", "/invoice", null));
+		String html = "<form><label>Begründung 姓名</label></form>";
+		MockRestServiceServer processApp = MockRestServiceServer.bindTo(restTemplate).build();
+		processApp.expect(requestTo("http://process-app/invoice/forms/review.html"))
+			.andRespond(withSuccess(html.getBytes(StandardCharsets.UTF_8), MediaType.TEXT_HTML));
+
+		ResponseEntity<String> response = taskService.proxyFormContent("task-1", false, user);
+
+		assertThat(response.getBody()).isEqualTo(html);
+		assertThat(response.getHeaders().getFirst("Content-Type")).isEqualTo("text/html; charset=UTF-8");
+		processApp.verify();
 	}
 }

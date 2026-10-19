@@ -31,7 +31,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.CacheControl;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
@@ -177,11 +176,6 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
     public InfoVersion infoVersion() {
         return new InfoVersion();
     }
-
-	@Bean // http://blog.codeleak.pl/2015/09/placeholders-support-in-value.html
-	public static PropertySourcesPlaceholderConfigurer placeholderConfigurer() {
-		return new PropertySourcesPlaceholderConfigurer();
-	}
 
 	/**
 	 * Creates a custom RestTemplate bean with configurable settings.

@@ -48,6 +48,8 @@ import HumanTasksView from '@/components/task/HumanTasksView.vue'
 import TasksView from '@/components/task/TasksView.vue'
 import TaskView from '@/components/task/TaskView.vue'
 import LoginView from '@/components/login/LoginView.vue'
+import LoggedOutView from '@/components/login/LoggedOutView.vue'
+import { LOGGED_OUT_KEY } from '@/constants.js'
 import InitialSetup from '@/components/setup/InitialSetup.vue'
 import { BWaitingBox, TranslationsDownload } from '@cib/common-frontend'
 import DeployedForm from '@/components/forms/DeployedForm.vue'
@@ -73,6 +75,8 @@ const appRoutes = [
     path: '/seven', name: 'seven', component: CibSeven, children: [
       {
         path: 'login', name: 'login', beforeEnter: async function (to) {
+          // Back from an external system's logout: wait for the user instead of logging in again
+          if (sessionStorage.getItem(LOGGED_OUT_KEY)) return { name: 'loggedOut' }
           // Check if setup is required first
           try {
             const res = await SetupService.getStatus()
@@ -92,6 +96,8 @@ const appRoutes = [
           }
         }, component: LoginView
       },
+
+      { path: 'logged-out', name: 'loggedOut', component: LoggedOutView },
 
       { path: 'setup', name: 'setup', beforeEnter: setupGuard, component: InitialSetup },
 
@@ -337,7 +343,7 @@ function authGuard(strict) {
       const headers = { authorization: token }
       const inst = axios.create() // bypass standard error handling
       const res = await inst.get(router.root.config.servicesBasePath + '/auth', { headers: headers })
-      console?.info('auth successful', res.data)
+      console?.info('auth successful', res.data.userID)
       axios.defaults.headers.common.authorization = res.data.authToken
       const permissions = await AuthService.fetchAuths()
       router.root.user = { ...res.data, permissions }

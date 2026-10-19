@@ -213,8 +213,22 @@ export function buildNavGroups(ctx) {
       icon: 'mdi-chart-timeline-variant',
       tooltip: 'admin.system.execution-metrics.title',
       title: 'admin.system.execution-metrics.title'
-    }]
+    }, ...adminPluginItems(ctx.adminPluginEntries)]
   }]
+}
+
+/** Admin areas contributed through ADMIN_ENTRY_SLOT (already permission-filtered), after the built-in ones. */
+function adminPluginItems(entries) {
+  if (!entries?.length) return []
+  return [{ divider: true }, ...entries.map(entry => ({
+    pluginEntry: true,
+    to: entry.to,
+    active: entry.active ?? [entry.to.replace(/^\//, '')],
+    icon: entry.icon,
+    tileImage: entry.image,
+    tooltip: entry.tooltip ?? entry.text,
+    title: entry.text
+  }))]
 }
 
 export function itemSurfaces(item) {
@@ -353,6 +367,7 @@ export function permissionFlagsFromVm(vm) {
     permissionsGroupsManagement: !!vm.permissionsGroupsManagement,
     permissionsTenantsManagement: !!vm.permissionsTenantsManagement,
     permissionsAuthorizationsManagement: !!vm.permissionsAuthorizationsManagement,
-    permissionsSystemManagement: !!vm.permissionsSystemManagement
+    permissionsSystemManagement: !!vm.permissionsSystemManagement,
+    adminPluginEntries: vm.adminPluginEntries ?? []
   }
 }

@@ -96,6 +96,7 @@ function context(overrides = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  localStorage.clear()
 })
 
 afterEach(() => {
@@ -152,6 +153,44 @@ describe('ProcessDefinitionView - sidebar persistence', () => {
     ProcessDefinitionView.data.call({ instanceId: undefined, getSavedLeftOpen })
 
     expect(getSavedLeftOpen).toHaveBeenCalledWith('process-definition')
+  })
+})
+
+describe('ProcessDefinitionView - unfinished filter persistence', () => {
+  const getSavedLeftOpen = vi.fn(() => true)
+
+  it('data should default the "unfinished" filter to true when no preference is stored', () => {
+    const data = ProcessDefinitionView.data.call({ instanceId: undefined, getSavedLeftOpen })
+
+    expect(data.filter).toEqual({ unfinished: true })
+  })
+
+  // The key must be absent (not `unfinished: false`), since the search box treats
+  // its mere presence - regardless of value - as the criterion being applied.
+  it('data should restore the "unfinished" filter as off (key omitted) when the stored preference says so', () => {
+    localStorage.setItem('cibseven:preferences:unfinishedInstancesFilter', 'false')
+
+    const data = ProcessDefinitionView.data.call({ instanceId: undefined, getSavedLeftOpen })
+
+    expect(data.filter).toEqual({})
+    expect('unfinished' in data.filter).toBe(false)
+  })
+
+  it('filterInstances should persist the "unfinished" filter when it is turned off', () => {
+    const vm = context()
+
+    m.filterInstances.call(vm, { unfinished: undefined })
+
+    expect(localStorage.getItem('cibseven:preferences:unfinishedInstancesFilter')).toBe('false')
+  })
+
+  it('filterInstances should persist the "unfinished" filter when it is turned back on', () => {
+    localStorage.setItem('cibseven:preferences:unfinishedInstancesFilter', 'false')
+    const vm = context()
+
+    m.filterInstances.call(vm, { unfinished: true })
+
+    expect(localStorage.getItem('cibseven:preferences:unfinishedInstancesFilter')).toBe('true')
   })
 })
 

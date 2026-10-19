@@ -30,6 +30,11 @@
           :src="systemImage"
           :to="{ name: 'adminSystem' }"
         ></StartViewItem>
+        <StartViewItem v-for="item in pluginItems" :key="item.to"
+          :title="$t(item.title)"
+          :src="item.tileImage"
+          :to="item.to"
+        ></StartViewItem>
       </div>
       <div v-else>
         <img src="@/assets/images/start/empty_start_page.svg" class="d-block mx-auto mt-5 mb-3" style="max-width: 250px" alt="">
@@ -77,8 +82,12 @@ export default {
     showSystem() {
       return !!this.adminGroup?.items.some(item => item.collapseGroup === 'system')
     },
+    // Contributed areas (ADMIN_ENTRY_SLOT) get their own tile after the built-in ones
+    pluginItems() {
+      return (this.adminGroup?.items ?? []).filter(item => item.pluginEntry)
+    },
     hasTiles() {
-      return this.showAccessManagement || this.showSystem
+      return this.showAccessManagement || this.showSystem || this.pluginItems.length > 0
     }
   }
 }

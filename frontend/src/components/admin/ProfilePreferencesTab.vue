@@ -62,7 +62,7 @@
       </b-form-group>
     </ContentBlock>
 
-    <ContentBlock :title="$t('admin.preferences.bpmn.title')">
+    <ContentBlock v-if="permissionsCockpit()" :title="$t('admin.preferences.bpmn.title')">
       <b-form-group>
         <b-form-checkbox v-model="shortenBadgeNumbers">
           <span class="fw-semibold">{{ $t('admin.preferences.bpmn.shortenBadgeNumbers') }}</span>

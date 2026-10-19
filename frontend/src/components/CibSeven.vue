@@ -204,6 +204,11 @@
       </template>
     </CIBHeaderFlow>
 
+    <!-- Messages for every logged-in user, e.g. system notifications of the enterprise edition -->
+    <div v-if="$root.user" class="flex-shrink-0">
+      <PluginSlot name="app-banner" :params="{ user: $root.user }"></PluginSlot>
+    </div>
+
     <main class="flex-grow-1 overflow-hidden d-flex flex-column">
       <router-view class="flex-grow-1 overflow-hidden" ref="down"></router-view>
     </main>
@@ -246,12 +251,13 @@ import AboutModal from '@/components/modals/AboutModal.vue'
 import SupportModal from '@/components/modals/SupportModal.vue'
 import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
 import FeedbackModal from '@/components/modals/FeedbackModal.vue'
+import PluginSlot from '@/components/common/PluginSlot.vue'
 import { updateAppTitle } from '@/utils/init'
 import { buildNavGroups, projectGroupsForNavbar, permissionFlagsFromVm } from '@/navigation/navGroups.js'
 
 export default {
   name: 'CibSeven',
-  components: { ShortcutsModal, AboutModal, SupportModal, CIBHeaderFlow, FeedbackModal },
+  components: { ShortcutsModal, AboutModal, SupportModal, CIBHeaderFlow, FeedbackModal, PluginSlot },
   mixins: [permissionsMixin, navigationPermissionsMixin],
   inject: ['isMobile'],
   data: function() {
@@ -356,15 +362,19 @@ export default {
     this.refreshAppTitle(this.pageTitle)
     // Focus the brand-home link for screen reader accessibility when user is logged in
     if (this.$root.user) {
-      this.$nextTick(() => {
-        if (this.$refs.headerFlow && this.$refs.brandHome) {
-          const brandLink = this.$refs.brandHome.$refs.brandLink
-          brandLink?.focus()
-        }
-      })
+      this.$nextTick(() => this.focusBrandLink())
     }
   },
   methods: {
+    // Browsers ring a focus set on load as if it came from the keyboard. The ring stays
+    // hidden until the first key press, so keyboard users still see where they are.
+    focusBrandLink: function() {
+      const brandLink = this.$refs.headerFlow && this.$refs.brandHome?.$refs.brandLink
+      if (!brandLink) return
+      brandLink.classList.add('initial-focus')
+      brandLink.focus()
+      document.addEventListener('keydown', () => brandLink.classList.remove('initial-focus'), { once: true, capture: true })
+    },
     // override this method to add/remove menu items
     getVisibleMenuItems: function(items) {
       return projectGroupsForNavbar(items)
@@ -393,17 +403,8 @@ export default {
         : path.endsWith('/' + a) || path.includes('/' + a + '/'))
     },
     logout: function() {
-      //Remove some storage variables when logout
-      //https://helpdesk.cib.de/browse/BPM4CIB-3691
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('tokenModeler')
-      sessionStorage.removeItem('accessToken')
-      sessionStorage.removeItem('tokenModeler')
-      // Note: engine token cleanup is handled by CIBHeaderFlow.logout()
-      // Set the hash before reload: router.push is async and loses the race, so the
-      // reload would otherwise land on the current page instead of the start page.
-      window.location.hash = '#/'
-      window.location.reload() //refresh to empty vuex and axios defaults
+      // The logged-out page signs the user out, while it shows what is going on
+      this.$router.push({ name: 'loggedOut' })
     },
     openStartProcess: function() {
       this.$eventBus.emit('openStartProcess')
@@ -463,6 +464,11 @@ export default {
 .dropdown-divider {
   margin-top: 0.15rem;
   margin-bottom: 0.15rem;
+}
+/* See focusBrandLink */
+:deep(.navbar-brand.initial-focus:focus) {
+  outline: none;
+  box-shadow: none;
 }
 </style>
 

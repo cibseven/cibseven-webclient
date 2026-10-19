@@ -16,6 +16,7 @@
  */
 package org.cibseven.webapp.rest;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -44,6 +45,7 @@ import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
 
@@ -79,6 +81,7 @@ public class CustomRestTemplate extends RestTemplate {
      */
     public CustomRestTemplate() {
         super();
+        decodeStringsAsUtf8();
     }
 
     /**
@@ -89,6 +92,29 @@ public class CustomRestTemplate extends RestTemplate {
      */
     public CustomRestTemplate(ClientHttpRequestFactory requestFactory) {
         super(requestFactory);
+        decodeStringsAsUtf8();
+    }
+
+    /**
+     * engine-rest sends its text responses (stack traces, error details, rendered forms) without a
+     * charset, and Spring's String converter then decodes them as ISO-8859-1, garbling every non-ASCII
+     * character. The engine always writes UTF-8, so make that the fallback; a charset the response does
+     * declare still wins. Templates built by copying these converters inherit this.
+     * <p>
+     * The fallback applies to every String read through this template, including embedded form HTML
+     * that {@code TaskService} fetches from process applications: a source that is not UTF-8 must
+     * declare its charset.
+     * <p>
+     * This runs in the constructor, so it only adjusts Spring's own default converter, in place.
+     * Converters registered later are not touched: those passed to {@link #addConverter} before
+     * {@link #initialize()} runs are inserted first, and those set through
+     * {@link #setMessageConverters} replace the list.
+     */
+    private void decodeStringsAsUtf8() {
+        getMessageConverters().stream()
+                .filter(StringHttpMessageConverter.class::isInstance)
+                .map(StringHttpMessageConverter.class::cast)
+                .forEach(converter -> converter.setDefaultCharset(StandardCharsets.UTF_8));
     }
 
     /**

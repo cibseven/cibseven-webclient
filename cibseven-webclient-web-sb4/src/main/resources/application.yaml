@@ -46,6 +46,9 @@ cibseven:
       # Load frontend plugins from the classpath below META-INF/cibseven-plugins/,
       # one folder per plugin. Plugin code runs inside the webclient page.
       enabled: false
+      # Ids of plugins to skip, e.g. one that breaks the page; takes a restart.
+      # disabled:
+      #   - demo-report
     # Engine rest
     engineRest:
       url: http://localhost:8080
@@ -80,6 +83,9 @@ cibseven:
     #    jwks: <certsUri>
     #    user: <usersUri>
     #    introspection:
+    #    revocation: <revocationUri>   # RFC 7009; tokens are revoked on logout when set
+    #    endSession: <endSessionUri>   # OIDC RP-Initiated Logout; ends the IdP session on logout when set.
+    #                                     # Register <app url>/ as a valid post logout redirect URI at the IdP
     #  clientId: <clientId>
     #  clientSecret: <clientSecret>
     #  scopes: openid email profile

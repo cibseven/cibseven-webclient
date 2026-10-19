@@ -15,12 +15,28 @@
  *  limitations under the License.
  */
 
+import { getPlugin } from '@/plugins/pluginsConfig.js'
+
+/**
+ * Slot through which an extension (e.g. the enterprise edition) adds an area to the admin
+ * navigation. A contribution carries no component, only its entry:
+ * { id, text, tooltip?, icon, image, to, active?, permissions, resource },
+ * shown when applicationPermissions(permissions, resource) allows it.
+ */
+export const ADMIN_ENTRY_SLOT = 'admin-entry'
+
 /**
  * Provides computed properties for the high-level navigation permission checks.
  * Requires permissionsMixin to be present on the same component.
  */
 export default {
   computed: {
+    /** The contributed admin entries the current user may open, in registration order */
+    adminPluginEntries() {
+      if (!this.$root.user) return []
+      return getPlugin(ADMIN_ENTRY_SLOT).value
+        .filter(entry => entry.to && entry.text && this.applicationPermissions(entry.permissions, entry.resource))
+    },
     permissionsTaskList() {
       return this.$root.user && this.applicationPermissions(this.$root.config.permissions.tasklist, 'tasklist')
     },
@@ -30,8 +46,10 @@ export default {
     permissionsModeler() {
       return this.$root.user && this.$root.config.modelerEnabled !== false && this.applicationPermissions(this.$root.config.permissions.modeler, 'modeler')
     },
+    /** Whether the admin area is reachable at all: through a built-in section or a contributed one */
     permissionsUsers() {
-      return this.$root.user && this.hasAdminManagementPermissions(this.$root.config.permissions)
+      return this.$root.user && (this.hasAdminManagementPermissions(this.$root.config.permissions) ||
+        this.adminPluginEntries?.length > 0)
     },
     permissionsUsersManagement() {
       return this.$root.user && this.applicationPermissions(this.$root.config.permissions.usersManagement, 'user')

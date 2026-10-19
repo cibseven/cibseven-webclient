@@ -41,8 +41,9 @@ export default {
     }
 
     switch (variable.type) {
+      case 'Bytes':
       case 'File':
-        return variable.valueInfo.filename
+        return this.getFilename(variable)
 
       case 'Json':
         return this.displayValueJson(variable)
@@ -103,6 +104,10 @@ export default {
     return '- Object -'
   },
 
+  isBytes(variable) {
+    return variable.type === 'Bytes'
+  },
+
   isFile(variable) {
     return (variable.type === 'File') || this.isFileValueDataSource(variable)
   },
@@ -115,6 +120,23 @@ export default {
       if (objectTypeName && this.getFileObjects().includes(objectTypeName)) return true
     }
     return false
+  },
+
+  isDownloadable(variable) {
+    // 'Bytes' is binary too and gets the same fetch-on-demand/download treatment as 'File' (CIB7-2132)
+    return this.isFile(variable) || this.isBytes(variable) || this.isFileValueDataSource(variable)
+  },
+
+  isUploadable(variable) {
+    // raw 'Bytes' values are replaced through the same data endpoint as files (CIB7-2132)
+    return (this.isFile(variable) || this.isBytes(variable)) && variable.isLive
+  },
+
+  getFilename(variable) {
+    // 'Bytes' variables have no valueInfo.filename, fall back to the variable name (CIB7-2132)
+    const filename = variable.valueInfo?.filename || `${variable.name}.dat`
+    // convert forbidden characters in filenames to underscores
+    return filename.replace(/[<>:"/\\|?*]/g, '_')
   },
 
   getFileVariableName(variable) {

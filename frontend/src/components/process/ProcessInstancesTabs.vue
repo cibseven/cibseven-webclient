@@ -22,7 +22,7 @@
 
 <script>
 import { GenericTabs } from '@cib/common-frontend'
-import { getDeepLinkEntries, resolveDeepLinkLabel } from '@/utils/deepLinks.js'
+import { defineTabBar } from '@/utils/tabBar.js'
 
 const BUILTIN_TABS = [
   { id: 'instances', text: 'process.instances' },
@@ -33,6 +33,12 @@ const BUILTIN_TABS = [
 
 export const RESERVED_TAB_IDS = BUILTIN_TABS.map(tab => tab.id)
 
+const tabsFor = defineTabBar({
+  deepLinkSection: 'processDefinition',
+  pluginSlot: 'process-definition-tab',
+  builtin: BUILTIN_TABS
+})
+
 export default {
   name: 'ProcessInstancesTabs',
   components: {
@@ -42,13 +48,7 @@ export default {
   emits: ['update:modelValue', 'tab-click'],
   computed: {
     tabs() {
-      const deepLinkTabs = getDeepLinkEntries(this.$root.config, 'processDefinition', RESERVED_TAB_IDS)
-        .filter(entry => entry.type === 'tab')
-        .map(entry => ({ id: entry.id, text: resolveDeepLinkLabel(this.$t, entry) }))
-      return [
-        ...BUILTIN_TABS,
-        ...deepLinkTabs,
-      ]
+      return tabsFor({ config: this.$root.config, t: this.$t })
     }
   }
 }

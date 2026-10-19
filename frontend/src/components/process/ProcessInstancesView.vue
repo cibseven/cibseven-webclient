@@ -123,6 +123,9 @@
                 <b-button size="sm" variant="light" @click="downloadBpmn()" :title="$t('process.downloadBpmn')">
                   <span class="mdi mdi-download"></span> {{ collapseButtons  ? '': $t('process.downloadBpmn') }}
                 </b-button>
+                <b-button v-if="permissionsModeler" size="sm" variant="light" @click="openModeler()" :title="$t('process.openModeler')">
+                  <span class="mdi mdi-pencil-outline"></span> {{ collapseButtons  ? '': $t('process.openModeler') }}
+                </b-button>
                 <b-button size="sm" variant="light" @click="viewDeployment()" :title="$t('process.showDeployment')">
                   <span class="mdi mdi-file-eye-outline"></span> {{ collapseButtons  ? '': $t('process.showDeployment') }}
                 </b-button>
@@ -154,6 +157,8 @@
         <CalledProcessDefinitionsTable v-else-if="activeTab === 'calledProcessDefinitions'" :process="process" />
         <DeepLinkFrame v-else-if="matchedDeepLink" :link="matchedDeepLink" :params="matchedDeepLinkParams"></DeepLinkFrame>
         <component :is="ProcessInstancesTabsContentPlugin" v-if="ProcessInstancesTabsContentPlugin" :process="process" :active-tab="activeTab"></component>
+        <PluginSlot name="process-definition-tab" :only="activeTab"
+          :params="{ process: process, tenantId: tenantId }"></PluginSlot>
       </div>
     </div>
 
@@ -179,6 +184,7 @@
 <script>
 import { ProcessService, getServicesBasePath } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
+import navigationPermissionsMixin from '@/mixins/navigationPermissionsMixin.js'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
 import InstancesTable from '@/components/process/tables/InstancesTable.vue'
 import JobDefinitionsTable from '@/components/process/tables/JobDefinitionsTable.vue'
@@ -197,6 +203,7 @@ import ScrollableTabsContainer from '@/components/common-components/ScrollableTa
 import ViewerFrame from '@/components/common-components/ViewerFrame.vue'
 import RemovableBadge from '@/components/common-components/RemovableBadge.vue'
 import DeepLinkFrame from '@/components/common-components/DeepLinkFrame.vue'
+import PluginSlot from '@/components/common/PluginSlot.vue'
 import DeepLinkButtons from '@/components/common-components/DeepLinkButtons.vue'
 import { getDeepLinkEntries } from '@/utils/deepLinks.js'
 import { mapGetters, mapActions } from 'vuex'
@@ -205,9 +212,9 @@ export default {
   name: 'ProcessInstancesView',
   components: { InstancesTable, JobDefinitionsTable, BpmnViewer, MultisortModal,
      SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable, CalledProcessDefinitionsTable,
-     ProcessInstancesTabs, ScrollableTabsContainer, ViewerFrame, RemovableBadge, DeepLinkFrame, DeepLinkButtons },
+     ProcessInstancesTabs, ScrollableTabsContainer, ViewerFrame, RemovableBadge, DeepLinkFrame, DeepLinkButtons, PluginSlot },
   inject: ['loadProcesses', 'currentLanguage'],
-  mixins: [permissionsMixin, resizerMixin, copyToClipboardMixin, tabUrlMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
+  mixins: [permissionsMixin, navigationPermissionsMixin, resizerMixin, copyToClipboardMixin, tabUrlMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
   emits: ['task-selected', 'filter-instances', 'instance-deleted'],
   props: {
     process: Object,
@@ -399,6 +406,10 @@ export default {
       const filename = this.process.resource.substr(this.process.resource.lastIndexOf('/') + 1, this.process.resource.lenght)
       window.location.href = getServicesBasePath() + '/process/' + this.process.id + '/data?filename=' + filename +
         '&token=' + this.$root.user.authToken
+    },
+    
+    openModeler: function() {
+      this.$router.push({ name: 'modeler', query: { processId: this.process.id, type: 'bpmn' } })
     },
     refreshDiagram: function() {
       this.$refs.diagram.cleanDiagramState()

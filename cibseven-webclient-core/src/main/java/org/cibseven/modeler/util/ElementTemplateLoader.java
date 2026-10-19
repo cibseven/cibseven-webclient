@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cibseven.modeler.config.ElementTemplateProperties;
-import org.cibseven.modeler.config.ModelerJpa;
+import org.cibseven.persistence.CibsevenJpa;
 import org.cibseven.modeler.model.ElementTemplate;
 import org.cibseven.modeler.model.ElementTemplateOrigin;
 import org.cibseven.modeler.repository.ElementTemplateRepository;
@@ -63,7 +63,7 @@ public class ElementTemplateLoader implements InitializingBean {
 	 */
 	public ElementTemplateLoader(ElementTemplateRepository elementTemplateRepository, ObjectMapper mapper,
 			ElementTemplateProperties properties,
-			@Qualifier(ModelerJpa.TRANSACTION_MANAGER) PlatformTransactionManager transactionManager,
+			@Qualifier(CibsevenJpa.TRANSACTION_MANAGER) PlatformTransactionManager transactionManager,
 			ResourcePatternResolver resourcePatternResolver) {
 		this.elementTemplateRepository = elementTemplateRepository;
 		this.mapper = mapper;
