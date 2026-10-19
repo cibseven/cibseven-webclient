@@ -900,6 +900,7 @@
 			"filterPriorityLabel": "Prioridad",
 			"selectProperty": "Seleccionar propiedad",
 			"insertValue": "Insertar valor",
+			"invalidDate": "Fecha no válida. Usa p. ej. {iso}, {dotted}, {german} o {isoTime}",
 			"insertVariableKey": "Ingresa el nombre de la variable",
 			"addCriteria": "Añadir criterio",
 			"filterExists": "Este filtro ya existe",
