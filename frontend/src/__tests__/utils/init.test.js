@@ -485,6 +485,17 @@ describe('handleAxiosError on 401', () => {
     await promise
   })
 
+  // A response can arrive after the logout cleared the user
+  it('should still prolong the token when the user is already gone', async () => {
+    sessionStorage.setItem('token', 'tok-expired')
+    const error = unauthorized({ type: 'TokenExpiredException', params: ['tok-prolonged'] })
+
+    await handleAxiosError(routerWith(), { user: null, $refs: { error: { show: vi.fn() } } }, error)
+
+    expect(axios.defaults.headers.common.authorization).toBe('tok-prolonged')
+    expect(axios.request).toHaveBeenCalledWith(error.config)
+  })
+
   it('should write the prolonged token back to localStorage when it lived there', async () => {
     localStorage.setItem('token', 'tok-expired')
     const error = unauthorized({ type: 'TokenExpiredException', params: ['tok-prolonged'] })

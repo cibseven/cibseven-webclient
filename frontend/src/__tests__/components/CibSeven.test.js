@@ -179,23 +179,15 @@ describe('CibSeven.vue', () => {
       expect(CibSeven.methods.isMenuItemActive.call(mockThis, exactItem)).toBe(false)
     })
 
-    it('should navigate to the start page before reloading on logout', () => {
-      const originalLocation = window.location
-      const reloadOrder = []
-      delete window.location
-      window.location = {
-        hash: '#/seven/auth/processes/123',
-        reload: vi.fn(() => reloadOrder.push(window.location.hash))
-      }
+    // The logged-out page does the logout: the header's logout only hands over to it
+    describe('logout', () => {
+      it('should hand over to the logged-out page', () => {
+        const push = vi.fn()
 
-      CibSeven.methods.logout.call({})
+        CibSeven.methods.logout.call({ $router: { push } })
 
-      // reload must fire AFTER the hash moves to the start page, else login returns
-      // to the (now-stale) previous page
-      expect(reloadOrder).toEqual(['#/'])
-      expect(window.location.hash).toBe('#/')
-
-      window.location = originalLocation
+        expect(push).toHaveBeenCalledWith({ name: 'loggedOut' })
+      })
     })
   })
 

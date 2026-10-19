@@ -87,6 +87,9 @@ application:
       #    jwks: <certsUri>
       #    user: <usersUri>
       #    introspection:
+      #    revocation: <revocationUri>   # RFC 7009; tokens are revoked on logout when set
+      #    endSession: <endSessionUri>   # OIDC RP-Initiated Logout; ends the IdP session on logout when set.
+      #                                     # Register <app url>/ as a valid post logout redirect URI at the IdP
       #  clientId: <clientId>
       #  clientSecret: <clientSecret>
       #  scopes: openid email profile
