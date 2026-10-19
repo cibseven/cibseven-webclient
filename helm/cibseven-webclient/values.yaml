@@ -95,7 +95,7 @@ application:
       #  accessTokenToEngineRest:
       #  assertion:
       #    type:
-      #    locationKey:
+      #    keyLocation:
 
       # Token generation
       authentication:
