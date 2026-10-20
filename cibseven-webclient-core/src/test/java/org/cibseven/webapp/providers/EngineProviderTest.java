@@ -138,9 +138,8 @@ public class EngineProviderTest {
 	}
 
 	@Test
-	public void testGetEngineConfiguration_missingNewFields_deserializeToNull() {
-		// The stock engine-rest configuration endpoint doesn't report these two fields yet -
-		// they must come through as unknown (null), not as false/absent-looking-like-known.
+	public void testGetEngineConfiguration_missingNewFields_keepDefaults() {
+		// An engine-rest before 3.0.0 doesn't report these two fields - they keep their defaults.
 		mockWebServer.enqueue(new MockResponse()
 				.setBody(ENGINE_CONFIG_JSON)
 				.addHeader("Content-Type", "application/json"));
@@ -148,18 +147,31 @@ public class EngineProviderTest {
 		EngineConfiguration result = provider.getEngineConfiguration("default");
 
 		assertNotNull(result);
-		assertNull(result.getHistoryTimeToLive());
-		assertNull(result.getEnforceHistoryTimeToLive());
+		assertEquals(-1, result.getHistoryTimeToLive());
+		assertTrue(result.isEnforceHistoryTimeToLive());
 	}
 
 	@Test
-	public void testGetEngineConfiguration_onlyOneNewFieldReported_normalizesBothToNull() {
-		// historyTimeToLive and enforceHistoryTimeToLive are only ever meaningfully known
-		// together. A partial report (e.g. an engine-rest version that added one field but
-		// not the other) must not let one leak through as "known" while the other is missing.
+	public void testGetEngineConfiguration_nullNewFields_keepDefaults() {
+		String nullJson =
+				"{\"engineName\":\"default\",\"historyLevel\":\"full\",\"authorizationEnabled\":true,"
+				+ "\"enablePasswordPolicy\":false,\"historyTimeToLive\":null,\"enforceHistoryTimeToLive\":null}";
+		mockWebServer.enqueue(new MockResponse()
+				.setBody(nullJson)
+				.addHeader("Content-Type", "application/json"));
+
+		EngineConfiguration result = provider.getEngineConfiguration("default");
+
+		assertNotNull(result);
+		assertEquals(-1, result.getHistoryTimeToLive());
+		assertTrue(result.isEnforceHistoryTimeToLive());
+	}
+
+	@Test
+	public void testGetEngineConfiguration_reportedNewFields_areDeserialized() {
 		String partialJson =
 				"{\"engineName\":\"default\",\"historyLevel\":\"full\",\"authorizationEnabled\":true,"
-				+ "\"enablePasswordPolicy\":false,\"historyTimeToLive\":30}";
+				+ "\"enablePasswordPolicy\":false,\"historyTimeToLive\":30,\"enforceHistoryTimeToLive\":false}";
 		mockWebServer.enqueue(new MockResponse()
 				.setBody(partialJson)
 				.addHeader("Content-Type", "application/json"));
@@ -167,8 +179,8 @@ public class EngineProviderTest {
 		EngineConfiguration result = provider.getEngineConfiguration("default");
 
 		assertNotNull(result);
-		assertNull(result.getHistoryTimeToLive());
-		assertNull(result.getEnforceHistoryTimeToLive());
+		assertEquals(30, result.getHistoryTimeToLive());
+		assertFalse(result.isEnforceHistoryTimeToLive());
 	}
 
 	@Test

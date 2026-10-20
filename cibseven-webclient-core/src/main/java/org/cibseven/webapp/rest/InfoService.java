@@ -171,7 +171,7 @@ public class InfoService extends BaseService {
 		configJson.put("engineRestUrl", engineRestUrl);
 		configJson.put("authorizationEnabled", engineConfig.isAuthorizationEnabled() || legacyAuthorizationEnabled);
 		configJson.put("historyTimeToLive", engineConfig.getHistoryTimeToLive());
-		configJson.put("enforceHistoryTimeToLive", engineConfig.getEnforceHistoryTimeToLive());
+		configJson.put("enforceHistoryTimeToLive", engineConfig.isEnforceHistoryTimeToLive());
 		configJson.put("modelerEnabled", modelerEnabled);
 		configJson.put("pluginsEnabled", pluginsEnabled);
 		configJson.put("startProcessDefaultFormEnabled", startProcessDefaultFormEnabled);

@@ -94,7 +94,9 @@ public class DirectEngineProvider implements IEngineProvider {
 		if (config instanceof org.cibseven.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl impl) {
 			// same representation as the engine-rest /configuration endpoint: days, -1 for unlimited
 			Integer historyTimeToLive = ParseUtil.parseHistoryTimeToLive(impl.getHistoryTimeToLive());
-			result.setHistoryTimeToLive(historyTimeToLive != null ? historyTimeToLive : -1);
+			if (historyTimeToLive != null) {
+				result.setHistoryTimeToLive(historyTimeToLive);
+			}
 			result.setEnforceHistoryTimeToLive(impl.isEnforceHistoryTimeToLive());
 		}
 		return result;

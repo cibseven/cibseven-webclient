@@ -52,16 +52,15 @@ public class EngineConfigurationTest {
 	}
 
 	@Test
-	public void testDefaultValues_historyTimeToLiveIsNull() {
+	public void testDefaultValues_historyTimeToLiveIsUnlimited() {
 		EngineConfiguration config = new EngineConfiguration();
-		assertNull(config.getHistoryTimeToLive());
+		assertEquals(-1, config.getHistoryTimeToLive());
 	}
 
 	@Test
-	public void testDefaultValues_enforceHistoryTimeToLiveIsNull() {
-		// Boxed on purpose: null means "unknown", distinct from a real, known false.
+	public void testDefaultValues_enforceHistoryTimeToLiveIsTrue() {
 		EngineConfiguration config = new EngineConfiguration();
-		assertNull(config.getEnforceHistoryTimeToLive());
+		assertTrue(config.isEnforceHistoryTimeToLive());
 	}
 
 	@Test
@@ -71,26 +70,8 @@ public class EngineConfigurationTest {
 		assertEquals("audit", config.getHistoryLevel());
 		assertFalse(config.isAuthorizationEnabled());
 		assertTrue(config.isEnablePasswordPolicy());
-		assertEquals(Integer.valueOf(30), config.getHistoryTimeToLive());
-		assertTrue(config.getEnforceHistoryTimeToLive());
-	}
-
-	@Test
-	public void testHistoryTimeToLive_withoutEnforceFlag_reportedAsUnknown() {
-		EngineConfiguration config = new EngineConfiguration();
-		config.setHistoryTimeToLive(30);
-
-		assertNull(config.getHistoryTimeToLive());
-		assertNull(config.getEnforceHistoryTimeToLive());
-	}
-
-	@Test
-	public void testHistoryTimeToLive_nullWithKnownEnforceFlag_staysKnown() {
-		EngineConfiguration config = new EngineConfiguration();
-		config.setEnforceHistoryTimeToLive(false);
-
-		assertNull(config.getHistoryTimeToLive());
-		assertFalse(config.getEnforceHistoryTimeToLive());
+		assertEquals(30, config.getHistoryTimeToLive());
+		assertTrue(config.isEnforceHistoryTimeToLive());
 	}
 
 	@Test
@@ -107,8 +88,8 @@ public class EngineConfigurationTest {
 		assertEquals("none", config.getHistoryLevel());
 		assertFalse(config.isAuthorizationEnabled());
 		assertTrue(config.isEnablePasswordPolicy());
-		assertEquals(Integer.valueOf(60), config.getHistoryTimeToLive());
-		assertTrue(config.getEnforceHistoryTimeToLive());
+		assertEquals(60, config.getHistoryTimeToLive());
+		assertTrue(config.isEnforceHistoryTimeToLive());
 	}
 
 	@ParameterizedTest

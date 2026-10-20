@@ -17,6 +17,8 @@
 package org.cibseven.webapp.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -35,22 +37,17 @@ public class EngineConfiguration {
 
 	// Default time to live for historical data, in days, as reported by the engine.
 	// -1 means to keep historical data indefinitely, 0 means to delete it immediately.
-	// Boxed, not primitive: null means "unknown" (e.g. an engine-rest version that doesn't
-	// report it). Valid when `enforceHistoryTimeToLive` is not null, elsewhere ignored.
+	// Falls back to the engine default when the engine doesn't report it (before 3.0.0).
 	// Supported since engine version 3.0.0.
-	private Integer historyTimeToLive;
-	// Boxed, not primitive: null means "unknown" (e.g. an engine-rest version that doesn't
-	// report it), which must stay distinguishable from a real, known false.
+	@JsonSetter(nulls = Nulls.SKIP)
+	private int historyTimeToLive = -1;
+	// Whether deploying a model resource without a history time to live is rejected.
+	// Falls back to the engine default when the engine doesn't report it (before 3.0.0).
 	// Supported since engine version 3.0.0.
-	private Boolean enforceHistoryTimeToLive;
+	@JsonSetter(nulls = Nulls.SKIP)
+	private boolean enforceHistoryTimeToLive = true;
 
 	public String getHistoryLevel() {
 		return historyLevel != null ? historyLevel.toLowerCase() : DEFAULT_HISTORY_LEVEL;
-	}
-
-	// historyTimeToLive is only meaningful when enforceHistoryTimeToLive is known. A partial
-	// report, where only the TTL came through, is therefore normalized to unknown (null).
-	public Integer getHistoryTimeToLive() {
-		return enforceHistoryTimeToLive != null ? historyTimeToLive : null;
 	}
 }
