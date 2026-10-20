@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.cibseven.bpm.BpmPlatform;
+import org.cibseven.bpm.engine.impl.util.ParseUtil;
 import org.cibseven.bpm.engine.rest.dto.identity.UserCredentialsDto;
 import org.cibseven.bpm.engine.rest.dto.identity.UserDto;
 import org.cibseven.bpm.engine.rest.dto.identity.UserProfileDto;
@@ -91,7 +92,9 @@ public class DirectEngineProvider implements IEngineProvider {
 		// getHistoryTimeToLive()/isEnforceHistoryTimeToLive() are declared on the impl class,
 		// not the public ProcessEngineConfiguration interface.
 		if (config instanceof org.cibseven.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl impl) {
-			result.setHistoryTimeToLive(impl.getHistoryTimeToLive());
+			// same representation as the engine-rest /configuration endpoint: days, -1 for unlimited
+			Integer historyTimeToLive = ParseUtil.parseHistoryTimeToLive(impl.getHistoryTimeToLive());
+			result.setHistoryTimeToLive(historyTimeToLive != null ? historyTimeToLive : -1);
 			result.setEnforceHistoryTimeToLive(impl.isEnforceHistoryTimeToLive());
 		}
 		return result;

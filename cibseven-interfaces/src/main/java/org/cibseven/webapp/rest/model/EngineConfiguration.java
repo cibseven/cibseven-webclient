@@ -33,24 +33,24 @@ public class EngineConfiguration {
 	private boolean authorizationEnabled = true;
 	private boolean enablePasswordPolicy;
 
-	// Time to live for historical data, in days.
-	// If null, means to keep historical data indefinitely.
-	// Valid when `enforceHistoryTimeToLive` is not null, elsewhere ignored.
-	// Supported since engine version 2.2.4.
-	private String historyTimeToLive;
+	// Default time to live for historical data, in days, as reported by the engine.
+	// -1 means to keep historical data indefinitely, 0 means to delete it immediately.
+	// Boxed, not primitive: null means "unknown" (e.g. an engine-rest version that doesn't
+	// report it). Valid when `enforceHistoryTimeToLive` is not null, elsewhere ignored.
+	// Supported since engine version 3.0.0.
+	private Integer historyTimeToLive;
 	// Boxed, not primitive: null means "unknown" (e.g. an engine-rest version that doesn't
 	// report it), which must stay distinguishable from a real, known false.
-	// Supported since engine version 2.2.4.
+	// Supported since engine version 3.0.0.
 	private Boolean enforceHistoryTimeToLive;
 
 	public String getHistoryLevel() {
 		return historyLevel != null ? historyLevel.toLowerCase() : DEFAULT_HISTORY_LEVEL;
 	}
 
-	// historyTimeToLive is only meaningful when enforceHistoryTimeToLive is known (a null TTL
-	// with a known flag means "keep indefinitely"). A partial report, where only the TTL came
-	// through, is therefore normalized to unknown (null) for both fields.
-	public String getHistoryTimeToLive() {
+	// historyTimeToLive is only meaningful when enforceHistoryTimeToLive is known. A partial
+	// report, where only the TTL came through, is therefore normalized to unknown (null).
+	public Integer getHistoryTimeToLive() {
 		return enforceHistoryTimeToLive != null ? historyTimeToLive : null;
 	}
 }

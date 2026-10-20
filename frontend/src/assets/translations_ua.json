@@ -1420,7 +1420,8 @@
 	"historyTimeToLive": {
 		"title": "Редагувати термін зберігання історії",
 		"choiceDefault": "Системне значення за замовчуванням ({value} дн.)",
-		"choiceDefaultUnknown": "Системне значення за замовчуванням",
+		"choiceDefaultUnknown": "Системне значення за замовчуванням (невідомо)",
+		"choiceDefaultUnlimited": "Системне значення за замовчуванням (без обмежень)",
 		"choiceZero": "0 - обробити сьогодні",
 		"choiceCustom": "Користувацьке",
 		"days": "дн.",

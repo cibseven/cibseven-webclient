@@ -1420,7 +1420,8 @@
 	"historyTimeToLive": {
 		"title": "Editar tiempo de vida del historial",
 		"choiceDefault": "Predeterminado del sistema ({value} días)",
-		"choiceDefaultUnknown": "Predeterminado del sistema",
+		"choiceDefaultUnknown": "Predeterminado del sistema (desconocido)",
+		"choiceDefaultUnlimited": "Predeterminado del sistema (ilimitado)",
 		"choiceZero": "0 - procesar hoy",
 		"choiceCustom": "Personalizado",
 		"days": "días",

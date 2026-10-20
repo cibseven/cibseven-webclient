@@ -56,7 +56,7 @@ describe('DecisionDefinitionDetails.vue', () => {
     ])('renders an explicit %s as-is, ignoring engine config', (_, historyTimeToLive, expected) => {
       const { result } = callWith(DecisionDefinitionDetails.computed.historyTimeToLiveDisplay, {
         historyTimeToLive,
-        $root: { config: { enforceHistoryTimeToLive: true, historyTimeToLive: '999' } }
+        $root: { config: { enforceHistoryTimeToLive: true, historyTimeToLive: 999 } }
       })
       expect(result).toBe(expected)
     })
@@ -73,7 +73,7 @@ describe('DecisionDefinitionDetails.vue', () => {
       ])('shows unlimited when the engine default itself is unlimited (%s)', (_, historyTimeToLive, enforceHistoryTimeToLive) => {
         const { result } = callWith(DecisionDefinitionDetails.computed.historyTimeToLiveDisplay, {
           historyTimeToLive,
-          $root: { config: { enforceHistoryTimeToLive, historyTimeToLive: null } }
+          $root: { config: { enforceHistoryTimeToLive, historyTimeToLive: -1 } }
         })
         expect(result).toBe('∞')
       })
@@ -83,10 +83,28 @@ describe('DecisionDefinitionDetails.vue', () => {
         const { result, context } = callWith(DecisionDefinitionDetails.computed.historyTimeToLiveDisplay, {
           historyTimeToLive: null,
           $t,
-          $root: { config: { enforceHistoryTimeToLive, historyTimeToLive: '7' } }
+          $root: { config: { enforceHistoryTimeToLive, historyTimeToLive: 7 } }
         })
-        expect(result).toBe('historyTimeToLive.choiceDefault:{"value":"7"}')
-        expect(context.$t).toHaveBeenCalledWith('historyTimeToLive.choiceDefault', { value: '7' })
+        expect(result).toBe('historyTimeToLive.choiceDefault:{"value":7}')
+        expect(context.$t).toHaveBeenCalledWith('historyTimeToLive.choiceDefault', { value: 7 })
+      })
+
+      it('shows the engine default of 0 as 0 days, never as unlimited', () => {
+        const $t = vi.fn((key, params) => params ? `${key}:${JSON.stringify(params)}` : key)
+        const { result } = callWith(DecisionDefinitionDetails.computed.historyTimeToLiveDisplay, {
+          historyTimeToLive: null,
+          $t,
+          $root: { config: { enforceHistoryTimeToLive: true, historyTimeToLive: 0 } }
+        })
+        expect(result).toBe('historyTimeToLive.choiceDefault:{"value":0}')
+      })
+
+      it('still shows unlimited for a known flag with a missing engine default (null)', () => {
+        const { result } = callWith(DecisionDefinitionDetails.computed.historyTimeToLiveDisplay, {
+          historyTimeToLive: null,
+          $root: { config: { enforceHistoryTimeToLive: true, historyTimeToLive: null } }
+        })
+        expect(result).toBe('∞')
       })
 
       it('shows a generic "unknown default" label when the engine reports nothing at all', () => {

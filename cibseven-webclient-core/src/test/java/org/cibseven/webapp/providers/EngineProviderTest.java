@@ -159,7 +159,7 @@ public class EngineProviderTest {
 		// not the other) must not let one leak through as "known" while the other is missing.
 		String partialJson =
 				"{\"engineName\":\"default\",\"historyLevel\":\"full\",\"authorizationEnabled\":true,"
-				+ "\"enablePasswordPolicy\":false,\"historyTimeToLive\":\"30\"}";
+				+ "\"enablePasswordPolicy\":false,\"historyTimeToLive\":30}";
 		mockWebServer.enqueue(new MockResponse()
 				.setBody(partialJson)
 				.addHeader("Content-Type", "application/json"));

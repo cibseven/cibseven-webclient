@@ -66,19 +66,19 @@ public class EngineConfigurationTest {
 
 	@Test
 	public void testAllArgsConstructor_setsAllFields() {
-		EngineConfiguration config = new EngineConfiguration("myEngine", "audit", false, true, "30", true);
+		EngineConfiguration config = new EngineConfiguration("myEngine", "audit", false, true, 30, true);
 		assertEquals("myEngine", config.getEngineName());
 		assertEquals("audit", config.getHistoryLevel());
 		assertFalse(config.isAuthorizationEnabled());
 		assertTrue(config.isEnablePasswordPolicy());
-		assertEquals("30", config.getHistoryTimeToLive());
+		assertEquals(Integer.valueOf(30), config.getHistoryTimeToLive());
 		assertTrue(config.getEnforceHistoryTimeToLive());
 	}
 
 	@Test
 	public void testHistoryTimeToLive_withoutEnforceFlag_reportedAsUnknown() {
 		EngineConfiguration config = new EngineConfiguration();
-		config.setHistoryTimeToLive("30");
+		config.setHistoryTimeToLive(30);
 
 		assertNull(config.getHistoryTimeToLive());
 		assertNull(config.getEnforceHistoryTimeToLive());
@@ -100,14 +100,14 @@ public class EngineConfigurationTest {
 		config.setHistoryLevel("none");
 		config.setAuthorizationEnabled(false);
 		config.setEnablePasswordPolicy(true);
-		config.setHistoryTimeToLive("60");
+		config.setHistoryTimeToLive(60);
 		config.setEnforceHistoryTimeToLive(true);
 
 		assertEquals("test", config.getEngineName());
 		assertEquals("none", config.getHistoryLevel());
 		assertFalse(config.isAuthorizationEnabled());
 		assertTrue(config.isEnablePasswordPolicy());
-		assertEquals("60", config.getHistoryTimeToLive());
+		assertEquals(Integer.valueOf(60), config.getHistoryTimeToLive());
 		assertTrue(config.getEnforceHistoryTimeToLive());
 	}
 

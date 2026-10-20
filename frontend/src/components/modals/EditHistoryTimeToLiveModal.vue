@@ -134,11 +134,17 @@ export default {
     defaultChoiceDisabled() {
       return this.$root.config.enforceHistoryTimeToLive === true
     },
+    // The engine reports its default in days; -1 means history is kept indefinitely,
+    // null/undefined means the engine did not report it.
     defaultChoiceLabel() {
       const systemDefault = this.$root.config.historyTimeToLive
-      return systemDefault
-        ? this.$t('historyTimeToLive.choiceDefault', { value: systemDefault })
-        : this.$t('historyTimeToLive.choiceDefaultUnknown')
+      if (systemDefault === null || systemDefault === undefined) {
+        return this.$t('historyTimeToLive.choiceDefaultUnknown')
+      }
+      if (systemDefault < 0) {
+        return this.$t('historyTimeToLive.choiceDefaultUnlimited')
+      }
+      return this.$t('historyTimeToLive.choiceDefault', { value: systemDefault })
     }
   },
   methods: {

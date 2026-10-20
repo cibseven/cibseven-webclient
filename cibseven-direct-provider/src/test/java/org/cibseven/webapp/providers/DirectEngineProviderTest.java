@@ -28,6 +28,8 @@ import org.cibseven.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mockito;
 
 public class DirectEngineProviderTest {
@@ -59,8 +61,21 @@ public class DirectEngineProviderTest {
 
 		EngineConfiguration result = provider.getEngineConfiguration("default");
 
-		assertThat(result.getHistoryTimeToLive()).isEqualTo("30");
+		assertThat(result.getHistoryTimeToLive()).isEqualTo(30);
 		assertThat(result.getEnforceHistoryTimeToLive()).isTrue();
+	}
+
+	@ParameterizedTest
+	@CsvSource(value = {"30,30", "P30D,30", "0,0", "P0D,0", "null,-1"}, nullValues = "null")
+	void getEngineConfiguration_historyTimeToLive_isReportedInDaysWithMinusOneForUnlimited(String configured, int expected) {
+		ProcessEngineConfigurationImpl config = mock(ProcessEngineConfigurationImpl.class);
+		when(config.getHistoryTimeToLive()).thenReturn(configured);
+		when(config.isEnforceHistoryTimeToLive()).thenReturn(false);
+		when(processEngine.getProcessEngineConfiguration()).thenReturn(config);
+
+		EngineConfiguration result = provider.getEngineConfiguration("default");
+
+		assertThat(result.getHistoryTimeToLive()).isEqualTo(expected);
 	}
 
 	@Test

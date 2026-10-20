@@ -1420,7 +1420,8 @@
 	"historyTimeToLive": {
 		"title": "Изменить время хранения истории",
 		"choiceDefault": "Системное значение по умолчанию ({value} дн.)",
-		"choiceDefaultUnknown": "Системное значение по умолчанию",
+		"choiceDefaultUnknown": "Системное значение по умолчанию (неизвестно)",
+		"choiceDefaultUnlimited": "Системное значение по умолчанию (без ограничений)",
 		"choiceZero": "0 - обработать сегодня",
 		"choiceCustom": "Пользовательское",
 		"days": "дн.",

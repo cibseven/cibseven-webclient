@@ -242,17 +242,28 @@ public class InfoServiceTest {
 
 	@Test
 	public void testGetConfig_historyTimeToLiveFromEngineConfig() {
-		EngineConfiguration config = new EngineConfiguration("default", "full", true, false, "30", false);
+		EngineConfiguration config = new EngineConfiguration("default", "full", true, false, 30, false);
 		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
 
 		ObjectNode result = infoService.getConfig(null);
 
-		assertEquals("30", result.get("historyTimeToLive").asText());
+		assertEquals(30, result.get("historyTimeToLive").asInt());
+		assertTrue(result.get("historyTimeToLive").isInt());
+	}
+
+	@Test
+	public void testGetConfig_historyTimeToLive_unlimitedIsPassedThroughAsMinusOne() {
+		EngineConfiguration config = new EngineConfiguration("default", "full", true, false, -1, true);
+		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
+
+		ObjectNode result = infoService.getConfig(null);
+
+		assertEquals(-1, result.get("historyTimeToLive").asInt());
 	}
 
 	@Test
 	public void testGetConfig_enforceHistoryTimeToLiveFromEngineConfig() {
-		EngineConfiguration config = new EngineConfiguration("default", "full", true, false, "30", true);
+		EngineConfiguration config = new EngineConfiguration("default", "full", true, false, 30, true);
 		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
 
 		ObjectNode result = infoService.getConfig(null);

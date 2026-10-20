@@ -1421,7 +1421,8 @@
 	"historyTimeToLive": {
 		"title": "Edit History Time To Live",
 		"choiceDefault": "Default to system ({value} days)",
-		"choiceDefaultUnknown": "Default to system",
+		"choiceDefaultUnknown": "Default to system (unknown)",
+		"choiceDefaultUnlimited": "Default to system (unlimited)",
 		"choiceZero": "0 - process today",
 		"choiceCustom": "Custom",
 		"days": "days",
