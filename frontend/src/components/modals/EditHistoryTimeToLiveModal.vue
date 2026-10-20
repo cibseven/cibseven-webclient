@@ -43,7 +43,8 @@
           :disabled="defaultChoiceDisabled"
           @change="onChoiceChanged">
         <label class="form-check-label" for="historyTimeToLiveChoiceDefault" :title="defaultChoiceDisabled ? $t('historyTimeToLive.enforcedTooltip') : null">
-          {{ defaultChoiceLabel }}
+          {{ captionValue(defaultChoiceLabel) }}
+          <span class="text-muted">{{ captionHint(defaultChoiceLabel) }}</span>
         </label>
       </div>
 
@@ -57,7 +58,8 @@
           v-model="choice"
           @change="onChoiceChanged">
         <label class="form-check-label" for="historyTimeToLiveChoiceZero">
-          {{ $t('historyTimeToLive.choiceZero') }}
+          {{ captionValue($t('historyTimeToLive.choiceZero')) }}
+          <span class="text-muted">{{ captionHint($t('historyTimeToLive.choiceZero')) }}</span>
         </label>
       </div>
 
@@ -71,26 +73,27 @@
           v-model="choice"
           @change="onChoiceChanged">
         <label class="form-check-label" for="historyTimeToLiveChoiceCustom">
-          {{ $t('historyTimeToLive.choiceCustom') }}
+          {{ captionValue($t('historyTimeToLive.choiceCustom')) }}
+          <span class="text-muted">{{ captionHint($t('historyTimeToLive.choiceCustom')) }}</span>
         </label>
       </div>
 
-      <div class="input-group mt-1" style="max-width: 220px; padding-left: 20px;">
+      <div class="input-group mt-1" style="max-width: 320px; padding-left: 20px;">
         <b-form-input
           v-model="editTtlValue"
           id="ttlValue"
           type="number"
-          min="0"
-          max="9999"
+          :min="customValueMin"
+          :max="customValueMax"
           :placeholder="$t('historyTimeToLive.placeholder')"
-          :state="ttlValidationState"
+          :state="choice === 'custom' ? !errorInCustomChoice : null"
           :disabled="choice !== 'custom'"
           @input="validateTtl($event)">
         </b-form-input>
         <span class="input-group-text">{{ $t('historyTimeToLive.days') }}</span>
       </div>
 
-      <div v-if="ttlValidationState === false" class="text-danger small mt-1">
+      <div v-if="errorInCustomChoice" class="text-danger small mt-1">
         {{ $t('historyTimeToLive.validation') }}
       </div>
     </div>
@@ -121,9 +124,8 @@ export default {
   data() {
     return {
       selectedItem: null,
-      choice: 'default',
-      editTtlValue: null,
-      ttlValidationState: null
+      choice: 'default', // 'default', 'zero', or 'custom'
+      editTtlValue: 30,
     }
   },
   computed: {
@@ -148,6 +150,18 @@ export default {
         return this.$t('historyTimeToLive.choiceDefaultZero')
       }
       return this.$t('historyTimeToLive.choiceDefault', { value: systemDefault })
+    },
+
+    customValueMin() {
+      return 0
+    },
+    customValueMax() {
+      return 356000 // roughly 1,000 years in days
+    },
+    errorInCustomChoice() {
+      if (this.choice !== 'custom') return false
+      const value = Number.parseInt(this.editTtlValue)
+      return Number.isNaN(value) || value < this.customValueMin || value > this.customValueMax
     }
   },
   methods: {
@@ -156,15 +170,14 @@ export default {
       this.selectedItem = item
       if (item.historyTimeToLive === null || item.historyTimeToLive === undefined) {
         this.choice = 'default'
-        this.editTtlValue = null
+        this.editTtlValue = 30
       } else if (item.historyTimeToLive === 0) {
         this.choice = 'zero'
-        this.editTtlValue = null
+        this.editTtlValue = 30
       } else {
         this.choice = 'custom'
         this.editTtlValue = item.historyTimeToLive
       }
-      this.ttlValidationState = null
 
       this.$nextTick(() => {
         if (this.$refs.modal) {
@@ -176,8 +189,7 @@ export default {
     resetTtlDialog() {
       this.selectedItem = null
       this.choice = 'default'
-      this.editTtlValue = null
-      this.ttlValidationState = null
+      this.editTtlValue = 30
     },
 
     onChoiceChanged() {
@@ -185,18 +197,14 @@ export default {
         if (!this.editTtlValue) {
           this.editTtlValue = this.selectedItem?.historyTimeToLive || 30
         }
-        this.ttlValidationState = null
         this.$nextTick(() => {
           this.validateTtl()
         })
-      } else {
-        this.ttlValidationState = true
       }
     },
 
     validateTtl(event = null) {
       if (this.choice !== 'custom') {
-        this.ttlValidationState = true
         return true
       }
 
@@ -204,12 +212,10 @@ export default {
       const inputValue = event ? event.target.value : this.editTtlValue
       const value = Number.parseInt(inputValue)
 
-      if (Number.isNaN(value) || value < 0 || value > 9999) {
-        this.ttlValidationState = false
+      if (Number.isNaN(value) || value < this.customValueMin || value > this.customValueMax) {
         return false
       }
 
-      this.ttlValidationState = true
       return true
     },
 
@@ -247,7 +253,17 @@ export default {
           this.$refs.modal.hide()
         }
       })
-    }
+    },
+
+    // 'a (b)' => 'a'
+    captionValue(value) {
+      return value?.split(' (')[0] || ''
+    },
+    // 'a (b)' => '(b)'
+    captionHint(value) {
+      const v = value?.split(' (')[1]
+      return v ? `(${v}` : ''
+    },
   }
 }
 </script>
