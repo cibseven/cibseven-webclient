@@ -23,7 +23,7 @@
     <!-- Split control: the icon leads to the section, the chevron opens its menu -->
     <template v-if="isSplit">
       <router-link ref="main" :to="cluster.to" class="cib-nav-btn cib-nav-btn-main"
-        :aria-label="cluster.label" :aria-describedby="tooltipId"
+        :aria-label="cluster.label" :aria-describedby="tipVisible ? tooltipId : null"
         @mouseenter="showTip = true" @mouseleave="showTip = false" @focus="showTip = true" @blur="showTip = false">
         <span class="cib-nav-current-bar" aria-hidden="true"></span>
         <span v-if="cluster.avatar" class="cib-nav-avatar" aria-hidden="true">{{ cluster.avatar }}</span>
@@ -39,10 +39,10 @@
 
     <!-- Single control: one button, for menus without a landing page (engine, help, language) or plain actions -->
     <button v-else ref="toggle" type="button" class="cib-nav-btn cib-nav-btn-single"
-      :aria-label="cluster.label" :aria-describedby="tooltipId"
+      :aria-label="cluster.label" :aria-describedby="tipVisible ? tooltipId : null"
       :aria-haspopup="hasMenu ? 'true' : null" :aria-expanded="hasMenu ? (open ? 'true' : 'false') : null"
       @click="hasMenu ? toggle() : $emit('select', cluster)" @pointerenter="hasMenu ? hoverOpen($event) : (showTip = true)"
-      @mouseenter="showTip = !hasMenu" @mouseleave="showTip = false" @focus="showTip = !open" @blur="showTip = false"
+      @mouseleave="showTip = false" @focus="showTip = !open" @blur="showTip = false"
       @keydown.down.prevent="hasMenu && openAndFocusFirst()" @keydown.esc="closeAndFocus">
       <span class="cib-nav-current-bar" aria-hidden="true"></span>
       <span v-if="cluster.avatar" class="cib-nav-avatar" aria-hidden="true">{{ cluster.avatar }}</span>
@@ -50,7 +50,7 @@
       <span v-if="hasMenu" class="mdi mdi-18px mdi-chevron-down" aria-hidden="true"></span>
     </button>
 
-    <span v-if="showTip && !open" :id="tooltipId" role="tooltip" class="cib-nav-tooltip">{{ cluster.label }}</span>
+    <span v-if="tipVisible" :id="tooltipId" role="tooltip" class="cib-nav-tooltip">{{ cluster.label }}</span>
 
     <div v-if="open" ref="menu" class="cib-nav-menu" :class="align === 'end' ? 'cib-nav-menu-end' : 'cib-nav-menu-start'"
       role="menu" tabindex="-1" :aria-label="cluster.label" @keydown.down.prevent="moveFocus(1)" @keydown.up.prevent="moveFocus(-1)"
@@ -69,7 +69,8 @@
             :target="item.external ? '_blank' : null" :rel="item.external ? 'noopener noreferrer' : null" @click="close">
             {{ item.label }}<span v-if="item.external" class="mdi mdi-14px mdi-open-in-new ms-1" aria-hidden="true"></span>
           </a>
-          <button v-else type="button" class="cib-nav-menu-item" :class="{ active: item.active }" role="menuitem"
+          <button v-else type="button" class="cib-nav-menu-item" :class="{ active: item.active }"
+            :role="item.checkable ? 'menuitemradio' : 'menuitem'"
             :title="item.tooltip" :aria-checked="item.checkable ? (item.active ? 'true' : 'false') : null"
             @click="select(item)">
             <span v-if="item.tag" class="cib-nav-menu-tag">{{ item.tag }}</span>{{ item.label }}
@@ -117,6 +118,9 @@ export default {
     }
   },
   computed: {
+    tipVisible() {
+      return this.showTip && !this.open
+    },
     hasMenu() {
       return !!this.cluster.sections?.some(section => section.length)
     },
@@ -208,7 +212,9 @@ export default {
       if (this.$refs.prepend?.contains(event.target)) this.close()
     },
     menuItems() {
-      return Array.from(this.$refs.menu?.querySelectorAll('[role="menuitem"]') || [])
+      // Includes legacy slot content (plain dropdown items without a menu role)
+      const selector = '[role="menuitem"], [role="menuitemradio"], .cib-nav-legacy-items a, .cib-nav-legacy-items button'
+      return Array.from(this.$refs.menu?.querySelectorAll(selector) || [])
     },
     async openAndFocusFirst() {
       // Keyboard focus moves into the menu, so it must not close when the pointer leaves

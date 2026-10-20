@@ -21,7 +21,9 @@ import { getPlugin } from '@/plugins/pluginsConfig.js'
  * Slot through which an extension (e.g. the enterprise edition) adds an area to the admin
  * navigation. A contribution carries no component, only its entry:
  * { id, text, tooltip?, icon, image, to, active?, permissions, resource },
- * shown when applicationPermissions(permissions, resource) allows it.
+ * shown when applicationPermissions(permissions, resource) allows it. `active` lists the paths
+ * that mark the entry as current (default: `to`); they match whole path segments, so
+ * 'seven/auth/admin/area' matches '/seven/auth/admin/area/1' but not '/seven/auth/admin/area-details'.
  */
 export const ADMIN_ENTRY_SLOT = 'admin-entry'
 

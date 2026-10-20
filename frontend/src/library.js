@@ -76,20 +76,15 @@ export { default as copyToClipboardMixin } from '@/mixins/copyToClipboardMixin.j
 export { default as assigneeMixin } from '@/mixins/assigneeMixin.js'
 export { default as navigationPermissionsMixin, ADMIN_ENTRY_SLOT } from '@/mixins/navigationPermissionsMixin.js'
 export { default as startTileOptionsMixin } from '@/mixins/startTileOptionsMixin.js'
+// Navigation catalog: only what editions (EE/Flow) build on
 export {
   SURFACES,
-  COLLAPSE_TARGETS,
   buildNavGroups,
   buildVisibleNavGroups,
   filterVisibleNavGroups,
-  projectGroupsForNavbar,
-  itemsToSections,
   projectStartHoverOptions,
-  singleOptionTile,
-  tasksOnlyRedirectTarget,
-  accessManagementCatalogItems,
   permissionFlagsFromVm,
-  itemVisibleOnSurface
+  registerNavGroupsExtender
 } from '@/navigation/navGroups.js'
 export { isStartableInTasklist, hasStartableProcesses } from '@/utils/process.js'
 

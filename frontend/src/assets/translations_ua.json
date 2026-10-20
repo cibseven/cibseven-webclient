@@ -1100,13 +1100,6 @@
 		"builder": {
 			"title": "Builder"
 		},
-		"data": {
-			"title": "Data"
-		},
-		"ins7ght": {
-			"title": "Ins7ght",
-			"tooltip": "Відкрити Ins7ght"
-		},
 		"modeler": {
 			"title": "Modeler",
 			"tooltip": "Відкрити Modeler для проектування та редагування BPMN, DMN та форм"

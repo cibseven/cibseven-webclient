@@ -94,7 +94,7 @@ import FeedbackModal from '@/components/modals/FeedbackModal.vue'
 import PluginSlot from '@/components/common/PluginSlot.vue'
 import { updateAppTitle } from '@/utils/init'
 import { hasStartableProcesses } from '@/utils/process.js'
-import { buildNavGroups, projectGroupsForNavbar, permissionFlagsFromVm, itemsToSections } from '@/navigation/navGroups.js'
+import { buildNavGroups, extendNavGroups, projectGroupsForNavbar, permissionFlagsFromVm, itemsToSections } from '@/navigation/navGroups.js'
 
 export default {
   name: 'CibSeven',
@@ -117,8 +117,9 @@ export default {
     productName() {
       return this.$root.config.productNamePageTitle || this.$t('login.productName')
     },
+    // Same catalog and extensions as the start page and hub pages (see buildVisibleNavGroups)
     menuItems: function() {
-      return buildNavGroups(permissionFlagsFromVm(this))
+      return extendNavGroups(buildNavGroups(permissionFlagsFromVm(this)), this)
     },
     computedMenuItems: function() {
       return this.getVisibleMenuItems(this.menuItems)
@@ -302,13 +303,15 @@ export default {
       if (!item.active) {
         return false
       }
+      // Entries match whole path segments: 'seven/auth/tasks' does not match '/seven/auth/tasks-home'.
+      // A leading '/' is optional; a trailing '/' matches anything below that path.
       const path = this.$route.path
-      if (item.activeExact) {
-        return item.active.some(a => path.endsWith(a))
-      }
-      return item.active.some(a => a.endsWith('/')
-        ? path.includes('/' + a)
-        : path.endsWith('/' + a) || path.includes('/' + a + '/'))
+      return item.active.some(entry => {
+        const a = entry.replace(/^\//, '')
+        if (item.activeExact) return path.endsWith(`/${a}`)
+        if (a.endsWith('/')) return path.includes(`/${a}`)
+        return path.endsWith(`/${a}`) || path.includes(`/${a}/`)
+      })
     },
     logout: function() {
       // The logged-out page signs the user out, while it shows what is going on

@@ -425,11 +425,13 @@ function permissionsGuard(permission, condition = undefined) {
   }
 }
 
-// Passes when any of the [permission, condition] pairs is granted; otherwise reports the first one
+// Passes as soon as one of the [permission, condition] pairs is granted; otherwise redirects as the first one would
 function anyPermissionGuard(...rules) {
   return function(to, from) {
-    const results = rules.map(([permission, condition]) => permissionsGuard(permission, condition)(to, from))
-    return results.find(result => result === true) ?? results[0]
+    const granted = rules.some(([permission, condition]) => permissionsGuard(permission, condition)(to, from) === true)
+    if (granted) return true
+    const [permission, condition] = rules[0]
+    return permissionsGuard(permission, condition)(to, from)
   }
 }
 

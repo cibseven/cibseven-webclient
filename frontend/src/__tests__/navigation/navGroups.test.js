@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterEach } from 'vitest'
 import {
   SURFACES,
   buildNavGroups,
@@ -27,7 +27,9 @@ import {
   itemVisibleOnSurface,
   buildVisibleNavGroups,
   getVisibleGroup,
-  itemsToSections
+  itemsToSections,
+  registerNavGroupsExtender,
+  extendNavGroups
 } from '@/navigation/navGroups.js'
 
 const fullCtx = {
@@ -98,7 +100,7 @@ describe('navGroups factory', () => {
       '/seven/auth/admin/groups',
       '/seven/auth/admin/tenants',
       '/seven/auth/admin/authorizations',
-      '/seven/auth/admin/system'
+      { name: 'adminSystem' }
     ])
     expect(adminOptions.at(-1).title).toBe('admin.system.title')
   })
@@ -160,22 +162,16 @@ describe('navGroups factory', () => {
   })
 
   it('tasksOnlyRedirectTarget is null when Tasks is not the sole tile', () => {
-    expect(tasksOnlyRedirectTarget(['tasks', 'cockpit'], [{ to: '/seven/auth/tasks', title: 'Task list' }])).toBeNull()
-    expect(tasksOnlyRedirectTarget(['cockpit'], [])).toBeNull()
-    expect(tasksOnlyRedirectTarget([], [])).toBeNull()
+    expect(tasksOnlyRedirectTarget(['tasks', 'cockpit'], '/seven/auth/tasks')).toBeNull()
+    expect(tasksOnlyRedirectTarget(['cockpit'])).toBeNull()
+    expect(tasksOnlyRedirectTarget([])).toBeNull()
   })
 
-  it('tasksOnlyRedirectTarget goes straight to the tasklist when it is the only tasks option', () => {
-    const target = tasksOnlyRedirectTarget(['tasks'], [{ to: '/seven/auth/tasks', title: 'Task list' }])
-    expect(target).toBe('/seven/auth/tasks')
-  })
-
-  it('tasksOnlyRedirectTarget goes to the tasks hub when start-process is also available', () => {
-    const target = tasksOnlyRedirectTarget(['tasks'], [
-      { to: '/seven/auth/tasks', title: 'Task list' },
-      { to: '/seven/auth/start-process', title: 'Start process' }
-    ])
-    expect(target).toEqual({ name: 'tasksHome' })
+  // Not dependent on how many tasks options there are yet: the process list may still be loading
+  it('tasksOnlyRedirectTarget always goes to the tasks destination', () => {
+    expect(tasksOnlyRedirectTarget(['tasks'], '/seven/auth/tasks')).toBe('/seven/auth/tasks')
+    expect(tasksOnlyRedirectTarget(['tasks'], { name: 'tasklist' })).toEqual({ name: 'tasklist' })
+    expect(tasksOnlyRedirectTarget(['tasks'])).toBe('/seven/auth/tasks')
   })
 })
 
@@ -203,5 +199,49 @@ describe('contributed admin entries in the catalog', () => {
 
   it('adds nothing without contributions', () => {
     expect(adminGroup(undefined).items.some(item => item.pluginEntry)).toBe(false)
+  })
+})
+
+describe('registered nav group extenders', () => {
+  const dataGroup = { id: 'data', title: 'start.data.title', show: true, items: [{ to: '/seven/auth/ins7ght', title: 'start.ins7ght.title' }] }
+  const vm = { permissionsTaskList: true, permissionsUsers: false }
+  let unregister = []
+  afterEach(() => {
+    unregister.forEach(fn => fn())
+    unregister = []
+  })
+
+  it('applies every registered extender in order, with the vm', () => {
+    const seen = []
+    unregister.push(registerNavGroupsExtender((groups, context) => {
+      seen.push(context)
+      return [...groups, dataGroup]
+    }))
+    unregister.push(registerNavGroupsExtender(groups => groups.filter(g => g.id !== 'cockpit')))
+
+    const ids = extendNavGroups(buildNavGroups({}), vm).map(g => g.id)
+
+    expect(seen).toEqual([vm])
+    expect(ids).toEqual(['tasks', 'builder', 'admin', 'data'])
+  })
+
+  it('reaches the start page and hub pages through buildVisibleNavGroups', () => {
+    unregister.push(registerNavGroupsExtender(groups => [...groups, dataGroup]))
+    expect(buildVisibleNavGroups(vm).map(g => g.id)).toEqual(['tasks', 'data'])
+    expect(getVisibleGroup(vm, 'data').items).toHaveLength(1)
+  })
+
+  it('still applies a NavGroupsExtender component registered on the vm, after the registered ones', () => {
+    unregister.push(registerNavGroupsExtender(groups => [...groups, dataGroup]))
+    const legacy = { methods: { extend(groups) { return groups.map(g => g.id === 'data' ? { ...g, title: 'legacy' } : g) } } }
+
+    const groups = extendNavGroups(buildNavGroups({}), { $options: { components: { NavGroupsExtender: legacy } } })
+
+    expect(groups.find(g => g.id === 'data').title).toBe('legacy')
+  })
+
+  it('stops applying an extender once unregistered', () => {
+    registerNavGroupsExtender(groups => [...groups, dataGroup])()
+    expect(extendNavGroups(buildNavGroups({}), vm).some(g => g.id === 'data')).toBe(false)
   })
 })

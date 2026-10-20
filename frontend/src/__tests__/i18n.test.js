@@ -87,8 +87,6 @@ function skipValue(value, lang) {
       'admin',
       'modeler',
       'builder',
-      'data',
-      'ins7ght',
 
       // authorizations.types:
       'allow',

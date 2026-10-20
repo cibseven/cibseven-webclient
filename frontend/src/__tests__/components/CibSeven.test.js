@@ -215,6 +215,20 @@ describe('CibSeven.vue', () => {
       expect(CibSeven.methods.isMenuItemActive.call(mockThis, tasklistItem)).toBe(false)
     })
 
+    // Contributed entries may give paths with a leading slash (ADMIN_ENTRY_SLOT `active`)
+    it('should treat a leading slash in an active entry as optional', () => {
+      const mockThis = { $route: { path: '/seven/auth/admin/ee-area/1' } }
+      expect(CibSeven.methods.isMenuItemActive.call(mockThis, { active: ['/seven/auth/admin/ee-area'] })).toBe(true)
+      expect(CibSeven.methods.isMenuItemActive.call(mockThis, { active: ['/seven/auth/admin/ee-area/1'], activeExact: true })).toBe(true)
+    })
+
+    it('should match activeExact entries on whole segments only', () => {
+      const mockThis = { $route: { path: '/seven/auth/my-batches' } }
+      expect(CibSeven.methods.isMenuItemActive.call(mockThis, { active: ['batches'], activeExact: true })).toBe(false)
+      mockThis.$route.path = '/seven/auth/batches'
+      expect(CibSeven.methods.isMenuItemActive.call(mockThis, { active: ['batches'], activeExact: true })).toBe(true)
+    })
+
     it('should match plural resource list pages via their explicit active pattern', () => {
       const mockThis = {
         $route: { path: '/seven/auth/admin/users' }
@@ -411,6 +425,19 @@ describe('CibSeven.vue', () => {
       CibSeven.methods.onHeaderSelect.call({ $refs: { about: { show } } }, { modal: 'about' })
       expect(show).toHaveBeenCalled()
       expect(() => CibSeven.methods.onHeaderSelect.call({ $refs: {} }, { key: 'other' })).not.toThrow()
+    })
+  })
+
+  describe('navbar catalog', () => {
+    it('applies registered nav group extenders, like the start page does', async () => {
+      const { registerNavGroupsExtender } = await import('@/navigation/navGroups.js')
+      const unregister = registerNavGroupsExtender(groups => [...groups, { id: 'data', show: true, items: [] }])
+      try {
+        const groups = CibSeven.computed.menuItems.call({ permissionsTaskList: true })
+        expect(groups.at(-1).id).toBe('data')
+      } finally {
+        unregister()
+      }
     })
   })
 })

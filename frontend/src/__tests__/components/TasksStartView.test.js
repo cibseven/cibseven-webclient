@@ -74,17 +74,18 @@ describe('TasksStartView.vue', () => {
     expect(vm.items.map(i => i.title)).toEqual(['start.taskList.title', 'Extra'])
   })
 
-  it('drops plugin options missing a required field', () => {
+  // Hover menus show such options too; the hub page gives them the section's image instead
+  it('keeps plugin options without an image and drops those without a route or title', () => {
     const plugin = {
       methods: {
         getOptions() {
-          return [{ to: { name: 'extra' }, title: 'Extra' }] // no src
+          return [{ to: { name: 'extra' }, title: 'Extra' }, { title: 'No route' }, { to: '/x' }]
         }
       }
     }
     const vm = evaluateTasksStartView({
       $options: { components: { TasksTileOptionsPlugin: plugin } }
     })
-    expect(vm.items).toEqual([])
+    expect(vm.items).toEqual([{ to: { name: 'extra' }, title: 'Extra' }])
   })
 })

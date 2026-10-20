@@ -52,7 +52,7 @@
                   {{ item.label }}<span v-if="item.external" class="mdi mdi-14px mdi-open-in-new ms-1" aria-hidden="true"></span>
                 </a>
                 <button v-else type="button" class="cib-nav-mobile-item" :class="{ active: item.active }"
-                  :aria-checked="item.checkable ? (item.active ? 'true' : 'false') : null" @click="$emit('select', item)">
+                  :aria-current="item.checkable && item.active ? 'true' : null" @click="$emit('select', item)">
                   <span v-if="item.tag" class="cib-nav-mobile-tag">{{ item.tag }}</span>{{ item.label }}
                 </button>
               </li>
@@ -88,12 +88,16 @@ export default {
     }
   },
   // Prepended cluster items come from the parent and don't close the menu themselves (e.g. one that
-  // opens a modal); bound here rather than in the template, as their wrapper is not interactive
+  // opens a modal); bound here rather than in the template, as their wrapper is not interactive.
+  // The menu covers the page, so the page behind it must not scroll (notably on iOS).
   mounted() {
     this.$el.addEventListener('click', this.onClick)
+    this.previousBodyOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
   },
   beforeUnmount() {
     this.$el.removeEventListener('click', this.onClick)
+    document.body.style.overflow = this.previousBodyOverflow
   },
   methods: {
     hasMenu(cluster) {

@@ -20,9 +20,9 @@
   <div :style="{ 'height': 'calc(100% - 55px)' }" class="d-flex flex-column">
     <div class="h-100 container-fluid overflow-auto bg-light">
       <div v-if="items.length > 0" class="row justify-content-center">
-        <StartViewItem v-for="item in items" :key="item.title"
+        <StartViewItem v-for="item in items" :key="JSON.stringify(item.to)"
           :title="item.title"
-          :src="item.src"
+          :src="item.src || fallbackSrc"
           :to="item.to"
         ></StartViewItem>
       </div>
@@ -36,8 +36,12 @@
 
 <script>
 import StartViewItem from '@/components/start/StartViewItem.vue'
+import modelerImage from '@/assets/images/start/modeler.svg'
 
-/** Shared shell for the Tasks/Builder/Data/Access-management hub pages: a tile grid or empty state. */
+/**
+ * Shared shell for the Tasks/Builder/Data/Access-management hub pages: a tile grid or empty state.
+ * Items without their own image (e.g. plugin options) show `fallbackSrc`, the section's image.
+ */
 export default {
   name: 'StartHubView',
   components: { StartViewItem },
@@ -45,8 +49,13 @@ export default {
     items: {
       type: Array,
       default: () => []
+    },
+    fallbackSrc: {
+      type: String,
+      default: modelerImage
     }
   },
+  emits: [],
   computed: {
     productName() {
       return this.$root.config.productNamePageTitle || this.$t('login.productName')

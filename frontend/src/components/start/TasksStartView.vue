@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <StartHubView :items="items"></StartHubView>
+  <StartHubView :items="items" :fallback-src="taskImage"></StartHubView>
 </template>
 
 <script>
@@ -27,12 +27,16 @@ import startTileOptionsMixin from '@/mixins/startTileOptionsMixin.js'
 import StartHubView from '@/components/start/StartHubView.vue'
 import { getVisibleGroup, projectStartHoverOptions } from '@/navigation/navGroups.js'
 import { hasStartableProcesses } from '@/utils/process.js'
+import taskImage from '@/assets/images/start/task.svg'
 
 export default {
   name: 'TasksStartView',
   mixins: [permissionsMixin, navigationPermissionsMixin, startTileOptionsMixin],
   components: { StartHubView },
   emits: [],
+  data() {
+    return { taskImage }
+  },
   computed: {
     startableProcesses() {
       return hasStartableProcesses(this.$store.state.process.list)
@@ -44,7 +48,7 @@ export default {
     },
     items() {
       return this.mergeOptions(this.builtInItems, 'TasksTileOptionsPlugin')
-        .filter(item => item && item.to && item.title && item.src)
+        .filter(item => item?.to && item.title)
     }
   }
 }

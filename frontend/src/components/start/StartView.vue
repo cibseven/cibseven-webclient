@@ -94,7 +94,7 @@ export default {
       return this.mergeOptions(this.builtInBuilderOptions, 'BuilderTileOptionsPlugin')
     },
     dataOptions() {
-      // CE has no 'data' group; EE/Flow inject it via NavGroupsExtender.
+      // CE has no 'data' group; EE/Flow add it through registerNavGroupsExtender.
       return projectStartHoverOptions(this.groupById.data?.items, this.$t.bind(this))
     },
     cockpitOptions() {
@@ -156,7 +156,7 @@ export default {
     // Skip when an error dialog still needs to explain a prior redirect.
     redirectIfTasksOnly() {
       if (this.$route.query.errorType) return
-      const target = tasksOnlyRedirectTarget(this.tiles, this.tasksOptions)
+      const target = tasksOnlyRedirectTarget(this.tiles, this.groupById.tasks?.defaultTo)
       if (target) this.$router.replace(target)
     }
   },

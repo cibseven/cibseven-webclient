@@ -40,7 +40,7 @@ export default {
     },
     items() {
       return this.mergeOptions(this.builtInItems, 'BuilderTileOptionsPlugin')
-        .filter(item => item && item.to && item.title && item.src)
+        .filter(item => item?.to && item.title)
     }
   }
 }

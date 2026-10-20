@@ -17,7 +17,7 @@
 
 /**
  * `buildNavGroups` is CE's shared catalog (Tasks/Cockpit/Builder/Admin); EE/Flow
- * add a `data` group via NavGroupsExtender (see buildVisibleNavGroups). Surfaces
+ * extend it (e.g. a `data` group) via registerNavGroupsExtender. Surfaces
  * (`navbar`, `startHover`, hub pages) project this same catalog — use the
  * `surfaces` allowlist per item instead of parallel booleans. Admin system
  * leaves collapse into one startHover entry via `collapseGroup: 'system'`.
@@ -39,9 +39,10 @@ export const SURFACES = {
 const DEFAULT_SURFACES = [SURFACES.NAVBAR, SURFACES.START_HOVER]
 
 // startHover stand-in for collapsed navbar-only leaves, keyed by collapseGroup.
+// Points at the group's landing route by name, so only the leaves carry paths.
 export const COLLAPSE_TARGETS = {
   system: {
-    to: '/seven/auth/admin/system',
+    to: { name: 'adminSystem' },
     icon: 'mdi-cog-outline',
     title: 'admin.system.title',
     tooltip: 'admin.system.tooltip'
@@ -331,25 +332,46 @@ export function singleOptionTile(options) {
   return { to: only.to, title: only.title }
 }
 
-/** Where to send the user when Tasks is the only tile: its sole option, or the tasks hub. */
-export function tasksOnlyRedirectTarget(tiles, tasksOptions) {
+/**
+ * Where to send the user when Tasks is the only tile: always the group's own destination (the
+ * task list), so the landing page does not depend on whether the process list has loaded yet.
+ */
+export function tasksOnlyRedirectTarget(tiles, tasksDefaultTo = '/seven/auth/tasks') {
   if (tiles?.length !== 1 || tiles[0] !== 'tasks') return null
-  const single = singleOptionTile(tasksOptions)
-  return single ? single.to : { name: 'tasksHome' }
+  return tasksDefaultTo
+}
+
+const extenders = []
+
+/**
+ * Registers a catalog extension (EE/Flow), applied wherever the catalog is built: navbar, start
+ * page and hub pages. `extend(groups, vm)` returns the new group list and must not mutate its input.
+ * Register at startup, before the app mounts: the list is not reactive. Returns an unregister function.
+ */
+export function registerNavGroupsExtender(extend) {
+  extenders.push(extend)
+  return () => {
+    const index = extenders.indexOf(extend)
+    if (index !== -1) extenders.splice(index, 1)
+  }
 }
 
 /**
- * Builds the catalog for a vm, applies a NavGroupsExtender registered on it (EE/Flow), and filters it.
- * The start page and the hub pages all go through here, so their entries can't diverge.
+ * Applies the registered extenders, then (legacy) a NavGroupsExtender component registered on the vm.
  */
-export function buildVisibleNavGroups(vm) {
-  let groups = buildNavGroups(permissionFlagsFromVm(vm))
-  const extender = vm.$options?.components?.NavGroupsExtender
-  const methods = extender?.methods || extender?.__vccOpts?.methods
+export function extendNavGroups(groups, vm) {
+  let extended = extenders.reduce((current, extend) => extend(current, vm), groups)
+  const legacy = vm?.$options?.components?.NavGroupsExtender
+  const methods = legacy?.methods || legacy?.__vccOpts?.methods
   if (methods?.extend) {
-    groups = methods.extend.call(vm, groups)
+    extended = methods.extend.call(vm, extended)
   }
-  return filterVisibleNavGroups(groups)
+  return extended
+}
+
+/** Builds the catalog for a vm, extends it and filters it: one place for the start page and the hub pages. */
+export function buildVisibleNavGroups(vm) {
+  return filterVisibleNavGroups(extendNavGroups(buildNavGroups(permissionFlagsFromVm(vm)), vm))
 }
 
 /** Returns one visible group by id (used by single-group hub pages). */

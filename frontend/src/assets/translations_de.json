@@ -1100,13 +1100,6 @@
 		"builder": {
 			"title": "Builder"
 		},
-		"data": {
-			"title": "Data"
-		},
-		"ins7ght": {
-			"title": "Ins7ght",
-			"tooltip": "Ins7ght öffnen"
-		},
 		"modeler": {
 			"title": "Modeler",
 			"tooltip": "Modeler öffnen, um BPMN, DMN und Formulare zu entwerfen und zu bearbeiten"

@@ -101,4 +101,25 @@ describe('NavMobileMenu.vue', () => {
     const wrapper = mountMenu({ main: [], utility: [user] })
     expect(wrapper.find('.cib-nav-mobile-row .mdi-account').exists()).toBe(true)
   })
+
+  it('keeps the page behind it from scrolling while open', () => {
+    document.body.style.overflow = 'auto'
+    const wrapper = mountMenu({ main: [tasks] })
+    expect(document.body.style.overflow).toBe('hidden')
+
+    wrapper.unmount()
+    expect(document.body.style.overflow).toBe('auto')
+  })
+
+  it('marks the picked language or engine as current', async () => {
+    const language = { id: 'language', label: 'Language', icon: 'mdi-web', sections: [[
+      { key: 'en', label: 'English', checkable: true, active: true }, { key: 'de', label: 'Deutsch', checkable: true }
+    ]] }
+    const wrapper = mountMenu({ main: [], utility: [language] })
+    await wrapper.find('.cib-nav-mobile-row').trigger('click')
+
+    const items = wrapper.findAll('button.cib-nav-mobile-item')
+    expect(items.map(i => i.attributes('aria-current'))).toEqual(['true', undefined])
+    expect(items.every(i => i.attributes('aria-checked') === undefined)).toBe(true)
+  })
 })

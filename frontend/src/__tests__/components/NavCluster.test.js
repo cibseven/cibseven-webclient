@@ -255,4 +255,37 @@ describe('NavCluster.vue', () => {
       expect(wrapper.props('open')).toBe(false)
     })
   })
+
+  describe('accessibility', () => {
+    it('marks pickable items as menuitemradio and plain ones as menuitem', () => {
+      wrapper = mountCluster({ ...language, sections: [[...language.sections[0], { key: 'x', label: 'Plain' }]] }, { open: true })
+      const roles = wrapper.findAll('button.cib-nav-menu-item').map(item => item.attributes('role'))
+      expect(roles).toEqual(['menuitemradio', 'menuitemradio', 'menuitem'])
+    })
+
+    it('only points aria-describedby at the tooltip while it is shown', async () => {
+      wrapper = mountCluster(cockpit)
+      const main = wrapper.find('.cib-nav-btn-main')
+      expect(main.attributes('aria-describedby')).toBeUndefined()
+
+      await main.trigger('mouseenter')
+      const id = main.attributes('aria-describedby')
+      expect(wrapper.find(`#${id}`).attributes('role')).toBe('tooltip')
+    })
+
+    it('includes legacy slot entries in arrow-key navigation', async () => {
+      wrapper = mount(NavCluster, {
+        attachTo: document.body,
+        props: { cluster: language, open: true },
+        slots: { 'menu-prepend': '<ul class="cib-nav-legacy-items"><li><a href="#" class="legacy">Settings</a></li></ul>' },
+        global: { mocks: { $t: key => key } }
+      })
+      const legacy = wrapper.find('a.legacy').element
+      legacy.focus()
+
+      await wrapper.find('.cib-nav-menu').trigger('keydown', { key: 'ArrowDown' })
+
+      expect(document.activeElement).toBe(wrapper.findAll('[role="menuitemradio"]')[0].element)
+    })
+  })
 })

@@ -112,7 +112,7 @@ describe('StartView.vue nav tiles', () => {
     const vm = evaluateStartView()
     expect(vm.cockpitOptions.some(o => o.to === '/seven/auth/processes')).toBe(false)
     expect(vm.cockpitOptions.some(o => o.to === '/seven/auth/processes/list')).toBe(true)
-    expect(vm.adminOptions.some(o => o.to === '/seven/auth/admin/system')).toBe(true)
+    expect(vm.adminOptions.some(o => o.to?.name === 'adminSystem')).toBe(true)
     expect(vm.adminOptions.some(o => o.to === '/seven/auth/admin/system/system-diagnostics')).toBe(false)
     expect(vm.adminOptions.some(o => o.to === '/seven/auth/admin/system/execution-metrics')).toBe(false)
   })
@@ -261,7 +261,7 @@ describe('StartView.vue tasks-only redirect', () => {
     expect(vm.$router.replace).not.toHaveBeenCalled()
   })
 
-  it('redirects straight to the tasklist when it is the only tasks option, without waiting for the process list', () => {
+  it('redirects to the tasklist while the process list is still empty', () => {
     const vm = evaluateStartView({
       ...TASKS_ONLY_PERMISSIONS,
       $store: { state: { process: { list: [] } } }
@@ -271,14 +271,15 @@ describe('StartView.vue tasks-only redirect', () => {
     expect(vm.$router.replace).toHaveBeenCalledWith('/seven/auth/tasks')
   })
 
-  it('redirects to the tasks hub when a startable process is already loaded', () => {
+  // Same target either way, so the landing page does not depend on load timing
+  it('redirects to the tasklist as well once a startable process is loaded', () => {
     const vm = evaluateStartView({
       ...TASKS_ONLY_PERMISSIONS,
       $store: { state: { process: { list: [{ revoked: false, startableInTasklist: true }] } } }
     })
     expect(vm.tiles).toEqual(['tasks'])
     vm.redirectIfTasksOnly()
-    expect(vm.$router.replace).toHaveBeenCalledWith({ name: 'tasksHome' })
+    expect(vm.$router.replace).toHaveBeenCalledWith('/seven/auth/tasks')
   })
 
   it('does not redirect while an error dialog needs to explain a prior redirect', () => {
