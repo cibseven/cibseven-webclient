@@ -78,7 +78,7 @@ export function buildNavGroups(ctx) {
     }]
   }, {
     id: 'cockpit',
-    icon: 'mdi-chart-donut-variant',
+    icon: 'mdi-speedometer',
     title: 'start.cockpit.title',
     defaultTo: '/seven/auth/processes',
     startTo: { name: 'cockpit' },
@@ -133,9 +133,11 @@ export function buildNavGroups(ctx) {
     }]
   }, {
     id: 'builder',
-    icon: 'mdi-hammer-wrench',
+    icon: 'mdi-tools',
     title: 'start.builder.title',
-    defaultTo: '/seven/auth/modeler',
+    defaultTo: { name: 'builderHome' },
+    // With a single tool the section skips its overview page
+    collapseSingle: true,
     startTo: { name: 'builderHome' },
     show: !!ctx.permissionsModeler,
     items: [{
@@ -148,7 +150,7 @@ export function buildNavGroups(ctx) {
     }]
   }, {
     id: 'admin',
-    icon: 'mdi-shield-account-variant-outline',
+    icon: 'mdi-shield-account-outline',
     title: 'start.admin.title',
     defaultTo: '/seven/auth/admin',
     startTo: { name: 'usersManagement' },
@@ -272,6 +274,19 @@ export function filterVisibleNavGroups(groups, surface = null) {
 /** Navbar projection of the catalog. */
 export function projectGroupsForNavbar(groups) {
   return filterVisibleNavGroups(groups, SURFACES.NAVBAR)
+}
+
+/** Splits a group's items at its dividers into the sections a navbar menu shows. */
+export function itemsToSections(items) {
+  const sections = [[]]
+  for (const item of items || []) {
+    if (item.divider) {
+      if (sections.at(-1).length) sections.push([])
+    } else {
+      sections.at(-1).push(item)
+    }
+  }
+  return sections.filter(section => section.length)
 }
 
 /**

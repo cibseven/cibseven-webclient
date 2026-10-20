@@ -82,6 +82,7 @@ export {
   buildNavGroups,
   filterVisibleNavGroups,
   projectGroupsForNavbar,
+  itemsToSections,
   projectStartHoverOptions,
   singleOptionTile,
   tasksOnlyRedirectTarget,
@@ -101,6 +102,8 @@ export { default as FeedbackModal } from '@/components/modals/FeedbackModal.vue'
 export { default as FeedbackScreenshot } from '@/components/modals/FeedbackScreenshot.vue'
 export { default as TaskList } from '@/components/common-components/TaskList.vue'
 export { default as CIBHeaderFlow } from '@/components/common-components/CIBHeaderFlow.vue'
+export { default as NavCluster } from '@/components/common-components/navigation/NavCluster.vue'
+export { default as NavMobileMenu } from '@/components/common-components/navigation/NavMobileMenu.vue'
 export { default as ResetDialog } from '@/components/login/ResetDialog.vue'
 export { default as OtpDialog } from '@/components/login/OtpDialog.vue'
 export { default as SecureInput } from '@/components/login/SecureInput.vue'

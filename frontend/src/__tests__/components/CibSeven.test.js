@@ -323,4 +323,94 @@ describe('CibSeven.vue', () => {
       expect(menus.find(m => m.id === 'cockpit').items.some(i => i.divider)).toBe(true)
     })
   })
+
+  describe('Header navigation model', () => {
+    const t = key => `t:${key}`
+    const route = (name = 'tasklist', path = '/seven/auth/tasks') => ({ name, path })
+    const shell = (overrides = {}) => {
+      const vm = {
+        $t: t,
+        $route: route(),
+        $root: { user: { id: 'ada' }, config: { layout: { showFeedbackButton: true, showInfoAndHelp: true, showUserSettings: true } } },
+        permissionsUserProfile: true,
+        helpMenuItems: [
+          { type: 'link', href: 'https://help', title: 'help.title', tooltip: 'help.tooltip' },
+          { type: 'button', ref: 'about', title: 'about.title', tooltip: 'about.tooltip' }
+        ],
+        ...overrides
+      }
+      vm.isMenuItemActive = item => CibSeven.methods.isMenuItemActive.call(vm, item)
+      vm.isToolActive = tool => CibSeven.methods.isToolActive.call(vm, tool)
+      vm.getToolDefaultTo = tool => CibSeven.methods.getToolDefaultTo.call(vm, tool)
+      vm.singleDestination = tool => CibSeven.methods.singleDestination.call(vm, tool)
+      return vm
+    }
+    const tasksTool = {
+      id: 'tasks', title: 'start.tasks.title', icon: 'mdi-clipboard-text-outline', defaultTo: '/seven/auth/tasks',
+      startTo: { name: 'tasksHome' },
+      items: [
+        { to: '/seven/auth/tasks', active: ['seven/auth/tasks'], title: 'start.taskList.title' },
+        { divider: true },
+        { to: '/seven/auth/start-process', active: ['seven/auth/start-process'], title: 'start.startProcess.title', tooltip: 'start.startProcess.tooltip' }
+      ]
+    }
+    const builderTool = {
+      id: 'builder', title: 'start.builder.title', icon: 'mdi-tools', defaultTo: { name: 'builderHome' },
+      startTo: { name: 'builderHome' }, collapseSingle: true,
+      items: [{ to: '/seven/auth/modeler', active: ['seven/auth/modeler'], title: 'start.modeler.title' }]
+    }
+
+    it('turns the catalog into clusters: icon to the section, title to its overview, items in sections', () => {
+      const [tasks] = CibSeven.computed.navClusters.call(shell({ computedMenuItems: [tasksTool] }))
+
+      expect(tasks).toMatchObject({ id: 'tasks', label: 't:start.tasks.title', to: '/seven/auth/tasks', titleTo: { name: 'tasksHome' }, active: true })
+      expect(tasks.sections.map(section => section.map(item => item.label))).toEqual([['t:start.taskList.title'], ['t:start.startProcess.title']])
+      expect(tasks.sections[0][0]).toMatchObject({ active: true, tooltip: 't:start.taskList.title' })
+      expect(tasks.sections[1][0]).toMatchObject({ active: false, tooltip: 't:start.startProcess.tooltip' })
+    })
+
+    it('sends a section with a single tool straight to it, and to its overview page with more', () => {
+      const [single] = CibSeven.computed.navClusters.call(shell({ computedMenuItems: [builderTool] }))
+      expect(single).toMatchObject({ to: '/seven/auth/modeler', titleTo: '/seven/auth/modeler' })
+
+      const twoTools = { ...builderTool, items: [...builderTool.items, { to: '/seven/auth/forms', title: 'forms' }] }
+      const [hub] = CibSeven.computed.navClusters.call(shell({ computedMenuItems: [twoTools] }))
+      expect(hub).toMatchObject({ to: { name: 'builderHome' }, titleTo: { name: 'builderHome' } })
+    })
+
+    it('offers feedback as an action and help as a menu of links and dialogs', () => {
+      const [feedback, help] = CibSeven.computed.utilityClusters.call(shell())
+
+      expect(feedback).toMatchObject({ id: 'feedback', modal: 'report' })
+      expect(feedback.sections).toBeUndefined()
+      expect(help.sections[0]).toEqual([
+        { key: 'https://help', label: 't:help.title', tooltip: 't:help.tooltip', href: 'https://help', external: true, modal: undefined },
+        { key: 'about', label: 't:about.title', tooltip: 't:about.tooltip', href: undefined, external: false, modal: 'about' }
+      ])
+    })
+
+    it('leaves out feedback and help when switched off', () => {
+      const vm = shell()
+      vm.$root.config.layout = { showFeedbackButton: false, showInfoAndHelp: false }
+      expect(CibSeven.computed.utilityClusters.call(vm)).toEqual([])
+    })
+
+    it('links the user profile when user settings are shown', () => {
+      const vm = shell({ $route: route('userProfile', '/seven/auth/account/ada') })
+      expect(CibSeven.computed.userMenuItems.call(vm)).toEqual([{
+        key: 'profile', label: 't:start.account.profile.title', tooltip: 't:start.account.profile.tooltip',
+        to: '/seven/auth/account/ada', active: true
+      }])
+
+      vm.permissionsUserProfile = false
+      expect(CibSeven.computed.userMenuItems.call(vm)).toEqual([])
+    })
+
+    it('opens the dialog a header item asks for', () => {
+      const show = vi.fn()
+      CibSeven.methods.onHeaderSelect.call({ $refs: { about: { show } } }, { modal: 'about' })
+      expect(show).toHaveBeenCalled()
+      expect(() => CibSeven.methods.onHeaderSelect.call({ $refs: {} }, { key: 'other' })).not.toThrow()
+    })
+  })
 })

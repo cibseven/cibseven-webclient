@@ -26,7 +26,8 @@ import {
   navItemsToTileOptions,
   accessManagementCatalogItems,
   itemVisibleOnSurface,
-  getVisibleGroup
+  getVisibleGroup,
+  itemsToSections
 } from '@/navigation/navGroups.js'
 
 const fullCtx = {
@@ -157,5 +158,32 @@ describe('navGroups factory', () => {
       { to: '/seven/auth/start-process', title: 'Start process' }
     ])
     expect(target).toEqual({ name: 'tasksHome' })
+  })
+})
+
+describe('itemsToSections', () => {
+  it('splits items at dividers and drops empty sections', () => {
+    const a = { to: '/a' }, b = { to: '/b' }, c = { to: '/c' }
+    expect(itemsToSections([{ divider: true }, a, b, { divider: true }, { divider: true }, c, { divider: true }]))
+      .toEqual([[a, b], [c]])
+  })
+
+  it('returns no sections for no items', () => {
+    expect(itemsToSections(undefined)).toEqual([])
+    expect(itemsToSections([{ divider: true }])).toEqual([])
+  })
+})
+
+describe('contributed admin entries in the catalog', () => {
+  const adminGroup = (adminPluginEntries) => buildNavGroups({ permissionsUsers: true, adminPluginEntries }).find(g => g.id === 'admin')
+
+  it('follows the built-in entries behind a divider', () => {
+    const items = adminGroup([{ text: 'admin.notifications.title', to: '/seven/auth/admin/notifications', image: 'n.svg', icon: 'mdi-bell' }]).items
+    expect(items.at(-2)).toEqual({ divider: true })
+    expect(items.at(-1)).toMatchObject({ pluginEntry: true, tileImage: 'n.svg', icon: 'mdi-bell', tooltip: 'admin.notifications.title' })
+  })
+
+  it('adds nothing without contributions', () => {
+    expect(adminGroup(undefined).items.some(item => item.pluginEntry)).toBe(false)
   })
 })

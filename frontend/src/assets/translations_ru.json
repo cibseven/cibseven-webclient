@@ -859,11 +859,9 @@
 		"email": "@:login.email"
 	},
 	"cib-header": {
+		"openMenu": "Меню {label}",
 		"languages": "Язык",
-		"languagesMenu": "Язык",
 		"engine": "Движок",
-		"engineMenu": "Выбор движка",
-		"helpMenu": "Помощь",
 		"en": "English",
 		"de": "Deutsch",
 		"es": "Español",
@@ -1114,7 +1112,6 @@
 			"tooltip": "Открыть Modeler для проектирования и редактирования BPMN, DMN и форм"
 		},
 		"account": {
-			"tooltip": "Просмотреть и изменить информацию о вашей учетной записи или выйти из системы",
 			"profile": {
 				"title": "Профиль пользователя",
 				"tooltip": "Просмотреть и изменить информацию о вашей учетной записи"

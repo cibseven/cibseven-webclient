@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vitest'
-import { mount } from '@vue/test-utils'
+import { mount, flushPromises } from '@vue/test-utils'
 import { i18n } from '@/i18n'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -36,8 +36,9 @@ vi.mock('@/utils/engineTokens.js', () => ({
   restoreTokenForEngine: vi.fn()
 }))
 
-const createWrapper = (props = {}) => {
+const createWrapper = (props = {}, slots = {}) => {
   return mount(CIBHeaderFlow, {
+    slots,
     props: {
       languages: ['en', 'de'],
       user: { id: '1', displayName: 'Test User' },
@@ -68,7 +69,8 @@ const createWrapper = (props = {}) => {
         'b-dropdown-item-button': { template: '<div class="dropdown-item-button"><slot></slot></div>' },
         'b-dropdown-item': { template: '<div class="dropdown-item"><slot></slot></div>' },
         'b-dropdown-divider': { template: '<hr class="dropdown-divider" />' },
-        'b-avatar': { template: '<div class="b-avatar">{{ text }}</div>', props: ['text', 'size', 'src', 'alt', 'variant', 'rounded'] }
+        'b-avatar': { template: '<div class="b-avatar">{{ text }}</div>', props: ['text', 'size', 'src', 'alt', 'variant', 'rounded'] },
+        'router-link': { template: '<a class="router-link"><slot></slot></a>', props: ['to'] }
       }
     }
   })
@@ -94,9 +96,9 @@ describe('CIBHeaderFlow.vue', () => {
   let wrapper
 
   describe('User avatar', () => {
-    it('renders a b-avatar with the user\'s initials as text', () => {
+    it('renders the user\'s initials as avatar', () => {
       wrapper = createWrapper({ user: { id: '1', displayName: 'Ada Morris' } })
-      expect(wrapper.find('.b-avatar').text()).toBe('AM')
+      expect(wrapper.find('.cib-nav-avatar').text()).toBe('AM')
     })
   })
 
@@ -105,7 +107,7 @@ describe('CIBHeaderFlow.vue', () => {
       wrapper = createWrapper()
       expect(wrapper.vm.isCollapsed).toBe(false)
       
-      const toggleButton = wrapper.find('.navbar-toggler')
+      const toggleButton = wrapper.find('.cib-nav-burger')
       await toggleButton.trigger('click')
       
       expect(wrapper.vm.isCollapsed).toBe(true)
@@ -124,7 +126,7 @@ describe('CIBHeaderFlow.vue', () => {
       wrapper.vm.isCollapsed = false
       await wrapper.vm.$nextTick()
       
-      expect(wrapper.find('.navbar-toggler-icon').exists()).toBe(true)
+      expect(wrapper.find('.mdi-menu').exists()).toBe(true)
     })
   })
 
@@ -143,7 +145,7 @@ describe('CIBHeaderFlow.vue', () => {
       wrapper.vm.isCollapsed = true
       await wrapper.vm.$nextTick()
       
-      const toggleButton = wrapper.find('.navbar-toggler').element
+      const toggleButton = wrapper.find('.cib-nav-burger').element
       wrapper.vm.handleClickOutside({ target: toggleButton })
       expect(wrapper.vm.isCollapsed).toBe(true)
     })
@@ -152,7 +154,7 @@ describe('CIBHeaderFlow.vue', () => {
       wrapper.vm.isCollapsed = true
       await wrapper.vm.$nextTick()
       
-      const toggleButton = wrapper.find('.navbar-toggler').element
+      const toggleButton = wrapper.find('.cib-nav-burger').element
       const spanElement = document.createElement('span')
       toggleButton.appendChild(spanElement)
       
@@ -294,6 +296,102 @@ describe('CIBHeaderFlow.vue', () => {
       wrapper.vm.selectEngine('engine2')
 
       expect(logoutSpy).toHaveBeenCalled()
+    })
+  })
+
+  describe('Navigation clusters', () => {
+    const tasks = { id: 'tasks', label: 'Tasks', icon: 'mdi-clipboard-text-outline', to: '/seven/auth/tasks', sections: [[{ key: 't', label: 'Task list', to: '/seven/auth/tasks' }]] }
+    const help = { id: 'help', label: 'Help', icon: 'mdi-help-circle-outline', sections: [[{ key: 'about', label: 'About', modal: 'about' }]] }
+
+    it('adds the engine selector to the main clusters only when there is more than one engine', async () => {
+      wrapper = createWrapper({ navClusters: [tasks] })
+      await flushPromises() // the mocked backend reports a single engine
+      expect(wrapper.vm.mainClusters.map(c => c.id)).toEqual(['tasks'])
+
+      wrapper.vm.engines = [{ id: 'dev', displayName: 'Dev' }, { id: 'test', displayName: 'Test' }]
+      wrapper.vm.selectedEngine = 'test'
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.vm.mainClusters.map(c => c.id)).toEqual(['tasks', 'engine'])
+      const engines = wrapper.vm.engineCluster.sections[0]
+      expect(engines.map(e => [e.label, e.active])).toEqual([['Dev', false], ['Test', true]])
+    })
+
+    it('places the parent\'s standard clusters before language and user', () => {
+      wrapper = createWrapper({ utilityClusters: [help] })
+      expect(wrapper.vm.utilityList.map(c => c.id)).toEqual(['help', 'language', 'user'])
+    })
+
+    it('marks the current language and tags each one with its code', () => {
+      wrapper = createWrapper()
+      const languages = wrapper.vm.languageCluster.sections[0]
+      expect(languages.map(l => [l.tag, l.active])).toEqual([['EN', true], ['DE', false]])
+    })
+
+    it('leaves out language and user when there are none', () => {
+      wrapper = createWrapper({ languages: [], user: null })
+      expect(wrapper.vm.utilityList).toEqual([])
+    })
+
+    it('lets the avatar lead to the first user entry with a route and ends the menu with logout', () => {
+      const profile = { key: 'profile', label: 'Profile', to: '/seven/auth/account/1', active: true }
+      wrapper = createWrapper({ userItems: [profile] })
+
+      expect(wrapper.vm.userCluster).toMatchObject({ to: '/seven/auth/account/1', active: true, avatar: 'TU' })
+      expect(wrapper.vm.userCluster.sections[0].map(i => i.key)).toEqual(['profile', 'logout'])
+    })
+
+    it('shows the user menu as a single button when there is no user entry to lead to', () => {
+      wrapper = createWrapper()
+      expect(wrapper.vm.userCluster.to).toBeNull()
+    })
+
+    it('keeps one menu open at a time', () => {
+      wrapper = createWrapper()
+      wrapper.vm.setOpenCluster('tasks', true)
+      wrapper.vm.setOpenCluster('help', true)
+      expect(wrapper.vm.openCluster).toBe('help')
+
+      // a menu that closes late does not close the one opened since
+      wrapper.vm.setOpenCluster('tasks', false)
+      expect(wrapper.vm.openCluster).toBe('help')
+      wrapper.vm.setOpenCluster('help', false)
+      expect(wrapper.vm.openCluster).toBeNull()
+    })
+
+    it('handles engine, language and logout itself and passes anything else on', () => {
+      wrapper = createWrapper()
+      const selectEngine = vi.spyOn(wrapper.vm, 'selectEngine').mockImplementation(() => {})
+      const logout = vi.spyOn(wrapper.vm, 'logout').mockImplementation(() => {})
+      wrapper.vm.isCollapsed = true
+
+      wrapper.vm.onSelect({ engineId: 'dev' })
+      wrapper.vm.onSelect({ language: 'de' })
+      wrapper.vm.onSelect({ logout: true })
+      wrapper.vm.onSelect({ modal: 'about' })
+
+      expect(selectEngine).toHaveBeenCalledWith('dev')
+      expect(wrapper.vm.setCurrentLanguage).toHaveBeenCalledWith('de')
+      expect(logout).toHaveBeenCalled()
+      expect(wrapper.emitted('select')).toEqual([[{ modal: 'about' }]])
+      expect(wrapper.vm.isCollapsed).toBe(false)
+    })
+
+    it('renders the mobile menu only while it is open', async () => {
+      wrapper = createWrapper({ navClusters: [tasks] })
+      expect(wrapper.find('.cib-nav-mobile').exists()).toBe(false)
+
+      await wrapper.find('.cib-nav-burger').trigger('click')
+
+      expect(wrapper.find('.cib-nav-mobile').exists()).toBe(true)
+    })
+
+    it('renders the page actions only when given', () => {
+      wrapper = createWrapper()
+      expect(wrapper.find('.cib-nav-actions').exists()).toBe(false)
+
+      wrapper = createWrapper({}, { actions: '<button class="cib-nav-action">Start</button>' })
+      expect(wrapper.find('.cib-nav-actions .cib-nav-action').text()).toBe('Start')
     })
   })
 })

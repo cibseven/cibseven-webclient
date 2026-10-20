@@ -859,11 +859,9 @@
 		"email": "@:login.email"
 	},
 	"cib-header": {
+		"openMenu": "Menú {label}",
 		"languages": "Idioma",
-		"languagesMenu": "Idioma",
 		"engine": "Motor",
-		"engineMenu": "Selección de motor",
-		"helpMenu": "Ayuda",
 		"en": "English",
 		"de": "Deutsch",
 		"es": "Español",
@@ -1114,7 +1112,6 @@
 			"tooltip": "Abrir Modeler para diseñar y editar BPMN, DMN y formularios"
 		},
 		"account": {
-			"tooltip": "Ver y editar la información de su cuenta o cerrar sesión",
 			"profile": {
 				"title": "Perfil de usuario",
 				"tooltip": "Ver y editar la información de su cuenta"
