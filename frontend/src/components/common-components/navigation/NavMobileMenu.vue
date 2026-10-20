@@ -18,6 +18,7 @@
 -->
 <template>
   <nav class="cib-nav-mobile" :aria-label="$t('navigation.menu')">
+    <slot name="prepend"></slot>
     <template v-for="(list, listIdx) in lists" :key="listIdx">
       <div v-if="listIdx > 0" class="cib-nav-mobile-separator" aria-hidden="true"></div>
       <ul class="cib-nav-mobile-list list-unstyled m-0">
@@ -39,6 +40,7 @@
           </button>
 
           <div v-if="expanded === cluster.id && hasMenu(cluster)">
+            <div v-if="$slots['cluster-prepend']" class="cib-nav-mobile-prepend"><slot name="cluster-prepend" :cluster="cluster"></slot></div>
             <ul v-for="(section, sIdx) in cluster.sections" :key="sIdx" class="cib-nav-mobile-section list-unstyled m-0">
               <li v-for="item in section" :key="item.key">
                 <router-link v-if="item.to" :to="item.to" class="cib-nav-mobile-item" :class="{ active: item.active }"
@@ -85,12 +87,23 @@ export default {
       return [this.main, this.utility].filter(list => list.length)
     }
   },
+  // Prepended cluster items come from the parent and don't close the menu themselves (e.g. one that
+  // opens a modal); bound here rather than in the template, as their wrapper is not interactive
+  mounted() {
+    this.$el.addEventListener('click', this.onClick)
+  },
+  beforeUnmount() {
+    this.$el.removeEventListener('click', this.onClick)
+  },
   methods: {
     hasMenu(cluster) {
       return !!cluster.sections?.some(section => section.length)
     },
     toggle(id) {
       this.expanded = this.expanded === id ? null : id
+    },
+    onClick(event) {
+      if (event.target.closest?.('.cib-nav-mobile-prepend')) this.$emit('navigate')
     }
   }
 }

@@ -54,10 +54,11 @@
 
     <div v-if="open" ref="menu" class="cib-nav-menu" :class="align === 'end' ? 'cib-nav-menu-end' : 'cib-nav-menu-start'"
       role="menu" tabindex="-1" :aria-label="cluster.label" @keydown.down.prevent="moveFocus(1)" @keydown.up.prevent="moveFocus(-1)"
-      @keydown.esc="closeAndFocus">
+      @keydown.esc="closeAndFocus" @click="onMenuClick">
       <router-link v-if="cluster.titleTo" :to="cluster.titleTo" class="cib-nav-menu-title cib-nav-menu-title-link"
         role="menuitem" @click="close">{{ cluster.label }}</router-link>
       <div v-else class="cib-nav-menu-title" role="presentation">{{ cluster.label }}</div>
+      <div v-if="$slots['menu-prepend']" ref="prepend" role="none"><slot name="menu-prepend" :cluster="cluster"></slot></div>
       <div v-for="(section, sIdx) in cluster.sections" :key="sIdx" class="cib-nav-menu-section" role="group">
         <template v-for="item in section" :key="item.key">
           <router-link v-if="item.to" :to="item.to" class="cib-nav-menu-item" :class="{ active: item.active }"
@@ -109,6 +110,9 @@ export default {
     return {
       showTip: false,
       closeTimer: null,
+      // How the open menu was opened: 'hover' closes again when the pointer leaves,
+      // 'click' (or keyboard) stays until clicked again, outside, or escaped
+      openedBy: null,
       tooltipId: `cib-nav-tip-${++uid}`
     }
   },
@@ -122,6 +126,7 @@ export default {
   },
   watch: {
     open(isOpen) {
+      if (!isOpen) this.openedBy = null
       if (isOpen) {
         this.showTip = false
         document.addEventListener('mousedown', this.onOutside)
@@ -152,6 +157,12 @@ export default {
     },
     toggle() {
       this.cancelClose()
+      // Hovering opened it just before the click: the click keeps it open instead of closing it
+      if (this.open && this.openedBy === 'hover') {
+        this.openedBy = 'click'
+        return
+      }
+      this.openedBy = this.open ? null : 'click'
       this.setOpen(!this.open)
     },
     close() {
@@ -168,10 +179,12 @@ export default {
       if (event?.pointerType && event.pointerType !== 'mouse') return
       if (!this.hasMenu) return
       this.cancelClose()
+      if (this.open) return
+      this.openedBy = 'hover'
       this.setOpen(true)
     },
     scheduleClose() {
-      if (!this.open) return
+      if (!this.open || this.openedBy !== 'hover') return
       this.cancelClose()
       this.closeTimer = setTimeout(() => this.setOpen(false), HOVER_CLOSE_DELAY)
     },
@@ -190,10 +203,17 @@ export default {
       this.close()
       this.$emit('select', item)
     },
+    // Prepended items come from the parent and don't close the menu themselves (e.g. one that opens a modal)
+    onMenuClick(event) {
+      if (this.$refs.prepend?.contains(event.target)) this.close()
+    },
     menuItems() {
       return Array.from(this.$refs.menu?.querySelectorAll('[role="menuitem"]') || [])
     },
     async openAndFocusFirst() {
+      // Keyboard focus moves into the menu, so it must not close when the pointer leaves
+      this.cancelClose()
+      this.openedBy = 'click'
       this.setOpen(true)
       await this.$nextTick()
       this.menuItems()[0]?.focus()

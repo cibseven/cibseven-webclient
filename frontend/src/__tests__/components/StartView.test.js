@@ -223,6 +223,31 @@ describe('StartView.vue single-option tile collapsing', () => {
     expect(vm.dataTile).toEqual({ to: '/seven/auth/ins7ght', title: 'start.ins7ght.title', src: 'ins7ght.svg', options: null })
   })
 
+  it('keeps the data tile for a data group with several tools, leading to its default and listing them', () => {
+    const tool = (to, title) => ({ to, title, tooltip: title, icon: 'mdi-database-outline' })
+    const extender = {
+      methods: {
+        extend(groups) {
+          return [...groups, {
+            id: 'data',
+            title: 'start.data.title',
+            show: true,
+            defaultTo: '/seven/auth/ins7ght',
+            tileImage: 'data.svg',
+            items: [tool('/seven/auth/ins7ght', 'start.ins7ght.title'), { divider: true }, tool('/seven/auth/dataflow', 'dataflow.title')]
+          }]
+        }
+      }
+    }
+    const vm = evaluateStartView({
+      $options: { components: { NavGroupsExtender: extender } }
+    })
+
+    expect(vm.tiles).toContain('data')
+    expect(vm.dataTile).toMatchObject({ to: '/seven/auth/ins7ght', title: 'start.data.title', src: 'data.svg' })
+    expect(vm.dataTile.options.map(o => o.to)).toEqual(['/seven/auth/ins7ght', '/seven/auth/dataflow'])
+  })
+
   it('shows no data tile when there is no injected data group at all', () => {
     const vm = evaluateStartView()
     expect(vm.dataTile).toBeNull()

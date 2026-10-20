@@ -43,9 +43,10 @@ const ROUTE_PERMISSIONS = {
   'not-found-instanceId': null,
   admin: null,
   usersManagement: null,
-  accessManagement: null,
-  tasksHome: null,
-  builderHome: null,
+  // Any one identity permission opens it (see the anyPermissionGuard test); the first one is reported
+  accessManagement: { permission: 'usersManagement', condition: 'user' },
+  tasksHome: { permission: 'tasklist' },
+  builderHome: { permission: 'modeler' },
 
   account: { permission: 'userProfile' },
   'start-process': { permission: 'tasklist' },
@@ -217,6 +218,20 @@ describe('router guards', () => {
         name: 'no-permission',
         query: { permission, refPath: from.fullPath },
       })
+    })
+  })
+
+  describe('accessManagement opens with any identity management permission', () => {
+    it.each(['user', 'group', 'tenant', 'authorization'])('lets a user with only "%s" access in', (access) => {
+      router.setRoot(createRootStub({ applicationPermissions: vi.fn((_, granted) => granted === access) }))
+      const guard = ownGuardOf(router, 'accessManagement')
+      expect(guard(resolveRoute(router, 'accessManagement'), router.resolve('/'))).toBe(true)
+    })
+
+    it('does not count the system permission', () => {
+      router.setRoot(createRootStub({ applicationPermissions: vi.fn((_, granted) => granted === 'system') }))
+      const guard = ownGuardOf(router, 'accessManagement')
+      expect(guard(resolveRoute(router, 'accessManagement'), router.resolve('/')).name).toBe('no-permission')
     })
   })
 

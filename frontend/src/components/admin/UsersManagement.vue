@@ -48,12 +48,7 @@
 import { permissionsMixin } from '@/permissions.js'
 import navigationPermissionsMixin from '@/mixins/navigationPermissionsMixin.js'
 import StartViewItem from '@/components/start/StartViewItem.vue'
-import {
-  buildNavGroups,
-  filterVisibleNavGroups,
-  accessManagementCatalogItems,
-  permissionFlagsFromVm
-} from '@/navigation/navGroups.js'
+import { getVisibleGroup, accessManagementCatalogItems } from '@/navigation/navGroups.js'
 
 import accessManagementImage from '@/assets/images/start/admin.svg'
 import systemAdminImage from '@/assets/images/admin/system_admin.svg'
@@ -74,7 +69,7 @@ export default {
     },
     // Shared nav catalog, so this matches the start page / navbar (see StartView.vue).
     adminGroup() {
-      return filterVisibleNavGroups(buildNavGroups(permissionFlagsFromVm(this))).find(g => g.id === 'admin')
+      return getVisibleGroup(this, 'admin')
     },
     showAccessManagement() {
       return accessManagementCatalogItems(this.adminGroup?.items).length > 0

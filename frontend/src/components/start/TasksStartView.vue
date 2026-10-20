@@ -26,6 +26,7 @@ import navigationPermissionsMixin from '@/mixins/navigationPermissionsMixin.js'
 import startTileOptionsMixin from '@/mixins/startTileOptionsMixin.js'
 import StartHubView from '@/components/start/StartHubView.vue'
 import { getVisibleGroup, projectStartHoverOptions } from '@/navigation/navGroups.js'
+import { hasStartableProcesses } from '@/utils/process.js'
 
 export default {
   name: 'TasksStartView',
@@ -34,7 +35,7 @@ export default {
   emits: [],
   computed: {
     startableProcesses() {
-      return (this.$store.state.process.list || []).some(process => process.startableInTasklist === true && !process.revoked && process.suspended !== 'true')
+      return hasStartableProcesses(this.$store.state.process.list)
     },
     // Reuses navGroups.js's 'tasks' group, so this can't diverge from the navbar's Tasks dropdown.
     builtInItems() {

@@ -158,8 +158,8 @@ const appRoutes = [
           },
 
           { path: 'start', name: 'start', component: StartView },
-          { path: 'tasks-home', name: 'tasksHome', component: TasksStartView, meta: { title: 'start.tasks.title' } },
-          { path: 'builder', name: 'builderHome', component: BuilderStartView, meta: { title: 'start.builder.title' } },
+          { path: 'tasks-home', name: 'tasksHome', beforeEnter: permissionsGuard('tasklist'), component: TasksStartView, meta: { title: 'start.tasks.title' } },
+          { path: 'builder', name: 'builderHome', beforeEnter: modelerGuard, component: BuilderStartView, meta: { title: 'start.builder.title' } },
 
           // Modeler
           { path: 'modeler/:diagramId?', name: 'modeler', beforeEnter: modelerGuard, component: ModelerView, meta: { title: 'start.modeler.title' } },
@@ -277,7 +277,11 @@ const appRoutes = [
             },
             children: [
               { path: '', name: 'usersManagement', component: UsersManagement, meta: { title: 'start.admin.title' } },
-              { path: 'access-management', name: 'accessManagement', component: AccessManagement, meta: { title: 'start.accessManagement.title' } },
+              {
+                path: 'access-management', name: 'accessManagement', component: AccessManagement, meta: { title: 'start.accessManagement.title' },
+                beforeEnter: anyPermissionGuard(['usersManagement', 'user'], ['groupsManagement', 'group'],
+                  ['tenantsManagement', 'tenant'], ['authorizationsManagement', 'authorization'])
+              },
               { path: 'users', name: 'adminUsers', beforeEnter: permissionsGuard('usersManagement', 'user'), component: AdminUsers },
               {
                 path: 'user/:userId', name: 'adminUser',
@@ -418,6 +422,14 @@ function permissionsGuard(permission, condition = undefined) {
         refPath: from.fullPath,
       }
     }
+  }
+}
+
+// Passes when any of the [permission, condition] pairs is granted; otherwise reports the first one
+function anyPermissionGuard(...rules) {
+  return function(to, from) {
+    const results = rules.map(([permission, condition]) => permissionsGuard(permission, condition)(to, from))
+    return results.find(result => result === true) ?? results[0]
   }
 }
 

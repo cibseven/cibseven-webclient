@@ -148,18 +148,61 @@ describe('NavCluster.vue', () => {
       expect(wrapper.emitted('update:open')).toEqual([[true]])
     })
 
-    it('closes shortly after the pointer leaves, unless it comes back', async () => {
+    it('closes a hover-opened menu shortly after the pointer leaves, unless it comes back', async () => {
       vi.useFakeTimers()
-      wrapper = mountCluster(cockpit, { open: true })
+      wrapper = mountCluster(cockpit)
+      await wrapper.find('.cib-nav-btn-chevron').trigger('pointerenter', { pointerType: 'mouse' })
 
       await wrapper.trigger('mouseleave')
       await wrapper.trigger('mouseenter')
       vi.advanceTimersByTime(500)
-      expect(wrapper.emitted('update:open')).toBeUndefined()
+      expect(wrapper.props('open')).toBe(true)
 
       await wrapper.trigger('mouseleave')
       vi.advanceTimersByTime(500)
-      expect(wrapper.emitted('update:open')).toEqual([[false]])
+      expect(wrapper.emitted('update:open')).toEqual([[true], [false]])
+    })
+
+    it('keeps a hover-opened menu open when the chevron is then clicked, and closes on the next click', async () => {
+      wrapper = mountCluster(cockpit)
+      const chevron = wrapper.find('.cib-nav-btn-chevron')
+
+      await chevron.trigger('pointerenter', { pointerType: 'mouse' })
+      await chevron.trigger('click')
+      expect(wrapper.props('open')).toBe(true)
+
+      await chevron.trigger('click')
+      expect(wrapper.props('open')).toBe(false)
+    })
+
+    it('keeps a clicked-open menu when the pointer leaves', async () => {
+      vi.useFakeTimers()
+      wrapper = mountCluster(language)
+
+      await wrapper.find('.cib-nav-btn-single').trigger('click')
+      await wrapper.trigger('mouseleave')
+      vi.advanceTimersByTime(500)
+
+      expect(wrapper.props('open')).toBe(true)
+    })
+
+    it('keeps a hover-opened menu open once the keyboard moves into it', async () => {
+      vi.useFakeTimers()
+      wrapper = mountCluster(cockpit)
+      const chevron = wrapper.find('.cib-nav-btn-chevron')
+
+      await chevron.trigger('pointerenter', { pointerType: 'mouse' })
+      await chevron.trigger('keydown', { key: 'ArrowDown' })
+      await wrapper.trigger('mouseleave')
+      vi.advanceTimersByTime(500)
+
+      expect(wrapper.props('open')).toBe(true)
+    })
+
+    it('does not reopen through hover while already open', async () => {
+      wrapper = mountCluster(cockpit, { open: true })
+      await wrapper.find('.cib-nav-btn-chevron').trigger('pointerenter', { pointerType: 'mouse' })
+      expect(wrapper.emitted('update:open')).toBeUndefined()
     })
 
     it('shows the tooltip while hovering the icon, not while the menu is open', async () => {

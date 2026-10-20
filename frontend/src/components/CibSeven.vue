@@ -93,6 +93,7 @@ import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
 import FeedbackModal from '@/components/modals/FeedbackModal.vue'
 import PluginSlot from '@/components/common/PluginSlot.vue'
 import { updateAppTitle } from '@/utils/init'
+import { hasStartableProcesses } from '@/utils/process.js'
 import { buildNavGroups, projectGroupsForNavbar, permissionFlagsFromVm, itemsToSections } from '@/navigation/navGroups.js'
 
 export default {
@@ -193,7 +194,7 @@ export default {
       return items
     },
     startableProcesses: function() {
-      return (this.$store.state.process.list || []).some(process => process.startableInTasklist === true && !process.revoked && process.suspended !== 'true')
+      return hasStartableProcesses(this.$store.state.process.list)
     },
     // when route is changed => let's change title of the view inside top navbar
     pageTitle: function() {

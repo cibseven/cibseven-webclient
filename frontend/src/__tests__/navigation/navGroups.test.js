@@ -23,9 +23,9 @@ import {
   projectStartHoverOptions,
   singleOptionTile,
   tasksOnlyRedirectTarget,
-  navItemsToTileOptions,
   accessManagementCatalogItems,
   itemVisibleOnSurface,
+  buildVisibleNavGroups,
   getVisibleGroup,
   itemsToSections
 } from '@/navigation/navGroups.js'
@@ -86,14 +86,6 @@ describe('navGroups factory', () => {
     expect(admin.items.some(i => i.to === '/seven/auth/admin/system/system-diagnostics')).toBe(true)
   })
 
-  it('navItemsToTileOptions skips dividers and resolves titles', () => {
-    const cockpit = buildNavGroups(fullCtx).find(g => g.id === 'cockpit')
-    const options = navItemsToTileOptions(cockpit.items, key => key)
-    expect(options.every(o => o.to && o.title)).toBe(true)
-    expect(options.some(o => o.to === '/seven/auth/processes')).toBe(true)
-    expect(options.length).toBe(cockpit.items.filter(i => !i.divider).length)
-  })
-
   it('projectStartHoverOptions omits navbar-only dashboard and collapses system', () => {
     const cockpit = buildNavGroups(fullCtx).find(g => g.id === 'cockpit')
     const admin = buildNavGroups(fullCtx).find(g => g.id === 'admin')
@@ -128,6 +120,32 @@ describe('navGroups factory', () => {
     const vm = { ...fullCtx, startableProcesses: fullCtx.startableProcesses }
     expect(getVisibleGroup(vm, 'tasks').id).toBe('tasks')
     expect(getVisibleGroup({ ...vm, permissionsModeler: false }, 'builder')).toBeUndefined()
+  })
+
+  describe('buildVisibleNavGroups', () => {
+    const dataGroup = { id: 'data', title: 'start.data.title', show: true, items: [{ to: '/seven/auth/ins7ght', title: 'start.ins7ght.title' }] }
+    const extending = (methods) => ({ ...fullCtx, $options: { components: { NavGroupsExtender: methods } } })
+
+    it('returns the filtered CE catalog when no extender is registered', () => {
+      expect(buildVisibleNavGroups(fullCtx).map(g => g.id)).toEqual(['tasks', 'cockpit', 'builder', 'admin'])
+    })
+
+    it('applies a registered NavGroupsExtender with the vm as `this`, then filters', () => {
+      const vm = extending({
+        methods: {
+          extend(groups) {
+            expect(this).toBe(vm)
+            return [...groups, dataGroup, { id: 'hidden', show: false, items: [{ to: '/x' }] }]
+          }
+        }
+      })
+      expect(buildVisibleNavGroups(vm).map(g => g.id)).toEqual(['tasks', 'cockpit', 'builder', 'admin', 'data'])
+    })
+
+    it('finds the extender methods on a compiled SFC (__vccOpts)', () => {
+      const vm = extending({ __vccOpts: { methods: { extend: groups => [...groups, dataGroup] } } })
+      expect(getVisibleGroup(vm, 'data').id).toBe('data')
+    })
   })
 
   it('singleOptionTile returns null for zero or multiple options', () => {

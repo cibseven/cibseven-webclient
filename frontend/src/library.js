@@ -80,18 +80,18 @@ export {
   SURFACES,
   COLLAPSE_TARGETS,
   buildNavGroups,
+  buildVisibleNavGroups,
   filterVisibleNavGroups,
   projectGroupsForNavbar,
   itemsToSections,
   projectStartHoverOptions,
   singleOptionTile,
   tasksOnlyRedirectTarget,
-  navItemsToTileOptions,
   accessManagementCatalogItems,
   permissionFlagsFromVm,
-  itemSurfaces,
   itemVisibleOnSurface
 } from '@/navigation/navGroups.js'
+export { isStartableInTasklist, hasStartableProcesses } from '@/utils/process.js'
 
 // components
 export { default as CibSeven } from '@/components/CibSeven.vue'

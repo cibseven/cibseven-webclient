@@ -17,7 +17,7 @@
 
 /**
  * `buildNavGroups` is CE's shared catalog (Tasks/Cockpit/Builder/Admin); EE/Flow
- * add a `data` group via NavGroupsExtender (see StartView.vue). Surfaces
+ * add a `data` group via NavGroupsExtender (see buildVisibleNavGroups). Surfaces
  * (`navbar`, `startHover`, hub pages) project this same catalog — use the
  * `surfaces` allowlist per item instead of parallel booleans. Admin system
  * leaves collapse into one startHover entry via `collapseGroup: 'system'`.
@@ -233,13 +233,9 @@ function adminPluginItems(entries) {
   }))]
 }
 
-export function itemSurfaces(item) {
-  return item.surfaces ?? DEFAULT_SURFACES
-}
-
 export function itemVisibleOnSurface(item, surface) {
   if (item.divider) return true
-  return itemSurfaces(item).includes(surface)
+  return (item.surfaces ?? DEFAULT_SURFACES).includes(surface)
 }
 
 /**
@@ -289,20 +285,6 @@ export function itemsToSections(items) {
   return sections.filter(section => section.length)
 }
 
-/**
- * Map nav-group items to start-tile hover options (skip dividers; resolve i18n via $t).
- */
-export function navItemsToTileOptions(items, t) {
-  return (items || [])
-    .filter(item => !item.divider && item.to)
-    .map(item => ({
-      to: item.to,
-      icon: item.icon,
-      title: t(item.title),
-      tooltip: t(item.tooltip || item.title)
-    }))
-}
-
 /** Start-hover projection: startHover-visible items, plus collapsed navbar-only leaves. */
 export function projectStartHoverOptions(items, t) {
   const options = []
@@ -312,7 +294,6 @@ export function projectStartHoverOptions(items, t) {
     if (item.divider || item.show === false) continue
 
     if (item.collapseGroup) {
-      if (item.show === false) continue
       if (!collapsed.has(item.collapseGroup)) {
         const target = COLLAPSE_TARGETS[item.collapseGroup]
         if (target) {
@@ -357,10 +338,23 @@ export function tasksOnlyRedirectTarget(tiles, tasksOptions) {
   return single ? single.to : { name: 'tasksHome' }
 }
 
-/** Builds + filters the catalog, returns one group by id (used by single-group hub pages). */
+/**
+ * Builds the catalog for a vm, applies a NavGroupsExtender registered on it (EE/Flow), and filters it.
+ * The start page and the hub pages all go through here, so their entries can't diverge.
+ */
+export function buildVisibleNavGroups(vm) {
+  let groups = buildNavGroups(permissionFlagsFromVm(vm))
+  const extender = vm.$options?.components?.NavGroupsExtender
+  const methods = extender?.methods || extender?.__vccOpts?.methods
+  if (methods?.extend) {
+    groups = methods.extend.call(vm, groups)
+  }
+  return filterVisibleNavGroups(groups)
+}
+
+/** Returns one visible group by id (used by single-group hub pages). */
 export function getVisibleGroup(vm, id) {
-  const groups = filterVisibleNavGroups(buildNavGroups(permissionFlagsFromVm(vm)))
-  return groups.find(g => g.id === id)
+  return buildVisibleNavGroups(vm).find(g => g.id === id)
 }
 
 /**

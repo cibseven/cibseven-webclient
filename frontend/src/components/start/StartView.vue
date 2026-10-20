@@ -40,13 +40,12 @@ import startTileOptionsMixin from '@/mixins/startTileOptionsMixin.js'
 import { ErrorDialog } from '@cib/common-frontend'
 import StartViewItem from '@/components/start/StartViewItem.vue'
 import {
-  buildNavGroups,
-  filterVisibleNavGroups,
+  buildVisibleNavGroups,
   projectStartHoverOptions,
   singleOptionTile,
-  tasksOnlyRedirectTarget,
-  permissionFlagsFromVm
+  tasksOnlyRedirectTarget
 } from '@/navigation/navGroups.js'
+import { hasStartableProcesses } from '@/utils/process.js'
 
 import taskImage from '@/assets/images/start/task.svg'
 import managementImage from '@/assets/images/start/management.svg'
@@ -74,16 +73,10 @@ export default {
       return this.$root.config.productNamePageTitle || this.$t('login.productName')
     },
     startableProcesses() {
-      return (this.$store.state.process.list || []).some(process => process.startableInTasklist === true && !process.revoked && process.suspended !== 'true')
+      return hasStartableProcesses(this.$store.state.process.list)
     },
     navGroups() {
-      let groups = buildNavGroups(permissionFlagsFromVm(this))
-      const extender = this.$options.components?.NavGroupsExtender
-      const methods = extender?.methods || extender?.__vccOpts?.methods
-      if (methods?.extend) {
-        groups = methods.extend.call(this, groups)
-      }
-      return filterVisibleNavGroups(groups)
+      return buildVisibleNavGroups(this)
     },
     groupById() {
       return Object.fromEntries(this.navGroups.map(g => [g.id, g]))
@@ -117,11 +110,14 @@ export default {
         ? { to: single.to, title: single.title, options: null }
         : { to: { name: 'builderHome' }, title: this.$t('start.builder.title'), options: this.builderOptions }
     },
-    // Only appears when EE/Flow inject a single-option 'data' group; no CE hub page to fall back to.
+    // Only when EE/Flow inject a 'data' group. A single tool is the tile itself; with several the
+    // tile leads to the group's default destination and lists the tools on hover (there is no hub page).
     dataTile() {
+      const data = this.groupById.data
+      if (!data || this.dataOptions.length === 0) return null
       const single = singleOptionTile(this.dataOptions)
-      if (!single) return null
-      return { to: single.to, title: single.title, src: this.groupById.data?.tileImage, options: null }
+      if (single) return { to: single.to, title: single.title, src: data.tileImage, options: null }
+      return { to: data.defaultTo ?? this.dataOptions[0].to, title: this.$t(data.title), src: data.tileImage, options: this.dataOptions }
     },
     // Single source for the tile row; adding a tile is one entry here.
     visibleTiles() {

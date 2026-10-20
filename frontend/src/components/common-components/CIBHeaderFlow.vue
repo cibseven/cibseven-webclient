@@ -35,6 +35,9 @@
         <span v-if="mainClusters.length && utilityList.length" class="cib-nav-divider" aria-hidden="true"></span>
         <NavCluster v-for="cluster in utilityList" :key="cluster.id" :cluster="cluster" align="end"
           :open="openCluster === cluster.id" @update:open="setOpenCluster(cluster.id, $event)" @select="onSelect">
+          <template v-if="$slots.userItems" #menu-prepend="{ cluster: menu }">
+            <ul v-if="menu.id === 'user'" class="cib-nav-legacy-items list-unstyled m-0 py-1"><slot name="userItems"></slot></ul>
+          </template>
         </NavCluster>
       </div>
 
@@ -48,6 +51,13 @@
 
     <NavMobileMenu v-if="isCollapsed" class="d-md-none" :main="mainClusters" :utility="utilityList"
       @select="onSelect" @navigate="closeMenu">
+      <!-- Legacy slots (pre-navClusters parents such as CIB flow): rendered inside the new menus -->
+      <template v-if="$slots.customNavItems" #prepend>
+        <ul class="navbar-nav cib-nav-legacy-items px-3"><slot name="customNavItems"></slot></ul>
+      </template>
+      <template v-if="$slots.userItems" #cluster-prepend="{ cluster }">
+        <ul v-if="cluster.id === 'user'" class="cib-nav-legacy-items list-unstyled m-0 py-1"><slot name="userItems"></slot></ul>
+      </template>
     </NavMobileMenu>
   </header>
 </template>
@@ -83,7 +93,8 @@ export default {
     navClusters: { type: Array, default: () => [] },
     // Standard clusters placed before language and user (feedback, help)
     utilityClusters: { type: Array, default: () => [] },
-    // Entries of the user menu above "Logout"; the first one with `to` is where the avatar leads
+    // Entries of the user menu above "Logout"; the first one with `to` is where the avatar leads.
+    // Parents built for the old header may still use the `userItems` and `customNavItems` slots instead.
     userItems: { type: Array, default: () => [] }
   },
   emits: ['logout', 'select'],
