@@ -1421,9 +1421,10 @@
 	"historyTimeToLive": {
 		"title": "Verlaufsaufbewahrungsdauer bearbeiten",
 		"choiceDefault": "Systemstandard ({value} Tage)",
+		"choiceDefaultZero": "Systemstandard (0 Tage - sofort bereinigen)",
 		"choiceDefaultUnknown": "Systemstandard (unbekannt)",
-		"choiceDefaultUnlimited": "Systemstandard (unbegrenzt)",
-		"choiceZero": "0 - heute verarbeiten",
+		"choiceDefaultUnlimited": "Systemstandard (∞ Tage - unbegrenzt)",
+		"choiceZero": "0 Tage (sofort bereinigen)",
 		"choiceCustom": "Benutzerdefiniert",
 		"days": "Tage",
 		"placeholder": "Tage eingeben (z. B. 30)",

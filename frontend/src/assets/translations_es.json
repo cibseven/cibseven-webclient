@@ -1420,9 +1420,10 @@
 	"historyTimeToLive": {
 		"title": "Editar tiempo de vida del historial",
 		"choiceDefault": "Predeterminado del sistema ({value} días)",
+		"choiceDefaultZero": "Predeterminado del sistema (0 días - limpieza inmediata)",
 		"choiceDefaultUnknown": "Predeterminado del sistema (desconocido)",
-		"choiceDefaultUnlimited": "Predeterminado del sistema (ilimitado)",
-		"choiceZero": "0 - procesar hoy",
+		"choiceDefaultUnlimited": "Predeterminado del sistema (∞ días - ilimitado)",
+		"choiceZero": "0 días (limpieza inmediata)",
 		"choiceCustom": "Personalizado",
 		"days": "días",
 		"placeholder": "Introduzca días (p. ej., 30)",

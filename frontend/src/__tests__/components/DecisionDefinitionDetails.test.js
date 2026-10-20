@@ -89,14 +89,14 @@ describe('DecisionDefinitionDetails.vue', () => {
         expect(context.$t).toHaveBeenCalledWith('historyTimeToLive.choiceDefault', { value: 7 })
       })
 
-      it('shows the engine default of 0 as 0 days, never as unlimited', () => {
+      it('shows the engine default of 0 with its own label, never as unlimited', () => {
         const $t = vi.fn((key, params) => params ? `${key}:${JSON.stringify(params)}` : key)
         const { result } = callWith(DecisionDefinitionDetails.computed.historyTimeToLiveDisplay, {
           historyTimeToLive: null,
           $t,
           $root: { config: { enforceHistoryTimeToLive: true, historyTimeToLive: 0 } }
         })
-        expect(result).toBe('historyTimeToLive.choiceDefault:{"value":0}')
+        expect(result).toBe('historyTimeToLive.choiceDefaultZero')
       })
 
       it('still shows unlimited for a known flag with a missing engine default (null)', () => {

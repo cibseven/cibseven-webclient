@@ -77,10 +77,16 @@ describe('EditHistoryTimeToLiveModal.vue', () => {
       expect(vm.defaultChoiceDisabled).toBe(expectedDisabled)
     })
 
-    it.each([30, 0])('shows the real system default when known (%j days)', (historyTimeToLive) => {
-      const vm = context({ $root: { config: { historyTimeToLive } } })
+    it('shows the real system default when known', () => {
+      const vm = context({ $root: { config: { historyTimeToLive: 30 } } })
 
       expect(vm.defaultChoiceLabel).toBe('historyTimeToLive.choiceDefault')
+    })
+
+    it('shows the zero label when the engine cleans up immediately (0)', () => {
+      const vm = context({ $root: { config: { historyTimeToLive: 0 } } })
+
+      expect(vm.defaultChoiceLabel).toBe('historyTimeToLive.choiceDefaultZero')
     })
 
     it('shows the unlimited label when the engine keeps history indefinitely (-1)', () => {

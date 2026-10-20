@@ -1421,9 +1421,10 @@
 	"historyTimeToLive": {
 		"title": "Edit History Time To Live",
 		"choiceDefault": "Default to system ({value} days)",
+		"choiceDefaultZero": "Default to system (0 days - cleanup immediately)",
 		"choiceDefaultUnknown": "Default to system (unknown)",
-		"choiceDefaultUnlimited": "Default to system (unlimited)",
-		"choiceZero": "0 - process today",
+		"choiceDefaultUnlimited": "Default to system (∞ days - unlimited)",
+		"choiceZero": "0 days (cleanup immediately)",
 		"choiceCustom": "Custom",
 		"days": "days",
 		"placeholder": "Enter days (e.g., 30)",

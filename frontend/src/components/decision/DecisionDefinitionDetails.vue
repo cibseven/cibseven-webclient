@@ -118,8 +118,12 @@ export default {
             // the engine reports -1 for unlimited retention (never cleaned up)
             return '∞'
           }
-          // any other number represents the number of days for history retention (including 0)
-          return this.$t('historyTimeToLive.choiceDefault', { value: this.$root.config.historyTimeToLive })
+          if (engineDefault === 0) {
+            // 0 means history is cleaned up immediately
+            return this.$t('historyTimeToLive.choiceDefaultZero')
+          }
+          // any other number represents the number of days for history retention
+          return this.$t('historyTimeToLive.choiceDefault', { value: engineDefault })
         }
         else {
           return this.$t('historyTimeToLive.choiceDefaultUnknown')
