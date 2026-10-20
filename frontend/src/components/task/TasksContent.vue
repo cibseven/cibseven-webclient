@@ -63,7 +63,8 @@
           <h3 class="h5">{{ $t('seven.selectTask') }}</h3>
         </div>
       </transition>
-      <!-- The header shows no chevron of its own: the buttons below resize and collapse the list -->
+      <!-- The header shows no chevron of its own: the buttons below resize and collapse the list.
+           The empty span keeps SidebarsFlow's default chevron out, which an empty slot would show -->
       <template v-slot:leftIcon><span></span></template>
       <!-- Next to the header toggle, not inside it: a button may not contain other buttons -->
       <template v-slot:leftActions>
