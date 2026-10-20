@@ -40,8 +40,7 @@
           id="historyTimeToLiveChoiceDefault"
           value="default"
           v-model="choice"
-          :disabled="defaultChoiceDisabled"
-          @change="onChoiceChanged">
+          :disabled="defaultChoiceDisabled">
         <label class="form-check-label" for="historyTimeToLiveChoiceDefault" :title="defaultChoiceDisabled ? $t('historyTimeToLive.enforcedTooltip') : null">
           {{ captionValue(defaultChoiceLabel) }}
           <span class="text-muted">{{ captionHint(defaultChoiceLabel) }}</span>
@@ -55,8 +54,7 @@
           name="historyTimeToLiveChoice"
           id="historyTimeToLiveChoiceZero"
           value="zero"
-          v-model="choice"
-          @change="onChoiceChanged">
+          v-model="choice">
         <label class="form-check-label" for="historyTimeToLiveChoiceZero">
           {{ captionValue($t('historyTimeToLive.choiceZero')) }}
           <span class="text-muted">{{ captionHint($t('historyTimeToLive.choiceZero')) }}</span>
@@ -70,8 +68,7 @@
           name="historyTimeToLiveChoice"
           id="historyTimeToLiveChoiceCustom"
           value="custom"
-          v-model="choice"
-          @change="onChoiceChanged">
+          v-model="choice">
         <label class="form-check-label" for="historyTimeToLiveChoiceCustom">
           {{ captionValue($t('historyTimeToLive.choiceCustom')) }}
           <span class="text-muted">{{ captionHint($t('historyTimeToLive.choiceCustom')) }}</span>
@@ -87,8 +84,7 @@
           :max="customValueMax"
           :placeholder="$t('historyTimeToLive.placeholder')"
           :state="choice === 'custom' ? !errorInCustomChoice : null"
-          :disabled="choice !== 'custom'"
-          @input="validateTtl($event)">
+          :disabled="choice !== 'custom'">
         </b-form-input>
         <span class="input-group-text">{{ $t('historyTimeToLive.days') }}</span>
       </div>
@@ -102,7 +98,7 @@
       <b-button variant="light" @click="$refs.modal.hide()">
         {{ $t('confirm.cancel') }}
       </b-button>
-      <b-button variant="primary" @click="saveTtlValue">
+      <b-button variant="primary" :disabled="errorInCustomChoice" @click="saveTtlValue">
         {{ $t('commons.save') }}
       </b-button>
     </template>
@@ -125,7 +121,7 @@ export default {
     return {
       selectedItem: null,
       choice: 'default', // 'default', 'zero', or 'custom'
-      editTtlValue: 30,
+      editTtlValue: null,
     }
   },
   computed: {
@@ -170,10 +166,10 @@ export default {
       this.selectedItem = item
       if (item.historyTimeToLive === null || item.historyTimeToLive === undefined) {
         this.choice = 'default'
-        this.editTtlValue = 30
+        this.editTtlValue = this.loadLastCustomValue()
       } else if (item.historyTimeToLive === 0) {
         this.choice = 'zero'
-        this.editTtlValue = 30
+        this.editTtlValue = this.loadLastCustomValue()
       } else {
         this.choice = 'custom'
         this.editTtlValue = item.historyTimeToLive
@@ -189,38 +185,11 @@ export default {
     resetTtlDialog() {
       this.selectedItem = null
       this.choice = 'default'
-      this.editTtlValue = 30
-    },
-
-    onChoiceChanged() {
-      if (this.choice === 'custom') {
-        if (!this.editTtlValue) {
-          this.editTtlValue = this.selectedItem?.historyTimeToLive || 30
-        }
-        this.$nextTick(() => {
-          this.validateTtl()
-        })
-      }
-    },
-
-    validateTtl(event = null) {
-      if (this.choice !== 'custom') {
-        return true
-      }
-
-      // Get value directly from input event or fall back to editTtlValue
-      const inputValue = event ? event.target.value : this.editTtlValue
-      const value = Number.parseInt(inputValue)
-
-      if (Number.isNaN(value) || value < this.customValueMin || value > this.customValueMax) {
-        return false
-      }
-
-      return true
+      this.editTtlValue = this.loadLastCustomValue()
     },
 
     async saveTtlValue() {
-      if (!this.validateTtl()) {
+      if (this.errorInCustomChoice) {
         return
       }
 
@@ -238,6 +207,7 @@ export default {
       } else {
         ttlValue = Number.parseInt(this.editTtlValue)
         ttlDisplay = `${ttlValue} ${this.$t('historyTimeToLive.days')}`
+        this.saveLastCustomValue(ttlValue)
       }
 
       // Emit event with TTL data - let parent handle the actual API call and success handling
@@ -264,6 +234,14 @@ export default {
       const v = value?.split(' (')[1]
       return v ? `(${v}` : ''
     },
+
+    loadLastCustomValue() {
+      return localStorage.getItem('lastCustomTtlValue') ?? 30
+    },
+    saveLastCustomValue(value) {
+      localStorage.setItem('lastCustomTtlValue', value)
+    },
+
   }
 }
 </script>
