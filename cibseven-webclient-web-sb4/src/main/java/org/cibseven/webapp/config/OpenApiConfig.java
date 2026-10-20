@@ -23,7 +23,6 @@ import java.util.TreeMap;
 import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.rest.model.InfoVersion;
 import org.springdoc.core.customizers.OpenApiCustomizer;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -37,11 +36,14 @@ import io.swagger.v3.oas.models.servers.Server;
 @Configuration
 public class OpenApiConfig {
 
-	@Autowired
-	SevenWebclientProperties properties;
-	
-	@Autowired
-	InfoVersion infoVersion;
+	private final SevenWebclientProperties properties;
+
+	private final InfoVersion infoVersion;
+
+	public OpenApiConfig(SevenWebclientProperties properties, InfoVersion infoVersion) {
+		this.properties = properties;
+		this.infoVersion = infoVersion;
+	}
 	
 	@Bean
 	OpenAPI getOpenApiDocumentation() {

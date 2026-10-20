@@ -69,11 +69,10 @@ class SevenWebclientContextJacksonTest {
 	void bindsTheDocumentedPropertyKey() throws JsonProcessingException {
 		// Fails if the key is misspelled or no longer bound into SevenWebclientProperties, which
 		// the direct tests above cannot detect.
-		SevenWebclientContext context = new SevenWebclientContext();
-		context.properties = new Binder(new MapConfigurationPropertySource(Map.of(
+		SevenWebclientProperties properties = new Binder(new MapConfigurationPropertySource(Map.of(
 				"cibseven.webclient.custom.spring.jackson.serialization.write-dates-as-timestamps", "true")))
 				.bindOrCreate("cibseven.webclient", SevenWebclientProperties.class);
-		assertThat(context.objectMapper().writeValueAsString(new Date(0))).isEqualTo("0");
+		assertThat(new SevenWebclientContext(properties).objectMapper().writeValueAsString(new Date(0))).isEqualTo("0");
 	}
 
 	@Test
@@ -101,11 +100,10 @@ class SevenWebclientContextJacksonTest {
 	}
 
 	private SevenWebclientContext newContext(boolean writeDatesAsTimestamps) {
-		SevenWebclientContext context = new SevenWebclientContext();
-		context.properties = new SevenWebclientProperties();
-		SevenWebclientProperties.Custom.Spring.Jackson jackson = context.properties.getCustom().getSpring().getJackson();
+		SevenWebclientProperties properties = new SevenWebclientProperties();
+		SevenWebclientProperties.Custom.Spring.Jackson jackson = properties.getCustom().getSpring().getJackson();
 		jackson.getParser().setMaxSize(PARSER_MAX_SIZE);
 		jackson.getSerialization().setWriteDatesAsTimestamps(writeDatesAsTimestamps);
-		return context;
+		return new SevenWebclientContext(properties);
 	}
 }

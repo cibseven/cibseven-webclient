@@ -26,7 +26,6 @@ import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.rest.CustomRestTemplate;
 import org.cibseven.webapp.rest.model.InfoVersion;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -76,8 +75,11 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 
 	BaseUserProvider provider;
 
-	@Autowired
-	SevenWebclientProperties properties;
+	final SevenWebclientProperties properties;
+
+	public SevenWebclientContext(SevenWebclientProperties properties) {
+		this.properties = properties;
+	}
 
 	@Bean
 	public ObjectMapper objectMapper() {

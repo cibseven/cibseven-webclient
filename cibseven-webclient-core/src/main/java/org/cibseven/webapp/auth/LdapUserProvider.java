@@ -63,6 +63,8 @@ public class LdapUserProvider extends BaseUserProvider<StandardLogin> {
 
 	@PostConstruct
 	public void init() {
+		required(ldap().getUrl(), "ldap.url");
+		required(ldap().getFolder(), "ldap.folder");
 		settings = new JwtTokenSettings(properties.getAuthentication().getJwtSecret(), getValidMinutes(), getProlongMinutes());		
 	}
 

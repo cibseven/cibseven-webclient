@@ -63,8 +63,7 @@ class SevenWebclientContextRestTemplateTest {
 	}
 
 	private static CustomRestTemplate customRestTemplate() {
-		SevenWebclientContext context = new SevenWebclientContext();
-		context.properties = new SevenWebclientProperties();
+		SevenWebclientContext context = new SevenWebclientContext(new SevenWebclientProperties());
 		return context.customRestTemplate();
 	}
 }

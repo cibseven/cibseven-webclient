@@ -52,7 +52,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 			if (IEngineProvider.isExternalEngine(engine)) {
 				String[] parts = engine.split("\\|", 3);
 				if (parts.length == 3) {
-					url = buildUrl(parts[0], parts[1]);
+					url = buildEngineRestUrl(parts[0], parts[1]);
 				} else {
 					log.warn("Invalid engine ID format: {}, expected 'url|path|engineName'", engine);
 				}
@@ -77,7 +77,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 		String defaultTooltip = engineRestProperties.getTooltip();
 		
 		try {
-			String fullUrl = buildUrl(defaultUrl, defaultPath) + ENGINE_SUB_PATH;
+			String fullUrl = buildEngineRestUrl(defaultUrl, defaultPath) + ENGINE_SUB_PATH;
 			Engine[] defaultEngines = ((ResponseEntity<Engine[]>) doGet(fullUrl, Engine[].class, null, false)).getBody();
 			
 			if (defaultEngines != null) {
@@ -100,7 +100,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 					String additionalPath = additional.getPath() != null && !additional.getPath().isEmpty() 
 						? additional.getPath() 
 						: "/engine-rest";
-					String additionalUrl = buildUrl(additional.getUrl(), additionalPath) + ENGINE_SUB_PATH;
+					String additionalUrl = buildEngineRestUrl(additional.getUrl(), additionalPath) + ENGINE_SUB_PATH;
 					Engine[] additionalEngines = ((ResponseEntity<Engine[]>) doGet(additionalUrl, Engine[].class, null, false)).getBody();
 					
 					if (additionalEngines != null) {
@@ -188,21 +188,6 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 			effectiveDefaultEngineName = IEngineProvider.super.getEffectiveDefaultEngineId();
 		}
 		return effectiveDefaultEngineName;
-	}
-
-	/**
-	 * Builds a URL from base URL and path.
-	 */
-	private String buildUrl(String url, String path) {
-		String baseUrl = url;
-		if (baseUrl.endsWith("/")) {
-			baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
-		}
-		String restPath = path;
-		if (!restPath.startsWith("/")) {
-			restPath = "/" + restPath;
-		}
-		return baseUrl + restPath;
 	}
 
 	@Override

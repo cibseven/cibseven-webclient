@@ -40,6 +40,8 @@ The webclient can be configured using Spring Boot properties. Key configuration 
 
 All settings below `cibseven.webclient` and their defaults are defined in one class,
 [`SevenWebclientProperties`](cibseven-interfaces/src/main/java/org/cibseven/webapp/config/SevenWebclientProperties.java).
+The build turns its Javadoc into `META-INF/spring-configuration-metadata.json` in the `cibseven-interfaces` jar,
+which IDEs use for completion and documentation of these properties in `application.yaml`.
 The webclient no longer ships an `application.yaml`. Put your own settings in `cibseven-webclient.yaml`
 or `cibseven-webclient.properties` on the classpath, or use any other Spring Boot property source
 (environment variables, system properties, an external `application.yaml`).
@@ -65,10 +67,9 @@ They have the lowest precedence, so any configured value overrides them.
 | `springdoc.swagger-ui.path` | `/swagger-ui` | `/swagger-ui.html` |
 | `springdoc.swagger-ui.operationsSorter`, `tagsSorter` | `alpha` | unsorted |
 | `springdoc.swagger-ui.doc-expansion` | `none` | `list` |
-| `management.*` | only `health` and `info` exposed, health probes enabled | – |
 
 When the webclient is embedded into another Spring Boot application, none of these are set: your
-application keeps full control over its `spring.*`, `springdoc.*` and `management.*` settings.
+application keeps full control over its `spring.*` and `springdoc.*` settings.
 
 #### Engine REST API Configuration
 

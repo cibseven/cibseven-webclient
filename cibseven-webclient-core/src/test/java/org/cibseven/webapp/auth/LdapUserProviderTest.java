@@ -45,6 +45,8 @@ import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.SystemException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -82,6 +84,19 @@ public class LdapUserProviderTest {
 	void setUp() {
 		provider = configure(new LdapUserProvider());
 		request = mock(HttpServletRequest.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "url", "folder" })
+	void refusesToStartWithoutRequiredSetting(String setting) {
+		LdapUserProvider unconfigured = new LdapUserProvider();
+		unconfigured.properties.getLdap().setUrl(setting.equals("url") ? null : "ldap://127.0.0.1:1");
+		unconfigured.properties.getLdap().setFolder(setting.equals("folder") ? null : "ou=people,dc=example,dc=com");
+		unconfigured.properties.getAuthentication().setJwtSecret(SECRET);
+
+		assertThatThrownBy(unconfigured::init)
+			.isInstanceOf(IllegalStateException.class)
+			.hasMessageContaining("cibseven.webclient.ldap." + setting);
 	}
 
 	private static <P extends LdapUserProvider> P configure(P provider) {

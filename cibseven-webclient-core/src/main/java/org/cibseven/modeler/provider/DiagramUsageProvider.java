@@ -21,7 +21,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.cibseven.webapp.exception.SystemException;
@@ -33,14 +32,18 @@ import org.cibseven.webapp.config.SevenWebclientProperties;
 @Component
 public class DiagramUsageProvider implements IDiagramUsageProvider {
 
-	@Autowired
-	private SevenWebclientProperties properties;
-	
-	@Autowired
-	private DiagramUsageRepository processDiagramDao;
-	
-	@Autowired
-	private UserSessionRepository userSessionRepository;
+	private final SevenWebclientProperties properties;
+
+	private final DiagramUsageRepository processDiagramDao;
+
+	private final UserSessionRepository userSessionRepository;
+
+	public DiagramUsageProvider(SevenWebclientProperties properties, DiagramUsageRepository processDiagramDao,
+			UserSessionRepository userSessionRepository) {
+		this.properties = properties;
+		this.processDiagramDao = processDiagramDao;
+		this.userSessionRepository = userSessionRepository;
+	}
 
 	@Override
 	public void delete(String id) throws SystemException {

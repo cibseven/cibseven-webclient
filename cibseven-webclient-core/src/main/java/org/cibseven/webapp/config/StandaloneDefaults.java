@@ -19,7 +19,7 @@ package org.cibseven.webapp.config;
 import java.util.Map;
 
 /**
- * Spring Boot, springdoc and actuator defaults of the standalone CIB seven webclient
+ * Spring Boot and springdoc defaults of the standalone CIB seven webclient
  * application, shared by the Spring Boot 3 and 4 builds.
  *
  * <p>They are registered as default properties by {@code SevenWebclientApplication}, both
@@ -47,17 +47,6 @@ public final class StandaloneDefaults {
 			Map.entry("springdoc.swagger-ui.path", "/swagger-ui"),
 			Map.entry("springdoc.swagger-ui.operationsSorter", "alpha"),
 			Map.entry("springdoc.swagger-ui.tagsSorter", "alpha"),
-			Map.entry("springdoc.swagger-ui.doc-expansion", "none"),
-
-			// Only expose the "/actuator/info" and "/actuator/health" endpoints
-			Map.entry("management.endpoints.access.default", "none"),
-			Map.entry("management.endpoints.web.exposure.include", "health,info"),
-			Map.entry("management.endpoint.info.access", "read-only"),
-			Map.entry("management.endpoint.health.access", "read-only"),
-			Map.entry("management.endpoint.health.probes.enabled", "true"),
-			Map.entry("management.info.build.enabled", "true"),
-			Map.entry("management.info.git.enabled", "true"),
-			Map.entry("management.info.git.mode", "full"),
-			Map.entry("management.info.java.enabled", "true"));
+			Map.entry("springdoc.swagger-ui.doc-expansion", "none"));
 	}
 }

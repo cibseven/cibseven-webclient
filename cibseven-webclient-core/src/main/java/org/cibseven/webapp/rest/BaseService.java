@@ -39,6 +39,8 @@ public class BaseService {
 	@Autowired
 	protected BaseUserProvider baseUserProvider;
 	
+	// Field instead of constructor injection: a constructor parameter would have to be repeated by every
+	// subclass, also outside this repository. Defaults apply until Spring injects the bound instance.
 	@Autowired(required = false)
 	protected SevenWebclientProperties properties = new SevenWebclientProperties();
 

@@ -20,7 +20,6 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import org.cibseven.webapp.exception.SystemException;
@@ -31,11 +30,14 @@ import org.cibseven.webapp.config.SevenWebclientProperties;
 @Component
 public class FormUsageProvider implements IFormUsageProvider {
 
-	@Autowired
-	private FormUsageRepository formDao;
+	private final FormUsageRepository formDao;
 
-	@Autowired
-	private SevenWebclientProperties properties;
+	private final SevenWebclientProperties properties;
+
+	public FormUsageProvider(FormUsageRepository formDao, SevenWebclientProperties properties) {
+		this.formDao = formDao;
+		this.properties = properties;
+	}
 
 	@Override
 	public void delete(String id) throws SystemException {

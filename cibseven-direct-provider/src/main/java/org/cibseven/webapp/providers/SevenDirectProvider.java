@@ -24,7 +24,8 @@ import lombok.Getter;
 
 @Getter
 public class SevenDirectProvider implements BpmProvider {
-    //decides about ldap/adfs
+	// Field injection: like all bpm providers, this class is created from its name in
+	// cibseven.webclient.bpm.provider through the no-argument constructor
 	@Autowired
 	SevenWebclientProperties properties;
 	

@@ -117,6 +117,7 @@ public class CustomRestTemplate extends RestTemplate {
                 .forEach(converter -> converter.setDefaultCharset(StandardCharsets.UTF_8));
     }
 
+    // Setter instead of constructor injection: the template is also created without Spring, see create()
     @Autowired(required = false)
     void setProperties(SevenWebclientProperties properties) {
         this.config = properties.getRest();

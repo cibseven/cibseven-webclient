@@ -1,5 +1,7 @@
 # cibseven.webclient section of the application.yaml that used to ship with cibseven-webclient-web.
 # SevenWebclientPropertiesTest checks that the code defaults are identical to it.
+# Deliberately no longer defaulted, because they were example values: ldap.url (ldap://ldap.cibseven.org)
+# and ldap.folder (DC=cibseven,DC=org). The LDAP user provider now requires both.
 cibseven:
   webclient:
     enabled: true
@@ -21,8 +23,6 @@ cibseven:
       tokenValidMinutes: 60
       tokenProlongMinutes: 1440
     ldap:
-      url: ldap://ldap.cibseven.org
-      folder: DC=cibseven,DC=org
       userClass: person
       userNameAttribute: samAccountName
       userDisplayNameAttribute: name

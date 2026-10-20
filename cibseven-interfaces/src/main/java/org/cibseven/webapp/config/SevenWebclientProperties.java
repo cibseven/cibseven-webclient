@@ -33,7 +33,12 @@ import lombok.Data;
  *
  * <p>The field initializers are the defaults. They apply whenever a property is not
  * configured, both for the standalone application and when the webclient is embedded
- * into another Spring Boot application.</p>
+ * into another Spring Boot application. A setting without a default has to be configured
+ * when the feature that needs it is used.</p>
+ *
+ * <p>The Javadoc of each field is its documentation: the build turns it into
+ * {@code META-INF/spring-configuration-metadata.json}, which IDEs use for completion and from
+ * which the list of configuration options can be generated.</p>
  *
  * <p>A few settings are needed before beans exist, by {@code @ConditionalOnProperty},
  * {@code @RequestMapping} and {@code @Scheduled}. Those annotations reference the constants
@@ -61,175 +66,227 @@ public class SevenWebclientProperties {
 	public static final String MODELER_DELETE_USAGES_CRON =
 		"${" + MODELER_PREFIX + ".deleteUsages.cron:" + Modeler.DeleteUsages.DEFAULT_CRON + "}";
 
-	/**
-	 * Global enable/disable flag for the entire CIB seven webclient, read by
-	 * {@code @ConditionalOnProperty(prefix = PREFIX, name = "enabled", matchIfMissing = true)}.
-	 */
+	/** Whether the webclient is active at all. When false, none of its beans and REST endpoints are created. */
 	private boolean enabled = true;
 
-	/** Public URL of the webclient. */
+	/**
+	 * URL of a webclient whose /auth endpoint the generic user provider asks for the
+	 * user's token. Not asked when empty.
+	 */
 	private String url = "";
 
+	/** Settings of the admin application used by the generic user provider. */
 	private Admin admin = new Admin();
 
 	/**
-	 * Legacy fallback used only with engine-rest versions prior to 2.2.0.
-	 * Since 2.2.0 the history level is exposed by the engine configuration endpoint.
+	 * History level reported to the frontend when the engine does not expose its configuration,
+	 * i.e. engine-rest versions before 2.2.0 (audit, full, activity, none). Newer engines report
+	 * their own history level.
 	 */
 	private String historyLevel = "full";
 
+	/** Bootstrap-based theme of the frontend. Only "cib" is supported. */
 	private String theme = "cib";
 
+	/** Product name shown in the browser page title. */
 	private String productNamePageTitle = "CIB seven";
 
-	/** Support dialog configuration, exposed to the frontend. */
+	/** JSON configuration of the support dialog in the frontend. Not shown when empty or invalid. */
 	private String supportDialog = "";
 
+	/** Engine REST API the webclient connects to, and optional additional engines. */
 	@NestedConfigurationProperty
 	private EngineRestProperties engineRest = new EngineRestProperties();
 
+	/** Tokens the webclient issues to logged in users. */
 	private Authentication authentication = new Authentication();
 
+	/** Single sign-on with an OAuth2/OpenID Connect provider or ADFS. */
 	private Sso sso = new Sso();
 
+	/** LDAP server used by the LDAP user provider. */
 	private Ldap ldap = new Ldap();
 
+	/** Connection to the process engine. */
 	private Bpm bpm = new Bpm();
 
+	/** Authentication and user management. */
 	private User user = new User();
 
+	/** User search. */
 	private Users users = new Users();
 
+	/** HTTP client used for the calls to the engine REST API. */
 	@NestedConfigurationProperty
 	private RestTemplateConfiguration rest = new RestTemplateConfiguration();
 
+	/** REST services of the webclient backend. */
 	private Services services = new Services();
 
+	/** OpenAPI documentation of the webclient REST services. */
 	private Api api = new Api();
 
+	/** Links shown in the frontend. Not shown when empty. */
 	private Link link = new Link();
 
+	/** Process and form modeler. */
 	private Modeler modeler = new Modeler();
 
+	/** JPA persistence unit holding the webclient's own tables. */
 	private Persistence persistence = new Persistence();
 
-	private Compatibility deprecated = new Compatibility();
+	/** Behavior that is deprecated and will be removed. */
+	private DeprecatedFeatures deprecated = new DeprecatedFeatures();
 
-	private Compatibility legacy = new Compatibility();
+	/** Compatibility with engines before 2.2.0. */
+	private LegacyFeatures legacy = new LegacyFeatures();
 
+	/** Frontend plugins. */
 	private Plugins plugins = new Plugins();
 
+	/** Starting process instances. */
 	private StartProcess startProcess = new StartProcess();
 
+	/** Settings for the frameworks the webclient uses. */
 	private Custom custom = new Custom();
 
 	@Data
 	public static class Admin {
-		/** URL of the admin application. */
+		/** URL of the admin application that the generic user provider reads the user from. */
 		private String url = "";
 	}
 
 	@Data
 	public static class Authentication {
-		/** Secret for signing the webclient tokens, base64 encoded and at least 155 characters long. */
+		/**
+		 * Secret for signing the webclient tokens. Base64 encoded and at least 155 characters long;
+		 * the webclient does not start without it.
+		 */
 		private String jwtSecret = "";
+		/** Minutes a token is valid. */
 		private long tokenValidMinutes = 60;
+		/** Minutes after its expiry within which a token can still be prolonged without a new login. */
 		private long tokenProlongMinutes = 1440;
 	}
 
 	@Data
 	public static class Sso {
+		/** Whether the frontend redirects to the identity provider for the login. */
 		private boolean active = false;
+		/** Endpoints of the identity provider. */
 		private Endpoints endpoints = new Endpoints();
-		/** Required for the OAuth2 and ADFS user providers. */
+		/** Client id of the webclient at the identity provider. Required for SSO. */
 		private String clientId;
+		/** Client secret of the webclient. Required for ADFS; for OAuth2 unless an assertion is configured. */
 		private String clientSecret;
+		/** Scopes requested in the authorization request, separated by spaces. */
 		private String scopes = "";
+		/** ADFS: domain appended to user names given without one at the password login. */
 		private String domain = "";
-		/** Required for the OAuth2 and ADFS user providers. */
+		/** Claim of the token holding the user id. Required for SSO. */
 		private String userIdProperty;
-		/** Required for the OAuth2 and ADFS user providers. */
+		/** Claim of the token holding the user's display name. Required for SSO. */
 		private String userNameProperty;
-		/** Required for the ADFS user provider. */
+		/** ADFS: user id assigned to tokens the identity provider issued to applications. Required for ADFS. */
 		private String technicalUserId;
+		/** ADFS: read the user claims from the id token instead of the access token. */
 		private boolean infoInIdToken = false;
-		/** Forward the SSO access token to the engine REST API. */
+		/**
+		 * Forward the identity provider's access token to the engine REST API instead of a webclient
+		 * token, needed when the engine REST API is protected by Spring Security.
+		 */
 		private boolean accessTokenToEngineRest = false;
+		/** Client assertion used instead of a client secret. */
 		private Assertion assertion = new Assertion();
 
 		@Data
 		public static class Endpoints {
+			/** Authorization endpoint the frontend redirects to for the login. */
 			private String authorization = "";
-			/** Required for the OAuth2 and ADFS user providers. */
+			/** Token endpoint. Required for SSO. */
 			private String token;
-			/** Required for the OAuth2 and ADFS user providers. */
+			/** JWKS endpoint with the keys that sign the tokens. Required for SSO. */
 			private String jwks;
-			/** Required for the OAuth2 user provider. */
+			/** OAuth2: user info endpoint. Required for OAuth2. */
 			private String user;
+			/** OAuth2: token introspection endpoint, used for access tokens that are no JWTs. */
 			private String introspection = "";
-			/** RFC 7009 token revocation endpoint. When blank, tokens are not revoked on logout. */
+			/** RFC 7009 token revocation endpoint. When empty, tokens are not revoked on logout. */
 			private String revocation = "";
 			/**
-			 * OIDC RP-Initiated Logout end_session_endpoint. When blank, the identity provider session is
-			 * left untouched. Register {@code <app url>/} as a valid post logout redirect URI at the IdP.
+			 * OIDC RP-Initiated Logout end_session_endpoint. When empty, the identity provider session is
+			 * left untouched. Register "<app url>/" as a valid post logout redirect URI at the IdP.
 			 */
 			private String endSession = "";
 		}
 
 		@Data
 		public static class Assertion {
-			/** Client assertion type (JJWT, AZURE_WORKLOAD_IDENTITY), used instead of a client secret. */
+			/** Client assertion type used instead of a client secret: JJWT or AZURE_WORKLOAD_IDENTITY. */
 			private String type = "";
-			/** Location of the PEM-encoded PKCS#8 private key file, supports classpath: and file:. */
+			/**
+			 * Location of the PEM-encoded PKCS#8 private key, with classpath: or file: prefix.
+			 * Required for JJWT, not used for AZURE_WORKLOAD_IDENTITY.
+			 */
 			private String keyLocation = "";
 		}
 	}
 
 	@Data
 	public static class Ldap {
-		private String url = "ldap://ldap.cibseven.org";
+		/** URL of the LDAP server, e.g. ldap://ldap.example.com. Required for LDAP. */
+		private String url;
+		/** User the webclient binds with to search for users. */
 		private String user = "";
+		/** Password of the bind user. */
 		private String password = "";
-		private String folder = "DC=cibseven,DC=org";
+		/** Base DN of the user search, e.g. DC=example,DC=com. Required for LDAP. */
+		private String folder;
+		/** Object class of user entries. */
 		private String userClass = "person";
+		/** Attribute holding the user name. */
 		private String userNameAttribute = "samAccountName";
+		/** Attribute holding the user's display name. */
 		private String userDisplayNameAttribute = "name";
-		private Attributes attributes = new Attributes();
+		/** SimpleDateFormat pattern of the modifyTimestamp attribute. */
 		private String modifiedDateFormat = "yyyyMMddHHmmss.SX";
+		/** Maximum number of entries a search returns. */
 		private int countLimit = 400;
+		/** How referrals are handled: follow, ignore or throw. */
 		private String followReferrals = "follow";
-
-		@Data
-		public static class Attributes {
-			/** Attributes searched by the user search, separated by semicolons. */
-			private String filters = "samAccountName;name";
-		}
 	}
 
 	@Data
 	public static class Bpm {
+		/**
+		 * Class connecting the webclient to the engine: org.cibseven.webapp.providers.SevenProvider
+		 * calls the engine REST API, org.cibseven.webapp.providers.SevenDirectProvider calls an engine
+		 * running in the same application.
+		 */
 		private String provider = "org.cibseven.webapp.providers.SevenProvider";
 	}
 
 	@Data
 	public static class User {
 		/**
-		 * User provider. Alternatives: org.cibseven.webapp.auth.LdapUserProvider,
-		 * org.cibseven.webapp.auth.OAuth2UserProvider, org.cibseven.webapp.auth.AdfsUserProvider
+		 * Class authenticating the users: org.cibseven.webapp.auth.SevenUserProvider (engine users),
+		 * LdapUserProvider, OAuth2UserProvider or AdfsUserProvider from the same package.
 		 */
 		private String provider = "org.cibseven.webapp.auth.SevenUserProvider";
-		/** Whether users can be edited, determined by the frontend if not set. */
+		/** Whether users can be created and edited in the frontend. When not set, only with the SevenUserProvider. */
 		private Boolean editable;
+		/** Whether users can change their password in the frontend. */
 		private Boolean userPasswordChangeEnabled = true;
 	}
 
 	@Data
 	public static class Users {
+		/** User search. */
 		private Search search = new Search();
 
 		@Data
 		public static class Search {
-			/** Wildcard used for the users search, "*" if empty. */
+			/** Wildcard that replaces "*" in user search terms, e.g. "%". "*" is kept when empty. */
 			private String wildcard = "";
 		}
 	}
@@ -238,29 +295,39 @@ public class SevenWebclientProperties {
 	public static class Services {
 		static final String DEFAULT_BASE_PATH = "services/v1";
 
-		/** Base path of the webclient REST services, read by {@code @RequestMapping(SERVICES_BASE_PATH)}. */
+		/** Path of the webclient REST services, relative to the application path. */
 		private String basePath = DEFAULT_BASE_PATH;
 	}
 
 	@Data
 	public static class Api {
+		/** Information shown in the OpenAPI documentation and the Swagger UI. */
 		private Common common = new Common();
 
 		@Data
 		public static class Common {
+			/** API title. */
 			private String title = "CIB seven webclient API";
+			/** API description. */
 			private String description = "This API exposes the functionality of CIB seven webclient as a REST service under the Apache License 2.0.";
+			/** URL of the terms of service. */
 			private String termsOfService = "https://www.apache.org/licenses/LICENSE-2.0";
+			/** License name. */
 			private String license = "Apache 2.0";
+			/** URL of the license. */
 			private String licenseUrl = "https://www.apache.org/licenses/LICENSE-2.0";
+			/** Contact. */
 			private Contact contact = new Contact();
-			/** Webclient server url for the swagger-ui, only needed if the automatic detection is wrong. */
+			/** Server URL used by the Swagger UI. Only needed when the automatic detection is wrong. */
 			private String url = "";
 
 			@Data
 			public static class Contact {
+				/** Contact name. */
 				private String name = "CIB seven";
+				/** Contact URL. */
 				private String url = "https://cibseven.org";
+				/** Contact email. */
 				private String email = "info@cibseven.org";
 			}
 		}
@@ -268,27 +335,35 @@ public class SevenWebclientProperties {
 
 	@Data
 	public static class Link {
+		/** URL of the terms of use. */
 		private String terms = "";
+		/** URL of the privacy policy. */
 		private String privacy = "";
+		/** URL of the imprint. */
 		private String imprint = "";
+		/** URL of the accessibility statement. */
 		private String accessibility = "";
+		/** URL of the help. */
 		private String help = "";
 	}
 
 	@Data
 	public static class Modeler {
 		/**
-		 * Enable or disable the modeler (JPA entities, repositories, REST endpoints).
-		 * Requires a configured DataSource and pre-created schema. Read by
-		 * {@code @ConditionalOnProperty(prefix = MODELER_PREFIX, name = "enabled")}.
+		 * Whether the modeler (JPA entities, repositories, REST endpoints) is active. Requires a
+		 * data source and the modeler tables, which are created by the database scripts of the engine.
 		 */
 		private boolean enabled = false;
+		/** Editing sessions of diagrams and forms. */
 		private Session session = new Session();
+		/** Cleanup of old editing sessions. */
 		private DeleteUsages deleteUsages = new DeleteUsages();
+		/** Element templates loaded at startup. */
 		private Templates templates = new Templates();
 
 		@Data
 		public static class Session {
+			/** Minutes after which an editing session counts as closed and the diagram or form is free again. */
 			private int expiresAfterMin = 10;
 		}
 
@@ -296,8 +371,9 @@ public class SevenWebclientProperties {
 		public static class DeleteUsages {
 			static final String DEFAULT_CRON = " 0 0 0 * * ?";
 
+			/** Number of most recent editing sessions kept by the cleanup. */
 			private int usageLimit = 50;
-			/** Cleanup schedule of old modeler sessions, read by {@code @Scheduled(cron = MODELER_DELETE_USAGES_CRON)}. */
+			/** Cron expression of the cleanup. */
 			private String cron = DEFAULT_CRON;
 		}
 
@@ -305,11 +381,11 @@ public class SevenWebclientProperties {
 		public static class Templates {
 			/**
 			 * Element template JSONs loaded into the modeler database at startup, as Spring resource
-			 * locations (globs resolved), e.g. {@code file:/opt/cibseven/element-templates/*.json}.
+			 * locations (globs resolved), e.g. file:/opt/cibseven/element-templates/*.json.
 			 */
 			private List<String> paths = new ArrayList<>();
 			/**
-			 * Attempts to verify that the {@code MOD_ELEMENT_TEMPLATES} table exists before loading.
+			 * Attempts to verify that the MOD_ELEMENT_TEMPLATES table exists before loading.
 			 * The table is created by the process engine (MyBatis), which cannot be ordered against
 			 * the webclient deployment, so on external databases and slow environments it may not
 			 * exist yet when the loader runs.
@@ -323,24 +399,23 @@ public class SevenWebclientProperties {
 	@Data
 	public static class Persistence {
 		/**
-		 * Additional Hibernate properties of the webclient's own persistence unit, the one holding
-		 * the modeler tables, e.g. {@code hibernate.default_schema}. They apply to this unit only,
-		 * unlike {@code spring.jpa.*}, and override {@link #DEFAULTS}.
+		 * Additional Hibernate properties of the webclient's own persistence unit, the one holding the
+		 * modeler tables, e.g. hibernate.default_schema. They apply to this unit only, unlike
+		 * spring.jpa.*, and override its defaults: hibernate.physical_naming_strategy=
+		 * org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl, so that table names are
+		 * used exactly as written in the entities, and hibernate.hbm2ddl.auto=none, because the schema
+		 * is created by the database scripts of the process engine.
 		 */
 		private Map<String, String> properties = new LinkedHashMap<>();
 
 		/**
-		 * Defaults of the webclient's unit, independent of the application's global {@code spring.jpa.*}
-		 * settings: table names are used exactly as written in the entities, and the schema is not
-		 * generated, because it is created by the database scripts of the process engine.
+		 * @return the defaults described at {@link #properties}, independent of the application's
+		 *         global spring.jpa.* settings, overridden by the configured {@link #properties}
 		 */
-		public static final Map<String, String> DEFAULTS = Map.of(
-			"hibernate.physical_naming_strategy", "org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl",
-			"hibernate.hbm2ddl.auto", "none");
-
-		/** @return {@link #DEFAULTS} overridden by the configured {@link #properties} */
 		public Map<String, String> effectiveProperties() {
-			Map<String, String> effective = new LinkedHashMap<>(DEFAULTS);
+			Map<String, String> effective = new LinkedHashMap<>(Map.of(
+				"hibernate.physical_naming_strategy", "org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl",
+				"hibernate.hbm2ddl.auto", "none"));
 			effective.putAll(properties);
 			return effective;
 		}
@@ -348,9 +423,12 @@ public class SevenWebclientProperties {
 
 	@Data
 	public static class Plugins {
-		/** Load frontend plugins from the classpath below META-INF/cibseven-plugins/, one folder per plugin. Plugin code runs inside the webclient page. */
+		/**
+		 * Whether frontend plugins are loaded from the classpath below META-INF/cibseven-plugins/,
+		 * one folder per plugin. Plugin code runs inside the webclient page.
+		 */
 		private boolean enabled = false;
-		/** Ids of plugins to skip, e.g. one that breaks the page; takes a restart. */
+		/** Ids of plugins to skip, e.g. one that breaks the page. Takes a restart. */
 		private List<String> disabled = new ArrayList<>();
 	}
 
@@ -358,45 +436,61 @@ public class SevenWebclientProperties {
 	public static class StartProcess {
 		/**
 		 * Show a default start form (business key and manual variable creation) when the process
-		 * definition has no start form. Disabled to keep the "instant start" behavior.
+		 * definition has no start form. Disabled by default to keep the instant start.
 		 */
 		private boolean defaultFormEnabled = false;
 	}
 
 	@Data
-	public static class Compatibility {
-		/** Check permissions for some use cases in the webclient backend (behaviour until 2.2.0). */
-		private Toggle authorization = new Toggle(false);
+	public static class DeprecatedFeatures {
+		/** Permission checks in the webclient backend. */
+		private BackendAuthorization authorization = new BackendAuthorization();
+
+		@Data
+		public static class BackendAuthorization {
+			/**
+			 * Check permissions for some use cases in the webclient backend as well, the behavior
+			 * until 2.2.0. Since then the engine checks them. Will be removed.
+			 */
+			private boolean enabled = false;
+		}
 	}
 
 	@Data
-	public static class Toggle {
-		private boolean enabled;
+	public static class LegacyFeatures {
+		/** Authorization reported to the frontend. */
+		private FrontendAuthorization authorization = new FrontendAuthorization();
 
-		public Toggle() {
-		}
-
-		public Toggle(boolean enabled) {
-			this.enabled = enabled;
+		@Data
+		public static class FrontendAuthorization {
+			/**
+			 * Report authorization as enabled to the frontend even when the engine configuration says
+			 * it is disabled.
+			 */
+			private boolean enabled = false;
 		}
 	}
 
 	@Data
 	public static class Custom {
+		/** Spring settings that apply to the webclient only. */
 		private Spring spring = new Spring();
 
 		@Data
 		public static class Spring {
+			/** JSON processing of the webclient REST services. */
 			private Jackson jackson = new Jackson();
 
 			@Data
 			public static class Jackson {
+				/** Parsing of requests. */
 				private Parser parser = new Parser();
+				/** Serialization of responses. */
 				private Serialization serialization = new Serialization();
 
 				@Data
 				public static class Parser {
-					/** Maximum length of a JSON string value. */
+					/** Maximum length in characters of a single JSON string value. */
 					private int maxSize = 20_000_000;
 				}
 

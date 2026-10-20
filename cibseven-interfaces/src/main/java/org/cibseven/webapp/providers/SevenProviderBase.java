@@ -78,6 +78,8 @@ public abstract class SevenProviderBase {
 
   protected static final String USER_ID_HEADER = "Context-User-ID";
 
+	// Field instead of constructor injection: a constructor parameter would have to be repeated by every
+	// subclass, also outside this repository. Defaults apply until Spring injects the bound instance.
 	@Autowired(required = false)
 	protected SevenWebclientProperties properties = new SevenWebclientProperties();
 
@@ -103,35 +105,26 @@ public abstract class SevenProviderBase {
 			// Parse the engine ID format: "url|path|engineName"
 			String[] parts = engineId.split("\\|", 3);
 			if (parts.length == 3) {
-				String url = parts[0];
-				String path = parts[1];
+				String restUrl = buildEngineRestUrl(parts[0], parts[1]);
 				String engineName = parts[2];
-				
-				// Build the full URL
-				String baseUrl = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
-				String restPath = path.startsWith("/") ? path : "/" + path;
-				
+
 				// Always use base engine REST URL for "default" engine (without /engine/default suffix)
 				if ("default".equals(engineName)) {
-					return baseUrl + restPath;
+					return restUrl;
 				}
-				
-				return baseUrl + restPath + "/engine/" + engineName;
+
+				return restUrl + "/engine/" + engineName;
 			}
 		}
-		
+
 		// Fall back to default configuration (for legacy engine names or when no engine specified)
-		String baseUrl = getEngineRestBaseUrl();
-		String restPath = getEngineRestPath();
-		
-		// If engine identifier is provided and not 'default', add it to the path
 		// Only use legacy format if engineId doesn't contain pipe (avoid treating malformed pipe format as legacy)
 		if (engineId != null && !engineId.isEmpty() && !"default".equals(engineId) && !engineId.contains("|")) {
 			// Legacy format - just use the engine name directly
-			return baseUrl + restPath + "/engine/" + engineId;
+			return getEngineRestUrl() + "/engine/" + engineId;
 		}
-		
-		return baseUrl + restPath;
+
+		return getEngineRestUrl();
 	}
 
 	/**
@@ -140,26 +133,17 @@ public abstract class SevenProviderBase {
 	 * @return the base engine REST URL
 	 */
 	protected String getEngineRestUrl() {
-		String baseUrl = getEngineRestBaseUrl();
-		String restPath = getEngineRestPath();
-		
+		return buildEngineRestUrl(properties.getEngineRest().getUrl(), properties.getEngineRest().getPath());
+	}
+
+	/**
+	 * Joins an engine REST server URL and its REST path, e.g. {@code http://host/} and
+	 * {@code engine-rest} to {@code http://host/engine-rest}.
+	 */
+	protected static String buildEngineRestUrl(String url, String path) {
+		String baseUrl = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+		String restPath = path.startsWith("/") ? path : "/" + path;
 		return baseUrl + restPath;
-	}
-
-	/**
-	 * @return the configured engine REST url without trailing slash
-	 */
-	private String getEngineRestBaseUrl() {
-		String url = properties.getEngineRest().getUrl();
-		return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
-	}
-
-	/**
-	 * @return the configured engine REST path with leading slash
-	 */
-	private String getEngineRestPath() {
-		String path = properties.getEngineRest().getPath();
-		return path.startsWith("/") ? path : "/" + path;
 	}
 
 	/**
