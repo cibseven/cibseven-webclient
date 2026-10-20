@@ -1427,7 +1427,7 @@
 		"choiceCustom": "Personalizado",
 		"days": "días",
 		"placeholder": "Introduzca días (p. ej., 30)",
-		"validation": "Introduzca un número válido entre 0 y 9999",
+		"validation": "Introduzca un número válido entre {min} y {max}",
 		"enforcedTooltip": "Este motor requiere un tiempo de vida del historial explícito; \"predeterminado del sistema\" no está disponible."
 	}
 }

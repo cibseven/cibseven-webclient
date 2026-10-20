@@ -90,7 +90,7 @@
       </div>
 
       <div v-if="errorInCustomChoice" class="text-danger small mt-1">
-        {{ $t('historyTimeToLive.validation') }}
+        {{ $t('historyTimeToLive.validation', { min: customValueMin, max: customValueMax }) }}
       </div>
     </div>
 
@@ -107,6 +107,8 @@
 
 <script>
 import { HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY } from '@/constants'
+
+const DEFAULT_CUSTOM_VALUE = 30
 
 export default {
   name: 'EditHistoryTimeToLiveModal',
@@ -232,18 +234,21 @@ export default {
       return value?.split(' (')[0] || ''
     },
     // 'a (b)' => '(b)'
+    // 'a (b) (x)' => '(b) (x)'
     captionHint(value) {
-      const v = value?.split(' (')[1]
+      const v = value?.split(' (').slice(1).join(' (')
       return v ? `(${v}` : ''
     },
 
     loadLastCustomValue() {
-      return localStorage.getItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY) ?? 30
+      const stored = Number.parseInt(localStorage?.getItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY))
+      const valid = !Number.isNaN(stored) && stored >= this.customValueMin && stored <= this.customValueMax
+      return valid ? stored : DEFAULT_CUSTOM_VALUE
     },
     saveLastCustomValue(value) {
-      localStorage.setItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY, value)
-    },
-
+      if (!value) return
+      localStorage?.setItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY, value)
+    }
   }
 }
 </script>

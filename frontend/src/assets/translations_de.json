@@ -1428,7 +1428,7 @@
 		"choiceCustom": "Benutzerdefiniert",
 		"days": "Tage",
 		"placeholder": "Tage eingeben (z. B. 30)",
-		"validation": "Bitte eine gültige Zahl zwischen 0 und 9999 eingeben",
+		"validation": "Bitte eine gültige Zahl zwischen {min} und {max} eingeben",
 		"enforcedTooltip": "Diese Engine erfordert eine explizite Verlaufsaufbewahrungsdauer; \"Systemstandard\" ist nicht verfügbar."
 	}
 }

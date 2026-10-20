@@ -14,9 +14,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createComponentContext } from '../support/callWithContext.js'
 import EditHistoryTimeToLiveModal from '@/components/modals/EditHistoryTimeToLiveModal.vue'
+import { HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY } from '@/constants'
 
 // The modal only wraps a b-modal shell around plain data/validation logic, so it is
 // exercised against a hand-built `this` rather than mounted.
@@ -37,31 +38,65 @@ function context(overrides = {}) {
 }
 
 describe('EditHistoryTimeToLiveModal.vue', () => {
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
   describe('show', () => {
     it.each([
-      ['null', { historyTimeToLive: null }, 'default', null],
-      ['undefined', {}, 'default', null],
-      ['zero', { historyTimeToLive: 0 }, 'zero', null],
-      ['a positive number', { historyTimeToLive: 30 }, 'custom', 30]
-    ])('preselects the %s choice from the item TTL', async (_, item, expectedChoice, expectedEditValue) => {
+      ['null', { historyTimeToLive: null }, 'default'],
+      ['undefined', {}, 'default'],
+      ['zero', { historyTimeToLive: 0 }, 'zero']
+    ])('preselects the %s choice from the item TTL and prefills the 30-day default', async (_, item, expectedChoice) => {
       const vm = context()
 
       vm.show(item)
       await vm.$nextTick()
 
       expect(vm.choice).toBe(expectedChoice)
-      expect(vm.editTtlValue).toBe(expectedEditValue)
+      expect(vm.editTtlValue).toBe(30)
       expect(vm.$refs.modal.show).toHaveBeenCalled()
+    })
+
+    it('preselects the custom choice with the item TTL for a positive number', async () => {
+      const vm = context()
+
+      vm.show({ historyTimeToLive: 45 })
+      await vm.$nextTick()
+
+      expect(vm.choice).toBe('custom')
+      expect(vm.editTtlValue).toBe(45)
+      expect(vm.$refs.modal.show).toHaveBeenCalled()
+    })
+
+    it('prefills the last saved custom value for the default and zero choices', () => {
+      localStorage.setItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY, '90')
+      const vm = context()
+
+      vm.show({ historyTimeToLive: null })
+      expect(vm.editTtlValue).toBe(90)
+
+      vm.show({ historyTimeToLive: 0 })
+      expect(vm.editTtlValue).toBe(90)
     })
   })
 
   describe('resetTtlDialog', () => {
     it('clears the dialog back to its defaults', () => {
-      const vm = context({ selectedItem: { historyTimeToLive: 30 }, choice: 'custom', editTtlValue: 30, ttlValidationState: true })
+      const vm = context({ selectedItem: { historyTimeToLive: 45 }, choice: 'custom', editTtlValue: 45 })
 
       vm.resetTtlDialog()
 
-      expect(vm).toMatchObject({ selectedItem: null, choice: 'default', editTtlValue: null, ttlValidationState: null })
+      expect(vm).toMatchObject({ selectedItem: null, choice: 'default', editTtlValue: 30 })
+    })
+
+    it('restores the last saved custom value', () => {
+      localStorage.setItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY, '90')
+      const vm = context({ choice: 'custom', editTtlValue: 45 })
+
+      vm.resetTtlDialog()
+
+      expect(vm.editTtlValue).toBe(90)
     })
   })
 
@@ -102,69 +137,90 @@ describe('EditHistoryTimeToLiveModal.vue', () => {
     })
   })
 
-  describe('onChoiceChanged', () => {
-    it('prefills the definition TTL (or a 30-day default) when switching to custom', async () => {
-      const vm = context({ choice: 'custom', selectedItem: { historyTimeToLive: 45 } })
+  describe('errorInCustomChoice', () => {
+    it.each(['default', 'zero'])('is never an error outside the custom choice (%s)', (choice) => {
+      const vm = context({ choice, editTtlValue: 'abc' })
 
-      vm.onChoiceChanged()
-      await vm.$nextTick()
-
-      expect(vm.editTtlValue).toBe(45)
-      expect(vm.ttlValidationState).toBe(true)
-    })
-
-    it('falls back to 30 when the definition had no prior TTL', async () => {
-      const vm = context({ choice: 'custom', selectedItem: { historyTimeToLive: null } })
-
-      vm.onChoiceChanged()
-      await vm.$nextTick()
-
-      expect(vm.editTtlValue).toBe(30)
-    })
-
-    it('does not overwrite an already-entered custom value', async () => {
-      const vm = context({ choice: 'custom', editTtlValue: 90, selectedItem: { historyTimeToLive: 45 } })
-
-      vm.onChoiceChanged()
-      await vm.$nextTick()
-
-      expect(vm.editTtlValue).toBe(90)
-    })
-
-    it('clears validation for the default/zero choices', () => {
-      const vm = context({ choice: 'zero' })
-
-      vm.onChoiceChanged()
-
-      expect(vm.ttlValidationState).toBe(true)
-    })
-  })
-
-  describe('validateTtl', () => {
-    it('is always valid outside the custom choice', () => {
-      const vm = context({ choice: 'zero' })
-
-      expect(vm.validateTtl()).toBe(true)
-      expect(vm.ttlValidationState).toBe(true)
+      expect(vm.errorInCustomChoice).toBe(false)
     })
 
     it.each([
-      ['not a number', 'abc', false],
-      ['negative', '-1', false],
-      ['above the 9999 ceiling', '10000', false],
-      ['zero', '0', true],
-      ['within range', '30', true]
-    ])('treats %s as %s', (_, rawValue, expectedValid) => {
+      ['not a number', 'abc', true],
+      ['empty', '', true],
+      ['negative', '-1', true],
+      ['above the 356000 ceiling', '356001', true],
+      ['the 356000 ceiling', '356000', false],
+      ['zero', '0', false],
+      ['within range', '30', false],
+      ['a number', 30, false]
+    ])('treats %s (%j) as error=%s', (_, rawValue, expectedError) => {
       const vm = context({ choice: 'custom', editTtlValue: rawValue })
 
-      expect(vm.validateTtl()).toBe(expectedValid)
-      expect(vm.ttlValidationState).toBe(expectedValid)
+      expect(vm.errorInCustomChoice).toBe(expectedError)
     })
 
-    it('reads the value from the input event over the stored editTtlValue', () => {
-      const vm = context({ choice: 'custom', editTtlValue: 30 })
+    it('exposes the input bounds', () => {
+      const vm = context()
 
-      expect(vm.validateTtl({ target: { value: '5000' } })).toBe(true)
+      expect(vm.customValueMin).toBe(0)
+      expect(vm.customValueMax).toBe(356000)
+    })
+  })
+
+  describe('captionValue / captionHint', () => {
+    it.each([
+      ['Default to system (30 days)', 'Default to system', '(30 days)'],
+      ['Custom', 'Custom', ''],
+      ['', '', ''],
+      ['a', 'a', ''],
+      ['a (b)', 'a', '(b)'],
+      ['a (b) (x)', 'a', '(b) (x)'],
+      [undefined, '', '']
+    ])('splits %j into the value and the parenthesised hint', (caption, expectedValue, expectedHint) => {
+      const vm = context()
+
+      expect(vm.captionValue(caption)).toBe(expectedValue)
+      expect(vm.captionHint(caption)).toBe(expectedHint)
+    })
+  })
+
+  describe('last custom value storage', () => {
+    it('falls back to 30 when nothing was saved', () => {
+      const vm = context()
+
+      expect(vm.loadLastCustomValue()).toBe(30)
+    })
+
+    it('round-trips a saved value', () => {
+      const vm = context()
+
+      vm.saveLastCustomValue(120)
+
+      expect(localStorage.getItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY)).toBe('120')
+      expect(vm.loadLastCustomValue()).toBe(120)
+    })
+
+    it.each(['abc', '-1', '356001'])('falls back to 30 when the stored value (%s) is not a valid number of days', (stored) => {
+      localStorage.setItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY, stored)
+      const vm = context()
+
+      expect(vm.loadLastCustomValue()).toBe(30)
+    })
+
+    it.each(['0', '356000'])('accepts the boundary value %s', (stored) => {
+      localStorage.setItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY, stored)
+      const vm = context()
+
+      expect(vm.loadLastCustomValue()).toBe(Number(stored))
+    })
+
+    it('does not save an empty value', () => {
+      const vm = context()
+
+      vm.saveLastCustomValue(null)
+      vm.saveLastCustomValue('')
+
+      expect(localStorage.getItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY)).toBeNull()
     })
   })
 
@@ -211,6 +267,16 @@ describe('EditHistoryTimeToLiveModal.vue', () => {
       })
     })
 
+    it('remembers the custom value, but not the default or zero choices', async () => {
+      const zero = context({ choice: 'zero', selectedItem: { id: 'def-1' } })
+      await zero.saveTtlValue()
+      expect(localStorage.getItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY)).toBeNull()
+
+      const custom = context({ choice: 'custom', editTtlValue: '45', selectedItem: { id: 'def-1' } })
+      await custom.saveTtlValue()
+      expect(localStorage.getItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY)).toBe('45')
+    })
+
     it('does not emit or close when the entered value fails validation', async () => {
       const vm = context({ choice: 'custom', editTtlValue: '-1' })
 
@@ -218,6 +284,7 @@ describe('EditHistoryTimeToLiveModal.vue', () => {
 
       expect(vm.$emit).not.toHaveBeenCalled()
       expect(vm.$refs.modal.hide).not.toHaveBeenCalled()
+      expect(localStorage.getItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY)).toBeNull()
     })
   })
 })

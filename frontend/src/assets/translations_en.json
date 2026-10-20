@@ -1428,7 +1428,7 @@
 		"choiceCustom": "Custom",
 		"days": "days",
 		"placeholder": "Enter days (e.g., 30)",
-		"validation": "Please enter a valid number between 0 and 9999",
+		"validation": "Please enter a valid number between {min} and {max}",
 		"enforcedTooltip": "This engine requires an explicit history time to live; \"default to system\" is not available."
 	}
 }
