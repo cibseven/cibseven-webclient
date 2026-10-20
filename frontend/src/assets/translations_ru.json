@@ -901,6 +901,7 @@
 			"filterPriorityLabel": "Приоритет",
 			"selectProperty": "Выбрать свойство",
 			"insertValue": "Введите значение",
+			"invalidDate": "Некорректная дата. Используйте, например, {iso}, {dotted}, {german} или {isoTime}",
 			"insertVariableKey": "Введите имя переменной",
 			"addCriteria": "Добавить критерий",
 			"filterExists": "Данный фильтр уже существует",

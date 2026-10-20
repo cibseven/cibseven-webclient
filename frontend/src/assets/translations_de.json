@@ -901,6 +901,7 @@
 			"filterPriorityLabel": "Priorität",
 			"selectProperty": "Schlüssel auswählen",
 			"insertValue": "Wert eingeben",
+			"invalidDate": "Ungültiges Datum. Verwende z. B. {iso}, {dotted}, {german} oder {isoTime}",
 			"insertVariableKey": "Variablennamen eingeben",
 			"addCriteria": "Kriterium hinzufügen",
 			"filterExists": "Dieser Filter existiert bereits",
