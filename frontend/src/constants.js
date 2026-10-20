@@ -18,3 +18,4 @@
 // Storage keys
 export const ENGINE_STORAGE_KEY = 'cibseven:engine'
 export const ENGINE_TOKENS_STORAGE_KEY = 'cibseven:engineTokens'
+export const HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY = 'cibseven:historyTtlLastCustomValue'

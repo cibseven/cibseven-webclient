@@ -106,6 +106,8 @@
 </template>
 
 <script>
+import { HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY } from '@/constants'
+
 export default {
   name: 'EditHistoryTimeToLiveModal',
   emits: ['ttl-updated'],
@@ -236,10 +238,10 @@ export default {
     },
 
     loadLastCustomValue() {
-      return localStorage.getItem('lastCustomTtlValue') ?? 30
+      return localStorage.getItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY) ?? 30
     },
     saveLastCustomValue(value) {
-      localStorage.setItem('lastCustomTtlValue', value)
+      localStorage.setItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY, value)
     },
 
   }
