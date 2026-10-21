@@ -42,6 +42,19 @@ describe('EditHistoryTimeToLiveModal.vue', () => {
     localStorage.clear()
   })
 
+  describe('element ids', () => {
+    // The sidebars mount one modal per version; a shared id would make <label for> toggle the
+    // radio of another instance and clear the selection in the visible one.
+    it('gives every instance its own id prefix', () => {
+      const first = EditHistoryTimeToLiveModal.data().idPrefix
+      const second = EditHistoryTimeToLiveModal.data().idPrefix
+
+      expect(first).toBeTruthy()
+      expect(second).toBeTruthy()
+      expect(first).not.toBe(second)
+    })
+  })
+
   describe('show', () => {
     it.each([
       ['null', { historyTimeToLive: null }, 'default'],

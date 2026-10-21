@@ -36,12 +36,12 @@
         <input
           class="form-check-input"
           type="radio"
-          name="historyTimeToLiveChoice"
-          id="historyTimeToLiveChoiceDefault"
+          :name="`${idPrefix}Choice`"
+          :id="`${idPrefix}ChoiceDefault`"
           value="default"
           v-model="choice"
           :disabled="defaultChoiceDisabled">
-        <label class="form-check-label" for="historyTimeToLiveChoiceDefault" :title="defaultChoiceDisabled ? $t('historyTimeToLive.enforcedTooltip') : null">
+        <label class="form-check-label" :for="`${idPrefix}ChoiceDefault`" :title="defaultChoiceDisabled ? $t('historyTimeToLive.enforcedTooltip') : null">
           {{ captionValue(defaultChoiceLabel) }}
           <span class="text-muted">{{ captionHint(defaultChoiceLabel) }}</span>
         </label>
@@ -51,11 +51,11 @@
         <input
           class="form-check-input"
           type="radio"
-          name="historyTimeToLiveChoice"
-          id="historyTimeToLiveChoiceZero"
+          :name="`${idPrefix}Choice`"
+          :id="`${idPrefix}ChoiceZero`"
           value="zero"
           v-model="choice">
-        <label class="form-check-label" for="historyTimeToLiveChoiceZero">
+        <label class="form-check-label" :for="`${idPrefix}ChoiceZero`">
           {{ captionValue($t('historyTimeToLive.choiceZero')) }}
           <span class="text-muted">{{ captionHint($t('historyTimeToLive.choiceZero')) }}</span>
         </label>
@@ -65,11 +65,11 @@
         <input
           class="form-check-input"
           type="radio"
-          name="historyTimeToLiveChoice"
-          id="historyTimeToLiveChoiceCustom"
+          :name="`${idPrefix}Choice`"
+          :id="`${idPrefix}ChoiceCustom`"
           value="custom"
           v-model="choice">
-        <label class="form-check-label" for="historyTimeToLiveChoiceCustom">
+        <label class="form-check-label" :for="`${idPrefix}ChoiceCustom`">
           {{ captionValue($t('historyTimeToLive.choiceCustom')) }}
           <span class="text-muted">{{ captionHint($t('historyTimeToLive.choiceCustom')) }}</span>
         </label>
@@ -78,7 +78,7 @@
       <div class="input-group mt-1" style="max-width: 320px; padding-left: 20px;">
         <b-form-input
           v-model="editTtlValue"
-          id="ttlValue"
+          :id="`${idPrefix}Value`"
           type="number"
           :min="customValueMin"
           :max="customValueMax"
@@ -110,6 +110,10 @@ import { HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY } from '@/constants'
 
 const DEFAULT_CUSTOM_VALUE = 30
 
+// One modal instance is mounted per version in the sidebars, so element ids must be unique
+// per instance - a duplicated id makes <label for> toggle the radio of another instance.
+let nextInstanceId = 0
+
 export default {
   name: 'EditHistoryTimeToLiveModal',
   emits: ['ttl-updated'],
@@ -123,6 +127,7 @@ export default {
   },
   data() {
     return {
+      idPrefix: `historyTimeToLive${++nextInstanceId}`,
       selectedItem: null,
       choice: 'default', // 'default', 'zero', or 'custom'
       editTtlValue: null,
