@@ -8,12 +8,9 @@
 	<artifactId>cibseven-webclient-core</artifactId>
 	<name>CIB seven webclient core</name>
 	<description>Core backend services and APIs for the CIB seven webclient platform.
-		Framework-version-neutral: compiled against Spring Boot 3.5 (the default BOM
-		imported by the parent) but also works at runtime on Spring Boot 4.x. The
-		per-flavour cibseven-webclient-web and cibseven-webclient-web-sb4 modules
-		each supply their own Spring Boot starters and any SB-version-specific
-		auto-configuration classes; cibseven-webclient-web-sb4 also overrides the
-		BOM to Spring Boot 4.x.</description>
+		Compiled against Spring Boot 4.x (the BOM imported by the parent);
+		cibseven-webclient-web supplies the Spring Boot starters and the
+		auto-configuration classes.</description>
 
 	<properties>
 		<!-- jacoco:check floors; measured 45.0% line / 40.1% branch. See the root pom for the rules. -->
@@ -30,14 +27,13 @@
 		</dependency>
 
 		<!--
-			spring-boot-starter-web (SB3) was renamed to spring-boot-starter-webmvc (SB4).
-			Each web module supplies its own flavour-specific starter at runtime; here
-			we depend on the SB3 name at <provided> scope just to compile against
-			Spring MVC types (RestController, GetMapping, ResponseEntity, ...).
+			cibseven-webclient-web supplies the starter at runtime; here we only need it at
+			<provided> scope to compile against Spring MVC types (RestController, GetMapping,
+			ResponseEntity, ...).
 		-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
+			<artifactId>spring-boot-starter-webmvc</artifactId>
 			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
@@ -118,8 +114,8 @@
 			Declared <optional>: it stays on our own compile classpath but is NOT
 			exported to consumers. The version we would export (${swagger-annotations.version},
 		    from release-parent) may differ from the one springdoc drags in via swagger-core-jakarta,
-			used as dep in webclient-web/webclient-web-sb4 (sb3 and sb4 flavours).
-			So no single pinned version can satisfy both flavours.
+			used as dep in webclient-web.
+			So no single pinned version can satisfy both.
 
 			Let these annotations arrive with springdoc (webclient-web), 
 			which manages the version consistently via its own parent pom at any graph depth.
@@ -145,7 +141,7 @@
 			<version>${common-auth.version}</version>
 			<exclusions>
 				<!-- Exclude common-auth's swagger-annotations;
-				 let springdoc (webclient-web/webclient-web-sb4) be the single source -->
+				 let springdoc (webclient-web) be the single source -->
 				<exclusion>
 					<groupId>io.swagger.core.v3</groupId>
 					<artifactId>swagger-annotations-jakarta</artifactId>

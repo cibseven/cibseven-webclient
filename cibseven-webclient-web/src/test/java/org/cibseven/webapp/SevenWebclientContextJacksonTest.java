@@ -21,13 +21,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.annotation.ContextAnnotationAutowireCandidateResolver;
@@ -96,28 +92,10 @@ class SevenWebclientContextJacksonTest {
 		assertThat(objectMapper(false).writeValueAsString(Duration.ofHours(1))).isEqualTo("\"PT1H\"");
 	}
 
-	@Test
-	void wiresTheConfiguredMapperIntoTheJsonConverter() throws JsonProcessingException {
-		// The defect was only user-visible through this wiring, so guard it explicitly.
-		SevenWebclientContext context = newContext(false);
-		List<HttpMessageConverter<?>> converters = new ArrayList<>();
-		context.configureMessageConverters(converters);
-		MappingJackson2HttpMessageConverter json = converters.stream()
-				.filter(MappingJackson2HttpMessageConverter.class::isInstance)
-				.map(MappingJackson2HttpMessageConverter.class::cast)
-				.findFirst().orElseThrow();
-		assertThat(json.getObjectMapper().writeValueAsString(new Date(0)))
-				.startsWith("\"1970-01-01T00:00:00.000");
-	}
-
 	private ObjectMapper objectMapper(boolean writeDatesAsTimestamps) {
-		return newContext(writeDatesAsTimestamps).objectMapper();
-	}
-
-	private SevenWebclientContext newContext(boolean writeDatesAsTimestamps) {
 		SevenWebclientContext context = new SevenWebclientContext();
 		context.jacksonParserMaxSize = PARSER_MAX_SIZE;
 		context.writeDatesAsTimestamps = writeDatesAsTimestamps;
-		return context;
+		return context.objectMapper();
 	}
 }

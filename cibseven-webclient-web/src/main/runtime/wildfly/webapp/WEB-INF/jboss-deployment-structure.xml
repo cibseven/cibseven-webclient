@@ -17,7 +17,6 @@
     </dependencies>
     <exclude-subsystems>
       <subsystem name="logging"/>
-      <subsystem name="jpa"/>
     </exclude-subsystems>
     <exclusions>
       <module name="org.hibernate"/>
