@@ -68,8 +68,13 @@ They have the lowest precedence, so any configured value overrides them.
 | `springdoc.swagger-ui.operationsSorter`, `tagsSorter` | `alpha` | unsorted |
 | `springdoc.swagger-ui.doc-expansion` | `none` | `list` |
 
-When the webclient is embedded into another Spring Boot application, none of these are set: your
-application keeps full control over its `spring.*` and `springdoc.*` settings.
+When the webclient is embedded into another Spring Boot application, none of these defaults are set. Two
+things still affect the application's Spring setup:
+
+- When the modeler is disabled and `spring.datasource.url` is not set, `DataSourceAutoConfiguration` is
+  excluded (`spring.autoconfigure.exclude`), so that no embedded database is created.
+- The webclient defines the `objectMapper` bean, so Spring Boot does not create its own and the
+  application's `spring.jackson.*` settings do not apply to it.
 
 #### Engine REST API Configuration
 

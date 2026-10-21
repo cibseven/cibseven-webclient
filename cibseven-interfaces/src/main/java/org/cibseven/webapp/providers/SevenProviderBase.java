@@ -78,8 +78,6 @@ public abstract class SevenProviderBase {
 
   protected static final String USER_ID_HEADER = "Context-User-ID";
 
-	// Field instead of constructor injection: a constructor parameter would have to be repeated by every
-	// subclass, also outside this repository. Defaults apply until Spring injects the bound instance.
 	@Autowired(required = false)
 	protected SevenWebclientProperties properties = new SevenWebclientProperties();
 
