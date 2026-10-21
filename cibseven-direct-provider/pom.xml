@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.cibseven.webapp</groupId>
 		<artifactId>cibseven-webclient</artifactId>
-		<version>2.3.0-SNAPSHOT</version>
+		<version>3.0.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>cibseven-direct-provider</artifactId>
 	<name>CIB seven webclient direct provider</name>
@@ -23,14 +23,14 @@
 	    <dependency>
 	        <groupId>org.cibseven.bpm</groupId>
 	        <artifactId>cibseven-engine-rest-core</artifactId>
-			<version>${project.version}</version>
+			<version>2.3.0-SNAPSHOT</version>
 	    </dependency>
         <dependency>
            <groupId>org.cibseven.bpm</groupId>
            <artifactId>cibseven-engine</artifactId>
            <scope>provided</scope>
            <type>jar</type>
-           <version>${project.version}</version>
+           <version>2.3.0-SNAPSHOT</version>
        </dependency>
 	    <dependency>
 	        <groupId>org.cibseven.webapp</groupId>
