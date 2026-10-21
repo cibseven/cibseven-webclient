@@ -35,9 +35,6 @@ public final class StandaloneDefaults {
 
 	public static Map<String, Object> properties() {
 		return Map.ofEntries(
-			// Later entries override earlier ones
-			Map.entry("spring.config.import", "optional:classpath:cibseven-webclient.properties,optional:classpath:cibseven-webclient.yaml"),
-
 			Map.entry("spring.servlet.register-default-servlet", "true"),
 			// Maximum size for each individual file upload
 			Map.entry("spring.servlet.multipart.max-file-size", "10MB"),

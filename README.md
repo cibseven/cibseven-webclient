@@ -46,6 +46,14 @@ The webclient no longer ships an `application.yaml`. Put your own settings in `c
 or `cibseven-webclient.properties` on the classpath, or use any other Spring Boot property source
 (environment variables, system properties, an external `application.yaml`).
 
+The webclient reads `cibseven-webclient.properties` and `cibseven-webclient.yaml` from the classpath
+in every setup: standalone, in the Run distribution and embedded into another Spring Boot application.
+They rank just above the defaults: every configuration file of the application, environment variables
+and system properties override them, and the YAML file overrides the properties file. They are not read
+when `cibseven.webclient.enabled` is `false`.
+The Run distribution also imports both files in its `default.yml` and `production.yml`, so there they
+keep overriding Run's own configuration.
+
 The webclient's tables (modeler, folders, history) live in its own JPA persistence unit, so the global
 `spring.jpa.*` settings of your application do not apply to them and vice versa. Hibernate settings for
 that unit go under `cibseven.webclient.persistence.properties`, for example
@@ -60,7 +68,6 @@ They have the lowest precedence, so any configured value overrides them.
 
 | Property | Default | Spring Boot's own default |
 |---|---|---|
-| `spring.config.import` | `optional:classpath:cibseven-webclient.properties,optional:classpath:cibseven-webclient.yaml` | – |
 | `spring.servlet.register-default-servlet` | `true` | `false` |
 | `spring.servlet.multipart.max-file-size` | `10MB` | `1MB` |
 | `spring.servlet.multipart.max-request-size` | `1GB` | `10MB` |
@@ -68,13 +75,9 @@ They have the lowest precedence, so any configured value overrides them.
 | `springdoc.swagger-ui.operationsSorter`, `tagsSorter` | `alpha` | unsorted |
 | `springdoc.swagger-ui.doc-expansion` | `none` | `list` |
 
-When the webclient is embedded into another Spring Boot application, none of these defaults are set. Two
-things still affect the application's Spring setup:
-
-- When the modeler is disabled and `spring.datasource.url` is not set, `DataSourceAutoConfiguration` is
-  excluded (`spring.autoconfigure.exclude`), so that no embedded database is created.
-- The webclient defines the `objectMapper` bean, so Spring Boot does not create its own and the
-  application's `spring.jackson.*` settings do not apply to it.
+When the webclient is embedded into another Spring Boot application, none of these defaults are set. The webclient
+does define the `objectMapper` bean, though, so Spring Boot does not create its own and the application's
+`spring.jackson.*` settings do not apply to it.
 
 #### Engine REST API Configuration
 

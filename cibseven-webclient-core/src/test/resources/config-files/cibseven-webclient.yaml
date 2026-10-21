@@ -1,0 +1,4 @@
+cibseven:
+  webclient:
+    theme: from-yaml
+    historyLevel: from-yaml
