@@ -226,6 +226,9 @@ export default {
         }
       }
       // any other number represents the number of days for history retention (including 0)
+      if (this.historyTimeToLive === 0) {
+        return this.$t('historyTimeToLive.choiceZero')
+      }
       return `${this.historyTimeToLive} ${this.$t('process.days')}`
     }
   },
