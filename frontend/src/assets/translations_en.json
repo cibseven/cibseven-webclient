@@ -1420,6 +1420,7 @@
 	},
 	"historyTimeToLive": {
 		"title": "Edit History Time To Live",
+		"ttl": "History time to live:",
 		"choiceDefault": "Default to system ({value} days)",
 		"choiceDefaultZero": "Default to system (0 days - cleanup immediately)",
 		"choiceDefaultUnknown": "Default to system (unknown)",

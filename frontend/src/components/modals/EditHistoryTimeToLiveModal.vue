@@ -32,6 +32,8 @@
         </template>
       </p>
 
+      <p class="mb-2">{{ $t('historyTimeToLive.ttl') }}</p>
+
       <div class="form-check mb-2">
         <input
           class="form-check-input"

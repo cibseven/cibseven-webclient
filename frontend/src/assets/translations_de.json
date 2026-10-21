@@ -1420,6 +1420,7 @@
 	},
 	"historyTimeToLive": {
 		"title": "Verlaufsaufbewahrungsdauer bearbeiten",
+		"ttl": "Verlaufsaufbewahrungsdauer:",
 		"choiceDefault": "Systemstandard ({value} Tage)",
 		"choiceDefaultZero": "Systemstandard (0 Tage - sofort bereinigen)",
 		"choiceDefaultUnknown": "Systemstandard (unbekannt)",

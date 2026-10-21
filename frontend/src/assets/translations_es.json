@@ -1419,6 +1419,7 @@
 	},
 	"historyTimeToLive": {
 		"title": "Editar tiempo de vida del historial",
+		"ttl": "Tiempo de vida del historial:",
 		"choiceDefault": "Predeterminado del sistema ({value} días)",
 		"choiceDefaultZero": "Predeterminado del sistema (0 días - limpieza inmediata)",
 		"choiceDefaultUnknown": "Predeterminado del sistema (desconocido)",
