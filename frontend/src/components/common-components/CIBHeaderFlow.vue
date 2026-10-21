@@ -41,7 +41,7 @@
         </NavCluster>
       </div>
 
-      <button type="button" class="cib-nav-burger d-md-none flex-shrink-0"
+      <button type="button" class="cib-nav-action cib-nav-burger d-md-none flex-shrink-0"
         @click.stop="isCollapsed = !isCollapsed"
         :aria-expanded="isCollapsed ? 'true' : 'false'"
         :aria-label="$t('navigation.menu')">
@@ -305,8 +305,11 @@ export default {
   width: 1px;
   height: 24px;
   margin: 0 10px;
-  background: var(--bs-gray-650, #8092A6);
+  /* The theme's $gray-650 (input borders), which has no CSS variable */
+  background: #8092A6;
 }
+/* Page actions from the parent and the burger: one button style, reacting like the nav buttons */
+.cib-nav-action,
 :slotted(.cib-nav-action) {
   display: flex;
   align-items: center;
@@ -315,13 +318,25 @@ export default {
   padding: 5px 10px;
   border: 1px solid var(--bs-gray-600);
   border-radius: 4px;
-  background: #fff;
+  background: var(--bs-body-bg);
   color: var(--bs-gray-800);
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
 }
+.cib-nav-action:hover,
 :slotted(.cib-nav-action:hover) {
-  background: var(--bs-gray-200);
+  background: var(--bs-gray-300);
+}
+.cib-nav-action:active,
+:slotted(.cib-nav-action:active) {
+  background: var(--bs-gray-400);
+}
+/* Square touch targets on mobile */
+.cib-nav-burger {
+  width: 44px;
+  height: 44px;
+  margin-left: 0.5rem;
+  padding: 0;
 }
 @media (max-width: 767.98px) {
   :slotted(.cib-nav-action) {
@@ -329,23 +344,5 @@ export default {
     height: 44px;
     padding: 0;
   }
-}
-.cib-nav-burger {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  margin-left: 0.5rem;
-  border: 1px solid var(--bs-gray-600);
-  border-radius: 4px;
-  background: #fff;
-  color: var(--bs-gray-800);
-}
-.cib-nav-burger:hover {
-  background: var(--bs-gray-300);
-}
-.cib-nav-burger:active {
-  background: var(--bs-gray-400);
 }
 </style>

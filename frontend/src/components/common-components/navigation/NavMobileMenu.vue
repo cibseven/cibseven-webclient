@@ -19,48 +19,46 @@
 <template>
   <nav class="cib-nav-mobile" :aria-label="$t('navigation.menu')">
     <slot name="prepend"></slot>
-    <template v-for="(list, listIdx) in lists" :key="listIdx">
-      <div v-if="listIdx > 0" class="cib-nav-mobile-separator" aria-hidden="true"></div>
-      <ul class="cib-nav-mobile-list list-unstyled m-0">
-        <li v-for="cluster in list" :key="cluster.id" class="cib-nav-mobile-cluster">
-          <button v-if="hasMenu(cluster)" type="button" class="cib-nav-mobile-row"
-            :aria-expanded="expanded === cluster.id ? 'true' : 'false'" @click="toggle(cluster.id)">
-            <span v-if="cluster.avatar" class="mdi mdi-24px mdi-account" aria-hidden="true"></span>
-            <span v-else :class="['mdi', 'mdi-24px', cluster.icon]" aria-hidden="true"></span>
-            <span class="cib-nav-mobile-label">{{ cluster.label }}</span>
-            <span :class="['mdi', 'mdi-24px', expanded === cluster.id ? 'mdi-chevron-down' : 'mdi-chevron-right']" aria-hidden="true"></span>
-          </button>
-          <router-link v-else-if="cluster.to" :to="cluster.to" class="cib-nav-mobile-row" @click="$emit('navigate')">
-            <span :class="['mdi', 'mdi-24px', cluster.icon]" aria-hidden="true"></span>
-            <span class="cib-nav-mobile-label">{{ cluster.label }}</span>
-          </router-link>
-          <button v-else type="button" class="cib-nav-mobile-row" @click="$emit('select', cluster)">
-            <span :class="['mdi', 'mdi-24px', cluster.icon]" aria-hidden="true"></span>
-            <span class="cib-nav-mobile-label">{{ cluster.label }}</span>
-          </button>
+    <ul v-if="clusters.length" class="cib-nav-mobile-list list-unstyled m-0">
+      <li v-for="(cluster, idx) in clusters" :key="cluster.id" class="cib-nav-mobile-cluster"
+        :class="{ 'cib-nav-mobile-standard-start': idx === standardStart }">
+        <button v-if="hasMenu(cluster)" type="button" class="cib-nav-mobile-row"
+          :aria-expanded="expanded === cluster.id ? 'true' : 'false'" @click="toggle(cluster.id)">
+          <span v-if="cluster.avatar" class="mdi mdi-24px mdi-account text-secondary" aria-hidden="true"></span>
+          <span v-else :class="['mdi', 'mdi-24px', 'text-secondary', cluster.icon]" aria-hidden="true"></span>
+          <span class="cib-nav-mobile-label flex-grow-1 fw-semibold">{{ cluster.label }}</span>
+          <span :class="['mdi', 'mdi-24px', 'cib-nav-mobile-chevron', expanded === cluster.id ? 'mdi-chevron-down' : 'mdi-chevron-right']" aria-hidden="true"></span>
+        </button>
+        <router-link v-else-if="cluster.to" :to="cluster.to" class="cib-nav-mobile-row" @click="$emit('navigate')">
+          <span :class="['mdi', 'mdi-24px', 'text-secondary', cluster.icon]" aria-hidden="true"></span>
+          <span class="cib-nav-mobile-label flex-grow-1 fw-semibold">{{ cluster.label }}</span>
+        </router-link>
+        <button v-else type="button" class="cib-nav-mobile-row" @click="$emit('select', cluster)">
+          <span :class="['mdi', 'mdi-24px', 'text-secondary', cluster.icon]" aria-hidden="true"></span>
+          <span class="cib-nav-mobile-label flex-grow-1 fw-semibold">{{ cluster.label }}</span>
+        </button>
 
-          <div v-if="expanded === cluster.id && hasMenu(cluster)">
-            <div v-if="$slots['cluster-prepend']" class="cib-nav-mobile-prepend"><slot name="cluster-prepend" :cluster="cluster"></slot></div>
-            <ul v-for="(section, sIdx) in cluster.sections" :key="sIdx" class="cib-nav-mobile-section list-unstyled m-0">
-              <li v-for="item in section" :key="item.key">
-                <router-link v-if="item.to" :to="item.to" class="cib-nav-mobile-item" :class="{ active: item.active }"
-                  :aria-current="item.active ? 'page' : null" @click="$emit('navigate')">
-                  <span v-if="item.tag" class="cib-nav-mobile-tag">{{ item.tag }}</span>{{ item.label }}
-                </router-link>
-                <a v-else-if="item.href" :href="item.href" class="cib-nav-mobile-item"
-                  :target="item.external ? '_blank' : null" :rel="item.external ? 'noopener noreferrer' : null" @click="$emit('navigate')">
-                  {{ item.label }}<span v-if="item.external" class="mdi mdi-14px mdi-open-in-new ms-1" aria-hidden="true"></span>
-                </a>
-                <button v-else type="button" class="cib-nav-mobile-item" :class="{ active: item.active }"
-                  :aria-current="item.checkable && item.active ? 'true' : null" @click="$emit('select', item)">
-                  <span v-if="item.tag" class="cib-nav-mobile-tag">{{ item.tag }}</span>{{ item.label }}
-                </button>
-              </li>
-            </ul>
-          </div>
-        </li>
-      </ul>
-    </template>
+        <div v-if="expanded === cluster.id && hasMenu(cluster)">
+          <div v-if="$slots['cluster-prepend']" class="cib-nav-mobile-prepend"><slot name="cluster-prepend" :cluster="cluster"></slot></div>
+          <ul v-for="(section, sIdx) in cluster.sections" :key="sIdx" class="cib-nav-mobile-section list-unstyled m-0 py-1">
+            <li v-for="item in section" :key="item.key">
+              <router-link v-if="item.to" :to="item.to" class="cib-nav-mobile-item" :class="{ active: item.active }"
+                :aria-current="item.active ? 'page' : null" @click="$emit('navigate')">
+                <span v-if="item.tag" class="cib-nav-mobile-tag">{{ item.tag }}</span>{{ item.label }}
+              </router-link>
+              <a v-else-if="item.href" :href="item.href" class="cib-nav-mobile-item"
+                :target="item.external ? '_blank' : null" :rel="item.external ? 'noopener noreferrer' : null" @click="$emit('navigate')">
+                {{ item.label }}<span v-if="item.external" class="mdi mdi-14px mdi-open-in-new ms-1" aria-hidden="true"></span>
+              </a>
+              <button v-else type="button" class="cib-nav-mobile-item" :class="{ active: item.active }"
+                :aria-current="item.checkable && item.active ? 'true' : null" @click="$emit('select', item)">
+                <span v-if="item.tag" class="cib-nav-mobile-tag">{{ item.tag }}</span>{{ item.label }}
+              </button>
+            </li>
+          </ul>
+        </div>
+      </li>
+    </ul>
   </nav>
 </template>
 
@@ -83,8 +81,12 @@ export default {
     }
   },
   computed: {
-    lists() {
-      return [this.main, this.utility].filter(list => list.length)
+    clusters() {
+      return [...this.main, ...this.utility]
+    },
+    // Index of the first standard cluster, which gets the stronger line; none without both groups
+    standardStart() {
+      return this.main.length && this.utility.length ? this.main.length : -1
     }
   },
   // Prepended cluster items come from the parent and don't close the menu themselves (e.g. one that
@@ -118,22 +120,18 @@ export default {
   position: fixed;
   inset: 55px 0 0 0;
   overflow: auto;
-  background: #fff;
+  background: var(--bs-body-bg);
   z-index: 1029;
+}
+/* A line above every row and one closing the list; a stronger one where the standard clusters begin */
+.cib-nav-mobile-list {
+  border-bottom: 1px solid var(--bs-gray-500);
 }
 .cib-nav-mobile-cluster {
   border-top: 1px solid var(--bs-gray-500);
 }
-/* Closing line under the very last row only; between the lists the separator draws the line */
-.cib-nav-mobile-list:last-of-type > .cib-nav-mobile-cluster:last-child {
-  border-bottom: 1px solid var(--bs-gray-500);
-}
-/* One stronger line between main and standard clusters, replacing the row's own top border */
-.cib-nav-mobile-separator {
-  border-top: 2px solid var(--bs-gray-500);
-}
-.cib-nav-mobile-separator + .cib-nav-mobile-list > .cib-nav-mobile-cluster:first-child {
-  border-top: 0;
+.cib-nav-mobile-standard-start {
+  border-top-width: 2px;
 }
 .cib-nav-mobile-row {
   display: flex;
@@ -148,20 +146,13 @@ export default {
   text-align: left;
   text-decoration: none;
 }
-.cib-nav-mobile-row > .mdi:first-child {
-  color: var(--bs-secondary);
-}
-.cib-nav-mobile-row > .mdi:last-child:not(:first-child) {
+.cib-nav-mobile-chevron {
   color: var(--bs-gray-800);
 }
 .cib-nav-mobile-label {
-  flex: 1;
   min-width: 0;
-  font-size: 1rem;
-  font-weight: 600;
 }
 .cib-nav-mobile-section {
-  padding: 4px 0;
   border-top: 1px solid var(--bs-gray-400);
 }
 .cib-nav-mobile-item {
@@ -171,13 +162,19 @@ export default {
   gap: 10px;
   width: 100%;
   min-height: 34px;
-  padding: 6px 16px 6px 54px;
+  /* Lines the text up under the row label: row padding + icon + gap */
+  padding: 6px 16px 6px calc(16px + 24px + 14px);
   border: 0;
   background: transparent;
   color: var(--bs-gray-800);
-  font-size: 14px;
+  font-size: 0.875rem;
   text-align: left;
   text-decoration: none;
+}
+/* Same feedback as the desktop menus (NavCluster) */
+.cib-nav-mobile-row:hover,
+.cib-nav-mobile-item:hover {
+  background: var(--bs-gray-200);
 }
 .cib-nav-mobile-item.active {
   background: var(--bs-gray-300);
@@ -196,7 +193,7 @@ export default {
   padding: 1px 5px;
   border-radius: 2px;
   background: var(--bs-gray-300);
-  font-size: 11.2px;
+  font-size: 0.7rem;
   font-weight: 700;
 }
 </style>

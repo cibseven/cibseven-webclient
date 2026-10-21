@@ -337,7 +337,7 @@ export default {
   /* margin, not padding: the hover gap still belongs to the cluster via the delayed close */
   margin-top: 6px;
   overflow: hidden;
-  background: #fff;
+  background: var(--bs-body-bg);
   border: 1px solid var(--bs-gray-600);
   border-radius: .3rem;
   box-shadow: 0 8px 8px 0 rgba(89, 121, 155, .2);

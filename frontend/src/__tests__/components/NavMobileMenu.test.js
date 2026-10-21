@@ -33,16 +33,20 @@ const mountMenu = (props) => mount(NavMobileMenu, {
 })
 
 describe('NavMobileMenu.vue', () => {
-  it('lists main clusters, then the standard ones behind a separator', () => {
+  it('lists main clusters, then the standard ones starting with the stronger line', () => {
     const wrapper = mountMenu({ main: [tasks, cockpit], utility: [help, user] })
 
     expect(wrapper.findAll('.cib-nav-mobile-label').map(l => l.text())).toEqual(['Tasks', 'Cockpit', 'Help', 'Ada Morris'])
-    expect(wrapper.findAll('.cib-nav-mobile-separator')).toHaveLength(1)
+    expect(wrapper.findAll('.cib-nav-mobile-list')).toHaveLength(1)
+    const marked = wrapper.findAll('.cib-nav-mobile-standard-start')
+    expect(marked).toHaveLength(1)
+    expect(marked[0].find('.cib-nav-mobile-label').text()).toBe('Help')
   })
 
-  it('omits the separator when there are no standard clusters', () => {
-    const wrapper = mountMenu({ main: [tasks] })
-    expect(wrapper.find('.cib-nav-mobile-separator').exists()).toBe(false)
+  it('draws no stronger line without both groups, and no list without clusters', () => {
+    expect(mountMenu({ main: [tasks] }).find('.cib-nav-mobile-standard-start').exists()).toBe(false)
+    expect(mountMenu({ utility: [help] }).find('.cib-nav-mobile-standard-start').exists()).toBe(false)
+    expect(mountMenu({}).find('.cib-nav-mobile-list').exists()).toBe(false)
   })
 
   it('opens with the current section expanded and its active item marked', () => {
