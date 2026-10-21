@@ -22,8 +22,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.rest.model.Decision;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.rest.model.Decision;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;

@@ -23,8 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.rest.model.Incident;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.rest.model.Incident;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

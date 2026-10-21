@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.User;
-import org.cibseven.webapp.providers.BpmProvider;
+import org.cibseven.common.api.providers.BpmProvider;
 import org.cibseven.webapp.rest.CustomRestTemplate;
 import org.cibseven.webapp.rest.model.InfoVersion;
 import org.springframework.beans.factory.annotation.Value;

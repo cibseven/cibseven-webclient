@@ -20,11 +20,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 
-import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.exception.InvalidUserIdException;
-import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.exception.InvalidUserIdException;
+import org.cibseven.common.api.exception.SystemException;
+import org.cibseven.common.api.providers.ITenantProvider;
 import org.cibseven.webapp.providers.utils.URLUtils;
-import org.cibseven.webapp.rest.model.Tenant;
+import org.cibseven.common.api.rest.model.Tenant;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 

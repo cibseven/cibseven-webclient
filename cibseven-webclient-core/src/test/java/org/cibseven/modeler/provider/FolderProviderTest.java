@@ -27,7 +27,7 @@ import org.cibseven.modeler.repository.FormRepository;
 import org.cibseven.modeler.repository.ProcessDiagramRepository;
 import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.exception.InvalidFolderException;
-import org.cibseven.webapp.exception.NoObjectFoundException;
+import org.cibseven.common.api.exception.NoObjectFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

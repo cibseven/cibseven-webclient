@@ -10,9 +10,9 @@
 	<description>Provider interfaces</description>
 
 	<properties>
-		<!-- jacoco:check floors; measured 44.9% line / 27.6% branch. See the root pom for the rules. -->
+		<!-- jacoco:check floors; measured 42.8% line / 62.4% branch. See the root pom for the rules. -->
 		<jacoco.line.coverage.floor>0.42</jacoco.line.coverage.floor>
-		<jacoco.branch.coverage.floor>0.25</jacoco.branch.coverage.floor>
+		<jacoco.branch.coverage.floor>0.60</jacoco.branch.coverage.floor>
 	</properties>
 
 	<dependencies>
@@ -39,19 +39,11 @@
 			<version>${commons-io.version}</version>
 		</dependency>
 
+		<!-- Provider interfaces (org.cibseven.common.api.providers) and the types they use -->
 		<dependency>
-			<groupId>org.cibseven.webapp.auth</groupId>
-			<artifactId>common-auth</artifactId>
-			<version>${common-auth.version}</version>
-			<exclusions>
-				<!-- common-auth is an external release that declares swagger-annotations-jakarta
-				     non-optionally at ${swagger-annotations.version}; excluding it here keeps
-				     springdoc the single source. See cibseven-webclient-core/pom.xml. -->
-				<exclusion>
-					<groupId>io.swagger.core.v3</groupId>
-					<artifactId>swagger-annotations-jakarta</artifactId>
-				</exclusion>
-			</exclusions>
+			<groupId>org.cibseven.common</groupId>
+			<artifactId>cibseven-common-api</artifactId>
+			<version>${cibseven-common.version}</version>
 		</dependency>
 
 		<dependency>

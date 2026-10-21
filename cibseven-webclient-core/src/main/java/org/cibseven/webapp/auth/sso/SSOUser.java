@@ -16,7 +16,7 @@
  */
 package org.cibseven.webapp.auth.sso;
 
-import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.common.api.auth.CIBUser;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

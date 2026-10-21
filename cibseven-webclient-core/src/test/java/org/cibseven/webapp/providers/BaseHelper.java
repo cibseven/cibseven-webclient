@@ -21,7 +21,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.common.api.auth.CIBUser;
 
 /**
  * BaseHelper provides shared utility methods for integration tests,

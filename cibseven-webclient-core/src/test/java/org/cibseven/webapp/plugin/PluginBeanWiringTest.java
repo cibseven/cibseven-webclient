@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
-import org.cibseven.webapp.providers.BpmProvider;
+import org.cibseven.common.api.providers.BpmProvider;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;

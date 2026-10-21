@@ -32,13 +32,14 @@ import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
+import org.cibseven.common.api.auth.CIBUser;
 import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.auth.exception.LoginException;
 import org.cibseven.webapp.auth.exception.TokenExpiredException;
 import org.cibseven.webapp.auth.providers.JwtUserProvider;
 import org.cibseven.webapp.auth.utils.EngineTokenUtils;
 import org.cibseven.webapp.auth.rest.StandardLogin;
-import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.common.api.exception.SystemException;
 import org.springframework.beans.factory.annotation.Value;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

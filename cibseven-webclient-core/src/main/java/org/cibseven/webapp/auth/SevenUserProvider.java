@@ -22,15 +22,16 @@ import java.util.Optional;
 
 import javax.crypto.SecretKey;
 
+import org.cibseven.common.api.auth.CIBUser;
 import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.auth.exception.TokenExpiredException;
 import org.cibseven.webapp.auth.providers.JwtUserProvider;
 import org.cibseven.webapp.auth.utils.EngineTokenUtils;
 import org.cibseven.webapp.auth.rest.StandardLogin;
-import org.cibseven.webapp.exception.SystemException;
-import org.cibseven.webapp.providers.BpmProvider;
-import org.cibseven.webapp.rest.model.SevenUser;
-import org.cibseven.webapp.rest.model.SevenVerifyUser;
+import org.cibseven.common.api.exception.SystemException;
+import org.cibseven.common.api.providers.BpmProvider;
+import org.cibseven.common.api.rest.model.SevenUser;
+import org.cibseven.common.api.rest.model.SevenVerifyUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 

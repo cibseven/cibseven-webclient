@@ -20,9 +20,9 @@ import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
 
-import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.providers.BpmProvider;
-import org.cibseven.webapp.rest.model.Job;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.providers.BpmProvider;
+import org.cibseven.common.api.rest.model.Job;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

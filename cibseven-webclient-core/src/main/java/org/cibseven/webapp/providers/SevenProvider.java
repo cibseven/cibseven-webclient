@@ -20,6 +20,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.Getter;
 
+import org.cibseven.common.api.providers.BpmProvider;
+import org.cibseven.common.api.providers.IActivityProvider;
+import org.cibseven.common.api.providers.IBatchProvider;
+import org.cibseven.common.api.providers.IDecisionProvider;
+import org.cibseven.common.api.providers.IDeploymentProvider;
+import org.cibseven.common.api.providers.IEngineProvider;
+import org.cibseven.common.api.providers.IExternalTaskProvider;
+import org.cibseven.common.api.providers.IFilterProvider;
+import org.cibseven.common.api.providers.IHistoricVariableInstanceProvider;
+import org.cibseven.common.api.providers.IIdentityProvider;
+import org.cibseven.common.api.providers.IIncidentProvider;
+import org.cibseven.common.api.providers.IJobDefinitionProvider;
+import org.cibseven.common.api.providers.IJobProvider;
+import org.cibseven.common.api.providers.IProcessProvider;
+import org.cibseven.common.api.providers.ISystemProvider;
+import org.cibseven.common.api.providers.ITaskProvider;
+import org.cibseven.common.api.providers.ITenantProvider;
+import org.cibseven.common.api.providers.IUserProvider;
+import org.cibseven.common.api.providers.IUtilsProvider;
+import org.cibseven.common.api.providers.IVariableInstanceProvider;
+import org.cibseven.common.api.providers.IVariableProvider;
+
 @Getter
 public class SevenProvider extends SevenProviderBase implements BpmProvider {
     @Autowired private IDeploymentProvider deploymentProvider;

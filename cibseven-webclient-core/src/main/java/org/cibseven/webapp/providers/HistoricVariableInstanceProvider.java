@@ -22,10 +22,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.exception.NoObjectFoundException;
-import org.cibseven.webapp.exception.SystemException;
-import org.cibseven.webapp.rest.model.VariableHistory;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.exception.NoObjectFoundException;
+import org.cibseven.common.api.exception.SystemException;
+import org.cibseven.common.api.providers.IHistoricVariableInstanceProvider;
+import org.cibseven.common.api.rest.model.VariableHistory;
 import org.cibseven.webapp.providers.utils.URLUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;

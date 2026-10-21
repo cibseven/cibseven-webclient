@@ -38,11 +38,12 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
+import org.cibseven.common.api.auth.CIBUser;
 import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.auth.exception.LoginException;
 import org.cibseven.webapp.auth.exception.TokenExpiredException;
 import org.cibseven.webapp.auth.rest.StandardLogin;
-import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.common.api.exception.SystemException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;

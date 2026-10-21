@@ -20,10 +20,10 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 
-import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.auth.SevenResourceType;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.auth.SevenResourceType;
 import org.cibseven.webapp.providers.PermissionConstants;
-import org.cibseven.webapp.rest.model.VariableHistory;
+import org.cibseven.common.api.rest.model.VariableHistory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

@@ -23,11 +23,12 @@ import java.util.List;
 import java.util.Collection;
 import java.util.Map;
 
-import org.cibseven.webapp.Data;
-import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.exception.SystemException;
-import org.cibseven.webapp.rest.model.Deployment;
-import org.cibseven.webapp.rest.model.DeploymentResource;
+import org.cibseven.common.api.Data;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.exception.SystemException;
+import org.cibseven.common.api.providers.IDeploymentProvider;
+import org.cibseven.common.api.rest.model.Deployment;
+import org.cibseven.common.api.rest.model.DeploymentResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.InputStreamSource;
 import org.springframework.http.MediaType;

@@ -29,10 +29,10 @@ import org.springframework.test.util.ReflectionTestUtils;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
-import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.rest.model.ActivityInstance;
-import org.cibseven.webapp.rest.model.ActivityInstanceHistory;
-import org.cibseven.webapp.rest.model.TransitionInstance;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.rest.model.ActivityInstance;
+import org.cibseven.common.api.rest.model.ActivityInstanceHistory;
+import org.cibseven.common.api.rest.model.TransitionInstance;
 import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 
 import java.util.List;

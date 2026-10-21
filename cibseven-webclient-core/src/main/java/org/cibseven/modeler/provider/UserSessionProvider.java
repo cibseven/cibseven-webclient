@@ -22,7 +22,7 @@ import java.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.common.api.exception.SystemException;
 import org.cibseven.modeler.model.UserSessionEntity;
 import org.cibseven.modeler.repository.UserSessionRepository;
 

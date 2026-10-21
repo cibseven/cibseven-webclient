@@ -36,7 +36,7 @@ import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.auth.exception.TokenExpiredException;
 import org.cibseven.webapp.auth.sso.SSOLogin;
 import org.cibseven.webapp.auth.sso.SSOUser;
-import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.common.api.exception.SystemException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

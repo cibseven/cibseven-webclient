@@ -20,9 +20,9 @@ import java.util.Arrays;
 
 import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.exception.AccessDeniedException;
-import org.cibseven.webapp.exception.ApplicationException;
+import org.cibseven.common.api.exception.ApplicationException;
 import org.cibseven.webapp.exception.ErrorMessage;
-import org.cibseven.webapp.exception.NoObjectFoundException;
+import org.cibseven.common.api.exception.NoObjectFoundException;
 import org.cibseven.webapp.rest.BaseService;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;

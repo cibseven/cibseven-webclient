@@ -21,6 +21,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+import org.cibseven.common.api.exception.ApplicationException;
+import org.cibseven.common.api.exception.NoObjectFoundException;
+import org.cibseven.common.api.exception.SystemException;
+import org.cibseven.common.api.exception.UnknownResourceTypeException;
+
 /**
  * The webclient has two exception families and they behave very differently.
  * <p>

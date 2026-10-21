@@ -31,7 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityNotFoundException;
 
-import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.common.api.exception.SystemException;
 import org.cibseven.webapp.exception.ValueTooLongException;
 import org.cibseven.modeler.model.FormEntity;
 import org.cibseven.modeler.repository.FormRepository;

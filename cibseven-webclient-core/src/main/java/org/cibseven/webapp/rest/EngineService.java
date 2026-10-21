@@ -18,7 +18,7 @@ package org.cibseven.webapp.rest;
 
 import java.util.Collection;
 
-import org.cibseven.webapp.rest.model.Engine;
+import org.cibseven.common.api.rest.model.Engine;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

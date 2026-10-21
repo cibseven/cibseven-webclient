@@ -29,8 +29,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.List;
 import java.util.Map;
 
-import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.providers.BpmProvider;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.providers.BpmProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

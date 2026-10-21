@@ -20,10 +20,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.common.api.auth.CIBUser;
 import org.cibseven.webapp.exception.AccessDeniedException;
-import org.cibseven.webapp.providers.BpmProvider;
-import org.cibseven.webapp.rest.model.Authorizations;
+import org.cibseven.common.api.providers.BpmProvider;
+import org.cibseven.common.api.rest.model.Authorizations;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;

@@ -19,6 +19,7 @@ package org.cibseven.webapp.auth;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
+import org.cibseven.common.api.auth.CIBUser;
 import org.cibseven.webapp.auth.providers.JwtUserProvider;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.config.EngineRestProperties;

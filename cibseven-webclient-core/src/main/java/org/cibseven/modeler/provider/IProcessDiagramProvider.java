@@ -19,7 +19,7 @@ package org.cibseven.modeler.provider;
 import java.util.List;
 import java.util.Optional;
 
-import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.common.api.exception.SystemException;
 import org.cibseven.modeler.model.ProcessDiagramEntity;
 import org.cibseven.modeler.model.ProcessDiagramReduce;
 

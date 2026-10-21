@@ -16,6 +16,8 @@
  */
 package org.cibseven.webapp.exception;
 
+import org.cibseven.common.api.exception.ApplicationException;
+
 public class OptimisticLockingException extends ApplicationException {
 
 	private static final long serialVersionUID = 1L;

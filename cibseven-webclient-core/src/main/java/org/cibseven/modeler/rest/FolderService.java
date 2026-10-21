@@ -34,8 +34,8 @@ import org.cibseven.modeler.provider.FolderProvider;
 import org.cibseven.modeler.provider.FolderProvider.FolderChange;
 import org.cibseven.modeler.provider.FolderProvider.FolderContents;
 import org.cibseven.webapp.auth.AuthorizationChecker;
-import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.auth.SevenResourceType;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.auth.SevenResourceType;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

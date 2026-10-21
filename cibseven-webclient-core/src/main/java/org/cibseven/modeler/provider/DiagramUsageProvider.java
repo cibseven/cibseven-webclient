@@ -25,7 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.common.api.exception.SystemException;
 import org.cibseven.modeler.model.DiagramUsageEntity;
 import org.cibseven.modeler.repository.DiagramUsageRepository;
 import org.cibseven.modeler.repository.UserSessionRepository;

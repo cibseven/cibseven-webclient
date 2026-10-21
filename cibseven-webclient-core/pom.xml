@@ -212,11 +212,6 @@
 	        <artifactId>cibseven-interfaces</artifactId>
 	        <version>${project.version}</version>
 	    </dependency>
-	    <dependency>
-	        <groupId>org.cibseven.webapp</groupId>
-	        <artifactId>cibseven-direct-provider</artifactId>
-	        <version>${project.version}</version>
-	    </dependency>
 
 	</dependencies>
 

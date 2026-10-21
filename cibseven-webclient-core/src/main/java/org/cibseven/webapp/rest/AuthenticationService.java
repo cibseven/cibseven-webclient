@@ -17,11 +17,11 @@
 package org.cibseven.webapp.rest;
 
 import java.util.Map;
-import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.common.api.auth.CIBUser;
 import org.cibseven.webapp.auth.LogoutRedirectProvider;
 import org.cibseven.webapp.auth.User;
 import org.cibseven.webapp.auth.rest.StandardLogin;
-import org.cibseven.webapp.rest.model.Authorizations;
+import org.cibseven.common.api.rest.model.Authorizations;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;

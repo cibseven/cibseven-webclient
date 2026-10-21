@@ -18,11 +18,11 @@ package org.cibseven.webapp.rest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.rest.model.User;
-import org.cibseven.webapp.rest.model.UserGroup;
-import org.cibseven.webapp.rest.model.Tenant;
-import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.rest.model.User;
+import org.cibseven.common.api.rest.model.UserGroup;
+import org.cibseven.common.api.rest.model.Tenant;
+import org.cibseven.common.api.exception.SystemException;
 import org.cibseven.webapp.providers.TenantProvider;
 import org.cibseven.webapp.providers.UserProvider;
 

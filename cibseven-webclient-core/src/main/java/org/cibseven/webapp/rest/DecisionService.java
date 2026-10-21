@@ -21,12 +21,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
-import org.cibseven.webapp.rest.model.HistoricDecisionInstance;
+import org.cibseven.common.api.rest.model.HistoricDecisionInstance;
 
-import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.auth.SevenResourceType;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.auth.SevenResourceType;
 import org.cibseven.webapp.providers.PermissionConstants;
-import org.cibseven.webapp.rest.model.Decision;
+import org.cibseven.common.api.rest.model.Decision;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

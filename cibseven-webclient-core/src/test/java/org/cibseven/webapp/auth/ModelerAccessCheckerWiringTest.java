@@ -18,7 +18,7 @@ package org.cibseven.webapp.auth;
 
 import java.util.Map;
 
-import org.cibseven.webapp.providers.BpmProvider;
+import org.cibseven.common.api.providers.BpmProvider;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;

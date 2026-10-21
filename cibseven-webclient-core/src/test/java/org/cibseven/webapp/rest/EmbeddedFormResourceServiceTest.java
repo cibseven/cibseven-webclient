@@ -30,9 +30,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
-import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.rest.model.User;
-import org.cibseven.webapp.rest.model.UserGroup;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.rest.model.User;
+import org.cibseven.common.api.rest.model.UserGroup;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

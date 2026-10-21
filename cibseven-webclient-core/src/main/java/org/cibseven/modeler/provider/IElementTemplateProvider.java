@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.common.api.exception.SystemException;
 import org.cibseven.modeler.model.ElementTemplate;
 
 public interface IElementTemplateProvider {

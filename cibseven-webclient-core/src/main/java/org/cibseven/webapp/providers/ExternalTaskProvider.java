@@ -20,9 +20,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 
-import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.providers.IExternalTaskProvider;
 import org.cibseven.webapp.providers.utils.URLUtils;
-import org.cibseven.webapp.rest.model.ExternalTask;
+import org.cibseven.common.api.rest.model.ExternalTask;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 

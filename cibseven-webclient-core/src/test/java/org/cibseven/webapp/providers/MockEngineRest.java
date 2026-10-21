@@ -25,7 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
-import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.common.api.auth.CIBUser;
 import org.cibseven.webapp.rest.CustomRestTemplate;
 import org.springframework.test.util.ReflectionTestUtils;
 

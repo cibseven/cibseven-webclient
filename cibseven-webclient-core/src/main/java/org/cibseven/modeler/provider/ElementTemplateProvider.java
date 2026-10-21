@@ -24,7 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import org.cibseven.webapp.exception.ExistingElementTemplateException;
-import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.common.api.exception.SystemException;
 import org.cibseven.modeler.model.ElementTemplate;
 import org.cibseven.modeler.repository.ElementTemplateRepository;
 

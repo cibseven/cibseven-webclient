@@ -26,10 +26,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.rest.model.Filter;
-import org.cibseven.webapp.rest.model.FilterCriterias;
-import org.cibseven.webapp.rest.model.FilterProperties;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.rest.model.Filter;
+import org.cibseven.common.api.rest.model.FilterCriterias;
+import org.cibseven.common.api.rest.model.FilterProperties;
 
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;

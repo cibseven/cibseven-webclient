@@ -25,12 +25,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import org.cibseven.webapp.Data;
-import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.rest.model.HistoryProcessInstance;
-import org.cibseven.webapp.rest.model.Process;
-import org.cibseven.webapp.rest.model.ProcessDiagram;
-import org.cibseven.webapp.rest.model.ProcessInstance;
+import org.cibseven.common.api.Data;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.rest.model.HistoryProcessInstance;
+import org.cibseven.common.api.rest.model.Process;
+import org.cibseven.common.api.rest.model.ProcessDiagram;
+import org.cibseven.common.api.rest.model.ProcessInstance;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;

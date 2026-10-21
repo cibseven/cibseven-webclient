@@ -16,6 +16,8 @@
  */
 package org.cibseven.webapp.exception;
 
+import org.cibseven.common.api.exception.ApplicationException;
+
 /**
  * A value longer than the column that holds it. Reported as a request error naming the field and
  * the limit, because the alternative is the database refusing the statement and the caller

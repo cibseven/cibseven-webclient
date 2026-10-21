@@ -18,7 +18,7 @@ package org.cibseven.modeler.provider;
 
 import java.util.Optional;
 
-import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.common.api.exception.SystemException;
 import org.cibseven.modeler.model.DiagramUsageEntity;
 
 public interface IDiagramUsageProvider {

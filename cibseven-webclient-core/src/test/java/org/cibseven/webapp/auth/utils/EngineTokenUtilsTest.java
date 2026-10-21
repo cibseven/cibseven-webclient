@@ -24,7 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 
-import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.common.api.auth.CIBUser;
 import org.cibseven.webapp.auth.JwtTokenSettings;
 import org.cibseven.webapp.auth.User;
 import org.cibseven.webapp.config.EngineRestProperties;

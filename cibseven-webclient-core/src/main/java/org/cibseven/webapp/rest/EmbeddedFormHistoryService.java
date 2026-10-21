@@ -21,10 +21,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
-import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.auth.SevenResourceType;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.auth.SevenResourceType;
 import org.cibseven.webapp.providers.PermissionConstants;
-import org.cibseven.webapp.rest.model.TaskHistory;
+import org.cibseven.common.api.rest.model.TaskHistory;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;

@@ -20,12 +20,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.auth.SevenResourceType;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.auth.SevenResourceType;
 import org.cibseven.webapp.providers.PermissionConstants;
-import org.cibseven.webapp.rest.model.ProcessStart;
-import org.cibseven.webapp.rest.model.StartForm;
-import org.cibseven.webapp.rest.model.Variable;
+import org.cibseven.common.api.rest.model.ProcessStart;
+import org.cibseven.common.api.rest.model.StartForm;
+import org.cibseven.common.api.rest.model.Variable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

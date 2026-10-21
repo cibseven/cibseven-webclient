@@ -16,6 +16,8 @@
  */
 package org.cibseven.webapp.auth;
 
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.auth.SevenResourceType;
 import org.cibseven.webapp.exception.AccessDeniedException;
 import org.springframework.stereotype.Component;
 

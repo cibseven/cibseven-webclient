@@ -21,10 +21,11 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 
-import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.exception.SystemException;
-import org.cibseven.webapp.rest.model.EventSubscription;
-import org.cibseven.webapp.rest.model.Message;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.exception.SystemException;
+import org.cibseven.common.api.providers.IUtilsProvider;
+import org.cibseven.common.api.rest.model.EventSubscription;
+import org.cibseven.common.api.rest.model.Message;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;

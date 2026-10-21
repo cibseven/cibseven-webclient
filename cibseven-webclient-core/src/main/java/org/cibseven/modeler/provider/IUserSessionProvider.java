@@ -16,7 +16,7 @@
  */
 package org.cibseven.modeler.provider;
 
-import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.common.api.exception.SystemException;
 import org.cibseven.modeler.model.UserSessionEntity;
 
 public interface IUserSessionProvider {

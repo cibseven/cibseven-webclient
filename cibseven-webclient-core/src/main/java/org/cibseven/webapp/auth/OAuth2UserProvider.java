@@ -27,6 +27,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import javax.crypto.SecretKey;
 
+import org.cibseven.common.api.auth.CIBUser;
 import org.cibseven.webapp.auth.assertion.AssertionType;
 import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.auth.exception.TokenExpiredException;
@@ -37,7 +38,7 @@ import org.cibseven.webapp.auth.sso.SSOUser;
 import org.cibseven.webapp.auth.sso.SsoHelper;
 import org.cibseven.webapp.auth.sso.TokenCache;
 import org.cibseven.webapp.auth.sso.TokenResponse;
-import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.common.api.exception.SystemException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;

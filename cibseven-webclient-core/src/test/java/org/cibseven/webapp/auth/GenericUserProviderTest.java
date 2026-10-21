@@ -23,10 +23,11 @@ import static org.mockito.Mockito.when;
 
 import java.util.Base64;
 
+import org.cibseven.common.api.auth.CIBUser;
 import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.auth.exception.TokenExpiredException;
 import org.cibseven.webapp.auth.rest.StandardLogin;
-import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.common.api.exception.SystemException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

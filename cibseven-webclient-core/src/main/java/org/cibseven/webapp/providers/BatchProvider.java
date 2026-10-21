@@ -22,10 +22,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.providers.IBatchProvider;
 import org.cibseven.webapp.providers.utils.URLUtils;
-import org.cibseven.webapp.rest.model.Batch;
-import org.cibseven.webapp.rest.model.HistoryBatch;
+import org.cibseven.common.api.rest.model.Batch;
+import org.cibseven.common.api.rest.model.HistoryBatch;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 

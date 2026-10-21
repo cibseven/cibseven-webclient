@@ -16,6 +16,8 @@
  */
 package org.cibseven.webapp.exception;
 
+import org.cibseven.common.api.exception.ApplicationException;
+
 /**
  * A folder operation was refused before it reached the database: an empty or duplicate name, a
  * move into the folder's own subtree, or a model placed where models cannot live. Carries the

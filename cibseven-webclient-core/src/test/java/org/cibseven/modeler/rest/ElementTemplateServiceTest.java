@@ -33,7 +33,7 @@ import org.cibseven.modeler.model.ElementTemplateOrigin;
 import org.cibseven.modeler.provider.ElementTemplateProvider;
 import org.cibseven.modeler.rest.dto.ElementTemplateRequest;
 import org.cibseven.webapp.auth.BaseUserProvider;
-import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.common.api.auth.CIBUser;
 import org.cibseven.webapp.auth.ModelerAccessChecker;
 import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.auth.exception.AuthenticationException;

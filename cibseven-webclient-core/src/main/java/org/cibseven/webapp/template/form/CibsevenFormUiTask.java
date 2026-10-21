@@ -20,10 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.common.api.auth.CIBUser;
 import org.cibseven.webapp.logger.TaskLogger;
-import org.cibseven.webapp.providers.BpmProvider;
-import org.cibseven.webapp.rest.model.Task;
+import org.cibseven.common.api.providers.BpmProvider;
+import org.cibseven.common.api.rest.model.Task;
 import org.cibseven.webapp.template.StartFormTemplate;
 import org.cibseven.webapp.template.Template;
 import org.cibseven.webapp.template.TemplateTask;

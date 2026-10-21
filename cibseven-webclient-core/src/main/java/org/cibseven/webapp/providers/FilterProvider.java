@@ -19,9 +19,10 @@ package org.cibseven.webapp.providers;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.exception.SystemException;
-import org.cibseven.webapp.rest.model.Filter;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.exception.SystemException;
+import org.cibseven.common.api.providers.IFilterProvider;
+import org.cibseven.common.api.rest.model.Filter;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 

@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.nio.charset.StandardCharsets;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
-import org.cibseven.webapp.providers.BpmProvider;
+import org.cibseven.common.api.providers.BpmProvider;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.AutoConfigurations;

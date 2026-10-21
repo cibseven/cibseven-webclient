@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
 import org.cibseven.persistence.CibsevenJpa;
 import org.springframework.transaction.annotation.Transactional;
 
-import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.common.api.exception.SystemException;
 import org.cibseven.webapp.exception.ValueTooLongException;
 import org.cibseven.modeler.model.ProcessDiagramEntity;
 import org.cibseven.modeler.model.ProcessDiagramReduce;

@@ -26,7 +26,7 @@ import static org.mockito.Mockito.withSettings;
 import java.util.Map;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
-import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.common.api.auth.CIBUser;
 import org.cibseven.webapp.auth.LogoutRedirectProvider;
 import org.cibseven.webapp.auth.User;
 import org.junit.jupiter.api.BeforeEach;

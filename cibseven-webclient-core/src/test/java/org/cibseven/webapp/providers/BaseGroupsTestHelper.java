@@ -18,9 +18,9 @@ package org.cibseven.webapp.providers;
 
 import java.util.Optional;
 
-import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.common.api.auth.CIBUser;
 import org.cibseven.webapp.exception.ExistingGroupRequestException;
-import org.cibseven.webapp.rest.model.UserGroup;
+import org.cibseven.common.api.rest.model.UserGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

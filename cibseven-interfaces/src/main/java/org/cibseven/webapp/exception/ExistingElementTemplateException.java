@@ -16,6 +16,8 @@
  */
 package org.cibseven.webapp.exception;
 
+import org.cibseven.common.api.exception.ApplicationException;
+
 /**
  * The template id is unique, so importing or saving one that is already stored is reported as a
  * request error naming the id, instead of surfacing the database constraint violation.

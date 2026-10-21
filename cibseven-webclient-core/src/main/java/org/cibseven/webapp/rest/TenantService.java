@@ -19,9 +19,9 @@ package org.cibseven.webapp.rest;
 import java.util.Collection;
 import java.util.Map;
 
-import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.providers.BpmProvider;
-import org.cibseven.webapp.rest.model.Tenant;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.providers.BpmProvider;
+import org.cibseven.common.api.rest.model.Tenant;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

@@ -21,9 +21,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
-import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.rest.model.ActivityInstanceHistory;
-import org.cibseven.webapp.rest.model.HistoryProcessInstance;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.rest.model.ActivityInstanceHistory;
+import org.cibseven.common.api.rest.model.HistoryProcessInstance;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

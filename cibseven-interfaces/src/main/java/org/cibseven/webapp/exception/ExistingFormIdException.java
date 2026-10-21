@@ -16,6 +16,8 @@
  */
 package org.cibseven.webapp.exception;
 
+import org.cibseven.common.api.exception.ApplicationException;
+
 /**
  * A form is referenced by its form id, so the id is unique across the modeler. Copying a form
  * therefore needs an id of its own, and reusing one is reported as a request error naming it.

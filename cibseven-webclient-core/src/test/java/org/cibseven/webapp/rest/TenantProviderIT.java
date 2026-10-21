@@ -23,7 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 
-import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.common.api.auth.CIBUser;
 import org.cibseven.webapp.providers.BaseGroupsTestHelper;
 import org.cibseven.webapp.providers.BaseHelper;
 import org.cibseven.webapp.providers.TenantProvider;

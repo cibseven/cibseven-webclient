@@ -22,13 +22,13 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.cibseven.webapp.auth.SevenResourceType;
+import org.cibseven.common.api.auth.SevenResourceType;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
-import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.common.api.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenAuthorizationUtils;
-import org.cibseven.webapp.providers.BpmProvider;
-import org.cibseven.webapp.rest.model.Authorizations;
+import org.cibseven.common.api.providers.BpmProvider;
+import org.cibseven.common.api.rest.model.Authorizations;
 
 public class BaseService {
 

@@ -22,9 +22,9 @@ import static org.mockito.Mockito.when;
 
 import java.nio.charset.StandardCharsets;
 
-import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.common.api.auth.CIBUser;
 import org.cibseven.webapp.exception.InvalidValueHistoryTimeToLive;
-import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.common.api.exception.SystemException;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

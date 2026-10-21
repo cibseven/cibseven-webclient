@@ -17,9 +17,9 @@
 package org.cibseven.webapp.rest;
 
 import org.cibseven.webapp.auth.SevenUserProvider;
-import org.cibseven.webapp.providers.BpmProvider;
-import org.cibseven.webapp.providers.IEngineProvider;
-import org.cibseven.webapp.rest.model.EngineConfiguration;
+import org.cibseven.common.api.providers.BpmProvider;
+import org.cibseven.common.api.providers.IEngineProvider;
+import org.cibseven.common.api.rest.model.EngineConfiguration;
 import org.cibseven.webapp.rest.model.InfoVersion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

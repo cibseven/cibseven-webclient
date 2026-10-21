@@ -23,10 +23,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Optional;
 
-import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.rest.model.Task;
-import org.cibseven.webapp.rest.model.TaskFiltering;
-import org.cibseven.webapp.rest.model.TaskHistory;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.rest.model.Task;
+import org.cibseven.common.api.rest.model.TaskFiltering;
+import org.cibseven.common.api.rest.model.TaskHistory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;

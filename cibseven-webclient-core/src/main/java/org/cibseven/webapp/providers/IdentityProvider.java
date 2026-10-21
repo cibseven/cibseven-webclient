@@ -19,9 +19,10 @@ package org.cibseven.webapp.providers;
 import java.util.ArrayList;
 import java.util.Map;
 
-import org.cibseven.webapp.exception.SystemException;
-import org.cibseven.webapp.rest.model.PasswordPolicyRequest;
-import org.cibseven.webapp.rest.model.PasswordPolicyResponse;
+import org.cibseven.common.api.exception.SystemException;
+import org.cibseven.common.api.providers.IIdentityProvider;
+import org.cibseven.common.api.rest.model.PasswordPolicyRequest;
+import org.cibseven.common.api.rest.model.PasswordPolicyResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 

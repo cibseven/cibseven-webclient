@@ -31,7 +31,7 @@ import org.cibseven.webapp.auth.assertion.AssertionType;
 import org.cibseven.webapp.auth.assertion.AzureWorkloadIdentityAssertionProvider;
 import org.cibseven.webapp.auth.assertion.JjwtAssertionProvider;
 import org.cibseven.webapp.auth.exception.AuthenticationException;
-import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.common.api.exception.SystemException;
 import org.springframework.boot.ssl.pem.PemContent;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;

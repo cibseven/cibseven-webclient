@@ -21,9 +21,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
 
+import org.cibseven.common.api.auth.SevenResourceType;
 import org.cibseven.webapp.exception.AccessDeniedException;
-import org.cibseven.webapp.rest.model.Authorization;
-import org.cibseven.webapp.rest.model.Authorizations;
+import org.cibseven.common.api.rest.model.Authorization;
+import org.cibseven.common.api.rest.model.Authorizations;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 

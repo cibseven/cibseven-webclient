@@ -20,8 +20,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 
-import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.rest.model.JobDefinition;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.providers.IJobDefinitionProvider;
+import org.cibseven.common.api.rest.model.JobDefinition;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 

@@ -18,7 +18,7 @@ package org.cibseven.webapp.template;
 
 import java.util.Map;
 
-import org.cibseven.webapp.rest.model.Variable;
+import org.cibseven.common.api.rest.model.Variable;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

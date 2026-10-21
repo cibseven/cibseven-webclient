@@ -16,10 +16,10 @@
  */
 package org.cibseven.webapp.rest;
 
-import org.cibseven.webapp.providers.BpmProvider;
-import org.cibseven.webapp.rest.model.NewUser;
-import org.cibseven.webapp.rest.model.PasswordPolicyRequest;
-import org.cibseven.webapp.rest.model.PasswordPolicyResponse;
+import org.cibseven.common.api.providers.BpmProvider;
+import org.cibseven.common.api.rest.model.NewUser;
+import org.cibseven.common.api.rest.model.PasswordPolicyRequest;
+import org.cibseven.common.api.rest.model.PasswordPolicyResponse;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

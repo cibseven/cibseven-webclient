@@ -21,10 +21,11 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 
-import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.providers.IDecisionProvider;
 import org.cibseven.webapp.providers.utils.URLUtils;
-import org.cibseven.webapp.rest.model.Decision;
-import org.cibseven.webapp.rest.model.HistoricDecisionInstance;
+import org.cibseven.common.api.rest.model.Decision;
+import org.cibseven.common.api.rest.model.HistoricDecisionInstance;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 

@@ -24,6 +24,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import org.cibseven.common.api.rest.model.Variable;
+
 @Getter @Setter @AllArgsConstructor @NoArgsConstructor @ToString
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ProcessVariables {

@@ -30,8 +30,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.rest.model.Incident;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.rest.model.Incident;
 import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 
 import okhttp3.mockwebserver.MockResponse;

@@ -24,13 +24,13 @@ import java.util.Optional;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.auth.SevenResourceType;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.auth.SevenResourceType;
 import org.cibseven.webapp.providers.PermissionConstants;
-import org.cibseven.webapp.rest.model.ActivityInstanceHistory;
-import org.cibseven.webapp.rest.model.HistoryProcessInstance;
-import org.cibseven.webapp.rest.model.HistoryStatistics;
-import org.cibseven.webapp.rest.model.VariableHistory;
+import org.cibseven.common.api.rest.model.ActivityInstanceHistory;
+import org.cibseven.common.api.rest.model.HistoryProcessInstance;
+import org.cibseven.common.api.rest.model.HistoryStatistics;
+import org.cibseven.common.api.rest.model.VariableHistory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;

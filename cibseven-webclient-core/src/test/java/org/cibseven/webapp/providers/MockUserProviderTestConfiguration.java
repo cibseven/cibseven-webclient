@@ -17,7 +17,7 @@
 package org.cibseven.webapp.providers;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
-import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.common.api.auth.CIBUser;
 import org.cibseven.webapp.auth.User;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.springframework.boot.test.context.TestConfiguration;

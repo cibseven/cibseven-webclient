@@ -16,7 +16,7 @@
  */
 package org.cibseven.modeler.rest;
 
-import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.common.api.auth.CIBUser;
 import org.cibseven.webapp.auth.ModelerAccessChecker;
 import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.auth.exception.AuthenticationException;

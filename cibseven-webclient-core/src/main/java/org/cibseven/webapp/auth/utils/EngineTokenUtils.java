@@ -18,7 +18,7 @@ package org.cibseven.webapp.auth.utils;
 
 import java.util.Base64;
 
-import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.common.api.auth.CIBUser;
 import org.cibseven.webapp.auth.JwtTokenSettings;
 import org.cibseven.webapp.auth.User;
 import org.cibseven.webapp.auth.providers.JwtUserProvider.TokenSettings;

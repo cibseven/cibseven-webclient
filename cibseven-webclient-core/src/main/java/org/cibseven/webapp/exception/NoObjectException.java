@@ -16,6 +16,8 @@
  */
 package org.cibseven.webapp.exception;
 
+import org.cibseven.common.api.exception.ApplicationException;
+
 public class NoObjectException extends ApplicationException { //TODO ? remove
 	
 	private static final long serialVersionUID = 1L;

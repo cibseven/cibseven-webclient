@@ -29,10 +29,10 @@ import static org.mockito.Mockito.when;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
-import org.cibseven.webapp.exception.SystemException;
-import org.cibseven.webapp.providers.BpmProvider;
+import org.cibseven.common.api.exception.SystemException;
+import org.cibseven.common.api.providers.BpmProvider;
 import org.cibseven.webapp.providers.EngineProvider;
-import org.cibseven.webapp.rest.model.EngineConfiguration;
+import org.cibseven.common.api.rest.model.EngineConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

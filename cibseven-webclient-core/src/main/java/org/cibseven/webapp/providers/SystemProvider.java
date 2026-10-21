@@ -28,8 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.rest.model.Metric;
+import org.cibseven.common.api.auth.CIBUser;
+import org.cibseven.common.api.providers.ISystemProvider;
+import org.cibseven.common.api.rest.model.Metric;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.databind.JsonNode;

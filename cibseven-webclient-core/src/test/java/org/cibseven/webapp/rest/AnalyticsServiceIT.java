@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import java.util.Locale;
 
-import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.common.api.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenUserProvider;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.providers.ActivityProvider;
