@@ -23,32 +23,24 @@
 <script>
 import { permissionsMixin } from '@/permissions.js'
 import navigationPermissionsMixin from '@/mixins/navigationPermissionsMixin.js'
-import startTileOptionsMixin from '@/mixins/startTileOptionsMixin.js'
 import StartHubView from '@/components/start/StartHubView.vue'
 import { getVisibleGroup, projectStartHoverOptions } from '@/navigation/navGroups.js'
-import { hasStartableProcesses } from '@/utils/process.js'
 import taskImage from '@/assets/images/start/task.svg'
 
 export default {
   name: 'TasksStartView',
-  mixins: [permissionsMixin, navigationPermissionsMixin, startTileOptionsMixin],
+  mixins: [permissionsMixin, navigationPermissionsMixin],
   components: { StartHubView },
   emits: [],
   data() {
     return { taskImage }
   },
   computed: {
-    startableProcesses() {
-      return hasStartableProcesses(this.$store.state.process.list)
-    },
-    // Reuses navGroups.js's 'tasks' group, so this can't diverge from the navbar's Tasks dropdown.
-    builtInItems() {
+    // Reuses navGroups.js's 'tasks' group (including what extenders add), so this can't diverge
+    // from the navbar's Tasks dropdown.
+    items() {
       const tasks = getVisibleGroup(this, 'tasks')
       return projectStartHoverOptions(tasks?.items, this.$t.bind(this))
-    },
-    items() {
-      return this.mergeOptions(this.builtInItems, 'TasksTileOptionsPlugin')
-        .filter(item => item?.to && item.title)
     }
   }
 }

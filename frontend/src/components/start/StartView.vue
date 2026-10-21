@@ -36,16 +36,16 @@
 <script>
 import { permissionsMixin } from '@/permissions.js'
 import navigationPermissionsMixin from '@/mixins/navigationPermissionsMixin.js'
-import startTileOptionsMixin from '@/mixins/startTileOptionsMixin.js'
 import { ErrorDialog } from '@cib/common-frontend'
 import StartViewItem from '@/components/start/StartViewItem.vue'
 import {
   buildVisibleNavGroups,
   projectStartHoverOptions,
+  singleDestination,
   singleOptionTile,
   tasksOnlyRedirectTarget
 } from '@/navigation/navGroups.js'
-import { hasStartableProcesses } from '@/utils/process.js'
+import { getPluginsSettled } from '@/plugins/pluginsConfig.js'
 
 import taskImage from '@/assets/images/start/task.svg'
 import managementImage from '@/assets/images/start/management.svg'
@@ -55,7 +55,8 @@ import modelerImage from '@/assets/images/start/modeler.svg'
 export default {
   name: 'StartView',
   components: { ErrorDialog, StartViewItem },
-  mixins: [permissionsMixin, navigationPermissionsMixin, startTileOptionsMixin],
+  mixins: [permissionsMixin, navigationPermissionsMixin],
+  emits: [],
   data() {
     return {
       items: [],
@@ -72,8 +73,8 @@ export default {
     productName() {
       return this.$root.config.productNamePageTitle || this.$t('login.productName')
     },
-    startableProcesses() {
-      return hasStartableProcesses(this.$store.state.process.list)
+    pluginsSettled() {
+      return getPluginsSettled().value
     },
     navGroups() {
       return buildVisibleNavGroups(this)
@@ -81,17 +82,12 @@ export default {
     groupById() {
       return Object.fromEntries(this.navGroups.map(g => [g.id, g]))
     },
-    builtInTasksOptions() {
+    // Tiles come from the catalog only, like the navbar: a tile always leads somewhere the user may open
+    tasksOptions() {
       return projectStartHoverOptions(this.groupById.tasks?.items, this.$t.bind(this))
     },
-    builtInBuilderOptions() {
-      return projectStartHoverOptions(this.groupById.builder?.items, this.$t.bind(this))
-    },
-    tasksOptions() {
-      return this.mergeOptions(this.builtInTasksOptions, 'TasksTileOptionsPlugin')
-    },
     builderOptions() {
-      return this.mergeOptions(this.builtInBuilderOptions, 'BuilderTileOptionsPlugin')
+      return projectStartHoverOptions(this.groupById.builder?.items, this.$t.bind(this))
     },
     dataOptions() {
       // CE has no 'data' group; EE/Flow add it through registerNavGroupsExtender.
@@ -103,11 +99,11 @@ export default {
     adminOptions() {
       return projectStartHoverOptions(this.groupById.admin?.items, this.$t.bind(this))
     },
-    // Collapses to its one destination (e.g. "Modeler") instead of an empty hub tile.
+    // Collapses to its one destination (e.g. "Modeler") instead of an empty hub tile, as the navbar does.
     builderTile() {
-      const single = singleOptionTile(this.builderOptions)
+      const single = singleDestination(this.groupById.builder)
       return single
-        ? { to: single.to, title: single.title, options: null }
+        ? { to: single.to, title: this.$t(single.title), options: null }
         : { to: { name: 'builderHome' }, title: this.$t('start.builder.title'), options: this.builderOptions }
     },
     // Only when EE/Flow inject a 'data' group. A single tool is the tile itself; with several the
@@ -146,6 +142,15 @@ export default {
       return this.items.length
     }
   },
+  watch: {
+    // Decided once plugins have loaded: an admin area contributed by a plugin adds a tile of its own
+    pluginsSettled: {
+      handler(settled) {
+        if (settled) this.redirectIfTasksOnly()
+      },
+      immediate: true
+    }
+  },
   methods: {
     updateItems() {
       if (this.$refs.startContainer) {
@@ -159,9 +164,6 @@ export default {
       const target = tasksOnlyRedirectTarget(this.tiles, this.groupById.tasks?.defaultTo)
       if (target) this.$router.replace(target)
     }
-  },
-  created() {
-    this.redirectIfTasksOnly()
   },
   mounted() {
     this.updateItems()

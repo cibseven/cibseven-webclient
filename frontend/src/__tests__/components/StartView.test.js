@@ -14,10 +14,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import StartView from '@/components/start/StartView.vue'
-import startTileOptionsMixin from '@/mixins/startTileOptionsMixin.js'
-import { SURFACES } from '@/navigation/navGroups.js'
+import navigationPermissionsMixin from '@/mixins/navigationPermissionsMixin.js'
+import { SURFACES, registerNavGroupsExtender } from '@/navigation/navGroups.js'
+
+const unregisterExtenders = []
+const useExtender = extend => unregisterExtenders.push(registerNavGroupsExtender(extend))
+afterEach(() => unregisterExtenders.splice(0).forEach(unregister => unregister()))
 
 vi.mock('@cib/common-frontend', () => ({
   ErrorDialog: { name: 'ErrorDialog', render() { return null } }
@@ -42,22 +46,14 @@ function evaluateStartView(overrides = {}) {
     images: { task: 'task.svg', modeler: 'modeler.svg', management: 'management.svg', admin: 'admin.svg' },
     ...overrides
   }
-  vm.getPluginOptions = startTileOptionsMixin.methods.getPluginOptions.bind(vm)
-  vm.mergeOptions = startTileOptionsMixin.methods.mergeOptions.bind(vm)
   Object.defineProperty(vm, 'startableProcesses', {
-    get: () => StartView.computed.startableProcesses.call(vm)
+    get: () => navigationPermissionsMixin.computed.startableProcesses.call(vm)
   })
   Object.defineProperty(vm, 'navGroups', {
     get: () => StartView.computed.navGroups.call(vm)
   })
   Object.defineProperty(vm, 'groupById', {
     get: () => StartView.computed.groupById.call(vm)
-  })
-  Object.defineProperty(vm, 'builtInTasksOptions', {
-    get: () => StartView.computed.builtInTasksOptions.call(vm)
-  })
-  Object.defineProperty(vm, 'builtInBuilderOptions', {
-    get: () => StartView.computed.builtInBuilderOptions.call(vm)
   })
   Object.defineProperty(vm, 'tasksOptions', {
     get: () => StartView.computed.tasksOptions.call(vm)
@@ -117,25 +113,19 @@ describe('StartView.vue nav tiles', () => {
     expect(vm.adminOptions.some(o => o.to === '/seven/auth/admin/system/execution-metrics')).toBe(false)
   })
 
-  it('keeps cockpit tile hover CE-shaped when NavGroupsExtender adds navbar-only EE items', () => {
-    const extender = {
-      methods: {
-        extend(groups) {
-          const clone = groups.map(g => ({ ...g, items: g.items ? [...g.items] : g.items }))
-          const cockpit = clone.find(g => g.id === 'cockpit')
-          cockpit.items.push({
-            surfaces: [SURFACES.NAVBAR],
-            to: '/seven/auth/operation-log',
-            title: 'operation-log.title',
-            tooltip: 'operation-log.description'
-          })
-          return clone
-        }
-      }
-    }
-    const vm = evaluateStartView({
-      $options: { components: { NavGroupsExtender: extender } }
+  it('keeps cockpit tile hover CE-shaped when a registered extender adds navbar-only EE items', () => {
+    useExtender(groups => {
+      const clone = groups.map(g => ({ ...g, items: g.items ? [...g.items] : g.items }))
+      const cockpit = clone.find(g => g.id === 'cockpit')
+      cockpit.items.push({
+        surfaces: [SURFACES.NAVBAR],
+        to: '/seven/auth/operation-log',
+        title: 'operation-log.title',
+        tooltip: 'operation-log.description'
+      })
+      return clone
     })
+    const vm = evaluateStartView()
     expect(vm.cockpitOptions.some(o => o.to === '/seven/auth/operation-log')).toBe(false)
     expect(vm.cockpitOptions.map(o => o.to)).toEqual([
       '/seven/auth/processes/list',
@@ -147,28 +137,22 @@ describe('StartView.vue nav tiles', () => {
   })
 
   it('shows a data tile only once an extender injects a whole data group (not DataTileOptionsPlugin)', () => {
-    const extender = {
-      methods: {
-        extend(groups) {
-          const clone = [...groups]
-          clone.push({
-            id: 'data',
-            title: 'start.data.title',
-            show: true,
-            items: [{
-              to: '/seven/auth/ins7ght',
-              title: 'start.ins7ght.title',
-              tooltip: 'start.ins7ght.tooltip',
-              icon: 'mdi-chart-box-outline'
-            }]
-          })
-          return clone
-        }
-      }
-    }
-    const vm = evaluateStartView({
-      $options: { components: { NavGroupsExtender: extender } }
+    useExtender(groups => {
+      const clone = [...groups]
+      clone.push({
+        id: 'data',
+        title: 'start.data.title',
+        show: true,
+        items: [{
+          to: '/seven/auth/ins7ght',
+          title: 'start.ins7ght.title',
+          tooltip: 'start.ins7ght.tooltip',
+          icon: 'mdi-chart-box-outline'
+        }]
+      })
+      return clone
     })
+    const vm = evaluateStartView()
     expect(vm.dataOptions.map(o => o.to)).toEqual(['/seven/auth/ins7ght'])
     expect(vm.tiles).toContain('data')
   })
@@ -197,51 +181,39 @@ describe('StartView.vue single-option tile collapsing', () => {
   })
 
   it('collapses the data tile to Ins7ght when the extender injects a single-item data group', () => {
-    const extender = {
-      methods: {
-        extend(groups) {
-          const clone = [...groups]
-          clone.push({
-            id: 'data',
-            title: 'start.data.title',
-            show: true,
-            tileImage: 'ins7ght.svg',
-            items: [{
-              to: '/seven/auth/ins7ght',
-              title: 'start.ins7ght.title',
-              tooltip: 'start.ins7ght.tooltip',
-              icon: 'mdi-chart-box-outline'
-            }]
-          })
-          return clone
-        }
-      }
-    }
-    const vm = evaluateStartView({
-      $options: { components: { NavGroupsExtender: extender } }
+    useExtender(groups => {
+      const clone = [...groups]
+      clone.push({
+        id: 'data',
+        title: 'start.data.title',
+        show: true,
+        tileImage: 'ins7ght.svg',
+        items: [{
+          to: '/seven/auth/ins7ght',
+          title: 'start.ins7ght.title',
+          tooltip: 'start.ins7ght.tooltip',
+          icon: 'mdi-chart-box-outline'
+        }]
+      })
+      return clone
     })
+    const vm = evaluateStartView()
     expect(vm.dataTile).toEqual({ to: '/seven/auth/ins7ght', title: 'start.ins7ght.title', src: 'ins7ght.svg', options: null })
   })
 
   it('keeps the data tile for a data group with several tools, leading to its default and listing them', () => {
     const tool = (to, title) => ({ to, title, tooltip: title, icon: 'mdi-database-outline' })
-    const extender = {
-      methods: {
-        extend(groups) {
-          return [...groups, {
-            id: 'data',
-            title: 'start.data.title',
-            show: true,
-            defaultTo: '/seven/auth/ins7ght',
-            tileImage: 'data.svg',
-            items: [tool('/seven/auth/ins7ght', 'start.ins7ght.title'), { divider: true }, tool('/seven/auth/dataflow', 'dataflow.title')]
-          }]
-        }
-      }
-    }
-    const vm = evaluateStartView({
-      $options: { components: { NavGroupsExtender: extender } }
+    useExtender(groups => {
+      return [...groups, {
+        id: 'data',
+        title: 'start.data.title',
+        show: true,
+        defaultTo: '/seven/auth/ins7ght',
+        tileImage: 'data.svg',
+        items: [tool('/seven/auth/ins7ght', 'start.ins7ght.title'), { divider: true }, tool('/seven/auth/dataflow', 'dataflow.title')]
+      }]
     })
+    const vm = evaluateStartView()
 
     expect(vm.tiles).toContain('data')
     expect(vm.dataTile).toMatchObject({ to: '/seven/auth/ins7ght', title: 'start.data.title', src: 'data.svg' })
@@ -289,5 +261,60 @@ describe('StartView.vue tasks-only redirect', () => {
     })
     vm.redirectIfTasksOnly()
     expect(vm.$router.replace).not.toHaveBeenCalled()
+  })
+})
+
+// A tile must lead somewhere the user may open: tasksHome / builderHome need tasklist / modeler permission
+describe('StartView.vue tiles come from the catalog only', () => {
+  const plugin = { methods: { getOptions: () => [{ to: '/seven/auth/flow-tool', title: 'Flow tool' }] } }
+
+  it('shows no Tasks or Builder tile for options a tile-options plugin adds on its own', () => {
+    const vm = evaluateStartView({
+      permissionsTaskList: false,
+      permissionsModeler: false,
+      $options: { components: { TasksTileOptionsPlugin: plugin, BuilderTileOptionsPlugin: plugin } }
+    })
+    expect(vm.tiles).toEqual(['cockpit', 'admin'])
+  })
+
+  it('does not redirect to the guarded tasklist without tasklist permission', () => {
+    const vm = evaluateStartView({
+      ...TASKS_ONLY_PERMISSIONS,
+      permissionsTaskList: false,
+      $options: { components: { TasksTileOptionsPlugin: plugin } }
+    })
+    vm.redirectIfTasksOnly()
+    expect(vm.$router.replace).not.toHaveBeenCalled()
+  })
+})
+
+describe('StartView.vue waits for plugins before redirecting', () => {
+  const settle = (vm, settled) => StartView.watch.pluginsSettled.handler.call(vm, settled)
+
+  it('decides nothing while plugins are still loading', () => {
+    const vm = evaluateStartView(TASKS_ONLY_PERMISSIONS)
+    settle(vm, false)
+    expect(vm.$router.replace).not.toHaveBeenCalled()
+  })
+
+  it('redirects once plugins have loaded and Tasks is still the only tile', () => {
+    const vm = evaluateStartView(TASKS_ONLY_PERMISSIONS)
+    settle(vm, true)
+    expect(vm.$router.replace).toHaveBeenCalledWith('/seven/auth/tasks')
+  })
+
+  it('stays on the start page when a plugin contributed an admin area meanwhile', () => {
+    const vm = evaluateStartView({
+      ...TASKS_ONLY_PERMISSIONS,
+      permissionsUsers: true,
+      adminPluginEntries: [{ text: 'admin.notifications.title', to: '/seven/auth/admin/notifications', icon: 'mdi-bell' }]
+    })
+    settle(vm, true)
+    expect(vm.tiles).toEqual(['tasks', 'admin'])
+    expect(vm.$router.replace).not.toHaveBeenCalled()
+  })
+
+  it('reads the shared plugin state', () => {
+    expect(typeof StartView.computed.pluginsSettled.call({})).toBe('boolean')
   })
 })

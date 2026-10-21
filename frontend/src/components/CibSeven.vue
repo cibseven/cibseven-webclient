@@ -93,14 +93,14 @@ import CIBHeaderFlow from '@/components/common-components/CIBHeaderFlow.vue'
 import FeedbackModal from '@/components/modals/FeedbackModal.vue'
 import PluginSlot from '@/components/common/PluginSlot.vue'
 import { updateAppTitle } from '@/utils/init'
-import { hasStartableProcesses } from '@/utils/process.js'
-import { buildNavGroups, extendNavGroups, projectGroupsForNavbar, permissionFlagsFromVm, itemsToSections } from '@/navigation/navGroups.js'
+import { buildNavGroups, extendNavGroups, projectGroupsForNavbar, permissionFlagsFromVm, itemsToSections, singleDestination } from '@/navigation/navGroups.js'
 
 export default {
   name: 'CibSeven',
   components: { ShortcutsModal, AboutModal, SupportModal, CIBHeaderFlow, FeedbackModal, PluginSlot },
   mixins: [permissionsMixin, navigationPermissionsMixin],
   inject: ['isMobile'],
+  emits: [],
   data: function() {
     return {
        rememberNotShow: false
@@ -130,7 +130,7 @@ export default {
     // The catalog as header clusters: the icon leads to the section, the menu title to its overview page
     navClusters: function() {
       return this.computedMenuItems.map(tool => {
-        const single = this.singleDestination(tool)
+        const single = singleDestination(tool)?.to
         return {
           id: tool.id,
           label: this.$t(tool.title),
@@ -193,9 +193,6 @@ export default {
       if (this.$root.config.layout.showSupportInfo) items.push({ type: 'button', ref: 'support', title: 'infoAndHelp.flowModalSupport.modalText', tooltip: 'infoAndHelp.flowModalSupport.modalText' })
       items.push({ type: 'button', ref: 'about', title: 'infoAndHelp.about.title', tooltip: 'infoAndHelp.about.tooltip' })
       return items
-    },
-    startableProcesses: function() {
-      return hasStartableProcesses(this.$store.state.process.list)
     },
     // when route is changed => let's change title of the view inside top navbar
     pageTitle: function() {
@@ -282,12 +279,6 @@ export default {
     getToolDefaultTo: function(tool) {
       return tool.defaultTo || tool.items.find(item => item.to)?.to || '/seven/auth/start'
     },
-    // A section with an overview page but only one entry (e.g. Builder with just the modeler) goes straight there
-    singleDestination: function(tool) {
-      if (!tool.collapseSingle) return null
-      const leaves = tool.items.filter(item => !item.divider && item.to)
-      return leaves.length === 1 ? leaves[0].to : null
-    },
     onHeaderSelect: function(item) {
       if (item.modal) this.$refs[item.modal]?.show()
     },
@@ -298,7 +289,9 @@ export default {
     },
     isMenuItemActive: function(item) {
       if (item.routeName || item.activeRouteNames) {
-        return this.$route.name === item.routeName || !!item.activeRouteNames?.includes(this.$route.name)
+        // A route without a name matches none of them (undefined === undefined must not count)
+        const name = this.$route.name
+        return !!name && (name === item.routeName || !!item.activeRouteNames?.includes(name))
       }
       if (!item.active) {
         return false

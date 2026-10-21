@@ -201,6 +201,32 @@ describe('CIBHeaderFlow.vue', () => {
       expect(removeEventListenerSpy).toHaveBeenCalledWith('click', handleClickOutside)
       removeEventListenerSpy.mockRestore()
     })
+
+    // Rotating a tablet to landscape: the menu would only be hidden by CSS and keep the page from scrolling
+    it('closes the mobile menu, and with it the scroll lock, once the layout reaches the desktop breakpoint', async () => {
+      const query = { addEventListener: vi.fn(), removeEventListener: vi.fn() }
+      window.matchMedia = vi.fn(() => query)
+      document.body.style.overflow = ''
+      try {
+        wrapper = createWrapper()
+        expect(window.matchMedia).toHaveBeenCalledWith('(min-width: 768px)')
+        await wrapper.find('.cib-nav-burger').trigger('click')
+        expect(document.body.style.overflow).toBe('hidden')
+        const onChange = query.addEventListener.mock.calls[0][1]
+
+        onChange({ matches: false })
+        expect(wrapper.vm.isCollapsed).toBe(true)
+        onChange({ matches: true })
+        await wrapper.vm.$nextTick()
+        expect(wrapper.find('.cib-nav-mobile').exists()).toBe(false)
+        expect(document.body.style.overflow).not.toBe('hidden')
+
+        wrapper.unmount()
+        expect(query.removeEventListener).toHaveBeenCalledWith('change', onChange)
+      } finally {
+        delete window.matchMedia
+      }
+    })
   })
 
   describe('Engine Token Management', () => {

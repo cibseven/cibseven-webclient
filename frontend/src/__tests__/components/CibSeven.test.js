@@ -268,6 +268,12 @@ describe('CibSeven.vue', () => {
       expect(CibSeven.methods.isMenuItemActive.call({ $route: { name: 'adminGroups', path: '/seven/auth/admin/groups' } }, usersItem)).toBe(false)
     })
 
+    it('should not mark an item with only activeRouteNames active on a route without a name', () => {
+      const item = { activeRouteNames: ['eeArea'] }
+      expect(CibSeven.methods.isMenuItemActive.call({ $route: { name: undefined, path: '/seven/auth/somewhere' } }, item)).toBe(false)
+      expect(CibSeven.methods.isMenuItemActive.call({ $route: { name: 'eeArea', path: '/seven/auth/ee' } }, item)).toBe(true)
+    })
+
     it('should match nested detail pages under a trailing-slash active pattern', () => {
       const mockThis = {
         $route: { path: '/seven/auth/process/myKey/1/inst1' }
@@ -356,7 +362,6 @@ describe('CibSeven.vue', () => {
       vm.isMenuItemActive = item => CibSeven.methods.isMenuItemActive.call(vm, item)
       vm.isToolActive = tool => CibSeven.methods.isToolActive.call(vm, tool)
       vm.getToolDefaultTo = tool => CibSeven.methods.getToolDefaultTo.call(vm, tool)
-      vm.singleDestination = tool => CibSeven.methods.singleDestination.call(vm, tool)
       return vm
     }
     const tasksTool = {

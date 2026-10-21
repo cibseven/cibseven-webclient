@@ -195,11 +195,18 @@ export default {
     this.loadEngines()
     // Close menu when clicking outside on mobile
     document.addEventListener('click', this.handleClickOutside)
+    // From md up the mobile menu is only hidden by CSS: close it there, which also ends its scroll lock
+    this.desktopQuery = window.matchMedia?.('(min-width: 768px)')
+    this.desktopQuery?.addEventListener('change', this.onDesktopChange)
   },
   beforeUnmount() {
     document.removeEventListener('click', this.handleClickOutside)
+    this.desktopQuery?.removeEventListener('change', this.onDesktopChange)
   },
   methods: {
+    onDesktopChange(event) {
+      if (event.matches) this.closeMenu()
+    },
     handleClickOutside(event) {
       // Only handle on mobile when menu is open
       if (!this.isCollapsed) return

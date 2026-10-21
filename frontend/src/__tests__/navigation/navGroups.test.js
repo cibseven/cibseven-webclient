@@ -21,6 +21,7 @@ import {
   filterVisibleNavGroups,
   projectGroupsForNavbar,
   projectStartHoverOptions,
+  singleDestination,
   singleOptionTile,
   tasksOnlyRedirectTarget,
   accessManagementCatalogItems,
@@ -124,30 +125,22 @@ describe('navGroups factory', () => {
     expect(getVisibleGroup({ ...vm, permissionsModeler: false }, 'builder')).toBeUndefined()
   })
 
-  describe('buildVisibleNavGroups', () => {
-    const dataGroup = { id: 'data', title: 'start.data.title', show: true, items: [{ to: '/seven/auth/ins7ght', title: 'start.ins7ght.title' }] }
-    const extending = (methods) => ({ ...fullCtx, $options: { components: { NavGroupsExtender: methods } } })
+  it('buildVisibleNavGroups returns the filtered CE catalog when no extender is registered', () => {
+    expect(buildVisibleNavGroups(fullCtx).map(g => g.id)).toEqual(['tasks', 'cockpit', 'builder', 'admin'])
+  })
 
-    it('returns the filtered CE catalog when no extender is registered', () => {
-      expect(buildVisibleNavGroups(fullCtx).map(g => g.id)).toEqual(['tasks', 'cockpit', 'builder', 'admin'])
-    })
+  it('singleDestination is the one entry of a collapseSingle group', () => {
+    const builder = buildNavGroups(fullCtx).find(g => g.id === 'builder')
+    expect(singleDestination(builder)).toMatchObject({ to: '/seven/auth/modeler', title: 'start.modeler.title' })
+  })
 
-    it('applies a registered NavGroupsExtender with the vm as `this`, then filters', () => {
-      const vm = extending({
-        methods: {
-          extend(groups) {
-            expect(this).toBe(vm)
-            return [...groups, dataGroup, { id: 'hidden', show: false, items: [{ to: '/x' }] }]
-          }
-        }
-      })
-      expect(buildVisibleNavGroups(vm).map(g => g.id)).toEqual(['tasks', 'cockpit', 'builder', 'admin', 'data'])
-    })
-
-    it('finds the extender methods on a compiled SFC (__vccOpts)', () => {
-      const vm = extending({ __vccOpts: { methods: { extend: groups => [...groups, dataGroup] } } })
-      expect(getVisibleGroup(vm, 'data').id).toBe('data')
-    })
+  it('singleDestination is null for other groups, several entries or hidden ones', () => {
+    const groups = buildNavGroups(fullCtx)
+    const builder = groups.find(g => g.id === 'builder')
+    expect(singleDestination(groups.find(g => g.id === 'tasks'))).toBeNull()
+    expect(singleDestination({ ...builder, items: [...builder.items, { divider: true }, { to: '/b', title: 'B' }] })).toBeNull()
+    expect(singleDestination({ ...builder, items: [...builder.items, { to: '/b', title: 'B', show: false }] }).to).toBe('/seven/auth/modeler')
+    expect(singleDestination(undefined)).toBeNull()
   })
 
   it('singleOptionTile returns null for zero or multiple options', () => {
@@ -231,13 +224,10 @@ describe('registered nav group extenders', () => {
     expect(getVisibleGroup(vm, 'data').items).toHaveLength(1)
   })
 
-  it('still applies a NavGroupsExtender component registered on the vm, after the registered ones', () => {
-    unregister.push(registerNavGroupsExtender(groups => [...groups, dataGroup]))
-    const legacy = { methods: { extend(groups) { return groups.map(g => g.id === 'data' ? { ...g, title: 'legacy' } : g) } } }
-
+  it('ignores a NavGroupsExtender component on the vm (replaced by registerNavGroupsExtender)', () => {
+    const legacy = { methods: { extend: groups => [...groups, dataGroup] } }
     const groups = extendNavGroups(buildNavGroups({}), { $options: { components: { NavGroupsExtender: legacy } } })
-
-    expect(groups.find(g => g.id === 'data').title).toBe('legacy')
+    expect(groups.some(g => g.id === 'data')).toBe(false)
   })
 
   it('stops applying an extender once unregistered', () => {

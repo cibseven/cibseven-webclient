@@ -57,6 +57,7 @@ export default {
   name: 'UsersManagement',
   mixins: [permissionsMixin, navigationPermissionsMixin],
   components: { StartViewItem },
+  emits: [],
   data() {
     return {
       accessManagementImage,

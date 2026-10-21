@@ -14,9 +14,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterEach } from 'vitest'
 import BuilderStartView from '@/components/start/BuilderStartView.vue'
-import startTileOptionsMixin from '@/mixins/startTileOptionsMixin.js'
+import { registerNavGroupsExtender } from '@/navigation/navGroups.js'
+
+const unregisterExtenders = []
+afterEach(() => unregisterExtenders.splice(0).forEach(unregister => unregister()))
 
 function evaluateBuilderStartView(overrides = {}) {
   const vm = {
@@ -25,11 +28,6 @@ function evaluateBuilderStartView(overrides = {}) {
     $options: { components: {} },
     ...overrides
   }
-  vm.getPluginOptions = startTileOptionsMixin.methods.getPluginOptions.bind(vm)
-  vm.mergeOptions = startTileOptionsMixin.methods.mergeOptions.bind(vm)
-  Object.defineProperty(vm, 'builtInItems', {
-    get: () => BuilderStartView.computed.builtInItems.call(vm)
-  })
   Object.defineProperty(vm, 'items', {
     get: () => BuilderStartView.computed.items.call(vm)
   })
@@ -48,18 +46,11 @@ describe('BuilderStartView.vue', () => {
     expect(vm.items[0].to).toBe('/seven/auth/modeler')
   })
 
-  it('merges in options from a registered BuilderTileOptionsPlugin', () => {
-    const plugin = {
-      methods: {
-        getOptions() {
-          return [{ to: { name: 'extra' }, title: 'Extra', src: 'extra.svg' }]
-        }
-      }
-    }
-    const vm = evaluateBuilderStartView({
-      permissionsModeler: true,
-      $options: { components: { BuilderTileOptionsPlugin: plugin } }
-    })
-    expect(vm.items.map(i => i.title)).toEqual(['start.modeler.title', 'Extra'])
+  it('shows what a registered extender adds to the builder group', () => {
+    unregisterExtenders.push(registerNavGroupsExtender(groups => groups.map(group => group.id === 'builder'
+      ? { ...group, items: [...group.items, { to: { name: 'extra' }, title: 'extra.title', tileImage: 'extra.svg' }] }
+      : group)))
+    const vm = evaluateBuilderStartView({ permissionsModeler: true })
+    expect(vm.items.map(i => i.title)).toEqual(['start.modeler.title', 'extra.title'])
   })
 })

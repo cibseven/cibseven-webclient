@@ -23,24 +23,20 @@
 <script>
 import { permissionsMixin } from '@/permissions.js'
 import navigationPermissionsMixin from '@/mixins/navigationPermissionsMixin.js'
-import startTileOptionsMixin from '@/mixins/startTileOptionsMixin.js'
 import StartHubView from '@/components/start/StartHubView.vue'
 import { getVisibleGroup, projectStartHoverOptions } from '@/navigation/navGroups.js'
 
 export default {
   name: 'BuilderStartView',
-  mixins: [permissionsMixin, navigationPermissionsMixin, startTileOptionsMixin],
+  mixins: [permissionsMixin, navigationPermissionsMixin],
   components: { StartHubView },
   emits: [],
   computed: {
-    // Reuses navGroups.js's 'builder' group, so this can't diverge from the navbar's Builder dropdown.
-    builtInItems() {
+    // Reuses navGroups.js's 'builder' group (including what extenders add), so this can't diverge
+    // from the navbar's Builder dropdown.
+    items() {
       const builder = getVisibleGroup(this, 'builder')
       return projectStartHoverOptions(builder?.items, this.$t.bind(this))
-    },
-    items() {
-      return this.mergeOptions(this.builtInItems, 'BuilderTileOptionsPlugin')
-        .filter(item => item?.to && item.title)
     }
   }
 }

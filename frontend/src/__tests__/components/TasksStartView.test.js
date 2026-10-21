@@ -14,9 +14,15 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterEach } from 'vitest'
 import TasksStartView from '@/components/start/TasksStartView.vue'
-import startTileOptionsMixin from '@/mixins/startTileOptionsMixin.js'
+import navigationPermissionsMixin from '@/mixins/navigationPermissionsMixin.js'
+import { registerNavGroupsExtender } from '@/navigation/navGroups.js'
+
+const unregisterExtenders = []
+afterEach(() => unregisterExtenders.splice(0).forEach(unregister => unregister()))
+const addToTasks = (...items) => unregisterExtenders.push(registerNavGroupsExtender(groups =>
+  groups.map(group => group.id === 'tasks' ? { ...group, items: [...group.items, ...items] } : group)))
 
 function evaluateTasksStartView(overrides = {}) {
   const vm = {
@@ -26,13 +32,8 @@ function evaluateTasksStartView(overrides = {}) {
     $options: { components: {} },
     ...overrides
   }
-  vm.getPluginOptions = startTileOptionsMixin.methods.getPluginOptions.bind(vm)
-  vm.mergeOptions = startTileOptionsMixin.methods.mergeOptions.bind(vm)
   Object.defineProperty(vm, 'startableProcesses', {
-    get: () => TasksStartView.computed.startableProcesses.call(vm)
-  })
-  Object.defineProperty(vm, 'builtInItems', {
-    get: () => TasksStartView.computed.builtInItems.call(vm)
+    get: () => navigationPermissionsMixin.computed.startableProcesses.call(vm)
   })
   Object.defineProperty(vm, 'items', {
     get: () => TasksStartView.computed.items.call(vm)
@@ -59,33 +60,18 @@ describe('TasksStartView.vue', () => {
     expect(vm.items.map(i => i.title)).toEqual(['start.taskList.title', 'start.startProcess.title'])
   })
 
-  it('merges in options from a registered TasksTileOptionsPlugin', () => {
-    const plugin = {
-      methods: {
-        getOptions() {
-          return [{ to: { name: 'extra' }, title: 'Extra', src: 'extra.svg' }]
-        }
-      }
-    }
-    const vm = evaluateTasksStartView({
-      permissionsTaskList: true,
-      $options: { components: { TasksTileOptionsPlugin: plugin } }
-    })
-    expect(vm.items.map(i => i.title)).toEqual(['start.taskList.title', 'Extra'])
+  it('shows what a registered extender adds to the tasks group', () => {
+    addToTasks({ to: { name: 'extra' }, title: 'extra.title', tileImage: 'extra.svg' })
+    const vm = evaluateTasksStartView({ permissionsTaskList: true })
+    expect(vm.items.map(i => i.title)).toEqual(['start.taskList.title', 'extra.title'])
+    expect(vm.items[1]).toMatchObject({ to: { name: 'extra' }, src: 'extra.svg' })
   })
 
-  // Hover menus show such options too; the hub page gives them the section's image instead
-  it('keeps plugin options without an image and drops those without a route or title', () => {
-    const plugin = {
-      methods: {
-        getOptions() {
-          return [{ to: { name: 'extra' }, title: 'Extra' }, { title: 'No route' }, { to: '/x' }]
-        }
-      }
-    }
-    const vm = evaluateTasksStartView({
-      $options: { components: { TasksTileOptionsPlugin: plugin } }
-    })
-    expect(vm.items).toEqual([{ to: { name: 'extra' }, title: 'Extra' }])
+  // The hub page gives entries without an image the section's image (StartHubView fallback-src)
+  it('keeps added entries without an image and drops those without a route', () => {
+    addToTasks({ to: { name: 'extra' }, title: 'extra.title' }, { title: 'no.route' })
+    const vm = evaluateTasksStartView({ permissionsTaskList: true })
+    expect(vm.items.map(i => i.title)).toEqual(['start.taskList.title', 'extra.title'])
+    expect(vm.items[1].src).toBeUndefined()
   })
 })

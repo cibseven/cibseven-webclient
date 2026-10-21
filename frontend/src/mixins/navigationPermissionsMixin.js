@@ -16,6 +16,7 @@
  */
 
 import { getPlugin } from '@/plugins/pluginsConfig.js'
+import { hasStartableProcesses } from '@/utils/process.js'
 
 /**
  * Slot through which an extension (e.g. the enterprise edition) adds an area to the admin
@@ -70,6 +71,10 @@ export default {
     },
     permissionsUserProfile() {
       return this.$root.user && this.applicationPermissions(this.$root.config.permissions.userProfile, 'userProfile')
+    },
+    /** Whether the loaded process list has one the user can start (gates "Start process" in the navigation) */
+    startableProcesses() {
+      return hasStartableProcesses(this.$store?.state.process?.list)
     }
   }
 }

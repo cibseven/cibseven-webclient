@@ -54,7 +54,7 @@ export { createProvideObject } from '@/utils/provide.js'
 // plugins — the mechanism is shared with the applications embedding this
 // library; each supplies its own plugin-runtime entry, since module instances
 // only exist within one build
-export { registerPlugin, getPlugin, resetPlugins, reserveSlotIds, PLUGIN_API_VERSION, getRuntimeInfo } from '@/plugins/pluginsConfig.js'
+export { registerPlugin, getPlugin, resetPlugins, reserveSlotIds, PLUGIN_API_VERSION, getRuntimeInfo, getPluginsSettled } from '@/plugins/pluginsConfig.js'
 export { defineTabBar } from '@/utils/tabBar.js'
 // as one object, so a downstream plugin runtime can hand it over without listing every service
 export * as services from '@/services.js'
@@ -75,7 +75,6 @@ export { default as usersMixin } from '@/mixins/usersMixin.js'
 export { default as copyToClipboardMixin } from '@/mixins/copyToClipboardMixin.js'
 export { default as assigneeMixin } from '@/mixins/assigneeMixin.js'
 export { default as navigationPermissionsMixin, ADMIN_ENTRY_SLOT } from '@/mixins/navigationPermissionsMixin.js'
-export { default as startTileOptionsMixin } from '@/mixins/startTileOptionsMixin.js'
 // Navigation catalog: only what editions (EE/Flow) build on
 export {
   SURFACES,

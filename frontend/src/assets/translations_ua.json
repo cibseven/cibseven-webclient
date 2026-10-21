@@ -859,7 +859,7 @@
 			"email": "@:login.email"
 		},
 		"cib-header": {
-		"openMenu": "Меню {label}",
+			"openMenu": "Меню {label}",
 			"languages": "Мова",
 			"engine": "Двигун",
 			"en": "English",

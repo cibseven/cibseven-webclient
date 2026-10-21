@@ -325,7 +325,17 @@ export function projectStartHoverOptions(items, t) {
   return options
 }
 
-/** Collapses a group's options to its one destination (e.g. Builder → "Modeler"); null otherwise. */
+/**
+ * The one entry of a `collapseSingle` group (e.g. Builder with just the modeler), which the navbar
+ * and the start tile then lead to directly instead of to the group's overview page; null otherwise.
+ */
+export function singleDestination(group) {
+  if (!group?.collapseSingle) return null
+  const leaves = (group.items || []).filter(item => !item.divider && item.show !== false && item.to)
+  return leaves.length === 1 ? leaves[0] : null
+}
+
+/** Collapses a group's options to its one destination (e.g. a data group with one tool); null otherwise. */
 export function singleOptionTile(options) {
   if (options?.length !== 1) return null
   const [only] = options
@@ -356,17 +366,9 @@ export function registerNavGroupsExtender(extend) {
   }
 }
 
-/**
- * Applies the registered extenders, then (legacy) a NavGroupsExtender component registered on the vm.
- */
+/** Applies the registered extenders in registration order. */
 export function extendNavGroups(groups, vm) {
-  let extended = extenders.reduce((current, extend) => extend(current, vm), groups)
-  const legacy = vm?.$options?.components?.NavGroupsExtender
-  const methods = legacy?.methods || legacy?.__vccOpts?.methods
-  if (methods?.extend) {
-    extended = methods.extend.call(vm, extended)
-  }
-  return extended
+  return extenders.reduce((current, extend) => extend(current, vm), groups)
 }
 
 /** Builds the catalog for a vm, extends it and filters it: one place for the start page and the hub pages. */
