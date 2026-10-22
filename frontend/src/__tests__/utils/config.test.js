@@ -98,5 +98,13 @@ describe('config utility', () => {
       const config = applyConfigDefaults()
       expect(config.permissions.tasklist).toEqual({ application: ['ACCESS'] })
     })
+
+    it('should not offer the deprecated optimize resource type', () => {
+      const config = applyConfigDefaults({ admin: { resourcesTypes: {} } })
+      const keys = Object.values(config.admin.resourcesTypes).map(resourceType => resourceType.key)
+      expect(keys).not.toContain('optimize')
+      // 15 is the engine's REPORT, which the defaults used to label as optimize
+      expect(config.admin.resourcesTypes['15']).toBeUndefined()
+    })
   })
 })
