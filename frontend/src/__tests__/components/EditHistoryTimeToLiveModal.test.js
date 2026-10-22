@@ -182,12 +182,13 @@ describe('EditHistoryTimeToLiveModal.vue', () => {
 
   describe('captionValue / captionHint', () => {
     it.each([
-      ['Default to system (30 days)', 'Default to system', '(30 days)'],
+      ['Default to system (30 days)', 'Default to system', '30 days'],
       ['Custom', 'Custom', ''],
       ['', '', ''],
       ['a', 'a', ''],
-      ['a (b)', 'a', '(b)'],
-      ['a (b) (x)', 'a', '(b) (x)'],
+      ['a (b)', 'a', 'b'],
+      ['a (b c)', 'a', 'b c'],
+      ['a (b) (x)', 'a', 'b) (x'],
       [undefined, '', '']
     ])('splits %j into the value and the parenthesised hint', (caption, expectedValue, expectedHint) => {
       const vm = context()

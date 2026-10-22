@@ -25,76 +25,84 @@
     size="md"
     @hidden="resetTtlDialog">
 
-    <div class="mb-3">
-      <p class="mb-3" v-if="descriptionItems.length > 0">
-        <template v-for="(item, index) in descriptionItems" :key="item.title">
-          <br v-if="index > 0">{{ item.title }}: <strong>{{ item.value }}</strong>
-        </template>
-      </p>
+    <p class="mb-0" v-if="descriptionItems.length > 0">
+      <template v-for="(item, index) in descriptionItems" :key="item.title">
+        <br v-if="index > 0">{{ item.title }}: <strong>{{ item.value }}</strong>
+      </template>
+    </p>
 
-      <p class="mb-2">{{ $t('historyTimeToLive.ttl') }}</p>
+    <b-form-group :label="$t('historyTimeToLive.ttl')" class="mb-0">
+      <div class="list-group">
 
-      <div class="form-check mb-2">
-        <input
-          class="form-check-input"
-          type="radio"
-          :name="`${idPrefix}Choice`"
-          :id="`${idPrefix}ChoiceDefault`"
-          value="default"
-          v-model="choice"
-          :disabled="defaultChoiceDisabled">
-        <label class="form-check-label" :for="`${idPrefix}ChoiceDefault`" :title="defaultChoiceDisabled ? $t('historyTimeToLive.enforcedTooltip') : null">
-          {{ captionValue(defaultChoiceLabel) }}
-          <span class="text-muted">{{ captionHint(defaultChoiceLabel) }}</span>
-        </label>
+        <div class="list-group-item border-top">
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="radio"
+              :name="`${idPrefix}Choice`"
+              :id="`${idPrefix}ChoiceDefault`"
+              value="default"
+              v-model="choice"
+              :disabled="defaultChoiceDisabled">
+            <label class="form-check-label w-100" :for="`${idPrefix}ChoiceDefault`" :title="defaultChoiceDisabled ? $t('historyTimeToLive.enforcedTooltip') : null">
+              {{ captionValue(defaultChoiceLabel) }}
+              <span class="text-muted float-end">{{ captionHint(defaultChoiceLabel) }}</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="list-group-item">
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="radio"
+              :name="`${idPrefix}Choice`"
+              :id="`${idPrefix}ChoiceZero`"
+              value="zero"
+              v-model="choice">
+            <label class="form-check-label w-100" :for="`${idPrefix}ChoiceZero`">
+              {{ captionValue($t('historyTimeToLive.choiceZero')) }}
+              <span class="text-muted float-end">{{ captionHint($t('historyTimeToLive.choiceZero')) }}</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="list-group-item border-bottom">
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="radio"
+              :name="`${idPrefix}Choice`"
+              :id="`${idPrefix}ChoiceCustom`"
+              value="custom"
+              v-model="choice">
+            <label class="form-check-label w-100" :for="`${idPrefix}ChoiceCustom`">
+              {{ captionValue($t('historyTimeToLive.choiceCustom')) }}
+              <span class="text-muted float-end">{{ captionHint($t('historyTimeToLive.choiceCustom')) }}</span>
+            </label>
+          </div>
+
+          <div class="input-group my-2" style="max-width: 320px; padding-left: 20px;">
+            <b-form-input
+              v-model="editTtlValue"
+              :id="`${idPrefix}Value`"
+              type="number"
+              :min="customValueMin"
+              :max="customValueMax"
+              :placeholder="$t('historyTimeToLive.placeholder')"
+              :state="choice === 'custom' ? !errorInCustomChoice : null"
+              :disabled="choice !== 'custom'">
+            </b-form-input>
+            <span class="input-group-text">{{ $t('historyTimeToLive.days') }}</span>
+          </div>
+
+          <div v-if="errorInCustomChoice" class="text-danger small mt-1" style="padding-left: 20px;">
+            {{ $t('historyTimeToLive.validation', { min: customValueMin, max: customValueMax }) }}
+          </div>
+        </div>
+
       </div>
-
-      <div class="form-check mb-2">
-        <input
-          class="form-check-input"
-          type="radio"
-          :name="`${idPrefix}Choice`"
-          :id="`${idPrefix}ChoiceZero`"
-          value="zero"
-          v-model="choice">
-        <label class="form-check-label" :for="`${idPrefix}ChoiceZero`">
-          {{ captionValue($t('historyTimeToLive.choiceZero')) }}
-          <span class="text-muted">{{ captionHint($t('historyTimeToLive.choiceZero')) }}</span>
-        </label>
-      </div>
-
-      <div class="form-check mb-2">
-        <input
-          class="form-check-input"
-          type="radio"
-          :name="`${idPrefix}Choice`"
-          :id="`${idPrefix}ChoiceCustom`"
-          value="custom"
-          v-model="choice">
-        <label class="form-check-label" :for="`${idPrefix}ChoiceCustom`">
-          {{ captionValue($t('historyTimeToLive.choiceCustom')) }}
-          <span class="text-muted">{{ captionHint($t('historyTimeToLive.choiceCustom')) }}</span>
-        </label>
-      </div>
-
-      <div class="input-group mt-1" style="max-width: 320px; padding-left: 20px;">
-        <b-form-input
-          v-model="editTtlValue"
-          :id="`${idPrefix}Value`"
-          type="number"
-          :min="customValueMin"
-          :max="customValueMax"
-          :placeholder="$t('historyTimeToLive.placeholder')"
-          :state="choice === 'custom' ? !errorInCustomChoice : null"
-          :disabled="choice !== 'custom'">
-        </b-form-input>
-        <span class="input-group-text">{{ $t('historyTimeToLive.days') }}</span>
-      </div>
-
-      <div v-if="errorInCustomChoice" class="text-danger small mt-1">
-        {{ $t('historyTimeToLive.validation', { min: customValueMin, max: customValueMax }) }}
-      </div>
-    </div>
+    </b-form-group>
 
     <template #modal-footer>
       <b-button variant="light" @click="$refs.modal.hide()">
@@ -244,7 +252,9 @@ export default {
     // 'a (b) (x)' => '(b) (x)'
     captionHint(value) {
       const v = value?.split(' (').slice(1).join(' (')
-      return v ? `(${v}` : ''
+      if (!v) return ''
+      // v is a string like 'b)' or 'b) (x)'
+      return v.replace(/\)$/, '')
     },
 
     loadLastCustomValue() {
