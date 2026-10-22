@@ -17,6 +17,9 @@
 	"login": {
 		"productName": "CIB seven",
 		"productSlogan": "Платформа для управления процессами",
+		"loggedOutText": "Вы успешно вышли из системы.",
+		"loggingOut": "Выход из системы…",
+		"loggedOutAgain": "Войти снова",
 		"username": "Имя пользователя",
 		"password": "Пароль",
 		"rememberMe": "Запомнить пароль",
@@ -505,6 +508,10 @@
 		"completedTasks": "Завершённая Задачи",
 		"notStarted": "Выбраннаяя задача ещё не запущена.",
 		"setDeadline": "Установить срок исполнения задачи",
+		"reminderLabel": "Напоминание: {date}",
+		"dueLabel": "Срок исполнения: {date}",
+		"dueSoonLabel": "Срок исполнения: {date}, скоро истекает",
+		"dueOverdueLabel": "Срок исполнения: {date}, просрочен",
 		"setReminder": "Установить дату напоминания",
 		"selectedTask": "Выбранная задача",
 		"details": {
@@ -896,6 +903,7 @@
 			"filterPriorityLabel": "Приоритет",
 			"selectProperty": "Выбрать свойство",
 			"insertValue": "Введите значение",
+			"invalidDate": "Некорректная дата. Используйте, например, {iso}, {dotted}, {german} или {isoTime}",
 			"insertVariableKey": "Введите имя переменной",
 			"addCriteria": "Добавить критерий",
 			"filterExists": "Данный фильтр уже существует",

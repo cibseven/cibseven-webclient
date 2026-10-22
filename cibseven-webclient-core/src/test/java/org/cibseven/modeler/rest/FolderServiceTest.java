@@ -23,17 +23,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BooleanSupplier;
 
 import org.cibseven.modeler.model.FolderEntity;
 import org.cibseven.modeler.provider.FolderProvider;
 import org.cibseven.modeler.provider.FolderProvider.FolderChange;
 import org.cibseven.modeler.provider.FolderProvider.FolderContents;
+import org.cibseven.webapp.auth.AuthorizationChecker;
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.ModelerAccessChecker;
+import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.exception.AccessDeniedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,6 +49,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -60,6 +65,7 @@ class FolderServiceTest {
 	private FolderService service;
 	private FolderProvider folderProvider;
 	private ModelerAccessChecker modelerAccessChecker;
+	private AuthorizationChecker authorizationChecker;
 	private HttpServletRequest request;
 
 	@BeforeEach
@@ -74,6 +80,8 @@ class FolderServiceTest {
 		ReflectionTestUtils.setField(service, "folderProvider", folderProvider);
 		ReflectionTestUtils.setField(service, "modelerAccessChecker", modelerAccessChecker);
 		ReflectionTestUtils.setField(service, "baseUserProvider", baseUserProvider);
+		authorizationChecker = mock(AuthorizationChecker.class);
+		ReflectionTestUtils.setField(service, "authorizationChecker", authorizationChecker);
 	}
 
 	/** Reading the tree only reads: a folder the user removed is not put back by listing it. */
@@ -96,7 +104,7 @@ class FolderServiceTest {
 	void renamesWithoutMovingWhenOnlyANameIsGiven() {
 		service.update("folder-1", body("name", "Billing"), request);
 
-		verify(folderProvider).update("folder-1", new FolderChange(true, "Billing", false, null), "demo");
+		verify(folderProvider).update(eq("folder-1"), eq(new FolderChange(true, "Billing", false, null)), eq("demo"), any(BooleanSupplier.class));
 	}
 
 	/** A parentId that is there but null is the request to take the folder out of its parent. */
@@ -107,7 +115,7 @@ class FolderServiceTest {
 
 		service.update("folder-1", folder, request);
 
-		verify(folderProvider).update("folder-1", new FolderChange(false, null, true, null), "demo");
+		verify(folderProvider).update(eq("folder-1"), eq(new FolderChange(false, null, true, null)), eq("demo"), any(BooleanSupplier.class));
 	}
 
 	/** Both in one request, so the provider can apply them as one. */
@@ -119,14 +127,65 @@ class FolderServiceTest {
 
 		service.update("folder-1", folder, request);
 
-		verify(folderProvider).update("folder-1", new FolderChange(true, "Billing", true, "folder-2"), "demo");
+		verify(folderProvider).update(eq("folder-1"), eq(new FolderChange(true, "Billing", true, "folder-2")), eq("demo"), any(BooleanSupplier.class));
 	}
 
 	@Test
 	void deletesTheFolderWithWhatItHolds() {
-		when(folderProvider.delete("folder-1")).thenReturn(new FolderContents(1, 2, 3));
+		when(folderProvider.delete(eq("folder-1"), any(BooleanSupplier.class))).thenReturn(new FolderContents(1, 2, 3));
 
 		assertThat(service.delete("folder-1", request).models()).isEqualTo(5);
+	}
+
+	@Test
+	void handsTheCallerTheirFolder() {
+		FolderEntity userFolder = new FolderEntity();
+		when(folderProvider.userFolder("demo")).thenReturn(userFolder);
+
+		FolderService.UserFolder result = service.userFolder(request);
+
+		assertThat(result.folder()).isSameAs(userFolder);
+		assertThat(result.manageUserFolders()).isFalse();
+	}
+
+	/** Holding ALL on the system resource is what makes an administrator here. */
+	@Test
+	void letsAnAdministratorManageUserFolders() {
+		when(authorizationChecker.isAuthorized(USER, SevenResourceType.SYSTEM, "*", "ALL")).thenReturn(true);
+
+		assertThat(service.userFolder(request).manageUserFolders()).isTrue();
+		assertThat(askedOnDelete().getAsBoolean()).isTrue();
+		assertThat(askedOnUpdate().getAsBoolean()).isTrue();
+	}
+
+	@Test
+	void tellsTheProviderWhenTheCallerMayNotManageUserFolders() {
+		assertThat(askedOnDelete().getAsBoolean()).isFalse();
+		assertThat(askedOnUpdate().getAsBoolean()).isFalse();
+	}
+
+	/** Asking the engine is left to the provider, which only does it for a user folder. */
+	@Test
+	void doesNotAskTheEngineBeforeTheProviderNeedsIt() {
+		service.delete("folder-1", request);
+		service.update("folder-1", body("name", "Billing"), request);
+
+		verifyNoInteractions(authorizationChecker);
+	}
+
+	private BooleanSupplier askedOnDelete() {
+		ArgumentCaptor<BooleanSupplier> manageUserFolders = ArgumentCaptor.forClass(BooleanSupplier.class);
+		service.delete("folder-1", request);
+		verify(folderProvider).delete(eq("folder-1"), manageUserFolders.capture());
+		return manageUserFolders.getValue();
+	}
+
+	private BooleanSupplier askedOnUpdate() {
+		ArgumentCaptor<BooleanSupplier> manageUserFolders = ArgumentCaptor.forClass(BooleanSupplier.class);
+		service.update("folder-1", body("name", "Billing"), request);
+		verify(folderProvider).update(eq("folder-1"), eq(new FolderChange(true, "Billing", false, null)), eq("demo"),
+			manageUserFolders.capture());
+		return manageUserFolders.getValue();
 	}
 
 	@Test
@@ -165,7 +224,7 @@ class FolderServiceTest {
 			}
 		}
 
-		assertEquals(6, checked, "endpoints of FolderService covered by this sweep");
+		assertEquals(7, checked, "endpoints of FolderService covered by this sweep");
 		assertEquals(List.of(), unprotected, "endpoints reachable without modeler access");
 		verifyNoInteractions(folderProvider);
 	}

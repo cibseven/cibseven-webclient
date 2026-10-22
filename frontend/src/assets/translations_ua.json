@@ -17,6 +17,9 @@
 	"login": {
 		"productName": "CIB seven",
 		"productSlogan": "Платформа для керування процесами",
+		"loggedOutText": "Ви успішно вийшли із системи.",
+		"loggingOut": "Вихід із системи…",
+		"loggedOutAgain": "Увійти знову",
 		"username": "Ім’я користувача",
 		"password": "Пароль",
 		"rememberMe": "Запам’ятати пароль",
@@ -505,6 +508,10 @@
 			"completedTasks": "Завершені завдання",
 			"notStarted": "Вибране завдання ще не почато.",
 			"setDeadline": "Встановити термін виконання завдання",
+			"reminderLabel": "Нагадування: {date}",
+			"dueLabel": "Термін виконання: {date}",
+			"dueSoonLabel": "Термін виконання: {date}, скоро спливає",
+			"dueOverdueLabel": "Термін виконання: {date}, прострочено",
 			"setReminder": "Встановити дату нагадування",
 			"selectedTask": "Вибране завдання",
 			"details": {
@@ -896,6 +903,7 @@
 			"filterPriorityLabel": "Пріоритет",
 			"selectProperty": "Вибрати властивість",
 			"insertValue": "Введіть значення",
+			"invalidDate": "Некоректна дата. Використовуйте, наприклад, {iso}, {dotted}, {german} або {isoTime}",
 			"insertVariableKey": "Введіть ім'я змінної",
 			"addCriteria": "Додати критерій",
 			"filterExists": "Цей фільтр вже існує",

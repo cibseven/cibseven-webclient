@@ -19,6 +19,7 @@ package org.cibseven.webapp.providers;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_SELF;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -38,19 +39,25 @@ import java.util.Optional;
 import org.cibseven.bpm.engine.FormService;
 import org.cibseven.bpm.engine.HistoryService;
 import org.cibseven.bpm.engine.ProcessEngine;
+import org.cibseven.bpm.engine.ProcessEngineConfiguration;
 import org.cibseven.bpm.engine.TaskService;
+import org.cibseven.bpm.engine.impl.variable.ValueTypeResolverImpl;
 import org.cibseven.bpm.engine.task.IdentityLinkType;
 import org.cibseven.bpm.engine.task.TaskQuery;
 import org.cibseven.bpm.engine.rest.dto.VariableValueDto;
 import org.cibseven.bpm.engine.rest.mapper.JacksonConfigurator;
+import org.cibseven.bpm.engine.variable.VariableMap;
 import org.cibseven.bpm.engine.variable.Variables;
+import org.cibseven.bpm.engine.variable.value.ObjectValue;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Task;
+import org.cibseven.webapp.rest.model.Variable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -423,5 +430,29 @@ public class DirectTaskProviderTest {
 
 		assertThatThrownBy(() -> taskProvider.getRenderedForm("task-1", Map.of(), user))
 			.isInstanceOf(SystemException.class);
+	}
+
+	// ---------- submitting a task form ----------
+
+	@Test
+	void submit_serializesAnObjectValueThatArrivesAsParsedJson() {
+		// regression for CIB7-880: the engine rejected a non-string value for a serializable type
+		ProcessEngineConfiguration configuration = mock(ProcessEngineConfiguration.class);
+		when(configuration.getValueTypeResolver()).thenReturn(new ValueTypeResolverImpl());
+		when(directProviderUtil.getProcessEngine(user).getProcessEngineConfiguration()).thenReturn(configuration);
+		Variable variable = new Variable();
+		variable.setName("payload");
+		variable.setType("Object");
+		variable.setValue(Map.of("a", 1));
+		variable.setValueInfo(Map.of("objectTypeName", "java.util.HashMap", "serializationDataFormat", "application/json"));
+		Task task = new Task();
+		task.setId("task-1");
+
+		taskProvider.submit(task, List.of(variable), user);
+
+		ArgumentCaptor<VariableMap> submitted = ArgumentCaptor.forClass(VariableMap.class);
+		verify(formService).submitTaskForm(eq("task-1"), submitted.capture());
+		ObjectValue payload = submitted.getValue().getValueTyped("payload");
+		assertThat(payload.getValueSerialized()).isEqualTo("{\"a\":1}");
 	}
 }

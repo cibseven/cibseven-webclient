@@ -343,13 +343,19 @@ export default {
     },
     buildActivityMap: function(elementRegistry) {
       const activityMap = {}
+      const externalTaskActivityIds = []
       elementRegistry.getAll().forEach(el => {
         const bo = el.businessObject
         if (bo?.id && bo?.name) {
           activityMap[bo.id] = bo.name
         }
+        // same check as the engine (BpmnParse)
+        if (bo?.id && bo.get?.('camunda:type')?.toLowerCase() === 'external') {
+          externalTaskActivityIds.push(bo.id)
+        }
       })
       this.$store.commit('setProcessActivities', activityMap)
+      this.$store.commit('setExternalTaskActivityIds', externalTaskActivityIds)
     },
     setSelectableOnAllowedElements: function() {
       const elementRegistry = this.viewer.get('elementRegistry')

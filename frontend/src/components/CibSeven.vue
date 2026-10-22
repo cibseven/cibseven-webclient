@@ -448,17 +448,8 @@ export default {
       }
     },
     logout: function() {
-      //Remove some storage variables when logout
-      //https://helpdesk.cib.de/browse/BPM4CIB-3691
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('tokenModeler')
-      sessionStorage.removeItem('accessToken')
-      sessionStorage.removeItem('tokenModeler')
-      // Note: engine token cleanup is handled by CIBHeaderFlow.logout()
-      // Set the hash before reload: router.push is async and loses the race, so the
-      // reload would otherwise land on the current page instead of the start page.
-      window.location.hash = '#/'
-      window.location.reload() //refresh to empty vuex and axios defaults
+      // The logged-out page signs the user out, while it shows what is going on
+      this.$router.push({ name: 'loggedOut' })
     },
     openStartProcess: function() {
       this.$eventBus.emit('openStartProcess')

@@ -431,7 +431,7 @@ public class DirectProcessProvider implements IProcessProvider {
 
 	@Override
 	public void deleteProcessInstance(String processInstanceId, CIBUser user) {
-		directProviderUtil.getProcessEngine(user).getRuntimeService().deleteProcessInstance(processInstanceId, null);
+		directProviderUtil.getProcessEngine(user).getRuntimeService().deleteProcessInstance(processInstanceId, null, false, true);
 	}
 
 	@Override

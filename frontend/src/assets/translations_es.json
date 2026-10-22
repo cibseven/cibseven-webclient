@@ -17,6 +17,9 @@
 	"login": {
 		"productName": "CIB seven",
 		"productSlogan": "Plataforma para la gestión de procesos",
+		"loggedOutText": "Ha cerrado la sesión correctamente.",
+		"loggingOut": "Cerrando sesión…",
+		"loggedOutAgain": "Iniciar sesión de nuevo",
 		"username": "Nombre de usuario",
 		"password": "Contraseña",
 		"rememberMe": "Recuérdame",
@@ -505,6 +508,10 @@
 		"completedTasks": "Tareas finalizada",
 		"notStarted": "La tarea seleccionada aún ha sido iniciada.",
 		"setDeadline": "Establecer fecha límite",
+		"reminderLabel": "Recordatorio: {date}",
+		"dueLabel": "Fecha límite: {date}",
+		"dueSoonLabel": "Fecha límite: {date}, vence pronto",
+		"dueOverdueLabel": "Fecha límite: {date}, vencida",
 		"setReminder": "Establecer recordatorio",
 		"selectedTask": "Tarea seleccionada",
 		"details": {
@@ -896,6 +903,7 @@
 			"filterPriorityLabel": "Prioridad",
 			"selectProperty": "Seleccionar propiedad",
 			"insertValue": "Insertar valor",
+			"invalidDate": "Fecha no válida. Usa p. ej. {iso}, {dotted}, {german} o {isoTime}",
 			"insertVariableKey": "Ingresa el nombre de la variable",
 			"addCriteria": "Añadir criterio",
 			"filterExists": "Este filtro ya existe",

@@ -30,6 +30,7 @@ import org.cibseven.bpm.engine.ProcessEngineException;
 import org.cibseven.bpm.engine.identity.Group;
 import org.cibseven.bpm.engine.identity.Tenant;
 import org.cibseven.bpm.engine.impl.identity.Authentication;
+import org.cibseven.bpm.engine.rest.dto.VariableValueDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.VariableInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.VariableInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.exception.RestException;
@@ -44,6 +45,7 @@ import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.cibseven.bpm.engine.rest.util.EngineUtil;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -112,6 +114,43 @@ public class DirectProviderUtil {
 		Map<String, Object> filterDtoMap = objectMapper.convertValue(fromValueDto, new TypeReference<Map<String, Object>>() {
 		});
 		return objectMapper.convertValue(filterDtoMap, toValueType);
+	}
+
+	/**
+	 * Converts a submitted form variable into the DTO the engine's {@code VariableValueDto.toMap}
+	 * expects, applying the same adjustments {@code VariableProvider.submitVariables} makes before
+	 * posting to engine-rest:
+	 * <ul>
+	 * <li>{@code json} and {@code Object} values that arrive as parsed JSON are serialized to a
+	 * string, because the engine only accepts a string or {@code null} for serializable types</li>
+	 * <li>{@code .rtf} files get the {@code application/rtf} mime type (BPM4CIB-434)</li>
+	 * </ul>
+	 */
+	protected VariableValueDto toVariableValueDto(Variable variable, CIBUser user) {
+		VariableValueDto variableValueDto = convertValue(variable, VariableValueDto.class, user);
+		String type = variable.getType();
+		Object value = variable.getValue();
+		Map<String, Object> valueInfo = variable.getValueInfo() != null ? new HashMap<>(variable.getValueInfo()) : null;
+
+		if (value != null && !(value instanceof String) && ("json".equalsIgnoreCase(type) || "Object".equalsIgnoreCase(type))) {
+			try {
+				value = getObjectMapper(user).writeValueAsString(value);
+			} catch (JsonProcessingException e) {
+				throw new SystemException("Cannot serialize value of variable " + variable.getName(), e);
+			}
+		}
+
+		//https://helpdesk.cib.de/browse/BPM4CIB-434
+		String filename = valueInfo != null ? (String) valueInfo.get("filename") : null;
+		if ("file".equalsIgnoreCase(type) && filename != null && filename.endsWith(".rtf") && filename.length() > 4) {
+			valueInfo.put("mimeType", "application/rtf");
+		}
+
+		variableValueDto.setType(type);
+		variableValueDto.setValue(value);
+		if (valueInfo != null)
+			variableValueDto.setValueInfo(valueInfo);
+		return variableValueDto;
 	}
 
 	protected <V extends Object> V runWithoutAuthorization(Supplier<V> action, CIBUser user) {

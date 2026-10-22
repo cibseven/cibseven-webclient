@@ -16,6 +16,8 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import TasksNavBar from '@/components/task/TasksNavBar.vue'
+import { mountWithDefaults } from '../support/mountWithDefaults.js'
+import { moment } from '@/globals.js'
 import { TaskService, AdminService } from '@/services.js'
 
 vi.mock('@/services.js', async (importOriginal) => {
@@ -70,8 +72,8 @@ function context(overrides = {}) {
     },
     $refs: {
       confirmTaskAssign: { show: vi.fn() },
-      due: { hide: vi.fn() },
-      followUp: { hide: vi.fn() }
+      due: { hide: vi.fn(), show: vi.fn() },
+      followUp: { hide: vi.fn(), show: vi.fn() }
     },
     isMobile: () => false,
     tasks: [],
@@ -289,6 +291,53 @@ describe('TasksNavBar - date presentation', () => {
     expect(result).toMatch(/ago|in |few seconds/)
   })
 
+  describe('dueState', () => {
+    it.each([
+      ['overdue', -60 * 60 * 1000, 'overdue'],
+      ['within the warning window', 60 * 60 * 1000, 'soon'],
+      ['beyond the warning window', 7 * 24 * 60 * 60 * 1000, null],
+    ])('should call a task due %s %s', (_when, offset, expected) => {
+      const due = new Date(Date.now() + offset).toISOString()
+
+      expect(m.dueState.call(context(), due)).toBe(expected)
+    })
+  })
+
+  /**
+   * CIB7-1108: the buttons were named only by their date, so a screen reader heard "10/20/2026"
+   * with no word of what it was, and whether a due date was close showed in its colour only.
+   */
+  describe('dateButtonLabel', () => {
+    // Echo the parameters too, so the date that goes into a label can be checked
+    const vm = () => context({ $t: (key, params) => (params ? `${key}:${params.date}` : key) })
+    const inHours = (hours) => new Date(Date.now() + hours * 60 * 60 * 1000).toISOString()
+    // The same format the component uses, whatever locale moment is set to
+    const shown = (date) => moment(date).format('L')
+
+    it.each([
+      ['followUp', 'task.setReminder'],
+      ['due', 'task.setDeadline'],
+    ])('should offer to set the %s while none is set', (type, expected) => {
+      expect(m.dateButtonLabel.call(vm(), { id: 't1', [type]: null }, type)).toBe(expected)
+    })
+
+    it('should name a reminder with its date', () => {
+      const followUp = inHours(48)
+
+      expect(m.dateButtonLabel.call(vm(), { followUp }, 'followUp')).toBe(`task.reminderLabel:${shown(followUp)}`)
+    })
+
+    it.each([
+      ['overdue', -1, 'task.dueOverdueLabel'],
+      ['due soon', 1, 'task.dueSoonLabel'],
+      ['not due yet', 24 * 7, 'task.dueLabel'],
+    ])('should name a due date that is %s', (_state, hours, key) => {
+      const due = inHours(hours)
+
+      expect(m.dateButtonLabel.call(vm(), { due }, 'due')).toBe(`${key}:${shown(due)}`)
+    })
+  })
+
   describe('getDueClasses', () => {
     // Overdue is red; approaching the configured warning window is amber.
     it('should mark an overdue task in danger', () => {
@@ -453,6 +502,176 @@ describe('TasksNavBar - date editing', () => {
     m.setTime.call(vm, null, 'due')
 
     expect(vm.selectedDateT.due.getHours()).toBe(due.getHours())
+  })
+})
+
+describe('TasksNavBar - opening the date dialogs', () => {
+  it.each(['followUp', 'due'])('openDateDialog should snapshot the task and open the %s dialog', (type) => {
+    const vm = context()
+    const task = { id: 't2', [type]: '2026-01-15T10:30:00Z' }
+
+    m.openDateDialog.call(vm, task, type)
+
+    expect(vm.taskToEdit).toBe(task)
+    expect(vm.selectedDateT.id).toBe('t2')
+    expect(vm.$refs[type].show).toHaveBeenCalled()
+  })
+
+  /**
+   * CIB7-2300: Space used to open the dialog without telling it which task, so it edited the
+   * task edited last. Mounted, because the bug was in the key binding of the template.
+   */
+  describe('from the keyboard', () => {
+    // Assigned already, so the row offers no 'assign to me' and needs no permissions
+    const taskA = { id: 'a', name: 'Task A', created: '2026-01-01T10:00:00Z', followUp: null, due: null, assignee: 'demo' }
+    const taskB = { id: 'b', name: 'Task B', created: '2026-01-02T10:00:00Z', followUp: null, due: null, assignee: 'demo' }
+
+    // Each dialog keeps its own flag, so a test can tell which of the two was opened
+    const modalStub = {
+      template: '<div><slot></slot></div>',
+      data: () => ({ shown: false }),
+      methods: { show() { this.shown = true }, hide() { this.shown = false } }
+    }
+
+    function mountNavBar() {
+      return mountWithDefaults(TasksNavBar, {
+        props: { tasks: [taskA, taskB], taskResultsIndex: 20, search: '' },
+        global: {
+          provide: { isMobile: () => false, currentLanguage: () => 'en' },
+          mocks: {
+            // Mounted standalone, $root is the component itself, so $root.config resolves to this
+            config: {
+              ...structuredClone(DEFAULT_CONFIG),
+              taskFilter: { advancedSearch: { filterEnabled: false, processVariables: [] }, smartSearch: { options: [] } }
+            },
+            user: { id: 'demo', userID: 'demo' },
+            $route: { params: {}, query: {} },
+            $router: { push: vi.fn() },
+            $store: {
+              state: {
+                filter: { selected: { id: 'f1', properties: {} }, settings: { reminder: false, dueDate: false } },
+                advancedSearch: { criterias: [], matchAllCriteria: true },
+                user: { listCandidates: [] },
+                process: { list: [] }
+              },
+              getters: {},
+              dispatch: vi.fn(() => Promise.resolve())
+            }
+          },
+          stubs: {
+            StartProcess: true, AdvancedSearchModal: true, SmartSearch: true, ConfirmDialog: true,
+            BWaitingBox: true, HighlightedText: true,
+            'b-modal': modalStub,
+            'b-list-group': { template: '<ul><slot></slot></ul>' },
+            'b-list-group-item': { template: '<li><slot></slot></li>' },
+            'b-popover': true, 'b-form-checkbox': true, 'b-form-input': true, 'b-input-group': true,
+            'b-calendar': true, 'b-form-timepicker': true
+          }
+        }
+      })
+    }
+
+    const buttons = (wrapper, icon) => wrapper.findAll(`button.${icon}`)
+
+    it.each([
+      ['followUp', 'mdi-alarm'],
+      ['due', 'mdi-calendar-alert'],
+    ])('Space opens the %s dialog for the task of the button, not the one edited before', async (type, icon) => {
+      const wrapper = mountNavBar()
+      // Edit task A first, so a stale dialog would still point at it
+      await buttons(wrapper, icon)[0].trigger('click')
+      expect(wrapper.vm.taskToEdit).toStrictEqual(taskA)
+
+      await buttons(wrapper, icon)[1].trigger('keydown', { key: ' ' })
+
+      expect(wrapper.vm.taskToEdit).toStrictEqual(taskB)
+      expect(wrapper.vm.selectedDateT.id).toBe('b')
+      expect(wrapper.vm.$refs[type].shown).toBe(true)
+    })
+
+    it('Space on a fresh page opens the dialog with the task of the button', async () => {
+      const wrapper = mountNavBar()
+
+      await buttons(wrapper, 'mdi-alarm')[1].trigger('keydown', { key: ' ' })
+
+      expect(wrapper.vm.taskToEdit).toStrictEqual(taskB)
+    })
+  })
+})
+
+/**
+ * CIB7-1106 and CIB7-1108: what a screen reader gets from the task list toolbar and the task rows.
+ * Mounted, because names and roles are in the template.
+ */
+describe('TasksNavBar - accessible names', () => {
+  const tasks = [
+    // Assigned already, so the row offers no 'assign to me' and needs no permissions
+    { id: 'a', name: 'Task A', created: '2026-01-01T10:00:00Z', followUp: null, due: null, assignee: 'demo' },
+  ]
+  const slotted = (tag) => ({ template: `<${tag}><slot></slot></${tag}>` })
+
+  function mountNavBar() {
+    return mountWithDefaults(TasksNavBar, {
+      props: { tasks, taskResultsIndex: 20, search: '' },
+      global: {
+        provide: { isMobile: () => false, currentLanguage: () => 'en' },
+        mocks: {
+          // Mounted standalone, $root is the component itself, so $root.config resolves to this
+          config: {
+            ...structuredClone(DEFAULT_CONFIG),
+            taskFilter: { advancedSearch: { filterEnabled: false, processVariables: [] }, smartSearch: { options: [] } }
+          },
+          user: { id: 'demo', userID: 'demo' },
+          $route: { params: {}, query: {} },
+          $router: { push: vi.fn() },
+          $store: {
+            state: {
+              filter: { selected: { id: 'f1', properties: {} }, settings: { reminder: false, dueDate: false } },
+              advancedSearch: { criterias: [], matchAllCriteria: true },
+              user: { listCandidates: [] },
+              process: { list: [] }
+            },
+            getters: {},
+            dispatch: vi.fn(() => Promise.resolve())
+          }
+        },
+        stubs: {
+          StartProcess: true, AdvancedSearchModal: true, SmartSearch: true, ConfirmDialog: true,
+          BWaitingBox: true, HighlightedText: true,
+          'b-list-group': slotted('ul'), 'b-list-group-item': slotted('li'),
+          // Rendered with their content, so the labels inside can be checked
+          'b-popover': slotted('div'), 'b-form-checkbox': slotted('label'),
+          'b-form-input': true, 'b-input-group': true, 'b-calendar': true, 'b-form-timepicker': true
+        }
+      }
+    })
+  }
+
+  it('names the filter button and hides its icon', () => {
+    const button = mountNavBar().findComponent({ ref: 'filters' })
+
+    expect(button.attributes('aria-label')).toBe('nav-bar.filtersAdditionalsTitle')
+    expect(button.find('.mdi').attributes('aria-hidden')).toBe('true')
+  })
+
+  // A heading inside a checkbox label lands in the screen reader's list of headings
+  it('labels the filter checkboxes with text, not headings', () => {
+    const wrapper = mountNavBar()
+    const labels = wrapper.findAll('label')
+
+    expect(labels.map(label => label.text())).toEqual(['nav-bar.reminder', 'nav-bar.dueDate'])
+    expect(wrapper.findAll('label h5')).toHaveLength(0)
+    expect(labels.every(label => label.find('.mdi').attributes('aria-hidden') === 'true')).toBe(true)
+  })
+
+  it.each([
+    ['mdi-alarm', 'task.setReminder'],
+    ['mdi-calendar-alert', 'task.setDeadline'],
+  ])('names the %s button by what it does, for screen readers and the tooltip alike', (icon, label) => {
+    const button = mountNavBar().find(`button.${icon}`)
+
+    expect(button.attributes('aria-label')).toBe(label)
+    expect(button.attributes('title')).toBe(label)
   })
 })
 

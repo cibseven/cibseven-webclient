@@ -63,8 +63,8 @@
           <div v-if="$root.config.layout.showFilterReminderDate || $root.config.layout.showFilterDueDate ||
             ($root.config.taskFilter.advancedSearch.processVariables.length > 0 && $root.config.taskFilter.advancedSearch.filterEnabled) ||
             filterVariables.length > 0" class="ms-auto col-auto">
-            <b-button ref="filters" variant="link" :title="$t('nav-bar.filtersAdditionalsTitle')">
-              <span class="mdi mdi-18px"
+            <b-button ref="filters" variant="link" :title="$t('nav-bar.filtersAdditionalsTitle')" :aria-label="$t('nav-bar.filtersAdditionalsTitle')">
+              <span class="mdi mdi-18px" aria-hidden="true"
                 :class="$store.state.filter.settings.reminder || $store.state.filter.settings.dueDate || $store.state.advancedSearch.criterias.length > 0 ? 'mdi-filter-menu text-primary' : 'mdi-filter-menu-outline'"></span>
             </b-button>
           </div>
@@ -76,19 +76,19 @@
         <div class="mt-2">
           <b-form-checkbox v-if="$root.config.layout.showFilterReminderDate" v-model="$store.state.filter.settings.reminder"
             @change="$emit('refresh-tasks')">
-            <h5 class="d-flex fw-normal"><span class="mdi mdi-16px mdi-alarm align-middle pe-1"></span> {{ $t('nav-bar.reminder') }}</h5>
+            <span class="h5 d-flex fw-normal"><span class="mdi mdi-16px mdi-alarm align-middle pe-1" aria-hidden="true"></span> {{ $t('nav-bar.reminder') }}</span>
           </b-form-checkbox>
         </div>
         <div>
           <b-form-checkbox v-if="$root.config.layout.showFilterDueDate" v-model="$store.state.filter.settings.dueDate"
             @change="$emit('refresh-tasks')">
-            <h5 class="d-flex fw-normal"><span class="mdi mdi-16px mdi-calendar-alert align-middle pe-1"></span> {{ $t('nav-bar.dueDate') }}</h5>
+            <span class="h5 d-flex fw-normal"><span class="mdi mdi-16px mdi-calendar-alert align-middle pe-1" aria-hidden="true"></span> {{ $t('nav-bar.dueDate') }}</span>
           </b-form-checkbox>
         </div>
         <div v-if="$root.config.taskFilter.advancedSearch.filterEnabled">
           <div v-for="(criteria, index) in advancedFilter.filter(c => c.source !== 'filter')" :key="index">
             <b-form-checkbox v-model="criteria.check">
-              <h5 class="d-flex fw-normal">{{ criteria.displayName }}</h5>
+              <span class="h5 d-flex fw-normal">{{ criteria.displayName }}</span>
             </b-form-checkbox>
             <label v-if="criteria.check && criteria.defaultValue === ''" :for="'tasks-criteria-value-' + index" class="visually-hidden">{{ criteria.displayName }}</label>
             <b-form-input v-if="criteria.check && criteria.defaultValue === ''" :id="'tasks-criteria-value-' + index" v-model="criteria.value" size="sm" class="mb-2"></b-form-input>
@@ -98,7 +98,7 @@
           <hr class="my-2">
           <div v-for="(criteria, index) in advancedFilter.filter(c => c.source === 'filter')" :key="'fv-' + index">
             <b-form-checkbox v-model="criteria.check">
-              <h5 class="d-flex fw-normal">{{ criteria.displayName }}</h5>
+              <span class="h5 d-flex fw-normal">{{ criteria.displayName }}</span>
             </b-form-checkbox>
             <label v-if="criteria.check" :for="'tasks-fv-value-' + index" class="visually-hidden">{{ criteria.displayName }}</label>
             <b-form-input v-if="criteria.check" :id="'tasks-fv-value-' + index" v-model="criteria.value" size="sm" class="mb-2"></b-form-input>
@@ -119,19 +119,19 @@
                 </h3>
                 <div class="d-flex ms-auto">
                   <b-button
-                    @click.stop="copyTaskForDateManagement(task, 'followUp'); $refs.followUp.show()"
-                    @keydown.enter.stop.prevent="copyTaskForDateManagement(task, 'followUp'); $refs.followUp.show()"
-                    @keyup.enter.stop.prevent 
-                    @keydown.space.stop.prevent="$refs.followUp.show()"
+                    @click.stop="openDateDialog(task, 'followUp')"
+                    @keydown.enter.stop.prevent="openDateDialog(task, 'followUp')"
+                    @keyup.enter.stop.prevent
+                    @keydown.space.stop.prevent="openDateDialog(task, 'followUp')"
                     v-if="$root.config.layout.showFilterReminderDate"
-                    size="sm" :class="getReminderClasses(task)" variant="light" class="mdi mdi-18px mdi-alarm border-0 me-1" :title="getDateFormatted(task.followUp, 'L', 'setReminder')"></b-button>
+                    size="sm" :class="getReminderClasses(task)" variant="light" class="mdi mdi-18px mdi-alarm border-0 me-1" :title="dateButtonLabel(task, 'followUp')" :aria-label="dateButtonLabel(task, 'followUp')"></b-button>
                   <b-button
-                    @click.stop="copyTaskForDateManagement(task, 'due'); $refs.due.show()"
-                    @keydown.enter.stop.prevent="copyTaskForDateManagement(task, 'due'); $refs.due.show()"
-                    @keyup.enter.stop.prevent 
-                    @keydown.space.stop.prevent="$refs.due.show()"
+                    @click.stop="openDateDialog(task, 'due')"
+                    @keydown.enter.stop.prevent="openDateDialog(task, 'due')"
+                    @keyup.enter.stop.prevent
+                    @keydown.space.stop.prevent="openDateDialog(task, 'due')"
                     v-if="$root.config.layout.showFilterDueDate"
-                    size="sm" :class="getDueClasses(task)" variant="light" class="mdi mdi-18px mdi-calendar-alert border-0" :title="getDateFormatted(task.due, 'L', 'setDeadline')"></b-button>
+                    size="sm" :class="getDueClasses(task)" variant="light" class="mdi mdi-18px mdi-calendar-alert border-0" :title="dateButtonLabel(task, 'due')" :aria-label="dateButtonLabel(task, 'due')"></b-button>
                 </div>
               </div>
               <div v-if="task.businessKey && $root.config.layout.showBusinessKey" class="d-flex align-items-center mb-1">
@@ -506,10 +506,32 @@ export default {
       if (format) return moment(date).format(format)
       else return moment(date).fromNow()
     },
+    // Overdue, due within the warning window, or neither; the colour and the label both follow it
+    dueState: function(due) {
+      if (moment(due).isBefore(moment())) return 'overdue'
+      if (moment().add(this.$root.config.warnOnDueExpirationIn, 'hours').isAfter(moment(due))) return 'soon'
+      return null
+    },
+    /**
+     * What a reminder or due date button is called, for screen readers and the tooltip alike: the
+     * action while no date is set, else the date and what it is, and for a due date whether it is
+     * close, which otherwise only its colour tells.
+     */
+    dateButtonLabel: function(task, type) {
+      const date = task[type]
+      if (!date) return this.$t(type === 'due' ? 'task.setDeadline' : 'task.setReminder')
+      const formatted = moment(date).format('L')
+      if (type === 'followUp') return this.$t('task.reminderLabel', { date: formatted })
+      const state = this.dueState(date)
+      if (state === 'overdue') return this.$t('task.dueOverdueLabel', { date: formatted })
+      if (state === 'soon') return this.$t('task.dueSoonLabel', { date: formatted })
+      return this.$t('task.dueLabel', { date: formatted })
+    },
     getDueClasses: function(task) {
       const classes = []
-      if (moment(task.due).isBefore(moment())) classes.push('text-danger')
-      else if (moment().add(this.$root.config.warnOnDueExpirationIn, 'hours').isAfter(moment(task.due))) classes.push('text-warning')
+      const state = this.dueState(task.due)
+      if (state === 'overdue') classes.push('text-danger')
+      else if (state === 'soon') classes.push('text-warning')
       if (!this.isMobile() && task !== this.focused && task.id !== this.selectedDateT.id && !task.due) classes.push('action-button-hidden')
       return classes
     },
@@ -602,6 +624,12 @@ export default {
           this.selectedDateT.followUp.setHours(0,0,0,0)
         }
       }
+    },
+    // Mouse, Enter and Space all go through here, so every way of opening the dialog edits the
+    // task the button belongs to
+    openDateDialog: function(task, type) {
+      this.copyTaskForDateManagement(task, type)
+      this.$refs[type].show()
     },
     copyTaskForDateManagement: function(task, type) {
       this.taskToEdit = task
