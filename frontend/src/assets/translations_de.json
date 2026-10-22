@@ -766,7 +766,6 @@
 				"userOperationLogCategory": "Kategorie des Benutzeraktionsprotokolls",
 				"historicTask": "Historische Aufgabe",
 				"historicProcessInstance": "Historische Prozessinstanz",
-				"optimize": "Optimieren",
 				"operationLogCategory": "Kategorie des Operationsprotokolls",
 				"property": "Eigenschaft"
 			},
@@ -792,7 +791,6 @@
 				"userOperationLogCategory": "Legt fest, wer das {userOperationLog} lesen darf, das pro Aufgabe oder Prozessinstanz geführt wird und in Kategorien wie Aktionen von Bearbeitern, Administratoren oder Operatoren unterteilt ist.",
 				"historicTask": "Legt fest, wer die historischen Daten einsehen darf, die nach Abschluss einer Aufgabe aufbewahrt werden.",
 				"historicProcessInstance": "Legt fest, wer die historischen Daten einer beendeten Prozessinstanz einsehen oder löschen darf.",
-				"optimize": "Legt fest, wer auf {optimize}, die Anwendung für Prozess-Reporting und -Analyse, zugreifen darf.",
 				"operationLogCategory": "Legt fest, wer Einträge im systemweiten {operationLog} in Cockpit lesen oder löschen darf — einem einzigen durchsuchbaren Prüfpfad über die gesamte Engine.",
 				"property": "Legt fest, wer interne Konfigurationseinträge der Engine, die als Schlüssel-Wert-Eigenschaften gespeichert sind, einsehen oder ändern darf – nicht die Anwendungseinstellungen."
 			},
