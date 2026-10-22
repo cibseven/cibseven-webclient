@@ -16,13 +16,26 @@
  */
 package org.cibseven.modeler.config;
 
+import javax.sql.DataSource;
+
 import org.cibseven.modeler.model.ProcessDiagramEntity;
 import org.cibseven.modeler.repository.ProcessDiagramRepository;
+import org.cibseven.modeler.util.ElementTemplateLoader;
 import org.cibseven.persistence.CibsevenJpa;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration;
 import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
+import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration;
+import org.springframework.boot.transaction.autoconfigure.TransactionAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.persistence.EntityManagerFactory;
 
@@ -36,7 +49,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ModelerPersistenceConfigurationTest {
 
 	private final ApplicationContextRunner standalone = new ApplicationContextRunner()
-		.withPropertyValues("spring.datasource.url=jdbc:h2:mem:modelershare-sb4;DB_CLOSE_DELAY=-1",
+		.withPropertyValues("spring.datasource.url=jdbc:h2:mem:modelershare;DB_CLOSE_DELAY=-1",
 			"spring.jpa.hibernate.ddl-auto=create-drop")
 		.withConfiguration(org.springframework.boot.autoconfigure.AutoConfigurations
 			.of(DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class))
@@ -59,5 +72,45 @@ class ModelerPersistenceConfigurationTest {
 			assertThat(context).hasSingleBean(ProcessDiagramRepository.class);
 			assertThat(context.getBean(ProcessDiagramRepository.class).count()).isZero();
 		});
+	}
+
+	/**
+	 * Startup work must run on the webclient's transaction manager too. An unqualified
+	 * {@code TransactionTemplate} is built on the primary manager, which in an embedding application
+	 * is the host's: a JDBC transaction there binds a connection to the thread and the JPA work then
+	 * fails with "Pre-bound JDBC Connection found".
+	 */
+	@Test
+	void theElementTemplateLoaderRunsOnTheWebclientsTransactionManager() {
+		standalone
+			.withPropertyValues("cibseven.webclient.modeler.enabled=true")
+			.withConfiguration(org.springframework.boot.autoconfigure.AutoConfigurations
+				.of(TransactionAutoConfiguration.class))
+			.withUserConfiguration(HostDrivingItsOwnDataSourceTransactions.class)
+			.withBean(ElementTemplateProperties.class)
+			.withBean(ObjectMapper.class)
+			.withBean(ElementTemplateLoader.class)
+			.run(context -> {
+				assertThat(context).hasNotFailed();
+				TransactionTemplate template = (TransactionTemplate) ReflectionTestUtils
+					.getField(context.getBean(ElementTemplateLoader.class), "transactionTemplate");
+
+				assertThat(template.getTransactionManager())
+					.isSameAs(context.getBean(CibsevenJpa.TRANSACTION_MANAGER, PlatformTransactionManager.class));
+			});
+	}
+
+	/**
+	 * A host whose primary transaction manager is JDBC-based on the shared data source — the shape of
+	 * an application embedding the webclient next to the process engine.
+	 */
+	@Configuration(proxyBeanMethods = false)
+	static class HostDrivingItsOwnDataSourceTransactions {
+
+		@Bean
+		@Primary
+		PlatformTransactionManager hostTransactionManager(DataSource dataSource) {
+			return new DataSourceTransactionManager(dataSource);
+		}
 	}
 }

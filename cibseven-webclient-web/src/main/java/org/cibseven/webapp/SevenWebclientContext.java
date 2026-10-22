@@ -109,11 +109,11 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 		MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter();
 		jacksonConverter.setObjectMapper(objectMapper());
 		builder.registerDefaults()
-				.withStringConverter(new StringHttpMessageConverter(StandardCharsets.UTF_8))
+				.withStringConverter(new StringHttpMessageConverter(StandardCharsets.UTF_8)) // needed for UiService
 				.withJsonConverter(jacksonConverter)
 				.addCustomConverter(new FormHttpMessageConverter())
-				.addCustomConverter(new ResourceHttpMessageConverter())
-				.addCustomConverter(new ByteArrayHttpMessageConverter());
+				.addCustomConverter(new ResourceHttpMessageConverter()) // needed for DocumentService.download
+				.addCustomConverter(new ByteArrayHttpMessageConverter()); // needed for fetching data variables
 	}
 
 	@Override
@@ -198,6 +198,7 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 	)
 	@SuppressWarnings("removal")
 	public CustomRestTemplate customRestTemplate() {
+		// It will be configured via @PostConstruct using @Autowired dependencies
 		CustomRestTemplate template = new CustomRestTemplate();
 		MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter();
 		jacksonConverter.setObjectMapper(objectMapper());
