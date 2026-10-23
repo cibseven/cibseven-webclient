@@ -37,6 +37,10 @@
     <b-form-group :id="`${idPrefix}Group`" :label="$t('historyTimeToLive.ttl')" class="mb-0">
       <div class="list-group">
 
+        <!-- "Unlimited" saves null: the definition gets no TTL and its history is never cleaned up.
+          It is deliberately not offered as "default to system": the engine-wide default only
+          applies when a model is deployed, never to a definition whose TTL is set to null
+          afterwards (see utils/historyTimeToLive.js). -->
         <div class="list-group-item border-0 border-top">
           <div class="form-check">
             <!-- When disabled, the reason is linked through aria-describedby, so screen readers
@@ -45,18 +49,18 @@
               class="form-check-input"
               type="radio"
               :name="`${idPrefix}Choice`"
-              :id="`${idPrefix}ChoiceDefault`"
-              value="default"
+              :id="`${idPrefix}ChoiceUnlimited`"
+              value="unlimited"
               v-model="choice"
-              :disabled="defaultChoiceDisabled"
-              :aria-describedby="defaultChoiceDisabled ? `${idPrefix}ChoiceDefaultHint` : null">
-            <label class="form-check-label w-100" :for="`${idPrefix}ChoiceDefault`">
-              {{ captionValue(defaultChoiceLabel) }}
-              <span class="text-muted float-end">{{ captionHint(defaultChoiceLabel) }}</span>
+              :disabled="unlimitedChoiceDisabled"
+              :aria-describedby="unlimitedChoiceDisabled ? `${idPrefix}ChoiceUnlimitedHint` : null">
+            <label class="form-check-label w-100" :for="`${idPrefix}ChoiceUnlimited`">
+              {{ captionValue($t('historyTimeToLive.choiceUnlimited')) }}
+              <span class="text-muted float-end">{{ captionHint($t('historyTimeToLive.choiceUnlimited')) }}</span>
             </label>
             <!-- The reason the option is disabled is shown as visible text rather than only as a
               title tooltip, which keyboard and touch users cannot reach. -->
-            <div v-if="defaultChoiceDisabled" :id="`${idPrefix}ChoiceDefaultHint`" class="form-text mt-0">
+            <div v-if="unlimitedChoiceDisabled" :id="`${idPrefix}ChoiceUnlimitedHint`" class="form-text mt-0">
               {{ $t('historyTimeToLive.enforcedHint') }}
             </div>
           </div>
@@ -138,7 +142,7 @@
 
 <script>
 import { HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY } from '@/constants'
-import { formatEngineDefaultHistoryTimeToLive } from '@/utils/historyTimeToLive.js'
+import { formatHistoryTimeToLive } from '@/utils/historyTimeToLive.js'
 
 const DEFAULT_CUSTOM_VALUE = 30
 
@@ -181,26 +185,31 @@ export default {
     return {
       idPrefix: `historyTimeToLive${++nextInstanceId}`,
       selectedItem: null,
-      choice: 'default', // 'default', 'zero', or 'custom'
+      choice: 'unlimited', // 'unlimited' (saves null), 'zero' (saves 0), or 'custom' (saves N)
       editTtlValue: null,
     }
   },
   computed: {
+    // An enforcing engine rejects setting a definition's TTL to null (NotAllowedException), so
+    // 'unlimited' is only available when enforcement is off.
     // Engines since 3.0.0 always report enforceHistoryTimeToLive as a known boolean; older
     // engines do not report it, which /info passes through as null ("unknown", see
     // EngineConfiguration.java). Only a known `true` disables the option - an unknown value is
     // left selectable (the engine may well have enforcement switched off) and if the engine
     // does enforce, the rejected save surfaces through the regular error dialog.
-    defaultChoiceDisabled() {
+    unlimitedChoiceDisabled() {
       return this.$root.config.enforceHistoryTimeToLive === true
     },
-    // The engine reports its default in days; -1 means no default is configured, 0 means
-    // history is cleaned up immediately, null/undefined means the engine did not report it
-    // (engines before 3.0.0) and is shown as "unknown" rather than as one of those values.
-    // Shared with the definition details views, which show the same label for definitions
-    // without their own TTL (see utils/historyTimeToLive.js).
-    defaultChoiceLabel() {
-      return formatEngineDefaultHistoryTimeToLive(this.$t, this.$root.config)
+    // The engine-wide default TTL (config.historyTimeToLive, in days) is only a suggestion for
+    // the custom field: it is the value the engine gives newly deployed models without their own
+    // TTL, i.e. the administrator's retention policy. Returns null when there is no usable
+    // default: -1 (none configured), null/undefined (not reported by engines before 3.0.0),
+    // 0 (offered by the 'zero' choice instead) or out of the custom field's range.
+    engineDefaultCustomValue() {
+      const engineDefault = this.$root.config.historyTimeToLive
+      return Number.isInteger(engineDefault) && engineDefault > 0 && engineDefault <= this.customValueMax
+        ? engineDefault
+        : null
     },
 
     customValueMin() {
@@ -215,27 +224,28 @@ export default {
       return Number.isNaN(value) || value < this.customValueMin || value > this.customValueMax
     },
     // Safeguard on top of the preselection in show(): never send a choice the user cannot
-    // select. A disabled 'default' would save null, which an enforcing engine rejects.
+    // select. A disabled 'unlimited' would save null, which an enforcing engine rejects.
     saveDisabled() {
-      return this.errorInCustomChoice || (this.choice === 'default' && this.defaultChoiceDisabled)
+      return this.errorInCustomChoice || (this.choice === 'unlimited' && this.unlimitedChoiceDisabled)
     }
   },
   methods: {
     // Parent calls show(item) via ref to open the dialog
     show(item) {
       this.selectedItem = item
-      if ((item.historyTimeToLive === null || item.historyTimeToLive === undefined) && this.defaultChoiceDisabled) {
+      if ((item.historyTimeToLive === null || item.historyTimeToLive === undefined) && this.unlimitedChoiceDisabled) {
         // The definition has no TTL (deployed before enforcement was switched on, or with
-        // enforcement skipped), but the engine now enforces one: the 'default' choice (which
+        // enforcement skipped), but the engine now enforces one: the 'unlimited' choice (which
         // saves null) is disabled, because the engine rejects null with a NotAllowedException.
         // Never preselect a disabled radio - preselect what the engine would apply instead.
         this.preselectEnforcedChoice()
       } else if (item.historyTimeToLive === null || item.historyTimeToLive === undefined) {
-        this.choice = 'default'
-        this.editTtlValue = this.loadLastCustomValue()
+        // No TTL means unlimited (whatever the engine default is), so that is what is preselected
+        this.choice = 'unlimited'
+        this.editTtlValue = this.suggestedCustomValue()
       } else if (item.historyTimeToLive === 0) {
         this.choice = 'zero'
-        this.editTtlValue = this.loadLastCustomValue()
+        this.editTtlValue = this.suggestedCustomValue()
       } else {
         this.choice = 'custom'
         this.editTtlValue = item.historyTimeToLive
@@ -255,23 +265,21 @@ export default {
     // - no (known) default    -> 'custom' prefilled with the last custom value (or 30 days)
     // The user still has to confirm with Save; nothing is sent until then.
     preselectEnforcedChoice() {
-      const systemDefault = this.$root.config.historyTimeToLive
-      if (systemDefault === 0) {
-        this.choice = 'zero'
-        this.editTtlValue = this.loadLastCustomValue()
-      } else if (Number.isInteger(systemDefault) && systemDefault > 0 && systemDefault <= this.customValueMax) {
-        this.choice = 'custom'
-        this.editTtlValue = systemDefault
-      } else {
-        this.choice = 'custom'
-        this.editTtlValue = this.loadLastCustomValue()
-      }
+      this.choice = this.$root.config.historyTimeToLive === 0 ? 'zero' : 'custom'
+      this.editTtlValue = this.suggestedCustomValue()
+    },
+
+    // Value prefilled in the custom field whenever it is not showing the definition's own TTL:
+    // the engine default (the administrator's retention policy) if there is a usable one,
+    // otherwise the last custom value the user saved (or 30 days).
+    suggestedCustomValue() {
+      return this.engineDefaultCustomValue ?? this.loadLastCustomValue()
     },
 
     resetTtlDialog() {
       this.selectedItem = null
-      this.choice = 'default'
-      this.editTtlValue = this.loadLastCustomValue()
+      this.choice = 'unlimited'
+      this.editTtlValue = this.suggestedCustomValue()
     },
 
     async saveTtlValue() {
@@ -279,23 +287,23 @@ export default {
         return
       }
 
-      // 'default' -> null (unlimited retention to the engine unless it falls back to a
-      // configured system default at cleanup time), 'zero' -> 0 (immediate cleanup
-      // eligibility - the opposite of 'default', never conflate the two), 'custom' -> N.
+      // 'unlimited' -> null: the definition gets no TTL and its history is never cleaned up. The
+      // engine does not fall back to its configured default for it, neither when saving nor at
+      // cleanup time - the default is only applied to models at deployment time.
+      // 'zero' -> 0: history is removed by the next cleanup run - the opposite of 'unlimited',
+      // never conflate the two. 'custom' -> N days.
       let ttlValue
-      let ttlDisplay
-      if (this.choice === 'default') {
+      if (this.choice === 'unlimited') {
         ttlValue = null
-        ttlDisplay = this.defaultChoiceLabel
       } else if (this.choice === 'zero') {
         ttlValue = 0
-        ttlDisplay = '0'
       } else {
         // validated by errorInCustomChoice above (saveDisabled), so this is a whole number in range
         ttlValue = parseDays(this.editTtlValue)
-        ttlDisplay = `${ttlValue} ${this.$t('historyTimeToLive.days')}`
         this.saveLastCustomValue(ttlValue)
       }
+      // same label the definition details views show for the saved value
+      const ttlDisplay = formatHistoryTimeToLive(this.$t, ttlValue)
 
       // Emit event with TTL data - let parent handle the actual API call and success handling
       this.$emit('ttl-updated', {

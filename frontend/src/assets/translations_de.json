@@ -1427,15 +1427,12 @@
 	"historyTimeToLive": {
 		"title": "Verlaufsaufbewahrungsdauer bearbeiten",
 		"ttl": "Verlaufsaufbewahrungsdauer:",
-		"choiceDefault": "Systemstandard ({value} Tage)",
-		"choiceDefaultZero": "Systemstandard (0 Tage - sofort bereinigen)",
-		"choiceDefaultUnknown": "Systemstandard (unbekannt)",
-		"choiceDefaultUnlimited": "Systemstandard (∞ Tage - unbegrenzt)",
+		"choiceUnlimited": "Unbegrenzt (Verlauf wird nie bereinigt)",
 		"choiceZero": "0 Tage (sofort bereinigen)",
 		"choiceCustom": "Benutzerdefiniert",
 		"days": "Tage",
 		"placeholder": "Tage eingeben (z. B. 30)",
 		"validation": "Bitte eine gültige Zahl zwischen {min} und {max} eingeben",
-		"enforcedHint": "Diese Engine erfordert eine explizite Verlaufsaufbewahrungsdauer; \"Systemstandard\" ist nicht verfügbar."
+		"enforcedHint": "Diese Engine erfordert eine explizite Verlaufsaufbewahrungsdauer; \"Unbegrenzt\" ist nicht verfügbar."
 	}
 }

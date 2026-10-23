@@ -49,21 +49,30 @@ describe('DecisionDefinitionDetails.vue', () => {
 
   describe('historyTimeToLiveDisplay', () => {
     // The labels themselves are covered in utils/historyTimeToLive.test.js; this only checks
-    // that the definition's own TTL and the engine configuration are passed to the shared helper.
+    // that the definition's own TTL is passed to the shared helper.
     it.each([
-      ['an explicit 0', 0, { historyTimeToLive: 999 }, 'historyTimeToLive.choiceZero'],
-      ['a positive number', 30, { historyTimeToLive: 999 }, '30 historyTimeToLive.days'],
-      ['no TTL, engine default 30', null, { historyTimeToLive: 30 }, 'historyTimeToLive.choiceDefault:{"value":30}'],
-      ['no TTL, no engine default', undefined, { historyTimeToLive: -1 }, 'historyTimeToLive.choiceDefaultUnlimited'],
-      ['no TTL, engine does not report it', null, {}, 'historyTimeToLive.choiceDefaultUnknown']
-    ])('renders %s through the shared helper', (_, historyTimeToLive, config, expected) => {
-      const $t = vi.fn((key, params) => params ? `${key}:${JSON.stringify(params)}` : key)
+      ['an explicit 0', 0, 'historyTimeToLive.choiceZero'],
+      ['a positive number', 30, '30 historyTimeToLive.days'],
+      ['no TTL (null)', null, 'historyTimeToLive.choiceUnlimited'],
+      ['no TTL (undefined)', undefined, 'historyTimeToLive.choiceUnlimited']
+    ])('renders %s through the shared helper', (_, historyTimeToLive, expected) => {
+      const { result } = callWith(DecisionDefinitionDetails.computed.historyTimeToLiveDisplay, { historyTimeToLive })
+      expect(result).toBe(expected)
+    })
+
+    // A definition without a TTL keeps its history forever, whatever the engine default is:
+    // the default is only applied to models at deployment time, never to an existing definition.
+    it.each([
+      ['an engine default of 180 days', { historyTimeToLive: 180, enforceHistoryTimeToLive: false }],
+      ['an engine default of 0', { historyTimeToLive: 0, enforceHistoryTimeToLive: true }],
+      ['no engine default', { historyTimeToLive: -1, enforceHistoryTimeToLive: false }],
+      ['an engine that does not report it', {}]
+    ])('shows a definition without TTL as unlimited with %s', (_, config) => {
       const { result } = callWith(DecisionDefinitionDetails.computed.historyTimeToLiveDisplay, {
-        historyTimeToLive,
-        $t,
+        historyTimeToLive: null,
         $root: { config }
       })
-      expect(result).toBe(expected)
+      expect(result).toBe('historyTimeToLive.choiceUnlimited')
     })
   })
 

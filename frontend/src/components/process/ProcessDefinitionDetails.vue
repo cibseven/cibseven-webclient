@@ -203,7 +203,7 @@ export default {
       ]
     },
     historyTimeToLiveDisplay() {
-      return formatHistoryTimeToLive(this.$t, this.historyTimeToLive, this.$root.config)
+      return formatHistoryTimeToLive(this.$t, this.historyTimeToLive)
     }
   },
   mounted() {

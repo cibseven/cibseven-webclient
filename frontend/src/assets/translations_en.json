@@ -1427,15 +1427,12 @@
 	"historyTimeToLive": {
 		"title": "Edit History Time To Live",
 		"ttl": "History time to live:",
-		"choiceDefault": "Default to system ({value} days)",
-		"choiceDefaultZero": "Default to system (0 days - cleanup immediately)",
-		"choiceDefaultUnknown": "Default to system (unknown)",
-		"choiceDefaultUnlimited": "Default to system (∞ days - unlimited)",
+		"choiceUnlimited": "Unlimited (history is never cleaned up)",
 		"choiceZero": "0 days (cleanup immediately)",
 		"choiceCustom": "Custom",
 		"days": "days",
 		"placeholder": "Enter days (e.g., 30)",
 		"validation": "Please enter a valid number between {min} and {max}",
-		"enforcedHint": "This engine requires an explicit history time to live; \"default to system\" is not available."
+		"enforcedHint": "This engine requires an explicit history time to live; \"unlimited\" is not available."
 	}
 }

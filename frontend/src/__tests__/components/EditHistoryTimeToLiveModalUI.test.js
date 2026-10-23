@@ -113,10 +113,23 @@ describe('EditHistoryTimeToLiveModal.vue accessibility', () => {
     })
   })
 
-  describe('disabled default choice', () => {
+  describe('unlimited choice', () => {
+    // null on a definition means its history is never cleaned up - the engine default is only
+    // applied to models at deployment time - so the option must not be labelled as the default.
+    it('is labelled as unlimited, not as the engine default, even when the engine has one', () => {
+      const wrapper = createWrapper({ enforceHistoryTimeToLive: false, historyTimeToLive: 180 })
+      const radio = wrapper.find('input[type="radio"][value="unlimited"]')
+      const label = wrapper.find(`label[for="${radio.attributes('id')}"]`)
+
+      expect(label.text()).toContain('historyTimeToLive.choiceUnlimited')
+      expect(wrapper.text()).not.toContain('choiceDefault')
+    })
+  })
+
+  describe('disabled unlimited choice', () => {
     it('shows the reason as visible text linked to the radio, not only as a title', () => {
       const wrapper = createWrapper({ enforceHistoryTimeToLive: true, historyTimeToLive: -1 })
-      const radio = wrapper.find('input[type="radio"][value="default"]')
+      const radio = wrapper.find('input[type="radio"][value="unlimited"]')
 
       expect(radio.attributes('disabled')).toBeDefined()
       expect(resolveIdRefs(wrapper, radio.attributes('aria-describedby'))).toBe('historyTimeToLive.enforcedHint')
@@ -125,7 +138,7 @@ describe('EditHistoryTimeToLiveModal.vue accessibility', () => {
 
     it.each([false, null, undefined])('shows no reason while the choice is available (enforce %j)', (enforceHistoryTimeToLive) => {
       const wrapper = createWrapper({ enforceHistoryTimeToLive, historyTimeToLive: 180 })
-      const radio = wrapper.find('input[type="radio"][value="default"]')
+      const radio = wrapper.find('input[type="radio"][value="unlimited"]')
 
       expect(radio.attributes('disabled')).toBeUndefined()
       expect(radio.attributes('aria-describedby')).toBeUndefined()

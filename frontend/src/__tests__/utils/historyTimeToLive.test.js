@@ -14,62 +14,28 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect, vi } from 'vitest'
-import { formatEngineDefaultHistoryTimeToLive, formatHistoryTimeToLive } from '@/utils/historyTimeToLive.js'
+import { describe, it, expect } from 'vitest'
+import { formatHistoryTimeToLive } from '@/utils/historyTimeToLive.js'
 
-// Renders "key" or "key:{params}", so the tests can assert both the label and its parameters.
-const t = vi.fn((key, params) => params ? `${key}:${JSON.stringify(params)}` : key)
+const $t = (key) => key
 
 describe('historyTimeToLive utils', () => {
-  describe('formatEngineDefaultHistoryTimeToLive', () => {
-    it.each([
-      [30, 'historyTimeToLive.choiceDefault:{"value":30}'],
-      [0, 'historyTimeToLive.choiceDefaultZero'],
-      [-1, 'historyTimeToLive.choiceDefaultUnlimited']
-    ])('labels a reported engine default of %j', (historyTimeToLive, expected) => {
-      expect(formatEngineDefaultHistoryTimeToLive(t, { historyTimeToLive })).toBe(expected)
-    })
-
-    // Engines before 3.0.0 do not report the default; /info passes that through as null.
-    // "Unknown" must never be shown as unlimited (-1) or as 0, both of which are real values.
-    it.each([
-      ['null', { historyTimeToLive: null }],
-      ['undefined', { historyTimeToLive: undefined }],
-      ['missing', {}],
-      ['a string', { historyTimeToLive: '30' }],
-      ['NaN', { historyTimeToLive: Number.NaN }]
-    ])('labels a %s engine default as unknown', (_, config) => {
-      expect(formatEngineDefaultHistoryTimeToLive(t, config)).toBe('historyTimeToLive.choiceDefaultUnknown')
-    })
-
-    it.each([null, undefined])('labels a missing config (%j) as unknown', (config) => {
-      expect(formatEngineDefaultHistoryTimeToLive(t, config)).toBe('historyTimeToLive.choiceDefaultUnknown')
-    })
-
-    it('does not depend on enforceHistoryTimeToLive', () => {
-      for (const enforceHistoryTimeToLive of [true, false, null]) {
-        expect(formatEngineDefaultHistoryTimeToLive(t, { enforceHistoryTimeToLive, historyTimeToLive: 30 }))
-          .toBe('historyTimeToLive.choiceDefault:{"value":30}')
-      }
-    })
-  })
-
   describe('formatHistoryTimeToLive', () => {
+    // A definition without a TTL keeps its history forever: the engine default is only applied
+    // to models at deployment time, and history cleanup skips definitions without a TTL. It must
+    // never be shown as "default to system (n days)".
+    it.each([null, undefined])('labels a definition without TTL (%j) as unlimited', (historyTimeToLive) => {
+      expect(formatHistoryTimeToLive($t, historyTimeToLive)).toBe('historyTimeToLive.choiceUnlimited')
+    })
+
     // Regression: 0 and null have opposite meanings for the engine (0 = removed by the next
-    // cleanup run, null = no TTL of its own) and must never render identically.
-    it('labels an explicit 0 with its own label, ignoring the engine default', () => {
-      expect(formatHistoryTimeToLive(t, 0, { historyTimeToLive: 999 })).toBe('historyTimeToLive.choiceZero')
+    // cleanup run, null = never removed) and must never render identically.
+    it('labels an explicit 0 with its own label', () => {
+      expect(formatHistoryTimeToLive($t, 0)).toBe('historyTimeToLive.choiceZero')
     })
 
-    it('labels a positive number as a day count, ignoring the engine default', () => {
-      expect(formatHistoryTimeToLive(t, 30, { historyTimeToLive: 999 })).toBe('30 historyTimeToLive.days')
-    })
-
-    it.each([null, undefined])('falls back to the engine default label for a definition without TTL (%j)', (historyTimeToLive) => {
-      expect(formatHistoryTimeToLive(t, historyTimeToLive, { historyTimeToLive: 30 })).toBe('historyTimeToLive.choiceDefault:{"value":30}')
-      expect(formatHistoryTimeToLive(t, historyTimeToLive, { historyTimeToLive: 0 })).toBe('historyTimeToLive.choiceDefaultZero')
-      expect(formatHistoryTimeToLive(t, historyTimeToLive, { historyTimeToLive: -1 })).toBe('historyTimeToLive.choiceDefaultUnlimited')
-      expect(formatHistoryTimeToLive(t, historyTimeToLive, {})).toBe('historyTimeToLive.choiceDefaultUnknown')
+    it('labels a positive number as a day count', () => {
+      expect(formatHistoryTimeToLive($t, 30)).toBe('30 historyTimeToLive.days')
     })
   })
 })
