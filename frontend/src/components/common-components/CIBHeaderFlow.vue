@@ -17,94 +17,48 @@
 
 -->
 <template>
-  <header style="height: 55px"> <!-- Empty container with height of navbar -->
-    <b-navbar toggleable="md" fixed="top" type="light" class="border-bottom bg-white px-3">
+  <header class="cib-navbar" style="height: 55px"> <!-- Empty container with height of navbar -->
+    <b-navbar fixed="top" type="light" class="border-bottom bg-white px-3 flex-nowrap">
       <slot></slot>
-      <button 
-        class="navbar-toggler" 
-        type="button" 
+
+      <!-- Page actions (e.g. start process), kept apart from the navigation by a divider -->
+      <div v-if="$slots.actions" class="cib-nav-actions d-flex align-items-center flex-shrink-0">
+        <slot name="actions"></slot>
+        <span class="cib-nav-divider d-none d-md-inline-block" aria-hidden="true"></span>
+      </div>
+
+      <!-- Desktop: main clusters (incl. engine) | standard menus (help, language, user) -->
+      <div class="d-none d-md-flex align-items-center flex-shrink-0 cib-nav-clusters">
+        <NavCluster v-for="cluster in mainClusters" :key="cluster.id" :cluster="cluster"
+          :open="openCluster === cluster.id" @update:open="setOpenCluster(cluster.id, $event)" @select="onSelect">
+        </NavCluster>
+        <span v-if="mainClusters.length && utilityList.length" class="cib-nav-divider" aria-hidden="true"></span>
+        <NavCluster v-for="cluster in utilityList" :key="cluster.id" :cluster="cluster" align="end"
+          :open="openCluster === cluster.id" @update:open="setOpenCluster(cluster.id, $event)" @select="onSelect">
+          <template v-if="$slots.userItems" #menu-prepend="{ cluster: menu }">
+            <ul v-if="menu.id === 'user'" class="cib-nav-legacy-items list-unstyled m-0 py-1"><slot name="userItems"></slot></ul>
+          </template>
+        </NavCluster>
+      </div>
+
+      <button type="button" class="cib-nav-action cib-nav-burger d-md-none flex-shrink-0"
         @click.stop="isCollapsed = !isCollapsed"
-        :aria-expanded="isCollapsed"
-        aria-label="Toggle navigation">
-        <span v-if="isCollapsed" class="mdi mdi-24px mdi-close"></span>
-        <span v-else class="navbar-toggler-icon"></span>
+        :aria-expanded="isCollapsed ? 'true' : 'false'"
+        :aria-label="$t('navigation.menu')">
+        <span :class="['mdi', 'mdi-24px', isCollapsed ? 'mdi-close' : 'mdi-menu']" aria-hidden="true"></span>
       </button>
-      <b-collapse is-nav id="nav_collapse" class="flex-grow-0" v-model="isCollapsed">
-        <b-navbar-nav>
-          <!-- Custom navigation items slot (for mobile menu items from parent) -->
-          <slot name="customNavItems"></slot>
-          
-          <!-- Engine Selector - only show if more than one engine -->
-          <b-nav-item-dropdown 
-            v-if="normalizedEngines.length > 1" 
-            extra-toggle-classes="py-1" 
-            right 
-            :title="$t('cib-header.engineMenu')"
-            :label="$t('cib-header.engineMenu')">
-            <template v-slot:button-content>
-              <span class="mdi mdi-24px mdi-engine align-middle me-2" aria-hidden="true"></span><span class="d-md-none">{{ $t('cib-header.engine') }}</span>
-            </template>
-            <b-dropdown-item-button
-              v-for="engine in normalizedEngines" 
-              :key="engine.id" 
-              :active="engine.id === selectedEngine" 
-              @click="selectEngine(engine.id)" 
-              :title="engine.tooltip || $t('cib-header.engine') + ': ' + engine.label">
-              <div class="d-flex align-items-baseline">
-                <span class="flex-grow-1">
-                  {{ engine.label }}
-                </span>
-              </div>
-            </b-dropdown-item-button>
-          </b-nav-item-dropdown>
-
-          <b-nav-item-dropdown 
-            extra-toggle-classes="py-1" 
-            right 
-            :title="$t('cib-header.languages')"
-            :label="$t('cib-header.languagesMenu')">
-            <template v-slot:button-content>
-              <span class="mdi mdi-24px mdi-web align-middle me-2" aria-hidden="true"></span><span class="d-md-none">{{ $t('cib-header.languages') }}</span>
-            </template>
-            <b-dropdown-item-button v-for="lang in languages" :key="lang" :active="lang === currentLanguage()" @click="setCurrentLanguage(lang)" :title="$t('cib-header.languages') + ': ' + $t('cib-header.' + lang)">
-              <div class="d-flex align-items-baseline">
-                <span class="lang-label text-center text-uppercase text-dark rounded me-2" :class="{ 'lang-label-active': lang === currentLanguage() }">
-                  {{ lang }}
-                </span>
-                <span class="flex-grow-1">
-                  {{ $t('cib-header.' + lang) }}
-                </span>
-              </div>
-            </b-dropdown-item-button>
-          </b-nav-item-dropdown>
-
-          <b-nav-item-dropdown 
-            v-if="$slots.helpItems" 
-            extra-toggle-classes="py-1" 
-            right
-            :label="$t('cib-header.helpMenu')">
-            <template v-slot:button-content>
-              <span class="mdi mdi-24px mdi-help-circle align-middle" aria-hidden="true"></span>
-              <span class="d-md-none">{{ $t('cib-header.helpMenu') }}</span>
-            </template>
-            <slot name="helpItems"></slot>
-          </b-nav-item-dropdown>
-
-          <b-nav-item-dropdown 
-            v-if="user" 
-            :title="$t('start.account.tooltip')" 
-            extra-toggle-classes="py-1" 
-            right
-            :label="$t('admin.users.account')">
-            <template v-slot:button-content>
-              <span class="mdi mdi-24px mdi-account align-middle" aria-hidden="true"></span> <span>{{ user.displayName }}</span>
-            </template>
-            <slot name="userItems"></slot>
-            <b-dropdown-item-button @click="logout" :title="$t('start.account.logout.tooltip', { productName })">{{ $t('start.account.logout.title') }}</b-dropdown-item-button>
-          </b-nav-item-dropdown>
-        </b-navbar-nav>
-      </b-collapse>
     </b-navbar>
+
+    <NavMobileMenu v-if="isCollapsed" class="d-md-none" :main="mainClusters" :utility="utilityList"
+      @select="onSelect" @navigate="closeMenu">
+      <!-- Legacy slots (pre-navClusters parents such as CIB flow): rendered inside the new menus -->
+      <template v-if="$slots.customNavItems" #prepend>
+        <ul class="navbar-nav cib-nav-legacy-items px-3"><slot name="customNavItems"></slot></ul>
+      </template>
+      <template v-if="$slots.userItems" #cluster-prepend="{ cluster }">
+        <ul v-if="cluster.id === 'user'" class="cib-nav-legacy-items list-unstyled m-0 py-1"><slot name="userItems"></slot></ul>
+      </template>
+    </NavMobileMenu>
   </header>
 </template>
 
@@ -117,22 +71,102 @@ import {
   hasTokenForEngine, 
   restoreTokenForEngine 
 } from '@/utils/engineTokens.js'
+import { getUserInitials } from '@/utils/user.js'
+import NavCluster from '@/components/common-components/navigation/NavCluster.vue'
+import NavMobileMenu from '@/components/common-components/navigation/NavMobileMenu.vue'
 
+/**
+ * Application header. The parent fills the left side (default slot: brand, page title, actions)
+ * and hands in its navigation as cluster models (see NavCluster); the header adds the engine
+ * selector to the main clusters and language + user to the standard ones, and renders all of
+ * them as the desktop bar and as the mobile menu. Items the header does not handle itself are
+ * passed on through `select`.
+ */
 export default {
   name: 'CIBHeaderFlow',
+  components: { NavCluster, NavMobileMenu },
   inject: ['currentLanguage', 'setCurrentLanguage'],
-  props: { languages: Array, user: Object },
-  emits: ['logout'],
+  props: {
+    languages: Array,
+    user: Object,
+    // Main navigation clusters (tasks, cockpit, ...)
+    navClusters: { type: Array, default: () => [] },
+    // Standard clusters placed before language and user (feedback, help)
+    utilityClusters: { type: Array, default: () => [] },
+    // Entries of the user menu above "Logout"; the first one with `to` is where the avatar leads.
+    // Parents built for the old header may still use the `userItems` and `customNavItems` slots instead.
+    userItems: { type: Array, default: () => [] }
+  },
+  emits: ['logout', 'select'],
   data() {
     return {
       engines: [],
       selectedEngine: null,
-      isCollapsed: false
+      isCollapsed: false,
+      openCluster: null
     }
   },
   computed: {
     productName() {
       return this.$root.config.productNamePageTitle || this.$t('login.productName')
+    },
+    userInitials() {
+      return getUserInitials(this.user)
+    },
+    engineCluster() {
+      if (this.normalizedEngines.length <= 1) return null
+      return {
+        id: 'engine',
+        label: this.$t('cib-header.engine'),
+        icon: 'mdi-dns-outline',
+        sections: [this.normalizedEngines.map(engine => ({
+          key: `engine:${engine.id}`,
+          label: engine.label,
+          tooltip: engine.tooltip || `${this.$t('cib-header.engine')}: ${engine.label}`,
+          active: engine.id === this.selectedEngine,
+          checkable: true,
+          engineId: engine.id
+        }))]
+      }
+    },
+    languageCluster() {
+      if (!this.languages?.length) return null
+      const current = this.currentLanguage()
+      return {
+        id: 'language',
+        label: this.$t('cib-header.languages'),
+        icon: 'mdi-web',
+        sections: [this.languages.map(lang => ({
+          key: `lang:${lang}`,
+          tag: lang.toUpperCase(),
+          label: this.$t(`cib-header.${lang}`),
+          active: lang === current,
+          checkable: true,
+          language: lang
+        }))]
+      }
+    },
+    userCluster() {
+      if (!this.user) return null
+      return {
+        id: 'user',
+        label: this.user.displayName || this.user.id,
+        avatar: this.userInitials,
+        to: this.userItems.find(item => item.to)?.to ?? null,
+        active: this.userItems.some(item => item.active),
+        sections: [[...this.userItems, {
+          key: 'logout',
+          label: this.$t('start.account.logout.title'),
+          tooltip: this.$t('start.account.logout.tooltip', { productName: this.productName }),
+          logout: true
+        }]]
+      }
+    },
+    mainClusters() {
+      return [...this.navClusters, this.engineCluster].filter(Boolean)
+    },
+    utilityList() {
+      return [...this.utilityClusters, this.languageCluster, this.userCluster].filter(Boolean)
     },
     normalizedEngines() {
       return this.engines.map(engine => ({
@@ -150,34 +184,51 @@ export default {
       if (newUser && this.selectedEngine) {
         storeTokenForEngine(this.selectedEngine)
       }
+    },
+    // Navigating closes whatever menu led there
+    '$route.fullPath'() {
+      this.openCluster = null
+      this.closeMenu()
     }
   },
   mounted() {
     this.loadEngines()
     // Close menu when clicking outside on mobile
     document.addEventListener('click', this.handleClickOutside)
+    // From md up the mobile menu is only hidden by CSS: close it there, which also ends its scroll lock
+    this.desktopQuery = window.matchMedia?.('(min-width: 768px)')
+    this.desktopQuery?.addEventListener('change', this.onDesktopChange)
   },
   beforeUnmount() {
     document.removeEventListener('click', this.handleClickOutside)
+    this.desktopQuery?.removeEventListener('change', this.onDesktopChange)
   },
   methods: {
+    onDesktopChange(event) {
+      if (event.matches) this.closeMenu()
+    },
     handleClickOutside(event) {
       // Only handle on mobile when menu is open
       if (!this.isCollapsed) return
-      
-      // Check if click is on the toggle button or any of its children (like the span icons)
-      const toggleButton = this.$el.querySelector('.navbar-toggler')
-      if (toggleButton && toggleButton.contains(event.target)) {
-        return // Don't close if clicking the toggle button or its children
-      }
-      
-      const navbar = this.$el.querySelector('.navbar')
-      if (navbar && !navbar.contains(event.target)) {
+      // The header holds the bar and the mobile menu; clicks inside either keep the menu open
+      if (!this.$el.contains(event.target)) {
         this.closeMenu()
       }
     },
     closeMenu() {
       this.isCollapsed = false
+    },
+    setOpenCluster(id, open) {
+      if (open) this.openCluster = id
+      else if (this.openCluster === id) this.openCluster = null
+    },
+    // Engine, language and logout are the header's own; anything else goes to the parent
+    onSelect(item) {
+      this.closeMenu()
+      if (item.engineId) this.selectEngine(item.engineId)
+      else if (item.language) this.setCurrentLanguage(item.language)
+      else if (item.logout) this.logout()
+      else this.$emit('select', item)
     },
     logout: function() {
       // Remove the token for the current engine from the cache
@@ -247,27 +298,51 @@ export default {
 </script>
 
 <style scoped>
-/* Ensure hamburger toggle is always on top */
-:deep(.navbar-toggler) {
-  position: relative;
-  z-index: 1050;
+.cib-nav-clusters {
+  gap: 2px;
 }
-
-/* Ensure dropdowns in collapsed menu don't overlap the toggle button */
-:deep(.navbar-collapse .dropdown-menu) {
-  z-index: 1040;
+.cib-nav-divider {
+  width: 1px;
+  height: 24px;
+  margin: 0 10px;
+  /* The theme's $gray-650 (input borders), which has no CSS variable */
+  background: #8092A6;
 }
-
-.lang-label {
-  min-width: 36px;
-  display: inline-block;
-  background-color: var(--bs-gray-200) !important;
+/* Page actions from the parent and the burger: one button style, reacting like the nav buttons */
+.cib-nav-action,
+:slotted(.cib-nav-action) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid var(--bs-gray-600);
+  border-radius: 4px;
+  background: var(--bs-body-bg);
+  color: var(--bs-gray-800);
+  font-size: 0.875rem;
+  font-weight: 600;
 }
-.dropdown-item:hover .lang-label {
-  background-color: var(--bs-gray-400) !important;
+.cib-nav-action:hover,
+:slotted(.cib-nav-action:hover) {
+  background: var(--bs-gray-300);
 }
-.lang-label-active,
-.dropdown-item:hover .lang-label-active {
-  background-color: var(--bs-gray-500) !important;
+.cib-nav-action:active,
+:slotted(.cib-nav-action:active) {
+  background: var(--bs-gray-400);
+}
+/* Square touch targets on mobile */
+.cib-nav-burger {
+  width: 44px;
+  height: 44px;
+  margin-left: 0.5rem;
+  padding: 0;
+}
+@media (max-width: 767.98px) {
+  :slotted(.cib-nav-action) {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+  }
 }
 </style>

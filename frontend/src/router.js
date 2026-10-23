@@ -23,6 +23,9 @@ import { AuthService, SetupService } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
 import CibSeven from '@/components/CibSeven.vue'
 import StartView from '@/components/start/StartView.vue'
+import TasksStartView from '@/components/start/TasksStartView.vue'
+import BuilderStartView from '@/components/start/BuilderStartView.vue'
+import AccessManagement from '@/components/admin/AccessManagement.vue'
 import StartProcessView from '@/components/start-process/StartProcessView.vue'
 import ProcessView from '@/components/process/ProcessView.vue'
 import ProcessListView from '@/components/processes/list/ProcessListView.vue'
@@ -155,6 +158,8 @@ const appRoutes = [
           },
 
           { path: 'start', name: 'start', component: StartView },
+          { path: 'tasks-home', name: 'tasksHome', beforeEnter: permissionsGuard('tasklist'), component: TasksStartView, meta: { title: 'start.tasks.title' } },
+          { path: 'builder', name: 'builderHome', beforeEnter: modelerGuard, component: BuilderStartView, meta: { title: 'start.builder.title' } },
 
           // Modeler
           { path: 'modeler/:diagramId?', name: 'modeler', beforeEnter: modelerGuard, component: ModelerView, meta: { title: 'start.modeler.title' } },
@@ -271,7 +276,12 @@ const appRoutes = [
               template: '<router-view></router-view>'
             },
             children: [
-              { path: '', name: 'usersManagement', component: UsersManagement },
+              { path: '', name: 'usersManagement', component: UsersManagement, meta: { title: 'start.admin.title' } },
+              {
+                path: 'access-management', name: 'accessManagement', component: AccessManagement, meta: { title: 'start.accessManagement.title' },
+                beforeEnter: anyPermissionGuard(['usersManagement', 'user'], ['groupsManagement', 'group'],
+                  ['tenantsManagement', 'tenant'], ['authorizationsManagement', 'authorization'])
+              },
               { path: 'users', name: 'adminUsers', beforeEnter: permissionsGuard('usersManagement', 'user'), component: AdminUsers },
               {
                 path: 'user/:userId', name: 'adminUser',
@@ -412,6 +422,16 @@ function permissionsGuard(permission, condition = undefined) {
         refPath: from.fullPath,
       }
     }
+  }
+}
+
+// Passes as soon as one of the [permission, condition] pairs is granted; otherwise redirects as the first one would
+function anyPermissionGuard(...rules) {
+  return function(to, from) {
+    const granted = rules.some(([permission, condition]) => permissionsGuard(permission, condition)(to, from) === true)
+    if (granted) return true
+    const [permission, condition] = rules[0]
+    return permissionsGuard(permission, condition)(to, from)
   }
 }
 

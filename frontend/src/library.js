@@ -54,7 +54,7 @@ export { createProvideObject } from '@/utils/provide.js'
 // plugins — the mechanism is shared with the applications embedding this
 // library; each supplies its own plugin-runtime entry, since module instances
 // only exist within one build
-export { registerPlugin, getPlugin, resetPlugins, reserveSlotIds, PLUGIN_API_VERSION, getRuntimeInfo } from '@/plugins/pluginsConfig.js'
+export { registerPlugin, getPlugin, resetPlugins, reserveSlotIds, PLUGIN_API_VERSION, getRuntimeInfo, getPluginsSettled } from '@/plugins/pluginsConfig.js'
 export { defineTabBar } from '@/utils/tabBar.js'
 // as one object, so a downstream plugin runtime can hand it over without listing every service
 export * as services from '@/services.js'
@@ -75,6 +75,17 @@ export { default as usersMixin } from '@/mixins/usersMixin.js'
 export { default as copyToClipboardMixin } from '@/mixins/copyToClipboardMixin.js'
 export { default as assigneeMixin } from '@/mixins/assigneeMixin.js'
 export { default as navigationPermissionsMixin, ADMIN_ENTRY_SLOT } from '@/mixins/navigationPermissionsMixin.js'
+// Navigation catalog: only what editions (EE/Flow) build on
+export {
+  SURFACES,
+  buildNavGroups,
+  buildVisibleNavGroups,
+  filterVisibleNavGroups,
+  projectStartHoverOptions,
+  permissionFlagsFromVm,
+  registerNavGroupsExtender
+} from '@/navigation/navGroups.js'
+export { isStartableInTasklist, hasStartableProcesses } from '@/utils/process.js'
 
 // components
 export { default as CibSeven } from '@/components/CibSeven.vue'
@@ -85,6 +96,8 @@ export { default as FeedbackModal } from '@/components/modals/FeedbackModal.vue'
 export { default as FeedbackScreenshot } from '@/components/modals/FeedbackScreenshot.vue'
 export { default as TaskList } from '@/components/common-components/TaskList.vue'
 export { default as CIBHeaderFlow } from '@/components/common-components/CIBHeaderFlow.vue'
+export { default as NavCluster } from '@/components/common-components/navigation/NavCluster.vue'
+export { default as NavMobileMenu } from '@/components/common-components/navigation/NavMobileMenu.vue'
 export { default as ResetDialog } from '@/components/login/ResetDialog.vue'
 export { default as OtpDialog } from '@/components/login/OtpDialog.vue'
 export { default as SecureInput } from '@/components/login/SecureInput.vue'
@@ -177,6 +190,10 @@ export { default as DmnViewer } from '@/components/decision/DmnViewer.vue'
 export { default as TemplateBase } from '@/components/forms/TemplateBase.vue'
 export { default as StartView } from '@/components/start/StartView.vue'
 export { default as StartViewItem } from '@/components/start/StartViewItem.vue'
+export { default as StartHubView } from '@/components/start/StartHubView.vue'
+export { default as TasksStartView } from '@/components/start/TasksStartView.vue'
+export { default as BuilderStartView } from '@/components/start/BuilderStartView.vue'
+export { default as AccessManagement } from '@/components/admin/AccessManagement.vue'
 export { default as LoginView } from '@/components/login/LoginView.vue'
 export { default as LoggedOutView } from '@/components/login/LoggedOutView.vue'
 export { default as InitialSetup } from '@/components/setup/InitialSetup.vue'
