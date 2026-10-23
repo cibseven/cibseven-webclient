@@ -92,6 +92,77 @@ describe('EditHistoryTimeToLiveModal.vue', () => {
       vm.show({ historyTimeToLive: 0 })
       expect(vm.editTtlValue).toBe(90)
     })
+
+    // A definition without a TTL can exist on an enforcing engine (deployed before enforcement
+    // was switched on, or with enforcement skipped). The 'default' radio is disabled there, so
+    // it must never be preselected - saving it would send null and the engine rejects that.
+    describe('definition without TTL on an engine that enforces one', () => {
+      it.each([
+        ['null', { historyTimeToLive: null }],
+        ['undefined', {}]
+      ])('never preselects the disabled default choice (%s TTL)', async (_, item) => {
+        const vm = context({ $root: { config: { enforceHistoryTimeToLive: true, historyTimeToLive: -1 } } })
+
+        vm.show(item)
+        await vm.$nextTick()
+
+        expect(vm.defaultChoiceDisabled).toBe(true)
+        expect(vm.choice).not.toBe('default')
+        expect(vm.saveDisabled).toBe(false)
+        expect(vm.$refs.modal.show).toHaveBeenCalled()
+      })
+
+      it('preselects custom prefilled with the engine default, keeping the engine policy', () => {
+        const vm = context({ $root: { config: { enforceHistoryTimeToLive: true, historyTimeToLive: 180 } } })
+
+        vm.show({ historyTimeToLive: null })
+
+        expect(vm.choice).toBe('custom')
+        expect(vm.editTtlValue).toBe(180)
+      })
+
+      it('preselects zero when the engine default is 0', () => {
+        const vm = context({ $root: { config: { enforceHistoryTimeToLive: true, historyTimeToLive: 0 } } })
+
+        vm.show({ historyTimeToLive: null })
+
+        expect(vm.choice).toBe('zero')
+        expect(vm.editTtlValue).toBe(30)
+      })
+
+      it.each([
+        ['no default configured (-1)', -1],
+        ['unknown default (null)', null]
+      ])('preselects custom prefilled with the last custom value when there is %s', (_, historyTimeToLive) => {
+        localStorage.setItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY, '90')
+        const vm = context({ $root: { config: { enforceHistoryTimeToLive: true, historyTimeToLive } } })
+
+        vm.show({ historyTimeToLive: null })
+
+        expect(vm.choice).toBe('custom')
+        expect(vm.editTtlValue).toBe(90)
+      })
+
+      it('keeps the default choice when enforcement is off or unknown', () => {
+        for (const enforceHistoryTimeToLive of [false, null, undefined]) {
+          const vm = context({ $root: { config: { enforceHistoryTimeToLive, historyTimeToLive: 180 } } })
+
+          vm.show({ historyTimeToLive: null })
+
+          expect(vm.choice).toBe('default')
+        }
+      })
+
+      it('keeps an explicit TTL preselected as usual', () => {
+        const vm = context({ $root: { config: { enforceHistoryTimeToLive: true, historyTimeToLive: 180 } } })
+
+        vm.show({ historyTimeToLive: 45 })
+        expect(vm).toMatchObject({ choice: 'custom', editTtlValue: 45 })
+
+        vm.show({ historyTimeToLive: 0 })
+        expect(vm.choice).toBe('zero')
+      })
+    })
   })
 
   describe('resetTtlDialog', () => {
@@ -299,6 +370,37 @@ describe('EditHistoryTimeToLiveModal.vue', () => {
       expect(vm.$emit).not.toHaveBeenCalled()
       expect(vm.$refs.modal.hide).not.toHaveBeenCalled()
       expect(localStorage.getItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY)).toBeNull()
+    })
+
+    // Safeguard: a disabled 'default' would send null, which an enforcing engine rejects with
+    // a NotAllowedException (HTTP 400) - it must never reach the engine.
+    it('does not emit or close for the default choice when the engine enforces a TTL', async () => {
+      const vm = context({
+        choice: 'default',
+        selectedItem: { id: 'def-1' },
+        $root: { config: { enforceHistoryTimeToLive: true, historyTimeToLive: 180 } }
+      })
+
+      await vm.saveTtlValue()
+
+      expect(vm.$emit).not.toHaveBeenCalled()
+      expect(vm.$refs.modal.hide).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('saveDisabled', () => {
+    it.each([
+      // [choice, enforceHistoryTimeToLive, editTtlValue, expected]
+      ['default', true, 30, true],
+      ['default', false, 30, false],
+      ['default', null, 30, false], // unknown (engine before 3.0.0): left selectable
+      ['zero', true, 30, false],
+      ['custom', true, 30, false],
+      ['custom', true, -1, true] // invalid custom value
+    ])('choice %s, enforce %j, value %j -> disabled %j', (choice, enforceHistoryTimeToLive, editTtlValue, expected) => {
+      const vm = context({ choice, editTtlValue, $root: { config: { enforceHistoryTimeToLive } } })
+
+      expect(vm.saveDisabled).toBe(expected)
     })
   })
 })

@@ -108,7 +108,7 @@
       <b-button variant="light" @click="$refs.modal.hide()">
         {{ $t('confirm.cancel') }}
       </b-button>
-      <b-button variant="primary" :disabled="errorInCustomChoice" @click="saveTtlValue">
+      <b-button variant="primary" :disabled="saveDisabled" @click="saveTtlValue">
         {{ $t('commons.save') }}
       </b-button>
     </template>
@@ -179,13 +179,24 @@ export default {
       if (this.choice !== 'custom') return false
       const value = Number.parseInt(this.editTtlValue)
       return Number.isNaN(value) || value < this.customValueMin || value > this.customValueMax
+    },
+    // Safeguard on top of the preselection in show(): never send a choice the user cannot
+    // select. A disabled 'default' would save null, which an enforcing engine rejects.
+    saveDisabled() {
+      return this.errorInCustomChoice || (this.choice === 'default' && this.defaultChoiceDisabled)
     }
   },
   methods: {
     // Parent calls show(item) via ref to open the dialog
     show(item) {
       this.selectedItem = item
-      if (item.historyTimeToLive === null || item.historyTimeToLive === undefined) {
+      if ((item.historyTimeToLive === null || item.historyTimeToLive === undefined) && this.defaultChoiceDisabled) {
+        // The definition has no TTL (deployed before enforcement was switched on, or with
+        // enforcement skipped), but the engine now enforces one: the 'default' choice (which
+        // saves null) is disabled, because the engine rejects null with a NotAllowedException.
+        // Never preselect a disabled radio - preselect what the engine would apply instead.
+        this.preselectEnforcedChoice()
+      } else if (item.historyTimeToLive === null || item.historyTimeToLive === undefined) {
         this.choice = 'default'
         this.editTtlValue = this.loadLastCustomValue()
       } else if (item.historyTimeToLive === 0) {
@@ -203,6 +214,26 @@ export default {
       })
     },
 
+    // Preselection for a definition without a TTL on an engine that enforces one. Mirrors what
+    // the engine applies at deployment time to models without their own TTL:
+    // - engine default 0      -> 'zero'
+    // - engine default n > 0  -> 'custom' prefilled with n, so saving keeps the engine's policy
+    // - no (known) default    -> 'custom' prefilled with the last custom value (or 30 days)
+    // The user still has to confirm with Save; nothing is sent until then.
+    preselectEnforcedChoice() {
+      const systemDefault = this.$root.config.historyTimeToLive
+      if (systemDefault === 0) {
+        this.choice = 'zero'
+        this.editTtlValue = this.loadLastCustomValue()
+      } else if (Number.isInteger(systemDefault) && systemDefault > 0 && systemDefault <= this.customValueMax) {
+        this.choice = 'custom'
+        this.editTtlValue = systemDefault
+      } else {
+        this.choice = 'custom'
+        this.editTtlValue = this.loadLastCustomValue()
+      }
+    },
+
     resetTtlDialog() {
       this.selectedItem = null
       this.choice = 'default'
@@ -210,7 +241,7 @@ export default {
     },
 
     async saveTtlValue() {
-      if (this.errorInCustomChoice) {
+      if (this.saveDisabled) {
         return
       }
 
