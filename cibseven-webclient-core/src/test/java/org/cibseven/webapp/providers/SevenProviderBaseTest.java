@@ -86,8 +86,8 @@ public class SevenProviderBaseTest {
     @Test
     public void testGetEngineRestUrl_DefaultPath() {
         TestProvider provider = new TestProvider();
-        ReflectionTestUtils.setField(provider, "cibsevenUrl", "http://localhost:8080");
-        ReflectionTestUtils.setField(provider, "engineRestPath", "/engine-rest");
+        provider.properties.getEngineRest().setUrl("http://localhost:8080");
+        provider.properties.getEngineRest().setPath("/engine-rest");
 
         String result = provider.getEngineRestUrl();
         assertEquals("http://localhost:8080/engine-rest", result);
@@ -96,8 +96,8 @@ public class SevenProviderBaseTest {
     @Test
     public void testGetEngineRestUrl_CustomPath() {
         TestProvider provider = new TestProvider();
-        ReflectionTestUtils.setField(provider, "cibsevenUrl", "http://localhost:8080");
-        ReflectionTestUtils.setField(provider, "engineRestPath", "/different-path");
+        provider.properties.getEngineRest().setUrl("http://localhost:8080");
+        provider.properties.getEngineRest().setPath("/different-path");
 
         String result = provider.getEngineRestUrl();
         assertEquals("http://localhost:8080/different-path", result);
@@ -106,8 +106,8 @@ public class SevenProviderBaseTest {
     @Test
     public void testGetEngineRestUrl_BaseUrlWithTrailingSlash() {
         TestProvider provider = new TestProvider();
-        ReflectionTestUtils.setField(provider, "cibsevenUrl", "http://localhost:8080/");
-        ReflectionTestUtils.setField(provider, "engineRestPath", "/engine-rest");
+        provider.properties.getEngineRest().setUrl("http://localhost:8080/");
+        provider.properties.getEngineRest().setPath("/engine-rest");
 
         String result = provider.getEngineRestUrl();
         assertEquals("http://localhost:8080/engine-rest", result);
@@ -116,8 +116,8 @@ public class SevenProviderBaseTest {
     @Test
     public void testGetEngineRestUrl_PathWithoutLeadingSlash() {
         TestProvider provider = new TestProvider();
-        ReflectionTestUtils.setField(provider, "cibsevenUrl", "http://localhost:8080");
-        ReflectionTestUtils.setField(provider, "engineRestPath", "engine-rest");
+        provider.properties.getEngineRest().setUrl("http://localhost:8080");
+        provider.properties.getEngineRest().setPath("engine-rest");
 
         String result = provider.getEngineRestUrl();
         assertEquals("http://localhost:8080/engine-rest", result);
@@ -126,8 +126,8 @@ public class SevenProviderBaseTest {
     @Test
     public void testGetEngineRestUrl_BothWithSlashes() {
         TestProvider provider = new TestProvider();
-        ReflectionTestUtils.setField(provider, "cibsevenUrl", "http://localhost:8080/");
-        ReflectionTestUtils.setField(provider, "engineRestPath", "/engine-rest");
+        provider.properties.getEngineRest().setUrl("http://localhost:8080/");
+        provider.properties.getEngineRest().setPath("/engine-rest");
 
         String result = provider.getEngineRestUrl();
         assertEquals("http://localhost:8080/engine-rest", result);
@@ -136,8 +136,8 @@ public class SevenProviderBaseTest {
     @Test
     public void testGetEngineRestUrl_RelativeBaseUrl() {
         TestProvider provider = new TestProvider();
-        ReflectionTestUtils.setField(provider, "cibsevenUrl", "./");
-        ReflectionTestUtils.setField(provider, "engineRestPath", "/engine-rest");
+        provider.properties.getEngineRest().setUrl("./");
+        provider.properties.getEngineRest().setPath("/engine-rest");
 
         String result = provider.getEngineRestUrl();
         assertEquals("./engine-rest", result);
@@ -148,8 +148,8 @@ public class SevenProviderBaseTest {
     @Test
     public void testGetEngineRestUrl_WithUser_PipeFormat() {
         TestProvider provider = new TestProvider();
-        ReflectionTestUtils.setField(provider, "cibsevenUrl", "http://localhost:8080");
-        ReflectionTestUtils.setField(provider, "engineRestPath", "/engine-rest");
+        provider.properties.getEngineRest().setUrl("http://localhost:8080");
+        provider.properties.getEngineRest().setPath("/engine-rest");
 
         CIBUser user = mock(CIBUser.class);
         when(user.getEngine()).thenReturn("http://remote:9090|/custom-path|myengine");
@@ -161,8 +161,8 @@ public class SevenProviderBaseTest {
     @Test
     public void testGetEngineRestUrl_WithUser_PipeFormatWithTrailingSlash() {
         TestProvider provider = new TestProvider();
-        ReflectionTestUtils.setField(provider, "cibsevenUrl", "http://localhost:8080");
-        ReflectionTestUtils.setField(provider, "engineRestPath", "/engine-rest");
+        provider.properties.getEngineRest().setUrl("http://localhost:8080");
+        provider.properties.getEngineRest().setPath("/engine-rest");
 
         CIBUser user = mock(CIBUser.class);
         when(user.getEngine()).thenReturn("http://remote:9090/|custom-path|myengine");
@@ -174,8 +174,8 @@ public class SevenProviderBaseTest {
     @Test
     public void testGetEngineRestUrl_WithUser_LegacyFormatNonDefault() {
         TestProvider provider = new TestProvider();
-        ReflectionTestUtils.setField(provider, "cibsevenUrl", "http://localhost:8080");
-        ReflectionTestUtils.setField(provider, "engineRestPath", "/engine-rest");
+        provider.properties.getEngineRest().setUrl("http://localhost:8080");
+        provider.properties.getEngineRest().setPath("/engine-rest");
 
         CIBUser user = mock(CIBUser.class);
         when(user.getEngine()).thenReturn("myengine");
@@ -187,8 +187,8 @@ public class SevenProviderBaseTest {
     @Test
     public void testGetEngineRestUrl_WithUser_LegacyFormatDefault() {
         TestProvider provider = new TestProvider();
-        ReflectionTestUtils.setField(provider, "cibsevenUrl", "http://localhost:8080");
-        ReflectionTestUtils.setField(provider, "engineRestPath", "/engine-rest");
+        provider.properties.getEngineRest().setUrl("http://localhost:8080");
+        provider.properties.getEngineRest().setPath("/engine-rest");
 
         CIBUser user = mock(CIBUser.class);
         when(user.getEngine()).thenReturn("default");
@@ -200,8 +200,8 @@ public class SevenProviderBaseTest {
     @Test
     public void testGetEngineRestUrl_WithUser_NullEngine() {
         TestProvider provider = new TestProvider();
-        ReflectionTestUtils.setField(provider, "cibsevenUrl", "http://localhost:8080");
-        ReflectionTestUtils.setField(provider, "engineRestPath", "/engine-rest");
+        provider.properties.getEngineRest().setUrl("http://localhost:8080");
+        provider.properties.getEngineRest().setPath("/engine-rest");
 
         CIBUser user = mock(CIBUser.class);
         when(user.getEngine()).thenReturn(null);
@@ -213,8 +213,8 @@ public class SevenProviderBaseTest {
     @Test
     public void testGetEngineRestUrl_WithUser_EmptyEngine() {
         TestProvider provider = new TestProvider();
-        ReflectionTestUtils.setField(provider, "cibsevenUrl", "http://localhost:8080");
-        ReflectionTestUtils.setField(provider, "engineRestPath", "/engine-rest");
+        provider.properties.getEngineRest().setUrl("http://localhost:8080");
+        provider.properties.getEngineRest().setPath("/engine-rest");
 
         CIBUser user = mock(CIBUser.class);
         when(user.getEngine()).thenReturn("");
@@ -226,8 +226,8 @@ public class SevenProviderBaseTest {
     @Test
     public void testGetEngineRestUrl_NullUser() {
         TestProvider provider = new TestProvider();
-        ReflectionTestUtils.setField(provider, "cibsevenUrl", "http://localhost:8080");
-        ReflectionTestUtils.setField(provider, "engineRestPath", "/engine-rest");
+        provider.properties.getEngineRest().setUrl("http://localhost:8080");
+        provider.properties.getEngineRest().setPath("/engine-rest");
 
         String result = provider.getEngineRestUrl(null);
         assertEquals("http://localhost:8080/engine-rest", result);
@@ -236,8 +236,8 @@ public class SevenProviderBaseTest {
     @Test
     public void testGetEngineRestUrl_WithUser_IncompletePipeFormat() {
         TestProvider provider = new TestProvider();
-        ReflectionTestUtils.setField(provider, "cibsevenUrl", "http://localhost:8080");
-        ReflectionTestUtils.setField(provider, "engineRestPath", "/engine-rest");
+        provider.properties.getEngineRest().setUrl("http://localhost:8080");
+        provider.properties.getEngineRest().setPath("/engine-rest");
 
         CIBUser user = mock(CIBUser.class);
         // Pipe format but incomplete (only 2 parts instead of 3)
@@ -251,8 +251,8 @@ public class SevenProviderBaseTest {
     @Test
     public void testGetEngineRestUrl_WithUser_PipeFormatWithDefaultEngine() {
         TestProvider provider = new TestProvider();
-        ReflectionTestUtils.setField(provider, "cibsevenUrl", "http://localhost:8080");
-        ReflectionTestUtils.setField(provider, "engineRestPath", "/engine-rest");
+        provider.properties.getEngineRest().setUrl("http://localhost:8080");
+        provider.properties.getEngineRest().setPath("/engine-rest");
 
         CIBUser user = mock(CIBUser.class);
         // Pipe format with "default" as engine name

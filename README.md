@@ -36,6 +36,49 @@ mvn clean install
 
 The webclient can be configured using Spring Boot properties. Key configuration options include:
 
+#### Where settings and defaults are defined
+
+All settings below `cibseven.webclient` and their defaults are defined in one class,
+[`SevenWebclientProperties`](cibseven-interfaces/src/main/java/org/cibseven/webapp/config/SevenWebclientProperties.java).
+The build turns its Javadoc into `META-INF/spring-configuration-metadata.json` in the `cibseven-interfaces` jar,
+which IDEs use for completion and documentation of these properties in `application.yaml`.
+The webclient no longer ships an `application.yaml`. Put your own settings in `cibseven-webclient.yaml`
+or `cibseven-webclient.properties` on the classpath, or use any other Spring Boot property source
+(environment variables, system properties, an external `application.yaml`).
+
+The webclient reads `cibseven-webclient.properties` and `cibseven-webclient.yaml` from the classpath
+in every setup: standalone, in the Run distribution and embedded into another Spring Boot application.
+They rank just above the defaults: every configuration file of the application, environment variables
+and system properties override them, and the YAML file overrides the properties file. They are not read
+when `cibseven.webclient.enabled` is `false`.
+The Run distribution also imports both files in its `default.yml` and `production.yml`, so there they
+keep overriding Run's own configuration.
+
+The webclient's tables (modeler, folders, history) live in its own JPA persistence unit, so the global
+`spring.jpa.*` settings of your application do not apply to them and vice versa. Hibernate settings for
+that unit go under `cibseven.webclient.persistence.properties`, for example
+`cibseven.webclient.persistence.properties.hibernate.default_schema`.
+
+#### Defaults of the standalone application
+
+When the webclient runs as its own application (`java -jar` or a WAR on Tomcat/WildFly), it additionally
+sets the following framework defaults, see
+[`StandaloneDefaults`](cibseven-webclient-core/src/main/java/org/cibseven/webapp/config/StandaloneDefaults.java).
+They have the lowest precedence, so any configured value overrides them.
+
+| Property | Default | Spring Boot's own default |
+|---|---|---|
+| `spring.servlet.register-default-servlet` | `true` | `false` |
+| `spring.servlet.multipart.max-file-size` | `10MB` | `1MB` |
+| `spring.servlet.multipart.max-request-size` | `1GB` | `10MB` |
+| `springdoc.swagger-ui.path` | `/swagger-ui` | `/swagger-ui.html` |
+| `springdoc.swagger-ui.operationsSorter`, `tagsSorter` | `alpha` | unsorted |
+| `springdoc.swagger-ui.doc-expansion` | `none` | `list` |
+
+When the webclient is embedded into another Spring Boot application, none of these defaults are set. The webclient
+does define the `objectMapper` bean, though, so Spring Boot does not create its own and the application's
+`spring.jackson.*` settings do not apply to it.
+
 #### Engine REST API Configuration
 
 ```yaml

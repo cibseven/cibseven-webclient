@@ -28,7 +28,7 @@ import org.cibseven.webapp.auth.sso.SSOUser;
 import org.cibseven.webapp.auth.sso.SsoHelper;
 import org.cibseven.webapp.auth.sso.TokenResponse;
 import org.cibseven.webapp.exception.SystemException;
-import org.springframework.beans.factory.annotation.Value;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,26 +50,19 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class AdfsUserProvider extends BaseUserProvider<SSOLogin> {
 	
-	@Value("${cibseven.webclient.sso.endpoints.token}") String tokenEndpoint;
-	@Value("${cibseven.webclient.sso.endpoints.jwks}") String certEndpoint;
-	@Value("${cibseven.webclient.sso.domain:}") String domain;
-	@Value("${cibseven.webclient.sso.clientId}") String clientId;
-	@Value("${cibseven.webclient.sso.clientSecret}") String clientSecret;
-	@Value("${cibseven.webclient.sso.userIdProperty}") String userIdProperty;
-	@Value("${cibseven.webclient.sso.userNameProperty}") String userNameProperty;
-	@Value("${cibseven.webclient.sso.infoInIdToken: false}") boolean infoInIdToken;
-	@Value("${cibseven.webclient.sso.technicalUserId}") String technicalUserId;
-	
-	@Value("${cibseven.webclient.authentication.jwtSecret}") String secret;
-	
 	@Getter JwtTokenSettings settings;
 	SsoHelper ssoHelper;
 	JwtParser flowParser;
 	
 	@PostConstruct
 	public void init() throws Exception {
-		settings = new JwtTokenSettings(secret, validMinutes, prolongMinutes);
-		ssoHelper = new SsoHelper(tokenEndpoint, clientId, clientSecret, null, null, certEndpoint, null, null);
+		settings = new JwtTokenSettings(properties.getAuthentication().getJwtSecret(), getValidMinutes(), getProlongMinutes());
+		SevenWebclientProperties.Sso sso = properties.getSso();
+		required(sso.getUserIdProperty(), "sso.userIdProperty");
+		required(sso.getUserNameProperty(), "sso.userNameProperty");
+		required(sso.getTechnicalUserId(), "sso.technicalUserId");
+		ssoHelper = new SsoHelper(required(sso.getEndpoints().getToken(), "sso.endpoints.token"), required(sso.getClientId(), "sso.clientId"),
+			required(sso.getClientSecret(), "sso.clientSecret"), null, null, required(sso.getEndpoints().getJwks(), "sso.endpoints.jwks"), null, null);
 		checkKey();
 		SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(settings.getSecret()));
 		flowParser = Jwts.parser().verifyWith(key).build();
@@ -83,13 +76,13 @@ public class AdfsUserProvider extends BaseUserProvider<SSOLogin> {
 		else {
 			String username = params.getUsername();
 			if (!username.contains("@") && !username.contains("\\"))
-				username = username + "@" + domain;
+				username = username + "@" + properties.getSso().getDomain();
 			tokens = ssoHelper.passwordLogin(username, params.getPassword());
 		}
 		
-		Claims userClaims = infoInIdToken ? tokens.getIdClaims() : tokens.getAccessClaims();
-		SSOUser user = new SSOUser(userClaims.get(userIdProperty, String.class));
-		user.setDisplayName(userClaims.get(userNameProperty, String.class));
+		Claims userClaims = properties.getSso().isInfoInIdToken() ? tokens.getIdClaims() : tokens.getAccessClaims();
+		SSOUser user = new SSOUser(userClaims.get(properties.getSso().getUserIdProperty(), String.class));
+		user.setDisplayName(userClaims.get(properties.getSso().getUserNameProperty(), String.class));
 		user.setRefreshToken(tokens.getRefresh_token());
 		
 		// Set engine from request header
@@ -97,7 +90,7 @@ public class AdfsUserProvider extends BaseUserProvider<SSOLogin> {
 		
 		// Get the appropriate token settings for this engine
 		TokenSettings tokenSettings = EngineTokenUtils.getSettingsForEngine(
-			user.getEngine(), engineRestProperties, getSettings(), validMinutes, prolongMinutes);
+			user.getEngine(), getEngineRestProperties(), getSettings(), getValidMinutes(), getProlongMinutes());
 		user.setAuthToken(createToken(tokenSettings, true, false, user));
 		user.setRefreshToken(null);
 		return user;
@@ -153,7 +146,7 @@ public class AdfsUserProvider extends BaseUserProvider<SSOLogin> {
 	public User parse(String token, TokenSettings settings) {
 		// Determine the correct settings based on the engine in the token
 		TokenSettings effectiveSettings = EngineTokenUtils.getEffectiveSettingsForToken(
-			token, engineRestProperties, settings, validMinutes, prolongMinutes);
+			token, getEngineRestProperties(), settings, getValidMinutes(), getProlongMinutes());
 		
 		try {
 			// Create parser with effective settings for engine-specific secret
@@ -174,7 +167,7 @@ public class AdfsUserProvider extends BaseUserProvider<SSOLogin> {
 			throw new TokenExpiredException();			
 		} catch (IllegalArgumentException | InvalidKeyException | MalformedJwtException | UnsupportedJwtException e) {
 			Claims claims = ssoHelper.getKeyResolver().checkToken(token);
-			SSOUser user = new SSOUser(technicalUserId);
+			SSOUser user = new SSOUser(properties.getSso().getTechnicalUserId());
 			user.setDisplayName(claims.get("appid", String.class));
 			user.setAuthToken(createToken(effectiveSettings, false, false, user));
 			return user;

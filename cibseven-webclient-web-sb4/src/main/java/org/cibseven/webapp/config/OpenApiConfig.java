@@ -20,10 +20,9 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.rest.model.InfoVersion;
 import org.springdoc.core.customizers.OpenApiCustomizer;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -37,30 +36,19 @@ import io.swagger.v3.oas.models.servers.Server;
 @Configuration
 public class OpenApiConfig {
 
-	@Value("${cibseven.webclient.api.common.url:}")
-	String serverUrl;
-	@Value("${cibseven.webclient.api.common.title:CIB seven webclient API}")
-	String apiTitle;
-	@Value("${cibseven.webclient.api.common.description:This API exposes the functionality of CIB seven webclient as a REST service under the Apache License 2.0.}")
-	String apiDescription;
-	@Value("${cibseven.webclient.api.common.termsOfService:https://www.apache.org/licenses/LICENSE-2.0}")
-	String apiTermsOfService;
-	@Value("${cibseven.webclient.api.common.license:Apache 2.0}")
-	String apiLicense;
-	@Value("${cibseven.webclient.api.common.licenseUrl:https://www.apache.org/licenses/LICENSE-2.0}")
-	String apiLicenseUrl;
-	@Value("${cibseven.webclient.api.common.contact.name:CIB seven}")
-	String apiContactName;
-	@Value("${cibseven.webclient.api.common.contact.url:https://cibseven.org}")
-	String apiContactUrl;
-	@Value("${cibseven.webclient.api.common.contact.email:info@cibseven.org}")
-	String apiContactEmail;
-	
-	@Autowired
-	InfoVersion infoVersion;
+	private final SevenWebclientProperties properties;
+
+	private final InfoVersion infoVersion;
+
+	public OpenApiConfig(SevenWebclientProperties properties, InfoVersion infoVersion) {
+		this.properties = properties;
+		this.infoVersion = infoVersion;
+	}
 	
 	@Bean
 	OpenAPI getOpenApiDocumentation() {
+		SevenWebclientProperties.Api.Common api = properties.getApi().getCommon();
+		String serverUrl = api.getUrl();
 		OpenAPI openAPI = new OpenAPI();
 
 		if (serverUrl != null && !serverUrl.isEmpty()) {
@@ -70,9 +58,9 @@ public class OpenApiConfig {
 		}
 
 		return openAPI.info(
-			new Info().title(apiTitle).description(apiDescription).version(infoVersion.getVersion())
-			.contact(new Contact().name(apiContactName).url(apiContactUrl).email(apiContactEmail))
-			.termsOfService(apiTermsOfService).license(new License().name(apiLicense).url(apiLicenseUrl)));
+			new Info().title(api.getTitle()).description(api.getDescription()).version(infoVersion.getVersion())
+			.contact(new Contact().name(api.getContact().getName()).url(api.getContact().getUrl()).email(api.getContact().getEmail()))
+			.termsOfService(api.getTermsOfService()).license(new License().name(api.getLicense()).url(api.getLicenseUrl())));
 	}
 
     @Bean

@@ -65,7 +65,7 @@ class TaskBpmnEscalationRoutingTest {
 		bpmProvider = mock(BpmProvider.class);
 		taskService = new TaskService();
 		ReflectionTestUtils.setField(taskService, "bpmProvider", bpmProvider);
-		ReflectionTestUtils.setField(taskService, "authorizationEnabled", false);
+		taskService.properties.getDeprecated().getAuthorization().setEnabled(false);
 		mockMvc = MockMvcBuilders.standaloneSetup(taskService)
 			.setCustomArgumentResolvers(new CibUserArgumentResolver())
 			.addPlaceholderValue("cibseven.webclient.services.basePath", "/services/v1")
@@ -116,7 +116,7 @@ class TaskBpmnEscalationRoutingTest {
 
 	@Test
 	void escalationRequiresTaskUpdatePermissionLikeBpmnError() {
-		ReflectionTestUtils.setField(taskService, "authorizationEnabled", true);
+		taskService.properties.getDeprecated().getAuthorization().setEnabled(true);
 		Authorizations noRights = new Authorizations();
 		noRights.setTask(List.of());
 		when(bpmProvider.getUserAuthorization(USER)).thenReturn(noRights);

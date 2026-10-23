@@ -23,9 +23,11 @@ import javax.sql.DataSource;
 import org.cibseven.modeler.config.ModelerPersistence;
 import org.cibseven.modeler.config.contributed.ContributedEntity;
 import org.cibseven.modeler.model.ProcessDiagramEntity;
+import org.cibseven.webapp.config.SevenWebclientPropertiesAutoConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.BeanFactoryAnnotationUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -50,8 +52,9 @@ class CibsevenPersistenceConfigurationTest {
 
 	/** A standalone webclient: Spring Boot auto-configures the application's JPA beans. */
 	private final ApplicationContextRunner standalone = new ApplicationContextRunner()
+		.withConfiguration(AutoConfigurations.of(SevenWebclientPropertiesAutoConfiguration.class))
 		.withPropertyValues("spring.datasource.url=jdbc:h2:mem:standalone;DB_CLOSE_DELAY=-1",
-			"spring.jpa.hibernate.ddl-auto=create-drop")
+			"cibseven.webclient.persistence.properties.hibernate.hbm2ddl.auto=create-drop")
 		.withConfiguration(org.springframework.boot.autoconfigure.AutoConfigurations
 			.of(DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class))
 		.withUserConfiguration(CibsevenPersistenceConfiguration.class, ModelerLikeFeature.class);

@@ -29,6 +29,7 @@ import static org.mockito.Mockito.when;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.providers.EngineProvider;
@@ -50,34 +51,18 @@ public class InfoServiceTest {
 
     private InfoService infoService;
 
+	private SevenWebclientProperties properties;
+
 	@BeforeEach
 	public void setUp() {
 		infoService = new InfoService();
 		ReflectionTestUtils.setField(infoService, "bpmProvider", bpmProvider);
 
-		// Set all @Value fields to defaults to avoid NullPointerExceptions
-		ReflectionTestUtils.setField(infoService, "theme", "cib");
-		ReflectionTestUtils.setField(infoService, "ssoActive", false);
-		ReflectionTestUtils.setField(infoService, "authorizationEndpoint", "");
-		ReflectionTestUtils.setField(infoService, "clientId", "");
-		ReflectionTestUtils.setField(infoService, "scopes", "");
-		ReflectionTestUtils.setField(infoService, "userProvider", "org.cibseven.webapp.auth.SevenUserProvider");
-		ReflectionTestUtils.setField(infoService, "userEditable", true);
-		ReflectionTestUtils.setField(infoService, "userPasswordChangeEnabled", null);
-		ReflectionTestUtils.setField(infoService, "productNamePageTitle", "CIB seven");
-		ReflectionTestUtils.setField(infoService, "servicesBasePath", "services/v1");
-		ReflectionTestUtils.setField(infoService, "flowLinkTerms", "");
-		ReflectionTestUtils.setField(infoService, "flowLinkPrivacy", "");
-		ReflectionTestUtils.setField(infoService, "flowLinkImprint", "");
-		ReflectionTestUtils.setField(infoService, "flowLinkAccessibility", "");
-		ReflectionTestUtils.setField(infoService, "flowLinkHelp", "");
-		ReflectionTestUtils.setField(infoService, "supportDialog", "");
-		ReflectionTestUtils.setField(infoService, "engineRestPath", "/engine-rest");
-		ReflectionTestUtils.setField(infoService, "engineRestUrl", "./");
-		ReflectionTestUtils.setField(infoService, "legacyAuthorizationEnabled", false);
-		ReflectionTestUtils.setField(infoService, "modelerEnabled", false);
-		ReflectionTestUtils.setField(infoService, "pluginsEnabled", false);
-		ReflectionTestUtils.setField(infoService, "camundaHistoryLevel", "full");
+		properties = new SevenWebclientProperties();
+		properties.getUser().setEditable(true);
+		properties.getUser().setUserPasswordChangeEnabled(null);
+		properties.getEngineRest().setUrl("./");
+		infoService.properties = properties;
 		ReflectionTestUtils.setField(infoService, "authorizationEnabled", true);
 	}
 
@@ -89,7 +74,7 @@ public class InfoServiceTest {
 		// the frontend skips asking for plugins when this is false
 		assertFalse(infoService.getConfig(null).get("pluginsEnabled").asBoolean());
 
-		ReflectionTestUtils.setField(infoService, "pluginsEnabled", true);
+		properties.getPlugins().setEnabled(true);
 		assertTrue(infoService.getConfig(null).get("pluginsEnabled").asBoolean());
 	}
 
@@ -176,9 +161,7 @@ public class InfoServiceTest {
 	private EngineProvider newEngineProvider(MockWebServer mockWebServer) {
 		EngineProvider engineProvider = new EngineProvider();
 		ReflectionTestUtils.setField(engineProvider, "customRestTemplate", new CustomRestTemplate());
-		ReflectionTestUtils.setField(engineProvider, "cibsevenUrl", "http://localhost:" + mockWebServer.getPort());
-		ReflectionTestUtils.setField(engineProvider, "engineRestPath", "/engine-rest");
-		ReflectionTestUtils.setField(engineProvider, "jacksonParserMaxSize", 20_000_000);
+		((SevenWebclientProperties) ReflectionTestUtils.getField(engineProvider, "properties")).getEngineRest().setUrl("http://localhost:" + mockWebServer.getPort());
 		return engineProvider;
 	}
 
@@ -222,7 +205,7 @@ public class InfoServiceTest {
 
 	@Test
 	public void testGetConfig_nullEngineConfig_fallsBackToLegacyConfiguration() {
-		ReflectionTestUtils.setField(infoService, "camundaHistoryLevel", "audit");
+		properties.setHistoryLevel("audit");
 		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(null);
 
 		ObjectNode result = infoService.getConfig(null);
@@ -244,7 +227,7 @@ public class InfoServiceTest {
 	public void testGetConfig_authorizationEnabledFromEngineConfig() {
 		EngineConfiguration config = new EngineConfiguration("default", "full", false, false);
 		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
-		ReflectionTestUtils.setField(infoService, "legacyAuthorizationEnabled", false);
+		properties.getLegacy().getAuthorization().setEnabled(false);
 
 		ObjectNode result = infoService.getConfig(null);
 
@@ -255,7 +238,7 @@ public class InfoServiceTest {
 	public void testGetConfig_authorizationEnabled_trueWhenLegacyOverrides() {
 		EngineConfiguration config = new EngineConfiguration("default", "full", false, false);
 		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
-		ReflectionTestUtils.setField(infoService, "legacyAuthorizationEnabled", true);
+		properties.getLegacy().getAuthorization().setEnabled(true);
 
 		ObjectNode result = infoService.getConfig(null);
 
@@ -284,7 +267,7 @@ public class InfoServiceTest {
 
 	@Test
 	public void testGetConfig_notFoundException_fallsBackToLegacyHistoryLevel() {
-		ReflectionTestUtils.setField(infoService, "camundaHistoryLevel", "audit");
+		properties.setHistoryLevel("audit");
 		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(null);
 
 		ObjectNode result = infoService.getConfig(null);
@@ -304,7 +287,7 @@ public class InfoServiceTest {
 
 	@Test
 	public void testGetConfig_notFoundExceptionForNamedEngine_fallsBackToLegacyConfiguration() {
-		ReflectionTestUtils.setField(infoService, "camundaHistoryLevel", "none");
+		properties.setHistoryLevel("none");
 		when(bpmProvider.getEngineConfiguration("myEngine")).thenReturn(null);
 
 		ObjectNode result = infoService.getConfig("myEngine");

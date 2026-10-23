@@ -50,9 +50,9 @@ public class EngineProviderTest {
 
 		provider = new EngineProvider();
 		ReflectionTestUtils.setField(provider, "customRestTemplate", new CustomRestTemplate());
-		ReflectionTestUtils.setField(provider, "cibsevenUrl", "http://localhost:" + mockWebServer.getPort());
-		ReflectionTestUtils.setField(provider, "engineRestPath", "/engine-rest");
-		ReflectionTestUtils.setField(provider, "jacksonParserMaxSize", 20_000_000);
+		provider.properties.getEngineRest().setUrl("http://localhost:" + mockWebServer.getPort());
+		provider.properties.getEngineRest().setPath("/engine-rest");
+		provider.properties.getCustom().getSpring().getJackson().getParser().setMaxSize(20_000_000);
 	}
 
 	@AfterEach

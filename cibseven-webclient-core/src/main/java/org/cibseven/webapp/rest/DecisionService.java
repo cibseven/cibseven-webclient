@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.rest.model.HistoricDecisionInstance;
 
 import org.cibseven.webapp.auth.CIBUser;
@@ -61,7 +62,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
 	@ApiResponse(responseCode = "401", description = "Unauthorized")
 })
-@RestController("WebclientDecisionService") @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/decision")
+@RestController("WebclientDecisionService") @RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH + "/decision")
 public class DecisionService extends BaseService implements InitializingBean {
 	
 	public void afterPropertiesSet() {

@@ -27,6 +27,7 @@ import org.cibseven.webapp.NamedByteArrayDataSource;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.auth.exception.TokenExpiredException;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
@@ -42,7 +43,6 @@ import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -63,14 +63,11 @@ import jakarta.ws.rs.core.MediaType;
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
 	@ApiResponse(responseCode = "401", description = "Unauthorized")
 })
-@RestController("WebclientTaskService") @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}")
+@RestController("WebclientTaskService") @RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH)
 public class TaskService extends BaseService implements InitializingBean {
 	
 	@Autowired
 	private CustomRestTemplate restTemplate;
-
-	@Value("${cibseven.webclient.engineRest.url:./}") 
-	private String cibsevenUrl;
 
 	public void afterPropertiesSet() {
 	}	
@@ -607,7 +604,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			}
 		} else {
 			// Use default configured engine URL for legacy format or default engine
-			baseUrl = cibsevenUrl;
+			baseUrl = properties.getEngineRest().getUrl();
 		}
 		
 		if (baseUrl == null) {

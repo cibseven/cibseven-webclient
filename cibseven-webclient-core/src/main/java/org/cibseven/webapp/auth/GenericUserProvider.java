@@ -31,7 +31,6 @@ import org.cibseven.webapp.auth.utils.EngineTokenUtils;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.ErrorMessage;
 import org.cibseven.webapp.exception.SystemException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -63,17 +62,11 @@ public class GenericUserProvider extends BaseUserProvider<StandardLogin> {
 		return map;
 	}
 
-	@Value("${cibseven.webclient.authentication.jwtSecret:}")
-	String secret;
 
-	@Value("${cibseven.webclient.admin.url:}")
-	String cibsevenAdminUrl;
-	@Value("${cibseven.webclient.url:}")
-	String cibsevenWebclientUrl;
 
 	@PostConstruct
 	public void init() {
-		settings = new JwtTokenSettings(secret, validMinutes, prolongMinutes);
+		settings = new JwtTokenSettings(properties.getAuthentication().getJwtSecret(), getValidMinutes(), getProlongMinutes());
 		checkKey();
 	}
 
@@ -89,7 +82,7 @@ public class GenericUserProvider extends BaseUserProvider<StandardLogin> {
 	@Override
 	public User getSelfInfoJSessionId(String userId, String jSessionId, HttpServletRequest rq) {
 		try {
-			String url = cibsevenAdminUrl + "/auth/user/default";
+			String url = properties.getAdmin().getUrl() + "/auth/user/default";
 			HttpHeaders headers = new HttpHeaders();
 			headers.add("Cookie", "JSESSIONID=" + jSessionId);
 			headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
@@ -141,14 +134,14 @@ public class GenericUserProvider extends BaseUserProvider<StandardLogin> {
 	}
 
 	public String verify(String token) {
-		if (cibsevenWebclientUrl != null && !cibsevenWebclientUrl.isEmpty()) {
+		if (properties.getUrl() != null && !properties.getUrl().isEmpty()) {
 			HttpHeaders headers = new HttpHeaders();
 			headers.add(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token);
 			// The following line fix the autorenew token
 			headers.set(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 			RestTemplate template = new RestTemplate();
 			try {
-				CIBUser body = template.exchange(cibsevenWebclientUrl + "/auth", HttpMethod.GET, new HttpEntity<>(null, toMultiValueMap(headers)),
+				CIBUser body = template.exchange(properties.getUrl() + "/auth", HttpMethod.GET, new HttpEntity<>(null, toMultiValueMap(headers)),
 								CIBUser.class).getBody();
 				if (body == null)
 					throw new NullPointerException();
@@ -173,7 +166,7 @@ public class GenericUserProvider extends BaseUserProvider<StandardLogin> {
 	public User parse(String token, TokenSettings settings) {
 		// Determine the correct settings based on the engine in the token
 		TokenSettings effectiveSettings = EngineTokenUtils.getEffectiveSettingsForToken(
-			token, engineRestProperties, settings, validMinutes, prolongMinutes);
+			token, getEngineRestProperties(), settings, getValidMinutes(), getProlongMinutes());
 		
 		try {
 			SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(effectiveSettings.getSecret()));
@@ -210,7 +203,7 @@ public class GenericUserProvider extends BaseUserProvider<StandardLogin> {
 				
 				// Get the appropriate token settings for this engine
 				TokenSettings tokenSettings = EngineTokenUtils.getSettingsForEngine(
-					user.getEngine(), engineRestProperties, getSettings(), validMinutes, prolongMinutes);
+					user.getEngine(), getEngineRestProperties(), getSettings(), getValidMinutes(), getProlongMinutes());
 				user.setAuthToken(createToken(tokenSettings, true, false, user));
 				return user;
 			} else {

@@ -20,27 +20,29 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.modeler.model.FormUsageEntity;
 import org.cibseven.modeler.repository.FormUsageRepository;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 
 @Component
 public class FormUsageProvider implements IFormUsageProvider {
 
-	@Autowired
-	private FormUsageRepository formDao;
+	private final FormUsageRepository formDao;
+
+	private final SevenWebclientProperties properties;
+
+	public FormUsageProvider(FormUsageRepository formDao, SevenWebclientProperties properties) {
+		this.formDao = formDao;
+		this.properties = properties;
+	}
 
 	@Override
 	public void delete(String id) throws SystemException {
 		formDao.deleteById(id);
 	}
-	
-	@Value("${cibseven.webclient.modeler.session.expiresAfterMin:10}")
-	private int sessionExpiresAfter;
 	
 	@Override
 	public Optional<FormUsageEntity> getSessionById(String id) throws SystemException {
@@ -69,7 +71,7 @@ public class FormUsageProvider implements IFormUsageProvider {
 		FormUsageEntity diagramUsage = formDao.checkSessionUser(diagramId);
 		if (diagramUsage == null) return null;
 		long openedAt = diagramUsage.getOpenedAt().getTime();
-		long expirationTime = sessionExpiresAfter * 60 * 1000;
+		long expirationTime = properties.getModeler().getSession().getExpiresAfterMin() * 60 * 1000;
 		long now = System.currentTimeMillis();
 		long result = now - openedAt;
 		if (result > expirationTime) {

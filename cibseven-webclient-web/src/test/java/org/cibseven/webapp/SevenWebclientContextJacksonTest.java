@@ -24,16 +24,14 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.context.properties.bind.Binder;
+import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
-import org.springframework.beans.factory.support.RootBeanDefinition;
-import org.springframework.context.annotation.ContextAnnotationAutowireCandidateResolver;
-import org.springframework.boot.test.util.TestPropertyValues;
-import org.springframework.context.support.GenericApplicationContext;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -69,25 +67,12 @@ class SevenWebclientContextJacksonTest {
 
 	@Test
 	void bindsTheDocumentedPropertyKey() throws JsonProcessingException {
-		// Fails if the @Value key is misspelled or the annotation is removed, which the
-		// direct-field tests above cannot detect.
-		try (GenericApplicationContext ctx = new GenericApplicationContext()) {
-			// Only the processors needed for @Value; deliberately no ConfigurationClassPostProcessor,
-			// so the class's @ComponentScan does not drag the whole application in.
-			ctx.registerBeanDefinition("placeholderConfigurer",
-					new RootBeanDefinition(PropertySourcesPlaceholderConfigurer.class));
-			ctx.registerBeanDefinition("autowiredProcessor",
-					new RootBeanDefinition(AutowiredAnnotationBeanPostProcessor.class));
-			ctx.getDefaultListableBeanFactory()
-					.setAutowireCandidateResolver(new ContextAnnotationAutowireCandidateResolver());
-			ctx.registerBean(SevenWebclientContext.class);
-			TestPropertyValues
-					.of("cibseven.webclient.custom.spring.jackson.serialization.write-dates-as-timestamps=true")
-					.applyTo(ctx.getEnvironment());
-			ctx.refresh();
-			assertThat(ctx.getBean(SevenWebclientContext.class).objectMapper()
-					.writeValueAsString(new Date(0))).isEqualTo("0");
-		}
+		// Fails if the key is misspelled or no longer bound into SevenWebclientProperties, which
+		// the direct tests above cannot detect.
+		SevenWebclientProperties properties = new Binder(new MapConfigurationPropertySource(Map.of(
+				"cibseven.webclient.custom.spring.jackson.serialization.write-dates-as-timestamps", "true")))
+				.bindOrCreate("cibseven.webclient", SevenWebclientProperties.class);
+		assertThat(new SevenWebclientContext(properties).objectMapper().writeValueAsString(new Date(0))).isEqualTo("0");
 	}
 
 	@Test
@@ -115,9 +100,10 @@ class SevenWebclientContextJacksonTest {
 	}
 
 	private SevenWebclientContext newContext(boolean writeDatesAsTimestamps) {
-		SevenWebclientContext context = new SevenWebclientContext();
-		context.jacksonParserMaxSize = PARSER_MAX_SIZE;
-		context.writeDatesAsTimestamps = writeDatesAsTimestamps;
-		return context;
+		SevenWebclientProperties properties = new SevenWebclientProperties();
+		SevenWebclientProperties.Custom.Spring.Jackson jackson = properties.getCustom().getSpring().getJackson();
+		jackson.getParser().setMaxSize(PARSER_MAX_SIZE);
+		jackson.getSerialization().setWriteDatesAsTimestamps(writeDatesAsTimestamps);
+		return new SevenWebclientContext(properties);
 	}
 }

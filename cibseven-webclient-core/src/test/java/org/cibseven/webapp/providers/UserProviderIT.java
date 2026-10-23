@@ -69,7 +69,7 @@ public class UserProviderIT extends BaseHelper {
         mockWebServer.start();
 
         String mockBaseUrl = mockWebServer.url("/").toString();
-        ReflectionTestUtils.setField(userProvider, "cibsevenUrl", mockBaseUrl);
+        userProvider.properties.getEngineRest().setUrl(mockBaseUrl);
 
         // The provider is a context-scoped singleton: without this, what one test remembered about the
         // self endpoint would decide which path the next one takes.

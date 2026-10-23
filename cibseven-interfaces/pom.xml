@@ -80,6 +80,13 @@
 			</exclusions>
 		</dependency>
 
+		<!-- Generates META-INF/spring-configuration-metadata.json from SevenWebclientProperties -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-configuration-processor</artifactId>
+			<optional>true</optional>
+		</dependency>
+
 		<!-- Apache HttpClient for connection pooling -->
 		<dependency>
 			<groupId>org.apache.httpcomponents.client5</groupId>

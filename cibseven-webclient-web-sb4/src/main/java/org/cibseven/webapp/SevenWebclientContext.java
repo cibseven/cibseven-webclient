@@ -23,15 +23,16 @@ import java.util.List;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.User;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.rest.CustomRestTemplate;
 import org.cibseven.webapp.rest.model.InfoVersion;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.MethodParameter;
+import org.springframework.util.ClassUtils;
 import org.springframework.http.CacheControl;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.FormHttpMessageConverter;
@@ -59,7 +60,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @Configuration
 @ConditionalOnProperty(
-	prefix = "cibseven.webclient",
+	prefix = SevenWebclientProperties.PREFIX,
 	name = "enabled",
 	havingValue = "true",
 	matchIfMissing = true
@@ -76,28 +77,24 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 	@SuppressWarnings("rawtypes")
 	BaseUserProvider provider;
 
-	@Value("${cibseven.webclient.custom.spring.jackson.parser.max-size:20000000}")
-	int jacksonParserMaxSize;
+	final SevenWebclientProperties properties;
 
-	/**
-	 * Deprecated interim opt-out: serializes dates as epoch millis again. Kept only so
-	 * consumers that adapted to the pre-fix output have a migration window. Jackson 3
-	 * disables timestamp output by default, so this flag loses its purpose once the wire
-	 * layer moves to Jackson 3 - remove it together with that migration.
-	 */
-	@Value("${cibseven.webclient.custom.spring.jackson.serialization.write-dates-as-timestamps:false}")
-	boolean writeDatesAsTimestamps;
+	public SevenWebclientContext(SevenWebclientProperties properties) {
+		this.properties = properties;
+	}
 
     @Bean
     public ObjectMapper objectMapper() {
         ObjectMapper objectMapper = new ObjectMapper();
         StreamReadConstraints streamReadConstraints = StreamReadConstraints
                 .builder()
-                .maxStringLength(jacksonParserMaxSize)
+                .maxStringLength(properties.getCustom().getSpring().getJackson().getParser().getMaxSize())
                 .build();
         objectMapper.getFactory().setStreamReadConstraints(streamReadConstraints);
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        // Deprecated interim opt-out, remove together with the Jackson 3 migration
+        boolean writeDatesAsTimestamps = properties.getCustom().getSpring().getJackson().getSerialization().isWriteDatesAsTimestamps();
         objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, writeDatesAsTimestamps);
         objectMapper.configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, writeDatesAsTimestamps);
         return objectMapper;
@@ -157,17 +154,19 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 	}
 
 	@Bean
-	public BpmProvider bpmProvider(@Value("${cibseven.webclient.bpm.provider:org.cibseven.webapp.providers.SevenProvider}") Class<BpmProvider> providerClass)
+	public BpmProvider bpmProvider()
 			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException {
+		Class<?> providerClass = ClassUtils.resolveClassName(properties.getBpm().getProvider(), ClassUtils.getDefaultClassLoader());
 		return (BpmProvider) providerClass.getConstructor().newInstance();
 	}
 
 	@SuppressWarnings("rawtypes")
 	@Bean
-	public BaseUserProvider baseUserProvider(@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") Class<BaseUserProvider> providerClass)
+	public BaseUserProvider baseUserProvider()
 			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException {
+		Class<?> providerClass = ClassUtils.resolveClassName(properties.getUser().getProvider(), ClassUtils.getDefaultClassLoader());
 		this.provider = (BaseUserProvider) providerClass.getConstructor().newInstance();
 		return provider;
 	}
@@ -181,8 +180,8 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 	 * Creates a custom RestTemplate bean with configurable settings.
 	 * This can be injected into services that need to make HTTP requests.
 	 * 
-	 * The bean is configured using properties from application.yaml under
-	 * the cibseven.webclient.rest namespace.
+	 * The bean is configured by the cibseven.webclient.rest section of
+	 * {@link SevenWebclientProperties}.
 	 * 
 	 * This bean is conditional and will only be created if cibseven.webclient.rest.enabled=true
 	 * or if the property is not specified (default behavior).
@@ -191,7 +190,7 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 	 */
 	@Bean
 	@ConditionalOnProperty(
-		prefix = "cibseven.webclient.rest",
+		prefix = SevenWebclientProperties.REST_PREFIX,
 		name = "enabled",
 		havingValue = "true",
 		matchIfMissing = true

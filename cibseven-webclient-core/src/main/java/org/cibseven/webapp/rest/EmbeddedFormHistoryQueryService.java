@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.rest.model.ActivityInstanceHistory;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -53,7 +54,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 	@ApiResponse(responseCode = "401", description = "Unauthorized")
 })
 @RestController
-@RequestMapping("${cibseven.webclient.services.basePath:/services/v1}")
+@RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH)
 public class EmbeddedFormHistoryQueryService extends BaseService {
 
 	private final HistoryProcessService historyProcessService;

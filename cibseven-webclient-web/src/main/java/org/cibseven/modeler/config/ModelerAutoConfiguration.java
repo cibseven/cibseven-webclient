@@ -16,6 +16,7 @@
  */
 package org.cibseven.modeler.config;
 
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -43,7 +44,7 @@ import org.springframework.context.annotation.Import;
  */
 @AutoConfiguration(after = {DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class})
 @ConditionalOnProperty(
-    prefix = "cibseven.webclient.modeler",
+    prefix = SevenWebclientProperties.MODELER_PREFIX,
     name = "enabled",
     havingValue = "true",
     matchIfMissing = false

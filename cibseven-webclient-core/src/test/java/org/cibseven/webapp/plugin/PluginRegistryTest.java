@@ -33,6 +33,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -67,7 +68,7 @@ public class PluginRegistryTest {
 	@Test
 	public void findsPluginOnTheClasspath() {
 		// Reads the fixtures below src/test/resources, i.e. a real classpath scan
-		PluginRegistry registry = new PluginRegistry(new PluginProperties());
+		PluginRegistry registry = new PluginRegistry(new SevenWebclientProperties());
 
 		ObjectNode manifest = manifestOf(registry, "test-plugin");
 
@@ -82,7 +83,7 @@ public class PluginRegistryTest {
 	 */
 	@Test
 	public void reportsEveryDocumentedFieldOfTheManifest() {
-		ObjectNode manifest = manifestOf(new PluginRegistry(new PluginProperties()), "test-plugin");
+		ObjectNode manifest = manifestOf(new PluginRegistry(new SevenWebclientProperties()), "test-plugin");
 
 		assertEquals("process-instance-tab", manifest.get("slots").get(0).asText());
 		assertEquals("styles.css", manifest.get("styles").get(0).asText());
@@ -92,7 +93,7 @@ public class PluginRegistryTest {
 	/** Several plugins may share one artifact, each in its own folder. */
 	@Test
 	public void findsEveryPluginOfOneClasspathEntry() {
-		PluginRegistry registry = new PluginRegistry(new PluginProperties());
+		PluginRegistry registry = new PluginRegistry(new SevenWebclientProperties());
 
 		List<ObjectNode> manifests = registry.getManifests();
 
@@ -110,7 +111,7 @@ public class PluginRegistryTest {
 	/** The folders serve the files, so every accepted plugin needs exactly its own. */
 	@Test
 	public void findsAFolderForEveryAcceptedPlugin() {
-		PluginRegistry registry = new PluginRegistry(new PluginProperties());
+		PluginRegistry registry = new PluginRegistry(new SevenWebclientProperties());
 
 		Map<String, Resource> locations = registry.getPluginLocations();
 		assertEquals(registry.getManifests().size(), locations.size());
@@ -319,7 +320,7 @@ public class PluginRegistryTest {
 
 	@Test
 	public void disablesNothingByDefault() {
-		assertTrue(new PluginProperties().getDisabled().isEmpty());
+		assertTrue(new SevenWebclientProperties().getPlugins().getDisabled().isEmpty());
 	}
 
 	/** Switching off a plugin whose manifest is broken must not depend on reading it. */

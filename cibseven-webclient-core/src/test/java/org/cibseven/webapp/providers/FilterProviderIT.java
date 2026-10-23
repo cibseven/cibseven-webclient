@@ -54,7 +54,7 @@ public class FilterProviderIT extends BaseHelper {
 
         // Configure the base URL for the FilterProvider to point to the MockWebServer
         String mockBaseUrl = mockWebServer.url("/").toString();
-        ReflectionTestUtils.setField(filterProvider, "cibsevenUrl", mockBaseUrl);
+        filterProvider.properties.getEngineRest().setUrl(mockBaseUrl);
     }
 
     @AfterEach

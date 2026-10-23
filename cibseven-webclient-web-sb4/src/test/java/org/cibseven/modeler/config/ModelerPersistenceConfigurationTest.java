@@ -19,7 +19,9 @@ package org.cibseven.modeler.config;
 import org.cibseven.modeler.model.ProcessDiagramEntity;
 import org.cibseven.modeler.repository.ProcessDiagramRepository;
 import org.cibseven.persistence.CibsevenJpa;
+import org.cibseven.webapp.config.SevenWebclientPropertiesAutoConfiguration;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration;
 import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -36,8 +38,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ModelerPersistenceConfigurationTest {
 
 	private final ApplicationContextRunner standalone = new ApplicationContextRunner()
+		.withConfiguration(AutoConfigurations.of(SevenWebclientPropertiesAutoConfiguration.class))
 		.withPropertyValues("spring.datasource.url=jdbc:h2:mem:modelershare-sb4;DB_CLOSE_DELAY=-1",
-			"spring.jpa.hibernate.ddl-auto=create-drop")
+			"cibseven.webclient.persistence.properties.hibernate.hbm2ddl.auto=create-drop")
 		.withConfiguration(org.springframework.boot.autoconfigure.AutoConfigurations
 			.of(DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class))
 		.withUserConfiguration(ModelerPersistenceConfiguration.class);

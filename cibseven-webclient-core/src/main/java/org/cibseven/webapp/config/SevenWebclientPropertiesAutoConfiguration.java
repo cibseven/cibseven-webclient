@@ -14,23 +14,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.cibseven.webapp.plugin;
+package org.cibseven.webapp.config;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
-import lombok.Getter;
-import lombok.Setter;
-
-@ConfigurationProperties(prefix = "cibseven.webclient.plugins")
-@Getter
-@Setter
-public class PluginProperties {
-
-	private boolean enabled;
-
-	/** Ids of plugins to skip, so one that breaks the page can be switched off without removing its jar. */
-	private List<String> disabled = new ArrayList<>();
+/**
+ * Binds {@link SevenWebclientProperties} in every Spring Boot application that has the webclient
+ * on its classpath, standalone or embedded, independent of which webclient features are enabled.
+ */
+@AutoConfiguration
+@EnableConfigurationProperties(SevenWebclientProperties.class)
+public class SevenWebclientPropertiesAutoConfiguration {
 }
