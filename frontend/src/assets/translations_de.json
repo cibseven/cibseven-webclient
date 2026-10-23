@@ -1428,7 +1428,7 @@
 		"title": "Verlaufsaufbewahrungsdauer bearbeiten",
 		"ttl": "Verlaufsaufbewahrungsdauer:",
 		"choiceUnlimited": "Unbegrenzt (Verlauf wird nie bereinigt)",
-		"choiceZero": "0 Tage (sofort bereinigen)",
+		"choiceZero": "0 Tage (Verlauf wird bei der nächsten Bereinigung entfernt)",
 		"choiceCustom": "Benutzerdefiniert",
 		"days": "Tage",
 		"placeholder": "Tage eingeben (z. B. 30)",

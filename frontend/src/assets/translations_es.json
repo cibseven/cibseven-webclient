@@ -1427,7 +1427,7 @@
 		"title": "Editar tiempo de vida del historial",
 		"ttl": "Tiempo de vida del historial:",
 		"choiceUnlimited": "Ilimitado (el historial nunca se limpia)",
-		"choiceZero": "0 días (limpieza inmediata)",
+		"choiceZero": "0 días (el historial se elimina en la próxima limpieza)",
 		"choiceCustom": "Personalizado",
 		"days": "días",
 		"placeholder": "Introduzca días (p. ej., 30)",

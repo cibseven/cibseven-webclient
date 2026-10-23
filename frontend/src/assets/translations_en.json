@@ -1428,7 +1428,7 @@
 		"title": "Edit History Time To Live",
 		"ttl": "History time to live:",
 		"choiceUnlimited": "Unlimited (history is never cleaned up)",
-		"choiceZero": "0 days (cleanup immediately)",
+		"choiceZero": "0 days (history is removed by the next cleanup)",
 		"choiceCustom": "Custom",
 		"days": "days",
 		"placeholder": "Enter days (e.g., 30)",
