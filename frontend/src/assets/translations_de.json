@@ -190,7 +190,6 @@
 		"loadVersions": "Alle Versionen der Historie laden",
 		"externalProcessStarted": "Prozess erfolgreich gestarted",
 		"exportInstances": "Instanzen exportieren",
-		"days": "Tage",
 		"deleteProcessDefinition": {
 			"tooltip": "Prozessdefinition löschen",
 			"confirm": {
@@ -1327,7 +1326,6 @@
 		"decision": "Entscheidung",
 		"refreshVersions": "Historische Versionen aktualisieren",
 		"loadVersions": "Alle Versionen der Historie laden",
-		"days": "Tage",
 		"instances": "Instanzen",
 		"showInstance": "Instanz anzeigen",
 		"evaluationTime": "Auswertungszeit",

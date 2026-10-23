@@ -138,6 +138,7 @@
 
 <script>
 import { HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY } from '@/constants'
+import { formatEngineDefaultHistoryTimeToLive } from '@/utils/historyTimeToLive.js'
 
 const DEFAULT_CUSTOM_VALUE = 30
 
@@ -196,18 +197,10 @@ export default {
     // The engine reports its default in days; -1 means no default is configured, 0 means
     // history is cleaned up immediately, null/undefined means the engine did not report it
     // (engines before 3.0.0) and is shown as "unknown" rather than as one of those values.
+    // Shared with the definition details views, which show the same label for definitions
+    // without their own TTL (see utils/historyTimeToLive.js).
     defaultChoiceLabel() {
-      const systemDefault = this.$root.config.historyTimeToLive
-      if (systemDefault === null || systemDefault === undefined) {
-        return this.$t('historyTimeToLive.choiceDefaultUnknown')
-      }
-      if (systemDefault < 0) {
-        return this.$t('historyTimeToLive.choiceDefaultUnlimited')
-      }
-      if (systemDefault === 0) {
-        return this.$t('historyTimeToLive.choiceDefaultZero')
-      }
-      return this.$t('historyTimeToLive.choiceDefault', { value: systemDefault })
+      return formatEngineDefaultHistoryTimeToLive(this.$t, this.$root.config)
     },
 
     customValueMin() {

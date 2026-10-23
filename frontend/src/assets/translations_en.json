@@ -190,7 +190,6 @@
 		"loadVersions": "Load all history versions",
 		"externalProcessStarted": "Process successfully started",
 		"exportInstances": "Export instances",
-		"days": "days",
 		"deleteProcessDefinition": {
 			"tooltip": "Delete process definition",
 			"confirm": {
@@ -1327,7 +1326,6 @@
 		"decision": "Decision",
 		"refreshVersions": "Refresh history versions",
 		"loadVersions": "Load all history versions",
-		"days": "days",
 		"instances": "Instances",
 		"showInstance": "View instance",
 		"evaluationTime": "Evaluation Time",

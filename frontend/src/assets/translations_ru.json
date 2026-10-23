@@ -190,7 +190,6 @@
 		"loadVersions": "Загрузить все версии истории",
 		"externalProcessStarted": "Процесс успешно запущен",
 		"exportInstances": "Экспорт экземпляров",
-		"days": "дней",
 		"deleteProcessDefinition": {
 			"tooltip": "Удалить определение процесса",
 			"confirm": {
@@ -1326,7 +1325,6 @@
 		"decision": "Решение",
 		"refreshVersions": "Обновить историю версий",
 		"loadVersions": "Загрузить все версии истории",
-		"days": "дней",
 		"instances": "Экземпляры",
 		"showInstance": "Просмотреть экземпляр",
 		"evaluationTime": "Время оценки",

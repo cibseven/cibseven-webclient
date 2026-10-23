@@ -43,72 +43,22 @@ describe('ProcessDefinitionDetails.vue', () => {
   })
 
   describe('historyTimeToLiveDisplay', () => {
-    // Regression: 0 and null are opposite engine semantics (0 = eligible for cleanup
-    // today, null = never) and must never render identically.
+    // The labels themselves are covered in utils/historyTimeToLive.test.js; this only checks
+    // that the definition's own TTL and the engine configuration are passed to the shared helper.
     it.each([
-      ['0 (eligible today)', 0, '0 process.days'],
-      ['a positive number', 30, '30 process.days']
-    ])('renders an explicit %s as-is, ignoring engine config', (_, historyTimeToLive, expected) => {
+      ['an explicit 0', 0, { historyTimeToLive: 999 }, 'historyTimeToLive.choiceZero'],
+      ['a positive number', 30, { historyTimeToLive: 999 }, '30 historyTimeToLive.days'],
+      ['no TTL, engine default 30', null, { historyTimeToLive: 30 }, 'historyTimeToLive.choiceDefault:{"value":30}'],
+      ['no TTL, no engine default', undefined, { historyTimeToLive: -1 }, 'historyTimeToLive.choiceDefaultUnlimited'],
+      ['no TTL, engine does not report it', null, {}, 'historyTimeToLive.choiceDefaultUnknown']
+    ])('renders %s through the shared helper', (_, historyTimeToLive, config, expected) => {
+      const $t = vi.fn((key, params) => params ? `${key}:${JSON.stringify(params)}` : key)
       const { result } = callWith(ProcessDefinitionDetails.computed.historyTimeToLiveDisplay, {
         historyTimeToLive,
-        $root: { config: { enforceHistoryTimeToLive: true, historyTimeToLive: 999 } }
+        $t,
+        $root: { config }
       })
       expect(result).toBe(expected)
-    })
-
-    describe('when the definition has no override (null or undefined)', () => {
-      // Regression: enforceHistoryTimeToLive is a known boolean (true OR false) whenever
-      // the engine actually reported its config - only null/undefined means "unknown".
-      // Both known values must be treated identically for showing the engine's own default.
-      it.each([
-        ['null historyTimeToLive, enforce true', null, true],
-        ['undefined historyTimeToLive, enforce true', undefined, true],
-        ['null historyTimeToLive, enforce false', null, false],
-        ['undefined historyTimeToLive, enforce false', undefined, false]
-      ])('shows unlimited when the engine default itself is unlimited (%s)', (_, historyTimeToLive, enforceHistoryTimeToLive) => {
-        const { result } = callWith(ProcessDefinitionDetails.computed.historyTimeToLiveDisplay, {
-          historyTimeToLive,
-          $root: { config: { enforceHistoryTimeToLive, historyTimeToLive: -1 } }
-        })
-        expect(result).toBe('∞')
-      })
-
-      it.each([true, false])('shows the engine default day count, with its value, whenever enforceHistoryTimeToLive is known (%s)', (enforceHistoryTimeToLive) => {
-        const $t = vi.fn((key, params) => params ? `${key}:${JSON.stringify(params)}` : key)
-        const { result, context } = callWith(ProcessDefinitionDetails.computed.historyTimeToLiveDisplay, {
-          historyTimeToLive: null,
-          $t,
-          $root: { config: { enforceHistoryTimeToLive, historyTimeToLive: 30 } }
-        })
-        expect(result).toBe('historyTimeToLive.choiceDefault:{"value":30}')
-        expect(context.$t).toHaveBeenCalledWith('historyTimeToLive.choiceDefault', { value: 30 })
-      })
-
-      it('shows the engine default of 0 with its own label, never as unlimited', () => {
-        const $t = vi.fn((key, params) => params ? `${key}:${JSON.stringify(params)}` : key)
-        const { result } = callWith(ProcessDefinitionDetails.computed.historyTimeToLiveDisplay, {
-          historyTimeToLive: null,
-          $t,
-          $root: { config: { enforceHistoryTimeToLive: true, historyTimeToLive: 0 } }
-        })
-        expect(result).toBe('historyTimeToLive.choiceDefaultZero')
-      })
-
-      it('still shows unlimited for a known flag with a missing engine default (null)', () => {
-        const { result } = callWith(ProcessDefinitionDetails.computed.historyTimeToLiveDisplay, {
-          historyTimeToLive: null,
-          $root: { config: { enforceHistoryTimeToLive: true, historyTimeToLive: null } }
-        })
-        expect(result).toBe('∞')
-      })
-
-      it('shows a generic "unknown default" label when the engine reports nothing at all', () => {
-        const { result } = callWith(ProcessDefinitionDetails.computed.historyTimeToLiveDisplay, {
-          historyTimeToLive: null,
-          $root: { config: {} }
-        })
-        expect(result).toBe('historyTimeToLive.choiceDefaultUnknown')
-      })
     })
   })
 

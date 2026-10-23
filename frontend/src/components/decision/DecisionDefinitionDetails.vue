@@ -84,6 +84,7 @@ import { DecisionService } from '@/services.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { SuccessAlert } from '@cib/common-frontend'
 import EditHistoryTimeToLiveModal from '@/components/modals/EditHistoryTimeToLiveModal.vue'
+import { formatHistoryTimeToLive } from '@/utils/historyTimeToLive.js'
 
 export default {
   name: 'DecisionDefinitionDetails',
@@ -106,36 +107,7 @@ export default {
       ]
     },
     historyTimeToLiveDisplay() {
-      if (this.historyTimeToLive === undefined || this.historyTimeToLive === null) {
-        // If decision 'historyTimeToLive' is undefined or null, we need to check the engine configuration to determine the default TTL.
-        // /info passes both engine values through as reported (see EngineConfiguration.java):
-        // engines since 3.0.0 always report a known boolean for enforceHistoryTimeToLive and a
-        // number for historyTimeToLive (-1 if no default is configured), while older engines do
-        // not report them at all, which arrives here as null ("unknown"). Unknown must not be
-        // mistaken for a real value, so check against both true and false explicitly.
-        const hasEngineTTLSetup = (this.$root.config.enforceHistoryTimeToLive === true || this.$root.config.enforceHistoryTimeToLive === false)
-        if (hasEngineTTLSetup) {
-          const engineDefault = this.$root.config.historyTimeToLive
-          if (engineDefault === null || engineDefault === undefined || engineDefault < 0) {
-            // the engine reports -1 for unlimited retention (never cleaned up)
-            return '∞'
-          }
-          if (engineDefault === 0) {
-            // 0 means history is cleaned up immediately
-            return this.$t('historyTimeToLive.choiceDefaultZero')
-          }
-          // any other number represents the number of days for history retention
-          return this.$t('historyTimeToLive.choiceDefault', { value: engineDefault })
-        }
-        else {
-          return this.$t('historyTimeToLive.choiceDefaultUnknown')
-        }
-      }
-      // any other number represents the number of days for history retention (including 0)
-      if (this.historyTimeToLive === 0) {
-        return this.$t('historyTimeToLive.choiceZero')
-      }
-      return `${this.historyTimeToLive} ${this.$t('decision.days')}`
+      return formatHistoryTimeToLive(this.$t, this.historyTimeToLive, this.$root.config)
     }
   },
   mounted() {
