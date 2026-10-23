@@ -766,7 +766,6 @@
 				"userOperationLogCategory": "Categoría de registro de operaciones de usuario",
 				"historicTask": "Tarea histórica",
 				"historicProcessInstance": "Instancia histórica de proceso",
-				"optimize": "Optimizar",
 				"operationLogCategory": "Categoría del registro de operaciones",
 				"property": "Propiedad"
 			},
@@ -792,7 +791,6 @@
 				"userOperationLogCategory": "Determina quién puede leer el {userOperationLog}, un registro de auditoría por tarea o instancia de proceso, agrupado en categorías como acciones de responsables, administradores u operadores.",
 				"historicTask": "Determina quién puede ver los datos históricos que se conservan de una tarea una vez completada.",
 				"historicProcessInstance": "Determina quién puede ver o eliminar los datos históricos de una instancia de proceso una vez finalizada.",
-				"optimize": "Determina quién puede acceder a {optimize}, la aplicación de informes y análisis de procesos.",
 				"operationLogCategory": "Determina quién puede leer o eliminar entradas del {operationLog} de todo el motor que se muestra en Cockpit — un único registro de auditoría consultable para todo el motor.",
 				"property": "Determina quién puede ver o modificar entradas de configuración internas del motor almacenadas como propiedades clave-valor, no la configuración a nivel de aplicación."
 			},
@@ -903,6 +901,7 @@
 			"filterPriorityLabel": "Prioridad",
 			"selectProperty": "Seleccionar propiedad",
 			"insertValue": "Insertar valor",
+			"invalidDate": "Fecha no válida. Usa p. ej. {iso}, {dotted}, {german} o {isoTime}",
 			"insertVariableKey": "Ingresa el nombre de la variable",
 			"addCriteria": "Añadir criterio",
 			"filterExists": "Este filtro ya existe",
