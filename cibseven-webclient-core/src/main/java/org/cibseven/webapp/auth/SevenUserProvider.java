@@ -148,7 +148,7 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
         	return (CIBUser) deserialize(userClaims.get("user").toString(), null);
 			//TODO? Verify User if wants to use in prod.
 		} catch(Exception e) {
-			throw new AuthenticationException(userClaims.get("user").toString());
+			throw new AuthenticationException(e);
 		}
         
 	}
