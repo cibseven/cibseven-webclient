@@ -24,8 +24,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class EngineConfigurationTest {
+
+	private static final ObjectMapper MAPPER = new ObjectMapper();
+
+	// Reads a /configuration response whose historyTimeToLive is the given raw JSON value, with
+	// properties after it, to check that those are still read whatever the TTL value looks like.
+	private static EngineConfiguration readWithHistoryTimeToLive(String rawJsonValue) throws Exception {
+		return MAPPER.readValue(
+			"{\"engineName\":\"default\",\"historyTimeToLive\":" + rawJsonValue
+				+ ",\"historyLevel\":\"audit\",\"authorizationEnabled\":false,\"enforceHistoryTimeToLive\":true}",
+			EngineConfiguration.class);
+	}
 
 	@Test
 	public void testDefaultValues_engineNameIsNull() {
@@ -108,5 +122,57 @@ public class EngineConfigurationTest {
 		EngineConfiguration config = new EngineConfiguration();
 		config.setHistoryLevel(input);
 		assertEquals(expected, config.getHistoryLevel());
+	}
+
+	// historyTimeToLive is reported differently by engine builds: a number (typed DTO, 3.0.0), the
+	// raw configured string (builds in between, e.g. "P180D"), or not at all (before 3.0.0).
+
+	@ParameterizedTest
+	@CsvSource(value = {
+		// typed DTO: JSON numbers, -1 = no default configured
+		"180, 180",
+		"0, 0",
+		"-1, -1",
+		// raw configured string: days or ISO-8601 period in days, like the engine accepts
+		"'\"180\"', 180",
+		"'\"P180D\"', 180",
+		"'\"0\"', 0",
+		"'\"P0D\"', 0",
+		"'\" P30D \"', 30"
+	})
+	public void testDeserialize_historyTimeToLive_readsNumbersAndEngineStrings(String rawJsonValue, int expected) throws Exception {
+		EngineConfiguration config = readWithHistoryTimeToLive(rawJsonValue);
+
+		assertEquals(expected, config.getHistoryTimeToLive());
+		assertEquals("audit", config.getHistoryLevel());
+		assertTrue(config.getEnforceHistoryTimeToLive());
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+		"null",
+		// unparsable strings
+		"\"\"", "\"  \"", "\"abc\"", "\"P180\"", "\"180D\"", "\"P1.5D\"", "\"1.5\"", "\"-5\"", "\"99999999999\"",
+		// other JSON types
+		"1.5", "99999999999", "true", "{\"days\":180}", "[180]"
+	})
+	public void testDeserialize_historyTimeToLive_unreadableValueIsUnknownAndKeepsTheRest(String rawJsonValue) throws Exception {
+		// An unexpected value must never make the whole engine configuration unreadable: it is
+		// read as null ("unknown"), and the properties after it are still read.
+		EngineConfiguration config = readWithHistoryTimeToLive(rawJsonValue);
+
+		assertNull(config.getHistoryTimeToLive());
+		assertEquals("default", config.getEngineName());
+		assertEquals("audit", config.getHistoryLevel());
+		assertFalse(config.isAuthorizationEnabled());
+		assertTrue(config.getEnforceHistoryTimeToLive());
+	}
+
+	@Test
+	public void testDeserialize_historyTimeToLive_missingIsUnknown() throws Exception {
+		EngineConfiguration config = MAPPER.readValue("{\"engineName\":\"default\"}", EngineConfiguration.class);
+
+		assertNull(config.getHistoryTimeToLive());
+		assertNull(config.getEnforceHistoryTimeToLive());
 	}
 }

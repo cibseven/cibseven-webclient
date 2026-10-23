@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -204,6 +205,83 @@ public class EngineProviderTest {
 		assertNotNull(result);
 		assertEquals(30, result.getHistoryTimeToLive());
 		assertFalse(result.getEnforceHistoryTimeToLive());
+	}
+
+	@Test
+	public void testGetEngineConfiguration_isoStringHistoryTimeToLive_isReadInDays() {
+		// engine-rest builds between the first exposure of the field and the typed DTO report the
+		// raw configured string. "P180D" used to fail the whole response (and with it
+		// /info/properties and the frontend startup); it must be read as 180 days instead.
+		String json =
+				"{\"engineName\":\"default\",\"historyLevel\":\"audit\",\"authorizationEnabled\":false,"
+				+ "\"enablePasswordPolicy\":false,\"historyTimeToLive\":\"P180D\",\"enforceHistoryTimeToLive\":true}";
+		mockWebServer.enqueue(new MockResponse()
+				.setBody(json)
+				.addHeader("Content-Type", "application/json"));
+
+		EngineConfiguration result = provider.getEngineConfiguration("default");
+
+		assertNotNull(result);
+		assertEquals(180, result.getHistoryTimeToLive());
+		assertTrue(result.getEnforceHistoryTimeToLive());
+		assertEquals("audit", result.getHistoryLevel());
+		assertFalse(result.isAuthorizationEnabled());
+	}
+
+	@Test
+	public void testGetEngineConfiguration_unparsableHistoryTimeToLive_isUnknownAndKeepsTheRest() {
+		// An unexpected TTL value is read as unknown (null) without losing the rest of the engine
+		// configuration - the engine's real history level and authorization setting still apply.
+		String json =
+				"{\"engineName\":\"default\",\"historyLevel\":\"audit\",\"authorizationEnabled\":false,"
+				+ "\"enablePasswordPolicy\":false,\"historyTimeToLive\":\"forever\",\"enforceHistoryTimeToLive\":false}";
+		mockWebServer.enqueue(new MockResponse()
+				.setBody(json)
+				.addHeader("Content-Type", "application/json"));
+
+		EngineConfiguration result = provider.getEngineConfiguration("default");
+
+		assertNotNull(result);
+		assertNull(result.getHistoryTimeToLive());
+		assertFalse(result.getEnforceHistoryTimeToLive());
+		assertEquals("audit", result.getHistoryLevel());
+		assertFalse(result.isAuthorizationEnabled());
+	}
+
+	@Test
+	public void testGetEngineConfiguration_unreadableResponse_fallsBackToLegacyConfiguration() {
+		// Last line of defense: a response that cannot be mapped at all (here: a field in a shape
+		// the webclient does not know) must not fail /info/properties with HTTP 500, which would
+		// leave the frontend blank on startup. null makes InfoService use the legacy configuration,
+		// like for an engine without the configuration endpoint.
+		String json =
+				"{\"engineName\":\"default\",\"historyLevel\":\"full\",\"authorizationEnabled\":{\"enabled\":true}}";
+		mockWebServer.enqueue(new MockResponse()
+				.setBody(json)
+				.addHeader("Content-Type", "application/json"));
+
+		EngineConfiguration result = provider.getEngineConfiguration("default");
+
+		assertNull(result);
+	}
+
+	@Test
+	public void testGetEngineConfiguration_malformedJson_fallsBackToLegacyConfiguration() {
+		mockWebServer.enqueue(new MockResponse()
+				.setBody("{\"engineName\":\"default\",")
+				.addHeader("Content-Type", "application/json"));
+
+		EngineConfiguration result = provider.getEngineConfiguration("default");
+
+		assertNull(result);
+	}
+
+	@Test
+	public void testGetEngineConfiguration_serverError_isNotSwallowed() {
+		// Only unreadable responses fall back; real errors keep their handling.
+		mockWebServer.enqueue(new MockResponse().setResponseCode(500));
+
+		assertThrows(RuntimeException.class, () -> provider.getEngineConfiguration("default"));
 	}
 
 	@Test
