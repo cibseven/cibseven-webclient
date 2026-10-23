@@ -30,6 +30,7 @@ import org.cibseven.bpm.engine.history.HistoricJobLogQuery;
 import org.cibseven.bpm.engine.runtime.JobQuery;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricJobLogDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricJobLogQueryDto;
+import org.cibseven.bpm.engine.rest.dto.history.batch.HistoricBatchQueryDto;
 import org.cibseven.bpm.engine.rest.dto.management.JobDefinitionSuspensionStateDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.JobDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.JobDuedateDto;
@@ -63,17 +64,10 @@ public class DirectJobProvider implements IJobProvider {
 				maxResults = Integer.parseInt((String) params.get("maxResults"));
 		}
 
-		JobQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(queryParams, JobQueryDto.class);
+		JobQueryDto queryDto = directProviderUtil.parseQueryDto(params, JobQueryDto.class, user);
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
 		JobQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
-		List<org.cibseven.bpm.engine.runtime.Job> matchingJobs = QueryUtil.list(query, firstResult, maxResults);
-
-		List<Job> jobResults = new ArrayList<>();
-		for (org.cibseven.bpm.engine.runtime.Job job : matchingJobs) {
-			JobDto result = JobDto.fromJob(job);
-			jobResults.add(directProviderUtil.convertValue(result, Job.class, user));
-		}
-		return jobResults;
+		return directProviderUtil.listAndConvert(query, firstResult, maxResults, JobDto::fromJob, Job.class, user);
 	}
 
 	@Override
@@ -111,7 +105,7 @@ public class DirectJobProvider implements IJobProvider {
 	@Override
 	public Collection<Object> getHistoryJobLog(Map<String, Object> params, CIBUser user) {
 
-		HistoricJobLogQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(params, HistoricJobLogQueryDto.class);
+		HistoricJobLogQueryDto queryDto = directProviderUtil.parseQueryDto(params, HistoricJobLogQueryDto.class, user);
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
 		HistoricJobLogQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 		Integer firstResult = null;
