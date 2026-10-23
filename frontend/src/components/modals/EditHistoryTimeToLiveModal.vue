@@ -34,7 +34,7 @@
     <b-form-group :label="$t('historyTimeToLive.ttl')" class="mb-0">
       <div class="list-group">
 
-        <div class="list-group-item border-top">
+        <div class="list-group-item border-0 border-top">
           <div class="form-check">
             <input
               class="form-check-input"
@@ -51,7 +51,7 @@
           </div>
         </div>
 
-        <div class="list-group-item">
+        <div class="list-group-item border-0 border-top">
           <div class="form-check">
             <input
               class="form-check-input"
@@ -67,7 +67,7 @@
           </div>
         </div>
 
-        <div class="list-group-item border-bottom">
+        <div class="list-group-item border-0 border-top border-bottom">
           <div class="form-check">
             <input
               class="form-check-input"
