@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { createComponentContext } from '../support/callWithContext.js'
 import EditHistoryTimeToLiveModal from '@/components/modals/EditHistoryTimeToLiveModal.vue'
 import { HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY } from '@/constants'
@@ -367,6 +367,36 @@ describe('EditHistoryTimeToLiveModal.vue', () => {
       const vm = context()
 
       expect(vm.loadLastCustomValue()).toBe(Number(stored))
+    })
+
+    describe('when storage is not available', () => {
+      afterEach(() => {
+        vi.restoreAllMocks()
+      })
+
+      it('falls back to 30 and still opens the dialog when reading fails', async () => {
+        vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+          throw new DOMException('The operation is insecure.', 'SecurityError')
+        })
+        const vm = context()
+
+        expect(vm.loadLastCustomValue()).toBe(30)
+
+        vm.show({ historyTimeToLive: null })
+        await vm.$nextTick()
+        expect(vm.$refs.modal.show).toHaveBeenCalled()
+      })
+
+      it('still emits the save when writing fails', async () => {
+        vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+          throw new DOMException('The quota has been exceeded.', 'QuotaExceededError')
+        })
+        const vm = context({ choice: 'custom', editTtlValue: '45', selectedItem: { id: 'def-1' } })
+
+        await vm.saveTtlValue()
+
+        expect(vm.$emit).toHaveBeenCalledWith('ttl-updated', expect.objectContaining({ ttlValue: 45 }))
+      })
     })
 
     it('does not save an empty value', () => {

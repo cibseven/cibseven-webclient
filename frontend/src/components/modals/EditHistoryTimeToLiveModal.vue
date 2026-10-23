@@ -395,15 +395,26 @@ export default {
       return v.replace(/\)$/, '')
     },
 
+    // The last custom value is only a convenience, so storage errors (e.g. blocked storage or a
+    // full quota) are ignored: they must neither keep the dialog from opening nor lose a save.
     loadLastCustomValue() {
-      // getItem() returns null when nothing is stored, which parseDays() rejects (never 0)
-      const stored = parseDays(localStorage?.getItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY))
+      let stored = Number.NaN
+      try {
+        // getItem() returns null when nothing is stored, which parseDays() rejects (never 0)
+        stored = parseDays(localStorage.getItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY))
+      } catch {
+        // storage not available - fall back to the default below
+      }
       const valid = !Number.isNaN(stored) && stored >= this.customValueMin && stored <= this.customValueMax
       return valid ? stored : DEFAULT_CUSTOM_VALUE
     },
     saveLastCustomValue(value) {
       if (!value) return
-      localStorage?.setItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY, value)
+      try {
+        localStorage.setItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY, value)
+      } catch {
+        // storage not available - the value is just not remembered
+      }
     }
   }
 }
