@@ -1433,6 +1433,7 @@
 		"days": "days",
 		"placeholder": "Enter days (e.g., 30)",
 		"validation": "Please enter a valid number between {min} and {max}",
+		"engineDefaultHint": "Default value for this engine.",
 		"enforcedHint": "This engine requires an explicit history time to live; \"unlimited\" is not available."
 	}
 }

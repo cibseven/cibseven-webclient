@@ -126,6 +126,55 @@ describe('EditHistoryTimeToLiveModal.vue accessibility', () => {
     })
   })
 
+  describe('engine default', () => {
+    const radioValues = (wrapper) => wrapper.findAll('input[type="radio"]').map(radio => radio.attributes('value'))
+    const hintOf = (wrapper, value) => {
+      const describedBy = wrapper.find(`input[type="radio"][value="${value}"]`).attributes('aria-describedby')
+      return describedBy ? resolveIdRefs(wrapper, describedBy) : null
+    }
+
+    it.each([undefined, null])('adds nothing when the engine default is unknown (%j)', (historyTimeToLive) => {
+      const wrapper = createWrapper({ enforceHistoryTimeToLive: false, historyTimeToLive })
+
+      expect(radioValues(wrapper)).toEqual(['unlimited', 'zero', 'custom'])
+      expect(wrapper.text()).not.toContain('historyTimeToLive.engineDefaultHint')
+    })
+
+    it('marks unlimited as the engine default when no default is configured (-1)', () => {
+      const wrapper = createWrapper({ enforceHistoryTimeToLive: false, historyTimeToLive: -1 })
+
+      expect(radioValues(wrapper)).toEqual(['unlimited', 'zero', 'custom'])
+      expect(hintOf(wrapper, 'unlimited')).toBe('historyTimeToLive.engineDefaultHint')
+      expect(hintOf(wrapper, 'zero')).toBeNull()
+    })
+
+    it('does not mark a disabled unlimited as the engine default (-1 with enforcement)', () => {
+      // with enforcement on, models without a TTL are rejected instead of kept indefinitely
+      const wrapper = createWrapper({ enforceHistoryTimeToLive: true, historyTimeToLive: -1 })
+
+      expect(hintOf(wrapper, 'unlimited')).toBe('historyTimeToLive.enforcedHint')
+      expect(wrapper.text()).not.toContain('historyTimeToLive.engineDefaultHint')
+    })
+
+    it('marks 0 days as the engine default when the default is 0', () => {
+      const wrapper = createWrapper({ enforceHistoryTimeToLive: false, historyTimeToLive: 0 })
+
+      expect(radioValues(wrapper)).toEqual(['unlimited', 'zero', 'custom'])
+      expect(hintOf(wrapper, 'zero')).toBe('historyTimeToLive.engineDefaultHint')
+      expect(hintOf(wrapper, 'unlimited')).toBeNull()
+    })
+
+    it('adds the engine default as its own choice after 0 days when it is n > 0', () => {
+      const wrapper = createWrapper({ enforceHistoryTimeToLive: true, historyTimeToLive: 180 })
+      const radio = wrapper.find('input[type="radio"][value="engineDefault"]')
+
+      expect(radioValues(wrapper)).toEqual(['unlimited', 'zero', 'engineDefault', 'custom'])
+      expect(wrapper.find(`label[for="${radio.attributes('id')}"]`).text()).toBe('180 historyTimeToLive.days')
+      expect(hintOf(wrapper, 'engineDefault')).toBe('historyTimeToLive.engineDefaultHint')
+      expect(hintOf(wrapper, 'zero')).toBeNull()
+    })
+  })
+
   describe('disabled unlimited choice', () => {
     it('shows the reason as visible text linked to the radio, not only as a title', () => {
       const wrapper = createWrapper({ enforceHistoryTimeToLive: true, historyTimeToLive: -1 })

@@ -1433,6 +1433,7 @@
 		"days": "Tage",
 		"placeholder": "Tage eingeben (z. B. 30)",
 		"validation": "Bitte eine gültige Zahl zwischen {min} und {max} eingeben",
+		"engineDefaultHint": "Standardwert dieser Engine.",
 		"enforcedHint": "Diese Engine erfordert eine explizite Verlaufsaufbewahrungsdauer; \"Unbegrenzt\" ist nicht verfügbar."
 	}
 }

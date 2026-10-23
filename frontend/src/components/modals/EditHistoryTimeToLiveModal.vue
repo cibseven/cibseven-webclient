@@ -43,8 +43,9 @@
           afterwards (see utils/historyTimeToLive.js). -->
         <div class="list-group-item border-0 border-top">
           <div class="form-check">
-            <!-- When disabled, the reason is linked through aria-describedby, so screen readers
-              announce it together with the option. -->
+            <!-- The hint below the label (why the option is disabled, or that it is the engine
+              default) is linked through aria-describedby, so screen readers announce it together
+              with the option. -->
             <input
               class="form-check-input"
               type="radio"
@@ -53,15 +54,19 @@
               value="unlimited"
               v-model="choice"
               :disabled="unlimitedChoiceDisabled"
-              :aria-describedby="unlimitedChoiceDisabled ? `${idPrefix}ChoiceUnlimitedHint` : null">
+              :aria-describedby="unlimitedChoiceDisabled || unlimitedIsEngineDefault ? `${idPrefix}ChoiceUnlimitedHint` : null">
             <label class="form-check-label w-100" :for="`${idPrefix}ChoiceUnlimited`">
               {{ captionValue($t('historyTimeToLive.choiceUnlimited')) }}
               <span class="text-muted float-end">{{ captionHint($t('historyTimeToLive.choiceUnlimited')) }}</span>
             </label>
             <!-- The reason the option is disabled is shown as visible text rather than only as a
-              title tooltip, which keyboard and touch users cannot reach. -->
+              title tooltip, which keyboard and touch users cannot reach. The two hints never
+              apply together: unlimitedIsEngineDefault is false while the option is disabled. -->
             <div v-if="unlimitedChoiceDisabled" :id="`${idPrefix}ChoiceUnlimitedHint`" class="form-text mt-0">
               {{ $t('historyTimeToLive.enforcedHint') }}
+            </div>
+            <div v-else-if="unlimitedIsEngineDefault" :id="`${idPrefix}ChoiceUnlimitedHint`" class="form-text mt-0">
+              {{ $t('historyTimeToLive.engineDefaultHint') }}
             </div>
           </div>
         </div>
@@ -74,11 +79,38 @@
               :name="`${idPrefix}Choice`"
               :id="`${idPrefix}ChoiceZero`"
               value="zero"
-              v-model="choice">
+              v-model="choice"
+              :aria-describedby="zeroIsEngineDefault ? `${idPrefix}ChoiceZeroHint` : null">
             <label class="form-check-label w-100" :for="`${idPrefix}ChoiceZero`">
               {{ captionValue($t('historyTimeToLive.choiceZero')) }}
               <span class="text-muted float-end">{{ captionHint($t('historyTimeToLive.choiceZero')) }}</span>
             </label>
+            <div v-if="zeroIsEngineDefault" :id="`${idPrefix}ChoiceZeroHint`" class="form-text mt-0">
+              {{ $t('historyTimeToLive.engineDefaultHint') }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Only when the engine reports a default of n > 0 days: offers exactly that value as its
+          own choice (saving n), so users can apply the administrator's retention policy without
+          typing it into the custom field. Unlimited (-1) and 0 are already choices of their own and
+          only get the hint; an unknown default (engines before 3.0.0) adds nothing. -->
+        <div v-if="engineDefaultDays !== null" class="list-group-item border-0 border-top">
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="radio"
+              :name="`${idPrefix}Choice`"
+              :id="`${idPrefix}ChoiceEngineDefault`"
+              value="engineDefault"
+              v-model="choice"
+              :aria-describedby="`${idPrefix}ChoiceEngineDefaultHint`">
+            <label class="form-check-label w-100" :for="`${idPrefix}ChoiceEngineDefault`">
+              {{ engineDefaultLabel }}
+            </label>
+            <div :id="`${idPrefix}ChoiceEngineDefaultHint`" class="form-text mt-0">
+              {{ $t('historyTimeToLive.engineDefaultHint') }}
+            </div>
           </div>
         </div>
 
@@ -185,7 +217,9 @@ export default {
     return {
       idPrefix: `historyTimeToLive${++nextInstanceId}`,
       selectedItem: null,
-      choice: 'unlimited', // 'unlimited' (saves null), 'zero' (saves 0), or 'custom' (saves N)
+      // 'unlimited' (saves null), 'zero' (saves 0), 'engineDefault' (saves the engine default n,
+      // only offered for n > 0) or 'custom' (saves N)
+      choice: 'unlimited',
       editTtlValue: null,
     }
   },
@@ -200,16 +234,35 @@ export default {
     unlimitedChoiceDisabled() {
       return this.$root.config.enforceHistoryTimeToLive === true
     },
-    // The engine-wide default TTL (config.historyTimeToLive, in days) is only a suggestion for
-    // the custom field: it is the value the engine gives newly deployed models without their own
-    // TTL, i.e. the administrator's retention policy. Returns null when there is no usable
-    // default: -1 (none configured), null/undefined (not reported by engines before 3.0.0),
-    // 0 (offered by the 'zero' choice instead) or out of the custom field's range.
-    engineDefaultCustomValue() {
+    // The engine-wide default TTL in days (config.historyTimeToLive, from /info): the value the
+    // engine gives newly deployed models without their own TTL, i.e. the administrator's
+    // retention policy. It is never applied to an existing definition by the engine itself, so
+    // the dialog only points it out (hint) or offers it as a choice of its own.
+    // - null: unknown (engines before 3.0.0 do not report it) -> the dialog adds nothing
+    // - -1: no default configured -> hint on 'unlimited'
+    // - 0: hint on 'zero'
+    // - n > 0: an extra 'engineDefault' choice saving n
+    engineDefault() {
       const engineDefault = this.$root.config.historyTimeToLive
-      return Number.isInteger(engineDefault) && engineDefault > 0 && engineDefault <= this.customValueMax
-        ? engineDefault
-        : null
+      return Number.isInteger(engineDefault) ? engineDefault : null
+    },
+    // Without a configured default, models without their own TTL get none and keep their history
+    // indefinitely - but only while enforcement is off. With enforcement on, the engine rejects
+    // such models instead, and 'unlimited' is disabled, so it is not marked as the default then.
+    unlimitedIsEngineDefault() {
+      return this.engineDefault !== null && this.engineDefault < 0 && !this.unlimitedChoiceDisabled
+    },
+    zeroIsEngineDefault() {
+      return this.engineDefault === 0
+    },
+    // The engine default in days if it is n > 0 (then offered as the 'engineDefault' choice),
+    // otherwise null.
+    engineDefaultDays() {
+      return this.engineDefault > 0 ? this.engineDefault : null
+    },
+    // e.g. "180 days", the same label the definition details views show for that value
+    engineDefaultLabel() {
+      return formatHistoryTimeToLive(this.$t, this.engineDefaultDays)
     },
 
     customValueMin() {
@@ -224,9 +277,12 @@ export default {
       return Number.isNaN(value) || value < this.customValueMin || value > this.customValueMax
     },
     // Safeguard on top of the preselection in show(): never send a choice the user cannot
-    // select. A disabled 'unlimited' would save null, which an enforcing engine rejects.
+    // select. A disabled 'unlimited' would save null, which an enforcing engine rejects, and
+    // 'engineDefault' has no value to save if the engine no longer reports a default n > 0.
     saveDisabled() {
-      return this.errorInCustomChoice || (this.choice === 'unlimited' && this.unlimitedChoiceDisabled)
+      return this.errorInCustomChoice ||
+        (this.choice === 'unlimited' && this.unlimitedChoiceDisabled) ||
+        (this.choice === 'engineDefault' && this.engineDefaultDays === null)
     }
   },
   methods: {
@@ -242,10 +298,14 @@ export default {
       } else if (item.historyTimeToLive === null || item.historyTimeToLive === undefined) {
         // No TTL means unlimited (whatever the engine default is), so that is what is preselected
         this.choice = 'unlimited'
-        this.editTtlValue = this.suggestedCustomValue()
+        this.editTtlValue = this.loadLastCustomValue()
       } else if (item.historyTimeToLive === 0) {
         this.choice = 'zero'
-        this.editTtlValue = this.suggestedCustomValue()
+        this.editTtlValue = this.loadLastCustomValue()
+      } else if (item.historyTimeToLive === this.engineDefaultDays) {
+        // the definition already uses the engine default - show it as that choice
+        this.choice = 'engineDefault'
+        this.editTtlValue = this.loadLastCustomValue()
       } else {
         this.choice = 'custom'
         this.editTtlValue = item.historyTimeToLive
@@ -261,25 +321,24 @@ export default {
     // Preselection for a definition without a TTL on an engine that enforces one. Mirrors what
     // the engine applies at deployment time to models without their own TTL:
     // - engine default 0      -> 'zero'
-    // - engine default n > 0  -> 'custom' prefilled with n, so saving keeps the engine's policy
+    // - engine default n > 0  -> 'engineDefault', so saving keeps the engine's policy
     // - no (known) default    -> 'custom' prefilled with the last custom value (or 30 days)
     // The user still has to confirm with Save; nothing is sent until then.
     preselectEnforcedChoice() {
-      this.choice = this.$root.config.historyTimeToLive === 0 ? 'zero' : 'custom'
-      this.editTtlValue = this.suggestedCustomValue()
-    },
-
-    // Value prefilled in the custom field whenever it is not showing the definition's own TTL:
-    // the engine default (the administrator's retention policy) if there is a usable one,
-    // otherwise the last custom value the user saved (or 30 days).
-    suggestedCustomValue() {
-      return this.engineDefaultCustomValue ?? this.loadLastCustomValue()
+      if (this.zeroIsEngineDefault) {
+        this.choice = 'zero'
+      } else if (this.engineDefaultDays !== null) {
+        this.choice = 'engineDefault'
+      } else {
+        this.choice = 'custom'
+      }
+      this.editTtlValue = this.loadLastCustomValue()
     },
 
     resetTtlDialog() {
       this.selectedItem = null
       this.choice = 'unlimited'
-      this.editTtlValue = this.suggestedCustomValue()
+      this.editTtlValue = this.loadLastCustomValue()
     },
 
     async saveTtlValue() {
@@ -291,12 +350,15 @@ export default {
       // engine does not fall back to its configured default for it, neither when saving nor at
       // cleanup time - the default is only applied to models at deployment time.
       // 'zero' -> 0: history is removed by the next cleanup run - the opposite of 'unlimited',
-      // never conflate the two. 'custom' -> N days.
+      // never conflate the two. 'engineDefault' -> the engine default n (not remembered as the
+      // last custom value, since it was not typed in). 'custom' -> N days.
       let ttlValue
       if (this.choice === 'unlimited') {
         ttlValue = null
       } else if (this.choice === 'zero') {
         ttlValue = 0
+      } else if (this.choice === 'engineDefault') {
+        ttlValue = this.engineDefaultDays
       } else {
         // validated by errorInCustomChoice above (saveDisabled), so this is a whole number in range
         ttlValue = parseDays(this.editTtlValue)

@@ -1432,6 +1432,7 @@
 		"days": "días",
 		"placeholder": "Introduzca días (p. ej., 30)",
 		"validation": "Introduzca un número válido entre {min} y {max}",
+		"engineDefaultHint": "Valor predeterminado de este motor.",
 		"enforcedHint": "Este motor requiere un tiempo de vida del historial explícito; \"ilimitado\" no está disponible."
 	}
 }

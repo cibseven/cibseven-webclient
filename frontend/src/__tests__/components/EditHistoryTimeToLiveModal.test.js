@@ -92,15 +92,33 @@ describe('EditHistoryTimeToLiveModal.vue', () => {
       expect(vm.choice).toBe('unlimited')
     })
 
-    it('prefills the custom field with the engine default for the unlimited and zero choices', () => {
+    it('preselects the engine default choice for a definition that uses the engine default', () => {
+      localStorage.setItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY, '90')
+      const vm = context({ $root: { config: { historyTimeToLive: 180, enforceHistoryTimeToLive: false } } })
+
+      vm.show({ historyTimeToLive: 180 })
+
+      expect(vm.choice).toBe('engineDefault')
+      expect(vm.editTtlValue).toBe(90) // the custom field keeps the last custom value
+    })
+
+    it('preselects custom for a definition whose TTL differs from the engine default', () => {
+      const vm = context({ $root: { config: { historyTimeToLive: 180, enforceHistoryTimeToLive: false } } })
+
+      vm.show({ historyTimeToLive: 45 })
+
+      expect(vm).toMatchObject({ choice: 'custom', editTtlValue: 45 })
+    })
+
+    it('does not prefill the custom field with the engine default (it has a choice of its own)', () => {
       localStorage.setItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY, '90')
       const vm = context({ $root: { config: { historyTimeToLive: 180, enforceHistoryTimeToLive: false } } })
 
       vm.show({ historyTimeToLive: null })
-      expect(vm.editTtlValue).toBe(180)
+      expect(vm.editTtlValue).toBe(90)
 
       vm.show({ historyTimeToLive: 0 })
-      expect(vm.editTtlValue).toBe(180)
+      expect(vm.editTtlValue).toBe(90)
     })
 
     it('prefills the last saved custom value for the unlimited and zero choices when there is no engine default', () => {
@@ -133,13 +151,15 @@ describe('EditHistoryTimeToLiveModal.vue', () => {
         expect(vm.$refs.modal.show).toHaveBeenCalled()
       })
 
-      it('preselects custom prefilled with the engine default, keeping the engine policy', () => {
+      it('preselects the engine default choice, keeping the engine policy', () => {
+        localStorage.setItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY, '90')
         const vm = context({ $root: { config: { enforceHistoryTimeToLive: true, historyTimeToLive: 180 } } })
 
         vm.show({ historyTimeToLive: null })
 
-        expect(vm.choice).toBe('custom')
-        expect(vm.editTtlValue).toBe(180)
+        expect(vm.choice).toBe('engineDefault')
+        expect(vm.editTtlValue).toBe(90)
+        expect(vm.saveDisabled).toBe(false)
       })
 
       it('preselects zero when the engine default is 0', () => {
@@ -195,13 +215,13 @@ describe('EditHistoryTimeToLiveModal.vue', () => {
       expect(vm).toMatchObject({ selectedItem: null, choice: 'unlimited', editTtlValue: 30 })
     })
 
-    it('prefills the engine default when there is one', () => {
+    it('does not prefill the engine default', () => {
       localStorage.setItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY, '90')
       const vm = context({ choice: 'custom', editTtlValue: 45, $root: { config: { historyTimeToLive: 180 } } })
 
       vm.resetTtlDialog()
 
-      expect(vm.editTtlValue).toBe(180)
+      expect(vm.editTtlValue).toBe(90)
     })
 
     it('restores the last saved custom value', () => {
@@ -227,21 +247,36 @@ describe('EditHistoryTimeToLiveModal.vue', () => {
     })
   })
 
-  describe('engineDefaultCustomValue', () => {
+  describe('engine default', () => {
+    // How the engine default (config.historyTimeToLive) shows up in the dialog:
+    // unknown -> nothing, -1 -> hint on 'unlimited' (only while selectable), 0 -> hint on 'zero',
+    // n > 0 -> an extra 'engineDefault' choice saving n.
     it.each([
-      // [engine default, expected suggestion]
-      [180, 180],
-      [356000, 356000],
-      [0, null], // offered by the zero choice instead
-      [-1, null], // no engine default configured
-      [null, null], // not reported (engine before 3.0.0)
-      [undefined, null],
-      [356001, null], // outside the custom field's range
-      [1.5, null]
-    ])('suggests the engine default %j as %j', (historyTimeToLive, expected) => {
-      const vm = context({ $root: { config: { historyTimeToLive } } })
+      // [engine default, enforce, unlimitedIsEngineDefault, zeroIsEngineDefault, engineDefaultDays]
+      [undefined, false, false, false, null],
+      [null, false, false, false, null],
+      ['180', false, false, false, null], // not a number: treated as unknown
+      [1.5, false, false, false, null],
+      [-1, false, true, false, null],
+      [-1, null, true, false, null], // enforcement unknown: 'unlimited' stays selectable
+      [-1, true, false, false, null], // enforced: 'unlimited' is disabled, so not the default
+      [0, false, false, true, null],
+      [0, true, false, true, null],
+      [180, false, false, false, 180],
+      [180, true, false, false, 180],
+      [356001, false, false, false, 356001] // not limited to the custom field's range
+    ])('engine default %j, enforce %j', (historyTimeToLive, enforceHistoryTimeToLive, unlimited, zero, days) => {
+      const vm = context({ $root: { config: { historyTimeToLive, enforceHistoryTimeToLive } } })
 
-      expect(vm.engineDefaultCustomValue).toBe(expected)
+      expect(vm.unlimitedIsEngineDefault).toBe(unlimited)
+      expect(vm.zeroIsEngineDefault).toBe(zero)
+      expect(vm.engineDefaultDays).toBe(days)
+    })
+
+    it('labels the engine default choice like the details views', () => {
+      const vm = context({ $root: { config: { historyTimeToLive: 180 } } })
+
+      expect(vm.engineDefaultLabel).toBe('180 historyTimeToLive.days')
     })
   })
 
@@ -389,6 +424,19 @@ describe('EditHistoryTimeToLiveModal.vue', () => {
       })
     })
 
+    it('emits the engine default for the engine default choice, without remembering it as custom value', async () => {
+      const vm = context({ choice: 'engineDefault', selectedItem: { id: 'def-1' }, $root: { config: { historyTimeToLive: 180 } } })
+
+      await vm.saveTtlValue()
+
+      expect(vm.$emit).toHaveBeenCalledWith('ttl-updated', {
+        item: { id: 'def-1' },
+        ttlValue: 180,
+        ttlDisplay: '180 historyTimeToLive.days'
+      })
+      expect(localStorage.getItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY)).toBeNull()
+    })
+
     it('emits the full value for exponent notation instead of truncating it', async () => {
       // Number.parseInt('1e3') is 1 - the value the user meant is 1000
       const vm = context({ choice: 'custom', editTtlValue: '1e3', selectedItem: { id: 'def-1' } })
@@ -460,6 +508,17 @@ describe('EditHistoryTimeToLiveModal.vue', () => {
       ['custom', true, -1, true] // invalid custom value
     ])('choice %s, enforce %j, value %j -> disabled %j', (choice, enforceHistoryTimeToLive, editTtlValue, expected) => {
       const vm = context({ choice, editTtlValue, $root: { config: { enforceHistoryTimeToLive } } })
+
+      expect(vm.saveDisabled).toBe(expected)
+    })
+
+    it.each([
+      [180, false],
+      [0, true], // no engine default choice is offered for 0 - nothing to save
+      [-1, true],
+      [undefined, true]
+    ])('engine default choice with engine default %j -> disabled %j', (historyTimeToLive, expected) => {
+      const vm = context({ choice: 'engineDefault', $root: { config: { historyTimeToLive } } })
 
       expect(vm.saveDisabled).toBe(expected)
     })
