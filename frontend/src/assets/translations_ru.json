@@ -190,7 +190,6 @@
 		"loadVersions": "Загрузить все версии истории",
 		"externalProcessStarted": "Процесс успешно запущен",
 		"exportInstances": "Экспорт экземпляров",
-		"days": "дней",
 		"deleteProcessDefinition": {
 			"tooltip": "Удалить определение процесса",
 			"confirm": {
@@ -1324,7 +1323,6 @@
 		"decision": "Решение",
 		"refreshVersions": "Обновить историю версий",
 		"loadVersions": "Загрузить все версии истории",
-		"days": "дней",
 		"instances": "Экземпляры",
 		"showInstance": "Просмотреть экземпляр",
 		"evaluationTime": "Время оценки",
@@ -1363,8 +1361,7 @@
 		"decisionInstanceId": "ID экземпляра решения"
 	},
 	"decision-instance": {
-		"edit": "@:commons.edit",
-		"save": "@:commons.save"
+		"edit": "@:commons.edit"
 	},
 	"human-tasks": {
 		"assignmentsByType": "Назначения по типу",
@@ -1423,5 +1420,17 @@
 	},
 	"deepLink": {
 		"tooltip": "Открыть {text}\n{url}"
+	},
+	"historyTimeToLive": {
+		"title": "Изменить время хранения истории",
+		"ttl": "Время хранения истории:",
+		"choiceUnlimited": "Без ограничения (история никогда не очищается)",
+		"choiceZero": "0 дн. (история удаляется при следующей очистке)",
+		"choiceCustom": "Пользовательское",
+		"days": "дн.",
+		"placeholder": "Введите количество дней (например, 30)",
+		"validation": "Введите допустимое число от {min} до {max}",
+		"engineDefaultHint": "Значение по умолчанию для этого движка.",
+		"enforcedHint": "Этот движок требует явного времени хранения истории; вариант \"без ограничения\" недоступен."
 	}
 }

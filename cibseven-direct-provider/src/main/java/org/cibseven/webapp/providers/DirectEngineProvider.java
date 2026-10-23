@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.cibseven.bpm.BpmPlatform;
+import org.cibseven.bpm.engine.impl.util.ParseUtil;
 import org.cibseven.bpm.engine.rest.dto.identity.UserCredentialsDto;
 import org.cibseven.bpm.engine.rest.dto.identity.UserDto;
 import org.cibseven.bpm.engine.rest.dto.identity.UserProfileDto;
@@ -88,6 +89,19 @@ public class DirectEngineProvider implements IEngineProvider {
 		result.setHistoryLevel(config.getHistory());
 		result.setAuthorizationEnabled(config.isAuthorizationEnabled());
 		result.setEnablePasswordPolicy(config.isEnablePasswordPolicy());
+		// getHistoryTimeToLive()/isEnforceHistoryTimeToLive() are declared on the impl class,
+		// not the public ProcessEngineConfiguration interface.
+		// For any other (custom) implementation the real values cannot be read, so both fields are
+		// left null ("unknown") - the same as an engine-rest before 3.0.0 that does not report them -
+		// instead of guessing the engine defaults.
+		if (config instanceof org.cibseven.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl impl) {
+			// Same representation as the engine-rest /configuration endpoint (3.0.0+):
+			// "180" / "P180D" -> 180, "0" / "P0D" -> 0, null / "" (no default configured) -> -1.
+			// The engine validates the value with the same method at startup, so it cannot throw here.
+			Integer historyTimeToLive = ParseUtil.parseHistoryTimeToLive(impl.getHistoryTimeToLive());
+			result.setHistoryTimeToLive(historyTimeToLive != null ? historyTimeToLive : -1);
+			result.setEnforceHistoryTimeToLive(impl.isEnforceHistoryTimeToLive());
+		}
 		return result;
 	}
 

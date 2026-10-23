@@ -190,7 +190,6 @@
 		"loadVersions": "Alle Versionen der Historie laden",
 		"externalProcessStarted": "Prozess erfolgreich gestarted",
 		"exportInstances": "Instanzen exportieren",
-		"days": "Tage",
 		"deleteProcessDefinition": {
 			"tooltip": "Prozessdefinition löschen",
 			"confirm": {
@@ -1325,7 +1324,6 @@
 		"decision": "Entscheidung",
 		"refreshVersions": "Historische Versionen aktualisieren",
 		"loadVersions": "Alle Versionen der Historie laden",
-		"days": "Tage",
 		"instances": "Instanzen",
 		"showInstance": "Instanz anzeigen",
 		"evaluationTime": "Auswertungszeit",
@@ -1364,8 +1362,7 @@
 		"decisionInstanceId": "Entscheidungsinstanz-ID"
 	},
 	"decision-instance": {
-		"edit": "@:commons.edit",
-		"save": "@:commons.save"
+		"edit": "@:commons.edit"
 	},
 	"human-tasks": {
 		"assignmentsByType": "Zuweisungen nach Typ",
@@ -1424,5 +1421,17 @@
 	},
 	"deepLink": {
 		"tooltip": "Öffnen {text}\n{url}"
+	},
+	"historyTimeToLive": {
+		"title": "Verlaufsaufbewahrungsdauer bearbeiten",
+		"ttl": "Verlaufsaufbewahrungsdauer:",
+		"choiceUnlimited": "Unbegrenzt (Verlauf wird nie bereinigt)",
+		"choiceZero": "0 Tage (Verlauf wird bei der nächsten Bereinigung entfernt)",
+		"choiceCustom": "Benutzerdefiniert",
+		"days": "Tage",
+		"placeholder": "Tage eingeben (z. B. 30)",
+		"validation": "Bitte eine gültige Zahl zwischen {min} und {max} eingeben",
+		"engineDefaultHint": "Standardwert dieser Engine.",
+		"enforcedHint": "Diese Engine erfordert eine explizite Verlaufsaufbewahrungsdauer; \"Unbegrenzt\" ist nicht verfügbar."
 	}
 }

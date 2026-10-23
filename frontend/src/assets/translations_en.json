@@ -190,7 +190,6 @@
 		"loadVersions": "Load all history versions",
 		"externalProcessStarted": "Process successfully started",
 		"exportInstances": "Export instances",
-		"days": "days",
 		"deleteProcessDefinition": {
 			"tooltip": "Delete process definition",
 			"confirm": {
@@ -1325,7 +1324,6 @@
 		"decision": "Decision",
 		"refreshVersions": "Refresh history versions",
 		"loadVersions": "Load all history versions",
-		"days": "days",
 		"instances": "Instances",
 		"showInstance": "View instance",
 		"evaluationTime": "Evaluation Time",
@@ -1364,8 +1362,7 @@
 		"decisionInstanceId": "Decision Instance ID"
 	},
 	"decision-instance": {
-		"edit": "@:commons.edit",
-		"save": "@:commons.save"
+		"edit": "@:commons.edit"
 	},
 	"human-tasks": {
 		"assignmentsByType": "Assignments by type",
@@ -1424,5 +1421,17 @@
 	},
 	"deepLink": {
 		"tooltip": "Open {text}\n{url}"
+	},
+	"historyTimeToLive": {
+		"title": "Edit History Time To Live",
+		"ttl": "History time to live:",
+		"choiceUnlimited": "Unlimited (history is never cleaned up)",
+		"choiceZero": "0 days (history is removed by the next cleanup)",
+		"choiceCustom": "Custom",
+		"days": "days",
+		"placeholder": "Enter days (e.g., 30)",
+		"validation": "Please enter a valid number between {min} and {max}",
+		"engineDefaultHint": "Default value for this engine.",
+		"enforcedHint": "This engine requires an explicit history time to live; \"unlimited\" is not available."
 	}
 }

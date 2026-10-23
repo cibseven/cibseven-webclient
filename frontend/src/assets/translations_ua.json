@@ -190,7 +190,6 @@
 		"loadVersions": "Завантажити всі версії історії",
 		"externalProcessStarted": "Процес успішно запущено",
 		"exportInstances": "Експортувати екземпляри",
-		"days": "днів",
 		"deleteProcessDefinition": {
 			"tooltip": "Видалити визначення процесу",
 			"confirm": {
@@ -1324,7 +1323,6 @@
 		"decision": "Рішення",
 		"refreshVersions": "Оновити історію версій",
 		"loadVersions": "Завантажити всі версії історії",
-		"days": "днів",
 		"instances": "Екземпляри",
 		"showInstance": "Переглянути екземпляр",
 		"evaluationTime": "Час оцінювання",
@@ -1363,8 +1361,7 @@
 		"decisionInstanceId": "ID екземпляра рішення"
 	},
 	"decision-instance": {
-		"edit": "@:commons.edit",
-		"save": "@:commons.save"
+		"edit": "@:commons.edit"
 	},
 	"human-tasks": {
 		"assignmentsByType": "Призначення за типом",
@@ -1423,5 +1420,17 @@
 	},
 	"deepLink": {
 		"tooltip": "Відкрити {text}\n{url}"
+	},
+	"historyTimeToLive": {
+		"title": "Редагувати термін зберігання історії",
+		"ttl": "Термін зберігання історії:",
+		"choiceUnlimited": "Без обмеження (історія ніколи не очищується)",
+		"choiceZero": "0 дн. (історія видаляється під час наступного очищення)",
+		"choiceCustom": "Користувацьке",
+		"days": "дн.",
+		"placeholder": "Введіть кількість днів (наприклад, 30)",
+		"validation": "Введіть дійсне число від {min} до {max}",
+		"engineDefaultHint": "Значення за замовчуванням для цього рушія.",
+		"enforcedHint": "Цей рушій вимагає явного терміну зберігання історії; варіант \"без обмеження\" недоступний."
 	}
 }
