@@ -87,6 +87,7 @@
               v-model="editTtlValue"
               :id="`${idPrefix}Value`"
               type="number"
+              step="1"
               :min="customValueMin"
               :max="customValueMax"
               :placeholder="$t('historyTimeToLive.placeholder')"
@@ -119,6 +120,26 @@
 import { HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY } from '@/constants'
 
 const DEFAULT_CUSTOM_VALUE = 30
+
+// Strictly parses a number of days from the input field (a string, as `<input type="number">`
+// hands it over through v-model), from localStorage (a string, or null if nothing is stored)
+// or from a plain number. Returns the integer, or NaN if the value is not a whole number.
+// - Number.parseInt is not used, since it silently stops at the first non-digit and turns
+//   '1e3' into 1 and '1.5' into 1, which would then pass validation and be saved.
+// - Number() alone is not enough either, since it turns '', '  ' and null into 0, which is a
+//   real TTL ("history is removed by the next cleanup run"), so those are rejected up front.
+// '1e3' is accepted as 1000 (the number input itself accepts the exponent notation), while
+// '1.5' and other fractions are rejected rather than rounded.
+function parseDays(value) {
+  if (typeof value === 'number') {
+    return Number.isInteger(value) ? value : Number.NaN
+  }
+  if (typeof value !== 'string' || value.trim() === '') {
+    return Number.NaN
+  }
+  const days = Number(value)
+  return Number.isInteger(days) ? days : Number.NaN
+}
 
 // One modal instance is mounted per version in the sidebars, so element ids must be unique
 // per instance - a duplicated id makes <label for> toggle the radio of another instance.
@@ -177,7 +198,7 @@ export default {
     },
     errorInCustomChoice() {
       if (this.choice !== 'custom') return false
-      const value = Number.parseInt(this.editTtlValue)
+      const value = parseDays(this.editTtlValue)
       return Number.isNaN(value) || value < this.customValueMin || value > this.customValueMax
     },
     // Safeguard on top of the preselection in show(): never send a choice the user cannot
@@ -257,7 +278,8 @@ export default {
         ttlValue = 0
         ttlDisplay = '0'
       } else {
-        ttlValue = Number.parseInt(this.editTtlValue)
+        // validated by errorInCustomChoice above (saveDisabled), so this is a whole number in range
+        ttlValue = parseDays(this.editTtlValue)
         ttlDisplay = `${ttlValue} ${this.$t('historyTimeToLive.days')}`
         this.saveLastCustomValue(ttlValue)
       }
@@ -291,7 +313,8 @@ export default {
     },
 
     loadLastCustomValue() {
-      const stored = Number.parseInt(localStorage?.getItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY))
+      // getItem() returns null when nothing is stored, which parseDays() rejects (never 0)
+      const stored = parseDays(localStorage?.getItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY))
       const valid = !Number.isNaN(stored) && stored >= this.customValueMin && stored <= this.customValueMax
       return valid ? stored : DEFAULT_CUSTOM_VALUE
     },

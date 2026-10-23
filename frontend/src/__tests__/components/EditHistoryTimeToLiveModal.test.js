@@ -236,7 +236,18 @@ describe('EditHistoryTimeToLiveModal.vue', () => {
       ['the 356000 ceiling', '356000', false],
       ['zero', '0', false],
       ['within range', '30', false],
-      ['a number', 30, false]
+      ['a number', 30, false],
+      // Number.parseInt would have read these as 1 and accepted them
+      ['a fraction', '1.5', true],
+      ['a fractional number', 1.5, true],
+      ['exponent notation (1000)', '1e3', false],
+      ['exponent notation above the ceiling', '1e6', true],
+      ['trailing garbage', '30abc', true],
+      // Number() alone would have read these as 0 and accepted them
+      ['whitespace only', '   ', true],
+      ['null', null, true],
+      ['undefined', undefined, true],
+      ['Infinity', 'Infinity', true]
     ])('treats %s (%j) as error=%s', (_, rawValue, expectedError) => {
       const vm = context({ choice: 'custom', editTtlValue: rawValue })
 
@@ -285,7 +296,7 @@ describe('EditHistoryTimeToLiveModal.vue', () => {
       expect(vm.loadLastCustomValue()).toBe(120)
     })
 
-    it.each(['abc', '-1', '356001'])('falls back to 30 when the stored value (%s) is not a valid number of days', (stored) => {
+    it.each(['abc', '-1', '356001', '1.5', '', '   '])('falls back to 30 when the stored value (%j) is not a valid number of days', (stored) => {
       localStorage.setItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY, stored)
       const vm = context()
 
@@ -350,6 +361,30 @@ describe('EditHistoryTimeToLiveModal.vue', () => {
         ttlValue: 45,
         ttlDisplay: '45 historyTimeToLive.days'
       })
+    })
+
+    it('emits the full value for exponent notation instead of truncating it', async () => {
+      // Number.parseInt('1e3') is 1 - the value the user meant is 1000
+      const vm = context({ choice: 'custom', editTtlValue: '1e3', selectedItem: { id: 'def-1' } })
+
+      await vm.saveTtlValue()
+
+      expect(vm.$emit).toHaveBeenCalledWith('ttl-updated', {
+        item: { id: 'def-1' },
+        ttlValue: 1000,
+        ttlDisplay: '1000 historyTimeToLive.days'
+      })
+    })
+
+    it('does not emit a truncated value for a fraction', async () => {
+      // Number.parseInt('1.5') is 1, which used to be saved silently
+      const vm = context({ choice: 'custom', editTtlValue: '1.5', selectedItem: { id: 'def-1' } })
+
+      await vm.saveTtlValue()
+
+      expect(vm.$emit).not.toHaveBeenCalled()
+      expect(vm.$refs.modal.hide).not.toHaveBeenCalled()
+      expect(localStorage.getItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY)).toBeNull()
     })
 
     it('remembers the custom value, but not the default or zero choices', async () => {
