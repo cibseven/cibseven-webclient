@@ -14,7 +14,7 @@
 		<jacoco.line.coverage.floor>0.28</jacoco.line.coverage.floor>
 		<jacoco.branch.coverage.floor>0.19</jacoco.branch.coverage.floor>
 		<!-- CIB seven engine the direct provider runs against. -->
-		<version.cibseven.engine>2.3.0-SNAPSHOT</version.cibseven.engine>
+		<version.cibseven.engine>3.0.0-SNAPSHOT</version.cibseven.engine>
 	</properties>
 
 	<dependencies>
