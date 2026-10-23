@@ -31,11 +31,16 @@
       </template>
     </p>
 
-    <b-form-group :label="$t('historyTimeToLive.ttl')" class="mb-0">
+    <!-- No label-for: the group label is rendered as the <legend> of a <fieldset>, which names
+      the radio group as a whole. The id makes that legend's id unique per modal instance
+      (otherwise every instance renders the same "form-group__label" id). -->
+    <b-form-group :id="`${idPrefix}Group`" :label="$t('historyTimeToLive.ttl')" class="mb-0">
       <div class="list-group">
 
         <div class="list-group-item border-0 border-top">
           <div class="form-check">
+            <!-- When disabled, the reason is linked through aria-describedby, so screen readers
+              announce it together with the option. -->
             <input
               class="form-check-input"
               type="radio"
@@ -43,11 +48,17 @@
               :id="`${idPrefix}ChoiceDefault`"
               value="default"
               v-model="choice"
-              :disabled="defaultChoiceDisabled">
-            <label class="form-check-label w-100" :for="`${idPrefix}ChoiceDefault`" :title="defaultChoiceDisabled ? $t('historyTimeToLive.enforcedTooltip') : null">
+              :disabled="defaultChoiceDisabled"
+              :aria-describedby="defaultChoiceDisabled ? `${idPrefix}ChoiceDefaultHint` : null">
+            <label class="form-check-label w-100" :for="`${idPrefix}ChoiceDefault`">
               {{ captionValue(defaultChoiceLabel) }}
               <span class="text-muted float-end">{{ captionHint(defaultChoiceLabel) }}</span>
             </label>
+            <!-- The reason the option is disabled is shown as visible text rather than only as a
+              title tooltip, which keyboard and touch users cannot reach. -->
+            <div v-if="defaultChoiceDisabled" :id="`${idPrefix}ChoiceDefaultHint`" class="form-text mt-0">
+              {{ $t('historyTimeToLive.enforcedHint') }}
+            </div>
           </div>
         </div>
 
@@ -76,12 +87,17 @@
               :id="`${idPrefix}ChoiceCustom`"
               value="custom"
               v-model="choice">
-            <label class="form-check-label w-100" :for="`${idPrefix}ChoiceCustom`">
+            <label class="form-check-label w-100" :for="`${idPrefix}ChoiceCustom`" :id="`${idPrefix}ChoiceCustomLabel`">
               {{ captionValue($t('historyTimeToLive.choiceCustom')) }}
               <span class="text-muted float-end">{{ captionHint($t('historyTimeToLive.choiceCustom')) }}</span>
             </label>
           </div>
 
+          <!-- The number input has no visible label of its own: its accessible name is composed
+            through aria-labelledby from the "Custom" radio label and the "days" unit next to it
+            (e.g. "Custom days"). The placeholder is not a label and disappears once typed into.
+            aria-invalid is set by b-form-input itself from :state (state false -> "true");
+            the validation message is linked through aria-describedby while it is shown. -->
           <div class="input-group my-2" style="max-width: 320px; padding-left: 20px;">
             <b-form-input
               v-model="editTtlValue"
@@ -91,13 +107,17 @@
               :min="customValueMin"
               :max="customValueMax"
               :placeholder="$t('historyTimeToLive.placeholder')"
+              :aria-labelledby="`${idPrefix}ChoiceCustomLabel ${idPrefix}ValueUnit`"
+              :aria-describedby="errorInCustomChoice ? `${idPrefix}ValueFeedback` : null"
               :state="choice === 'custom' ? !errorInCustomChoice : null"
               :disabled="choice !== 'custom'">
             </b-form-input>
-            <span class="input-group-text">{{ $t('historyTimeToLive.days') }}</span>
+            <span class="input-group-text" :id="`${idPrefix}ValueUnit`">{{ $t('historyTimeToLive.days') }}</span>
           </div>
 
-          <div v-if="errorInCustomChoice" class="text-danger small mt-1" style="padding-left: 20px;">
+          <!-- The alert role makes screen readers announce the message as soon as it appears,
+            the same way b-form-group renders its own invalid feedback. -->
+          <div v-if="errorInCustomChoice" :id="`${idPrefix}ValueFeedback`" role="alert" class="text-danger small mt-1" style="padding-left: 20px;">
             {{ $t('historyTimeToLive.validation', { min: customValueMin, max: customValueMax }) }}
           </div>
         </div>

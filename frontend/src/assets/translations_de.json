@@ -1438,6 +1438,6 @@
 		"days": "Tage",
 		"placeholder": "Tage eingeben (z. B. 30)",
 		"validation": "Bitte eine gültige Zahl zwischen {min} und {max} eingeben",
-		"enforcedTooltip": "Diese Engine erfordert eine explizite Verlaufsaufbewahrungsdauer; \"Systemstandard\" ist nicht verfügbar."
+		"enforcedHint": "Diese Engine erfordert eine explizite Verlaufsaufbewahrungsdauer; \"Systemstandard\" ist nicht verfügbar."
 	}
 }
