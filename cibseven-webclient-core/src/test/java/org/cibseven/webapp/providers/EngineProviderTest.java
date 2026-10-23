@@ -138,8 +138,11 @@ public class EngineProviderTest {
 	}
 
 	@Test
-	public void testGetEngineConfiguration_missingNewFields_keepDefaults() {
-		// An engine-rest before 3.0.0 doesn't report these two fields - they keep their defaults.
+	public void testGetEngineConfiguration_missingNewFields_areUnknown() {
+		// An engine-rest before 3.0.0 doesn't report these two fields. They must stay null
+		// ("unknown") instead of falling back to the engine defaults (-1 / true): such an engine
+		// may well have enforcement switched off, and a made-up `true` would make the UI block
+		// choices the engine actually allows.
 		mockWebServer.enqueue(new MockResponse()
 				.setBody(ENGINE_CONFIG_JSON)
 				.addHeader("Content-Type", "application/json"));
@@ -147,12 +150,32 @@ public class EngineProviderTest {
 		EngineConfiguration result = provider.getEngineConfiguration("default");
 
 		assertNotNull(result);
-		assertEquals(-1, result.getHistoryTimeToLive());
-		assertTrue(result.isEnforceHistoryTimeToLive());
+		assertNull(result.getHistoryTimeToLive());
+		assertNull(result.getEnforceHistoryTimeToLive());
 	}
 
 	@Test
-	public void testGetEngineConfiguration_nullNewFields_keepDefaults() {
+	public void testGetEngineConfiguration_noDefaultConfigured_isMinusOneNotUnknown() {
+		// An engine-rest since 3.0.0 always reports both fields; "no engine default configured"
+		// arrives as -1 and must be kept as -1, distinguishable from "unknown" (null).
+		String json =
+				"{\"engineName\":\"default\",\"historyLevel\":\"full\",\"authorizationEnabled\":true,"
+				+ "\"enablePasswordPolicy\":false,\"historyTimeToLive\":-1,\"enforceHistoryTimeToLive\":true}";
+		mockWebServer.enqueue(new MockResponse()
+				.setBody(json)
+				.addHeader("Content-Type", "application/json"));
+
+		EngineConfiguration result = provider.getEngineConfiguration("default");
+
+		assertNotNull(result);
+		assertEquals(-1, result.getHistoryTimeToLive());
+		assertTrue(result.getEnforceHistoryTimeToLive());
+	}
+
+	@Test
+	public void testGetEngineConfiguration_nullNewFields_areUnknown() {
+		// Engines never send explicit nulls for these fields, but if one does, null must be read
+		// as "unknown", exactly like a missing property.
 		String nullJson =
 				"{\"engineName\":\"default\",\"historyLevel\":\"full\",\"authorizationEnabled\":true,"
 				+ "\"enablePasswordPolicy\":false,\"historyTimeToLive\":null,\"enforceHistoryTimeToLive\":null}";
@@ -163,8 +186,8 @@ public class EngineProviderTest {
 		EngineConfiguration result = provider.getEngineConfiguration("default");
 
 		assertNotNull(result);
-		assertEquals(-1, result.getHistoryTimeToLive());
-		assertTrue(result.isEnforceHistoryTimeToLive());
+		assertNull(result.getHistoryTimeToLive());
+		assertNull(result.getEnforceHistoryTimeToLive());
 	}
 
 	@Test
@@ -180,7 +203,7 @@ public class EngineProviderTest {
 
 		assertNotNull(result);
 		assertEquals(30, result.getHistoryTimeToLive());
-		assertFalse(result.isEnforceHistoryTimeToLive());
+		assertFalse(result.getEnforceHistoryTimeToLive());
 	}
 
 	@Test

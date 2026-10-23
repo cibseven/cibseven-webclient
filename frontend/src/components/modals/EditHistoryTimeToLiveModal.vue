@@ -144,15 +144,17 @@ export default {
     }
   },
   computed: {
-    // A real engine config always reports enforceHistoryTimeToLive as a concrete boolean;
-    // it only ever comes back null/undefined when the deployment can't be determined
-    // (see EngineProvider's atomic-pair normalization). Only a known `true` disables the
-    // option - an unknown value is left selectable and a rejected save surfaces normally.
+    // Engines since 3.0.0 always report enforceHistoryTimeToLive as a known boolean; older
+    // engines do not report it, which /info passes through as null ("unknown", see
+    // EngineConfiguration.java). Only a known `true` disables the option - an unknown value is
+    // left selectable (the engine may well have enforcement switched off) and if the engine
+    // does enforce, the rejected save surfaces through the regular error dialog.
     defaultChoiceDisabled() {
       return this.$root.config.enforceHistoryTimeToLive === true
     },
-    // The engine reports its default in days; -1 means history is kept indefinitely, 0 means
-    // it is cleaned up immediately, null/undefined means the engine did not report it.
+    // The engine reports its default in days; -1 means no default is configured, 0 means
+    // history is cleaned up immediately, null/undefined means the engine did not report it
+    // (engines before 3.0.0) and is shown as "unknown" rather than as one of those values.
     defaultChoiceLabel() {
       const systemDefault = this.$root.config.historyTimeToLive
       if (systemDefault === null || systemDefault === undefined) {

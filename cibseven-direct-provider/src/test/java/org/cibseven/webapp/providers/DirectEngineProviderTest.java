@@ -62,7 +62,7 @@ public class DirectEngineProviderTest {
 		EngineConfiguration result = provider.getEngineConfiguration("default");
 
 		assertThat(result.getHistoryTimeToLive()).isEqualTo(30);
-		assertThat(result.isEnforceHistoryTimeToLive()).isTrue();
+		assertThat(result.getEnforceHistoryTimeToLive()).isTrue();
 	}
 
 	@ParameterizedTest
@@ -86,17 +86,18 @@ public class DirectEngineProviderTest {
 	}
 
 	@Test
-	void getEngineConfiguration_configNotAnImpl_keepsNewFieldDefaults() {
+	void getEngineConfiguration_configNotAnImpl_reportsTtlFieldsAsUnknown() {
 		// getHistoryTimeToLive()/isEnforceHistoryTimeToLive() only exist on the impl class -
-		// an engine reporting a bare ProcessEngineConfiguration must not fail, just report
-		// the two new fields at their defaults, same as an engine that doesn't have them at all.
+		// an engine reporting a bare ProcessEngineConfiguration must not fail. Its real values
+		// cannot be read, so both fields are reported as unknown (null), the same as an
+		// engine-rest before 3.0.0 that does not report them, rather than as guessed defaults.
 		ProcessEngineConfiguration config = mock(ProcessEngineConfiguration.class);
 		when(config.getHistory()).thenReturn("full");
 		when(processEngine.getProcessEngineConfiguration()).thenReturn(config);
 
 		EngineConfiguration result = provider.getEngineConfiguration("default");
 
-		assertThat(result.getHistoryTimeToLive()).isEqualTo(-1);
-		assertThat(result.isEnforceHistoryTimeToLive()).isTrue();
+		assertThat(result.getHistoryTimeToLive()).isNull();
+		assertThat(result.getEnforceHistoryTimeToLive()).isNull();
 	}
 }

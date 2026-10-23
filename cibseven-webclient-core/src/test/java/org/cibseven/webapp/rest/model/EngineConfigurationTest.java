@@ -52,15 +52,17 @@ public class EngineConfigurationTest {
 	}
 
 	@Test
-	public void testDefaultValues_historyTimeToLiveIsUnlimited() {
+	public void testDefaultValues_historyTimeToLiveIsUnknown() {
+		// null = "not reported by the engine" (before 3.0.0), never a guessed default such as -1
 		EngineConfiguration config = new EngineConfiguration();
-		assertEquals(-1, config.getHistoryTimeToLive());
+		assertNull(config.getHistoryTimeToLive());
 	}
 
 	@Test
-	public void testDefaultValues_enforceHistoryTimeToLiveIsTrue() {
+	public void testDefaultValues_enforceHistoryTimeToLiveIsUnknown() {
+		// null = "not reported by the engine" (before 3.0.0), never a guessed default such as true
 		EngineConfiguration config = new EngineConfiguration();
-		assertTrue(config.isEnforceHistoryTimeToLive());
+		assertNull(config.getEnforceHistoryTimeToLive());
 	}
 
 	@Test
@@ -71,7 +73,7 @@ public class EngineConfigurationTest {
 		assertFalse(config.isAuthorizationEnabled());
 		assertTrue(config.isEnablePasswordPolicy());
 		assertEquals(30, config.getHistoryTimeToLive());
-		assertTrue(config.isEnforceHistoryTimeToLive());
+		assertTrue(config.getEnforceHistoryTimeToLive());
 	}
 
 	@Test
@@ -89,7 +91,7 @@ public class EngineConfigurationTest {
 		assertFalse(config.isAuthorizationEnabled());
 		assertTrue(config.isEnablePasswordPolicy());
 		assertEquals(60, config.getHistoryTimeToLive());
-		assertTrue(config.isEnforceHistoryTimeToLive());
+		assertTrue(config.getEnforceHistoryTimeToLive());
 	}
 
 	@ParameterizedTest

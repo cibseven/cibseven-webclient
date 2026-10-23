@@ -272,16 +272,33 @@ public class InfoServiceTest {
 	}
 
 	@Test
-	public void testGetConfig_historyTimeToLiveFields_defaultsWhenEngineDoesNotReportThem() {
-		// An engine config that didn't report them (e.g. an older engine-rest) keeps the defaults.
+	public void testGetConfig_historyTimeToLiveFields_nullWhenEngineDoesNotReportThem() {
+		// An engine config that didn't report them (an engine-rest before 3.0.0) must reach the
+		// frontend as explicit nulls ("unknown"), not as the engine defaults -1 / true: such an
+		// engine may have enforcement switched off, and a made-up `true` would make the UI
+		// disable choices the engine actually allows.
 		EngineConfiguration config = new EngineConfiguration();
 		config.setEngineName("default");
 		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
 
 		ObjectNode result = infoService.getConfig(null);
 
-		assertEquals(-1, result.get("historyTimeToLive").asInt());
-		assertTrue(result.get("enforceHistoryTimeToLive").asBoolean());
+		assertTrue(result.has("historyTimeToLive"));
+		assertTrue(result.get("historyTimeToLive").isNull());
+		assertTrue(result.has("enforceHistoryTimeToLive"));
+		assertTrue(result.get("enforceHistoryTimeToLive").isNull());
+	}
+
+	@Test
+	public void testGetConfig_enforceHistoryTimeToLive_knownFalseIsPassedThrough() {
+		// A known `false` must stay a boolean false and not be confused with "unknown" (null).
+		EngineConfiguration config = new EngineConfiguration("default", "full", true, false, -1, false);
+		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
+
+		ObjectNode result = infoService.getConfig(null);
+
+		assertTrue(result.get("enforceHistoryTimeToLive").isBoolean());
+		assertFalse(result.get("enforceHistoryTimeToLive").asBoolean());
 	}
 
 	@Test

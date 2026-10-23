@@ -107,10 +107,12 @@ export default {
     },
     historyTimeToLiveDisplay() {
       if (this.historyTimeToLive === undefined || this.historyTimeToLive === null) {
-        // If 'historyTimeToLive' is undefined or null, we need to check the engine configuration to determine the default TTL.
-        // enforceHistoryTimeToLive is only ever a known boolean when the engine actually
-        // reported its config (see EngineConfiguration.java's "atomic pair" contract) -
-        // null/undefined means unknown, so check against both true and false explicitly.
+        // If decision 'historyTimeToLive' is undefined or null, we need to check the engine configuration to determine the default TTL.
+        // /info passes both engine values through as reported (see EngineConfiguration.java):
+        // engines since 3.0.0 always report a known boolean for enforceHistoryTimeToLive and a
+        // number for historyTimeToLive (-1 if no default is configured), while older engines do
+        // not report them at all, which arrives here as null ("unknown"). Unknown must not be
+        // mistaken for a real value, so check against both true and false explicitly.
         const hasEngineTTLSetup = (this.$root.config.enforceHistoryTimeToLive === true || this.$root.config.enforceHistoryTimeToLive === false)
         if (hasEngineTTLSetup) {
           const engineDefault = this.$root.config.historyTimeToLive

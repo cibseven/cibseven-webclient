@@ -17,8 +17,6 @@
 package org.cibseven.webapp.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.Nulls;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -35,17 +33,40 @@ public class EngineConfiguration {
 	private boolean authorizationEnabled = true;
 	private boolean enablePasswordPolicy;
 
-	// Default time to live for historical data, in days, as reported by the engine.
-	// -1 means to keep historical data indefinitely, 0 means to delete it immediately.
-	// Falls back to the engine default when the engine doesn't report it (before 3.0.0).
-	// Supported since engine version 3.0.0.
-	@JsonSetter(nulls = Nulls.SKIP)
-	private int historyTimeToLive = -1;
-	// Whether deploying a model resource without a history time to live is rejected.
-	// Falls back to the engine default when the engine doesn't report it (before 3.0.0).
-	// Supported since engine version 3.0.0.
-	@JsonSetter(nulls = Nulls.SKIP)
-	private boolean enforceHistoryTimeToLive = true;
+	/**
+	 * The engine-wide default history time to live, in days, as reported by the engine's
+	 * {@code GET /engine/{name}/configuration} endpoint (or read directly from the engine
+	 * configuration by the direct provider).
+	 * <ul>
+	 *   <li>{@code n >= 0}: the engine applies this TTL at deployment time to definitions whose
+	 *   model does not set its own one ({@code 0}: history is removed by the next cleanup run).</li>
+	 *   <li>{@code -1}: the engine has no default configured.</li>
+	 *   <li>{@code null}: <b>unknown</b>, the engine does not report it (engines before 3.0.0, which
+	 *   omit the property). It must not be mistaken for {@code -1}.</li>
+	 * </ul>
+	 * Boxed on purpose: a primitive with a fallback default would make an engine that does not
+	 * report the value indistinguishable from one that really has that value.
+	 *
+	 * @since 3.0.0 (engine version)
+	 */
+	private Integer historyTimeToLive;
+
+	/**
+	 * Whether the engine rejects the deployment of a model resource (BPMN, DMN, CMMN) for which no
+	 * history time to live can be resolved, and rejects setting a definition's TTL to {@code null}.
+	 * <ul>
+	 *   <li>{@code true} / {@code false}: the value reported by the engine.</li>
+	 *   <li>{@code null}: <b>unknown</b>, the engine does not report it (engines before 3.0.0, which
+	 *   omit the property). It must not be mistaken for {@code true} (the engine default), since
+	 *   the engine may have enforcement switched off, nor for {@code false}.</li>
+	 * </ul>
+	 * Boxed on purpose, see {@link #historyTimeToLive}. Note that Lombok generates
+	 * {@code getEnforceHistoryTimeToLive()} (not {@code isEnforceHistoryTimeToLive()}) for a
+	 * {@link Boolean}.
+	 *
+	 * @since 3.0.0 (engine version)
+	 */
+	private Boolean enforceHistoryTimeToLive;
 
 	public String getHistoryLevel() {
 		return historyLevel != null ? historyLevel.toLowerCase() : DEFAULT_HISTORY_LEVEL;
