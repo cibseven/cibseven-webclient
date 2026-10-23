@@ -1113,6 +1113,7 @@
 		"Network_Error": "Es gibt ein Verbindungsproblem",
 		"FolderUploadError": "Ordner Hochladen ist nicht möglich, bitte lade Dateien hoch.",
 		"SystemException": "Es ist ein unerwartetes technisches Problem aufgetreten. Möchtest du einen Bericht senden?",		
+		"EngineRestClientException": "Die Anfrage wurde abgelehnt: {0}",
 		"DoxichangeException": "Die Vorschau konnte nicht erzeugt werden. Möchtest du das betroffene Dokument zur Analyse bereitstellen?",
 		"AccessDeniedException": "Keine Berechtigung ({0})",
 		"NoPermission": "Sie haben nicht die erforderlichen Berechtigungen, um diese Aktion auszuführen.\nErforderliche Berechtigung: \"{permission}\".\nReferenziert von: {refPath}",

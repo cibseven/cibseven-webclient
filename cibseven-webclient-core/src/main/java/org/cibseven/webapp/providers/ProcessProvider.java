@@ -35,6 +35,7 @@ import java.util.function.Function;
 
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.exception.EngineRestClientException;
 import org.cibseven.webapp.exception.ExpressionEvaluationException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnsupportedTypeException;
@@ -745,7 +746,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		String url = engineRestUrl + "/history/process-definition/" + processDefinitionId + "/statistics";
 		try {
 			return Arrays.asList(((ResponseEntity<HistoryStatistics[]>) doPost(url, filters, HistoryStatistics[].class, user)).getBody());
-		} catch (SystemException e) {
+		} catch (EngineRestClientException e) {
 			// Backwards compatibility: this call is only supported for Engine version 2.2.0 and over.
 			// Whether the engine offers it cannot change while it is running, so remember the answer and
 			// spare every later call the rejected request and the error SevenProviderBase logs for it.

@@ -19,6 +19,7 @@ package org.cibseven.webapp.providers;
 import java.util.ArrayList;
 import java.util.Map;
 
+import org.cibseven.webapp.exception.EngineRestClientException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.PasswordPolicyRequest;
 import org.cibseven.webapp.rest.model.PasswordPolicyResponse;
@@ -41,7 +42,7 @@ public class IdentityProvider extends SevenProviderBase implements IIdentityProv
             return doPost(url, body, PasswordPolicyResponse.class, null).getBody();
             // when enable-password-policy is switched off the endpoint will return 404, so
             // we catch this and return a default response
-        } catch (SystemException e) {
+        } catch (EngineRestClientException e) {
             Throwable cause = e.getCause();
             if (cause instanceof HttpClientErrorException.NotFound) {
                 return new PasswordPolicyResponse(true, new ArrayList<>());
