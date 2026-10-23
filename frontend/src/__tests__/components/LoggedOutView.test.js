@@ -21,7 +21,11 @@ import { AuthService } from '@/services.js'
 import { axios } from '@/globals.js'
 import { LOGGED_OUT_KEY } from '@/constants.js'
 
-vi.mock('@/services.js', () => ({ AuthService: { logout: vi.fn() } }))
+vi.mock('@/services.js', () => ({
+  AuthService: { logout: vi.fn() },
+  // AppFooter loads the version when it is created
+  InfoService: { getVersion: vi.fn(() => Promise.resolve('1.0.0')) }
+}))
 
 describe('LoggedOutView', () => {
   const push = vi.fn()
