@@ -866,7 +866,9 @@
 		"de": "Deutsch",
 		"es": "Español",
 		"ua": "Українська",
-		"ru": "Русский"
+		"ru": "Русский",
+		"zh": "Chino simplificado",
+		"zh-tw": "Chino tradicional"
 	},
 	"cib-datepicker2": {
 		"noDate": "Ninguna fecha",

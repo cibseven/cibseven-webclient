@@ -193,7 +193,7 @@ application:
           enabled: false
 
 ui:
-  supportedLanguages: ["de", "en", "es", "ua", "ru"]
+  supportedLanguages: ["de", "en", "es", "ua", "ru", "zh", "zh-tw"]
   taskListTime: "30000"
   taskFilter:
     smartSearch:

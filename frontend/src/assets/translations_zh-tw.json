@@ -1,0 +1,1430 @@
+{
+	"commons": {
+		"operator": "運算子",
+		"edit": "編輯",
+		"save": "儲存",
+		"actualisation": {
+			"progress": "正在更新資料…",
+			"lastUpdate": "上次更新：{date}",
+			"disabled": "上次更新：{date}\n\n自動更新已禁用。\n按 F5 重新載入資料。",
+			"enabled": "上次更新：{date}\n\n自動更新已啟用。\n每 {seconds} 秒重新整理一次。"
+		},
+		"notAvailable": {
+			"label": "不適用",
+			"tooltip": "不可用"
+		}
+	},
+	"login": {
+		"productName": "CIB seven",
+		"productSlogan": "流程管理平臺",
+		"loggedOutText": "您已成功退出登入。",
+		"loggingOut": "正在退出…",
+		"loggedOutAgain": "重新登入",
+		"username": "使用者名稱",
+		"password": "密碼",
+		"rememberMe": "記住我",
+		"email": "電子郵箱",
+		"login": "登入",
+		"2fa": "兩步驗證",
+		"emailSent": "我們已向以下電子郵箱地址傳送了一封郵件：{0}！請按郵件中的說明操作。沒有收到郵件？請檢查垃圾郵件資料夾。",
+		"needOtp": "請透過 <b>應用</b> 確認您的請求。",
+		"otp": "驗證碼",
+		"register": "還沒有賬號？",
+		"registerLink": "立即註冊",
+		"reset2fa": "重置受信任裝置",
+		"resetPassword": "重置密碼",
+		"forgotten": "忘記密碼？",
+		"usernameRequired": "請輸入使用者名稱",
+		"passwordRequired": "請輸入密碼",
+		"showPassword": "顯示密碼",
+		"hidePassword": "隱藏密碼"
+	},
+	"processes-dashboard": {
+		"headerActive": "運營儀表板",
+		"headerDeployed": "已部署",
+		"items": {
+			"running-instances": {
+				"title": "執行中的流程例項",
+				"tooltip": "瀏覽所有活躍的流程例項"
+			},
+			"open-incidents": {
+				"title": "未關閉的異常事件",
+				"tooltip": "檢視所有當前未關閉的異常事件"
+			},
+			"open-human-tasks": {
+				"title": "待處理的人工任務",
+				"tooltip": "@:start.cockpit.humanTasks.tooltip",
+				"assigned": "已分配給使用者",
+				"unassigned": "未分配",
+				"assignedGroups": "已分配給一個或多個組"
+			},
+			"processes": {
+				"title": "流程定義",
+				"tooltip": "@:start.cockpit.processes.tooltip"
+			},
+			"decisions": {
+				"title": "決策定義",
+				"tooltip": "@:start.cockpit.decisions.tooltip"
+			},
+			"deployments": {
+				"title": "@:start.cockpit.deployments.title",
+				"tooltip": "@:start.cockpit.deployments.tooltip"
+			},
+			"batches": {
+				"title": "@:start.cockpit.batches.title",
+				"tooltip": "@:start.cockpit.batches.tooltip"
+			}
+		},
+		"others": "其他",
+		"unnamedProcess": "未命名流程"
+	},
+	"process": {
+		"instanceRunning": "例項執行中",
+		"instanceIncidents": "例項存在異常事件",
+		"instanceSuspended": "例項已掛起",
+		"instanceWithoutIncidents": "例項無異常事件",
+		"instanceFinished": "例項已完成",
+		"name": "名稱",
+		"key": "流程鍵",
+		"state": "狀態",
+		"id": "ID",
+		"instanceId": "ID",
+		"processId": "流程 ID",
+		"startUserId": "使用者",
+		"startTime": "開始時間",
+		"endTime": "結束時間",
+		"businessKey": "業務鍵",
+		"title": "流程",
+		"viewMode": "檢視模式",
+		"view-comfy": "小",
+		"view-module": "大",
+		"view-list": "列表",
+		"image-outline": "緊湊",
+		"startProcess": "啟動流程",
+		"start": "啟動",
+		"showProcess": "檢視流程",
+		"showInstance": "檢視例項",
+		"downloadBpmn": "下載 BPMN 檔案",
+		"openModeler": "在建模器中開啟 BPMN 檔案",
+		"openModelerDmn": "在建模器中開啟 DMN 檔案",
+		"showManagement": "管理",
+		"showHistory": "歷史",
+		"showDeployment": "檢視部署",
+		"organizeDeployment": "整理部署",
+		"tasks": "任務",
+		"processCheck": "流程已啟動 - 請檢視您的{tasks}",
+		"processStarted": "流程已啟動",
+		"runningProcesess": "執行中的流程",
+		"process": "流程",
+		"info": "流程定義詳情",
+		"description": "描述",
+		"favorite": "收藏",
+		"actions": "操作",
+		"status": "狀態",
+		"tenant": "租戶",
+		"details": {
+			"titleProcessActions": "流程定義操作",
+			"titleInstancesActions": "流程操作",
+			"firstStart": "首次啟動於",
+			"lastStart": "最近啟動於",
+			"totalInstances": "例項總數",
+			"unfinishedInstances": "執行中的例項",
+			"finishedInstances": "已完成且無錯誤的例項總數",
+			"definitionVersion": "定義版本",
+			"versionTag": "版本標籤",
+			"definitionId": "定義 ID",
+			"definitionKey": "定義鍵",
+			"definitionName": "定義名稱",
+			"deploymentId": "部署 ID",
+			"superProcessInstanceId": "父流程例項 ID",
+			"instancesRunning": "執行中的例項",
+			"currentVersion": "當前版本",
+			"allVersions": "所有版本",
+			"versionInstances": "此版本的例項",
+			"historyVersions": "歷史版本",
+			"variable": "流程變數",
+			"copyValue": "複製值",
+			"historyTimeToLive": "歷史資料保留時長",
+			"tenantId": "租戶 ID"
+		},
+		"sections": {
+			"all": "全部",
+			"favorites": "收藏",
+			"mostUsed": "最常用",
+			"startables": "我的流程",
+			"mostStarted": "啟動最多"
+		},
+		"diagram": {
+			"title": "流程圖：{0}"
+		},
+		"emptyProcessList": "您的流程列表當前為空。",
+		"emptyProcessListFiltered": "沒有符合當前篩選條件的流程。",
+		"definitionVersionNotFound": "未找到流程定義版本“{0}”。將回退到最新版本。",
+		"definitionNotFound": "未找到租戶 ID 為“{tenantId}”的流程定義鍵“{processKey}”。",
+		"instanceNotFound": "未找到 ID 為“{instanceId}”的流程例項。\n伺服器響應：\n{error}",
+		"back": "返回",
+		"incidentsCounter": "異常事件：{0}",
+		"incidents": "異常事件",
+		"variables": "變數",
+		"usertasks": "使用者任務",
+		"calledProcessInstances": "被呼叫的流程例項",
+		"onlyIncidents": {
+			"title": "僅顯示有異常事件的",
+			"tooltip": "僅顯示存在異常事件的流程"
+		},
+		"onlyActive": {
+			"title": "僅顯示活躍的",
+			"tooltip": "僅顯示流程定義未掛起的流程"
+		},
+		"runningInstances": "例項",
+		"instances": "例項",
+		"statistics": "統計",
+		"suspendInstance": "掛起流程例項",
+		"stopInstance": "停止流程例項",
+		"deleteHistoryInstance": "刪除歷史流程例項",
+		"suspendProcess": "掛起流程定義",
+		"activateProcess": "啟用流程定義",
+		"activateInstance": "啟用流程例項",
+		"copySuccess": "已複製所選值",
+		"refreshVersions": "重新整理歷史版本",
+		"loadVersions": "載入所有歷史版本",
+		"externalProcessStarted": "流程已成功啟動",
+		"exportInstances": "匯出例項",
+		"days": "天",
+		"deleteProcessDefinition": {
+			"tooltip": "刪除流程定義",
+			"confirm": {
+				"title": "@:confirm.delete",
+				"line1": "刪除流程定義？",
+				"line2": "名稱：{name}版本：{version}"
+			}
+		},
+		"confirm": {
+			"suspend": "您確實要掛起以下流程定義及其所有執行中的流程例項嗎？",
+			"activate": "您確實要啟用以下流程定義及其所有執行中的流程例項嗎？"
+		},
+		"activityIdBadge": {
+			"remove": "移除條件 - 列出所有流程例項",
+			"title": {
+				"executed": "{activityId}（僅已執行）",
+				"active": "{activityId}（僅活躍）",
+				"all": "{activityId}"
+			},
+			"tooltip": {
+				"executed": "列出執行過 {activityId} 活動的例項",
+				"active": "列出仍處於 {activityId} 活動的例項",
+				"all": "列出執行過 {activityId} 活動或仍處於 {activityId} 活動的例項"
+			}
+		},
+		"true": "是",
+		"false": "否",
+		"jobDefinitions": "作業定義",
+		"jobs": "作業",
+		"calledProcessDefinitions": "被呼叫的流程定義",
+		"jobLog": "作業日誌",
+		"userOperations": "使用者操作",
+		"externalTasksLog": "外部任務日誌",
+		"modify": "修改",
+		"restart": "重新啟動",
+		"documentation": "文件",
+		"externalTasks": "外部任務"
+	},
+	"process-instance": {
+		"processInstanceId": "流程例項 ID",
+		"businessKey": "業務鍵",
+		"info": "流程詳情",
+		"active": "活躍",
+		"history": "歷史",
+		"download": "下載",
+		"edit": "@:commons.edit",
+		"save": "@:commons.save",
+		"upload": "上傳檔案",
+		"selectFile": "選擇檔案",
+		"calledProcessDefinitions": {
+			"calledProcessDefinition": "被呼叫的流程定義",
+			"process": "流程",
+			"version": "版本",
+			"activities": "呼叫活動",
+			"activity": "活動",
+			"state": "狀態",
+			"referenced": "已引用",
+			"running": "執行中",
+			"runningAndReferenced": "執行中且已引用",
+			"unknown": "未知"
+		},
+		"details": {
+			"instancesChain": "根流程",
+			"startUser": "啟動使用者",
+			"start": "開始於",
+			"finish": "完成於",
+			"duration": "持續時間",
+			"superProcessInstanceId": "父流程例項 ID",
+			"superCaseInstanceId": "父案例例項 ID",
+			"caseInstanceId": "案例例項 ID",
+			"startActivityId": "開始活動 ID",
+			"version": "版本",
+			"state": "狀態",
+			"deleted": "刪除於",
+			"deletedReason": "刪除原因",
+			"currentTaskAssignee": "當前處理人",
+			"currentTaskCreated": "當前任務建立於"
+		},
+		"confirm": {
+			"suspend": "您確實要掛起該流程的以下例項嗎？",
+			"activate": "您確實要啟用該流程的以下例項嗎？",
+			"stopInstance": "您確實要停止該流程的以下例項嗎？",
+			"deleteHistoryInstance": "您確實要刪除該流程的以下歷史例項嗎？"
+		},
+		"variables": {
+			"editVariable": {
+				"title": "編輯變數",
+				"tooltip": "編輯變數"
+			},
+			"runtimeVariable": {
+				"title": "執行時變數",
+				"tooltip": "檢視執行時變數"
+			},
+			"historicVariable": {
+				"title": "歷史變數",
+				"tooltip": "檢視歷史變數"
+			},
+			"name": "名稱",
+			"type": "型別",
+			"value": "值",
+			"valueSerialized": "序列化值",
+			"actions": "操作",
+			"scope": "作用域",
+			"activityInstanceId": "活動例項 ID",
+			"objectTypeName": "物件型別名稱",
+			"serializationDataFormat": "序列化資料格式",
+			"confirmDelete": "要刪除該變數嗎？",
+			"loadStatus": {
+				"runtimeError": "嘗試載入 ID 為 {id} 的變數“{name}”時出錯。",
+				"historicError": "嘗試載入 ID 為 {id} 的歷史變數“{name}”時出錯。"
+			},
+			"deleteStatus": {
+				"runtime": "變數已成功刪除。",
+				"runtimeError": "嘗試刪除變數“{name}”時出錯。",
+				"historic": "歷史變數已成功刪除。",
+				"historicError": "嘗試刪除歷史變數“{name}”時出錯。"
+			},
+			"enterValue": "輸入值",
+			"activityIdBadge": {
+				"remove": "移除條件 - 列出所有變數",
+				"title": "{activityId}",
+				"tooltip": "僅顯示作用域“{activityId}”內的變數。"
+			}
+		},
+		"incidents": {
+			"activityIdBadge": {
+				"remove": "移除條件 - 列出所有異常事件",
+				"title": "{activityId}（失敗的活動）",
+				"tooltip": "僅列出因“{activityId}”活動失敗而建立的異常事件。"
+			},
+			"state": "狀態",
+			"processInstance": "流程例項",
+			"deleted": "已刪除",
+			"resolved": "已解決",
+			"open": "未關閉",
+			"unknown": "未知",
+			"message": "訊息",
+			"timestamp": "時間戳",
+			"activity": "活動",
+			"failedActivity": "失敗的活動",
+			"executionId": "執行 ID",
+			"incidentType": "異常型別",
+			"retryJob": "增加失敗作業的重試次數",
+			"annotation": "註釋",
+			"actions": "操作",
+			"incrementNumberRetries": "增加重試次數",
+			"retryMsg": "所選異常事件對應的失敗作業的重試次數將增加。",
+			"dueDateMsg": "作業的執行時間由到期日決定：",
+			"keepDueDate": "保留到期日",
+			"setDueDate": "設定到期日",
+			"dueDate": "到期日",
+			"scheduleAt": "計劃時間",
+			"invalidDateError": "請輸入有效日期",
+			"retry": "重試",
+			"editAnnotation": "編輯註釋",
+			"causeIncidentProcessInstanceId": "起因流程例項 ID",
+			"rootCauseIncidentProcessInstanceId": "根本原因流程例項 ID",
+			"createTime": "建立日期",
+			"endTime": "結束日期"
+		},
+		"jobDefinitions": {
+			"state": "狀態",
+			"activity": "活動",
+			"type": "型別",
+			"configuration": "配置",
+			"overridingJobPriority": "覆蓋作業優先順序",
+			"actions": "操作",
+			"active": "活躍",
+			"suspendJob": "掛起作業定義",
+			"activateJob": "啟用作業定義",
+			"suspended": "已掛起",
+			"activateMsg": "此作業定義將被啟用，因此基於此作業定義的新作業初始狀態為活躍。",
+			"suspendMsg": "此作業定義將被掛起，因此基於此作業定義的新作業初始狀態為掛起。",
+			"includeExisting": "包含現有作業",
+			"execute": "執行",
+			"immediately": "立即",
+			"delayed": "延遲",
+			"scheduleAt": "計劃時間",
+			"suspend": "掛起",
+			"activate": "啟用",
+			"changeJobPriority": "更改覆蓋作業優先順序",
+			"overridingMsg": "更改指定作業定義下作業的覆蓋優先順序。",
+			"jobPriority": "優先順序",
+			"clear": "清除覆蓋作業優先順序",
+			"set": "設定覆蓋作業優先順序",
+			"invalidPriorityError": "請輸入整數值",
+			"overrideAction": "覆蓋",
+			"clearAction": "清除",
+			"invalidDateError": "請輸入有效日期"
+		},
+		"usertasks": {
+			"activity": "活動",
+			"assignee": "處理人",
+			"owner": "所有者",
+			"startTime": "開始時間",
+			"due": "到期日期",
+			"followUp": "跟進日期",
+			"taskID": "任務 ID",
+			"actions": "操作",
+			"openTask": "在任務列表中開啟“{name}”任務"
+		},
+		"calledProcesses": {
+			"callingActivity": "活動",
+			"process": "流程定義",
+			"calledProcessInstance": "被呼叫的流程例項",
+			"state": "狀態",
+			"startTime": "開始時間",
+			"endTime": "結束時間"
+		},
+		"assignModal": {
+			"manageUsersGroups": "管理使用者/組",
+			"manageAssignee": "管理已分配使用者",
+			"manageGroups": "管理組",
+			"manageUsers": "管理使用者",
+			"groupId": "組 ID",
+			"userId": "@:admin.users.id",
+			"groups": "組",
+			"users": "使用者",
+			"assignee": "處理人",
+			"add": "新增",
+			"delete": "@:confirm.delete",
+			"actions": "操作",
+			"exists": "該實體已被分配"
+		},
+		"noResults": "無結果",
+		"noIncidents": "無異常事件",
+		"noJobDefinitions": "無作業定義",
+		"stacktrace": "堆疊跟蹤",
+		"copyValueToClipboard": "複製值到剪貼簿",
+		"confirmRetryJob": "確定要增加重試次數嗎？",
+		"successRetryJob": "重試次數已成功增加。",
+		"addVariable": "新增變數",
+		"jobs": {
+			"id": "ID",
+			"dueDate": "到期日期",
+			"createTime": "建立日期",
+			"retries": "重試次數",
+			"activity": "活動",
+			"failedActivity": "失敗的活動",
+			"actions": "操作",
+			"suspend": "掛起",
+			"resume": "恢復",
+			"changeDueDate": "更改定時器到期日",
+			"recalculateFromCreation": "從建立時間起算",
+			"recalculateFromCurrent": "從當前時間起算",
+			"setSpecificDate": "設定指定日期",
+			"cascade": "級聯到子流程",
+			"changeDueDateMsg": "選擇以下選項之一來更改此定時器：",
+			"recalculate": "重新計算",
+			"scheduleAt": "計劃時間",
+			"invalidDateError": "請輸入有效日期",
+			"overrideAction": "覆蓋"
+		},
+		"externalTasks": {
+			"id": "外部任務 ID",
+			"activityId": "活動",
+			"topicName": "主題",
+			"workerId": "工作程序 ID",
+			"lockExpirationTime": "鎖定過期時間",
+			"retries": "重試次數",
+			"priority": "優先順序",
+			"noExternalTasks": "未找到外部任務"
+		},
+		"onlyUnfinished": {
+			"title": "僅顯示未完成的",
+			"tooltip": "僅顯示未完成的流程例項"
+		}
+	},
+	"dmn-viewer": {
+		"zoomIn": "放大",
+		"zoomOut": "縮小",
+		"resetZoom": "重置縮放"
+	},
+	"bpmn-viewer": {
+		"zoomIn": "放大",
+		"zoomOut": "縮小",
+		"resetZoom": "重置縮放",
+		"legend": {
+			"runningInstances": "執行中的活動例項",
+			"openIncidents": "未關閉的異常事件",
+			"closedIncidents": "已關閉的異常事件",
+			"suspendedJobDefinition": "已掛起的作業定義",
+			"activitiesHistory": "已執行的活動例項",
+			"canceledInstances": "已取消的活動例項",
+			"openSubprocess": "顯示被呼叫的流程定義",
+			"disabledSubprocess": "被呼叫的流程定義將在執行時解析"
+		}
+	},
+	"task": {
+		"options": "選項",
+		"title": "任務",
+		"created": "已建立",
+		"info": "任務詳情",
+		"reminder": "提醒日期",
+		"priority": "優先順序",
+		"taskId": "任務 ID",
+		"assign": "分配給他人",
+		"assignToMe": "分配給我",
+		"backToTaskList": "返回任務列表",
+		"assignedTo": "已分配給 {0}",
+		"notAssigned": "未分配",
+		"unassign": "移除分配",
+		"searchUserLabel": "查詢使用者",
+		"searchUserPlaceholder": "姓名或使用者 ID",
+		"searchUserHint": "至少輸入 3 個字元進行搜尋",
+		"searchResults": "搜尋結果",
+		"candidateUsers": "候選使用者",
+		"noUsersFound": "未找到使用者",
+		"assignPopoverTitle": "任務未分配給您",
+		"assignPopoverContent": "要開始處理該任務，請將它分配給您自己。",
+		"assignPopoverContent2": "請記住，您也可以將其分配給其他人；為此，請轉到右側邊欄頂部的操作區域。",
+		"disablePopover": "不再顯示",
+		"currentTask": "當前任務",
+		"currentTasks": "當前任務",
+		"completedTasks": "已完成任務",
+		"notStarted": "所選任務尚未開始。",
+		"setDeadline": "設定截止日期",
+		"reminderLabel": "提醒：{date}",
+		"dueLabel": "截止日期：{date}",
+		"dueSoonLabel": "截止日期：{date}，即將到期",
+		"dueOverdueLabel": "截止日期：{date}，已逾期",
+		"setReminder": "設定提醒",
+		"selectedTask": "所選任務",
+		"details": {
+			"name": "任務名稱",
+			"assignee": "處理人",
+			"created": "建立於",
+			"finish": "@:process-instance.details.finish",
+			"processStart": "流程啟動於",
+			"processUser": "流程啟動使用者",
+			"due": "任務截止日期"
+		},
+		"actions": {
+			"title": "任務操作",
+			"submit": "完成",
+			"save": "儲存",
+			"saveError": "儲存任務時出錯：{0}",
+			"initError": "初始化表單時出錯：{0}"
+		},
+		"emptyTask": "空任務",
+		"showMore": "顯示更多…",
+		"showOnlyAddFilters": "顯示任務條件：",
+		"expand": "展開",
+		"collapse": "收起",
+		"assignedUserTitle": "刪除已分配使用者",
+		"usersFound": "找到結果：搜尋篩選器找到了符合條件的使用者",
+		"userAssigned": "使用者 {0} 已成功分配"
+	},
+	"batches": {
+		"inProgressBatches": "進行中的批處理",
+		"historicBatches": "已結束的批處理",
+		"runtimeDetails": "進行中批處理的詳情",
+		"historyDetails": "已完成批處理的詳情",
+		"id": "ID",
+		"type": "型別",
+		"startTime": "已開始",
+		"endTime": "已結束",
+		"user": "使用者",
+		"failedJobs": "失敗的作業",
+		"progress": "進度",
+		"loading": "正在載入…",
+		"property": "屬性",
+		"value": "值",
+		"suspend": "掛起批處理",
+		"activate": "啟用批處理",
+		"remove": "移除批處理",
+		"confirmRemove": "您確實要刪除此批處理及其所有相關作業和作業定義嗎？",
+		"historyLevelTooLow": "您的引擎例項配置的歷史級別為“{historyLevel}”。\n要獲取已完成批處理的資訊，歷史級別必須設定為“full”。",
+		"exception": "異常",
+		"actions": "操作",
+		"retryJob": "重試作業",
+		"deleteJob": "刪除作業",
+		"seeFullLog": "檢視完整日誌",
+		"retryFailedJobs": "重試失敗的作業",
+		"jobLog": {
+			"modalTitle": "作業日誌",
+			"state": "狀態",
+			"message": "訊息",
+			"timestamp": "時間戳",
+			"jobId": "作業 ID",
+			"type": "型別",
+			"configuration": "配置",
+			"retries": "重試次數",
+			"hostname": "主機名",
+			"priority": "優先順序",
+			"created": "已建立",
+			"failed": "失敗",
+			"successful": "成功",
+			"unknown": "未知"
+		}
+	},
+	"admin": {
+		"loading": "正在載入…",
+		"loadingMoreData": "正在載入更多資料…",
+		"noResults": "無結果",
+		"exportCsv": "全部匯出",
+		"users": {
+			"title": "使用者",
+			"tooltip": "使用者管理",
+			"id": "使用者 ID",
+			"firstName": "名",
+			"lastName": "姓",
+			"email": "電子郵箱",
+			"add": "新增使用者",
+			"account": "使用者賬號",
+			"profile": "使用者資料",
+			"password": "密碼",
+			"passwordRepeat": "密碼（重複）",
+			"cancel": "取消",
+			"create": "建立新使用者",
+			"userCreatedMessage": "使用者 {0} 已建立",
+			"confirmDelete": "您確實要刪除具有以下引數的使用者嗎？",
+			"userDeletedMessage": "使用者 {0} 已刪除",
+			"groups": "組",
+			"editMessage": "編輯使用者（{0}）",
+			"update": "更新資料",
+			"editUser": "編輯使用者",
+			"viewUser": "檢視使用者",
+			"deleteUser": "刪除使用者",
+			"updateProfileMessage": "使用者資料已成功更新",
+			"updatePasswordMessage": "密碼已成功更新",
+			"unassignGroupMessage": "使用者 {0} 已從組中移除",
+			"actions": "操作",
+			"group": {
+				"title": "{0} 的組",
+				"add": "新增到組"
+			}
+		},
+		"preferences": {
+			"title": "偏好設定",
+			"general": {
+				"title": "常規設定",
+				"startPage": {
+					"label": "預設起始頁",
+					"description": "選擇登入後顯示的頁面。",
+					"goTo": "前往{page}",
+					"options": {
+						"home": "主頁",
+						"groupTasklist": "任務列表",
+						"startProcess": "啟動流程",
+						"tasks": "任務",
+						"groupCockpit": "駕駛艙",
+						"processesDashboard": "流程儀表板",
+						"decisionsList": "決策列表",
+						"humanTasksDashboard": "人工任務儀表板"
+					}
+				}
+			},
+			"dates": {
+				"title": "日期和時間格式",
+				"formatDefault": "格式",
+				"formatLong": "長格式（含準確時間）",
+				"formatDefaultDescription": "用於常規日期欄位",
+				"formatLongDescription": "用於需要準確時間的日期欄位（如異常事件時間戳）以及所有日期的工具提示",
+				"groupStandard": "國際標準",
+				"groupEuropean": "歐洲格式",
+				"groupUS": "美國格式",
+				"groupISO": "ISO/技術格式"
+			},
+			"bpmn": {
+				"title": "BPMN 圖",
+				"shortenBadgeNumbers": "簡化數字格式",
+				"shortenBadgeNumbersDescription": "啟用後，BPMN 圖中例項和出現次數的數字將以簡化格式顯示，例如用 1K 代替 1,005。"
+			},
+			"notifications": {
+				"title": "通知",
+				"showPopoverHowToAssign": {
+					"label": "顯示“任務未分配給您”彈窗",
+					"description": "啟用後，在任務列表檢視中開啟未分配的任務時，將顯示一個資訊彈窗，幫助您將任務分配給自己或他人。"
+				},
+				"tasksCheckNotificationsDisabled": {
+					"label": "禁用任務通知",
+					"description": "如果勾選，當有新任務分配給您時，您將不會在瀏覽器中收到任何通知。"
+				}
+			}
+		},
+		"groups": {
+			"title": "組",
+			"tooltip": "組管理",
+			"id": "組 ID",
+			"name": "名稱",
+			"type": "型別",
+			"add": "新增組",
+			"addCandidateGroups": "新增候選組",
+			"cancel": "取消",
+			"createLabel": "建立新組",
+			"groupCreatedMessage": "組 {0} 已建立",
+			"actions": "操作",
+			"confirmDelete": "您確實要刪除具有以下引數的組嗎？",
+			"information": "資訊",
+			"editMessage": "編輯組（{0}）",
+			"users": "使用者",
+			"update": "更新組",
+			"viewGroup": "檢視組",
+			"editGroup": "編輯組",
+			"deleteGroup": "刪除組",
+			"updateGroupMessage": "組 {0} 已更新",
+			"deleteGroupMessage": "組 {0} 已移除",
+			"user": {
+				"title": "組成員"
+			}
+		},
+		"tenants": {
+			"title": "租戶",
+			"tooltip": "租戶管理",
+			"associationTitle": "{0} 的租戶",
+			"fullId": "租戶 ID",
+			"fullName": "租戶名稱",
+			"actions": "操作",
+			"unassignUserMessage": "使用者 {0} 已從租戶中移除",
+			"unassignGroupMessage": "組 {0} 已從租戶中移除",
+			"addTo": "新增到租戶",
+			"unassignTenant": "從租戶中取消分配",
+			"id": "ID",
+			"name": "名稱",
+			"add": "新增租戶",
+			"create": "建立新租戶",
+			"cancel": "取消",
+			"tenantCreatedMessage": "租戶 {0} 已建立",
+			"confirmDelete": "您確實要刪除具有以下引數的租戶嗎？",
+			"tenantDeletedMessage": "租戶 {0} 已刪除",
+			"deleteTenant": "刪除租戶",
+			"editTenant": "編輯租戶",
+			"information": "資訊",
+			"users": "使用者",
+			"groups": "組",
+			"editMessage": "編輯租戶（{0}）",
+			"update": "更新租戶",
+			"updateTenantMessage": "租戶 {0} 已更新",
+			"deleteTenantMessage": "租戶 {0} 已移除",
+			"tenantUsers": "租戶使用者",
+			"tenantGroups": "租戶組"
+		},
+		"authorizations": {
+			"title": "授權",
+			"tooltip": "授權管理",
+			"type": "型別",
+			"userIdGroupId": "使用者/組",
+			"permissions": "許可權",
+			"resourceId": "資源 ID",
+			"actions": "操作",
+			"buttons": {
+				"edit": "編輯授權",
+				"delete": "刪除授權",
+				"save": "儲存授權",
+				"cancel": "取消修改"
+			},
+			"name": "資源名稱",
+			"types": {
+				"allow": "允許",
+				"deny": "拒絕",
+				"global": "全域性"
+			},
+			"resourcesTypes": {
+				"application": "應用",
+				"user": "使用者",
+				"group": "組",
+				"groupMembership": "組成員關係",
+				"authorization": "授權",
+				"system": "系統",
+				"filter": "篩選器",
+				"processDefinition": "流程定義",
+				"task": "任務",
+				"processInstance": "流程例項",
+				"deployment": "部署",
+				"decisionDefinition": "決策定義",
+				"tenant": "租戶",
+				"tenantMembership": "租戶成員關係",
+				"batch": "批處理",
+				"decisionRequirements": "決策需求定義",
+				"report": "報表",
+				"dashboard": "儀表板",
+				"userOperationLogCategory": "使用者操作日誌類別",
+				"historicTask": "歷史任務",
+				"historicProcessInstance": "歷史流程例項",
+				"operationLogCategory": "操作日誌類別",
+				"property": "屬性"
+			},
+			"resourcesTypesDescriptions": {
+				"application": "控制使用者或組可以開啟哪些 Web 應用，例如 {tasklist}、{cockpit}、{admin} 或 {modeler}。此資源僅支援 {access} 許可權。",
+				"user": "控制誰可以檢視、建立、編輯或刪除使用者賬號，以及使用者是否可以檢視彼此的基本資訊，例如在選擇任務處理人時。",
+				"group": "控制誰可以檢視、建立、編輯或刪除組。",
+				"groupMembership": "控制誰可以將使用者新增到組或從組中移除。",
+				"authorization": "控制誰可以檢視、建立、編輯或刪除授權規則本身，即誰有權授予或撤銷其他許可權。",
+				"system": "控制對“管理”中{systemSettings}區域的訪問：診斷、執行指標、許可證金鑰管理、遙測以及其他引擎級配置。預設情況下，該區域需要 {all} 許可權。",
+				"filter": "控制誰可以檢視、建立、編輯或刪除任務列表中顯示的已儲存任務篩選器。這些許可權與可直接在篩選器自身共享設定中設定的許可權相同。",
+				"processDefinition": "控制使用者或組是否可以檢視已部署的流程定義並在 Cockpit 和任務列表中對其實施操作，例如啟動新例項、掛起流程，或處理其任務及變數。",
+				"task": "控制誰可以檢視、認領、分配或完成任務，以及誰可以讀取或更新任務變數。可將其限定為單個任務，例如將特定任務交給某個組。",
+				"processInstance": "控制誰可以檢視、修改、掛起執行中的流程例項、重試其失敗的作業或刪除該例項。可將其限定為單個例項，而不是整個流程。",
+				"deployment": "控制誰可以建立、檢視或刪除部署，即上傳到引擎的 {bpmn}、{dmn} 和表單資源。",
+				"decisionDefinition": "控制誰可以檢視或評估已部署的 {dmn} 決策，以及誰可以訪問其評估歷史。",
+				"tenant": "控制誰可以在多租戶環境中檢視、建立、編輯或刪除租戶。",
+				"tenantMembership": "控制誰可以將使用者和組分配給租戶，或將其從租戶中移除。",
+				"batch": "控制誰可以建立或取消批處理操作，即批次操作，例如流程例項遷移、重新啟動、刪除或批次更新變數。{br}{create} 控制所有批處理操作。每種 {createBatch} 許可權在 {create} 的基礎上控制一種特定操作，並會覆蓋 {create}。",
+				"decisionRequirements": "控制誰可以檢視決策需求定義，即顯示一組相關 {dmn} 決策如何相互依賴的圖。",
+				"report": "控制誰可以檢視或管理已儲存的報表。",
+				"dashboard": "控制誰可以檢視或管理已儲存的儀表板。",
+				"userOperationLogCategory": "控制誰可以讀取按任務或流程例項記錄並分類（如任務處理人、管理員或操作員操作）的 {userOperationLog} 審計跟蹤。",
+				"historicTask": "控制誰可以檢視任務完成後保留的歷史資料。",
+				"historicProcessInstance": "控制誰可以檢視或刪除流程例項完成後的歷史資料。",
+				"operationLogCategory": "控制誰可以讀取或刪除 Cockpit 中顯示的引擎級 {operationLog} 條目，即整個引擎範圍內可搜尋的單一審計跟蹤。",
+				"property": "控制誰可以檢視或更改以鍵/值屬性形式儲存的內部引擎配置項，而不是應用級設定。"
+			},
+			"resourcesTypesDescriptionsTerms": {
+				"systemSettings": "系統設定",
+				"userOperationLog": "使用者操作",
+				"operationLog": "操作日誌"
+			},
+			"unselectAll": "取消全選",
+			"selectAll": "全選",
+			"confirmDelete": "您確實要刪除具有以下引數的許可權嗎？",
+			"confirmParams": {
+				"type": "型別：{value}",
+				"user": "使用者：{value}",
+				"group": "組：{value}",
+				"permissions": "許可權：{value}",
+				"resource": "資源：{value}",
+				"resourceId": "資源 ID：{value}"
+			},
+			"add": "新增授權",
+			"authorizationDisabledWarning": "授權管理已禁用 - 系統中所有使用者都擁有完全訪問許可權。\n請檢查引擎配置中的“authorizationEnabled”屬性。",
+			"noAuthSelected": "未選擇授權型別"
+		},
+		"system": {
+			"title": "系統",
+			"tooltip": "系統設定與診斷",
+			"settings": "設定",
+			"system-diagnostics": {
+				"title": "診斷",
+				"diagnosticHelp": "診斷資料可幫助瞭解執行環境，以便排查問題。",
+				"diagnosticData": "診斷資料"
+			},
+			"execution-metrics": {
+				"title": "執行指標",
+				"metricsHelp": "記錄引擎處理的流程例項和決策例項數量，以及分配給使用者任務的任務使用者數。",
+				"process-instances": "流程例項",
+				"decision-instances": "決策例項",
+				"task-users": "任務使用者",
+				"total": "總計",
+				"actions": "操作",
+				"usageLast12MonthsByMonth": "過去 12 個月按月使用情況",
+				"annualUsageBySubscriptionTerm": "按訂閱期統計的年度使用指標",
+				"fromUpToToday": "{from} 至今",
+				"fromTo": "{from} 至 {to}"
+			}
+		}
+	},
+	"confirm": {
+		"title": "請確認",
+		"ok": "確定",
+		"cancel": "取消",
+		"close": "關閉",
+		"delete": "刪除",
+		"deleteFilter": "您確實要刪除所選篩選器 {name} 嗎？",
+		"assignUser": "此任務已分配給其他人，您確實要更改此分配嗎？"
+	},
+	"alert": {
+		"successSaveTask": "任務已成功儲存。請記住，您必須關閉它才能完成工作。",
+		"successOperation": "操作已成功執行。"
+	},
+	"problem-report": {
+		"title": "請告訴我們您的問題或改進建議",
+		"ok": "傳送",
+		"cancel": "@:confirm.cancel",
+		"email": "@:login.email"
+	},
+	"cib-header": {
+		"languages": "語言",
+		"languagesMenu": "語言",
+		"engine": "引擎",
+		"engineMenu": "引擎選擇",
+		"helpMenu": "幫助",
+		"en": "English",
+		"de": "Deutsch",
+		"es": "Español",
+		"ua": "Українська",
+		"ru": "Русский",
+		"zh": "簡體中文",
+		"zh-tw": "繁體中文"
+	},
+	"cib-datepicker2": {
+		"noDate": "無日期",
+		"reset": "清除選擇",
+		"today": "今天"
+	},
+	"cib-timepicker": {
+		"noDate": "未選擇時間",
+		"reset": "清除選擇"
+	},
+	"snapshot": {
+		"titleAbove": "點選此處，然後按 [Ctrl] + [V]",
+		"titleBelow": "（剪貼簿中已有截圖）"
+	},
+	"seven": {
+		"feedback": "反饋",
+		"selectTask": "從任務列表中選擇一個任務以檢視",
+		"taskCompleted": "任務已完成",
+		"allTasks": "任務",
+		"titleInfo": "資訊",
+		"types": "型別"
+	},
+	"nav-bar": {
+		"no-tasks-pending": "您沒有待處理任務",
+		"no-tasks": "未找到任務",
+		"tasks-count": "未完成任務：{count}",
+		"filters": {
+			"addFilter": "新增篩選器",
+			"updateFilter": "更新篩選器",
+			"filterNameLabel": "篩選器名稱",
+			"filterNamePlaceholder": "例如：我的任務",
+			"filterPriorityLabel": "優先順序",
+			"selectProperty": "選擇鍵",
+			"insertValue": "輸入值",
+			"invalidDate": "無效日期。例如使用 {iso}、{dotted}、{german} 或 {isoTime}",
+			"insertVariableKey": "輸入變數名",
+			"addCriteria": "新增條件",
+			"filterExists": "此篩選器已存在",
+			"selectedCriteria": "已選條件",
+			"no-filters": "未找到篩選器",
+			"edit": "@:commons.edit",
+			"editFilter": "編輯“{filterName}”篩選器",
+			"delete": "@:confirm.delete",
+			"deleteFilter": "刪除“{filterName}”篩選器",
+			"pin": "固定",
+			"pinFilter": "固定“{filterName}”篩選器",
+			"unpin": "取消固定",
+			"unpinFilter": "取消固定“{filterName}”篩選器",
+			"includeAssigned": "包含已分配任務",
+			"keys": {
+				"processInstanceId": "流程例項 ID",
+				"processInstanceBusinessKey": "流程例項業務鍵",
+				"processInstanceBusinessKeyExpression": "流程例項業務鍵 *",
+				"processInstanceBusinessKeyLike": "流程例項業務鍵類似",
+				"processInstanceBusinessKeyLikeExpression": "流程例項業務鍵類似 *",
+				"processDefinitionId": "流程定義 ID",
+				"processDefinitionKey": "流程定義鍵",
+				"processDefinitionKeyIn": "流程定義鍵屬於",
+				"processDefinitionName": "流程定義名稱",
+				"processDefinitionNameLike": "流程定義名稱類似",
+				"caseInstanceId": "@:process-instance.details.caseInstanceId",
+				"caseInstanceBusinessKey": "案例例項業務鍵",
+				"caseInstanceBusinessKeyLike": "案例例項業務鍵類似",
+				"caseDefinitionId": "案例定義 ID",
+				"caseDefinitionKey": "案例定義鍵",
+				"caseDefinitionName": "案例定義名稱",
+				"caseDefinitionNameLike": "案例定義名稱類似",
+				"executionId": "執行 ID",
+				"activityInstanceIdIn": "活動例項 ID 屬於",
+				"active": "活躍",
+				"assignee": "處理人",
+				"assigneeExpression": "處理人 *",
+				"assigneeIn": "處理人屬於",
+				"assigneeLike": "處理人類似",
+				"assigneeLikeExpression": "處理人類似 *",
+				"ownerExpression": "所有者 *",
+				"candidateGroup": "候選組",
+				"candidateGroupExpression": "候選組 *",
+				"candidateGroups": "候選組（多個）",
+				"candidateGroupsExpression": "候選組（多個）*",
+				"candidateUser": "候選使用者",
+				"candidateUserExpression": "候選使用者 *",
+				"involvedUser": "相關使用者",
+				"involvedUserExpression": "相關使用者 *",
+				"unassigned": "未分配",
+				"delegationState": "委派狀態",
+				"taskDefinitionKey": "任務定義鍵",
+				"taskDefinitionKeyIn": "任務定義鍵屬於",
+				"taskDefinitionKeyLike": "任務定義鍵類似",
+				"name": "名稱",
+				"nameLike": "名稱類似",
+				"description": "描述",
+				"descriptionLike": "描述類似",
+				"priority": "優先順序",
+				"maxPriority": "最高優先順序",
+				"minPriority": "最低優先順序",
+				"tenantIdIn": "租戶 ID 屬於",
+				"withoutTenantId": "無租戶 ID",
+				"createdBefore": "建立時間早於",
+				"createdBeforeExpression": "建立時間早於 *",
+				"dueBefore": "到期時間早於",
+				"dueBeforeExpression": "到期時間早於 *",
+				"dueAfter": "到期時間晚於",
+				"dueAfterExpression": "到期時間晚於 *",
+				"followUpAfter": "跟進時間晚於",
+				"followUpAfterExpression": "跟進時間晚於 *",
+				"followUpBefore": "跟進時間早於",
+				"followUpBeforeExpression": "跟進時間早於 *",
+				"followUpBeforeOrNotExistent": "跟進時間早於或不存在",
+				"followUpBeforeOrNotExistentExpression": "跟進時間早於或不存在 *",
+				"processVariables": "流程變數",
+				"processInstanceGroup": "流程例項",
+				"processDefinitionGroup": "流程定義",
+				"caseInstanceGroup": "案例例項",
+				"caseDefinitionGroup": "案例定義",
+				"otherGroup": "其他",
+				"usersGroup": "使用者/組",
+				"taskGroup": "任務",
+				"datesGroup": "日期"
+			},
+			"noCriterias": "您尚未設定任何篩選條件",
+			"criteria": {
+				"key": "條件鍵",
+				"value": "條件值"
+			},
+			"matchAllCriteria": "滿足所有條件",
+			"msgFilterCreated": "篩選器“{name}”已建立",
+			"msgFilterUpdated": "篩選器“{name}”已成功更改",
+			"msgFilterDeleted": "篩選器“{name}”已刪除",
+			"legendExpression": "結尾帶“*”的鍵接受表示式作為值。例如：'&#36;&#123; currentUser&#40;&#41; &#125;' 或 '&#36;&#123; currentUserGroups&#40;&#41; &#125;'",
+			"legendMultiple": "結尾為“in”的鍵接受以逗號分隔的多個值。例如：`keyC, keyA, keyB`",
+			"create": "建立篩選器",
+			"variablesTitle": "變數",
+			"variablesLegend": "您可以定義在任務列表中顯示的變數。",
+			"showUndefinedVariable": "顯示未定義的變數",
+			"addVariable": "新增變數",
+			"variable": {
+				"name": "名稱",
+				"label": "標籤",
+				"namePlaceholder": "變數名",
+				"labelPlaceholder": "可讀標籤"
+			},
+			"operators": {
+				"eq": "=",
+				"neq": "≠",
+				"gt": ">",
+				"gteq": ">=",
+				"lt": "<",
+				"lteq": "<=",
+				"txteq": "= 等於",
+				"txtneq": "≠ 不等於",
+				"txtgt": "> 大於",
+				"txtgteq": ">= 大於或等於",
+				"txtlt": "< 小於",
+				"txtlteq": "<= 小於或等於"
+			}
+		},
+		"dueDate": "@:task.details.due",
+		"reminder": "提醒日期",
+		"filtersTitle": "篩選器",
+		"refresh": "重新整理任務列表",
+		"filtersAdditionalsTitle": "其他篩選器"
+	},
+	"ienotify": {
+		"remember": "不再顯示此訊息",
+		"text": "CIB seven 不完全支援 Internet Explorer。為了獲得更好的 CIB seven 體驗，建議您使用其他瀏覽器。"
+	},
+	"start": {
+		"close": "關閉",
+		"defaultStartForm": {
+			"introduction": "如果需要，您可以在啟動前設定業務鍵並新增變數。",
+			"businessKey": "業務鍵",
+			"businessKeyPlaceholder": "輸入業務鍵（可選）",
+			"start": "啟動流程"
+		},
+		"startProcess": {
+			"title": "@:process.startProcess",
+			"tooltip": "開啟帶搜尋功能的啟動流程檢視"
+		},
+		"taskList": {
+			"title": "任務列表",
+			"tooltip": "開啟任務列表"
+		},
+		"cockpit": {
+			"title": "駕駛艙",
+			"tooltip": "開啟駕駛艙",
+			"processes": {
+				"title": "流程",
+				"tooltip": "探索可用的流程定義"
+			},
+			"process-definition": {
+				"title": "流程定義"
+			},
+			"process-instance": {
+				"title": "流程例項"
+			},
+			"decisions": {
+				"title": "決策",
+				"tooltip": "探索可用的決策定義"
+			},
+			"decision-definition": {
+				"title": "決策定義"
+			},
+			"decision-instance": {
+				"title": "決策例項"
+			},
+			"humanTasks": {
+				"title": "人工任務",
+				"tooltip": "檢視所有待處理的人工任務"
+			},
+			"deployments": {
+				"title": "部署",
+				"tooltip": "檢視所有已部署的流程資源"
+			},
+			"batches": {
+				"title": "批處理",
+				"tooltip": "管理和檢視批處理操作"
+			}
+		},
+		"admin": {
+			"title": "管理",
+			"tooltip": "開啟管理"
+		},
+		"modeler": {
+			"title": "建模器",
+			"tooltip": "開啟建模器以設計和編輯 BPMN、DMN 和表單"
+		},
+		"account": {
+			"tooltip": "檢視和編輯您的賬號資訊或退出登入",
+			"profile": {
+				"title": "使用者資料",
+				"tooltip": "檢視和編輯您的賬號資訊"
+			},
+			"logout": {
+				"title": "退出登入",
+				"tooltip": "從 {productName} 退出登入"
+			}
+		},
+		"emptyStart": "目前您沒有許可權在此執行任何任務。請聯絡 {productName} 管理員獲取許可權。"
+	},
+	"errors": {
+		"invalid": "請輸入有效資訊",
+		"invalidName": "該名稱無效或已被使用",
+		"Network_Error": "連線出現問題",
+		"FolderUploadError": "不允許上傳資料夾，請僅上傳檔案。",
+		"SystemException": "發生了意外的技術錯誤。是否要傳送報告？",
+		"DoxichangeException": "無法生成預覽。是否要傳送受影響的文件進行分析？",
+		"AccessDeniedException": "無許可權（{0}）",
+		"NoPermission": "您沒有執行此操作所需的許可權。\n所需許可權：“{permission}”。\n引用自：{refPath}",
+		"EntryAlreadyExistsException": "{0} 已存在",
+		"globalAuthorizationExists": "資源“{0}”的全域性授權已存在。請調整該授權，而不是再新增一個。",
+		"formNotFound": "無法載入表單“{0}”。表單為空或表單資源未正確部署。請檢查部署後重試。",
+		"deployedFormNotFound": "在部署中找不到已部署的表單資源“{0}”。請確認表單資源已包含在部署中，然後重試。",
+		"NoObjectFoundException": "執行此操作時發生了特定問題。請在瀏覽器中重新整理頁面後重試。",
+		"InvalidAttributeValueException": "執行此操作時發生了特定問題。請在瀏覽器中重新整理頁面後重試。",
+		"SubmitDeniedException": "執行此操作時發生了特定問題。請在瀏覽器中重新整理頁面後重試。",
+		"UnsupportedTypeException": "執行此操作時發生了特定問題。請在瀏覽器中重新整理頁面後重試。",
+		"ExpressionEvaluationException": "執行此操作時發生了特定問題。請在瀏覽器中重新整理頁面後重試。",
+		"CmisConstraintException": "不允許使用以下字元：\\ / : * ? \" | < >",
+		"MaxUploadSizeExceededException": "檔案過大，上傳限制為 {0}",
+		"ContentForbiddenException": "該操作不支援“{0}”等檔案型別。",
+		"InvalidNameException": "指定的程式碼“{0}”只能包含以下特殊字元：!#'()*+-.<=>@^_{|}$&。<br>此外，其長度應在 3 到 512 個字元之間，且不能包含空格或變音符號。",
+		"AuthenticationException": "身份驗證資料錯誤",
+		"LoginException": "使用者名稱或密碼不正確",
+		"TokenExpiredException": "身份驗證資料已過期",
+		"WrongDeploymenIdException": "找不到此 ID 對應的部署。",
+		"NoRessourcesFoundException": "此 deploymentId 的部署資源不存在。",
+		"urlError": "無效 URL",
+		"errorSaveTask": "儲存任務時出錯。",
+		"taskSelectedNotExist": "此任務已不可用，因此將從工作區中消失",
+		"ExistingUserRequestException": "使用者已存在",
+		"ExistingGroupRequestException": "組已存在",
+		"VariableModificationException": "無法成功更改變數。請重新整理頁面後重試。",
+		"processNotFound": "未找到鍵為“{0}”的流程",
+		"notFoundInstanceId": "找不到 ID 為“{instanceId}”的流程例項。\n引用自：{refPath}",
+		"filterSaveError": "嘗試儲存篩選器時出錯，請檢查輸入的資料。",
+		"passwordDoNotMatch": "密碼不匹配",
+		"PasswordPolicyException": "密碼不符合策略",
+		"InvalidUserIdException": "使用者 ID 包含無效字元。僅允許使用字母和數字（a-z、A-Z、0-9）。請更正輸入。",
+		"invalidEmail": "請輸入有效的電子郵箱地址。",
+		"InvalidValueHistoryTimeToLive": "必須設定歷史資料保留時長。請在模型中設定，或在引擎中配置預設值。",
+		"DmnTransformationException": "無法更新資源。無法轉換 DMN 資源。",
+		"InvalidGroupIdException": "組 ID 無效。只能包含字母和數字（a-z、A-Z、0-9）或 camunda-admin。請更正輸入。",
+		"unknown": "發生意外錯誤。請重試。"
+	},
+	"searches": {
+		"filter": "篩選…",
+		"refreshAndFilter": "重新整理並篩選",
+		"search": "搜尋…",
+		"searchByTaskName": "按任務名稱搜尋…",
+		"searchByFilterName": "按篩選器名稱搜尋…",
+		"wildcardHelp": "支援萬用字元搜尋。",
+		"wildcardExample": "使用 % 表示任意數量的字元（例如 %process%）。"
+	},
+	"sorting": {
+		"created": "@:task.details.created",
+		"followUpDate": "@:task.reminder",
+		"dueDate": "@:task.details.due",
+		"name": "@:task.details.name",
+		"processDefinitionId": "@:process.key",
+		"assignee": "@:task.details.assignee",
+		"priority": "@:task.priority",
+		"sortBy": "排序方式",
+		"asc": "升序",
+		"desc": "降序",
+		"select": "選擇屬性",
+		"deployments": {
+			"name": "名稱",
+			"deploymentTime": "日期"
+		}
+	},
+	"deployment": {
+		"title": "部署",
+		"resourcesCaption": "包含的模型",
+		"noDeployments": "沒有可用的部署",
+		"deploymentTime": "部署於",
+		"source": "來源",
+		"confirmDeleteDeployment": "您確實要刪除所選部署嗎？",
+		"deleteRunningInstances": "停止執行中的流程例項",
+		"noDeploymentSelected": "選擇一個部署以檢視",
+		"selectAll": "全選",
+		"deleteDeployments": "刪除部署",
+		"showModel": "顯示模型",
+		"delete": "刪除部署",
+		"showDeployment": "在列表中載入部署",
+		"deploymentsDeleted": "{0}/{1} 個部署已成功刪除",
+		"tenant": "租戶",
+		"errorLoading": "無法載入所選部署的資源",
+		"formPreviewError": "無法預覽所選表單",
+		"formPreviewHeading": "表單預覽",
+		"formRawDataHeading": "原始資料"
+	},
+	"navigation": {
+		"home": "主頁",
+		"navigation": "導航",
+		"menu": "導航選單",
+		"infoAndHelp": "資訊與幫助"
+	},
+	"infoAndHelp": {
+		"flowLinkTerms": "使用條款",
+		"flowLinkPrivacy": "隱私宣告",
+		"flowLinkImprint": "法律宣告",
+		"flowLinkAccessibility": "無障礙宣告",
+		"flowLinkHelp": "幫助",
+		"shortcuts": {
+			"title": "快捷鍵",
+			"tooltip": "檢視可用快捷鍵",
+			"columnShortcut": "快捷鍵",
+			"columnDescription": "說明",
+			"buttonCtrl": "Ctrl",
+			"shortcuts": {
+				"startProcessView": "跳轉到“啟動流程”檢視",
+				"tasksView": "跳轉到“任務”檢視",
+				"processesView": "跳轉到“流程”檢視",
+				"startProcess": "開啟“啟動流程”彈窗",
+				"claimTask": "認領當前所選任務",
+				"focusFilters": "將焦點移至篩選器",
+				"focusTasks": "將焦點移至篩選後的任務列表",
+				"focusTask": "將焦點移至所選任務"
+			}
+		},
+		"flowModalSupport": {
+			"modalText": "支援",
+			"title": "資訊",
+			"supportHotline": "支援熱線",
+			"openingHours": "服務時間",
+			"openingHoursInfo": "週一至週五，08:00 - 19:00",
+			"phone": "電話",
+			"phoneNumber": "+49 89 14360 111",
+			"emailAddress": "電子郵箱地址",
+			"email": "cibsupport{'@'}cib.de",
+			"version": "版本"
+		},
+		"about": {
+			"title": "關於",
+			"tooltip": "檢視版本"
+		}
+	},
+	"multisort": {
+		"title": "排序條件",
+		"column": "列",
+		"order": "順序",
+		"orderBy": "排序依據",
+		"thenBy": "其次依據",
+		"asc": "升序",
+		"desc": "降序",
+		"add": "新增條件",
+		"moveUp": "上移",
+		"moveDown": "下移",
+		"remove": "移除",
+		"cancel": "取消",
+		"apply": "應用"
+	},
+	"password": {
+		"recover": {
+			"sendEmail": "傳送恢復郵件",
+			"id": "@:admin.users.id",
+			"changePassword": "更改密碼",
+			"emailSent": "包含密碼恢復連結的郵件已傳送。",
+			"currentUserPassword": "當前密碼",
+			"newPassword": "新密碼",
+			"newPasswordRepeat": "新密碼（重複）"
+		},
+		"policy": {
+			"title": "密碼策略",
+			"header": "您的密碼必須滿足以下條件：",
+			"items": {
+				"PASSWORD_POLICY_USER_DATA": "不能包含使用者資料（即使用者 ID、名、姓、電子郵箱）",
+				"PASSWORD_POLICY_LENGTH": "長度至少為 {minLength} 個字元",
+				"PASSWORD_POLICY_LOWERCASE": "至少包含 {minLowerCase} 個小寫字母",
+				"PASSWORD_POLICY_UPPERCASE": "至少包含 {minUpperCase} 個大寫字母",
+				"PASSWORD_POLICY_DIGIT": "至少包含 {minDigit} 個數字",
+				"PASSWORD_POLICY_SPECIAL": "至少包含 {minSpecial} 個特殊字元"
+			}
+		}
+	},
+	"advanced-search": {
+		"title": "高階搜尋",
+		"criteriaKey": "條件鍵",
+		"selectProperty": "選擇屬性",
+		"property": "屬性名稱",
+		"value": "值",
+		"add": "新增條件",
+		"apply": "應用",
+		"cancel": "取消",
+		"criteriaKeys": {
+			"processVariables": "流程變數"
+		},
+		"table": {
+			"key": "鍵",
+			"value": "值"
+		},
+		"operators": {
+			"eq": "=",
+			"neq": "≠",
+			"gt": ">",
+			"gteq": ">=",
+			"lt": "<",
+			"lteq": "<=",
+			"like": "類似",
+			"notLike": "不類似"
+		}
+	},
+	"notification": {
+		"newTasks": "新任務",
+		"newTasksTitle": "您在 CIB seven 上有新分配的任務"
+	},
+	"decision": {
+		"id": "ID",
+		"name": "名稱",
+		"tenantId": "租戶 ID",
+		"actions": "操作",
+		"emptyProcessList": "您的決策列表當前為空。",
+		"emptyProcessListFiltered": "沒有符合當前篩選條件的決策。",
+		"decision": "決策",
+		"refreshVersions": "重新整理歷史版本",
+		"loadVersions": "載入所有歷史版本",
+		"days": "天",
+		"instances": "例項",
+		"showInstance": "檢視例項",
+		"evaluationTime": "評估時間",
+		"callingProcess": "呼叫流程/案例",
+		"callingInstanceId": "呼叫例項 ID",
+		"activityId": "活動 ID",
+		"copySuccess": "已複製所選值",
+		"details": {
+			"titleProcessActions": "決策定義操作",
+			"titleInstancesActions": "決策操作",
+			"firstStart": "首次啟動於",
+			"lastStart": "最近啟動於",
+			"totalInstances": "例項總數",
+			"unfinishedInstances": "執行中的例項",
+			"finishedInstances": "已完成且無錯誤的例項總數",
+			"definitionVersion": "定義版本",
+			"versionTag": "版本標籤",
+			"definitionId": "定義 ID",
+			"definitionKey": "定義鍵",
+			"definitionName": "定義名稱",
+			"deploymentId": "部署 ID",
+			"instancesRunning": "執行中的例項",
+			"currentVersion": "當前版本",
+			"allVersions": "所有版本",
+			"versionInstances": "此版本的例項",
+			"historyVersions": "歷史版本",
+			"variable": "決策變數",
+			"copyValue": "複製值",
+			"historyTimeToLive": "歷史資料保留時長"
+		},
+		"showManagement": "@:process.showManagement",
+		"type": "型別",
+		"value": "值",
+		"inputs": "輸入",
+		"outputs": "輸出",
+		"decisionInstanceId": "決策例項 ID"
+	},
+	"decision-instance": {
+		"edit": "@:commons.edit",
+		"save": "@:commons.save"
+	},
+	"human-tasks": {
+		"assignmentsByType": "按型別分配",
+		"assignmentsByGroup": "按組分配",
+		"user": "已分配給使用者",
+		"group": "已分配給一個或多個組",
+		"unassigned": "未分配",
+		"total": "總計",
+		"tasks": "任務",
+		"types": "型別",
+		"noGroups": "無組",
+		"groupName": "組",
+		"assignmentsByGroupInfo": "一個任務可以有多個組。"
+	},
+	"deployed-form": {
+		"selectDate": "選擇日期",
+		"accept": "接受",
+		"fullscreen": "全屏",
+		"showProcess": "檢視流程"
+	},
+	"task-variables": {
+		"title": "“{name}”的任務變數",
+		"introduction": "您可以在此檢視和編輯與此任務相關的流程例項變數。請注意，更改變數值可能會對流程執行產生意外影響。",
+		"businessKey": "業務鍵：{businessKey}",
+		"noVariables": "尚未為此任務指定變數。",
+		"noVariablesLoaded": "尚未新增其他變數。",
+		"editVariable": {
+			"tooltip": "編輯變數“{name}”"
+		},
+		"removeVariable": {
+			"tooltip": "從列表中移除變數“{name}”"
+		},
+		"addVariable": {
+			"title": "@:process-instance.addVariable",
+			"tooltip": "向流程例項新增新變數"
+		},
+		"showTaskVariables": {
+			"title": "新增任務變數",
+			"tooltip": "顯示為任務定義的變數。您可以編輯這些變數的值，或向流程例項新增新變數。"
+		},
+		"showExistingVariables": {
+			"title": "顯示現有變數",
+			"tooltip": "顯示已為此流程例項定義的變數。您可以編輯這些變數的值，或向流程例項新增新變數。"
+		}
+	},
+	"setup": {
+		"title": "初始設定",
+		"description": "歡迎使用 CIB seven！請建立管理員賬號以開始使用。",
+		"createAdminUser": "建立管理員賬號",
+		"createUser": "建立使用者",
+		"success": "管理員賬號建立成功！正在跳轉到登入頁…",
+		"help": {
+			"title": "為什麼顯示此頁面？",
+			"description": "您正在嘗試訪問流程引擎“{0}”。該引擎配置為使用內建身份服務（資料庫），但尚未配置管理員使用者。此頁面允許您建立用於訪問流程引擎的初始使用者。"
+		}
+	},
+	"deepLink": {
+		"tooltip": "開啟 {text}\n{url}"
+	}
+}
