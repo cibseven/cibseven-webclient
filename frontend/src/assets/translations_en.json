@@ -839,6 +839,7 @@
 		}
 	},
 	"confirm": {
+		"title": "Please confirm",
 		"ok": "Ok",
 		"cancel": "Cancel",
 		"close": "Close",
@@ -866,7 +867,9 @@
 		"de": "Deutsch",
 		"es": "Español",
 		"ua": "Українська",
-		"ru": "Русский"
+		"ru": "Русский",
+		"zh": "简体中文",
+		"zh-tw": "繁體中文"
 	},
 	"cib-datepicker2": {
 		"noDate": "No date",

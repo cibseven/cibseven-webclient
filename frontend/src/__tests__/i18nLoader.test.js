@@ -147,3 +147,30 @@ describe('registerTranslationLoader', () => {
     error.mockRestore()
   })
 })
+
+describe('language tags', () => {
+  /**
+   * A deep link, a preference stored by an older version or a host application can
+   * hand in a full tag. The messages - the ones of this application and the ones the
+   * libraries merge - are stored under the short code.
+   */
+  it('resolves a full traditional Chinese tag to the short code', async () => {
+    await expect(switchLanguage({ supportedLanguages: ['en', 'zh', 'zh-tw'] }, 'zh-HK')).resolves.toBe('zh-tw')
+
+    expect(i18n.global.locale).toBe('zh-tw')
+    expect(mergeModelerTranslations).toHaveBeenCalledWith(i18n, 'zh-tw')
+  })
+
+  it('resolves a regional simplified Chinese tag to the short code', async () => {
+    await expect(switchLanguage({ supportedLanguages: ['en', 'zh', 'zh-tw'] }, 'zh-CN')).resolves.toBe('zh')
+
+    expect(i18n.global.locale).toBe('zh')
+    expect(mergeModelerTranslations).toHaveBeenCalledWith(i18n, 'zh')
+  })
+
+  it('matches a configuration that spells the tag in full', async () => {
+    await expect(switchLanguage({ supportedLanguages: ['en', 'zh-TW'] }, 'zh-TW')).resolves.toBe('zh-tw')
+
+    expect(i18n.global.locale).toBe('zh-tw')
+  })
+})
