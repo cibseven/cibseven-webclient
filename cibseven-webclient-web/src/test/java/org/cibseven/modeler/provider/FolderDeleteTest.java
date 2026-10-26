@@ -51,7 +51,7 @@ class FolderDeleteTest {
 	@Test
 	void removesAFolderWithTheFoldersBelowIt() {
 		runner.run(context -> {
-			FolderProvider folders = context.getBean(FolderProvider.class, OpenProjectAccess.class);
+			FolderProvider folders = context.getBean(FolderProvider.class);
 			FolderRepository repository = context.getBean(FolderRepository.class);
 
 			FolderEntity root = folders.create(null, "Projects", "tester");
@@ -71,7 +71,7 @@ class FolderDeleteTest {
 	@Test
 	void leavesTheFoldersBesideItAlone() {
 		runner.run(context -> {
-			FolderProvider folders = context.getBean(FolderProvider.class, OpenProjectAccess.class);
+			FolderProvider folders = context.getBean(FolderProvider.class);
 			FolderRepository repository = context.getBean(FolderRepository.class);
 
 			FolderEntity removed = folders.create(null, "Going", "tester");
