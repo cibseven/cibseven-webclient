@@ -83,7 +83,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	 * Legacy fallback used only with engine-rest versions prior to 2.2.0, where the
 	 * engine configuration endpoint (which exposes the history level dynamically) is not available.
 	 */
-	@Value("${cibseven.webclient.historyLevel:full}") String legacyHistoryLevel;
+	@Value("${cibseven.webclient.historyLevel:" + EngineConfiguration.DEFAULT_HISTORY_LEVEL + "}") String legacyHistoryLevel;
 
 	private String getHistoryLevel(CIBUser user) {
 		EngineConfiguration engineConfig = IEngineProvider.isEngineUnspecified(user.getEngine())
