@@ -23,6 +23,9 @@ import { AuthService, SetupService } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
 import CibSeven from '@/components/CibSeven.vue'
 import StartView from '@/components/start/StartView.vue'
+import TasksStartView from '@/components/start/TasksStartView.vue'
+import BuilderStartView from '@/components/start/BuilderStartView.vue'
+import AccessManagement from '@/components/admin/AccessManagement.vue'
 import StartProcessView from '@/components/start-process/StartProcessView.vue'
 import ProcessView from '@/components/process/ProcessView.vue'
 import ProcessListView from '@/components/processes/list/ProcessListView.vue'
@@ -155,6 +158,8 @@ const appRoutes = [
           },
 
           { path: 'start', name: 'start', component: StartView },
+          { path: 'tasks-home', name: 'tasksHome', beforeEnter: permissionsGuard('tasklist'), component: TasksStartView, meta: { title: 'start.tasks.title' } },
+          { path: 'builder', name: 'builderHome', beforeEnter: modelerGuard, component: BuilderStartView, meta: { title: 'start.builder.title' } },
 
           // Modeler
           { path: 'modeler/:diagramId?', name: 'modeler', beforeEnter: modelerGuard, component: ModelerView, meta: { title: 'start.modeler.title' } },
@@ -271,7 +276,14 @@ const appRoutes = [
               template: '<router-view></router-view>'
             },
             children: [
-              { path: '', name: 'usersManagement', component: UsersManagement },
+              { path: '', name: 'usersManagement', component: UsersManagement, meta: { title: 'start.admin.title' } },
+              {
+                path: 'access-management', name: 'accessManagement', component: AccessManagement, meta: { title: 'start.accessManagement.title' },
+                // Opens with ANY one of these permissions, as the page shows a tile for each one granted.
+                // A plain list of permissionsGuard would need ALL of them: Vue Router runs every guard in a list.
+                beforeEnter: anyPermissionGuard(['usersManagement', 'user'], ['groupsManagement', 'group'],
+                  ['tenantsManagement', 'tenant'], ['authorizationsManagement', 'authorization'])
+              },
               { path: 'users', name: 'adminUsers', beforeEnter: permissionsGuard('usersManagement', 'user'), component: AdminUsers },
               {
                 path: 'user/:userId', name: 'adminUser',
@@ -412,6 +424,17 @@ function permissionsGuard(permission, condition = undefined) {
         refPath: from.fullPath,
       }
     }
+  }
+}
+
+// Like permissionsGuard, for several [permission, condition] pairs: passes as soon as one of them is
+// granted; if none is, redirects to "no permission" as the first pair would
+function anyPermissionGuard(...rules) {
+  return function(to, from) {
+    const granted = rules.some(([permission, condition]) => permissionsGuard(permission, condition)(to, from) === true)
+    if (granted) return true
+    const [permission, condition] = rules[0]
+    return permissionsGuard(permission, condition)(to, from)
   }
 }
 

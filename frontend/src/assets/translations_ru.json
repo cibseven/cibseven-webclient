@@ -856,11 +856,9 @@
 		"email": "@:login.email"
 	},
 	"cib-header": {
+		"openMenu": "Меню {label}",
 		"languages": "Язык",
-		"languagesMenu": "Язык",
 		"engine": "Движок",
-		"engineMenu": "Выбор движка",
-		"helpMenu": "Помощь",
 		"en": "English",
 		"de": "Deutsch",
 		"es": "Español",
@@ -1045,6 +1043,9 @@
 			"title": "@:process.startProcess",
 			"tooltip": "Открыть страницу запуска процесса с возможностью поиска"
 		},
+		"tasks": {
+			"title": "Задачи"
+		},
 		"taskList": {
 			"title": "Tasklist",
 			"tooltip": "Открыть Tasklist"
@@ -1052,6 +1053,9 @@
 		"cockpit": {
 			"title": "Cockpit",
 			"tooltip": "Открыть Cockpit",
+			"dashboard": {
+				"title": "Панель"
+			},
 			"processes": {
 				"title": "Процессы",
 				"tooltip": "Просмотреть доступные определения процессов"
@@ -1086,15 +1090,19 @@
 			}
 		},
 		"admin": {
-			"title": "Admin",
-			"tooltip": "Открыть Admin"
+			"title": "Admin"
+		},
+		"accessManagement": {
+			"title": "Управление доступом"
+		},
+		"builder": {
+			"title": "Builder"
 		},
 		"modeler": {
 			"title": "Modeler",
 			"tooltip": "Открыть Modeler для проектирования и редактирования BPMN, DMN и форм"
 		},
 		"account": {
-			"tooltip": "Просмотреть и изменить информацию о вашей учетной записи или выйти из системы",
 			"profile": {
 				"title": "Профиль пользователя",
 				"tooltip": "Просмотреть и изменить информацию о вашей учетной записи"
@@ -1200,7 +1208,6 @@
 	},
 	"navigation": {
 		"home": "Домашняя страница",
-		"navigation": "Навигация",
 		"menu": "Меню навигации",
 		"infoAndHelp": "Информация и помощь"
 	},

@@ -856,11 +856,9 @@
 		"email": "@:login.email"
 	},
 	"cib-header": {
+		"openMenu": "Menü {label}",
 		"languages": "Sprache",
-		"languagesMenu": "Sprache",
 		"engine": "Engine",
-		"engineMenu": "Engine-Auswahl",
-		"helpMenu": "Hilfe",
 		"en": "English",
 		"de": "Deutsch",
 		"es": "Español",
@@ -1045,6 +1043,9 @@
 			"title": "@:process.startProcess",
 			"tooltip": "Startprozess-Ansicht mit Suchfunktion öffnen"
 		},
+		"tasks": {
+			"title": "Aufgaben"
+		},
 		"taskList": {
 			"title": "Tasklist",
 			"tooltip": "Tasklist öffnen"
@@ -1052,6 +1053,9 @@
 		"cockpit": {
 			"title": "Cockpit",
 			"tooltip": "Cockpit öffnen",
+			"dashboard": {
+				"title": "Dashboard"
+			},
 			"processes": {
 				"title": "Prozesse",
 				"tooltip": "Verfügbare Prozessdefinitionen durchsuchen"
@@ -1086,15 +1090,19 @@
 			}
 		},
 		"admin": {
-			"title": "Admin",
-			"tooltip": "Admin öffnen"
+			"title": "Admin"
+		},
+		"accessManagement": {
+			"title": "Zugriffsverwaltung"
+		},
+		"builder": {
+			"title": "Builder"
 		},
 		"modeler": {
 			"title": "Modeler",
 			"tooltip": "Modeler öffnen, um BPMN, DMN und Formulare zu entwerfen und zu bearbeiten"
 		},
 		"account": {
-			"tooltip": "Kontoinformationen ansehen und bearbeiten oder abmelden",
 			"profile": {
 				"title": "Benutzerprofil",
 				"tooltip": "Kontoinformationen ansehen und bearbeiten"
@@ -1200,7 +1208,6 @@
 	},
 	"navigation": {
 		"home": "Startseite",
-		"navigation": "Navigation",
 		"menu": "Navigationsmenü",
 		"infoAndHelp": "Infos & Hilfe"
 	},
