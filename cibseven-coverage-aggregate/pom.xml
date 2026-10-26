@@ -32,11 +32,6 @@
 		</dependency>
 		<dependency>
 			<groupId>org.cibseven.webapp</groupId>
-			<artifactId>cibseven-direct-provider</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.cibseven.webapp</groupId>
 			<artifactId>cibseven-webclient-web</artifactId>
 			<version>${project.version}</version>
 			<type>war</type>
@@ -67,7 +62,7 @@
 				none of its own, so the jar modules' classes are unpacked here to give it a subject.
 				The two war modules are not unpacked (their classes sit under WEB-INF/classes, so the
 				package layout would not survive); they are held by their own per-module floors instead.
-				That leaves 8,541 of 8,738 lines - 97.7% of the codebase - under the global floor.
+				That leaves 5,781 of 5,980 lines - 96.7% of the codebase - under the global floor.
 			-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

@@ -5,7 +5,7 @@ description: Write Java tests and read/raise JaCoCo coverage in this repo. Use w
 
 # Java test coverage in cibseven-webclient
 
-How to measure Java coverage here, the four test recipes the suite already uses, the traps that
+How to measure Java coverage here, the three test recipes the suite already uses, the traps that
 cost real time, and how the `jacoco:check` gates work.
 
 ## Measure it
@@ -45,10 +45,10 @@ PY
 **Rank by absolute uncovered lines, never by percentage.** A 0%-covered 30-line class is noise
 next to a 40%-covered 600-line one.
 
-## The four recipes
+## The three recipes
 
-Pick by what the class under test talks to. All four already exist in the repo — copy the
-nearest neighbour rather than inventing a fifth.
+Pick by what the class under test talks to. All three already exist in the repo — copy the
+nearest neighbour rather than inventing a fourth.
 
 ### 1. REST-over-HTTP provider (`core/webapp.providers`, extends `SevenProviderBase`)
 
@@ -77,37 +77,10 @@ A provider with extra `@Value` fields of its own needs them set too (`UserProvid
 
 Canonical examples: `DecisionProviderTest`, `IncidentProviderTest`, `ProcessProviderTest`.
 
-### 2. Embedded-engine provider (`direct-provider/webapp.providers`)
+The embedded-engine provider (`SevenDirectProvider`, `Direct*Provider`) moved to the `cibseven`
+repository (`direct-provider`), together with its tests.
 
-These take their collaborators in the constructor and reach the engine through
-`DirectProviderUtil`. Spy the util, stub the two lookup methods, and mock the engine services:
-
-```java
-ProcessEngine processEngine = mock(ProcessEngine.class);
-RepositoryService repositoryService = mock(RepositoryService.class);
-when(processEngine.getRepositoryService()).thenReturn(repositoryService);
-// fluent queries need RETURNS_SELF or every chained call returns null
-ProcessDefinitionQuery query = mock(ProcessDefinitionQuery.class,
-    withSettings().defaultAnswer(RETURNS_SELF));
-when(repositoryService.createProcessDefinitionQuery()).thenReturn(query);
-
-ObjectMapper objectMapper = new ObjectMapper();
-JacksonConfigurator.configureObjectMapper(objectMapper);
-
-directProviderUtil = Mockito.spy(new DirectProviderUtil());
-doReturn(processEngine).when(directProviderUtil).getProcessEngine(any(CIBUser.class));
-doReturn(objectMapper).when(directProviderUtil).getObjectMapper(any(CIBUser.class));
-
-provider = new DirectProcessProvider(directProviderUtil, mock(SevenDirectProvider.class));
-```
-
-`getProcessEngine`/`getObjectMapper` are `protected`, which works because the tests sit in the
-same package. Extra services get mocked the same way (`getRuntimeService`, `getTaskService`,
-`getHistoryService`, `getManagementService`, `getIdentityService`, `getFormService`).
-
-Canonical examples: `DirectProcessProviderTest`, `DirectTaskProviderTest`, `DirectBatchProviderTest`.
-
-### 3. REST service / facade (`core/webapp.rest`, `core/modeler.rest`)
+### 2. REST service / facade (`core/webapp.rest`, `core/modeler.rest`)
 
 Plain Mockito plus `ReflectionTestUtils` for the `@Autowired` and `@Value` fields:
 
@@ -124,7 +97,7 @@ A service whose endpoint takes an `HttpServletRequest` derives the user itself, 
 
 Canonical examples: `InfoServiceTest` (the original), `ProcessServiceTest`, `ModelerServiceTest`.
 
-### 4. Spring wiring (`webapp.plugin.*`, `modeler.config.*`)
+### 3. Spring wiring (`webapp.plugin.*`, `modeler.config.*`)
 
 `ApplicationContextRunner`, no full boot. See `PluginAutoConfigurationTest`.
 
@@ -217,8 +190,7 @@ mvn -B clean verify -pl '!.' -Djacoco.aggregate.line.floor=0.99
 - `*Test.java` for unit tests, `*IT.java` only for something that genuinely needs a Spring
   context — and read the failsafe note above first.
 - Test packages mirror the main source (`org.cibseven.webapp.*`, `org.cibseven.modeler.*`).
-- Several providers already have more than one test class (`DirectUserProviderAuthorizationTest`,
-  `DirectUserProviderCrudTest`); splitting by concern is preferred over one huge class.
+- Split a provider's tests by concern rather than growing one huge class.
 - Reuse the existing helpers rather than re-inventing them: `MockEngineRest`, `BaseHelper`
   (`loadMockResponse`, `getCibUser`), `MockUserProviderTestConfiguration`,
   `TestRestTemplateConfiguration`, `SevenProviderBaseTest`.
@@ -253,9 +225,8 @@ The rules:
   the code does, what it costs in production, and what has to change for the test to go green.
 - Name the test after the **correct** behaviour (`..._quotesTheExecutionDate`), not the defect.
 - **Keep an enabled sibling** wherever the same lines can be reached without asserting the bug —
-  it keeps the path covered while the bug stands. `DirectBatchProviderTest` covers the cascade
-  branch with the string `"false"`; `SsoHelperTest` still asserts that a rejected code throws
-  `AuthenticationException`, only the assertion on its (missing) message is disabled;
+  it keeps the path covered while the bug stands. `SsoHelperTest` still asserts that a rejected
+  code throws `AuthenticationException`, only the assertion on its (missing) message is disabled;
   `ExceptionContractTest` still exercises all four subclasses through `getData()`.
 - A disabled test earns no coverage. Two of these — the tenant-scoped decision evaluation and the
   empty-JWKS guard — are the only callers of their lines, so ~4 lines of `cibseven-webclient-core`
@@ -275,19 +246,17 @@ The rules:
   written.
 
 `KNOWN BUG` is the only label; earlier `KNOWN LIMITATION` / `KNOWN INEFFICIENCY` pins were folded
-into it, since from a caller's seat they are the same thing. The twelve currently disabled, and
+into it, since from a caller's seat they are the same thing. The nine currently disabled, and
 why they will surprise you:
 
 | Where | Bug |
 |---|---|
-| `ExceptionContractTest`, `DirectVariableProviderTest` | `ApplicationException` declares only a varargs `Object...` constructor and never calls `super(message)`. **Every** subclass has a null `getMessage()` and a broken cause chain; the real message is only in `getData()`. Do not assert on the message of one of those. |
+| `ExceptionContractTest` | `ApplicationException` declares only a varargs `Object...` constructor and never calls `super(message)`. **Every** subclass has a null `getMessage()` and a broken cause chain; the real message is only in `getData()`. Do not assert on the message of one of those. |
 | `SsoHelperTest` | `AuthenticationException` from the shared `common-auth` library has the same shape, so every SSO failure logs an empty message. Three enabled tests there assert only the exception type for that reason. |
 | `SsoHelperTest` | `KeyResolver.loadKey` guards a null `KeyList` but not a JWKS with no `keys`, so an empty key set NPEs instead of failing authentication. |
 | `SevenUserProviderTest` | `SevenUserProvider.verify` builds its `AuthenticationException` from the same null claim that just failed, so a token with no `user` claim NPEs. |
 | `ProcessProviderTest` | `ProcessProvider.suspendProcessDefinition` interpolates the execution date into JSON unquoted. |
 | `DecisionProviderTest` | `DecisionProvider.evaluateDecisionDefinitionByKeyAndTenant` builds `/tenant<id>` instead of `/tenant-id/<id>`. |
 | `TaskProviderTest` | `TaskProvider.setAssignee` compares `assignee.equals("null")`, so a real null reference NPEs instead of unclaiming. |
-| `DirectBatchProviderTest` | `DirectBatchProvider.deleteBatch` compares the cascade flag with `equals("true")`, so a real JSON boolean never cascades. |
 | `SevenAuthorizationUtilsTest` | `hasCockpitRights` inspects `permissions[0]` only, so a GRANT listing ACCESS in any later position is denied. The GLOBAL branch of the same method reads the whole array. |
 | `SevenAuthorizationUtilsTest` | `hasSpecificProcessRights` matches the resource id exactly, so a `"*"` grant — "every process" to the engine — authorises nothing. |
-| `DirectProcessProviderDefinitionsTest` | `findProcessVersionsByDefinitionKey` runs three history queries per version, so a process with many versions costs 3×N round-trips. |

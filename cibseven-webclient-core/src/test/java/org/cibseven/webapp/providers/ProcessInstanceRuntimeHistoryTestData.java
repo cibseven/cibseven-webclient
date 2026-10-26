@@ -20,12 +20,12 @@ package org.cibseven.webapp.providers;
  * Fixed process-instance ids, keys and business keys shared by the
  * {@code findProcessesInstancesRuntime}/{@code findProcessesInstancesHistory} tests in this module.
  * <p>
- * A twin of this class with the same constant values lives in
- * {@code cibseven-direct-provider/.../providers/ProcessInstanceRuntimeHistoryTestData.java} (as engine
+ * A twin of this class with the same constant values lives in the cibseven repository, in
+ * {@code direct-provider/.../providers/ProcessInstanceRuntimeHistoryTestData.java} (as engine
  * mocks instead of JSON, since that module drives the direct/embedded provider). The two modules
- * cannot share a single compiled class without a cross-module test-jar dependency, so both copies are
- * kept in sync by hand - update both when either changes, so the direct and REST provider
- * implementations are exercised against the same scenario.
+ * cannot share a single compiled class across repositories, so both copies are kept in sync by
+ * hand - update both when either changes, so the direct and REST provider implementations are
+ * exercised against the same scenario.
  */
 final class ProcessInstanceRuntimeHistoryTestData {
 
