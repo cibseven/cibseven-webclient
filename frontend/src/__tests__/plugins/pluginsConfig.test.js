@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { registerPlugin, getPlugin, resetPlugins, reserveSlotIds, PLUGIN_API_VERSION } from '@/plugins/pluginsConfig.js'
+import { registerPlugin, getPlugin, resetPlugins, reserveSlotIds, getSlotsByPlugin, PLUGIN_API_VERSION } from '@/plugins/pluginsConfig.js'
 import packageJson from '../../../package.json'
 
 describe('pluginsConfig', () => {
@@ -154,5 +154,20 @@ describe('pluginsConfig', () => {
 
     expect(getPlugin('slot-a').value).toEqual([])
     expect(getPlugin('slot-b').value).toEqual([])
+  })
+
+  it('lists the slots each plugin contributed to, once each', () => {
+    registerPlugin('slot-a', { name: 'A' }, { pluginId: 'first', id: 'one' })
+    registerPlugin('slot-a', { name: 'B' }, { pluginId: 'first', id: 'two' })
+    registerPlugin('slot-b', { name: 'C' }, { pluginId: 'first' })
+    registerPlugin('slot-b', { name: 'D' }, { pluginId: 'second' })
+
+    expect(getSlotsByPlugin()).toEqual({ first: ['slot-a', 'slot-b'], second: ['slot-b'] })
+  })
+
+  it('leaves the application\'s own contributions out of the slots by plugin', () => {
+    registerPlugin('slot-a', { name: 'A' }, { id: 'app-tab' })
+
+    expect(getSlotsByPlugin()).toEqual({})
   })
 })
