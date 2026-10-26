@@ -760,12 +760,9 @@
 				"tenantMembership": "Membresía de arrendatario",
 				"batch": "Lote",
 				"decisionRequirements": "Definición de requisitos de decisión",
-				"report": "Informe",
-				"dashboard": "Tablero",
 				"userOperationLogCategory": "Categoría de registro de operaciones de usuario",
 				"historicTask": "Tarea histórica",
 				"historicProcessInstance": "Instancia histórica de proceso",
-				"operationLogCategory": "Categoría del registro de operaciones",
 				"property": "Propiedad"
 			},
 			"resourcesTypesDescriptions": {
@@ -785,18 +782,14 @@
 				"tenantMembership": "Determina quién puede asignar usuarios y grupos a un tenant, o eliminarlos de él.",
 				"batch": "Determina quién puede crear o cancelar operaciones por lotes, es decir, acciones masivas como la migración, el reinicio, la eliminación o la actualización masiva de variables de instancias de proceso.{br}{create} controla todas las operaciones por lotes. Cada permiso {createBatch} controla una operación específica además de {create}, y tiene prioridad sobre él.",
 				"decisionRequirements": "Determina quién puede ver una definición de requisitos de decisión, es decir, el grafo que muestra cómo depende entre sí un conjunto de decisiones {dmn} relacionadas.",
-				"report": "Determina quién puede ver o gestionar los informes guardados.",
-				"dashboard": "Determina quién puede ver o gestionar los paneles guardados.",
 				"userOperationLogCategory": "Determina quién puede leer el {userOperationLog}, un registro de auditoría por tarea o instancia de proceso, agrupado en categorías como acciones de responsables, administradores u operadores.",
 				"historicTask": "Determina quién puede ver los datos históricos que se conservan de una tarea una vez completada.",
 				"historicProcessInstance": "Determina quién puede ver o eliminar los datos históricos de una instancia de proceso una vez finalizada.",
-				"operationLogCategory": "Determina quién puede leer o eliminar entradas del {operationLog} de todo el motor que se muestra en Cockpit — un único registro de auditoría consultable para todo el motor.",
 				"property": "Determina quién puede ver o modificar entradas de configuración internas del motor almacenadas como propiedades clave-valor, no la configuración a nivel de aplicación."
 			},
 			"resourcesTypesDescriptionsTerms": {
 				"systemSettings": "Configuración del sistema",
-				"userOperationLog": "registro de operaciones de usuario",
-				"operationLog": "registro de operaciones"
+				"userOperationLog": "registro de operaciones de usuario"
 			},
 			"unselectAll": "Deseleccionar todos",
 			"selectAll": "Seleccionar todos",

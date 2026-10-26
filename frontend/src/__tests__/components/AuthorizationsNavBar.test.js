@@ -60,7 +60,6 @@ describe('AuthorizationsNavBar', () => {
       ['batch', 'processes'],
       ['task', 'tasks'],
       ['filter', 'tasks'],
-      ['report', 'other'],
       ['system', 'system']
     ])('maps %s to %s', (key, expected) => {
       expect(getResourceTypeGroup(key)).toBe(expected)
@@ -86,7 +85,7 @@ describe('AuthorizationsNavBar', () => {
     it('orders groups as application, admin, authorizations, processes, tasks, other, system', () => {
       const result = grouped({
         '1': type(1, 'system'),
-        '2': type(2, 'report'),
+        '2': type(2, 'somethingNew'),
         '3': type(3, 'task'),
         '4': type(4, 'processDefinition'),
         '5': type(5, 'authorization'),
@@ -112,13 +111,18 @@ describe('AuthorizationsNavBar', () => {
       expect(result[0].resourceTypes.map(resourceType => resourceType.key)).toEqual(['task', 'historicTask', 'filter'])
     })
 
-    it('places unknown keys in other after the known members of that group', () => {
+    it('places unknown keys in other', () => {
       const result = grouped({
         '1': type(1, 'somethingNew'),
-        '2': type(2, 'report')
+        '2': type(2, 'anotherNew')
       })
+      expect(result).toHaveLength(1)
       expect(result[0].name).toBe('other')
-      expect(result[0].resourceTypes.map(resourceType => resourceType.key)).toEqual(['report', 'somethingNew'])
+      expect(result[0].resourceTypes.map(resourceType => resourceType.key)).toEqual(['somethingNew', 'anotherNew'])
+    })
+
+    it.each(['report', 'dashboard', 'operationLogCategory'])('has no dedicated group for the removed %s resource type', key => {
+      expect(getResourceIndex(key)).toBe(Number.MAX_SAFE_INTEGER)
     })
 
     it('returns no groups when no resource types are configured', () => {
