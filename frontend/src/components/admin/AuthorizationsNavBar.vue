@@ -64,6 +64,9 @@ const RESOURCE_TYPE_GROUPS = [
   { name: 'historicTask', group: 'tasks' },
   { name: 'filter', group: 'tasks' },
 
+  // Placeholder for unknown resource types
+  { name: '_other', group: 'other' },
+
   { name: 'system', group: 'system' },
 ]
 
