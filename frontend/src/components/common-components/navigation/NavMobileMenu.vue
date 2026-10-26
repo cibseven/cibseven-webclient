@@ -20,8 +20,7 @@
   <nav class="cib-nav-mobile" :aria-label="$t('navigation.menu')">
     <slot name="prepend"></slot>
     <ul v-if="clusters.length" class="cib-nav-mobile-list list-unstyled m-0">
-      <li v-for="(cluster, idx) in clusters" :key="cluster.id" class="cib-nav-mobile-cluster"
-        :class="{ 'cib-nav-mobile-standard-start': idx === standardStart }">
+      <li v-for="cluster in clusters" :key="cluster.id" class="cib-nav-mobile-cluster">
         <button v-if="hasMenu(cluster)" type="button" class="cib-nav-mobile-row"
           :aria-expanded="expanded === cluster.id ? 'true' : 'false'" @click="toggle(cluster.id)">
           <span v-if="cluster.avatar" class="mdi mdi-24px mdi-account text-secondary" aria-hidden="true"></span>
@@ -83,10 +82,6 @@ export default {
   computed: {
     clusters() {
       return [...this.main, ...this.utility]
-    },
-    // Index of the first standard cluster, which gets the stronger line; none without both groups
-    standardStart() {
-      return this.main.length && this.utility.length ? this.main.length : -1
     }
   },
   // Prepended cluster items come from the parent and don't close the menu themselves (e.g. one that
@@ -123,15 +118,12 @@ export default {
   background: var(--bs-body-bg);
   z-index: 1029;
 }
-/* A line above every row and one closing the list; a stronger one where the standard clusters begin */
+/* A line above every row and one closing the list */
 .cib-nav-mobile-list {
   border-bottom: 1px solid var(--bs-gray-500);
 }
 .cib-nav-mobile-cluster {
   border-top: 1px solid var(--bs-gray-500);
-}
-.cib-nav-mobile-standard-start {
-  border-top-width: 2px;
 }
 .cib-nav-mobile-row {
   display: flex;
@@ -189,11 +181,18 @@ export default {
   width: 3px;
   background: var(--bs-primary);
 }
+/* Its own shade in every row state, as in the desktop menus (NavCluster) */
 .cib-nav-mobile-tag {
   padding: 1px 5px;
   border-radius: 2px;
-  background: var(--bs-gray-300);
+  background: var(--bs-gray-200);
   font-size: 0.7rem;
   font-weight: 700;
+}
+.cib-nav-mobile-item:hover .cib-nav-mobile-tag {
+  background: var(--bs-gray-400);
+}
+.cib-nav-mobile-item.active .cib-nav-mobile-tag {
+  background: var(--bs-gray-500);
 }
 </style>

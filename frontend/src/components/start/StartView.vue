@@ -107,13 +107,13 @@ export default {
         : { to: { name: 'builderHome' }, title: this.$t('start.builder.title'), options: this.builderOptions }
     },
     // Only when EE/Flow inject a 'data' group. A single tool is the tile itself; with several the
-    // tile leads to the group's default destination and lists the tools on hover (there is no hub page).
+    // tile leads to the group's overview page (startTo, else its default destination) and lists the tools on hover.
     dataTile() {
       const data = this.groupById.data
       if (!data || this.dataOptions.length === 0) return null
       const single = singleOptionTile(this.dataOptions)
       if (single) return { to: single.to, title: single.title, src: data.tileImage, options: null }
-      return { to: data.defaultTo ?? this.dataOptions[0].to, title: this.$t(data.title), src: data.tileImage, options: this.dataOptions }
+      return { to: data.startTo ?? data.defaultTo ?? this.dataOptions[0].to, title: this.$t(data.title), src: data.tileImage, options: this.dataOptions }
     },
     // Single source for the tile row; adding a tile is one entry here.
     visibleTiles() {

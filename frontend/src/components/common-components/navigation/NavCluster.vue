@@ -409,12 +409,21 @@ export default {
   width: 4px;
   background: var(--bs-primary);
 }
+/* Its own shade in every row state, as in the former language menu: lighter than the hovered and
+   the picked row, darker once the row is hovered, darkest for the picked one */
 .cib-nav-menu-tag {
   padding: 1px 5px;
   border-radius: 2px;
-  background: var(--bs-gray-300);
+  background: var(--bs-gray-200);
   color: var(--bs-gray-800);
   font-size: 11.2px;
   font-weight: 700;
+}
+.cib-nav-menu-item:hover .cib-nav-menu-tag,
+.cib-nav-menu-item:focus-visible .cib-nav-menu-tag {
+  background: var(--bs-gray-400);
+}
+.cib-nav-menu-item.active .cib-nav-menu-tag {
+  background: var(--bs-gray-500);
 }
 </style>

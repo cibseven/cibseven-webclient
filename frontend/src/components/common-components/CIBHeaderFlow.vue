@@ -154,12 +154,13 @@ export default {
         avatar: this.userInitials,
         to: this.userItems.find(item => item.to)?.to ?? null,
         active: this.userItems.some(item => item.active),
-        sections: [[...this.userItems, {
+        // Logout in a section of its own, so a line sets it apart from the account entries
+        sections: [this.userItems, [{
           key: 'logout',
           label: this.$t('start.account.logout.title'),
           tooltip: this.$t('start.account.logout.tooltip', { productName: this.productName }),
           logout: true
-        }]]
+        }]].filter(section => section.length)
       }
     },
     mainClusters() {
@@ -298,6 +299,16 @@ export default {
 </script>
 
 <style scoped>
+/* One keyboard focus ring for every link and button in the header and its menus: the theme's dark
+   outline rather than each browser's own colour, never an underline. Inset, so the menus' clipping
+   does not cut it off. */
+.cib-navbar :deep(a:focus-visible),
+.cib-navbar :deep(button:focus-visible) {
+  outline: 2px solid var(--bs-dark) !important;
+  outline-offset: -2px;
+  box-shadow: none !important;
+  text-decoration: none;
+}
 .cib-nav-clusters {
   gap: 2px;
 }

@@ -307,6 +307,11 @@ describe('CibSeven.vue', () => {
   })
 
   describe('Computed Properties', () => {
+    // Used as the logo's aria-label and tooltip
+    it('labels the logo with the product name and where it leads', () => {
+      expect(CibSeven.computed.brandLabel.call({ productName: 'CIB seven', $t: key => key })).toBe('CIB seven - navigation.home')
+    })
+
     it('should generate helpMenuItems with configured links', () => {
       const mockThis = {
         $root: {
@@ -388,9 +393,9 @@ describe('CibSeven.vue', () => {
       expect(tasks.sections[1][0]).toMatchObject({ active: false, tooltip: 't:start.startProcess.tooltip' })
     })
 
-    it('sends a section with a single tool straight to it, and to its overview page with more', () => {
+    it('sends the icon of a section with a single tool straight to it, and its menu title to the overview page', () => {
       const [single] = CibSeven.computed.navClusters.call(shell({ computedMenuItems: [builderTool] }))
-      expect(single).toMatchObject({ to: '/seven/auth/modeler', titleTo: '/seven/auth/modeler' })
+      expect(single).toMatchObject({ to: '/seven/auth/modeler', titleTo: { name: 'builderHome' } })
 
       const twoTools = { ...builderTool, items: [...builderTool.items, { to: '/seven/auth/forms', title: 'forms' }] }
       const [hub] = CibSeven.computed.navClusters.call(shell({ computedMenuItems: [twoTools] }))
@@ -414,15 +419,39 @@ describe('CibSeven.vue', () => {
       expect(CibSeven.computed.utilityClusters.call(vm)).toEqual([])
     })
 
-    it('links the user profile when user settings are shown', () => {
-      const vm = shell({ $route: route('userProfile', '/seven/auth/account/ada') })
-      expect(CibSeven.computed.userMenuItems.call(vm)).toEqual([{
+    it('lists every tab of the account page when user settings are shown, marking the open one', () => {
+      const vm = shell({ $route: { ...route('account', '/seven/auth/account/ada'), query: { tab: 'groups' } } })
+      const items = CibSeven.computed.userMenuItems.call(vm)
+
+      expect(items.map(i => i.key)).toEqual(['profile', 'groups', 'tenants', 'preferences'])
+      expect(items[0]).toEqual({
         key: 'profile', label: 't:start.account.profile.title', tooltip: 't:start.account.profile.tooltip',
-        to: '/seven/auth/account/ada', active: true
-      }])
+        to: { name: 'account', params: { userId: 'ada' }, query: { tab: 'profile' } }, active: false
+      })
+      expect(items.filter(i => i.active).map(i => i.key)).toEqual(['groups'])
+      expect(items[1].tooltip).toBe('t:admin.users.groups')
 
       vm.permissionsUserProfile = false
       expect(CibSeven.computed.userMenuItems.call(vm)).toEqual([])
+    })
+
+    it('marks the profile entry on the account page without a tab, and nothing elsewhere', () => {
+      const onAccount = CibSeven.computed.userMenuItems.call(shell({ $route: route('account', '/seven/auth/account/ada') }))
+      expect(onAccount.filter(i => i.active).map(i => i.key)).toEqual(['profile'])
+
+      const elsewhere = CibSeven.computed.userMenuItems.call(shell())
+      expect(elsewhere.some(i => i.active)).toBe(false)
+    })
+
+    // Same condition as the account page's own "Change password" tab
+    it('offers the password change only when users may edit and change passwords', () => {
+      const vm = shell()
+      vm.$root.config.userEditable = true
+      vm.$root.config.userPasswordChangeEnabled = true
+      expect(CibSeven.computed.userMenuItems.call(vm).map(i => i.key)).toContain('account')
+
+      vm.$root.config.userPasswordChangeEnabled = false
+      expect(CibSeven.computed.userMenuItems.call(vm).map(i => i.key)).not.toContain('account')
     })
 
     it('opens the dialog a header item asks for', () => {

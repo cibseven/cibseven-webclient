@@ -33,19 +33,15 @@ const mountMenu = (props) => mount(NavMobileMenu, {
 })
 
 describe('NavMobileMenu.vue', () => {
-  it('lists main clusters, then the standard ones starting with the stronger line', () => {
+  it('lists main clusters, then the standard ones, in one list with the same line between all rows', () => {
     const wrapper = mountMenu({ main: [tasks, cockpit], utility: [help, user] })
 
     expect(wrapper.findAll('.cib-nav-mobile-label').map(l => l.text())).toEqual(['Tasks', 'Cockpit', 'Help', 'Ada Morris'])
     expect(wrapper.findAll('.cib-nav-mobile-list')).toHaveLength(1)
-    const marked = wrapper.findAll('.cib-nav-mobile-standard-start')
-    expect(marked).toHaveLength(1)
-    expect(marked[0].find('.cib-nav-mobile-label').text()).toBe('Help')
+    expect(wrapper.findAll('.cib-nav-mobile-cluster').every(row => row.classes().length === 1)).toBe(true)
   })
 
-  it('draws no stronger line without both groups, and no list without clusters', () => {
-    expect(mountMenu({ main: [tasks] }).find('.cib-nav-mobile-standard-start').exists()).toBe(false)
-    expect(mountMenu({ utility: [help] }).find('.cib-nav-mobile-standard-start').exists()).toBe(false)
+  it('renders no list without clusters', () => {
     expect(mountMenu({}).find('.cib-nav-mobile-list').exists()).toBe(false)
   })
 

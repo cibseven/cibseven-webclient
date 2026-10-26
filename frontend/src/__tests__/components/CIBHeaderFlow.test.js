@@ -359,12 +359,18 @@ describe('CIBHeaderFlow.vue', () => {
       expect(wrapper.vm.utilityList).toEqual([])
     })
 
-    it('lets the avatar lead to the first user entry with a route and ends the menu with logout', () => {
+    it('lets the avatar lead to the first user entry with a route and ends the menu with logout, set apart', () => {
       const profile = { key: 'profile', label: 'Profile', to: '/seven/auth/account/1', active: true }
-      wrapper = createWrapper({ userItems: [profile] })
+      const groups = { key: 'groups', label: 'Groups', to: '/seven/auth/account/1?tab=groups' }
+      wrapper = createWrapper({ userItems: [profile, groups] })
 
       expect(wrapper.vm.userCluster).toMatchObject({ to: '/seven/auth/account/1', active: true, avatar: 'TU' })
-      expect(wrapper.vm.userCluster.sections[0].map(i => i.key)).toEqual(['profile', 'logout'])
+      expect(wrapper.vm.userCluster.sections.map(section => section.map(i => i.key))).toEqual([['profile', 'groups'], ['logout']])
+    })
+
+    it('shows only logout, without an empty section, when there are no user entries', () => {
+      wrapper = createWrapper()
+      expect(wrapper.vm.userCluster.sections.map(section => section.map(i => i.key))).toEqual([['logout']])
     })
 
     it('shows the user menu as a single button when there is no user entry to lead to', () => {

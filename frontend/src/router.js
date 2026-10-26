@@ -279,6 +279,8 @@ const appRoutes = [
               { path: '', name: 'usersManagement', component: UsersManagement, meta: { title: 'start.admin.title' } },
               {
                 path: 'access-management', name: 'accessManagement', component: AccessManagement, meta: { title: 'start.accessManagement.title' },
+                // Opens with ANY one of these permissions, as the page shows a tile for each one granted.
+                // A plain list of permissionsGuard would need ALL of them: Vue Router runs every guard in a list.
                 beforeEnter: anyPermissionGuard(['usersManagement', 'user'], ['groupsManagement', 'group'],
                   ['tenantsManagement', 'tenant'], ['authorizationsManagement', 'authorization'])
               },
@@ -425,7 +427,8 @@ function permissionsGuard(permission, condition = undefined) {
   }
 }
 
-// Passes as soon as one of the [permission, condition] pairs is granted; otherwise redirects as the first one would
+// Like permissionsGuard, for several [permission, condition] pairs: passes as soon as one of them is
+// granted; if none is, redirects to "no permission" as the first pair would
 function anyPermissionGuard(...rules) {
   return function(to, from) {
     const granted = rules.some(([permission, condition]) => permissionsGuard(permission, condition)(to, from) === true)

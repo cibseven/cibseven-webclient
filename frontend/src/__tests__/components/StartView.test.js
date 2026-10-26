@@ -220,6 +220,15 @@ describe('StartView.vue single-option tile collapsing', () => {
     expect(vm.dataTile.options.map(o => o.to)).toEqual(['/seven/auth/ins7ght', '/seven/auth/dataflow'])
   })
 
+  it('leads a data tile with several tools to the group overview page when there is one', () => {
+    const tool = (to, title) => ({ to, title, tooltip: title })
+    useExtender(groups => [...groups, {
+      id: 'data', title: 'start.data.title', show: true, defaultTo: '/seven/auth/ins7ght', startTo: { name: 'dataHome' },
+      items: [tool('/seven/auth/ins7ght', 'start.ins7ght.title'), tool('/seven/auth/dataflow', 'dataflow.title')]
+    }])
+    expect(evaluateStartView().dataTile.to).toEqual({ name: 'dataHome' })
+  })
+
   it('shows no data tile when there is no injected data group at all', () => {
     const vm = evaluateStartView()
     expect(vm.dataTile).toBeNull()

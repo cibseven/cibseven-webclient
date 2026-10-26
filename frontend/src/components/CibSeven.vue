@@ -23,9 +23,13 @@
       @logout="logout" @select="onHeaderSelect">
       <div class="me-auto d-flex flex-row overflow-hidden" style="min-height: 38px;">
         <!-- Product name on the home page only; elsewhere the icon and the page title -->
-        <b-navbar-brand ref="brandHome" class="py-0 flex-shrink-0" :aria-label="productName + ' - ' + $t('navigation.home')" to="/seven/auth/start">
+        <b-navbar-brand ref="brandHome" class="py-0 flex-shrink-0" :aria-label="brandLabel" :title="brandLabel" to="/seven/auth/start">
           <img v-if="isStartPage" height="38px" alt="" :src="$root.logoPath"/>
-          <img v-else height="38px" alt="" :src="$root.logoIconPath"/>
+          <!-- The mark at the size and place it has in the full logo, so it does not change when leaving
+               the start page: the icon file draws it about 1/0.62 times larger (matched by eye at 23.75px;
+               whole pixels look visibly too small or too big). Set on the element: EE renders this template
+               from its own component, where this component's scoped styles do not apply. -->
+          <img v-else style="height: 23.75px; margin: 7px 0 7.25px 9px" alt="" :src="$root.logoIconPath"/>
         </b-navbar-brand>
         <div v-if="pageTitle" style="max-height: 38px; min-width: 0;" class="d-flex align-items-center overflow-hidden flex-shrink-1">
           <span class="border-start border-secondary py-3 me-2 me-md-3"></span>
@@ -117,6 +121,10 @@ export default {
     productName() {
       return this.$root.config.productNamePageTitle || this.$t('login.productName')
     },
+    // Label and tooltip of the logo, which leads to the start page
+    brandLabel() {
+      return `${this.productName} - ${this.$t('navigation.home')}`
+    },
     // Same catalog and extensions as the start page and hub pages (see buildVisibleNavGroups)
     menuItems: function() {
       return extendNavGroups(buildNavGroups(permissionFlagsFromVm(this)), this)
@@ -136,7 +144,8 @@ export default {
           label: this.$t(tool.title),
           icon: tool.icon,
           to: single ?? this.getToolDefaultTo(tool),
-          titleTo: single ?? tool.startTo ?? null,
+          // The menu title always opens the overview page, even when it has a single tile
+          titleTo: tool.startTo ?? single ?? null,
           active: this.isToolActive(tool),
           sections: itemsToSections(tool.items).map(section => section.map(item => ({
             key: item.href ?? JSON.stringify(item.to) ?? item.title,
@@ -174,13 +183,24 @@ export default {
     },
     userMenuItems: function() {
       if (!this.$root.user || !this.$root.config.layout.showUserSettings || !this.permissionsUserProfile) return []
-      return [{
-        key: 'profile',
-        label: this.$t('start.account.profile.title'),
-        tooltip: this.$t('start.account.profile.tooltip'),
-        to: '/seven/auth/account/' + this.$root.user.id,
-        active: this.isMenuItemActive({ active: ['seven/auth/account'] })
-      }]
+      const config = this.$root.config
+      // One entry per tab of the account page (ProfileUser), which reads the tab from ?tab=
+      const tabs = [
+        { tab: 'profile', label: 'start.account.profile.title', tooltip: 'start.account.profile.tooltip' },
+        { tab: 'account', label: 'password.recover.changePassword', show: !!(config.userEditable && config.userPasswordChangeEnabled) },
+        { tab: 'groups', label: 'admin.users.groups' },
+        { tab: 'tenants', label: 'admin.tenants.title' },
+        { tab: 'preferences', label: 'admin.preferences.title' }
+      ]
+      const onAccountPage = this.isMenuItemActive({ active: ['seven/auth/account'] })
+      const currentTab = this.$route.query?.tab ?? 'profile'
+      return tabs.filter(entry => entry.show !== false).map(({ tab, label, tooltip }) => ({
+        key: tab,
+        label: this.$t(label),
+        tooltip: this.$t(tooltip ?? label),
+        to: { name: 'account', params: { userId: this.$root.user.id }, query: { tab } },
+        active: onAccountPage && currentTab === tab
+      }))
     },
     helpMenuItems: function() {
       const items = []
@@ -359,7 +379,6 @@ export default {
 <style lang="css" scoped>
 /* See focusBrandLink */
 :deep(.navbar-brand.initial-focus:focus) {
-  outline: none;
+  outline: none !important;
   box-shadow: none;
-}
-</style>
+}</style>
