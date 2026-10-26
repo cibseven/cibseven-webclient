@@ -43,6 +43,7 @@
       </div>
       <ErrorDialog v-if="$route.query.errorType" ref="errorPopup" variant="warning" />
     </div>
+    <AppFooter />
   </div>
 </template>
 
@@ -58,10 +59,11 @@ import taskImage from '@/assets/images/start/task.svg'
 import managementImage from '@/assets/images/start/management.svg'
 import adminImage from '@/assets/images/start/admin.svg'
 import modelerImage from '@/assets/images/start/modeler.svg'
+import AppFooter from '@/components/common-components/AppFooter.vue'
 
 export default {
   name: "StartView",
-  components: { ErrorDialog, StartViewItem },
+  components: { ErrorDialog, StartViewItem, AppFooter },
   mixins: [permissionsMixin, navigationPermissionsMixin],
   data: function() {
     return {

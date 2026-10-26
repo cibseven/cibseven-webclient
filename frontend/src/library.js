@@ -204,6 +204,7 @@ export { default as RemovableBadge } from '@/components/common-components/Remova
 export { default as WarningBox } from '@/components/common-components/WarningBox.vue'
 export { default as DeepLinkFrame } from '@/components/common-components/DeepLinkFrame.vue'
 export { default as DeepLinkButtons } from '@/components/common-components/DeepLinkButtons.vue'
+export { default as AppFooter } from '@/components/common-components/AppFooter.vue'
 
 // re-export common frontend library
 export * from '@cib/common-frontend'
