@@ -38,7 +38,17 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class EngineConfiguration {
-	private static final String DEFAULT_HISTORY_LEVEL = "full";
+	/**
+	 * The history level assumed when the engine does not report one, i.e. with engine-rest versions
+	 * prior to 2.2.0 (no configuration endpoint) and the legacy {@code cibseven.webclient.historyLevel}
+	 * property not set.
+	 * <p>
+	 * {@code full} matches every shipped distribution (Tomcat {@code bpm-platform.xml}, WildFly
+	 * {@code standalone.xml}, Run) and the Spring Boot starter default ({@code CamundaBpmProperties}).
+	 * The bare engine default {@code audit} ({@code ProcessEngineConfiguration.HISTORY_DEFAULT})
+	 * only applies to custom engine configurations that omit the history property.
+	 */
+	public static final String DEFAULT_HISTORY_LEVEL = "full";
 
 	private String engineName;
 	private String historyLevel = DEFAULT_HISTORY_LEVEL;

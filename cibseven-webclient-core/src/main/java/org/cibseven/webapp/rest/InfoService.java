@@ -60,7 +60,7 @@ public class InfoService extends BaseService {
 	 * keeping the "/info" endpoint backward-compatible without requiring the history level
 	 * to be maintained in the application configuration.
 	 */
-	@Value("${cibseven.webclient.historyLevel:full}") private String camundaHistoryLevel;
+	@Value("${cibseven.webclient.historyLevel:" + EngineConfiguration.DEFAULT_HISTORY_LEVEL + "}") private String camundaHistoryLevel;
 	@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") private String userProvider;
 	@Value("${cibseven.webclient.user.editable:#{null}}") private Boolean userEditable;
 	@Value("${cibseven.webclient.user.userPasswordChangeEnabled:}") private Boolean userPasswordChangeEnabled;
