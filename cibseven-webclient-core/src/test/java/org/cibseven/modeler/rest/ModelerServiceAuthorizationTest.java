@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.cibseven.modeler.model.FormEntity;
 import org.cibseven.modeler.model.FolderEntity;
@@ -184,7 +185,7 @@ class ModelerServiceAuthorizationTest {
 	void userWithModelerAccessIsServed() {
 		modelerAccess(true);
 		List<ProcessDiagramReduce> diagrams = new ArrayList<>();
-		when(dbProcessDiagramProvider.getDiagrams(null, null, 0, 10)).thenReturn(diagrams);
+		when(dbProcessDiagramProvider.getDiagrams(null, null, Set.of(), 0, 10)).thenReturn(diagrams);
 
 		assertSame(diagrams, modelerService.getDiagrams(request, 0, 10, null, null));
 	}

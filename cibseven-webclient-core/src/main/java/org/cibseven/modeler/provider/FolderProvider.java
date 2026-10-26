@@ -22,7 +22,9 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 
@@ -60,6 +62,10 @@ public class FolderProvider {
 	@Autowired
 	private FormRepository formDao;
 
+	// Replaced by the bean of the edition; open until then, so a provider built by hand works as before
+	@Autowired
+	private ProjectAccess projectAccess = new OpenProjectAccess();
+
 	/** What a folder holds, counted through the whole subtree. */
 	public record FolderContents(long folders, long diagrams, long forms) {
 
@@ -95,7 +101,11 @@ public class FolderProvider {
 		folder.setName(folderName);
 		folder.setCreated(Timestamp.valueOf(LocalDateTime.now()));
 		folder.setCreatedBy(userId);
-		return folderDao.save(folder);
+		FolderEntity created = folderDao.save(folder);
+		if (parentFolderId == null) {
+			projectAccess.projectCreated(userId, created);
+		}
+		return created;
 	}
 
 	/**
@@ -106,8 +116,10 @@ public class FolderProvider {
 	@Transactional(CibsevenJpa.TRANSACTION_MANAGER)
 	public FolderEntity userFolder(String userId) {
 		String name = validName(userId);
-		return folderDao.findFirstByParentIdIsNullAndNameOrderByCreatedAsc(name)
-			.orElseGet(() -> create(null, name, userId));
+		Optional<FolderEntity> existing = folderDao.findFirstByParentIdIsNullAndNameOrderByCreatedAsc(name);
+		// A folder from before there were members gets its owner now
+		existing.ifPresent(folder -> projectAccess.projectCreated(userId, folder));
+		return existing.orElseGet(() -> create(null, name, userId));
 	}
 
 	/** What a request changes about a folder: it may rename it, move it, or both at once. */
@@ -154,8 +166,43 @@ public class FolderProvider {
 		String targetId = target == null ? null : target.getId();
 		requireFreeName(targetId, folder.getName(), id);
 
+		// Taken out to the top level, the folder is a project of its own from now on
+		String formerProjectId = folder.getParentId() != null && targetId == null ? projectOf(id) : null;
 		folder.setParentId(targetId);
-		return touch(folder, userId);
+		FolderEntity moved = touch(folder, userId);
+		if (formerProjectId != null) {
+			projectAccess.becameProject(userId, moved, formerProjectId);
+		}
+		return moved;
+	}
+
+	/** The project of every folder: the top-level folder it lies under, a project being its own. */
+	@Transactional(value = CibsevenJpa.TRANSACTION_MANAGER, readOnly = true)
+	public Map<String, String> projectsByFolder() {
+		Map<String, String> parents = new HashMap<>();
+		folderDao.findAll().forEach(folder -> parents.put(folder.getId(), folder.getParentId()));
+		Map<String, String> projects = new HashMap<>();
+		parents.keySet().forEach(id -> projects.put(id, rootOf(id, parents)));
+		return projects;
+	}
+
+	/** The project a folder belongs to, or null for a folder that does not exist. */
+	@Transactional(value = CibsevenJpa.TRANSACTION_MANAGER, readOnly = true)
+	public String projectOf(String folderId) {
+		return folderId == null ? null : projectsByFolder().get(folderId);
+	}
+
+	private static String rootOf(String id, Map<String, String> parents) {
+		String current = id;
+		// Bounded by the number of folders, so a broken parent chain cannot loop for ever
+		for (int depth = 0; depth < parents.size(); depth++) {
+			String parent = parents.get(current);
+			if (parent == null || !parents.containsKey(parent)) {
+				return current;
+			}
+			current = parent;
+		}
+		return current;
 	}
 
 	@Transactional(value = CibsevenJpa.TRANSACTION_MANAGER, readOnly = true)

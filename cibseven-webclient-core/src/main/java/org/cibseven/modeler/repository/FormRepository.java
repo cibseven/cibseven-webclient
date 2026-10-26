@@ -34,10 +34,13 @@ public interface FormRepository extends JpaRepository<FormEntity, String> {
 
 	FormEntity findByFormId(String formId);
 
+	/** The hidden folders never come back empty: an empty list is not valid SQL on every database. */
 	@Query("select f from FormEntity f " +
-		"where lower(f.formId) like lower(concat('%', :keyword, '%')) " +
-		"or lower(f.description) like lower(concat('%', :keyword, '%'))")
-	List<FormEntity> findAllFiltered(@Param("keyword") String keyword, Pageable pageable);
+		"where (lower(f.formId) like lower(concat('%', :keyword, '%')) " +
+		"or lower(f.description) like lower(concat('%', :keyword, '%'))) " +
+		"and (f.folderId is null or f.folderId not in :hiddenFolderIds)")
+	List<FormEntity> findAllFiltered(@Param("keyword") String keyword,
+		@Param("hiddenFolderIds") Collection<String> hiddenFolderIds, Pageable pageable);
 
 	List<FormEntity> findByFolderIdIn(Collection<String> folderIds);
 
