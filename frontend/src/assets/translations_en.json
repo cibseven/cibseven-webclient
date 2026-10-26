@@ -765,7 +765,6 @@
 				"userOperationLogCategory": "User Operation Log Category",
 				"historicTask": "Historic Task",
 				"historicProcessInstance": "Historic Process Instance",
-				"optimize": "Optimize",
 				"operationLogCategory": "Operation Log Category",
 				"property": "Property"
 			},
@@ -791,7 +790,6 @@
 				"userOperationLogCategory": "Controls who may read the {userOperationLog} audit trail recorded per task or process instance, grouped into categories such as task worker, admin, or operator actions.",
 				"historicTask": "Controls who may view the historic data kept for a task after it has been completed.",
 				"historicProcessInstance": "Controls who may view or delete the historic data of a process instance after it has finished.",
-				"optimize": "Controls who may access {optimize}, the process reporting and analytics application.",
 				"operationLogCategory": "Controls who may read or delete entries in the engine-wide {operationLog} shown in Cockpit — a single searchable audit trail across the whole engine.",
 				"property": "Controls who may view or change internal engine configuration entries stored as key/value properties, not application-level settings."
 			},

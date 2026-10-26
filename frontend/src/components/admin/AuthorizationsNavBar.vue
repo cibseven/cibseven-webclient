@@ -65,7 +65,6 @@ const RESOURCE_TYPE_GROUPS = [
   { name: 'historicTask', group: 'tasks' },
   { name: 'filter', group: 'tasks' },
 
-  { name: 'optimize', group: 'other' },
   { name: 'report', group: 'other' },
   { name: 'dashboard', group: 'other' },
 

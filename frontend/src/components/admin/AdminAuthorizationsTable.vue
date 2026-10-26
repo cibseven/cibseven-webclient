@@ -33,7 +33,6 @@
         <template #dmn><strong>DMN</strong></template>
         <template #create><strong>CREATE</strong></template>
         <template #createBatch><strong>CREATE_BATCH_*</strong></template>
-        <template #optimize><strong>Optimize</strong></template>
         <template #systemSettings><strong>{{ $t('admin.authorizations.resourcesTypesDescriptionsTerms.systemSettings') }}</strong></template>
         <template #userOperationLog><strong>{{ $t('admin.authorizations.resourcesTypesDescriptionsTerms.userOperationLog') }}</strong></template>
         <template #operationLog><strong>{{ $t('admin.authorizations.resourcesTypesDescriptionsTerms.operationLog') }}</strong></template>
