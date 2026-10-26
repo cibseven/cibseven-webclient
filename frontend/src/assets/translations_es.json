@@ -190,7 +190,6 @@
 		"loadVersions": "Cargar todo el historial de versiones",
 		"externalProcessStarted": "Proceso iniciado con éxito",
 		"exportInstances": "Exportar instancias",
-		"days": "días",
 		"deleteProcessDefinition": {
 			"tooltip": "Eliminar definición de proceso",
 			"confirm": {
@@ -766,7 +765,6 @@
 				"userOperationLogCategory": "Categoría de registro de operaciones de usuario",
 				"historicTask": "Tarea histórica",
 				"historicProcessInstance": "Instancia histórica de proceso",
-				"optimize": "Optimizar",
 				"operationLogCategory": "Categoría del registro de operaciones",
 				"property": "Propiedad"
 			},
@@ -792,7 +790,6 @@
 				"userOperationLogCategory": "Determina quién puede leer el {userOperationLog}, un registro de auditoría por tarea o instancia de proceso, agrupado en categorías como acciones de responsables, administradores u operadores.",
 				"historicTask": "Determina quién puede ver los datos históricos que se conservan de una tarea una vez completada.",
 				"historicProcessInstance": "Determina quién puede ver o eliminar los datos históricos de una instancia de proceso una vez finalizada.",
-				"optimize": "Determina quién puede acceder a {optimize}, la aplicación de informes y análisis de procesos.",
 				"operationLogCategory": "Determina quién puede leer o eliminar entradas del {operationLog} de todo el motor que se muestra en Cockpit — un único registro de auditoría consultable para todo el motor.",
 				"property": "Determina quién puede ver o modificar entradas de configuración internas del motor almacenadas como propiedades clave-valor, no la configuración a nivel de aplicación."
 			},
@@ -1333,7 +1330,6 @@
 		"decision": "Decisión",
 		"refreshVersions": "Actualizar versiones históricas",
 		"loadVersions": "Cargar todas las versiones históricas",
-		"days": "días",
 		"instances": "Instancias",
 		"showInstance": "Ver instancia",
 		"evaluationTime": "Tiempo de evaluación",
@@ -1372,8 +1368,7 @@
 		"decisionInstanceId": "ID de instancia de decisión"
 	},
 	"decision-instance": {
-		"edit": "@:commons.edit",
-		"save": "@:commons.save"
+		"edit": "@:commons.edit"
 	},
 	"human-tasks": {
 		"assignmentsByType": "Asignaciones por tipo",
@@ -1432,5 +1427,17 @@
 	},
 	"deepLink": {
 		"tooltip": "Abrir {text}\n{url}"
+	},
+	"historyTimeToLive": {
+		"title": "Editar tiempo de vida del historial",
+		"ttl": "Tiempo de vida del historial:",
+		"choiceUnlimited": "Ilimitado (el historial nunca se limpia)",
+		"choiceZero": "0 días (el historial se elimina en la próxima limpieza)",
+		"choiceCustom": "Personalizado",
+		"days": "días",
+		"placeholder": "Introduzca días (p. ej., 30)",
+		"validation": "Introduzca un número válido entre {min} y {max}",
+		"engineDefaultHint": "Valor predeterminado de este motor.",
+		"enforcedHint": "Este motor requiere un tiempo de vida del historial explícito; \"ilimitado\" no está disponible."
 	}
 }

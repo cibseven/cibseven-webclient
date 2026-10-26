@@ -94,6 +94,7 @@ export { default as SearchInput } from '@/components/common-components/SearchInp
 export { default as AboutModal } from '@/components/modals/AboutModal.vue'
 export { default as FeedbackModal } from '@/components/modals/FeedbackModal.vue'
 export { default as FeedbackScreenshot } from '@/components/modals/FeedbackScreenshot.vue'
+export { default as EditHistoryTimeToLiveModal } from '@/components/modals/EditHistoryTimeToLiveModal.vue'
 export { default as TaskList } from '@/components/common-components/TaskList.vue'
 export { default as CIBHeaderFlow } from '@/components/common-components/CIBHeaderFlow.vue'
 export { default as NavCluster } from '@/components/common-components/navigation/NavCluster.vue'
@@ -220,6 +221,7 @@ export { default as RemovableBadge } from '@/components/common-components/Remova
 export { default as WarningBox } from '@/components/common-components/WarningBox.vue'
 export { default as DeepLinkFrame } from '@/components/common-components/DeepLinkFrame.vue'
 export { default as DeepLinkButtons } from '@/components/common-components/DeepLinkButtons.vue'
+export { default as AppFooter } from '@/components/common-components/AppFooter.vue'
 
 // re-export common frontend library
 export * from '@cib/common-frontend'

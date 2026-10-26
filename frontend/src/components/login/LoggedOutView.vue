@@ -38,7 +38,7 @@
         </div>
       </div>
     </div>
-    <footer class="fixed-bottom text-center text-muted">CIB seven &copy; CIB, {{ new Date().getFullYear() }}</footer>
+    <AppFooter />
   </div>
 </template>
 
@@ -47,6 +47,7 @@ import { BWaitingBox } from '@cib/common-frontend'
 import { AuthService } from '@/services.js'
 import { axios } from '@/globals.js'
 import { LOGGED_OUT_KEY } from '@/constants.js'
+import AppFooter from '../common-components/AppFooter.vue';
 
 // The page of the logout. Reached from inside the application, with the session still loaded, it signs
 // the user out while it shows what is going on. Reached any other way (the identity provider sent the
@@ -55,7 +56,7 @@ import { LOGGED_OUT_KEY } from '@/constants.js'
 // the user decides when to sign in.
 export default {
   name: 'LoggedOutView',
-  components: { BWaitingBox },
+  components: { BWaitingBox, AppFooter },
   data: function() {
     return { signingOut: !!this.$root.user }
   },
