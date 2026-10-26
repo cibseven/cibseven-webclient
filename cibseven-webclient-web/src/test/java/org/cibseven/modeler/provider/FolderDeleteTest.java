@@ -46,12 +46,12 @@ class FolderDeleteTest {
 		.withConfiguration(AutoConfigurations.of(DataSourceAutoConfiguration.class,
 			HibernateJpaAutoConfiguration.class, SqlInitializationAutoConfiguration.class,
 			TransactionAutoConfiguration.class))
-		.withUserConfiguration(ModelerPersistenceConfiguration.class, FolderProvider.class);
+		.withUserConfiguration(ModelerPersistenceConfiguration.class, FolderProvider.class, OpenProjectAccess.class);
 
 	@Test
 	void removesAFolderWithTheFoldersBelowIt() {
 		runner.run(context -> {
-			FolderProvider folders = context.getBean(FolderProvider.class);
+			FolderProvider folders = context.getBean(FolderProvider.class, OpenProjectAccess.class);
 			FolderRepository repository = context.getBean(FolderRepository.class);
 
 			FolderEntity root = folders.create(null, "Projects", "tester");
@@ -71,7 +71,7 @@ class FolderDeleteTest {
 	@Test
 	void leavesTheFoldersBesideItAlone() {
 		runner.run(context -> {
-			FolderProvider folders = context.getBean(FolderProvider.class);
+			FolderProvider folders = context.getBean(FolderProvider.class, OpenProjectAccess.class);
 			FolderRepository repository = context.getBean(FolderRepository.class);
 
 			FolderEntity removed = folders.create(null, "Going", "tester");

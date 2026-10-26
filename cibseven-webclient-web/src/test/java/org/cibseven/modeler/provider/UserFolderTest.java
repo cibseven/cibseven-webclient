@@ -50,12 +50,12 @@ class UserFolderTest {
 		.withConfiguration(AutoConfigurations.of(DataSourceAutoConfiguration.class,
 			HibernateJpaAutoConfiguration.class, SqlInitializationAutoConfiguration.class,
 			TransactionAutoConfiguration.class))
-		.withUserConfiguration(ModelerPersistenceConfiguration.class, FolderProvider.class);
+		.withUserConfiguration(ModelerPersistenceConfiguration.class, FolderProvider.class, OpenProjectAccess.class);
 
 	@Test
 	void createsTheUserFolderOnceAndFindsItAfterwards() {
 		runner.run(context -> {
-			FolderProvider folders = context.getBean(FolderProvider.class);
+			FolderProvider folders = context.getBean(FolderProvider.class, OpenProjectAccess.class);
 
 			FolderEntity first = folders.userFolder("anna");
 			FolderEntity second = folders.userFolder("anna");
@@ -68,7 +68,7 @@ class UserFolderTest {
 	@Test
 	void usesTheOldestWhenAUserFolderWasStoredTwice() {
 		runner.run(context -> {
-			FolderProvider folders = context.getBean(FolderProvider.class);
+			FolderProvider folders = context.getBean(FolderProvider.class, OpenProjectAccess.class);
 			FolderRepository repository = context.getBean(FolderRepository.class);
 			LocalDateTime now = LocalDateTime.now();
 			FolderEntity oldest = repository.save(userFolder("bert", now.minusMinutes(1)));

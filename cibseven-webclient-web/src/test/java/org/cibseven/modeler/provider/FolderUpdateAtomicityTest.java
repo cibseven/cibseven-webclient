@@ -47,12 +47,12 @@ class FolderUpdateAtomicityTest {
 		.withConfiguration(AutoConfigurations.of(DataSourceAutoConfiguration.class,
 			HibernateJpaAutoConfiguration.class, SqlInitializationAutoConfiguration.class,
 			TransactionAutoConfiguration.class))
-		.withUserConfiguration(ModelerPersistenceConfiguration.class, FolderProvider.class);
+		.withUserConfiguration(ModelerPersistenceConfiguration.class, FolderProvider.class, OpenProjectAccess.class);
 
 	@Test
 	void appliesARenameAndAMoveTogether() {
 		runner.run(context -> {
-			FolderProvider folders = context.getBean(FolderProvider.class);
+			FolderProvider folders = context.getBean(FolderProvider.class, OpenProjectAccess.class);
 			FolderEntity target = folders.create(null, "Archive", "tester");
 			FolderEntity folder = folders.create(null, "Drafts", "tester");
 
@@ -67,7 +67,7 @@ class FolderUpdateAtomicityTest {
 	@Test
 	void leavesTheNameAloneWhenTheMoveIsRefused() {
 		runner.run(context -> {
-			FolderProvider folders = context.getBean(FolderProvider.class);
+			FolderProvider folders = context.getBean(FolderProvider.class, OpenProjectAccess.class);
 			FolderEntity target = folders.create(null, "Invoicing", "tester");
 			// The name the folder is renamed to is already taken where it is moved
 			folders.create(target.getId(), "Billing", "tester");
