@@ -28,7 +28,7 @@
           <span class="cib-nav-mobile-label flex-grow-1 fw-semibold">{{ cluster.label }}</span>
           <span :class="['mdi', 'mdi-24px', 'cib-nav-mobile-chevron', expanded === cluster.id ? 'mdi-chevron-down' : 'mdi-chevron-right']" aria-hidden="true"></span>
         </button>
-        <router-link v-else-if="cluster.to" :to="cluster.to" class="cib-nav-mobile-row" @click="$emit('navigate')">
+        <router-link v-else-if="cluster.to" :to="cluster.to" active-class="" exact-active-class="" class="cib-nav-mobile-row" @click="$emit('navigate')">
           <span :class="['mdi', 'mdi-24px', 'text-secondary', cluster.icon]" aria-hidden="true"></span>
           <span class="cib-nav-mobile-label flex-grow-1 fw-semibold">{{ cluster.label }}</span>
         </router-link>
@@ -41,7 +41,8 @@
           <div v-if="$slots['cluster-prepend']" class="cib-nav-mobile-prepend"><slot name="cluster-prepend" :cluster="cluster"></slot></div>
           <ul v-for="(section, sIdx) in cluster.sections" :key="sIdx" class="cib-nav-mobile-section list-unstyled m-0 py-1">
             <li v-for="item in section" :key="item.key">
-              <router-link v-if="item.to" :to="item.to" class="cib-nav-mobile-item" :class="{ active: item.active }"
+              <!-- Marked by item.active only, as in NavCluster: Vue Router's active class ignores the query -->
+              <router-link v-if="item.to" :to="item.to" active-class="" exact-active-class="" class="cib-nav-mobile-item" :class="{ active: item.active }"
                 :aria-current="item.active ? 'page' : null" @click="$emit('navigate')">
                 <span v-if="item.tag" class="cib-nav-mobile-tag">{{ item.tag }}</span>{{ item.label }}
               </router-link>

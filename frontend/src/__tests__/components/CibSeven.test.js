@@ -312,6 +312,14 @@ describe('CibSeven.vue', () => {
       expect(CibSeven.computed.brandLabel.call({ productName: 'CIB seven', $t: key => key })).toBe('CIB seven - navigation.home')
     })
 
+    it('shows the full logo on the start page and the account page, the icon elsewhere', () => {
+      const full = (name) => CibSeven.computed.showFullLogo.call({ $route: { name }, isStartPage: name === 'start' })
+      expect(full('start')).toBe(true)
+      expect(full('account')).toBe(true)
+      expect(full('tasklist')).toBe(false)
+      expect(full('adminUser')).toBe(false)
+    })
+
     it('should generate helpMenuItems with configured links', () => {
       const mockThis = {
         $root: {

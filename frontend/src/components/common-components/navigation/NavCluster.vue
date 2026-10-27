@@ -22,9 +22,13 @@
 
     <!-- Split control: the icon leads to the section, the chevron opens its menu -->
     <template v-if="isSplit">
-      <router-link ref="main" :to="cluster.to" class="cib-nav-btn cib-nav-btn-main"
+      <!-- The menus mark the current entry themselves (cluster.active / item.active): Vue Router's own
+           active class ignores the query, so it would mark every entry leading to the same page -->
+      <!-- Hovering the icon opens the menu too, so it opens whichever side the pointer comes from
+           (the tooltip then stays hidden: the menu title names the section) -->
+      <router-link ref="main" :to="cluster.to" active-class="" exact-active-class="" class="cib-nav-btn cib-nav-btn-main"
         :aria-label="cluster.label" :aria-describedby="tipVisible ? tooltipId : null"
-        @mouseenter="showTip = true" @mouseleave="showTip = false" @focus="showTip = true" @blur="showTip = false">
+        @pointerenter="hoverOpen" @mouseenter="showTip = true" @mouseleave="showTip = false" @focus="showTip = true" @blur="showTip = false">
         <span class="cib-nav-current-bar" aria-hidden="true"></span>
         <span v-if="cluster.avatar" class="cib-nav-avatar" aria-hidden="true">{{ cluster.avatar }}</span>
         <span v-else :class="['mdi', 'mdi-24px', cluster.icon]" aria-hidden="true"></span>
@@ -55,13 +59,13 @@
     <div v-if="open" ref="menu" class="cib-nav-menu" :class="align === 'end' ? 'cib-nav-menu-end' : 'cib-nav-menu-start'"
       role="menu" tabindex="-1" :aria-label="cluster.label" @keydown.down.prevent="moveFocus(1)" @keydown.up.prevent="moveFocus(-1)"
       @keydown.esc="closeAndFocus" @click="onMenuClick">
-      <router-link v-if="cluster.titleTo" :to="cluster.titleTo" class="cib-nav-menu-title cib-nav-menu-title-link"
+      <router-link v-if="cluster.titleTo" :to="cluster.titleTo" active-class="" exact-active-class="" class="cib-nav-menu-title cib-nav-menu-title-link"
         role="menuitem" @click="close">{{ cluster.label }}</router-link>
       <div v-else class="cib-nav-menu-title" role="presentation">{{ cluster.label }}</div>
       <div v-if="$slots['menu-prepend']" ref="prepend" role="none"><slot name="menu-prepend" :cluster="cluster"></slot></div>
       <div v-for="(section, sIdx) in cluster.sections" :key="sIdx" class="cib-nav-menu-section" role="group">
         <template v-for="item in section" :key="item.key">
-          <router-link v-if="item.to" :to="item.to" class="cib-nav-menu-item" :class="{ active: item.active }"
+          <router-link v-if="item.to" :to="item.to" active-class="" exact-active-class="" class="cib-nav-menu-item" :class="{ active: item.active }"
             role="menuitem" :title="item.tooltip" :aria-current="item.active ? 'page' : null" @click="close">
             <span v-if="item.tag" class="cib-nav-menu-tag">{{ item.tag }}</span>{{ item.label }}
           </router-link>
