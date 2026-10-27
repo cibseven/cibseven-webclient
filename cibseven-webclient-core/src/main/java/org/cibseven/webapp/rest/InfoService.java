@@ -60,7 +60,7 @@ public class InfoService extends BaseService {
 	 * keeping the "/info" endpoint backward-compatible without requiring the history level
 	 * to be maintained in the application configuration.
 	 */
-	@Value("${cibseven.webclient.historyLevel:full}") private String camundaHistoryLevel;
+	@Value("${cibseven.webclient.historyLevel:" + EngineConfiguration.DEFAULT_HISTORY_LEVEL + "}") private String camundaHistoryLevel;
 	@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") private String userProvider;
 	@Value("${cibseven.webclient.user.editable:#{null}}") private Boolean userEditable;
 	@Value("${cibseven.webclient.user.userPasswordChangeEnabled:}") private Boolean userPasswordChangeEnabled;
@@ -170,6 +170,12 @@ public class InfoService extends BaseService {
 		configJson.put("engineRestPath", engineRestPath);
 		configJson.put("engineRestUrl", engineRestUrl);
 		configJson.put("authorizationEnabled", engineConfig.isAuthorizationEnabled() || legacyAuthorizationEnabled);
+
+		// Both are passed through as-is, including null: null means the engine does not report the
+		// value (engines before 3.0.0) and the frontend must treat it as "unknown", not as a default.
+		configJson.put("historyTimeToLive", engineConfig.getHistoryTimeToLive());
+		configJson.put("enforceHistoryTimeToLive", engineConfig.getEnforceHistoryTimeToLive());
+
 		configJson.put("modelerEnabled", modelerEnabled);
 		configJson.put("pluginsEnabled", pluginsEnabled);
 		configJson.put("startProcessDefaultFormEnabled", startProcessDefaultFormEnabled);

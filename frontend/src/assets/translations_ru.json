@@ -190,7 +190,6 @@
 		"loadVersions": "Загрузить все версии истории",
 		"externalProcessStarted": "Процесс успешно запущен",
 		"exportInstances": "Экспорт экземпляров",
-		"days": "дней",
 		"deleteProcessDefinition": {
 			"tooltip": "Удалить определение процесса",
 			"confirm": {
@@ -857,11 +856,9 @@
 		"email": "@:login.email"
 	},
 	"cib-header": {
+		"openMenu": "Меню {label}",
 		"languages": "Язык",
-		"languagesMenu": "Язык",
 		"engine": "Движок",
-		"engineMenu": "Выбор движка",
-		"helpMenu": "Помощь",
 		"en": "English",
 		"de": "Deutsch",
 		"es": "Español",
@@ -1048,6 +1045,9 @@
 			"title": "@:process.startProcess",
 			"tooltip": "Открыть страницу запуска процесса с возможностью поиска"
 		},
+		"tasks": {
+			"title": "Задачи"
+		},
 		"taskList": {
 			"title": "Tasklist",
 			"tooltip": "Открыть Tasklist"
@@ -1055,6 +1055,9 @@
 		"cockpit": {
 			"title": "Cockpit",
 			"tooltip": "Открыть Cockpit",
+			"dashboard": {
+				"title": "Панель"
+			},
 			"processes": {
 				"title": "Процессы",
 				"tooltip": "Просмотреть доступные определения процессов"
@@ -1089,15 +1092,19 @@
 			}
 		},
 		"admin": {
-			"title": "Admin",
-			"tooltip": "Открыть Admin"
+			"title": "Admin"
+		},
+		"accessManagement": {
+			"title": "Управление доступом"
+		},
+		"builder": {
+			"title": "Builder"
 		},
 		"modeler": {
 			"title": "Modeler",
 			"tooltip": "Открыть Modeler для проектирования и редактирования BPMN, DMN и форм"
 		},
 		"account": {
-			"tooltip": "Просмотреть и изменить информацию о вашей учетной записи или выйти из системы",
 			"profile": {
 				"title": "Профиль пользователя",
 				"tooltip": "Просмотреть и изменить информацию о вашей учетной записи"
@@ -1203,7 +1210,6 @@
 	},
 	"navigation": {
 		"home": "Домашняя страница",
-		"navigation": "Навигация",
 		"menu": "Меню навигации",
 		"infoAndHelp": "Информация и помощь"
 	},
@@ -1326,7 +1332,6 @@
 		"decision": "Решение",
 		"refreshVersions": "Обновить историю версий",
 		"loadVersions": "Загрузить все версии истории",
-		"days": "дней",
 		"instances": "Экземпляры",
 		"showInstance": "Просмотреть экземпляр",
 		"evaluationTime": "Время оценки",
@@ -1365,8 +1370,7 @@
 		"decisionInstanceId": "ID экземпляра решения"
 	},
 	"decision-instance": {
-		"edit": "@:commons.edit",
-		"save": "@:commons.save"
+		"edit": "@:commons.edit"
 	},
 	"human-tasks": {
 		"assignmentsByType": "Назначения по типу",
@@ -1425,5 +1429,17 @@
 	},
 	"deepLink": {
 		"tooltip": "Открыть {text}\n{url}"
+	},
+	"historyTimeToLive": {
+		"title": "Изменить время хранения истории",
+		"ttl": "Время хранения истории:",
+		"choiceUnlimited": "Без ограничения (история никогда не очищается)",
+		"choiceZero": "0 дн. (история удаляется при следующей очистке)",
+		"choiceCustom": "Пользовательское",
+		"days": "дн.",
+		"placeholder": "Введите количество дней (например, 30)",
+		"validation": "Введите допустимое число от {min} до {max}",
+		"engineDefaultHint": "Значение по умолчанию для этого движка.",
+		"enforcedHint": "Этот движок требует явного времени хранения истории; вариант \"без ограничения\" недоступен."
 	}
 }

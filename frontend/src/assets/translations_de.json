@@ -190,7 +190,6 @@
 		"loadVersions": "Alle Versionen der Historie laden",
 		"externalProcessStarted": "Prozess erfolgreich gestarted",
 		"exportInstances": "Instanzen exportieren",
-		"days": "Tage",
 		"deleteProcessDefinition": {
 			"tooltip": "Prozessdefinition löschen",
 			"confirm": {
@@ -857,11 +856,9 @@
 		"email": "@:login.email"
 	},
 	"cib-header": {
+		"openMenu": "Menü {label}",
 		"languages": "Sprache",
-		"languagesMenu": "Sprache",
 		"engine": "Engine",
-		"engineMenu": "Engine-Auswahl",
-		"helpMenu": "Hilfe",
 		"en": "English",
 		"de": "Deutsch",
 		"es": "Español",
@@ -1048,6 +1045,9 @@
 			"title": "@:process.startProcess",
 			"tooltip": "Startprozess-Ansicht mit Suchfunktion öffnen"
 		},
+		"tasks": {
+			"title": "Aufgaben"
+		},
 		"taskList": {
 			"title": "Tasklist",
 			"tooltip": "Tasklist öffnen"
@@ -1055,6 +1055,9 @@
 		"cockpit": {
 			"title": "Cockpit",
 			"tooltip": "Cockpit öffnen",
+			"dashboard": {
+				"title": "Dashboard"
+			},
 			"processes": {
 				"title": "Prozesse",
 				"tooltip": "Verfügbare Prozessdefinitionen durchsuchen"
@@ -1089,15 +1092,19 @@
 			}
 		},
 		"admin": {
-			"title": "Admin",
-			"tooltip": "Admin öffnen"
+			"title": "Admin"
+		},
+		"accessManagement": {
+			"title": "Zugriffsverwaltung"
+		},
+		"builder": {
+			"title": "Builder"
 		},
 		"modeler": {
 			"title": "Modeler",
 			"tooltip": "Modeler öffnen, um BPMN, DMN und Formulare zu entwerfen und zu bearbeiten"
 		},
 		"account": {
-			"tooltip": "Kontoinformationen ansehen und bearbeiten oder abmelden",
 			"profile": {
 				"title": "Benutzerprofil",
 				"tooltip": "Kontoinformationen ansehen und bearbeiten"
@@ -1203,7 +1210,6 @@
 	},
 	"navigation": {
 		"home": "Startseite",
-		"navigation": "Navigation",
 		"menu": "Navigationsmenü",
 		"infoAndHelp": "Infos & Hilfe"
 	},
@@ -1327,7 +1333,6 @@
 		"decision": "Entscheidung",
 		"refreshVersions": "Historische Versionen aktualisieren",
 		"loadVersions": "Alle Versionen der Historie laden",
-		"days": "Tage",
 		"instances": "Instanzen",
 		"showInstance": "Instanz anzeigen",
 		"evaluationTime": "Auswertungszeit",
@@ -1366,8 +1371,7 @@
 		"decisionInstanceId": "Entscheidungsinstanz-ID"
 	},
 	"decision-instance": {
-		"edit": "@:commons.edit",
-		"save": "@:commons.save"
+		"edit": "@:commons.edit"
 	},
 	"human-tasks": {
 		"assignmentsByType": "Zuweisungen nach Typ",
@@ -1426,5 +1430,17 @@
 	},
 	"deepLink": {
 		"tooltip": "Öffnen {text}\n{url}"
+	},
+	"historyTimeToLive": {
+		"title": "Verlaufsaufbewahrungsdauer bearbeiten",
+		"ttl": "Verlaufsaufbewahrungsdauer:",
+		"choiceUnlimited": "Unbegrenzt (Verlauf wird nie bereinigt)",
+		"choiceZero": "0 Tage (Verlauf wird bei der nächsten Bereinigung entfernt)",
+		"choiceCustom": "Benutzerdefiniert",
+		"days": "Tage",
+		"placeholder": "Tage eingeben (z. B. 30)",
+		"validation": "Bitte eine gültige Zahl zwischen {min} und {max} eingeben",
+		"engineDefaultHint": "Standardwert dieser Engine.",
+		"enforcedHint": "Diese Engine erfordert eine explizite Verlaufsaufbewahrungsdauer; \"Unbegrenzt\" ist nicht verfügbar."
 	}
 }

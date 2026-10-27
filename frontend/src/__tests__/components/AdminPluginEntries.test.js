@@ -25,20 +25,28 @@ const notifications = {
 }
 
 describe('contributed admin entries', () => {
+  const admin = (adminPluginEntries, overrides = {}) => ({
+    $t: key => `t:${key}`,
+    permissionsUsers: true,
+    permissionsUsersManagement: true, permissionsGroupsManagement: false, permissionsTenantsManagement: false,
+    permissionsAuthorizationsManagement: false, permissionsSystemManagement: false,
+    adminPluginEntries,
+    ...overrides
+  })
+
   describe('StartView admin tile', () => {
-    const adminOptions = (adminPluginEntries) => StartView.computed.adminOptions.call({
-      $t: key => `t:${key}`,
-      permissionsUsersManagement: true, permissionsGroupsManagement: false, permissionsTenantsManagement: false,
-      permissionsAuthorizationsManagement: false, permissionsSystemManagement: false,
-      adminPluginEntries
-    })
+    const adminOptions = (adminPluginEntries) => {
+      const vm = admin(adminPluginEntries)
+      vm.groupById = { admin: StartView.computed.navGroups.call({ ...vm, $options: {} }).find(g => g.id === 'admin') }
+      return StartView.computed.adminOptions.call(vm)
+    }
 
     it('lists a contributed entry after the built-in ones, with its icon and translated texts', () => {
       const options = adminOptions([notifications])
 
       expect(options.map(o => o.to)).toEqual(['/seven/auth/admin/users', '/seven/auth/admin/notifications'])
       expect(options.at(-1)).toEqual({
-        to: '/seven/auth/admin/notifications', icon: 'mdi-bullhorn-outline',
+        to: '/seven/auth/admin/notifications', icon: 'mdi-bullhorn-outline', src: 'notifications.svg',
         title: 't:admin.notifications.title', tooltip: 't:admin.notifications.title'
       })
     })
@@ -50,22 +58,32 @@ describe('contributed admin entries', () => {
   })
 
   describe('UsersManagement cards', () => {
-    const items = (adminPluginEntries) => UsersManagement.computed.items.call({
-      $root: { config: { permissions: {} } },
-      // only the built-in System card is granted, so the list shows both kinds
-      applicationPermissions: (permissions, resource) => resource === 'system',
-      adminPluginEntries
-    })
+    const vmFor = (adminPluginEntries, overrides) => {
+      const vm = admin(adminPluginEntries, overrides)
+      vm.adminGroup = UsersManagement.computed.adminGroup.call(vm)
+      vm.pluginItems = UsersManagement.computed.pluginItems.call(vm)
+      vm.showAccessManagement = UsersManagement.computed.showAccessManagement.call(vm)
+      vm.showSystem = UsersManagement.computed.showSystem.call(vm)
+      return vm
+    }
 
     it('shows a contributed card after the built-in ones, linking to its route', () => {
-      const cards = items([notifications])
+      const vm = vmFor([notifications], { permissionsUsersManagement: false, permissionsSystemManagement: true })
 
-      expect(cards.map(c => c.title)).toEqual(['admin.system.title', 'admin.notifications.title'])
-      expect(cards.at(-1)).toMatchObject({ image: 'notifications.svg', link: { path: '/seven/auth/admin/notifications' } })
+      expect(vm.showSystem).toBe(true)
+      expect(vm.pluginItems).toHaveLength(1)
+      expect(vm.pluginItems[0]).toMatchObject({ title: 'admin.notifications.title', tileImage: 'notifications.svg', to: '/seven/auth/admin/notifications' })
     })
 
     it('shows only the built-in cards when nothing is contributed', () => {
-      expect(items([]).map(c => c.title)).toEqual(['admin.system.title'])
+      expect(vmFor([], { permissionsSystemManagement: true }).pluginItems).toEqual([])
+    })
+
+    it('shows the admin page when only a contributed area is reachable', () => {
+      const vm = vmFor([notifications], { permissionsUsersManagement: false })
+
+      expect(vm.showAccessManagement).toBe(false)
+      expect(UsersManagement.computed.hasTiles.call(vm)).toBe(true)
     })
   })
 })
