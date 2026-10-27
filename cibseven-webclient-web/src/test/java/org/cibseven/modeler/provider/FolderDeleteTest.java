@@ -46,7 +46,7 @@ class FolderDeleteTest {
 		.withConfiguration(AutoConfigurations.of(DataSourceAutoConfiguration.class,
 			HibernateJpaAutoConfiguration.class, SqlInitializationAutoConfiguration.class,
 			TransactionAutoConfiguration.class))
-		.withUserConfiguration(ModelerPersistenceConfiguration.class, FolderProvider.class);
+		.withUserConfiguration(ModelerPersistenceConfiguration.class, FolderProvider.class, OpenProjectAccess.class);
 
 	@Test
 	void removesAFolderWithTheFoldersBelowIt() {

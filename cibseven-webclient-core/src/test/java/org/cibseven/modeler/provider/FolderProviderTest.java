@@ -253,23 +253,11 @@ class FolderProviderTest {
 	@Test
 	void findsTheUserFolderOnLaterVisitsInsteadOfCreatingAnother() {
 		FolderEntity existing = userFolder("demo");
-		when(folders.findFirstByParentIdIsNullAndNameOrderByCreatedAsc("demo")).thenReturn(Optional.of(existing));
+		when(folders.findFirstByParentIdIsNullAndNameAndCreatedByOrderByCreatedAsc("demo", "demo"))
+			.thenReturn(Optional.of(existing));
 
 		assertThat(provider.userFolder("demo")).isSameAs(existing);
 		verify(folders, never()).save(any());
-	}
-
-	/** Somebody else named a folder after the user: it is used, but it does not become protected. */
-	@Test
-	void takesAFolderNamedAfterTheUserAsItIs() {
-		FolderEntity named = folder("named", null, "demo");
-		named.setCreatedBy("someone-else");
-		when(folders.findFirstByParentIdIsNullAndNameOrderByCreatedAsc("demo")).thenReturn(Optional.of(named));
-
-		FolderEntity userFolder = provider.userFolder("demo");
-
-		assertThat(userFolder).isSameAs(named);
-		assertThat(userFolder.isUserFolder()).isFalse();
 	}
 
 	@Test
@@ -333,5 +321,87 @@ class FolderProviderTest {
 
 		assertThat(renamed.getName()).isEqualTo("Sketches");
 		verify(folders).deleteAllById(List.of("drafts"));
+	}
+
+	private ProjectAccess watchedAccess() {
+		ProjectAccess access = Mockito.mock(ProjectAccess.class);
+		ReflectionTestUtils.setField(provider, "projectAccess", access);
+		return access;
+	}
+
+	@Test
+	void findsTheProjectOfEveryFolderAtAnyDepth() {
+		FolderEntity drafts = folder("drafts", "project", "Drafts");
+		FolderEntity old = folder("old", "drafts", "Old");
+		FolderEntity archive = folder("archive", null, "Archive");
+		when(folders.findAll()).thenReturn(List.of(project, drafts, old, archive));
+
+		assertThat(provider.projectsByFolder())
+			.containsEntry("project", "project")
+			.containsEntry("drafts", "project")
+			.containsEntry("old", "project")
+			.containsEntry("archive", "archive");
+		assertThat(provider.projectOf("old")).isEqualTo("project");
+		assertThat(provider.projectOf("gone")).isNull();
+		assertThat(provider.projectOf(null)).isNull();
+	}
+
+	/** A broken chain would otherwise walk for ever; the folder whose parent is gone counts as the top. */
+	@Test
+	void stopsAtAFolderWhoseParentIsGone() {
+		FolderEntity orphan = folder("orphan", "deleted", "Orphan");
+		FolderEntity a = folder("a", "b", "A");
+		FolderEntity b = folder("b", "a", "B");
+		when(folders.findAll()).thenReturn(List.of(orphan, a, b));
+
+		assertThat(provider.projectOf("orphan")).isEqualTo("orphan");
+		assertThat(provider.projectOf("a")).isNotNull();
+	}
+
+	@Test
+	void makesTheCreatorTheFirstAdminOfANewProjectOnly() {
+		ProjectAccess access = watchedAccess();
+
+		FolderEntity created = provider.create(null, "Archive", "demo");
+		provider.create("project", "Drafts", "demo");
+
+		verify(access).projectCreated("demo", created);
+		verify(access, Mockito.times(1)).projectCreated(any(), any());
+	}
+
+	/** A user folder from before there were members is claimed by its owner on the next visit. */
+	@Test
+	void givesAnExistingUserFolderItsOwner() {
+		ProjectAccess access = watchedAccess();
+		FolderEntity existing = userFolder("demo");
+		when(folders.findFirstByParentIdIsNullAndNameAndCreatedByOrderByCreatedAsc("demo", "demo"))
+			.thenReturn(Optional.of(existing));
+
+		provider.userFolder("demo");
+
+		verify(access).projectCreated("demo", existing);
+	}
+
+	@Test
+	void handsAFolderTakenOutToTheTopLevelTheMembersOfItsFormerProject() {
+		ProjectAccess access = watchedAccess();
+		FolderEntity drafts = folder("drafts", "project", "Drafts");
+		FolderEntity old = folder("old", "drafts", "Old");
+		when(folders.findAll()).thenReturn(List.of(project, drafts, old));
+
+		FolderEntity moved = provider.move("old", null, "demo");
+
+		verify(access).becameProject("demo", moved, "project");
+	}
+
+	@Test
+	void asksNothingWhenAFolderStaysInsideItsProject() {
+		ProjectAccess access = watchedAccess();
+		folder("drafts", "project", "Drafts");
+		folder("old", "drafts", "Old");
+
+		provider.move("old", "project", "demo");
+
+		verify(access, never()).becameProject(any(), any(), any());
 	}
 }

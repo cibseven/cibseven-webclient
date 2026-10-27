@@ -18,6 +18,7 @@ package org.cibseven.modeler.provider;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,9 +46,17 @@ public class FormProvider implements IFormProvider {
 
 	@Override
 	public List<FormEntity> getForms(String keyword, int firstResult, int maxResults) throws SystemException {
+		return getForms(keyword, List.of(), firstResult, maxResults);
+	}
+
+	/** Leaves out the forms in the hidden folders, counting only what is left for the paging. */
+	public List<FormEntity> getForms(String keyword, Collection<String> hiddenFolderIds, int firstResult, int maxResults)
+			throws SystemException {
 		String kw = keyword == null ? "" : keyword;
-		PageRequest page = PageRequest.of(firstResult / maxResults, maxResults, Sort.by("updated").descending());
-		return formRepositoryDao.findAllFiltered(kw, page);
+		return ProjectGuard.visiblePage(hiddenFolderIds, firstResult, maxResults,
+			(hidden, page, size) -> formRepositoryDao.findAllFiltered(kw, hidden,
+				PageRequest.of(page, size, Sort.by("updated").descending())),
+			FormEntity::getFolderId);
 	}
 
 	@Override
