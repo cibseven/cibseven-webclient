@@ -81,6 +81,44 @@ class UserFolderTest {
 		});
 	}
 
+	/** Somebody else named a folder after the user, which may be closed to them: they get their own beside it. */
+	@Test
+	void givesTheUserAFolderOfTheirOwnBesideOneSomebodyElseNamedAfterThem() {
+		runner.run(context -> {
+			FolderProvider folders = context.getBean(FolderProvider.class);
+			FolderRepository repository = context.getBean(FolderRepository.class);
+			FolderEntity named = userFolder("carla", LocalDateTime.now().minusMinutes(1));
+			named.setCreatedBy("someone-else");
+			repository.save(named);
+
+			FolderEntity own = folders.userFolder("carla");
+
+			assertThat(own.getId()).isNotEqualTo(named.getId());
+			assertThat(own.isUserFolder()).isTrue();
+			assertThat(folders.userFolder("carla").getId()).isEqualTo(own.getId());
+			assertThat(repository.findAll()).filteredOn(folder -> "carla".equals(folder.getName())).hasSize(2);
+		});
+	}
+
+	/** Two folders share the name, so a rename or move that keeps it as it is must not clash with the other one. */
+	@Test
+	void letsAUserFolderKeepTheNameItSharesWithAnother() {
+		runner.run(context -> {
+			FolderProvider folders = context.getBean(FolderProvider.class);
+			FolderRepository repository = context.getBean(FolderRepository.class);
+			FolderEntity named = userFolder("dora", LocalDateTime.now().minusMinutes(1));
+			named.setCreatedBy("someone-else");
+			repository.save(named);
+			FolderEntity own = folders.userFolder("dora");
+
+			assertThat(folders.rename(own.getId(), "dora", "admin").getName()).isEqualTo("dora");
+			assertThat(folders.move(own.getId(), null, "admin").getParentId()).isNull();
+			// A third folder of the name is still refused
+			assertThatThrownBy(() -> folders.create(null, "dora", "someone-else"))
+				.isInstanceOf(InvalidFolderException.class);
+		});
+	}
+
 	private static FolderEntity userFolder(String user, LocalDateTime created) {
 		FolderEntity folder = new FolderEntity();
 		folder.setName(user);

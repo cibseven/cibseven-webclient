@@ -25,6 +25,7 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 
@@ -153,7 +154,10 @@ public class FolderProvider {
 	public FolderEntity rename(String id, String name, String userId) {
 		FolderEntity folder = find(id);
 		String folderName = validName(name);
-		requireFreeName(folder.getParentId(), folderName, id);
+		// Keeping the name changes nothing; a user folder may share it with somebody else's
+		if (!folderName.equals(folder.getName())) {
+			requireFreeName(folder.getParentId(), folderName, id);
+		}
 
 		folder.setName(folderName);
 		return touch(folder, userId);
@@ -169,7 +173,9 @@ public class FolderProvider {
 			throw new InvalidFolderException("parentId", "a folder cannot move into itself");
 		}
 		String targetId = target == null ? null : target.getId();
-		requireFreeName(targetId, folder.getName(), id);
+		if (!Objects.equals(targetId, folder.getParentId())) {
+			requireFreeName(targetId, folder.getName(), id);
+		}
 
 		// Taken out to the top level, the folder is a project of its own from now on
 		String formerProjectId = folder.getParentId() != null && targetId == null ? projectOf(id) : null;

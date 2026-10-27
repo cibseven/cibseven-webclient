@@ -260,27 +260,6 @@ class FolderProviderTest {
 		verify(folders, never()).save(any());
 	}
 
-	/**
-	 * Somebody else named a folder after the user, which may be closed to the user: it is neither
-	 * their folder nor claimed for them, and they get one of their own beside it.
-	 */
-	@Test
-	void givesTheUserAFolderOfTheirOwnBesideOneNamedAfterThem() {
-		ProjectAccess access = watchedAccess();
-		FolderEntity named = folder("named", null, "demo");
-		named.setCreatedBy("someone-else");
-		when(folders.findFirstByParentIdIsNullAndNameOrderByCreatedAsc("demo")).thenReturn(Optional.of(named));
-
-		FolderEntity userFolder = provider.userFolder("demo");
-
-		assertThat(userFolder).isNotSameAs(named);
-		assertThat(userFolder.isUserFolder()).isTrue();
-		assertThat(named.isUserFolder()).isFalse();
-		verify(folders).save(userFolder);
-		verify(access).projectCreated("demo", userFolder);
-		verify(access, never()).projectCreated("demo", named);
-	}
-
 	@Test
 	void isAUserFolderOnlyAtTheTopLevelAndUnderTheNameOfItsCreator() {
 		FolderEntity nested = folder("nested", "project", "demo");
