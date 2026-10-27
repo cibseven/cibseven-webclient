@@ -470,9 +470,6 @@ configmaps:
             "deleteProcessDefinition": {
               "processDefinition": ["DELETE"]
             },
-            "suspendProcessInstance": {
-              "processInstance": ["SUSPEND"]
-            },
             "updateProcessInstance": {
               "processInstance": ["UPDATE"]
             }
