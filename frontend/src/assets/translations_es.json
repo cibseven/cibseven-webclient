@@ -731,6 +731,11 @@
 			"permissions": "Permisos",
 			"resourceId": "ID del recurso",
 			"actions": "Acciones",
+			"resourceType": "Tipo de recurso",
+			"identity": {
+				"title": "Autorizaciones de {0}",
+				"includeWildcard": "Incluir autorizaciones para todos los usuarios y grupos (*)"
+			},
 			"buttons": {
 				"edit": "Editar autorización",
 				"delete": "Eliminar autorización",

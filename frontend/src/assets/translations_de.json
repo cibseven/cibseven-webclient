@@ -731,6 +731,11 @@
 			"permissions": "Zugriffsrechte",
 			"resourceId": "Ressourcen-ID",
 			"actions": "Aktionen",
+			"resourceType": "Ressourcentyp",
+			"identity": {
+				"title": "Berechtigungen von {0}",
+				"includeWildcard": "Berechtigungen für alle Benutzer und Gruppen (*) einbeziehen"
+			},
 			"buttons": {
 				"edit": "Berechtigung bearbeiten",
 				"delete": "Berechtigung löschen",
