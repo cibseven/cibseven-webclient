@@ -149,7 +149,7 @@ public class FolderService extends ModelerBaseService {
 		}
 		if (change.moving()) {
 			String parentId = change.parentId() == null || change.parentId().isBlank() ? null : change.parentId();
-			projectGuard.requireMove(user, id, parentId);
+			projectGuard.requireFolderMove(user, folderProvider.find(id), parentId);
 		}
 		return folderProvider.update(id, change, user.getUserID(), () -> mayManageUserFolders(user));
 	}

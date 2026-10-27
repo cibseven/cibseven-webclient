@@ -97,6 +97,20 @@ public class ProjectGuard {
 	}
 
 	/**
+	 * A folder moves to another parent. Moving a whole project ends it as a project, wherever it
+	 * goes, so like renaming or deleting it that is up to its admins.
+	 */
+	public void requireFolderMove(CIBUser user, FolderEntity folder, String toFolderId) {
+		if (access.isOpen()) {
+			return;
+		}
+		if (folder.getParentId() == null) {
+			require(user, folder.getId(), Action.MANAGE);
+		}
+		requireMove(user, folder.getId(), toFolderId);
+	}
+
+	/**
 	 * A folder or a model leaves one folder for another. Taking a folder out to the top level makes
 	 * it a project with the members it had, so only the project it leaves is asked. Moving into
 	 * another project would change who sees it on both sides, which the edition may refuse.

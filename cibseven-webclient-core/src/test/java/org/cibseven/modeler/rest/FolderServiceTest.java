@@ -326,8 +326,8 @@ class FolderServiceTest {
 		service.delete("folder-1", request);
 
 		verify(guard, Mockito.times(2)).requireFolderChange(USER, folder);
-		verify(guard).requireMove(USER, "folder-1", null);
-		verify(guard).requireMove(USER, "folder-1", "drafts");
+		verify(guard).requireFolderMove(USER, folder, null);
+		verify(guard).requireFolderMove(USER, folder, "drafts");
 	}
 
 	@Test

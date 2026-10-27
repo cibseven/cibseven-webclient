@@ -28,6 +28,7 @@ import org.cibseven.modeler.provider.ProjectAccess.Action;
 import org.cibseven.modeler.provider.ProjectAccess.ProjectRights;
 import org.cibseven.modeler.provider.ProjectGuard.AccessOverview;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.exception.InvalidFolderException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -76,6 +77,7 @@ class ProjectGuardTest {
 		open.require(USER, "drafts", Action.MANAGE);
 		open.requireFolderChange(USER, project);
 		open.requireMove(USER, "drafts", "sales");
+		open.requireFolderMove(USER, project, "sales");
 		List<FolderEntity> all = List.of(project);
 
 		assertThat(open.visible(USER, all)).isSameAs(all);
@@ -144,6 +146,25 @@ class ProjectGuardTest {
 
 		verify(access).require(USER, "claims", Action.EDIT);
 		verify(access).require(USER, "sales", Action.EDIT);
+	}
+
+	/** A project moved into another stops being one, so an editor may not move it, wherever moves may go. */
+	@Test
+	void leavesMovingAProjectToItsAdmins() {
+		when(access.movesBetweenProjects()).thenReturn(true);
+		Mockito.doThrow(new AccessDeniedException("editor")).when(access).require(USER, "claims", Action.MANAGE);
+
+		assertThatThrownBy(() -> guard.requireFolderMove(USER, folder("claims", null), "sales"))
+			.isInstanceOf(AccessDeniedException.class);
+		verify(access, never()).require(USER, "sales", Action.EDIT);
+	}
+
+	@Test
+	void leavesMovingAFolderInsideAProjectToItsEditors() {
+		guard.requireFolderMove(USER, folder("drafts", "claims"), null);
+
+		verify(access).require(USER, "claims", Action.EDIT);
+		verify(access, never()).require(any(), any(), eq(Action.MANAGE));
 	}
 
 	@Test
