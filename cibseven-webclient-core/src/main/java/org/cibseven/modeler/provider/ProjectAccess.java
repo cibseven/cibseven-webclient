@@ -28,7 +28,7 @@ import org.cibseven.webapp.exception.AccessDeniedException;
  * Who may do what in a modeler project: a folder at the top level, with everything below it. The
  * modeler endpoints ask before they read or change a folder or a model. {@link OpenProjectAccess}
  * lets everyone with modeler access do everything; an edition with project members replaces it
- * with a bean of its own.
+ * with a bean of its own, marked {@code @Primary}, since the open one stays registered beside it.
  */
 public interface ProjectAccess {
 
