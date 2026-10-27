@@ -50,7 +50,6 @@ const DEFAULT_CONFIG = {
     updateInstanceProcessDefinition: { processDefinition: ["UPDATE_INSTANCE"] },
     updateProcessDefinition : { processDefinition: ["UPDATE"] },
     deleteProcessDefinition: { processDefinition: ["DELETE"] },
-    suspendProcessInstance: {processInstance: ["SUSPEND"] },
 	  updateProcessInstance: { processInstance: ["UPDATE"] },
   },
   taskSorting: {
