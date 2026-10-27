@@ -253,23 +253,32 @@ class FolderProviderTest {
 	@Test
 	void findsTheUserFolderOnLaterVisitsInsteadOfCreatingAnother() {
 		FolderEntity existing = userFolder("demo");
-		when(folders.findFirstByParentIdIsNullAndNameOrderByCreatedAsc("demo")).thenReturn(Optional.of(existing));
+		when(folders.findFirstByParentIdIsNullAndNameAndCreatedByOrderByCreatedAsc("demo", "demo"))
+			.thenReturn(Optional.of(existing));
 
 		assertThat(provider.userFolder("demo")).isSameAs(existing);
 		verify(folders, never()).save(any());
 	}
 
-	/** Somebody else named a folder after the user: it is used, but it does not become protected. */
+	/**
+	 * Somebody else named a folder after the user, which may be closed to the user: it is neither
+	 * their folder nor claimed for them, and they get one of their own beside it.
+	 */
 	@Test
-	void takesAFolderNamedAfterTheUserAsItIs() {
+	void givesTheUserAFolderOfTheirOwnBesideOneNamedAfterThem() {
+		ProjectAccess access = watchedAccess();
 		FolderEntity named = folder("named", null, "demo");
 		named.setCreatedBy("someone-else");
 		when(folders.findFirstByParentIdIsNullAndNameOrderByCreatedAsc("demo")).thenReturn(Optional.of(named));
 
 		FolderEntity userFolder = provider.userFolder("demo");
 
-		assertThat(userFolder).isSameAs(named);
-		assertThat(userFolder.isUserFolder()).isFalse();
+		assertThat(userFolder).isNotSameAs(named);
+		assertThat(userFolder.isUserFolder()).isTrue();
+		assertThat(named.isUserFolder()).isFalse();
+		verify(folders).save(userFolder);
+		verify(access).projectCreated("demo", userFolder);
+		verify(access, never()).projectCreated("demo", named);
 	}
 
 	@Test
@@ -386,7 +395,8 @@ class FolderProviderTest {
 	void givesAnExistingUserFolderItsOwner() {
 		ProjectAccess access = watchedAccess();
 		FolderEntity existing = userFolder("demo");
-		when(folders.findFirstByParentIdIsNullAndNameOrderByCreatedAsc("demo")).thenReturn(Optional.of(existing));
+		when(folders.findFirstByParentIdIsNullAndNameAndCreatedByOrderByCreatedAsc("demo", "demo"))
+			.thenReturn(Optional.of(existing));
 
 		provider.userFolder("demo");
 

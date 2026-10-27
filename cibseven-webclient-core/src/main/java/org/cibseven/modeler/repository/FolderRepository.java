@@ -28,6 +28,9 @@ public interface FolderRepository extends JpaRepository<FolderEntity, String> {
 	/** A folder at the top level, where the name is not scoped by a parent. */
 	Optional<FolderEntity> findFirstByParentIdIsNullAndNameOrderByCreatedAsc(String name);
 
+	/** A folder at the top level that its creator named, as a user folder is named after its user. */
+	Optional<FolderEntity> findFirstByParentIdIsNullAndNameAndCreatedByOrderByCreatedAsc(String name, String createdBy);
+
 	List<FolderEntity> findByParentIdOrderByNameAsc(String parentId);
 
 	List<FolderEntity> findAllByOrderByNameAsc();

@@ -95,7 +95,10 @@ public class FolderProvider {
 		String parentFolderId = parent == null ? null : parent.getId();
 		String folderName = validName(name);
 		requireFreeName(parentFolderId, folderName, null);
+		return store(parentFolderId, folderName, userId);
+	}
 
+	private FolderEntity store(String parentFolderId, String folderName, String userId) {
 		FolderEntity folder = new FolderEntity();
 		folder.setParentId(parentFolderId);
 		folder.setName(folderName);
@@ -109,17 +112,19 @@ public class FolderProvider {
 	}
 
 	/**
-	 * The folder of the user, created the first time it is asked for. A folder at the top level that
-	 * already carries the user's name is taken as it is. Two first visits at once can store it
-	 * twice, since no key covers the top level; the oldest is the one used from then on.
+	 * The folder of the user, created the first time it is asked for: the folder at the top level
+	 * the user created under their own name. A folder somebody else named after the user is not it,
+	 * since it may be closed to the user; they get a folder of their own beside it. Two first visits
+	 * at once can store it twice, since no key covers the top level; the oldest is the one used from
+	 * then on.
 	 */
 	@Transactional(CibsevenJpa.TRANSACTION_MANAGER)
 	public FolderEntity userFolder(String userId) {
 		String name = validName(userId);
-		Optional<FolderEntity> existing = folderDao.findFirstByParentIdIsNullAndNameOrderByCreatedAsc(name);
+		Optional<FolderEntity> existing = folderDao.findFirstByParentIdIsNullAndNameAndCreatedByOrderByCreatedAsc(name, userId);
 		// A folder from before there were members gets its owner now
 		existing.ifPresent(folder -> projectAccess.projectCreated(userId, folder));
-		return existing.orElseGet(() -> create(null, name, userId));
+		return existing.orElseGet(() -> store(null, name, userId));
 	}
 
 	/** What a request changes about a folder: it may rename it, move it, or both at once. */
