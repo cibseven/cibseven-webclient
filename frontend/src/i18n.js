@@ -19,22 +19,41 @@ import { mergeLocaleMessage as commonFrontendMergeLocaleMessage } from '@cib/com
 import { mergeModelerTranslations } from 'cibseven-modeler'
 import { axios, moment } from './globals.js'
 import { getTheme } from './utils/init'
+import { normalizeLanguage, resolveLanguage } from './utils/language'
 import 'moment/dist/locale/de'
 import 'moment/dist/locale/es'
 import 'moment/dist/locale/uk'
 import 'moment/dist/locale/ru'
+import 'moment/dist/locale/zh-cn'
+import 'moment/dist/locale/zh-tw'
+
+// Browsers, URLs and stored preferences can hand out a full language tag such as
+// `zh-TW`, while the messages are stored under short codes. Normalizing on the way
+// in means every source merges under the same key, instead of creating a second,
+// empty locale next to it.
+const getBrowserLanguage = function() {
+  const browserLanguage = navigator.language || navigator.userLanguage || 'en'
+  return normalizeLanguage(browserLanguage)
+}
 
 function getDefaultLanguage() {
-  let language = localStorage.getItem('language')
-  if (!language) {
-      language = navigator.language.split('-')[0] || navigator.userLanguage || 'en'
-      localStorage.setItem('language', language)
+  const stored = localStorage.getItem('language')
+  if (!stored) {
+    const language = getBrowserLanguage() || 'en'
+    localStorage.setItem('language', language)
+    return language
   }
+
+  // A stored value can predate the short codes, or be a full tag written by another
+  // version or a host application; the translations only know the short code.
+  const language = normalizeLanguage(stored)
+  if (language !== stored) localStorage.setItem('language', language)
   return language
 }
 
 const i18n = createI18n({
-  locale: getDefaultLanguage()
+  locale: getDefaultLanguage(),
+  fallbackLocale: 'en'
 })
 
 import en from '@/assets/translations_en.json'
@@ -42,35 +61,40 @@ import de from '@/assets/translations_de.json'
 import es from '@/assets/translations_es.json'
 import ua from '@/assets/translations_ua.json'
 import ru from '@/assets/translations_ru.json'
+import zh from '@/assets/translations_zh.json'
+import zhTw from '@/assets/translations_zh-tw.json'
 
-const translations = { en, de, es, ua, ru }
+const translations = { en, de, es, ua, ru, zh, 'zh-tw': zhTw }
 
 const loadTranslationsFromSevenComponents = function(i18n, lang) {
-  const translation = translations[lang] || translations.en
-  i18n.global.mergeLocaleMessage(lang, translation)
+  const language = normalizeLanguage(lang)
+  const translation = translations[language] || translations.en
+  i18n.global.mergeLocaleMessage(language, translation)
 }
 
 const loadTranslationsFromModeler = function(i18n, lang) {
-  mergeModelerTranslations(i18n, lang)
+  mergeModelerTranslations(i18n, normalizeLanguage(lang))
 }
 
 const loadTranslationsFromPublic = async function(lang) {
   // Load translations from public/translations_*.json
+  const language = normalizeLanguage(lang)
   try {
-    const res = await axios.create().get('translations_' + lang + '.json')
-    i18n.global.mergeLocaleMessage(lang, res.data)
+    const res = await axios.create().get('translations_' + language + '.json')
+    i18n.global.mergeLocaleMessage(language, res.data)
   } catch {
-    console.debug('Optional translations file not found:', 'translations_' + lang + '.json')
+    console.debug('Optional translations file not found:', 'translations_' + language + '.json')
   }
 }
 
 const loadTranslationsFromThemes = async function(config, lang) {
   // Load translations from public/themes/translations_*.json
+  const language = normalizeLanguage(lang)
   try {
-    const res = await axios.create().get('themes/' + getTheme(config) + '/translations_' + lang + '.json')
-    i18n.global.mergeLocaleMessage(lang, res.data)
+    const res = await axios.create().get('themes/' + getTheme(config) + '/translations_' + language + '.json')
+    i18n.global.mergeLocaleMessage(language, res.data)
   } catch {
-    console.debug('Optional theme translations file not found:', 'themes/' + getTheme(config) + '/translations_' + lang + '.json')
+    console.debug('Optional theme translations file not found:', 'themes/' + getTheme(config) + '/translations_' + language + '.json')
   }
 }
 
@@ -133,7 +157,10 @@ const runTranslationSource = async function(source, lang, load) {
  *
  * @returns {Promise<boolean>} whether every source was loaded
  */
-const loadTranslations = async function(config, lang, sources = defaultTranslationSources) {
+const loadTranslations = async function(config, requestedLanguage, sources = defaultTranslationSources) {
+  // A caller may hand in a full tag: plugins, the embedded form, a URL. Normalizing
+  // once here means every source below picks the same messages.
+  const lang = normalizeLanguage(requestedLanguage)
   const loaded = []
 
   if (sources.includes(translationSources.commonComponents)) {
@@ -170,17 +197,26 @@ const loadTranslations = async function(config, lang, sources = defaultTranslati
   return loaded.every(Boolean)
 }
 
+// BCP 47 tags for the places that expect a full language tag instead of the
+// short code used inside the application.
+const languageTags = { zh: 'zh-CN', 'zh-tw': 'zh-TW' }
+
 const setLanguage = function(language) {
-  i18n.global.locale = language
-  axios.defaults.headers.common['Accept-Language'] = language
-  localStorage.setItem('language', language)
-  document.documentElement.setAttribute('lang', language)
-  moment.locale(language)
+  const normalized = normalizeLanguage(language)
+  const languageTag = languageTags[normalized] || normalized
+  i18n.global.locale = normalized
+  axios.defaults.headers.common['Accept-Language'] = languageTag
+  localStorage.setItem('language', normalized)
+  document.documentElement.setAttribute('lang', languageTag)
+  moment.locale(languageTag)
 }
 
 const loadedLanguages = []
 const switchLanguage = async function(config, lang) {
-  const language = config.supportedLanguages.includes(lang) ? lang : config.supportedLanguages[0]
+  // The language may arrive as a full tag - a deep link, `localStorage` written by
+  // an older version, a host application - while the messages and the configured
+  // list use short codes.
+  const language = resolveLanguage(config.supportedLanguages, lang)
 
   if (loadedLanguages.includes(language)) {
     setLanguage(language)
