@@ -148,6 +148,28 @@ describe('NavCluster.vue', () => {
       expect(wrapper.emitted('update:open')).toEqual([[true]])
     })
 
+    // Coming from the left the pointer reaches the icon before the chevron: the menu must open there already
+    it('opens on mouse hover over the icon as well, but not for touch', async () => {
+      wrapper = mountCluster(cockpit)
+      const icon = wrapper.find('.cib-nav-btn-main')
+
+      await icon.trigger('pointerenter', { pointerType: 'touch' })
+      expect(wrapper.emitted('update:open')).toBeUndefined()
+
+      await icon.trigger('pointerenter', { pointerType: 'mouse' })
+      expect(wrapper.emitted('update:open')).toEqual([[true]])
+
+      // Moving on to the chevron keeps it open rather than toggling it
+      await wrapper.find('.cib-nav-btn-chevron').trigger('pointerenter', { pointerType: 'mouse' })
+      expect(wrapper.emitted('update:open')).toEqual([[true]])
+    })
+
+    it('does not open anything when hovering the icon of a section without a menu', async () => {
+      wrapper = mountCluster({ ...cockpit, sections: [] })
+      await wrapper.find('.cib-nav-btn-main').trigger('pointerenter', { pointerType: 'mouse' })
+      expect(wrapper.emitted('update:open')).toBeUndefined()
+    })
+
     it('closes a hover-opened menu shortly after the pointer leaves, unless it comes back', async () => {
       vi.useFakeTimers()
       wrapper = mountCluster(cockpit)
