@@ -37,10 +37,17 @@ const CONFIG = {
   }
 }
 
+const FILTER = 5
+
+function store() {
+  return { state: { filter: { list: [{ id: 'f1', name: 'My tasks' }, { id: 'f2', name: 'Group tasks' }] } } }
+}
+
 function context(overrides = {}) {
   const vm = {
     $t: (key, params) => params ? `${key}:${params.join(',')}` : key,
     $root: { config: structuredClone(CONFIG) },
+    $store: store(),
     ...IdentityAuthorizations.data.call({}),
     userId: null,
     groupId: null,
@@ -214,6 +221,22 @@ describe('IdentityAuthorizations display', () => {
   it('offers the resource type as the first column', () => {
     expect(context().fields.map(f => f.key)).toEqual(['resourceType', 'type', 'userIdGroupId', 'permissions', 'resourceId'])
   })
+
+  it('adds the resource name column as soon as a filter authorization is listed', () => {
+    const vm = context({ authorizations: [authorization(), authorization({ id: 'f', resourceType: FILTER, resourceId: 'f1' })] })
+    expect(vm.fields.map(f => f.key)).toEqual(['resourceType', 'type', 'userIdGroupId', 'permissions', 'name', 'resourceId'])
+  })
+
+  it.each([
+    [FILTER, 'f2', 'Group tasks'],
+    // A filter that is gone, or one the admin may not see, has no name to show.
+    [FILTER, 'unknown', ''],
+    [FILTER, '*', ''],
+    // Other resource types have no name, even when their id happens to match a filter id.
+    [6, 'f1', '']
+  ])('names resource type %j with id %j as %j', (resourceType, resourceId, expected) => {
+    expect(context().resourceName(authorization({ resourceType, resourceId }))).toBe(expected)
+  })
 })
 
 describe('IdentityAuthorizations rendered', () => {
@@ -240,7 +263,7 @@ describe('IdentityAuthorizations rendered', () => {
   // Mounted directly, $root is the component itself, so `config` comes in as a global property.
   function mountHost(props) {
     return mountWithDefaults(IdentityAuthorizations, {
-      props, i18nPlugin: false, global: { stubs, mocks: { config: structuredClone(CONFIG) } }
+      props, i18nPlugin: false, global: { stubs, mocks: { config: structuredClone(CONFIG), $store: store() } }
     })
   }
 
@@ -270,6 +293,18 @@ describe('IdentityAuthorizations rendered', () => {
     expect(rows[1].find('.resourceType a').text()).toBe('admin.authorizations.resourcesTypes.processDefinition')
     expect(rows[1].find('.userIdGroupId .mdi-account').exists()).toBe(true)
     expect(rows[1].find('.permissions').text()).toBe('READ, UPDATE')
+  })
+
+  it('shows the name of a filter next to its id', async () => {
+    AdminService.findAuthorizations.mockResolvedValueOnce([
+      authorization({ id: 'f', resourceType: FILTER, resourceId: 'f1', permissions: ['READ'] })
+    ])
+    const wrapper = mountHost({ userId: 'demo' })
+    await settle()
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.find('td.name').text()).toBe('My tasks')
+    expect(wrapper.find('td.resourceId').text()).toBe('f1')
   })
 
   it('asks for the wildcard authorizations once the checkbox is ticked', async () => {

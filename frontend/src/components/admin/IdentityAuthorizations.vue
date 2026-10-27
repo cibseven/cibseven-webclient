@@ -42,6 +42,9 @@
         <template v-slot:cell(permissions)="row">
           {{ permissionsText(row.item.permissions) }}
         </template>
+        <template v-slot:cell(name)="row">
+          {{ resourceName(row.item) }}
+        </template>
       </FlowTable>
     </div>
     <div v-else-if="loading" class="text-center p-4">
@@ -59,6 +62,8 @@ import { FlowTable, ContentBlock, BWaitingBox } from '@cib/common-frontend'
 
 // The engine's wildcard identity, meaning "every user" (or "every group").
 const WILDCARD = '*'
+// The engine's resource type of task filters, whose resource id is the filter id.
+const FILTER_RESOURCE_TYPE = 5
 
 export default {
   name: 'IdentityAuthorizations',
@@ -84,7 +89,21 @@ export default {
     includeWildcard() { this.loadAuthorizations() }
   },
   computed: {
+    hasNameColumn() {
+      return this.authorizations.some(authorization => authorization.resourceType === FILTER_RESOURCE_TYPE)
+    },
     fields() {
+      // Like the admin table of filter authorizations, the filter name is shown next to its id.
+      if (this.hasNameColumn) {
+        return [
+          { label: 'admin.authorizations.resourceType', key: 'resourceType', class: 'col-2' },
+          { label: 'admin.authorizations.type', key: 'type', class: 'col-1' },
+          { label: 'admin.authorizations.userIdGroupId', key: 'userIdGroupId', class: 'col-2' },
+          { label: 'admin.authorizations.permissions', key: 'permissions', class: 'col-3' },
+          { label: 'admin.authorizations.name', key: 'name', class: 'col-2' },
+          { label: 'admin.authorizations.resourceId', key: 'resourceId', class: 'col-2' }
+        ]
+      }
       return [
         { label: 'admin.authorizations.resourceType', key: 'resourceType', class: 'col-3' },
         { label: 'admin.authorizations.type', key: 'type', class: 'col-1' },
@@ -147,6 +166,12 @@ export default {
     },
     permissionsText(permissions) {
       return permissions?.length > 0 ? permissions.join(', ') : 'NONE'
+    },
+    resourceName(authorization) {
+      if (authorization.resourceType !== FILTER_RESOURCE_TYPE) return ''
+      // The filters are preloaded into the store for the whole authenticated area.
+      const filter = this.$store.state.filter.list.find(f => f.id === authorization.resourceId)
+      return filter?.name ?? ''
     }
   }
 }
