@@ -136,7 +136,7 @@ public class ModelerService extends ModelerBaseService {
 		@RequestParam(required = false) String keyword
 	) {
 		CIBUser user = checkModelerAccess(rq);
-		return dbProcessDiagramProvider.getDiagrams(keyword, diagramType, projectGuard.hiddenFolderIds(user), firstResult, maxResults);
+		return dbProcessDiagramProvider.getDiagrams(keyword, diagramType, projectGuard.hiddenProjects(user), firstResult, maxResults);
 	}
 	
 	@RequestMapping(value = "/unified-diagrams", method = RequestMethod.GET)
@@ -152,7 +152,7 @@ public class ModelerService extends ModelerBaseService {
 		if (folderId != null && !folderId.isBlank()) {
 			projectGuard.require(user, folderId, Action.VIEW);
 		}
-		return unifiedDiagramProvider.getDiagrams(keyword, type, folderId, projectGuard.hiddenFolderIds(user),
+		return unifiedDiagramProvider.getDiagrams(keyword, type, folderId, projectGuard.hiddenProjects(user),
 			firstResult, maxResults);
 	}
 
@@ -620,7 +620,7 @@ public class ModelerService extends ModelerBaseService {
 		@RequestParam int maxResults,
 		@RequestParam(required = false) String keyword) {
 		CIBUser user = checkModelerAccess(rq);
-		return formProvider.getForms(keyword, projectGuard.hiddenFolderIds(user), firstResult, maxResults);
+		return formProvider.getForms(keyword, projectGuard.hiddenProjects(user), firstResult, maxResults);
 	}
 
 	@RequestMapping(value = "/form/{id}/data", method = RequestMethod.GET)
