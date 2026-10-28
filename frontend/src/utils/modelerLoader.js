@@ -34,8 +34,11 @@ let translationsRegistered = false
 export async function loadModeler(store, options = {}) {
   modelerPackage ??= Promise.all([
     import('cibseven-modeler'),
-    import('cibseven-modeler/dist/cibseven-modeler.css')
-  ]).then(([modeler]) => modeler).catch(error => {
+    import('cibseven-modeler/dist/cibseven-modeler.css?inline')
+  ]).then(([modeler, styles]) => {
+    addStylesBeforeTheme('cibseven-modeler', styles.default)
+    return modeler
+  }).catch(error => {
     // A chunk that failed to load, after a deployment for instance, is tried again next time
     modelerPackage = null
     throw error
@@ -43,6 +46,22 @@ export async function loadModeler(store, options = {}) {
   const modeler = await modelerPackage
   installModeler(store, modeler, options)
   return modeler
+}
+
+/**
+ * Adds styles loaded on demand where they stood when they were part of the startup: before the
+ * theme. Appended after it, a stylesheet that sets Bootstrap's variables, as the modeler's does,
+ * would recolour the whole application. Each set of styles is added once.
+ *
+ * @param {string} name - Tells the sets of styles apart
+ * @param {string} css - The styles, as text
+ */
+export function addStylesBeforeTheme(name, css) {
+  if (document.head.querySelector(`style[data-styles="${name}"]`)) return
+  const style = document.createElement('style')
+  style.dataset.styles = name
+  style.textContent = css
+  document.head.insertBefore(style, document.head.querySelector('style[data-theme]'))
 }
 
 /**

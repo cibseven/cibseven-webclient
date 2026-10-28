@@ -40,7 +40,7 @@ const modelerPackage = {
 async function freshLoader({ packageFails = false } = {}) {
   vi.resetModules()
   vi.doMock('@/i18n', () => ({ i18n, registerTranslationLoader }))
-  vi.doMock('cibseven-modeler/dist/cibseven-modeler.css', () => ({}))
+  vi.doMock('cibseven-modeler/dist/cibseven-modeler.css?inline', () => ({ default: '.modeler { color: red }' }))
   let fail = packageFails
   vi.doMock('cibseven-modeler', () => {
     if (fail) {
@@ -56,6 +56,7 @@ describe('modelerLoader', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     Object.keys(messages).forEach(lang => delete messages[lang])
+    document.head.innerHTML = ''
   })
 
   it('registers the modeler store modules once the package has loaded', async () => {
@@ -141,5 +142,30 @@ describe('modelerLoader', () => {
 
     await expect(loadModeler(store)).resolves.toBeDefined()
     expect(store.hasModule('modeler')).toBe(true)
+  })
+
+  /**
+   * The modeler stylesheet sets Bootstrap variables of its own. It stood before the theme while it
+   * was part of the startup, and has to stay there, or it recolours the whole application.
+   */
+  it('adds the modeler styles before the theme', async () => {
+    const { loadModeler } = await freshLoader()
+    document.head.innerHTML = '<style id="app"></style><style data-theme="cib"></style>'
+
+    await loadModeler(createStore({ modules: {} }))
+
+    const styles = [...document.head.querySelectorAll('style')]
+    expect(styles.map(style => style.id || style.dataset.styles || style.dataset.theme)).toEqual(['app', 'cibseven-modeler', 'cib'])
+    expect(styles[1].textContent).toBe('.modeler { color: red }')
+  })
+
+  it('adds a set of styles once and appends it where there is no theme', async () => {
+    const { addStylesBeforeTheme } = await freshLoader()
+
+    addStylesBeforeTheme('extra', '.a {}')
+    addStylesBeforeTheme('extra', '.b {}')
+
+    expect(document.head.querySelectorAll('style[data-styles="extra"]')).toHaveLength(1)
+    expect(document.head.lastElementChild.textContent).toBe('.a {}')
   })
 })

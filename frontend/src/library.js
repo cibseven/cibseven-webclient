@@ -47,7 +47,7 @@ export {
 export { TaskService, FilterService, ProcessService, VariableInstanceService, HistoricVariableInstanceService, AdminService, JobService, JobDefinitionService, SystemService,
   HistoryService, IncidentService, AuthService, InfoService, ElementTemplateService, FormsService, TemplateService, DecisionService,
   AnalyticsService, BatchService, TenantService, ExternalTaskService, DeploymentService, EngineService, SetupService, getServicesBasePath, setServicesBasePath, createDocumentEndpointUrl } from '@/services.js';
-export { loadModeler, installModeler } from '@/utils/modelerLoader.js'
+export { loadModeler, installModeler, addStylesBeforeTheme } from '@/utils/modelerLoader.js'
 export { getEnabledShortcuts, getShortcutsForModal,
   getGlobalNavigationShortcuts, getTaskEventShortcuts, checkKeyMatch } from './utils/shortcuts.js'
 export { createProvideObject } from '@/utils/provide.js'
