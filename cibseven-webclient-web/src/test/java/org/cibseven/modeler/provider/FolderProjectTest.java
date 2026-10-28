@@ -60,6 +60,7 @@ class FolderProjectTest {
 
 			assertThat(projectOf(context, claims)).isEqualTo(claims);
 			assertThat(projectOf(context, old)).isEqualTo(claims);
+			assertThat(folders.projectIds()).contains(claims, archive).doesNotContain(drafts, old);
 
 			folders.move(drafts, archive, "anna");
 			assertThat(projectOf(context, drafts)).isEqualTo(archive);

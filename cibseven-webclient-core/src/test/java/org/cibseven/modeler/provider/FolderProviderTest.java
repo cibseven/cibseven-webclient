@@ -503,6 +503,14 @@ class FolderProviderTest {
 		verify(folders).setProject(argThat(ids -> ids.size() == 101), eq("archive"));
 	}
 
+	@Test
+	void namesTheFoldersAtTheTopLevelAsTheProjects() {
+		when(folders.findProjectIds()).thenReturn(List.of("project", "archive"));
+
+		assertThat(provider.projectIds()).containsExactlyInAnyOrder("project", "archive");
+		verify(folders, never()).findAll();
+	}
+
 	/** Folders from before the project was kept have none, and a stored one may be stale. */
 	@Test
 	void storesTheProjectOfEveryFolderThatHasAWrongOrNoOne() {

@@ -203,12 +203,15 @@ public class ProjectGuard {
 		}
 	}
 
-	/** The projects the user may not see, for the lists to leave out. */
+	/**
+	 * The projects the user may not see, for the lists to leave out. The projects are the folders at
+	 * the top level; the whole tree is read only if a list has to leave them out row by row.
+	 */
 	public HiddenProjects hiddenProjects(CIBUser user) {
 		if (access.isOpen()) {
 			return HiddenProjects.NONE;
 		}
-		return new HiddenProjects(access.hidden(user, new HashSet<>(projects().values())), this::project);
+		return new HiddenProjects(access.hidden(user, folderProvider.projectIds()), this::project);
 	}
 
 	/** The folders the user may not see: every folder of a project hidden from them. */

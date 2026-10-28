@@ -41,6 +41,10 @@ public interface FolderRepository extends JpaRepository<FolderEntity, String> {
 
 	Optional<FolderEntity> findByParentIdAndName(String parentId, String name);
 
+	/** The projects: the folders at the top level. */
+	@Query("select f.id from FolderEntity f where f.parentId is null")
+	List<String> findProjectIds();
+
 	/** Pending changes go to the database first, so the update does not overtake them. */
 	@Modifying(flushAutomatically = true)
 	@Query("update FolderEntity f set f.projectId = :projectId where f.id in :ids")

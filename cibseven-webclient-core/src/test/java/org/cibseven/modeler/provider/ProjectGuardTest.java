@@ -66,6 +66,7 @@ class ProjectGuardTest {
 		// Claims with drafts inside it, and Sales beside it
 		when(folders.projectsByFolder()).thenReturn(Map.of(
 			"claims", "claims", "drafts", "claims", "sales", "sales"));
+		when(folders.projectIds()).thenReturn(Set.of("claims", "sales"));
 		when(folders.projectOf(any())).thenAnswer(call -> Map.of(
 			"claims", "claims", "drafts", "claims", "sales", "sales").get(call.getArgument(0)));
 	}
@@ -179,14 +180,18 @@ class ProjectGuardTest {
 			.extracting(FolderEntity::getId).containsExactly("sales");
 	}
 
-	/** The lists are handed the hidden projects, and can tell for any folder whether it lies in one. */
+	/**
+	 * The lists are handed the hidden projects, read from the top level alone, and can still tell
+	 * for any folder whether it lies in one; only that reads the tree.
+	 */
 	@Test
 	void namesTheHiddenProjectsForTheLists() {
-		when(access.hidden(eq(USER), anyCollection())).thenReturn(Set.of("claims"));
+		when(access.hidden(USER, Set.of("claims", "sales"))).thenReturn(Set.of("claims"));
 
 		HiddenProjects hidden = guard.hiddenProjects(USER);
 
 		assertThat(hidden.projectIds()).containsExactly("claims");
+		verify(folders, never()).projectsByFolder();
 		assertThat(hidden.hides("drafts")).isTrue();
 		assertThat(hidden.hides("sales")).isFalse();
 		assertThat(hidden.hides(null)).isFalse();

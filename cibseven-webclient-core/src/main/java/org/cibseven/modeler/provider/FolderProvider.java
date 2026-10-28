@@ -23,10 +23,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BooleanSupplier;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -201,6 +203,12 @@ public class FolderProvider {
 	@Transactional(value = CibsevenJpa.TRANSACTION_MANAGER, readOnly = true)
 	public Map<String, String> projectsByFolder() {
 		return projectsOf(folderDao.findAll());
+	}
+
+	/** Every project: the folders at the top level, read without the tree below them. */
+	@Transactional(value = CibsevenJpa.TRANSACTION_MANAGER, readOnly = true)
+	public Set<String> projectIds() {
+		return new HashSet<>(folderDao.findProjectIds());
 	}
 
 	/**
