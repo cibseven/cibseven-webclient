@@ -18,7 +18,6 @@ package org.cibseven.modeler.provider;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,16 +43,16 @@ public class DBProcessDiagramProvider implements IProcessDiagramProvider {
 
 	@Override
 	public List<ProcessDiagramReduce> getDiagrams(String keyword, String diagramType, int firstResult, int maxResults) throws SystemException {
-		return getDiagrams(keyword, diagramType, List.of(), firstResult, maxResults);
+		return getDiagrams(keyword, diagramType, ProjectGuard.HiddenProjects.NONE, firstResult, maxResults);
 	}
 
-	/** Leaves out the diagrams in the hidden folders, counting only what is left for the paging. */
-	public List<ProcessDiagramReduce> getDiagrams(String keyword, String diagramType, Collection<String> hiddenFolderIds,
+	/** Leaves out the diagrams of the hidden projects, counting only what is left for the paging. */
+	public List<ProcessDiagramReduce> getDiagrams(String keyword, String diagramType, ProjectGuard.HiddenProjects hidden,
 			int firstResult, int maxResults) throws SystemException {
 		String kw = keyword == null ? "" : keyword;
 		String dt = diagramType == null ? "" : diagramType;
-		return ProjectGuard.visiblePage(hiddenFolderIds, firstResult, maxResults,
-			(hidden, page, size) -> processDiagramDao.findAllFiltered(kw, dt, hidden,
+		return ProjectGuard.visiblePage(hidden, firstResult, maxResults,
+			(hiddenProjectIds, page, size) -> processDiagramDao.findAllFiltered(kw, dt, hiddenProjectIds,
 				PageRequest.of(page, size, Sort.by("updated").descending())),
 			ProcessDiagramReduce::getFolderId);
 	}

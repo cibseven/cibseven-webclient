@@ -16,10 +16,14 @@
  */
 package org.cibseven.modeler.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import org.cibseven.modeler.model.FolderEntity;
 
@@ -36,4 +40,9 @@ public interface FolderRepository extends JpaRepository<FolderEntity, String> {
 	List<FolderEntity> findAllByOrderByNameAsc();
 
 	Optional<FolderEntity> findByParentIdAndName(String parentId, String name);
+
+	/** Pending changes go to the database first, so the update does not overtake them. */
+	@Modifying(flushAutomatically = true)
+	@Query("update FolderEntity f set f.projectId = :projectId where f.id in :ids")
+	int setProject(@Param("ids") Collection<String> ids, @Param("projectId") String projectId);
 }

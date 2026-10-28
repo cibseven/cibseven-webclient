@@ -24,6 +24,7 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.cibseven.modeler.config.ModelerPersistence;
+import org.cibseven.modeler.model.FolderEntity;
 import org.cibseven.modeler.model.FormEntity;
 import org.cibseven.modeler.model.ProcessDiagramEntity;
 import org.cibseven.modeler.model.ProcessDiagramReduce;
@@ -56,18 +57,24 @@ class HiddenFolderQueryTest {
 
 	private final ApplicationContextRunner modeler = new ApplicationContextRunner().withUserConfiguration(Config.class);
 
+	/** A hidden project takes the models of its subfolders along, though only the project is named. */
 	@Test
-	void leavesTheModelsOfHiddenFoldersOutOfEveryList() {
+	void leavesTheModelsOfHiddenProjectsOutOfEveryList() {
 		modeler.run(context -> {
+			FolderRepository folders = context.getBean(FolderRepository.class);
 			ProcessDiagramRepository diagrams = context.getBean(ProcessDiagramRepository.class);
 			FormRepository forms = context.getBean(FormRepository.class);
-			diagrams.save(diagram("invoice", "claims"));
-			diagrams.save(diagram("order", "sales"));
+			String claims = folder(folders, "Claims", null);
+			String drafts = folder(folders, "Drafts", claims);
+			String sales = folder(folders, "Sales", null);
+			diagrams.save(diagram("invoice", claims));
+			diagrams.save(diagram("draft", drafts));
+			diagrams.save(diagram("order", sales));
 			diagrams.save(diagram("legacy", null));
-			forms.save(form("invoice-form", "claims"));
-			forms.save(form("order-form", "sales"));
+			forms.save(form("invoice-form", drafts));
+			forms.save(form("order-form", sales));
 
-			Collection<String> hidden = List.of("claims");
+			Collection<String> hidden = List.of(claims);
 			PageRequest page = PageRequest.of(0, 20);
 
 			assertThat(diagrams.findAllUnified(null, null, null, hidden, page))
@@ -79,19 +86,35 @@ class HiddenFolderQueryTest {
 		});
 	}
 
-	/** Nothing hidden is the stand-in, which matches no folder. */
+	/** Nothing hidden is the stand-in, which matches no project. */
 	@Test
 	void listsEverythingWhenNothingIsHidden() {
 		modeler.run(context -> {
+			FolderRepository folders = context.getBean(FolderRepository.class);
 			ProcessDiagramRepository diagrams = context.getBean(ProcessDiagramRepository.class);
 			FormRepository forms = context.getBean(FormRepository.class);
-			diagrams.save(diagram("invoice", "claims"));
-			forms.save(form("invoice-form", "claims"));
+			String claims = folder(folders, "Claims", null);
+			diagrams.save(diagram("invoice", claims));
+			forms.save(form("invoice-form", claims));
 			Collection<String> none = ProjectGuard.notEmpty(List.of());
 
 			assertThat(diagrams.findAllUnified(null, null, null, none, PageRequest.of(0, 20))).hasSize(2);
 			assertThat(forms.findAllFiltered("", none, PageRequest.of(0, 20))).hasSize(1);
 		});
+	}
+
+	/** A folder at the top level is its own project; any other lies in the project of its parent. */
+	private static String folder(FolderRepository folders, String name, String parentId) {
+		FolderEntity folder = new FolderEntity();
+		folder.setName(name);
+		folder.setParentId(parentId);
+		folder.setProjectId(parentId == null ? null : folders.findById(parentId).orElseThrow().getProjectId());
+		FolderEntity saved = folders.save(folder);
+		if (parentId == null) {
+			saved.setProjectId(saved.getId());
+			saved = folders.save(saved);
+		}
+		return saved.getId();
 	}
 
 	private static ProcessDiagramEntity diagram(String key, String folderId) {

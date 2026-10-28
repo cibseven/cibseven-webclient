@@ -96,17 +96,20 @@ public class FolderProvider {
 		String parentFolderId = parent == null ? null : parent.getId();
 		String folderName = validName(name);
 		requireFreeName(parentFolderId, folderName, null);
-		return store(parentFolderId, folderName, userId);
+		return store(parent, folderName, userId);
 	}
 
-	private FolderEntity store(String parentFolderId, String folderName, String userId) {
+	private FolderEntity store(FolderEntity parent, String folderName, String userId) {
 		FolderEntity folder = new FolderEntity();
-		folder.setParentId(parentFolderId);
+		folder.setParentId(parent == null ? null : parent.getId());
+		folder.setProjectId(parent == null ? null : projectIdOf(parent));
 		folder.setName(folderName);
 		folder.setCreated(Timestamp.valueOf(LocalDateTime.now()));
 		folder.setCreatedBy(userId);
 		FolderEntity created = folderDao.save(folder);
-		if (parentFolderId == null) {
+		if (parent == null) {
+			// A project is its own, and its id exists only now
+			created.setProjectId(created.getId());
 			projectAccess.projectCreated(userId, created);
 		}
 		return created;
@@ -179,8 +182,15 @@ public class FolderProvider {
 
 		// Taken out to the top level, the folder is a project of its own from now on
 		String formerProjectId = folder.getParentId() != null && targetId == null ? projectOf(id) : null;
+		String projectId = target == null ? id : projectIdOf(target);
+		boolean otherProject = !Objects.equals(projectId, folder.getProjectId());
 		folder.setParentId(targetId);
+		folder.setProjectId(projectId);
 		FolderEntity moved = touch(folder, userId);
+		if (otherProject) {
+			// Everything below goes along into the project
+			setProject(subtreeIds(id), projectId);
+		}
 		if (formerProjectId != null) {
 			projectAccess.becameProject(userId, moved, formerProjectId);
 		}
@@ -190,11 +200,43 @@ public class FolderProvider {
 	/** The project of every folder: the top-level folder it lies under, a project being its own. */
 	@Transactional(value = CibsevenJpa.TRANSACTION_MANAGER, readOnly = true)
 	public Map<String, String> projectsByFolder() {
+		return projectsOf(folderDao.findAll());
+	}
+
+	/**
+	 * Stores the project of every folder whose stored one is missing or wrong, as on the folders
+	 * from before it was kept, and answers how many that were.
+	 */
+	@Transactional(CibsevenJpa.TRANSACTION_MANAGER)
+	public int fillProjects() {
+		List<FolderEntity> folders = folderDao.findAll();
+		Map<String, String> projects = projectsOf(folders);
+		List<FolderEntity> wrong = folders.stream()
+			.filter(folder -> !Objects.equals(folder.getProjectId(), projects.get(folder.getId())))
+			.toList();
+		wrong.forEach(folder -> folder.setProjectId(projects.get(folder.getId())));
+		folderDao.saveAll(wrong);
+		return wrong.size();
+	}
+
+	private static Map<String, String> projectsOf(List<FolderEntity> folders) {
 		Map<String, String> parents = new HashMap<>();
-		folderDao.findAll().forEach(folder -> parents.put(folder.getId(), folder.getParentId()));
+		folders.forEach(folder -> parents.put(folder.getId(), folder.getParentId()));
 		Map<String, String> projects = new HashMap<>();
 		parents.keySet().forEach(id -> projects.put(id, rootOf(id, parents)));
 		return projects;
+	}
+
+	/** The stored project, or the one the tree gives a folder that has none stored yet. */
+	private String projectIdOf(FolderEntity folder) {
+		return folder.getProjectId() != null ? folder.getProjectId() : projectOf(folder.getId());
+	}
+
+	/** In slices, since a subtree may be larger than a database takes in one list. */
+	private void setProject(List<String> ids, String projectId) {
+		for (int from = 0; from < ids.size(); from += ProjectGuard.QUERY_LIMIT) {
+			folderDao.setProject(ids.subList(from, Math.min(ids.size(), from + ProjectGuard.QUERY_LIMIT)), projectId);
+		}
 	}
 
 	/** The project a folder belongs to, or null for a folder that does not exist. */

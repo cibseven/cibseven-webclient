@@ -134,45 +134,58 @@ public class ProjectGuard {
 	}
 
 	/**
-	 * The folder ids for a NOT IN clause, which may not be empty. A folder id is a UUID, so the
-	 * stand-in matches none; it is not blank either, which Oracle would read as null.
+	 * The ids for a NOT IN clause, which may not be empty. A project id is a UUID, so the stand-in
+	 * matches none; it is not blank either, which Oracle would read as null.
 	 */
-	public static Collection<String> notEmpty(Collection<String> folderIds) {
-		return folderIds == null || folderIds.isEmpty() ? List.of("-") : folderIds;
+	public static Collection<String> notEmpty(Collection<String> ids) {
+		return ids == null || ids.isEmpty() ? List.of("-") : ids;
 	}
 
 	/**
-	 * The most hidden folders a query is given to leave out. Oracle takes at most 1000 values in
+	 * The most hidden projects a query is given to leave out. Oracle takes at most 1000 values in
 	 * a list and SQL Server 2100 parameters in a query, so this stays well below both.
 	 */
 	static final int QUERY_LIMIT = 500;
 
 	private static final int BATCH = 200;
 
-	/** One page of a list query, leaving out the models in the folders given. */
+	/**
+	 * The projects hidden from a user, for a query to leave out, and the project of each folder,
+	 * for leaving them out of rows that were read without it.
+	 */
+	public record HiddenProjects(Set<String> projectIds, Function<String, String> projectOf) {
+
+		/** Nothing hidden, as when every project is open. */
+		public static final HiddenProjects NONE = new HiddenProjects(Set.of(), folderId -> folderId);
+
+		/** A model without a folder lies in no project, so nothing hides it. */
+		boolean hides(String folderId) {
+			return folderId != null && projectIds.contains(projectOf.apply(folderId));
+		}
+	}
+
+	/** One page of a list query, leaving out the models in the projects given. */
 	@FunctionalInterface
 	public interface PagedQuery<T> {
-		List<T> fetch(Collection<String> hiddenFolderIds, int page, int size);
+		List<T> fetch(Collection<String> hiddenProjectIds, int page, int size);
 	}
 
 	/**
-	 * A page of what the user may see. A short list of hidden folders goes into the query. A longer
-	 * one would break it, so the rows are read in batches instead and the hidden ones left out
-	 * here, which keeps the page exactly what the query would have returned.
+	 * A page of what the user may see. A short list of hidden projects goes into the query. A
+	 * longer one would break it, so the rows are read in batches instead and the hidden ones left
+	 * out here, which keeps the page exactly what the query would have returned.
 	 */
-	public static <T> List<T> visiblePage(Collection<String> hiddenFolderIds, int firstResult, int maxResults,
+	public static <T> List<T> visiblePage(HiddenProjects hidden, int firstResult, int maxResults,
 			PagedQuery<T> query, Function<T, String> folderOf) {
-		if (hiddenFolderIds == null || hiddenFolderIds.size() <= QUERY_LIMIT) {
-			return query.fetch(notEmpty(hiddenFolderIds), firstResult / maxResults, maxResults);
+		if (hidden == null || hidden.projectIds().size() <= QUERY_LIMIT) {
+			return query.fetch(notEmpty(hidden == null ? null : hidden.projectIds()), firstResult / maxResults, maxResults);
 		}
-		Set<String> hidden = new HashSet<>(hiddenFolderIds);
 		List<T> page = new ArrayList<>();
 		int skipped = 0;
 		for (int batch = 0; ; batch++) {
 			List<T> rows = query.fetch(notEmpty(List.of()), batch, BATCH);
 			for (T row : rows) {
-				String folderId = folderOf.apply(row);
-				if (folderId != null && hidden.contains(folderId)) {
+				if (hidden.hides(folderOf.apply(row))) {
 					continue;
 				}
 				if (skipped < firstResult) {
@@ -188,6 +201,14 @@ public class ProjectGuard {
 				return page;
 			}
 		}
+	}
+
+	/** The projects the user may not see, for the lists to leave out. */
+	public HiddenProjects hiddenProjects(CIBUser user) {
+		if (access.isOpen()) {
+			return HiddenProjects.NONE;
+		}
+		return new HiddenProjects(access.hidden(user, new HashSet<>(projects().values())), this::project);
 	}
 
 	/** The folders the user may not see: every folder of a project hidden from them. */

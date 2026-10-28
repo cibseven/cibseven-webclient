@@ -229,9 +229,9 @@ class ModelerServiceProjectAccessTest {
 	}
 
 	@Test
-	void leavesTheHiddenFoldersOutOfEveryList() {
-		Set<String> hidden = Set.of("claims", "drafts");
-		when(guard.hiddenFolderIds(USER)).thenReturn(hidden);
+	void leavesTheHiddenProjectsOutOfEveryList() {
+		ProjectGuard.HiddenProjects hidden = new ProjectGuard.HiddenProjects(Set.of("claims"), folderId -> folderId);
+		when(guard.hiddenProjects(USER)).thenReturn(hidden);
 
 		service.getUnifiedDiagrams(request, 0, 20, null, null, null);
 		service.getDiagrams(request, 0, 20, null, null);

@@ -40,16 +40,20 @@ public interface ProcessDiagramRepository extends JpaRepository<ProcessDiagramEn
 
 	List<ProcessDiagramReduce> findAllBy(Pageable pageable);
 
-	/** The hidden folders never come back empty: an empty list is not valid SQL on every database. */
+	/**
+	 * Leaves out the models of the hidden projects, through the project kept on each folder. The
+	 * hidden projects never come back empty: an empty list is not valid SQL on every database.
+	 */
 	@Query("select p from ProcessDiagramEntity p " +
 		"where (lower(p.name) like lower(concat('%', :keyword, '%')) " +
 		"or lower(p.processkey) like lower(concat('%', :keyword, '%'))) " +
 		"and (:diagramType = '' or p.type like concat('%', :diagramType, '%')) " +
-		"and (p.folderId is null or p.folderId not in :hiddenFolderIds)")
+		"and (p.folderId is null or p.folderId not in " +
+		"(select hf.id from FolderEntity hf where hf.projectId in :hiddenProjectIds))")
 	List<ProcessDiagramReduce> findAllFiltered(
 		@Param("keyword") String keyword,
 		@Param("diagramType") String diagramType,
-		@Param("hiddenFolderIds") Collection<String> hiddenFolderIds,
+		@Param("hiddenProjectIds") Collection<String> hiddenProjectIds,
 		Pageable pageable);
 
 	@Query(value =
@@ -62,7 +66,8 @@ public interface ProcessDiagramRepository extends JpaRepository<ProcessDiagramEn
 		"          OR LOWER(p.processkey) LIKE LOWER(:keyword)) " +
 		"   AND (:type IS NULL OR p.type LIKE :type) " +
 		"   AND (:folderId IS NULL OR p.folder_id = :folderId) " +
-		"   AND (p.folder_id IS NULL OR p.folder_id NOT IN (:hiddenFolderIds)) " +
+		"   AND (p.folder_id IS NULL OR p.folder_id NOT IN " +
+		"        (SELECT hf.id FROM MOD_FOLDERS hf WHERE hf.project_id IN (:hiddenProjectIds))) " +
 		"   UNION ALL " +
 		"   SELECT f.id, f.formid, 'form', f.formid, f.formid, " +
 		"          f.description, f.created, f.updated, f.updated_by, f.version, f.folder_id " +
@@ -70,7 +75,8 @@ public interface ProcessDiagramRepository extends JpaRepository<ProcessDiagramEn
 		"   WHERE (:keyword IS NULL OR LOWER(f.formid) LIKE LOWER(:keyword)) " +
 		"   AND (:type IS NULL OR 'form' LIKE :type) " +
 		"   AND (:folderId IS NULL OR f.folder_id = :folderId) " +
-		"   AND (f.folder_id IS NULL OR f.folder_id NOT IN (:hiddenFolderIds)) " +
+		"   AND (f.folder_id IS NULL OR f.folder_id NOT IN " +
+		"        (SELECT hf.id FROM MOD_FOLDERS hf WHERE hf.project_id IN (:hiddenProjectIds))) " +
 		") t " +
 		"ORDER BY t.updated DESC",
 		nativeQuery = true)
@@ -78,7 +84,7 @@ public interface ProcessDiagramRepository extends JpaRepository<ProcessDiagramEn
 		@Param("keyword") String keyword,
 		@Param("type") String type,
 		@Param("folderId") String folderId,
-		@Param("hiddenFolderIds") Collection<String> hiddenFolderIds,
+		@Param("hiddenProjectIds") Collection<String> hiddenProjectIds,
 		Pageable pageable);
 
 	@Query(value =

@@ -21,12 +21,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.cibseven.modeler.model.FolderEntity;
 import org.cibseven.modeler.provider.ProjectAccess.Action;
 import org.cibseven.modeler.provider.ProjectAccess.ProjectRights;
 import org.cibseven.modeler.provider.ProjectGuard.AccessOverview;
+import org.cibseven.modeler.provider.ProjectGuard.HiddenProjects;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.exception.InvalidFolderException;
@@ -82,6 +84,7 @@ class ProjectGuardTest {
 
 		assertThat(open.visible(USER, all)).isSameAs(all);
 		assertThat(open.hiddenFolderIds(USER)).isEmpty();
+		assertThat(open.hiddenProjects(USER)).isSameAs(HiddenProjects.NONE);
 		assertThat(open.overview(USER)).isEqualTo(new AccessOverview(Map.of(), true));
 		verifyNoInteractions(folders);
 	}
@@ -176,6 +179,19 @@ class ProjectGuardTest {
 			.extracting(FolderEntity::getId).containsExactly("sales");
 	}
 
+	/** The lists are handed the hidden projects, and can tell for any folder whether it lies in one. */
+	@Test
+	void namesTheHiddenProjectsForTheLists() {
+		when(access.hidden(eq(USER), anyCollection())).thenReturn(Set.of("claims"));
+
+		HiddenProjects hidden = guard.hiddenProjects(USER);
+
+		assertThat(hidden.projectIds()).containsExactly("claims");
+		assertThat(hidden.hides("drafts")).isTrue();
+		assertThat(hidden.hides("sales")).isFalse();
+		assertThat(hidden.hides(null)).isFalse();
+	}
+
 	@Test
 	void reportsTheRightsInTheProjectsTheUserCanSee() {
 		ProjectRights viewer = new ProjectRights("VIEWER", true, false, false);
@@ -198,18 +214,21 @@ class ProjectGuardTest {
 		assertThat(ProjectGuard.notEmpty(List.of("claims"))).containsExactly("claims");
 	}
 
-	/** Few hidden folders go into the query, which pages as it always did. */
+	/** Few hidden projects go into the query, which pages as it always did. */
 	@Test
-	void handsAShortListOfHiddenFoldersToTheQuery() {
+	void handsAShortListOfHiddenProjectsToTheQuery() {
 		List<Object[]> asked = new ArrayList<>();
 		ProjectGuard.PagedQuery<String> query = (hidden, page, size) -> {
 			asked.add(new Object[] { hidden, page, size });
 			return List.of("row");
 		};
 
-		assertThat(ProjectGuard.visiblePage(List.of("claims"), 40, 20, query, row -> null)).containsExactly("row");
-		assertThat(asked).hasSize(1);
-		assertThat(asked.get(0)).containsExactly(List.of("claims"), 2, 20);
+		assertThat(ProjectGuard.visiblePage(new HiddenProjects(Set.of("claims"), id -> id), 40, 20, query, row -> null))
+			.containsExactly("row");
+		assertThat(ProjectGuard.visiblePage(null, 0, 20, query, row -> null)).containsExactly("row");
+		assertThat(asked).hasSize(2);
+		assertThat(asked.get(0)).containsExactly(Set.of("claims"), 2, 20);
+		assertThat(asked.get(1)).containsExactly(List.of("-"), 0, 20);
 	}
 
 	/**
@@ -217,9 +236,10 @@ class ProjectGuardTest {
 	 * ones left out, and the page counts only what the user sees.
 	 */
 	@Test
-	void leavesOutALongListOfHiddenFoldersWhileReadingTheRows() {
-		List<String> hidden = IntStream.range(0, ProjectGuard.QUERY_LIMIT + 1).mapToObj(i -> "hidden-" + i).toList();
-		// Every other row lies in a hidden folder: 600 rows, in three batches
+	void leavesOutALongListOfHiddenProjectsWhileReadingTheRows() {
+		HiddenProjects hidden = new HiddenProjects(
+			IntStream.range(0, ProjectGuard.QUERY_LIMIT + 1).mapToObj(i -> "hidden-" + i).collect(Collectors.toSet()), id -> id);
+		// Every other row lies in a hidden project: 600 rows, in three batches
 		List<String[]> rows = IntStream.range(0, 600)
 			.mapToObj(i -> new String[] { "row-" + i, i % 2 == 0 ? "hidden-" + (i % 100) : "visible" }).toList();
 		List<Collection<String>> asked = new ArrayList<>();
@@ -235,11 +255,14 @@ class ProjectGuardTest {
 		assertThat(asked).allSatisfy(excluded -> assertThat(excluded).containsExactly("-"));
 	}
 
+	/** A row names its folder, which may lie deep inside the hidden project. */
 	@Test
 	void endsAShortPageWhenTheRowsRunOut() {
-		List<String> hidden = IntStream.range(0, ProjectGuard.QUERY_LIMIT + 1).mapToObj(i -> "hidden-" + i).toList();
+		Set<String> projects = IntStream.range(0, ProjectGuard.QUERY_LIMIT + 1).mapToObj(i -> "hidden-" + i)
+			.collect(Collectors.toSet());
+		HiddenProjects hidden = new HiddenProjects(projects, folderId -> folderId.replace("subfolder-of-", ""));
 		ProjectGuard.PagedQuery<String[]> query = (excluded, page, size) -> page == 0
-			? List.of(new String[] { "a", "visible" }, new String[] { "b", "hidden-3" }, new String[] { "c", null })
+			? List.of(new String[] { "a", "visible" }, new String[] { "b", "subfolder-of-hidden-3" }, new String[] { "c", null })
 			: List.of();
 
 		assertThat(ProjectGuard.visiblePage(hidden, 0, 20, query, row -> row[1]))
@@ -255,6 +278,7 @@ class ProjectGuardTest {
 			when(access.movesBetweenProjects()).thenReturn(false);
 			guard.requireMove(USER, "drafts", "claims");
 			guard.hiddenFolderIds(USER);
+			guard.hiddenProjects(USER).hides("drafts");
 
 			verify(folders, Mockito.times(1)).projectsByFolder();
 		} finally {
