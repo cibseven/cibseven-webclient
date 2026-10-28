@@ -1,6 +1,7 @@
 /.settings/
 /.project
 .vscode/
+*/target/
 
 # IntelliJ
 .idea/
