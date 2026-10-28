@@ -90,6 +90,10 @@ const defaultTranslationSources = [
 // ones, so a language is never switched to before their messages are there.
 const extraLoaders = []
 
+// Every language translations were loaded for, through switchLanguage or by an edition
+// that switches languages its own way and calls loadTranslations directly
+const requestedLanguages = new Set()
+
 /**
  * Registers a loader called with every language, like the built-in sources. It is
  * called right away for the languages already loaded, since a source registered
@@ -99,7 +103,7 @@ const extraLoaders = []
  */
 const registerTranslationLoader = function(load) {
   extraLoaders.push(load)
-  loadedLanguages.forEach(lang => runTranslationSource('a registered source', lang, () => load(lang)))
+  requestedLanguages.forEach(lang => runTranslationSource('a registered source', lang, () => load(lang)))
 }
 
 /**
@@ -129,6 +133,7 @@ const runTranslationSource = async function(source, lang, load) {
  * @returns {Promise<boolean>} whether every source was loaded
  */
 const loadTranslations = async function(config, lang, sources = defaultTranslationSources) {
+  requestedLanguages.add(lang)
   const loaded = []
 
   if (sources.includes(translationSources.commonComponents)) {

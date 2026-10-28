@@ -121,6 +121,22 @@ describe('registerTranslationLoader', () => {
   })
 
   /**
+   * The enterprise edition switches languages itself and only calls loadTranslations, so
+   * a source registered later, the modeler's, has to catch up on those languages too.
+   */
+  it('catches a source up on a language loaded without switchLanguage', async () => {
+    await loadTranslations(config, 'sv', [translationSources.sevenComponents])
+    const loaded = []
+
+    registerTranslationLoader(lang => {
+      loaded.push(lang)
+      return Promise.resolve()
+    })
+
+    expect(loaded).toContain('sv')
+  })
+
+  /**
    * The loaders fetch files of their own - a plugin's translations - and the first
    * language switch happens during startup, so a failing one must not take it down.
    */
