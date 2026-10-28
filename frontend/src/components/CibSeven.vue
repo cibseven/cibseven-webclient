@@ -194,6 +194,7 @@ export default {
         { tab: 'account', label: 'password.recover.changePassword', show: !!(config.userEditable && config.userPasswordChangeEnabled) },
         { tab: 'groups', label: 'admin.users.groups' },
         { tab: 'tenants', label: 'admin.tenants.title' },
+        { tab: 'authorizations', label: 'admin.authorizations.title', tooltip: 'admin.authorizations.tooltip', show: this.applicationPermissions(this.$root.config.permissions.authorizationsManagement, 'authorization') },
         { tab: 'preferences', label: 'admin.preferences.title' }
       ]
       const onAccountPage = this.isMenuItemActive({ active: ['seven/auth/account'] })
