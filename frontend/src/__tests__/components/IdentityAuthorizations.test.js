@@ -30,6 +30,7 @@ const CONFIG = {
   admin: {
     resourcesTypes: {
       '0': { id: '0', key: 'application', permissions: ['ACCESS'] },
+      '1': { id: '1', key: 'user', permissions: ['READ'] },
       '6': { id: '6', key: 'processDefinition', permissions: ['READ'] }
     },
     // Deployment configuration has carried the ids both as numbers and as strings.
@@ -219,12 +220,12 @@ describe('IdentityAuthorizations display', () => {
   })
 
   it('offers the resource type as the first column', () => {
-    expect(context().fields.map(f => f.key)).toEqual(['resourceType', 'type', 'userIdGroupId', 'permissions', 'resourceId'])
+    expect(context().fields.map(f => f.key)).toEqual(['resourceTypeName', 'typeName', 'userIdGroupId', 'permissionsText', 'resourceId'])
   })
 
   it('adds the resource name column as soon as a filter authorization is listed', () => {
     const vm = context({ authorizations: [authorization(), authorization({ id: 'f', resourceType: FILTER, resourceId: 'f1' })] })
-    expect(vm.fields.map(f => f.key)).toEqual(['resourceType', 'type', 'userIdGroupId', 'permissions', 'name', 'resourceId'])
+    expect(vm.fields.map(f => f.key)).toEqual(['resourceTypeName', 'typeName', 'userIdGroupId', 'permissionsText', 'name', 'resourceId'])
   })
 
   it.each([
@@ -261,9 +262,10 @@ describe('IdentityAuthorizations rendered', () => {
   }
 
   // Mounted directly, $root is the component itself, so `config` comes in as a global property.
-  function mountHost(props) {
+  function mountHost(props, extraStubs = {}) {
     return mountWithDefaults(IdentityAuthorizations, {
-      props, i18nPlugin: false, global: { stubs, mocks: { config: structuredClone(CONFIG), $store: store() } }
+      props, i18nPlugin: false,
+      global: { stubs: { ...stubs, ...extraStubs }, mocks: { config: structuredClone(CONFIG), $store: store() } }
     })
   }
 
@@ -284,15 +286,15 @@ describe('IdentityAuthorizations rendered', () => {
     const rows = wrapper.findAll('tr')
     expect(rows).toHaveLength(2)
     // Sorted by resource type name: the unknown type "99" comes before the translation key.
-    expect(rows[0].find('.resourceType').text()).toBe('99')
-    expect(rows[0].find('.resourceType a').exists()).toBe(false)
-    expect(rows[0].find('.type').text()).toBe('admin.authorizations.types.deny')
+    expect(rows[0].find('.resourceTypeName').text()).toBe('99')
+    expect(rows[0].find('.resourceTypeName a').exists()).toBe(false)
+    expect(rows[0].find('.typeName').text()).toBe('admin.authorizations.types.deny')
     expect(rows[0].find('.userIdGroupId').text()).toBe('sales')
     expect(rows[0].find('.userIdGroupId .mdi-account-group').exists()).toBe(true)
-    expect(rows[0].find('.permissions').text()).toBe('NONE')
-    expect(rows[1].find('.resourceType a').text()).toBe('admin.authorizations.resourcesTypes.processDefinition')
+    expect(rows[0].find('.permissionsText').text()).toBe('NONE')
+    expect(rows[1].find('.resourceTypeName a').text()).toBe('admin.authorizations.resourcesTypes.processDefinition')
     expect(rows[1].find('.userIdGroupId .mdi-account').exists()).toBe(true)
-    expect(rows[1].find('.permissions').text()).toBe('READ, UPDATE')
+    expect(rows[1].find('.permissionsText').text()).toBe('READ, UPDATE')
   })
 
   it('shows the name of a filter next to its id', async () => {
@@ -327,6 +329,38 @@ describe('IdentityAuthorizations rendered', () => {
     await wrapper.vm.$nextTick()
 
     expect(wrapper.text()).toContain('admin.loading')
+  })
+
+  // FlowTable sorts a column by item[field.key]. The resource type and type ids are numbered in another
+  // order than their titles (application 0, user 1, processDefinition 6; global 0, allow 1, deny 2), so
+  // a column keyed by the id would come out in an order that looks random.
+  it.each([
+    [0, 'resource type', [
+      'admin.authorizations.resourcesTypes.application',
+      'admin.authorizations.resourcesTypes.processDefinition',
+      'admin.authorizations.resourcesTypes.user'
+    ]],
+    [1, 'type', [
+      'admin.authorizations.types.allow',
+      'admin.authorizations.types.deny',
+      'admin.authorizations.types.global'
+    ]]
+  ])('sorts column %i (%s) by its visible titles', async (column, label, ascending) => {
+    AdminService.findAuthorizations.mockResolvedValueOnce([
+      authorization({ id: 'u', resourceType: 1, type: 2 }),
+      authorization({ id: 'a', resourceType: 0, type: 0 }),
+      authorization({ id: 'p', resourceType: 6, type: 1 })
+    ])
+    const wrapper = mountHost({ userId: 'demo' }, { FlowTable: false })
+    await settle()
+    await wrapper.vm.$nextTick()
+    const cells = () => wrapper.findAll('tbody tr').map(row => row.findAll('td')[column].text())
+
+    await wrapper.findAll('thead th')[column].trigger('click')
+    expect(cells()).toEqual(ascending)
+
+    await wrapper.findAll('thead th')[column].trigger('click')
+    expect(cells()).toEqual([...ascending].reverse())
   })
 })
 

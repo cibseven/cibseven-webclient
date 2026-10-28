@@ -26,24 +26,15 @@
 
     <div v-if="rows.length > 0" class="p-0">
       <FlowTable striped :items="rows" primary-key="id" :fields="fields">
-        <template v-slot:cell(resourceType)="row">
+        <template v-slot:cell(resourceTypeName)="row">
           <router-link v-if="resourceTypeRoute(row.item.resourceType)" :to="resourceTypeRoute(row.item.resourceType)">
-            {{ resourceTypeName(row.item.resourceType) }}
+            {{ row.item.resourceTypeName }}
           </router-link>
-          <span v-else>{{ resourceTypeName(row.item.resourceType) }}</span>
-        </template>
-        <template v-slot:cell(type)="row">
-          {{ typeName(row.item.type) }}
+          <span v-else>{{ row.item.resourceTypeName }}</span>
         </template>
         <template v-slot:cell(userIdGroupId)="row">
           <span class="mdi" :class="row.item.userId != null ? 'mdi-account' : 'mdi-account-group'" aria-hidden="true"></span>
-          {{ row.item.userId ?? row.item.groupId }}
-        </template>
-        <template v-slot:cell(permissions)="row">
-          {{ permissionsText(row.item.permissions) }}
-        </template>
-        <template v-slot:cell(name)="row">
-          {{ resourceName(row.item) }}
+          {{ row.item.userIdGroupId }}
         </template>
       </FlowTable>
     </div>
@@ -93,28 +84,36 @@ export default {
       return this.authorizations.some(authorization => authorization.resourceType === FILTER_RESOURCE_TYPE)
     },
     fields() {
+      // The keys name the displayed texts of a row, as FlowTable sorts a column by item[key].
       // Like the admin table of filter authorizations, the filter name is shown next to its id.
       if (this.hasNameColumn) {
         return [
-          { label: 'admin.authorizations.resourceType', key: 'resourceType', class: 'col-2' },
-          { label: 'admin.authorizations.type', key: 'type', class: 'col-1' },
+          { label: 'admin.authorizations.resourceType', key: 'resourceTypeName', class: 'col-2' },
+          { label: 'admin.authorizations.type', key: 'typeName', class: 'col-1' },
           { label: 'admin.authorizations.userIdGroupId', key: 'userIdGroupId', class: 'col-2' },
-          { label: 'admin.authorizations.permissions', key: 'permissions', class: 'col-3' },
+          { label: 'admin.authorizations.permissions', key: 'permissionsText', class: 'col-3' },
           { label: 'admin.authorizations.name', key: 'name', class: 'col-2' },
           { label: 'admin.authorizations.resourceId', key: 'resourceId', class: 'col-2' }
         ]
       }
       return [
-        { label: 'admin.authorizations.resourceType', key: 'resourceType', class: 'col-3' },
-        { label: 'admin.authorizations.type', key: 'type', class: 'col-1' },
+        { label: 'admin.authorizations.resourceType', key: 'resourceTypeName', class: 'col-3' },
+        { label: 'admin.authorizations.type', key: 'typeName', class: 'col-1' },
         { label: 'admin.authorizations.userIdGroupId', key: 'userIdGroupId', class: 'col-2' },
-        { label: 'admin.authorizations.permissions', key: 'permissions', class: 'col-4' },
+        { label: 'admin.authorizations.permissions', key: 'permissionsText', class: 'col-4' },
         { label: 'admin.authorizations.resourceId', key: 'resourceId', class: 'col-2' }
       ]
     },
     rows() {
-      return [...this.authorizations].sort((a, b) =>
-        this.resourceTypeName(a.resourceType).localeCompare(this.resourceTypeName(b.resourceType)) ||
+      return this.authorizations.map(authorization => ({
+        ...authorization,
+        resourceTypeName: this.resourceTypeName(authorization.resourceType),
+        typeName: this.typeName(authorization.type),
+        userIdGroupId: authorization.userId ?? authorization.groupId,
+        permissionsText: this.permissionsText(authorization.permissions),
+        name: this.resourceName(authorization)
+      })).sort((a, b) =>
+        a.resourceTypeName.localeCompare(b.resourceTypeName) ||
         String(a.resourceId ?? '').localeCompare(String(b.resourceId ?? '')))
     }
   },
