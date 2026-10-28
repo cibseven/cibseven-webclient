@@ -193,7 +193,7 @@ const DEFAULT_CONFIG = {
  * @param {Object} source - The source object
  * @returns {Object} - Merged object
  */
-function deepMerge(target, source) {
+export function deepMerge(target, source) {
   const result = { ...target }
 
   for (const key in source) {

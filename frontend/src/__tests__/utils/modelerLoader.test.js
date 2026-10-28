@@ -18,13 +18,22 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { createStore } from 'vuex'
 
 const registerTranslationLoader = vi.fn()
-const i18n = { global: {} }
+const messages = {}
+const i18n = {
+  global: {
+    getLocaleMessage: lang => messages[lang] || {},
+    setLocaleMessage: (lang, value) => { messages[lang] = value }
+  }
+}
 const modelerPackage = {
   processStore: { namespaced: true, state: () => ({ processes: [] }) },
   formStore: { namespaced: true, state: () => ({ forms: [] }) },
   elementTemplateStore: { namespaced: true, state: () => ({ elementTemplates: [] }) },
   xmlStore: { namespaced: true, state: () => ({ xml: '' }) },
-  mergeModelerTranslations: vi.fn()
+  modelerTranslations: {
+    en: { version: 'Version', modeler: { save: 'Save' } },
+    de: { version: 'Version (de)', modeler: { save: 'Speichern' } }
+  }
 }
 
 /** A fresh loader per test, since it keeps the loaded package for the whole page. */
@@ -46,6 +55,7 @@ async function freshLoader({ packageFails = false } = {}) {
 describe('modelerLoader', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    Object.keys(messages).forEach(lang => delete messages[lang])
   })
 
   it('registers the modeler store modules once the package has loaded', async () => {
@@ -80,8 +90,36 @@ describe('modelerLoader', () => {
     await loadModeler(createStore({ modules: {} }))
     const merge = registerTranslationLoader.mock.calls[0][0]
     merge('de')
+    merge('fr')
 
-    expect(modelerPackage.mergeModelerTranslations).toHaveBeenCalledWith(i18n, 'de')
+    expect(messages.de).toEqual({ version: 'Version (de)', modeler: { save: 'Speichern' } })
+    // A language the modeler does not speak gets its English
+    expect(messages.fr.modeler.save).toBe('Save')
+  })
+
+  /**
+   * The modeler's messages arrive last, so they go underneath: a theme or the application that
+   * rewords one of its keys keeps its wording, as when the modeler was merged at startup.
+   */
+  it('keeps what is already there for a modeler key', async () => {
+    const { loadModeler } = await freshLoader()
+    messages.en = { modeler: { save: 'Store' }, start: { title: 'Start' } }
+
+    await loadModeler(createStore({ modules: {} }))
+    registerTranslationLoader.mock.calls[0][0]('en')
+
+    expect(messages.en).toEqual({ version: 'Version', modeler: { save: 'Store' }, start: { title: 'Start' } })
+  })
+
+  /** An edition layers its own messages over the modeler's, and still underneath what is there. */
+  it('layers the messages of an edition over those of the modeler', async () => {
+    const { loadModeler } = await freshLoader()
+    messages.en = { modeler: { save: 'Store' } }
+
+    await loadModeler(createStore({ modules: {} }), { messages: () => ({ version: 'Edition version', modeler: { save: 'Edition save' } }) })
+    registerTranslationLoader.mock.calls[0][0]('en')
+
+    expect(messages.en).toEqual({ version: 'Edition version', modeler: { save: 'Store' } })
   })
 
   it('leaves a store alone that has the modeler modules already', async () => {

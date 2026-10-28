@@ -15,6 +15,7 @@
  *  limitations under the License.
  */
 import { i18n, registerTranslationLoader } from '@/i18n'
+import { deepMerge } from '@/utils/config.js'
 
 let modelerPackage = null
 let translationsRegistered = false
@@ -25,9 +26,12 @@ let translationsRegistered = false
  * of every bundle, the library included, and a static import would load the modeler at startup.
  *
  * @param {import('vuex').Store} store - The store the modeler components read
+ * @param {object} [options]
+ * @param {(lang: string) => object} [options.messages] - Messages layered over the modeler's own,
+ *        for an edition that rewords or extends them
  * @returns {Promise<object>} The package, as cibseven-modeler exports it
  */
-export async function loadModeler(store) {
+export async function loadModeler(store, options = {}) {
   modelerPackage ??= Promise.all([
     import('cibseven-modeler'),
     import('cibseven-modeler/dist/cibseven-modeler.css')
@@ -37,32 +41,45 @@ export async function loadModeler(store) {
     throw error
   })
   const modeler = await modelerPackage
-  installModeler(store, modeler)
+  installModeler(store, modeler, options)
   return modeler
 }
 
 /**
- * Registers the modeler's store modules and translations, once. Takes the package as an argument,
- * for an edition that loads it together with its own.
+ * Registers the modeler's store modules and translations, once.
  *
  * @param {import('vuex').Store} store - The store the modeler components read
  * @param {object} modeler - The stores and translations of cibseven-modeler, as it exports them
+ * @param {object} [options] - As for loadModeler
  */
-export function installModeler(store, { processStore, formStore, elementTemplateStore, xmlStore, mergeModelerTranslations }) {
+export function installModeler(store, modeler, { messages } = {}) {
   if (!store.hasModule('modeler')) {
     store.registerModule('modeler', {
       namespaced: true,
       modules: {
-        processes: processStore,
-        forms: formStore,
-        elementTemplates: elementTemplateStore,
-        xml: xmlStore
+        processes: modeler.processStore,
+        forms: modeler.formStore,
+        elementTemplates: modeler.elementTemplateStore,
+        xml: modeler.xmlStore
       }
     })
   }
   if (!translationsRegistered) {
     translationsRegistered = true
     // Merged for every language loaded so far and for each one switched to later
-    registerTranslationLoader(lang => mergeModelerTranslations(i18n, lang))
+    registerTranslationLoader(lang => mergeBeneath(lang, modelerMessages(modeler, messages, lang)))
   }
+}
+
+function modelerMessages(modeler, messages, lang) {
+  const own = modeler.modelerTranslations[lang] || modeler.modelerTranslations.en
+  return messages ? deepMerge(own, messages(lang) || {}) : own
+}
+
+/**
+ * The modeler's messages arrive after everything else, so they go underneath: what the application,
+ * a theme, the public translation files or a plugin say for one of its keys still applies.
+ */
+function mergeBeneath(lang, messages) {
+  i18n.global.setLocaleMessage(lang, deepMerge(messages, i18n.global.getLocaleMessage(lang)))
 }
