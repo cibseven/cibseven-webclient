@@ -861,11 +861,9 @@
 			"email": "@:login.email"
 		},
 		"cib-header": {
+			"openMenu": "Меню {label}",
 			"languages": "Мова",
-			"languagesMenu": "Мова",
 			"engine": "Двигун",
-			"engineMenu": "Вибір двигуна",
-			"helpMenu": "Допомога",
 			"en": "English",
 			"de": "Deutsch",
 			"es": "Español",
@@ -1050,6 +1048,9 @@
 			"title": "@:process.startProcess",
 			"tooltip": "Відкрити сторінку запуску процесу з можливістю пошуку"
 		},
+		"tasks": {
+			"title": "Завдання"
+		},
 		"taskList": {
 			"title": "Список завдань",
 			"tooltip": "Відкрити Tasklist"
@@ -1057,6 +1058,9 @@
 		"cockpit": {
 			"title": "Cockpit",
 			"tooltip": "Відкрити Cockpit",
+			"dashboard": {
+				"title": "Панель"
+			},
 			"processes": {
 				"title": "Процеси",
 				"tooltip": "Переглянути доступні визначення процесів"
@@ -1091,15 +1095,19 @@
 			}
 		},
 		"admin": {
-			"title": "Адмін",
-			"tooltip": "Відкрити Адмін панель"
+			"title": "Адмін"
+		},
+		"accessManagement": {
+			"title": "Управління доступом"
+		},
+		"builder": {
+			"title": "Builder"
 		},
 		"modeler": {
 			"title": "Modeler",
 			"tooltip": "Відкрити Modeler для проектування та редагування BPMN, DMN та форм"
 		},
 		"account": {
-			"tooltip": "Переглянути та змінити інформацію про ваш обліковий запис або вийти з системи",
 			"profile": {
 				"title": "Профіль користувача",
 				"tooltip": "Переглянути та змінити інформацію про ваш обліковий запис"
@@ -1205,7 +1213,6 @@
 	},
 	"navigation": {
 		"home": "Головна сторінка",
-		"navigation": "Навігація",
 		"menu": "Навігаційне меню",
 		"infoAndHelp": "Інформація та допомога"
 	},

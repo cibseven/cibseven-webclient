@@ -628,6 +628,12 @@ public class DirectUserProvider implements IUserProvider {
 			.isUserAuthorized(user.getId(), groupIdsOf(user, engine), required, resource, resourceId);
 	}
 
+	/** Every group of the user, also those the user may not read. */
+	@Override
+	public Collection<String> findGroupIdsOfUser(CIBUser user) {
+		return groupIdsOf(user, directProviderUtil.getProcessEngine(user));
+	}
+
 	/**
 	 * Taken from the authentication {@link AuthorizingProviderProxy} already established, because
 	 * querying memberships as that user is filtered by READ on the group resource and would miss a

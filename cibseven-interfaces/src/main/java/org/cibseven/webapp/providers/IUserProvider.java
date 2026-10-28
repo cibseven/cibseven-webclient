@@ -69,6 +69,16 @@ public interface IUserProvider {
 			Optional<String> member, Optional<String> memberOfTenant, Optional<String> sortBy, Optional<String> sortOrder,
 			Optional<String> firstResult, Optional<String> maxResults,CIBUser user);
 	
+	/**
+	 * The ids of the groups the user is a member of. Asked as the user, a remote engine names only
+	 * the groups the user may read; a provider that can ask the engine directly does better.
+	 */
+	default Collection<String> findGroupIdsOfUser(CIBUser user) {
+		return findGroups(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(user.getId()),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), user)
+			.stream().map(UserGroup::getId).toList();
+	}
+
 	public void createGroup(UserGroup group, CIBUser user);
 	public void updateGroup(String groupId, UserGroup group, CIBUser user);
 	public void deleteGroup(String groupId, CIBUser user);
