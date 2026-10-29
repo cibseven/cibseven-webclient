@@ -19,8 +19,8 @@
 <template>
   <footer class="fixed-bottom footer-bg d-flex justify-content-center align-items-center gap-4 py-2" style="color: var(--bs-gray-800); background-color: var(--bs-gray-400);">
     <p class="m-0">CIB seven &emsp;&copy; CIB, {{ new Date().getFullYear() }} &emsp;Version {{ version }}</p>
-    <a v-if="$root.config.flowLinkPrivacy" :href="$root.config.flowLinkPrivacy" target="_blank" rel="noopener noreferrer">{{ $t('infoAndHelp.flowLinkPrivacy') }}</a>
-    <a v-if="$root.config.flowLinkImprint" :href="$root.config.flowLinkImprint" target="_blank" rel="noopener noreferrer">{{ $t('infoAndHelp.flowLinkImprint') }}</a>
+    <a class="hovered-link link-underline link-underline-opacity-0" v-if="$root.config.flowLinkPrivacy" :href="$root.config.flowLinkPrivacy" target="_blank" rel="noopener noreferrer">{{ $t('infoAndHelp.flowLinkPrivacy') }}</a>
+    <a class="hovered-link link-underline link-underline-opacity-0" v-if="$root.config.flowLinkImprint" :href="$root.config.flowLinkImprint" target="_blank" rel="noopener noreferrer">{{ $t('infoAndHelp.flowLinkImprint') }}</a>
   </footer>
 </template>
 <script>
@@ -48,3 +48,11 @@ export default {
   }
 }
 </script>
+
+<style lang="css" scoped>
+/* hover style for link*/
+
+.hovered-link:hover {
+  color: var(--bs-dark) !important;
+}
+</style>

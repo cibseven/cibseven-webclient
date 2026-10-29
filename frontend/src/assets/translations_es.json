@@ -1100,7 +1100,9 @@
 		},
 		"modeler": {
 			"title": "Modeler",
-			"tooltip": "Abrir Modeler para diseñar y editar BPMN, DMN y formularios"
+			"tooltip": "Abrir Modeler para diseñar y editar BPMN, DMN y formularios",
+			"loading": "Cargando el Modeler...",
+			"loadFailed": "No se pudo cargar el Modeler. Recargue la página para intentarlo de nuevo."
 		},
 		"account": {
 			"profile": {

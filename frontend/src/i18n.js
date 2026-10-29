@@ -16,7 +16,6 @@
  */
 import { createI18n } from 'vue-i18n'
 import { mergeLocaleMessage as commonFrontendMergeLocaleMessage } from '@cib/common-frontend'
-import { mergeModelerTranslations } from 'cibseven-modeler'
 import { axios, moment } from './globals.js'
 import { getTheme } from './utils/init'
 import 'moment/dist/locale/de'
@@ -50,10 +49,6 @@ const loadTranslationsFromSevenComponents = function(i18n, lang) {
   i18n.global.mergeLocaleMessage(lang, translation)
 }
 
-const loadTranslationsFromModeler = function(i18n, lang) {
-  mergeModelerTranslations(i18n, lang)
-}
-
 const loadTranslationsFromPublic = async function(lang) {
   // Load translations from public/translations_*.json
   try {
@@ -74,7 +69,8 @@ const loadTranslationsFromThemes = async function(config, lang) {
   }
 }
 
-// Available translation sources
+// Available translation sources. The modeler's messages are merged when the modeler is loaded, see
+// loadModeler; modelerComponents is kept so that callers naming it still work, and loads nothing.
 const translationSources = {
   commonComponents: 'commonComponents',
   sevenComponents: 'sevenComponents',
@@ -86,7 +82,6 @@ const translationSources = {
 const defaultTranslationSources = [
   translationSources.commonComponents,
   translationSources.sevenComponents,
-  translationSources.modelerComponents,
   translationSources.public,
   translationSources.themes
 ]
@@ -94,6 +89,10 @@ const defaultTranslationSources = [
 // Sources that only exist at runtime, plugins today. They are loaded with the built-in
 // ones, so a language is never switched to before their messages are there.
 const extraLoaders = []
+
+// Every language translations were loaded for, through switchLanguage or by an edition
+// that switches languages its own way and calls loadTranslations directly
+const requestedLanguages = new Set()
 
 /**
  * Registers a loader called with every language, like the built-in sources. It is
@@ -104,7 +103,7 @@ const extraLoaders = []
  */
 const registerTranslationLoader = function(load) {
   extraLoaders.push(load)
-  loadedLanguages.forEach(lang => runTranslationSource('a registered source', lang, () => load(lang)))
+  requestedLanguages.forEach(lang => runTranslationSource('a registered source', lang, () => load(lang)))
 }
 
 /**
@@ -134,6 +133,7 @@ const runTranslationSource = async function(source, lang, load) {
  * @returns {Promise<boolean>} whether every source was loaded
  */
 const loadTranslations = async function(config, lang, sources = defaultTranslationSources) {
+  requestedLanguages.add(lang)
   const loaded = []
 
   if (sources.includes(translationSources.commonComponents)) {
@@ -146,12 +146,6 @@ const loadTranslations = async function(config, lang, sources = defaultTranslati
     // Add translations from src/assets/translations_*.json
     loaded.push(await runTranslationSource('cibseven-components', lang,
       () => loadTranslationsFromSevenComponents(i18n, lang)))
-  }
-
-  if (sources.includes(translationSources.modelerComponents)) {
-    // Add translations from cibseven-modeler library
-    loaded.push(await runTranslationSource('cibseven-modeler', lang,
-      () => loadTranslationsFromModeler(i18n, lang)))
   }
 
   if (sources.includes(translationSources.public)) {
