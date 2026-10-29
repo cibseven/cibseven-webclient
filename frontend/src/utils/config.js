@@ -140,7 +140,7 @@ const DEFAULT_CONFIG = {
         "READ","UPDATE","DELETE","CREATE","TASK_ASSIGN","TASK_WORK","READ_VARIABLE","UPDATE_VARIABLE"
       ] },
       "16": { "id": "16", "key": "operationLogCategory", "permissions": ["READ","DELETE"] },
-      "12": { "id": "12", "key": "system", "permissions": ["READ","UPDATE","DELETE"] },
+      "21": { "id": "21", "key": "system", "permissions": ["READ","SET","DELETE"] },
       "1": { "id": "1", "key": "user", "permissions": ["READ","UPDATE","CREATE","DELETE"] }
     }
   },
