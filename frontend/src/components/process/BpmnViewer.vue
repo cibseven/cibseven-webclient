@@ -105,7 +105,7 @@ export default {
     ...mapGetters(['highlightedElement', 'getHistoricActivityStatistics']),
     ...mapGetters('calledProcessDefinitions', ['getStaticCalledProcessDefinitions']),
     ...mapGetters('job', ['jobDefinitions']),
-    ...mapGetters('modeler/elementTemplates', { allElementTemplateContents: 'allElementTemplateContents' }),
+    ...mapGetters('elementTemplates', { allElementTemplateContents: 'allElementTemplateContents' }),
     historicActivityStatistics() {
       return this.getHistoricActivityStatistics(this.processDefinitionId)
     }
@@ -159,7 +159,7 @@ export default {
   methods: {
     ...mapActions(['selectActivity', 'clearActivitySelection', 'setHighlightedElement', 'loadActivitiesInstanceHistory', 'getProcessById']),
     ...mapActions('diagram', ['setDiagramReady']),
-    ...mapActions('modeler/elementTemplates', ['fetchAllElementTemplates']),
+    ...mapActions('elementTemplates', ['fetchAllElementTemplates']),
     ensureElementTemplatesLoaded: function() {
       if (!this.$root?.config?.modelerEnabled) return
       if (this.allElementTemplateContents && this.allElementTemplateContents.length > 0) return

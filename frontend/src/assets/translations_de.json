@@ -1100,7 +1100,9 @@
 		},
 		"modeler": {
 			"title": "Modeler",
-			"tooltip": "Modeler öffnen, um BPMN, DMN und Formulare zu entwerfen und zu bearbeiten"
+			"tooltip": "Modeler öffnen, um BPMN, DMN und Formulare zu entwerfen und zu bearbeiten",
+			"loading": "Modeler wird geladen...",
+			"loadFailed": "Der Modeler konnte nicht geladen werden. Laden Sie die Seite neu, um es erneut zu versuchen."
 		},
 		"account": {
 			"profile": {
