@@ -65,7 +65,6 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import com.fasterxml.jackson.core.StreamReadConstraints;
@@ -161,22 +160,14 @@ public abstract class SevenProviderBase {
 		return headers;
 	}
 
-	/**
-	 * Creates an HttpEntity with body and headers, converting HttpHeaders to a
-	 * LinkedMultiValueMap to avoid IncompatibleClassChangeError in Spring 7 where
-	 * HttpHeaders no longer implements MultiValueMap.
-	 */
+	/** Creates an HttpEntity with body and headers. */
 	protected <T> HttpEntity<T> httpEntity(T body, HttpHeaders httpHeaders) {
-		LinkedMultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-		httpHeaders.forEach(map::addAll);
-		return new HttpEntity<>(body, map);
+		return new HttpEntity<>(body, httpHeaders);
 	}
 
 	/** Headers-only variant — used for GET-style requests that send no body. */
 	protected HttpEntity<?> httpEntity(HttpHeaders httpHeaders) {
-		LinkedMultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-		httpHeaders.forEach(map::addAll);
-		return new HttpEntity<>(map);
+		return new HttpEntity<>(httpHeaders);
 	}
 
 	protected <T> ResponseEntity<T> doGet(String url, Class<T> neededClass, CIBUser user, Boolean encoded) {
@@ -403,6 +394,8 @@ public abstract class SevenProviderBase {
 	 * 
 	 * @return A newly configured RestTemplate instance
 	 */
+	// MappingJackson2HttpMessageConverter is Jackson 2; it goes with the Jackson 3 migration
+	@SuppressWarnings("removal")
 	protected RestTemplate createPatchRestTemplate() {
         // Create a new RestTemplate instance instead of modifying the shared one
         RestTemplate restTemplate = new RestTemplate();

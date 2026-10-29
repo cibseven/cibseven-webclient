@@ -94,7 +94,7 @@ cibseven:
     #  accessTokenToEngineRest:
     #  assertion:
     #    type:
-    #    locationKey:
+    #    keyLocation:
 
     # LDAP
     ldap:
@@ -213,15 +213,16 @@ springdoc:
 # Activate "/actuator/info" and "/actuator/health" endpoints
 management:
   endpoints:
-    enabled-by-default: false # Disable all endpoints by default
+    access:
+      default: none # Disable all endpoints by default
     web:
       exposure:
         include: health,info # Include only health and info endpoints
   endpoint:
     info:
-      enabled: true # Enable the info endpoint
+      access: read-only # Enable the info endpoint
     health:
-      enabled: true # Enable the health endpoint
+      access: read-only # Enable the health endpoint
       probes:
         enabled: true # Enable health probes (if applicable)
   info:
