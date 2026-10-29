@@ -22,7 +22,7 @@
       :nav-clusters="navClusters" :utility-clusters="utilityClusters" :user-items="userMenuItems"
       @logout="logout" @select="onHeaderSelect">
       <div class="me-auto d-flex flex-row overflow-hidden" style="min-height: 38px;">
-        <!-- Product name on the home page and the user's own account page; elsewhere the icon and the page title -->
+        <!-- Product name on the home page, the user's own account page and the pages before sign-in; elsewhere the icon and the page title -->
         <b-navbar-brand ref="brandHome" class="py-0 flex-shrink-0" :aria-label="brandLabel" :title="brandLabel" to="/seven/auth/start">
           <img v-if="showFullLogo" height="38px" alt="" :src="$root.logoPath"/>
           <!-- The mark at the size and place it has in the full logo, so it does not change when leaving
@@ -135,9 +135,10 @@ export default {
     isStartPage: function() {
       return this.$route.name === 'start'
     },
-    // The account page has no page title next to the logo, so it keeps the full one like the start page
+    // The account page and the pages before sign-in have no page title next to the logo, so they
+    // keep the full one like the start page
     showFullLogo: function() {
-      return this.isStartPage || this.$route.name === 'account'
+      return this.isStartPage || ['account', 'login', 'loggedOut', 'setup'].includes(this.$route.name)
     },
     // The catalog as header clusters: the icon leads to the section, the menu title to its overview page
     navClusters: function() {
@@ -288,7 +289,9 @@ export default {
   },
   methods: {
     // Browsers ring a focus set on load as if it came from the keyboard. The ring stays
-    // hidden until the first key press, so keyboard users still see where they are.
+    // hidden until the first key press, so keyboard users still see where they are. The header
+    // hides it (CIBHeaderFlow): EE renders this template from its own component, where this
+    // component's scoped styles do not apply.
     focusBrandLink: function() {
       const brandLink = this.$refs.headerFlow && this.$refs.brandHome?.$refs.brandLink
       if (!brandLink) return
@@ -379,10 +382,3 @@ export default {
   }
 }
 </script>
-
-<style lang="css" scoped>
-/* See focusBrandLink */
-:deep(.navbar-brand.initial-focus:focus) {
-  outline: none !important;
-  box-shadow: none;
-}</style>
