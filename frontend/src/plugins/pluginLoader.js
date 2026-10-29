@@ -18,7 +18,7 @@ import { axios } from '@/globals.js'
 import { i18n, registerTranslationLoader } from '@/i18n'
 import { getServicesBasePath } from '@/services.js'
 import { getPluginContext } from './pluginContext.js'
-import { PLUGIN_API_VERSION, registerPlugin } from './pluginsConfig.js'
+import { PLUGIN_API_VERSION, registerPlugin, setPluginsSettled } from './pluginsConfig.js'
 
 // Plugins are discovered by the backend on its classpath and served by it, from
 // the same base path as every other endpoint
@@ -242,14 +242,18 @@ export async function loadPlugins(manifests, lang, importer = importModule) {
  * @returns {Promise<Array<string>>} ids of the plugins that were loaded
  */
 export async function initPlugins(lang, importer = importModule) {
-  // Only an explicit false skips the request; a backend not reporting the flag is asked
-  if (getPluginContext().config?.pluginsEnabled === false) return []
+  try {
+    // Only an explicit false skips the request; a backend not reporting the flag is asked
+    if (getPluginContext().config?.pluginsEnabled === false) return []
 
-  const manifests = await fetchPluginManifests()
-  if (manifests.length === 0) return []
-  const ids = await loadPlugins(manifests, lang, importer)
+    const manifests = await fetchPluginManifests()
+    if (manifests.length === 0) return []
+    const ids = await loadPlugins(manifests, lang, importer)
 
-  // A plugin's labels come from its own files, so a language switch has to fetch them
-  registerTranslationLoader(syncPluginTranslations)
-  return ids
+    // A plugin's labels come from its own files, so a language switch has to fetch them
+    registerTranslationLoader(syncPluginTranslations)
+    return ids
+  } finally {
+    setPluginsSettled()
+  }
 }

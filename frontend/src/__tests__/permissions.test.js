@@ -548,6 +548,64 @@ describe('canDeleteRuntimeProcessInstance', () => {
 })
 
 // ---------------------------------------------------------------------------
+// canSuspendProcessInstance
+// ---------------------------------------------------------------------------
+describe('canSuspendProcessInstance', () => {
+  const PI = 'pi-1'
+  const KEY = 'order-process'
+
+  it.each([
+    ['SUSPEND on the process instance', { processInstance: [allow(PI, ['SUSPEND'])] }],
+    ['UPDATE on the process instance', { processInstance: [allow(PI, ['UPDATE'])] }],
+    ['SUSPEND on any process instance', { processInstance: [allow('*', ['SUSPEND'])] }],
+    ['SUSPEND_INSTANCE on the process definition', { processDefinition: [allow(KEY, ['SUSPEND_INSTANCE'])] }],
+    ['UPDATE_INSTANCE on the process definition', { processDefinition: [allow(KEY, ['UPDATE_INSTANCE'])] }],
+    ['ALL on the process instance', { processInstance: [allow(PI, ['ALL'])] }],
+    ['ALL on any process definition', { processDefinition: [allow('*', ['ALL'])] }],
+  ])('is granted by %s alone', (_, userPermissions) => {
+    expect(createContext(userPermissions).canSuspendProcessInstance(PI, KEY)).toBe(true)
+  })
+
+  it('matches SUSPEND against the process instance id, not the definition key', () => {
+    const ctx = createContext({ processInstance: [allow(KEY, ['SUSPEND'])] })
+    expect(ctx.canSuspendProcessInstance(PI, KEY)).toBe(false)
+  })
+
+  it('is denied when the grants belong to another instance or definition', () => {
+    const ctx = createContext({
+      processInstance: [allow('pi-2', ['SUSPEND', 'UPDATE'])],
+      processDefinition: [allow('invoice-process', ['SUSPEND_INSTANCE', 'UPDATE_INSTANCE'])],
+    })
+    expect(ctx.canSuspendProcessInstance(PI, KEY)).toBe(false)
+  })
+
+  it('is denied by other process permissions', () => {
+    const ctx = createContext({
+      processInstance: [allow(PI, ['READ', 'DELETE', 'UPDATE_VARIABLE'])],
+      processDefinition: [allow(KEY, ['SUSPEND', 'UPDATE', 'DELETE_INSTANCE', 'UPDATE_INSTANCE_VARIABLE'])],
+    })
+    expect(ctx.canSuspendProcessInstance(PI, KEY)).toBe(false)
+  })
+
+  it('is granted through the definition when SUSPEND is revoked on the instance (any one is enough)', () => {
+    const ctx = createContext({
+      processInstance: [deny(PI, ['SUSPEND'])],
+      processDefinition: [allow(KEY, ['SUSPEND_INSTANCE'])],
+    })
+    expect(ctx.canSuspendProcessInstance(PI, KEY)).toBe(true)
+  })
+
+  it('is denied when the only grant is revoked', () => {
+    const ctx = createContext({ processInstance: [allow('*', ['SUSPEND']), deny(PI, ['SUSPEND'])] })
+    expect(ctx.canSuspendProcessInstance(PI, KEY)).toBe(false)
+  })
+
+  it('is granted when authorization is disabled', () => {
+    expect(createContext({}, { authorizationEnabled: false }).canSuspendProcessInstance(PI, KEY)).toBe(true)
+  })
+})
+
+// ---------------------------------------------------------------------------
 // canDeleteProcessInstanceVariable
 // ---------------------------------------------------------------------------
 describe('canDeleteProcessInstanceVariable', () => {

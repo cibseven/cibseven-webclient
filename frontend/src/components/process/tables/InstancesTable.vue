@@ -73,9 +73,9 @@
 
       <template v-slot:cell(actions)="table">
         <div class="d-flex">
-          <CellActionButton v-if="table.item.state === 'ACTIVE' && processByPermissions($root.config.permissions.suspendProcessInstance, table.item)" @click="confirmSuspend(table.item)"
+          <CellActionButton v-if="hasSuspendInstanceButton(table.item)" @click="confirmSuspend(table.item)"
           icon="mdi-pause-circle-outline" :title="$t('process.suspendInstance')"></CellActionButton>
-          <CellActionButton v-else-if="table.item.state === 'SUSPENDED' && processByPermissions($root.config.permissions.suspendProcessInstance, table.item)" @click="confirmActivate(table.item)"
+          <CellActionButton v-else-if="hasActivateInstanceButton(table.item)" @click="confirmActivate(table.item)"
           icon="mdi-play-circle-outline" :title="$t('process.activateInstance')"></CellActionButton>
           <CellActionButton :to="selectInstanceRoute(table.item)" icon="mdi-eye-outline" :title="$t('process.showInstance')"></CellActionButton>
           <CellActionButton v-if="hasStopInstanceButton(table.item)"
@@ -305,6 +305,10 @@ export default {
       })
     },
     // "Suspend" button
+    hasSuspendInstanceButton: function(instance) {
+      return instance.state === 'ACTIVE' &&
+        this.canSuspendProcessInstance(instance.id, instance.processDefinitionKey)
+    },
     confirmSuspend: function(instance) {
       this.$refs.confirm.show({
         ok: this.suspendInstance,
@@ -320,6 +324,10 @@ export default {
       })
     },
     // "Activate" button
+    hasActivateInstanceButton: function(instance) {
+      return instance.state === 'SUSPENDED' &&
+        this.canSuspendProcessInstance(instance.id, instance.processDefinitionKey)
+    },
     confirmActivate: function(instance) {
       this.$refs.confirm.show({
         ok: this.activateInstance,

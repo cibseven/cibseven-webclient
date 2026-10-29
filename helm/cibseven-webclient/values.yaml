@@ -98,7 +98,7 @@ application:
       #  accessTokenToEngineRest:
       #  assertion:
       #    type:
-      #    locationKey:
+      #    keyLocation:
 
       # Token generation
       authentication:
@@ -469,9 +469,6 @@ configmaps:
             },
             "deleteProcessDefinition": {
               "processDefinition": ["DELETE"]
-            },
-            "suspendProcessInstance": {
-              "processInstance": ["SUSPEND"]
             },
             "updateProcessInstance": {
               "processInstance": ["UPDATE"]

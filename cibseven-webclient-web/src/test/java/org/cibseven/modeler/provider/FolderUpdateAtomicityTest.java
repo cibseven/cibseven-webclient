@@ -47,7 +47,7 @@ class FolderUpdateAtomicityTest {
 		.withConfiguration(AutoConfigurations.of(DataSourceAutoConfiguration.class,
 			HibernateJpaAutoConfiguration.class, DataSourceInitializationAutoConfiguration.class,
 			TransactionAutoConfiguration.class))
-		.withUserConfiguration(ModelerPersistenceConfiguration.class, FolderProvider.class);
+		.withUserConfiguration(ModelerPersistenceConfiguration.class, FolderProvider.class, OpenProjectAccess.class);
 
 	@Test
 	void appliesARenameAndAMoveTogether() {

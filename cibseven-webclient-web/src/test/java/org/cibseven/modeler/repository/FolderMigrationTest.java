@@ -82,6 +82,7 @@ class FolderMigrationTest {
 
 			assertThat(general.getId()).isEqualTo(GENERAL);
 			assertThat(general.getParentId()).isNull();
+			assertThat(general.getProjectId()).isEqualTo(GENERAL);
 			// Nothing above it: the upgrade adds one folder, not a tree
 			assertThat(folders.findAll()).hasSize(1);
 		});

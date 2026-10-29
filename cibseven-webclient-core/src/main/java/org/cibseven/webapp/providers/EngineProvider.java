@@ -30,9 +30,11 @@ import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -179,6 +181,20 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 		String url = getNamedEngineRestUrl(engineId) + "/configuration";
 		try {
 			return doGet(url, EngineConfiguration.class, null, false).getBody();
+		} catch (RestClientException e) {
+			// The endpoint answered, but its body cannot be mapped onto EngineConfiguration.
+			// EngineConfiguration's own readers are lenient (e.g. historyTimeToLive accepts "P180D"),
+			// so this is a last line of defense against engine-rest builds that report a field in a
+			// shape this webclient does not know. Rethrowing would make /info/properties fail with
+			// HTTP 500, and the frontend, which waits for it on startup, would stay blank. Instead,
+			// fall back to the legacy configuration, like for an engine without this endpoint.
+			// Only unreadable responses are handled here: connection errors and HTTP errors keep
+			// their current handling.
+			if (isUnreadableResponse(e)) {
+				log.warn("Engine configuration at {} could not be read, falling back to legacy configuration", url, e);
+				return null;
+			}
+			throw e;
 		} catch (SystemException e) {
 			if (e.getCause() instanceof HttpClientErrorException.NotFound ||
 				// for CIB seven before 2.2.0, with auth enabled, the endpoint returns 401 instead of 404 when not found
@@ -188,6 +204,23 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 			}
 			throw e;
 		}
+	}
+
+	/**
+	 * Whether the given error means that a response arrived but its body could not be read into
+	 * the expected type (Spring wraps the {@link HttpMessageNotReadableException} of the message
+	 * converter into a {@link RestClientException}).
+	 */
+	private static boolean isUnreadableResponse(Throwable error) {
+		for (Throwable cause = error; cause != null; cause = cause.getCause()) {
+			if (cause instanceof HttpMessageNotReadableException) {
+				return true;
+			}
+			if (cause.getCause() == cause) {
+				break;
+			}
+		}
+		return false;
 	}
 
 	@Override

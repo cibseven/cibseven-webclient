@@ -190,7 +190,6 @@
 		"loadVersions": "Load all history versions",
 		"externalProcessStarted": "Process successfully started",
 		"exportInstances": "Export instances",
-		"days": "days",
 		"deleteProcessDefinition": {
 			"tooltip": "Delete process definition",
 			"confirm": {
@@ -857,11 +856,9 @@
 		"email": "@:login.email"
 	},
 	"cib-header": {
+		"openMenu": "{label} menu",
 		"languages": "Language",
-		"languagesMenu": "Language",
 		"engine": "Engine",
-		"engineMenu": "Engine selection",
-		"helpMenu": "Help",
 		"en": "English",
 		"de": "Deutsch",
 		"es": "Español",
@@ -1046,6 +1043,9 @@
 			"title": "@:process.startProcess",
 			"tooltip": "Open Start Process view with search possibility"
 		},
+		"tasks": {
+			"title": "Tasks"
+		},
 		"taskList": {
 			"title": "Tasklist",
 			"tooltip": "Open Tasklist"
@@ -1053,6 +1053,9 @@
 		"cockpit": {
 			"title": "Cockpit",
 			"tooltip": "Open Cockpit",
+			"dashboard": {
+				"title": "Dashboard"
+			},
 			"processes": {
 				"title": "Processes",
 				"tooltip": "Explore available process definitions"
@@ -1087,15 +1090,19 @@
 			}
 		},
 		"admin": {
-			"title": "Admin",
-			"tooltip": "Open Admin"
+			"title": "Admin"
+		},
+		"accessManagement": {
+			"title": "Access management"
+		},
+		"builder": {
+			"title": "Builder"
 		},
 		"modeler": {
 			"title": "Modeler",
 			"tooltip": "Open Modeler to design and edit BPMN, DMN, and Forms"
 		},
 		"account": {
-			"tooltip": "View and edit your account information or log out",
 			"profile": {
 				"title": "User Profile",
 				"tooltip": "View and edit your account information"
@@ -1202,7 +1209,6 @@
 	},
 	"navigation": {
 		"home": "Home",
-		"navigation": "Navigation",
 		"menu": "Navigation menu",
 		"infoAndHelp": "Info & help"
 	},
@@ -1325,7 +1331,6 @@
 		"decision": "Decision",
 		"refreshVersions": "Refresh history versions",
 		"loadVersions": "Load all history versions",
-		"days": "days",
 		"instances": "Instances",
 		"showInstance": "View instance",
 		"evaluationTime": "Evaluation Time",
@@ -1364,8 +1369,7 @@
 		"decisionInstanceId": "Decision Instance ID"
 	},
 	"decision-instance": {
-		"edit": "@:commons.edit",
-		"save": "@:commons.save"
+		"edit": "@:commons.edit"
 	},
 	"human-tasks": {
 		"assignmentsByType": "Assignments by type",
@@ -1424,5 +1428,17 @@
 	},
 	"deepLink": {
 		"tooltip": "Open {text}\n{url}"
+	},
+	"historyTimeToLive": {
+		"title": "Edit History Time To Live",
+		"ttl": "History time to live:",
+		"choiceUnlimited": "Unlimited (history is never cleaned up)",
+		"choiceZero": "0 days (history is removed by the next cleanup)",
+		"choiceCustom": "Custom",
+		"days": "days",
+		"placeholder": "Enter days (e.g., 30)",
+		"validation": "Please enter a valid number between {min} and {max}",
+		"engineDefaultHint": "Default value for this engine.",
+		"enforcedHint": "This engine requires an explicit history time to live; \"unlimited\" is not available."
 	}
 }

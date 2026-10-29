@@ -800,6 +800,11 @@ public interface BpmProvider {
 		return getUserProvider().findGroups(id, name, nameLike, type, member, memberOfTenant, sortBy, sortOrder, firstResult, maxResults, user);
 	}
 
+	/** See {@link IUserProvider#findGroupIdsOfUser}. */
+	default Collection<String> findGroupIdsOfUser(CIBUser user) {
+		return getUserProvider().findGroupIdsOfUser(user);
+	}
+
 	/**
 	 * Create a group.
 	 *
