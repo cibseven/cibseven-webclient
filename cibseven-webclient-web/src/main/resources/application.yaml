@@ -94,7 +94,7 @@ cibseven:
     #  accessTokenToEngineRest:
     #  assertion:
     #    type:
-    #    locationKey:
+    #    keyLocation:
 
     # LDAP
     ldap:
