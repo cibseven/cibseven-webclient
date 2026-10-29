@@ -309,6 +309,11 @@ export default {
   box-shadow: none !important;
   text-decoration: none;
 }
+/* Except on the brand link that CibSeven focuses on load, until the first key press (see focusBrandLink) */
+.cib-navbar :deep(a.initial-focus:focus) {
+  outline: none !important;
+  box-shadow: none !important;
+}
 .cib-nav-clusters {
   gap: 2px;
 }
