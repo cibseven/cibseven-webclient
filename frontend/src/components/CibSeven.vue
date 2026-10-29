@@ -288,7 +288,9 @@ export default {
   },
   methods: {
     // Browsers ring a focus set on load as if it came from the keyboard. The ring stays
-    // hidden until the first key press, so keyboard users still see where they are.
+    // hidden until the first key press, so keyboard users still see where they are. The header
+    // hides it (CIBHeaderFlow): EE renders this template from its own component, where this
+    // component's scoped styles do not apply.
     focusBrandLink: function() {
       const brandLink = this.$refs.headerFlow && this.$refs.brandHome?.$refs.brandLink
       if (!brandLink) return
@@ -379,10 +381,3 @@ export default {
   }
 }
 </script>
-
-<style lang="css" scoped>
-/* See focusBrandLink */
-:deep(.navbar-brand.initial-focus:focus) {
-  outline: none !important;
-  box-shadow: none;
-}</style>
