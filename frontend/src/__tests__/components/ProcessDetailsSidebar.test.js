@@ -53,9 +53,9 @@ function selected(processDefinitions, versionIndex, statistics) {
   return process ? { ...process, statistics } : null
 }
 
-function mountSidebar({ processDefinitions = [version()], versionIndex = '37', selectedStatistics, config = {}, component = ProcessDetailsSidebar } = {}) {
+function mountSidebar({ processDefinitions = [version()], versionIndex = '37', selectedStatistics, refreshing = null, config = {}, component = ProcessDetailsSidebar } = {}) {
   return mountWithDefaults(component, {
-    props: { processDefinitions, processKey: 'invoice', versionIndex, selectedProcess: selected(processDefinitions, versionIndex, selectedStatistics) },
+    props: { processDefinitions, processKey: 'invoice', versionIndex, selectedProcess: selected(processDefinitions, versionIndex, selectedStatistics), refreshing },
     i18nPlugin: false,
     global: {
       stubs: {
@@ -182,6 +182,33 @@ describe('ProcessDetailsSidebar', () => {
       await flushPromises()
 
       expect(wrapper.find('.deployment-time').text()).toBe('deployment.deploymentTime: -')
+    })
+  })
+
+  describe('data loaded for every version', () => {
+    it('shows the incidents and deployment time the list brings for the versions not selected', async () => {
+      const loaded = lazyVersion({ runningInstances: 3, completedInstances: 7, incidents: 4, deploymentTime: '2025-04-02T09:15:00.000+0200' })
+      const wrapper = mountSidebar({ processDefinitions: [version(), loaded] })
+      await flushPromises()
+
+      const card = wrapper.findAll('.list-group-item-action')[1]
+      expect(card.find('.open-incidents').text()).toBe('bpmn-viewer.legend.openIncidents: 4')
+      expect(card.find('.deployment-time').text()).not.toBe('deployment.deploymentTime: -')
+      expect(card.find('.deployment-time').attributes('title')).toBeTruthy()
+    })
+
+    it('keeps a dash for the incidents a lazy list leaves out', async () => {
+      const wrapper = mountSidebar({ processDefinitions: [version(), lazyVersion({ incidents: '-' })] })
+      await flushPromises()
+
+      expect(wrapper.findAll('.open-incidents')[1].text()).toBe('bpmn-viewer.legend.openIncidents: -')
+    })
+
+    it('shows the live incidents of the selected version rather than the loaded ones', async () => {
+      const wrapper = mountSidebar({ processDefinitions: [version({ incidents: 9 })], selectedStatistics: statistics([1]) })
+      await flushPromises()
+
+      expect(wrapper.find('.open-incidents').text()).toBe('bpmn-viewer.legend.openIncidents: 1')
     })
   })
 
@@ -488,6 +515,37 @@ describe('ProcessDetailsSidebar', () => {
       await flushPromises()
 
       expect(wrapper.find('.load-data').text()).toBe('process.loadData')
+    })
+
+    it('shows a spinner in place of its icon, and holds both reload buttons, while every version loads', async () => {
+      const wrapper = mountSidebar({ refreshing: 'all' })
+      await flushPromises()
+
+      const button = wrapper.find('.load-data')
+      expect(button.find('.spinner-border').exists()).toBe(true)
+      expect(button.find('.mdi-poll').exists()).toBe(false)
+      expect(button.attributes('aria-busy')).toBe('true')
+      expect(button.attributes('disabled')).toBeDefined()
+      expect(wrapper.find('button[title="process.refreshVersions"]').attributes('disabled')).toBeDefined()
+    })
+
+    it('keeps its icon but holds both buttons during a plain refresh', async () => {
+      const wrapper = mountSidebar({ refreshing: 'refresh' })
+      await flushPromises()
+
+      const button = wrapper.find('.load-data')
+      expect(button.find('.spinner-border').exists()).toBe(false)
+      expect(button.attributes('aria-busy')).toBeUndefined()
+      expect(button.attributes('disabled')).toBeDefined()
+      expect(wrapper.find('button[title="process.refreshVersions"]').attributes('disabled')).toBeDefined()
+    })
+
+    it('is free to use once nothing is reloading', async () => {
+      const wrapper = mountSidebar()
+      await flushPromises()
+
+      expect(wrapper.find('.load-data').attributes('disabled')).toBeUndefined()
+      expect(wrapper.find('.load-data .mdi-poll').exists()).toBe(true)
     })
 
     it('fits itself whenever the sidebar is resized, and stops when it goes away', async () => {

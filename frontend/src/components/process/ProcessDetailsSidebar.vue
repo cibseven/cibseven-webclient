@@ -23,12 +23,16 @@
         class="load-data position-absolute d-inline-flex align-items-center"
         :class="{ 'border-0': compactLoadData }" :variant="compactLoadData ? 'btn-outline-primary' : 'outline-secondary'" size="sm"
         :title="$t('process.loadVersions')" :aria-label="compactLoadData ? $t('process.loadData') : null"
+        :disabled="!!refreshing" :aria-busy="refreshing === 'all' ? 'true' : null"
         @click="onRefreshProcessDefinitions(false)">
-        <span class="mdi mdi-18px mdi-poll" :class="{ 'lh-1': !compactLoadData }" aria-hidden="true"></span>
+        <!-- the spinner takes the place of the icon while every version's data is loading -->
+        <span v-if="refreshing === 'all'" class="load-data-spinner spinner-border" aria-hidden="true"></span>
+        <span v-else class="mdi mdi-18px mdi-poll" :class="{ 'lh-1': !compactLoadData }" aria-hidden="true"></span>
         <span v-if="!compactLoadData" class="ms-1">{{ $t('process.loadData') }}</span>
       </b-button>
       <b-button style="top: 2px; right: 30px" class="border-0 position-absolute"
         variant="btn-outline-primary" size="sm" :title="$t('process.refreshVersions')"
+        :disabled="!!refreshing"
         @click="onRefreshProcessDefinitions($root.config.lazyLoadHistory)">
         <span class="mdi mdi-18px mdi-refresh"></span>
       </b-button>
@@ -61,9 +65,9 @@
                     <div class="text-truncate">
                       {{ $t('process.details.versionTag') }}: <span class="fw-bold">{{ version.versionTag || '-' }}</span>
                     </div>
-                    <div v-if="deployments[version.deploymentId]?.deploymentTime" class="text-truncate deployment-time"
-                      :title="formatDateForTooltips(deployments[version.deploymentId].deploymentTime)">
-                      {{ $t('deployment.deploymentTime') }}: {{ formatDate(deployments[version.deploymentId].deploymentTime, 'L HH:mm') }}
+                    <div v-if="deploymentTimeOf(version)" class="text-truncate deployment-time"
+                      :title="formatDateForTooltips(deploymentTimeOf(version))">
+                      {{ $t('deployment.deploymentTime') }}: {{ formatDate(deploymentTimeOf(version), 'L HH:mm') }}
                     </div>
                     <div v-else class="text-truncate deployment-time">{{ $t('deployment.deploymentTime') }}: -</div>
                   </div>
@@ -147,7 +151,9 @@ export default {
     versionIndex: { type: String, default: '' },
     selectedInstance: { type: Object, default: null },
     // the selected definition, with the activity statistics the diagram already loaded
-    selectedProcess: { type: Object, default: null }
+    selectedProcess: { type: Object, default: null },
+    // the versions reload in progress: 'all' (every version's data) or 'refresh'
+    refreshing: { type: String, default: null }
   },
   emits: ['onDeleteProcessDefinition', 'onRefreshProcessDefinitions'],
   data() {
@@ -233,10 +239,14 @@ export default {
       const labelStart = this.$el.getBoundingClientRect().right - LOAD_DATA_RIGHT - this.loadDataWidth
       this.compactLoadData = labelStart < captionEnd + 8
     },
-    // the selected version shows its live count, the others the one they had when selected
+    // the selected version shows its live count, the others the one they had when selected or the loaded data
     incidentsOf(version) {
       if (version.id === this.selectedProcess?.id) return this.selectedIncidents
-      return this.incidentsByVersionId[version.id] ?? null
+      return this.incidentsByVersionId[version.id] ?? version.incidents
+    },
+    // from the deployment read when the version was selected, or the loaded data
+    deploymentTimeOf(version) {
+      return this.deployments[version.deploymentId]?.deploymentTime ?? version.deploymentTime ?? null
     },
     rememberSelectedIncidents() {
       if (this.selectedIncidents !== null) this.incidentsByVersionId[this.selectedProcess.id] = this.selectedIncidents
@@ -274,14 +284,23 @@ export default {
 .min-width-0 {
   min-width: 0;
 }
+/* the size of the icon it replaces, so the button keeps its size */
+.load-data-spinner {
+  width: 18px;
+  height: 18px;
+  border-width: 2px;
+}
 /* danger 20% darker, so its text reaches the contrast needed on white */
 .delete-version {
   --delete-version-color: color-mix(in srgb, var(--bs-danger) 80%, #000);
   --bs-btn-color: var(--delete-version-color);
   --bs-btn-border-color: var(--delete-version-color);
-  --bs-btn-hover-bg: var(--delete-version-color);
+  /* hover and press only tint the background, the text keeps its color */
+  --bs-btn-hover-color: var(--delete-version-color);
+  --bs-btn-hover-bg: color-mix(in srgb, var(--delete-version-color) 10%, transparent);
   --bs-btn-hover-border-color: var(--delete-version-color);
-  --bs-btn-active-bg: var(--delete-version-color);
+  --bs-btn-active-color: var(--delete-version-color);
+  --bs-btn-active-bg: color-mix(in srgb, var(--delete-version-color) 20%, transparent);
   --bs-btn-active-border-color: var(--delete-version-color);
 }
 </style>
