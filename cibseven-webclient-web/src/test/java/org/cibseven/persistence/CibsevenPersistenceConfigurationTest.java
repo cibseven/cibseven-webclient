@@ -26,8 +26,8 @@ import org.cibseven.modeler.model.ProcessDiagramEntity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.BeanFactoryAnnotationUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
+import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -50,7 +50,7 @@ class CibsevenPersistenceConfigurationTest {
 
 	/** A standalone webclient: Spring Boot auto-configures the application's JPA beans. */
 	private final ApplicationContextRunner standalone = new ApplicationContextRunner()
-		.withPropertyValues("spring.datasource.url=jdbc:h2:mem:standalone;DB_CLOSE_DELAY=-1",
+		.withPropertyValues("spring.datasource.url=jdbc:h2:mem:standalone-sb4;DB_CLOSE_DELAY=-1",
 			"spring.jpa.hibernate.ddl-auto=create-drop")
 		.withConfiguration(org.springframework.boot.autoconfigure.AutoConfigurations
 			.of(DataSourceAutoConfiguration.class, HibernateJpaAutoConfiguration.class))
@@ -172,7 +172,7 @@ class CibsevenPersistenceConfigurationTest {
 
 		@Bean
 		org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean appEntityManagerFactory(
-				org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder builder, DataSource dataSource) {
+				org.springframework.boot.jpa.EntityManagerFactoryBuilder builder, DataSource dataSource) {
 			// Deliberately scans a package without entities: the host's unit knows nothing of ours.
 			return builder.dataSource(dataSource).packages("org.cibseven.modeler.config")
 				.persistenceUnit("app").build();

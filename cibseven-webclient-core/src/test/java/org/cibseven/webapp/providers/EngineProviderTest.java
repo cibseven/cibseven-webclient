@@ -29,7 +29,7 @@ import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 
-import org.cibseven.webapp.rest.CustomRestTemplate;
+import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,7 +50,7 @@ public class EngineProviderTest {
 		mockWebServer.start();
 
 		provider = new EngineProvider();
-		ReflectionTestUtils.setField(provider, "customRestTemplate", new CustomRestTemplate());
+		ReflectionTestUtils.setField(provider, "customRestTemplate", TestRestTemplateConfiguration.jackson2CustomRestTemplate());
 		ReflectionTestUtils.setField(provider, "cibsevenUrl", "http://localhost:" + mockWebServer.getPort());
 		ReflectionTestUtils.setField(provider, "engineRestPath", "/engine-rest");
 		ReflectionTestUtils.setField(provider, "jacksonParserMaxSize", 20_000_000);

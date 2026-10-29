@@ -8,7 +8,7 @@
 	<artifactId>cibseven-webclient-web</artifactId>
 	<packaging>war</packaging>
 	<name>CIB seven webclient web</name>
-	<description>Web application module for the CIB seven webclient platform (Spring Boot 3.5.x).</description>
+	<description>Web application module for the CIB seven webclient platform (Spring Boot 4.x).</description>
 
 	<properties>
 		<!-- jacoco:check floors; measured 32.0% line / 0.0% branch. See the root pom for the rules. -->
@@ -22,11 +22,49 @@
 			<groupId>org.cibseven.webapp</groupId>
 			<artifactId>cibseven-webclient-core</artifactId>
 			<version>${project.version}</version>
+			<!--
+				cibseven-webclient-core compiles against Jackson 2 (com.fasterxml.jackson.*).
+				SB4 ships Jackson 3 (tools.jackson.*) by default; we add Jackson 2
+				back explicitly below so the shared code still works at runtime.
+			-->
 		</dependency>
 
+		<!--
+			Spring Boot 4 renamed spring-boot-starter-web to spring-boot-starter-webmvc.
+			Also pulls in tools.jackson (Jackson 3) for the wire layer.
+		-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
+			<artifactId>spring-boot-starter-webmvc</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- New in SB4: replaces RestTemplate idiom -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-restclient</artifactId>
+		</dependency>
+
+		<!--
+		    Spring Boot 4 defaults to Jackson 3 and deprecates Jackson 2 support, 
+			but still provides Jackson 2 compatibility modules.
+			cibseven-webclient-core's REST providers / model
+			classes use Jackson 2 ObjectMapper / JsonNode directly; this keeps them
+			working. Coexists with Jackson 3 (tools.jackson.*) since they're in
+			different top-level packages.
+		-->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
 		</dependency>
 
 		<dependency>
@@ -244,6 +282,17 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>com.google.cloud.tools</groupId>
+				<artifactId>jib-maven-plugin</artifactId>
+				<configuration>
+					<skip>false</skip>
+					<container>
+						<appRoot>/usr/local/tomcat/webapps/seven</appRoot>
+					</container>
+				</configuration>
 			</plugin>
 
 			<plugin>
