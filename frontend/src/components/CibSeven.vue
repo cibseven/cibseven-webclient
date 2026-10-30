@@ -18,8 +18,9 @@
 -->
 <template>
   <div class="h-100 d-flex flex-column">
-    <button v-if="$root.header === 'true'" type="button" class="btn btn-light visually-hidden-focusable position-absolute top-0 start-0 m-1 z-3"
-      @click="focusMain">{{ $t('navigation.skipToContent') }}</button>
+    <!-- Above the fixed-top header (z-index 1030), which would otherwise hide it while focused -->
+    <button v-if="$root.header === 'true'" type="button" class="btn btn-light visually-hidden-focusable position-fixed top-0 start-0 m-1"
+      style="z-index: 1031" @click="focusMain">{{ $t('navigation.skipToContent') }}</button>
     <CIBHeaderFlow v-if="$root.header === 'true'" ref="headerFlow" class="flex-shrink-0" :languages="$root.config.supportedLanguages.sort()" :user="$root.user"
       :nav-clusters="navClusters" :utility-clusters="utilityClusters" :user-items="userMenuItems"
       @logout="logout" @select="onHeaderSelect">
