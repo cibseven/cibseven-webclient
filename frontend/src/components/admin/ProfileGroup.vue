@@ -30,6 +30,9 @@
         <b-list-group-item class="border-0 px-3 py-2" :active="$route.query.tab === 'tenants'" exact :to="'?tab=tenants'">
           <span> {{ $t('admin.tenants.title') }}</span>
         </b-list-group-item>
+        <b-list-group-item v-if="canReadAuthorizations" class="border-0 px-3 py-2" :active="$route.query.tab === 'authorizations'" exact :to="'?tab=authorizations'">
+          <span> {{ $t('admin.authorizations.title') }}</span>
+        </b-list-group-item>
       </b-list-group>
     </template>
 
@@ -119,6 +122,10 @@
               </div>
             </div>
           </div>
+          <div v-else-if="$route.query.tab === 'authorizations' && canReadAuthorizations" class="row pt-3 ps-4 pe-4">
+            <IdentityAuthorizations :group-id="group.id"
+              :title="$t('admin.authorizations.identity.title', [group.id])"></IdentityAuthorizations>
+          </div>
         </div>
 
         <b-modal ref="assignTenantsModal" :title="$t('admin.tenants.addTo')" size="lg">
@@ -168,10 +175,13 @@ import { notEmpty } from '@/components/admin/utils.js'
 import { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ConfirmDialog } from '@cib/common-frontend'
 import { mapActions, mapGetters } from 'vuex'
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
+import IdentityAuthorizations from '@/components/admin/IdentityAuthorizations.vue'
+import { permissionsMixin } from '@/permissions.js'
 
 export default {
   name: 'ProfileGroup',
-  components: { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ConfirmDialog, CellActionButton },
+  components: { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ConfirmDialog, CellActionButton, IdentityAuthorizations },
+  mixins: [permissionsMixin],
   data: function() {
     return {
       leftOpen: true,
@@ -195,7 +205,11 @@ export default {
     }
   },
   computed: {
-    ...mapGetters(['tenants'])
+    ...mapGetters(['tenants']),
+    canReadAuthorizations() {
+      // The list is read through the admin authorization endpoint, so it is offered to authorization admins only.
+      return this.applicationPermissions(this.$root.config.permissions.authorizationsManagement, 'authorization')
+    }
   },
   created: function() {
     if (this.$route.params.groupId) this.loadGroup(this.$route.params.groupId)

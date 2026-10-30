@@ -367,8 +367,16 @@ describe('CibSeven.vue', () => {
       const vm = {
         $t: t,
         $route: route(),
-        $root: { user: { id: 'ada' }, config: { layout: { showFeedbackButton: true, showInfoAndHelp: true, showUserSettings: true } } },
+        $root: {
+          user: { id: 'ada' },
+          config: {
+            layout: { showFeedbackButton: true, showInfoAndHelp: true, showUserSettings: true },
+            permissions: { authorizationsManagement: { authorization: ['ALL'] } }
+          }
+        },
         permissionsUserProfile: true,
+        // Not an authorization admin unless a test says so
+        applicationPermissions: vi.fn(() => false),
         helpMenuItems: [
           { type: 'link', href: 'https://help', title: 'help.title', tooltip: 'help.tooltip' },
           { type: 'button', ref: 'about', title: 'about.title', tooltip: 'about.tooltip' }
@@ -463,6 +471,21 @@ describe('CibSeven.vue', () => {
 
       vm.$root.config.userPasswordChangeEnabled = false
       expect(CibSeven.computed.userMenuItems.call(vm).map(i => i.key)).not.toContain('account')
+    })
+
+    // Same condition as the account page's own "Authorizations" tab
+    it('offers the authorizations tab only to authorization admins', () => {
+      const vm = shell()
+      expect(CibSeven.computed.userMenuItems.call(vm).map(i => i.key)).not.toContain('authorizations')
+      expect(vm.applicationPermissions).toHaveBeenCalledWith({ authorization: ['ALL'] }, 'authorization')
+
+      vm.applicationPermissions.mockReturnValue(true)
+      const items = CibSeven.computed.userMenuItems.call(vm)
+      expect(items.map(i => i.key)).toEqual(['profile', 'groups', 'tenants', 'authorizations', 'preferences'])
+      expect(items.find(i => i.key === 'authorizations')).toEqual({
+        key: 'authorizations', label: 't:admin.authorizations.title', tooltip: 't:admin.authorizations.tooltip',
+        to: { name: 'account', params: { userId: 'ada' }, query: { tab: 'authorizations' } }, active: false
+      })
     })
 
     it('opens the dialog a header item asks for', () => {

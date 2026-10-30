@@ -731,6 +731,12 @@
 			"permissions": "Permissions",
 			"resourceId": "Resource ID",
 			"actions": "Actions",
+			"resourceType": "Resource type",
+			"identity": {
+				"title": "Authorizations of {0}",
+				"includeWildcard": "Include authorizations for all users and groups (*)",
+				"userHint": "This list shows only the authorizations explicitly assigned to this user (and, if switched on, those for all users and groups). These are not the effective permissions: authorizations the user gets through group memberships are listed on the pages of those groups, and DENY and GLOBAL entries are not applied."
+			},
 			"buttons": {
 				"edit": "Edit authorization",
 				"delete": "Delete authorization",

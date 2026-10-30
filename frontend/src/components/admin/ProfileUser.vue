@@ -33,6 +33,9 @@
         <b-list-group-item v-if="!user.noInfo" class="border-0 px-3 py-2" :active="selectedTab === 'tenants'" exact :to="'?tab=tenants'">
           <span> {{ $t('admin.tenants.title') }}</span>
         </b-list-group-item>
+        <b-list-group-item v-if="canReadAuthorizations" class="border-0 px-3 py-2" :active="selectedTab === 'authorizations'" exact :to="'?tab=authorizations'">
+          <span> {{ $t('admin.authorizations.title') }}</span>
+        </b-list-group-item>
         <b-list-group-item v-if="$root.user && $root.user.id === user.id" class="border-0 px-3 py-2"
           :active="selectedTab === 'preferences'" exact :to="'?tab=preferences'">
           <span> {{ $t('admin.preferences.title') }}</span>
@@ -171,6 +174,12 @@
             </ContentBlock>
           </div>
 
+          <!-- Authorizations Tab -->
+          <div v-else-if="selectedTab === 'authorizations' && canReadAuthorizations" class="row pt-3 ps-4 pe-4">
+            <IdentityAuthorizations :user-id="user.id"
+              :title="$t('admin.authorizations.identity.title', [user.id])"></IdentityAuthorizations>
+          </div>
+
           <!-- Preferences Tab -->
           <div v-else-if="selectedTab === 'preferences'" class="row pt-3 ps-4 pe-4">
             <ProfilePreferencesTab></ProfilePreferencesTab>
@@ -264,13 +273,16 @@ import { AdminService, SetupService } from '@/services.js'
 import { notEmpty, same } from '@/components/admin/utils.js'
 import { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ContentBlock } from '@cib/common-frontend'
 import ProfilePreferencesTab from '@/components/admin/ProfilePreferencesTab.vue'
+import IdentityAuthorizations from '@/components/admin/IdentityAuthorizations.vue'
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import { mapActions, mapGetters } from 'vuex'
 import SecureInput from '@/components/login/SecureInput.vue'
+import { permissionsMixin } from '@/permissions.js'
 
 export default {
   name: 'ProfileUser',
-  components: { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ProfilePreferencesTab, ContentBlock, CellActionButton, SecureInput },
+  components: { SidebarsFlow, FlowTable, SuccessAlert, CIBForm, ProfilePreferencesTab, ContentBlock, CellActionButton, SecureInput, IdentityAuthorizations },
+  mixins: [permissionsMixin],
   inject: ['AuthService'],
   props: {
     editMode: {
@@ -387,6 +399,10 @@ export default {
     },
     canChangePassword() {
       return !this.user.noInfo && this.$root.config.userEditable && this.$root.config.userPasswordChangeEnabled
+    },
+    canReadAuthorizations() {
+      // The list is read through the admin authorization endpoint, so it is offered to authorization admins only.
+      return this.applicationPermissions(this.$root.config.permissions.authorizationsManagement, 'authorization')
     }
   },
   created: function () {
