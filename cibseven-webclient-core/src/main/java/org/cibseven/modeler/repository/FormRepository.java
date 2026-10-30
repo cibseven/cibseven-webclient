@@ -21,9 +21,11 @@ import java.util.List;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import org.cibseven.modeler.model.FormEntity;
 
@@ -49,5 +51,19 @@ public interface FormRepository extends JpaRepository<FormEntity, String> {
 	List<FormEntity> findByFolderIdIn(Collection<String> folderIds);
 
 	long countByFolderIdIn(Collection<String> folderIds);
+
+	@Transactional
+	@Modifying
+	@Query(value = "DELETE FROM MOD_FORMS_AUD fa " +
+		" WHERE fa.form_schema IS NOT NULL " +
+  		" AND fa.version IS NOT NULL " +
+  		" AND ( " +
+    	" SELECT COUNT(*) " +
+    	" FROM MOD_FORMS_AUD newer " +
+     	" WHERE newer.id = fa.id " +
+      	" AND newer.version IS NOT NULL " +
+       	" AND newer.version > fa.version " +
+  		") >= :versionLimit", nativeQuery = true)
+	void deleteOldRecords(@Param("versionLimit") int versionLimit);
 
 }
