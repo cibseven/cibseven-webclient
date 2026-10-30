@@ -1211,7 +1211,8 @@
 	"navigation": {
 		"home": "Домашняя страница",
 		"menu": "Меню навигации",
-		"infoAndHelp": "Информация и помощь"
+		"infoAndHelp": "Информация и помощь",
+		"skipToContent": "Перейти к основному содержимому"
 	},
 	"infoAndHelp": {
 		"flowLinkTerms": "Условия использования",

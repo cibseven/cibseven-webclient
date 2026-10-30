@@ -58,6 +58,43 @@ describe('CibSeven.vue', () => {
     })
   })
 
+  // Keyboard users skip the header; page changes (router.js) focus the same element by its id
+  describe('skip link', () => {
+    const mountShell = (header) => shallowMount(CibSeven, {
+      attachTo: document.body,
+      global: {
+        mocks: {
+          user: { id: 'demo' }, header, $t: key => key, $route: { path: '/seven/auth/start', name: 'start', meta: {} },
+          config: { permissions: {}, layout: {}, supportedLanguages: [] },
+          $store: { state: { process: { list: [] } }, getters: {}, dispatch: vi.fn(() => Promise.resolve()) }
+        },
+        provide: { isMobile: false },
+        // A plain header stub: the generated one declares a `user` prop, which clashes with the `user` mock
+        stubs: { 'router-view': true, 'b-modal': true, CIBHeaderFlow: { template: '<header></header>' } }
+      }
+    })
+
+    it('comes first on the page and moves the focus to the main content', async () => {
+      const wrapper = mountShell('true')
+
+      const skip = wrapper.find('button')
+      expect(skip.text()).toBe('navigation.skipToContent')
+      expect(wrapper.element.firstElementChild).toBe(skip.element)
+
+      await skip.trigger('click')
+
+      expect(document.activeElement.id).toBe('main-content')
+      expect(wrapper.find('main').attributes('tabindex')).toBe('-1')
+      wrapper.unmount()
+    })
+
+    it('is not offered without the header', () => {
+      const wrapper = mountShell('false')
+      expect(wrapper.find('button').exists()).toBe(false)
+      wrapper.unmount()
+    })
+  })
+
   describe('admin menu', () => {
     const adminItems = (adminPluginEntries) => {
       const context = {
