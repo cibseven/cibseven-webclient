@@ -188,7 +188,11 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		Collection<Process> processes = Arrays.asList(((ResponseEntity<Process[]>) doGet(url, Process[].class, user, false)).getBody());		
 
 		if (!lazyLoad.isPresent() || (lazyLoad.isPresent() && !lazyLoad.get())) {
+			Map<String, Long> incidentsById = countIncidentsByDefinitionId(user);
 			for(Process process : processes) {
+				process.setIncidents(incidentsById.getOrDefault(process.getId(), 0L));
+				process.setDeploymentTime(findDeploymentTime(process.getDeploymentId(), user));
+
 				String urlInstances = getEngineRestUrl(user) + "/history/process-instance/count?processDefinitionId=" + process.getId();
 
 				JsonNode body = ((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody();
@@ -211,6 +215,32 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 			}
 		}
 		return processes;
+	}
+
+	/** Open incidents per version, from the engine-wide statistics (the engine cannot filter them by key). */
+	private Map<String, Long> countIncidentsByDefinitionId(CIBUser user) {
+		Map<String, Object> queryParams = new HashMap<>();
+		queryParams.put("incidents", true);
+		Map<String, Long> incidentsById = new HashMap<>();
+		for (ProcessStatistics stats : getProcessStatistics(queryParams, user)) {
+			if (stats.getId() != null && stats.getIncidents() != null)
+				incidentsById.put(stats.getId(), stats.getIncidents().stream()
+						.mapToLong(incident -> incident.getIncidentCount() != null ? incident.getIncidentCount() : 0).sum());
+		}
+		return incidentsById;
+	}
+
+	/** The engine has no deployment time on the process definition; left out when the deployment cannot be read. */
+	private String findDeploymentTime(String deploymentId, CIBUser user) {
+		if (deploymentId == null)
+			return null;
+		try {
+			JsonNode deployment = ((ResponseEntity<JsonNode>) doGet(getEngineRestUrl(user) + "/deployment/" + deploymentId, JsonNode.class, user, false)).getBody();
+			return deployment != null && deployment.hasNonNull("deploymentTime") ? deployment.get("deploymentTime").asText() : null;
+		} catch (RuntimeException e) {
+			log.debug("Deployment time of {} not available: {}", deploymentId, e.getMessage());
+			return null;
+		}
 	}
 
 	@Override

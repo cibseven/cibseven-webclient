@@ -383,6 +383,15 @@ describe('ProcessDefinitionView - statistics placeholders', () => {
     )).toBe(true)
   })
 
+  // the backend sends 0 incidents when it did not count them
+  it('should placeholder the incidents when lazy loading', () => {
+    const vm = context({ processDefinitions: [version({ incidents: 0 })] })
+
+    m.resetStatsLazyLoad.call(vm, true)
+
+    expect(vm.processDefinitions[0].incidents).toBe('-')
+  })
+
   it('should leave the counts alone when not lazy loading', () => {
     const vm = context({ processDefinitions: [version({ runningInstances: 5 })] })
 
@@ -676,6 +685,29 @@ describe('ProcessDefinitionView - onRefreshProcessDefinitions', () => {
     await m.onRefreshProcessDefinitions.call(vm, false)
 
     expect(vm.loadProcessVersion).not.toHaveBeenCalled()
+  })
+
+  it('should tell which reload is running while it runs', async () => {
+    const vm = context({ process: version(), resetStatsLazyLoad: vi.fn(), loadProcessVersion: vi.fn() })
+    let seen
+    ProcessService.findProcessVersionsByDefinitionKey.mockImplementation(async () => { seen = vm.refreshingVersions; return [version()] })
+
+    await m.onRefreshProcessDefinitions.call(vm, false)
+    expect(seen).toBe('all')
+    expect(vm.refreshingVersions).toBeNull()
+
+    await m.onRefreshProcessDefinitions.call(vm, true)
+    expect(seen).toBe('refresh')
+    expect(vm.refreshingVersions).toBeNull()
+  })
+
+  it('should end the reload state when the versions cannot be loaded', async () => {
+    const vm = context({ resetStatsLazyLoad: vi.fn(), loadProcessVersion: vi.fn() })
+    ProcessService.findProcessVersionsByDefinitionKey.mockRejectedValue(new Error('down'))
+
+    await expect(m.onRefreshProcessDefinitions.call(vm, false)).rejects.toThrow('down')
+
+    expect(vm.refreshingVersions).toBeNull()
   })
 })
 

@@ -22,7 +22,7 @@
       <b-button :disabled="!instances || instances.length === 0" :title="$t('process.exportInstances')" variant="outline-secondary" @click="exportCSV()"
         class="ms-auto me-3 mdi mdi-18px mdi-download-outline border-0"></b-button>
     </div>
-    <SidebarsFlow ref="sidebars" class="border-top overflow-auto" :left-open="leftOpen" @update:left-open="onLeftOpenChanged" :left-caption="shortendLeftCaption">
+    <SidebarsFlow ref="sidebars" class="border-top overflow-auto capped-left-sidebar" :left-open="leftOpen" @update:left-open="onLeftOpenChanged" :left-caption="shortendLeftCaption">
       <template v-slot:left>
         <template v-if="errorVersionNotFound !== null">
           <WarningBox :message="$t('process.definitionVersionNotFound', [errorVersionNotFound])"/>
@@ -32,6 +32,8 @@
           :process-key="processKey"
           :process-definitions="processDefinitions"
           :version-index="computedVersionIndex"
+          :selected-process="process"
+          :refreshing="refreshingVersions"
           @on-refresh-process-definitions="onRefreshProcessDefinitions"
           @on-delete-process-definition="onDeleteProcessDefinition"
           :selected-instance="selectedInstance"
@@ -146,6 +148,7 @@ export default {
       leftOpen: this.getSavedLeftOpen(this.instanceId ? 'process-instance' : 'process-definition'),
       process: null, // selected process definition
       processDefinitions: [],
+      refreshingVersions: null,
       errorVersionNotFound: null,
       errorLoadingInstanceId: null,
       selectedInstance: null,
@@ -328,13 +331,19 @@ export default {
     // - user have deleted a non-selected process definition (this.process is still valid)
     // - user clicked "refresh process definitions" button
     async onRefreshProcessDefinitions(lazyLoad) {
-      const versions = await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, lazyLoad)
-      this.processDefinitions = versions
-      if (this.processDefinitions.length > 0) {
-        this.resetStatsLazyLoad(lazyLoad)
-        await this.loadProcessVersion(this.process)
+      // 'all' when every version's data is loaded, shown on the sidebar's load button
+      this.refreshingVersions = lazyLoad ? 'refresh' : 'all'
+      try {
+        const versions = await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, lazyLoad)
+        this.processDefinitions = versions
+        if (this.processDefinitions.length > 0) {
+          this.resetStatsLazyLoad(lazyLoad)
+          await this.loadProcessVersion(this.process)
+        }
+        return versions
+      } finally {
+        this.refreshingVersions = null
       }
-      return versions
     },
     resetStatsLazyLoad(lazyLoad) {
       if (lazyLoad) {
@@ -342,6 +351,7 @@ export default {
           v.runningInstances = '-'
           v.allInstances = '-'
           v.completedInstances = '-'
+          v.incidents = '-'
         })
       }
     },
@@ -481,3 +491,19 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+/* caps the left sidebar (25% by default) on large screens; the middle column follows it */
+@media (min-width: 992px) {
+  .capped-left-sidebar {
+    --left-sidebar-width: min(25%, 22.5rem);
+  }
+  .capped-left-sidebar > :deep(.border-end.position-absolute) {
+    max-width: var(--left-sidebar-width);
+  }
+  .capped-left-sidebar > :deep(.sidebars-middle[class*="offset-"]) {
+    margin-left: var(--left-sidebar-width);
+    width: calc(100% - var(--left-sidebar-width));
+  }
+}
+</style>
