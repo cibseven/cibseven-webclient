@@ -106,5 +106,15 @@ describe('config utility', () => {
       // 15 is the engine's REPORT, which the defaults used to label as optimize
       expect(config.admin.resourcesTypes['15']).toBeUndefined()
     })
+
+    it('should not offer the deprecated report and dashboard resource types', () => {
+      const config = applyConfigDefaults({ admin: { resourcesTypes: {} } })
+      const keys = Object.values(config.admin.resourcesTypes).map(resourceType => resourceType.key)
+      expect(keys).not.toContain('report')
+      expect(keys).not.toContain('dashboard')
+      // 16 is the engine's DASHBOARD, which the defaults used to label as operationLogCategory
+      expect(keys).not.toContain('operationLogCategory')
+      expect(config.admin.resourcesTypes['16']).toBeUndefined()
+    })
   })
 })
