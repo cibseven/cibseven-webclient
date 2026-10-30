@@ -24,6 +24,7 @@ import java.util.Map;
 import org.cibseven.bpm.engine.externaltask.ExternalTaskQuery;
 import org.cibseven.bpm.engine.rest.dto.externaltask.ExternalTaskDto;
 import org.cibseven.bpm.engine.rest.dto.externaltask.ExternalTaskQueryDto;
+import org.cibseven.bpm.engine.rest.dto.history.batch.HistoricBatchQueryDto;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.SystemException;
@@ -43,17 +44,13 @@ public class DirectExternalTaskProvider implements IExternalTaskProvider {
 		Integer maxResults = directProviderUtil.getMaxResults(params);
 		Map<String, Object> queryParams = directProviderUtil.withoutPagingParams(params);
 
-		ExternalTaskQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(queryParams, ExternalTaskQueryDto.class);
+		ExternalTaskQueryDto queryDto = directProviderUtil.parseQueryDto(queryParams, ExternalTaskQueryDto.class, user);
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
 		ExternalTaskQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 		List<org.cibseven.bpm.engine.externaltask.ExternalTask> matchingTasks = QueryUtil.list(query, firstResult, maxResults);
 
-		List<ExternalTask> taskResults = new ArrayList<>();
-		for (org.cibseven.bpm.engine.externaltask.ExternalTask task : matchingTasks) {
-			ExternalTaskDto resultInstance = ExternalTaskDto.fromExternalTask(task);
-			taskResults.add(directProviderUtil.convertValue(resultInstance, ExternalTask.class, user));
-		}
-		return taskResults;
+		return directProviderUtil.listAndConvert(query, null, null, ExternalTaskDto::fromExternalTask, ExternalTask.class, user);
+
 	}
 
 }
