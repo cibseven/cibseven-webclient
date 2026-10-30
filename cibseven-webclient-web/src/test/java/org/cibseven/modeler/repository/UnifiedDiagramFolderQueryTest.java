@@ -23,9 +23,9 @@ import org.cibseven.modeler.model.ProcessDiagramEntity;
 import org.cibseven.modeler.provider.ProjectGuard;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
-import org.springframework.boot.autoconfigure.sql.init.SqlInitializationAutoConfiguration;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
+import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceInitializationAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.data.domain.PageRequest;
 
@@ -55,7 +55,7 @@ class UnifiedDiagramFolderQueryTest {
 				"spring.sql.init.schema-locations=classpath:modeler-folders-before.sql,classpath:modeler-folders-migration.sql",
 				"spring.jpa.hibernate.ddl-auto=none")
 			.withConfiguration(AutoConfigurations.of(DataSourceAutoConfiguration.class,
-				HibernateJpaAutoConfiguration.class, SqlInitializationAutoConfiguration.class))
+				HibernateJpaAutoConfiguration.class, DataSourceInitializationAutoConfiguration.class))
 			.withUserConfiguration(ModelerPersistenceConfiguration.class);
 	}
 

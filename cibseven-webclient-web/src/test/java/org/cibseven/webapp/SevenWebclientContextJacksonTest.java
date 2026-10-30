@@ -21,12 +21,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
+import java.util.stream.StreamSupport;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverters;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.support.RootBeanDefinition;
@@ -97,12 +96,13 @@ class SevenWebclientContextJacksonTest {
 	}
 
 	@Test
+	@SuppressWarnings("removal")
 	void wiresTheConfiguredMapperIntoTheJsonConverter() throws JsonProcessingException {
 		// The defect was only user-visible through this wiring, so guard it explicitly.
 		SevenWebclientContext context = newContext(false);
-		List<HttpMessageConverter<?>> converters = new ArrayList<>();
-		context.configureMessageConverters(converters);
-		MappingJackson2HttpMessageConverter json = converters.stream()
+		HttpMessageConverters.ServerBuilder builder = HttpMessageConverters.forServer();
+		context.configureMessageConverters(builder);
+		MappingJackson2HttpMessageConverter json = StreamSupport.stream(builder.build().spliterator(), false)
 				.filter(MappingJackson2HttpMessageConverter.class::isInstance)
 				.map(MappingJackson2HttpMessageConverter.class::cast)
 				.findFirst().orElseThrow();

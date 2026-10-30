@@ -28,7 +28,7 @@ vi.mock('@/globals.js', async (importOriginal) => {
 const {
   TaskService, FilterService, ProcessService, VariableInstanceService, HistoricVariableInstanceService,
   AdminService, JobService, JobDefinitionService, SystemService, HistoryService, IncidentService,
-  AuthService, InfoService, FormsService, TemplateService, DecisionService, AnalyticsService,
+  AuthService, InfoService, ElementTemplateService, FormsService, TemplateService, DecisionService, AnalyticsService,
   BatchService, TenantService, ExternalTaskService, DeploymentService, EngineService, SetupService,
   getServicesBasePath, setServicesBasePath, createDocumentEndpointUrl, joinArrayParams
 } = await import('@/services.js')
@@ -474,7 +474,8 @@ describe('small services', () => {
     { name: 'AuthService.passwordRecover', verb: 'post', call: () => AuthService.passwordRecover({ email: 'a@b.c' }), args: [`${BASE}/auth/password-recover`, { email: 'a@b.c' }] },
     { name: 'AuthService.passwordRecoverCheck sends the recovery token as the header', verb: 'get', call: () => AuthService.passwordRecoverCheck('tok'), args: [`${BASE}/auth/password-recover-check`, { headers: { authorization: 'tok' } }] },
     { name: 'AuthService.passwordRecoverUpdatePassword', verb: 'put', call: () => AuthService.passwordRecoverUpdatePassword('demo', 'new', 'old', 'tok'), args: [`${BASE}/auth/password-recovery-update-password/demo`, { password: 'new', authenticatedUserPassword: 'old' }, { headers: { authorization: 'tok' } }] },
-    { name: 'InfoService.getVersion is not base-path prefixed', verb: 'get', call: () => InfoService.getVersion(), args: ['info'] }
+    { name: 'InfoService.getVersion is not base-path prefixed', verb: 'get', call: () => InfoService.getVersion(), args: ['info'] },
+    { name: 'ElementTemplateService.findAll', verb: 'get', call: () => ElementTemplateService.findAll(), args: [`${BASE}/modeler/element-templates`] }
   ])
 })
 

@@ -1105,7 +1105,9 @@
 		},
 		"modeler": {
 			"title": "Modeler",
-			"tooltip": "Open Modeler to design and edit BPMN, DMN, and Forms"
+			"tooltip": "Open Modeler to design and edit BPMN, DMN, and Forms",
+			"loading": "Loading the modeler...",
+			"loadFailed": "The modeler could not be loaded. Reload the page to try again."
 		},
 		"account": {
 			"profile": {

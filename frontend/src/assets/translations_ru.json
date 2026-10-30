@@ -1105,7 +1105,9 @@
 		},
 		"modeler": {
 			"title": "Modeler",
-			"tooltip": "Открыть Modeler для проектирования и редактирования BPMN, DMN и форм"
+			"tooltip": "Открыть Modeler для проектирования и редактирования BPMN, DMN и форм",
+			"loading": "Загрузка Modeler...",
+			"loadFailed": "Не удалось загрузить Modeler. Перезагрузите страницу, чтобы попробовать снова."
 		},
 		"account": {
 			"profile": {
