@@ -26,6 +26,8 @@
         <template #tasklist><strong>tasklist</strong></template>
         <template #cockpit><strong>cockpit</strong></template>
         <template #admin><strong>admin</strong></template>
+        <template #userProfile><strong>userProfile</strong></template>
+        <template #ins7ght><strong>ins7ght</strong></template>
         <template #modeler><strong>modeler</strong></template>
         <template #access><strong>Access</strong></template>
         <template #all><strong>All</strong></template>
@@ -35,7 +37,6 @@
         <template #createBatch><strong>CREATE_BATCH_*</strong></template>
         <template #systemSettings><strong>{{ $t('admin.authorizations.resourcesTypesDescriptionsTerms.systemSettings') }}</strong></template>
         <template #userOperationLog><strong>{{ $t('admin.authorizations.resourcesTypesDescriptionsTerms.userOperationLog') }}</strong></template>
-        <template #operationLog><strong>{{ $t('admin.authorizations.resourcesTypesDescriptionsTerms.operationLog') }}</strong></template>
         <template #br><br></template>
       </i18n-t>
       <div class="row align-items-center px-4">

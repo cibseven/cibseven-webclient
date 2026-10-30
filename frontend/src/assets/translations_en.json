@@ -765,16 +765,13 @@
 				"tenantMembership": "Tenant Membership",
 				"batch": "Batch",
 				"decisionRequirements": "Decision Requirements Definition",
-				"report": "Report",
-				"dashboard": "Dashboard",
 				"userOperationLogCategory": "User Operation Log Category",
 				"historicTask": "Historic Task",
 				"historicProcessInstance": "Historic Process Instance",
-				"operationLogCategory": "Operation Log Category",
 				"property": "Property"
 			},
 			"resourcesTypesDescriptions": {
-				"application": "Controls which web applications a user or group is allowed to open, e.g. {tasklist}, {cockpit}, {admin}, or {modeler}. This resource only supports the {access} permission.",
+				"application": "Controls which web applications a user or group is allowed to open, e.g. {tasklist}, {cockpit}, {admin}, {userProfile}, {ins7ght} or {modeler}. This resource only supports the {access} permission.",
 				"user": "Controls who may view, create, edit, or delete user accounts, and whether users can see each other’s basic information, e.g. when picking a task assignee.",
 				"group": "Controls who may view, create, edit, or delete groups.",
 				"groupMembership": "Controls who may add users to a group or remove them from it.",
@@ -790,18 +787,14 @@
 				"tenantMembership": "Controls who may assign users and groups to a tenant, or remove them from it.",
 				"batch": "Controls who may create or cancel batch operations, i.e. bulk actions such as process instance migration, restart, deletion, or mass variable updates.{br}{create} controls all batch operations. Each {createBatch} permission controls one specific operation on top of {create}, overriding it.",
 				"decisionRequirements": "Controls who may view a decision requirements definition, i.e. the graph showing how a set of related {dmn} decisions depend on each other.",
-				"report": "Controls who may view or manage saved reports.",
-				"dashboard": "Controls who may view or manage saved dashboards.",
 				"userOperationLogCategory": "Controls who may read the {userOperationLog} audit trail recorded per task or process instance, grouped into categories such as task worker, admin, or operator actions.",
 				"historicTask": "Controls who may view the historic data kept for a task after it has been completed.",
 				"historicProcessInstance": "Controls who may view or delete the historic data of a process instance after it has finished.",
-				"operationLogCategory": "Controls who may read or delete entries in the engine-wide {operationLog} shown in Cockpit — a single searchable audit trail across the whole engine.",
 				"property": "Controls who may view or change internal engine configuration entries stored as key/value properties, not application-level settings."
 			},
 			"resourcesTypesDescriptionsTerms": {
 				"systemSettings": "System Settings",
-				"userOperationLog": "User Operations",
-				"operationLog": "Operation Log"
+				"userOperationLog": "User Operations"
 			},
 			"unselectAll": "Unselect All",
 			"selectAll": "Select All",
