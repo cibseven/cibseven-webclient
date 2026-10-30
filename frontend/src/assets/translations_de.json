@@ -734,7 +734,8 @@
 			"resourceType": "Ressourcentyp",
 			"identity": {
 				"title": "Berechtigungen von {0}",
-				"includeWildcard": "Berechtigungen für alle Benutzer und Gruppen (*) einbeziehen"
+				"includeWildcard": "Berechtigungen für alle Benutzer und Gruppen (*) einbeziehen",
+				"userHint": "Diese Liste zeigt nur die Berechtigungen, die diesem Benutzer explizit zugewiesen sind (und, falls eingeschaltet, die für alle Benutzer und Gruppen). Es sind nicht die effektiven Berechtigungen: Berechtigungen, die der Benutzer über Gruppenmitgliedschaften erhält, stehen auf den Seiten dieser Gruppen, und DENY- sowie GLOBAL-Einträge werden nicht verrechnet."
 			},
 			"buttons": {
 				"edit": "Berechtigung bearbeiten",

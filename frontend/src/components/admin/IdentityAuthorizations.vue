@@ -17,34 +17,43 @@
 
 -->
 <template>
-  <ContentBlock :title="title" class="mb-3">
-    <template v-slot:actions>
-      <b-form-checkbox v-model="includeWildcard" switch>
-        {{ $t('admin.authorizations.identity.includeWildcard') }}
-      </b-form-checkbox>
-    </template>
+  <div>
 
-    <div v-if="rows.length > 0" class="p-0">
-      <FlowTable striped :items="rows" primary-key="id" :fields="fields">
-        <template v-slot:cell(resourceTypeName)="row">
-          <router-link v-if="resourceTypeRoute(row.item.resourceType)" :to="resourceTypeRoute(row.item.resourceType)">
-            {{ row.item.resourceTypeName }}
-          </router-link>
-          <span v-else>{{ row.item.resourceTypeName }}</span>
-        </template>
-        <template v-slot:cell(userIdGroupId)="row">
-          <span class="mdi" :class="row.item.userId != null ? 'mdi-account' : 'mdi-account-group'" aria-hidden="true"></span>
-          {{ row.item.userIdGroupId }}
-        </template>
-      </FlowTable>
+    <!-- A user's own entries are only part of what the user may do, so this must not pass for the effective permissions -->
+    <div v-if="userId" class="alert alert-info d-flex align-items-center mb-3" role="note">
+      <span class="mdi mdi-24px mdi-information-outline me-3" aria-hidden="true"></span>
+      <span>{{ $t('admin.authorizations.identity.userHint') }}</span>
     </div>
-    <div v-else-if="loading" class="text-center p-4">
-      <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
-    </div>
-    <span v-else class="d-block text-center p-4">
-      {{ $t('admin.noResults') }}
-    </span>
-  </ContentBlock>
+
+    <ContentBlock :title="title" class="mb-3">
+      <template v-slot:actions>
+        <b-form-checkbox v-model="includeWildcard" switch>
+          {{ $t('admin.authorizations.identity.includeWildcard') }}
+        </b-form-checkbox>
+      </template>
+
+      <div v-if="rows.length > 0" class="p-0">
+        <FlowTable striped :items="rows" primary-key="id" :fields="fields">
+          <template v-slot:cell(resourceTypeName)="row">
+            <router-link v-if="resourceTypeRoute(row.item.resourceType)" :to="resourceTypeRoute(row.item.resourceType)">
+              {{ row.item.resourceTypeName }}
+            </router-link>
+            <span v-else>{{ row.item.resourceTypeName }}</span>
+          </template>
+          <template v-slot:cell(userIdGroupId)="row">
+            <span class="mdi" :class="row.item.userId != null ? 'mdi-account' : 'mdi-account-group'" aria-hidden="true"></span>
+            {{ row.item.userIdGroupId }}
+          </template>
+        </FlowTable>
+      </div>
+      <div v-else-if="loading" class="text-center p-4">
+        <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
+      </div>
+      <span v-else class="d-block text-center p-4">
+        {{ $t('admin.noResults') }}
+      </span>
+    </ContentBlock>
+  </div>
 </template>
 
 <script>

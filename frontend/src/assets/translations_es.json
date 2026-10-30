@@ -734,7 +734,8 @@
 			"resourceType": "Tipo de recurso",
 			"identity": {
 				"title": "Autorizaciones de {0}",
-				"includeWildcard": "Incluir autorizaciones para todos los usuarios y grupos (*)"
+				"includeWildcard": "Incluir autorizaciones para todos los usuarios y grupos (*)",
+				"userHint": "Esta lista muestra solo las autorizaciones asignadas explícitamente a este usuario (y, si está activado, las de todos los usuarios y grupos). No son los permisos efectivos: las autorizaciones que el usuario obtiene a través de sus grupos aparecen en las páginas de esos grupos, y las entradas DENY y GLOBAL no se aplican."
 			},
 			"buttons": {
 				"edit": "Editar autorización",

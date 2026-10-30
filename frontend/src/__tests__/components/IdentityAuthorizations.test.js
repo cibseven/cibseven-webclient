@@ -323,6 +323,26 @@ describe('IdentityAuthorizations rendered', () => {
     expect(AdminService.findAuthorizations).toHaveBeenCalledWith({ groupIdIn: '*' })
   })
 
+  // A user's own entries leave out what the user gets through groups, so the list must not pass for the effective permissions
+  it('warns above a user\'s list that it holds only the explicitly assigned authorizations', async () => {
+    const wrapper = mountHost({ userId: 'demo' })
+    await settle()
+
+    const banner = wrapper.find('.alert-info')
+    expect(banner.exists()).toBe(true)
+    expect(banner.text()).toBe('admin.authorizations.identity.userHint')
+    expect(banner.find('.mdi').attributes('aria-hidden')).toBe('true')
+    // The banner sits above the content block, not inside it
+    expect(wrapper.find('section .alert-info').exists()).toBe(false)
+  })
+
+  it('shows no such banner above a group\'s list', async () => {
+    const wrapper = mountHost({ groupId: 'sales' })
+    await settle()
+
+    expect(wrapper.find('.alert-info').exists()).toBe(false)
+  })
+
   it('shows the loading state while the request is pending', async () => {
     AdminService.findAuthorizations.mockImplementationOnce(() => new Promise(() => {}))
     const wrapper = mountHost({ userId: 'demo' })
