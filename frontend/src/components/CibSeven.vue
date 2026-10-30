@@ -18,6 +18,9 @@
 -->
 <template>
   <div class="h-100 d-flex flex-column">
+    <!-- Above the fixed-top header (z-index 1030), which would otherwise hide it while focused -->
+    <button v-if="$root.header === 'true'" type="button" class="btn btn-light visually-hidden-focusable position-fixed top-0 start-0 m-1"
+      style="z-index: 1031" @click="focusMain">{{ $t('navigation.skipToContent') }}</button>
     <CIBHeaderFlow v-if="$root.header === 'true'" ref="headerFlow" class="flex-shrink-0" :languages="$root.config.supportedLanguages.sort()" :user="$root.user"
       :nav-clusters="navClusters" :utility-clusters="utilityClusters" :user-items="userMenuItems"
       @logout="logout" @select="onHeaderSelect">
@@ -53,7 +56,8 @@
       <PluginSlot name="app-banner" :params="{ user: $root.user }"></PluginSlot>
     </div>
 
-    <main class="flex-grow-1 overflow-hidden d-flex flex-column">
+    <!-- Focus target of the skip link and of page changes (router.js); never interactive itself, so no ring -->
+    <main id="main-content" ref="main" tabindex="-1" class="flex-grow-1 overflow-hidden d-flex flex-column" style="outline: none">
       <router-view class="flex-grow-1 overflow-hidden" ref="down"></router-view>
     </main>
 
@@ -298,6 +302,9 @@ export default {
       brandLink.classList.add('initial-focus')
       brandLink.focus()
       document.addEventListener('keydown', () => brandLink.classList.remove('initial-focus'), { once: true, capture: true })
+    },
+    focusMain: function() {
+      this.$refs.main.focus()
     },
     // override this method to add/remove menu items
     getVisibleMenuItems: function(items) {

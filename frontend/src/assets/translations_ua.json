@@ -1204,7 +1204,8 @@
 	"navigation": {
 		"home": "Головна сторінка",
 		"menu": "Навігаційне меню",
-		"infoAndHelp": "Інформація та допомога"
+		"infoAndHelp": "Інформація та допомога",
+		"skipToContent": "Перейти до основного вмісту"
 	},
 	"infoAndHelp": {
 		"flowLinkTerms": "Умови використання",

@@ -15,6 +15,7 @@
  *  limitations under the License.
  */
 
+import { nextTick } from 'vue'
 import { createRouter, createWebHashHistory } from 'vue-router'
 
 import { axios } from './globals.js'
@@ -444,6 +445,23 @@ function redirectToNoPermissions(to, from, permission, condition = undefined) {
   return result
 }
 
+// The route record of the page itself, below 'seven' and, when signed in, 'auth'
+function pageRecord(route) {
+  return route.matched[route.matched[1]?.name === 'auth' ? 2 : 1]
+}
+
+// When a navigation opens another page, move the focus to the main content so screen readers
+// start there instead of on the clicked link or the body. Navigation within a page (another
+// filter, task or tab) leaves the focus where the user is, and so does a view that focused
+// something of its own. The first load is handled by CibSeven.
+function focusMainOnPageChange(to, from, failure) {
+  if (failure || !from.matched.length || pageRecord(to) === pageRecord(from)) return
+  return nextTick(() => {
+    const main = document.getElementById('main-content')
+    if (main && !main.contains(document.activeElement)) main.focus({ preventScroll: true })
+  })
+}
+
 /**
  * Creates and configures the main Vue Router instance for the application.
  * Sets up hash-based navigation, active link class, and assigns the provided routes.
@@ -467,6 +485,8 @@ function createAppRouter(routes) {
   router.setRoot = function(value) {
     this.root = value
   }
+
+  router.afterEach(focusMainOnPageChange)
 
   return router
 }
