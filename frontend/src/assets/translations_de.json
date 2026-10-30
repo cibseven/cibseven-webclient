@@ -760,12 +760,9 @@
 				"tenantMembership": "Mandantenmitgliedschaft",
 				"batch": "Stapel",
 				"decisionRequirements": "Anforderungsdefinition für Entscheidung",
-				"report": "Bericht",
-				"dashboard": "Dashboard",
 				"userOperationLogCategory": "Kategorie des Benutzeraktionsprotokolls",
 				"historicTask": "Historische Aufgabe",
 				"historicProcessInstance": "Historische Prozessinstanz",
-				"operationLogCategory": "Kategorie des Operationsprotokolls",
 				"property": "Eigenschaft"
 			},
 			"resourcesTypesDescriptions": {
@@ -785,18 +782,14 @@
 				"tenantMembership": "Legt fest, wer Benutzer und Gruppen einem Mandanten zuordnen oder daraus entfernen darf.",
 				"batch": "Legt fest, wer Stapelvorgänge anlegen oder abbrechen darf, also Massenaktionen wie die Migration, den Neustart, das Löschen oder die Massenänderung von Variablen von Prozessinstanzen.{br}{create} steuert alle Stapelvorgänge. Jede Berechtigung {createBatch} steuert einen bestimmten Vorgang zusätzlich zu {create} und setzt sich gegenüber ihr durch.",
 				"decisionRequirements": "Legt fest, wer eine Anforderungsdefinition für Entscheidungen anzeigen darf, also den Graphen, der zeigt, wie eine Gruppe zusammengehöriger {dmn}-Entscheidungen voneinander abhängt.",
-				"report": "Legt fest, wer gespeicherte Berichte anzeigen oder verwalten darf.",
-				"dashboard": "Legt fest, wer gespeicherte Dashboards anzeigen oder verwalten darf.",
 				"userOperationLogCategory": "Legt fest, wer das {userOperationLog} lesen darf, das pro Aufgabe oder Prozessinstanz geführt wird und in Kategorien wie Aktionen von Bearbeitern, Administratoren oder Operatoren unterteilt ist.",
 				"historicTask": "Legt fest, wer die historischen Daten einsehen darf, die nach Abschluss einer Aufgabe aufbewahrt werden.",
 				"historicProcessInstance": "Legt fest, wer die historischen Daten einer beendeten Prozessinstanz einsehen oder löschen darf.",
-				"operationLogCategory": "Legt fest, wer Einträge im systemweiten {operationLog} in Cockpit lesen oder löschen darf — einem einzigen durchsuchbaren Prüfpfad über die gesamte Engine.",
 				"property": "Legt fest, wer interne Konfigurationseinträge der Engine, die als Schlüssel-Wert-Eigenschaften gespeichert sind, einsehen oder ändern darf – nicht die Anwendungseinstellungen."
 			},
 			"resourcesTypesDescriptionsTerms": {
 				"systemSettings": "Systemeinstellungen",
-				"userOperationLog": "Benutzeraktionsprotokoll",
-				"operationLog": "Operationsprotokoll"
+				"userOperationLog": "Benutzeraktionsprotokoll"
 			},
 			"unselectAll": "Alle abwählen",
 			"selectAll": "Alle auswählen",
