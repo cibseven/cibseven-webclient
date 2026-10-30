@@ -22,8 +22,13 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BooleanSupplier;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +65,10 @@ public class FolderProvider {
 	@Autowired
 	private FormRepository formDao;
 
+	// Replaced by the bean of the edition; open until then, so a provider built by hand works as before
+	@Autowired
+	private ProjectAccess projectAccess = new OpenProjectAccess();
+
 	/** What a folder holds, counted through the whole subtree. */
 	public record FolderContents(long folders, long diagrams, long forms) {
 
@@ -89,25 +98,39 @@ public class FolderProvider {
 		String parentFolderId = parent == null ? null : parent.getId();
 		String folderName = validName(name);
 		requireFreeName(parentFolderId, folderName, null);
+		return store(parent, folderName, userId);
+	}
 
+	private FolderEntity store(FolderEntity parent, String folderName, String userId) {
 		FolderEntity folder = new FolderEntity();
-		folder.setParentId(parentFolderId);
+		folder.setParentId(parent == null ? null : parent.getId());
+		folder.setProjectId(parent == null ? null : projectIdOf(parent));
 		folder.setName(folderName);
 		folder.setCreated(Timestamp.valueOf(LocalDateTime.now()));
 		folder.setCreatedBy(userId);
-		return folderDao.save(folder);
+		FolderEntity created = folderDao.save(folder);
+		if (parent == null) {
+			// A project is its own, and its id exists only now
+			created.setProjectId(created.getId());
+			projectAccess.projectCreated(userId, created);
+		}
+		return created;
 	}
 
 	/**
-	 * The folder of the user, created the first time it is asked for. A folder at the top level that
-	 * already carries the user's name is taken as it is. Two first visits at once can store it
-	 * twice, since no key covers the top level; the oldest is the one used from then on.
+	 * The folder of the user, created the first time it is asked for: the folder at the top level
+	 * the user created under their own name. A folder somebody else named after the user is not it,
+	 * since it may be closed to the user; they get a folder of their own beside it. Two first visits
+	 * at once can store it twice, since no key covers the top level; the oldest is the one used from
+	 * then on.
 	 */
 	@Transactional(CibsevenJpa.TRANSACTION_MANAGER)
 	public FolderEntity userFolder(String userId) {
 		String name = validName(userId);
-		return folderDao.findFirstByParentIdIsNullAndNameOrderByCreatedAsc(name)
-			.orElseGet(() -> create(null, name, userId));
+		Optional<FolderEntity> existing = folderDao.findFirstByParentIdIsNullAndNameAndCreatedByOrderByCreatedAsc(name, userId);
+		// A folder from before there were members gets its owner now
+		existing.ifPresent(folder -> projectAccess.projectCreated(userId, folder));
+		return existing.orElseGet(() -> store(null, name, userId));
 	}
 
 	/** What a request changes about a folder: it may rename it, move it, or both at once. */
@@ -136,7 +159,10 @@ public class FolderProvider {
 	public FolderEntity rename(String id, String name, String userId) {
 		FolderEntity folder = find(id);
 		String folderName = validName(name);
-		requireFreeName(folder.getParentId(), folderName, id);
+		// Keeping the name changes nothing; a user folder may share it with somebody else's
+		if (!folderName.equals(folder.getName())) {
+			requireFreeName(folder.getParentId(), folderName, id);
+		}
 
 		folder.setName(folderName);
 		return touch(folder, userId);
@@ -152,10 +178,92 @@ public class FolderProvider {
 			throw new InvalidFolderException("parentId", "a folder cannot move into itself");
 		}
 		String targetId = target == null ? null : target.getId();
-		requireFreeName(targetId, folder.getName(), id);
+		if (!Objects.equals(targetId, folder.getParentId())) {
+			requireFreeName(targetId, folder.getName(), id);
+		}
 
+		// Taken out to the top level, the folder is a project of its own from now on
+		String formerProjectId = folder.getParentId() != null && targetId == null ? projectOf(id) : null;
+		String projectId = target == null ? id : projectIdOf(target);
+		boolean otherProject = !Objects.equals(projectId, folder.getProjectId());
 		folder.setParentId(targetId);
-		return touch(folder, userId);
+		folder.setProjectId(projectId);
+		FolderEntity moved = touch(folder, userId);
+		if (otherProject) {
+			// Everything below goes along into the project
+			setProject(subtreeIds(id), projectId);
+		}
+		if (formerProjectId != null) {
+			projectAccess.becameProject(userId, moved, formerProjectId);
+		}
+		return moved;
+	}
+
+	/** The project of every folder: the top-level folder it lies under, a project being its own. */
+	@Transactional(value = CibsevenJpa.TRANSACTION_MANAGER, readOnly = true)
+	public Map<String, String> projectsByFolder() {
+		return projectsOf(folderDao.findAll());
+	}
+
+	/** Every project: the folders at the top level, read without the tree below them. */
+	@Transactional(value = CibsevenJpa.TRANSACTION_MANAGER, readOnly = true)
+	public Set<String> projectIds() {
+		return new HashSet<>(folderDao.findProjectIds());
+	}
+
+	/**
+	 * Stores the project of every folder whose stored one is missing or wrong, as on the folders
+	 * from before it was kept, and answers how many that were.
+	 */
+	@Transactional(CibsevenJpa.TRANSACTION_MANAGER)
+	public int fillProjects() {
+		List<FolderEntity> folders = folderDao.findAll();
+		Map<String, String> projects = projectsOf(folders);
+		List<FolderEntity> wrong = folders.stream()
+			.filter(folder -> !Objects.equals(folder.getProjectId(), projects.get(folder.getId())))
+			.toList();
+		wrong.forEach(folder -> folder.setProjectId(projects.get(folder.getId())));
+		folderDao.saveAll(wrong);
+		return wrong.size();
+	}
+
+	private static Map<String, String> projectsOf(List<FolderEntity> folders) {
+		Map<String, String> parents = new HashMap<>();
+		folders.forEach(folder -> parents.put(folder.getId(), folder.getParentId()));
+		Map<String, String> projects = new HashMap<>();
+		parents.keySet().forEach(id -> projects.put(id, rootOf(id, parents)));
+		return projects;
+	}
+
+	/** The stored project, or the one the tree gives a folder that has none stored yet. */
+	private String projectIdOf(FolderEntity folder) {
+		return folder.getProjectId() != null ? folder.getProjectId() : projectOf(folder.getId());
+	}
+
+	/** In slices, since a subtree may be larger than a database takes in one list. */
+	private void setProject(List<String> ids, String projectId) {
+		for (int from = 0; from < ids.size(); from += ProjectGuard.QUERY_LIMIT) {
+			folderDao.setProject(ids.subList(from, Math.min(ids.size(), from + ProjectGuard.QUERY_LIMIT)), projectId);
+		}
+	}
+
+	/** The project a folder belongs to, or null for a folder that does not exist. */
+	@Transactional(value = CibsevenJpa.TRANSACTION_MANAGER, readOnly = true)
+	public String projectOf(String folderId) {
+		return folderId == null ? null : projectsByFolder().get(folderId);
+	}
+
+	private static String rootOf(String id, Map<String, String> parents) {
+		String current = id;
+		// Bounded by the number of folders, so a broken parent chain cannot loop for ever
+		for (int depth = 0; depth < parents.size(); depth++) {
+			String parent = parents.get(current);
+			if (parent == null || !parents.containsKey(parent)) {
+				return current;
+			}
+			current = parent;
+		}
+		return current;
 	}
 
 	@Transactional(value = CibsevenJpa.TRANSACTION_MANAGER, readOnly = true)

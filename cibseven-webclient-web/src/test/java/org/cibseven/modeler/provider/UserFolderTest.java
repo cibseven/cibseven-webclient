@@ -25,10 +25,10 @@ import org.cibseven.modeler.repository.FolderRepository;
 import org.cibseven.webapp.exception.InvalidFolderException;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
-import org.springframework.boot.autoconfigure.sql.init.SqlInitializationAutoConfiguration;
-import org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
+import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceInitializationAutoConfiguration;
+import org.springframework.boot.transaction.autoconfigure.TransactionAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,9 +48,9 @@ class UserFolderTest {
 			"spring.sql.init.schema-locations=classpath:modeler-folders-before.sql,classpath:modeler-folders-migration.sql",
 			"spring.jpa.hibernate.ddl-auto=none")
 		.withConfiguration(AutoConfigurations.of(DataSourceAutoConfiguration.class,
-			HibernateJpaAutoConfiguration.class, SqlInitializationAutoConfiguration.class,
+			HibernateJpaAutoConfiguration.class, DataSourceInitializationAutoConfiguration.class,
 			TransactionAutoConfiguration.class))
-		.withUserConfiguration(ModelerPersistenceConfiguration.class, FolderProvider.class);
+		.withUserConfiguration(ModelerPersistenceConfiguration.class, FolderProvider.class, OpenProjectAccess.class);
 
 	@Test
 	void createsTheUserFolderOnceAndFindsItAfterwards() {
@@ -77,6 +77,44 @@ class UserFolderTest {
 			assertThat(folders.userFolder("bert").getId()).isEqualTo(oldest.getId());
 			// The name is still taken, and reported as such rather than failing on the second row
 			assertThatThrownBy(() -> folders.create(null, "bert", "someone-else"))
+				.isInstanceOf(InvalidFolderException.class);
+		});
+	}
+
+	/** Somebody else named a folder after the user, which may be closed to them: they get their own beside it. */
+	@Test
+	void givesTheUserAFolderOfTheirOwnBesideOneSomebodyElseNamedAfterThem() {
+		runner.run(context -> {
+			FolderProvider folders = context.getBean(FolderProvider.class);
+			FolderRepository repository = context.getBean(FolderRepository.class);
+			FolderEntity named = userFolder("carla", LocalDateTime.now().minusMinutes(1));
+			named.setCreatedBy("someone-else");
+			repository.save(named);
+
+			FolderEntity own = folders.userFolder("carla");
+
+			assertThat(own.getId()).isNotEqualTo(named.getId());
+			assertThat(own.isUserFolder()).isTrue();
+			assertThat(folders.userFolder("carla").getId()).isEqualTo(own.getId());
+			assertThat(repository.findAll()).filteredOn(folder -> "carla".equals(folder.getName())).hasSize(2);
+		});
+	}
+
+	/** Two folders share the name, so a rename or move that keeps it as it is must not clash with the other one. */
+	@Test
+	void letsAUserFolderKeepTheNameItSharesWithAnother() {
+		runner.run(context -> {
+			FolderProvider folders = context.getBean(FolderProvider.class);
+			FolderRepository repository = context.getBean(FolderRepository.class);
+			FolderEntity named = userFolder("dora", LocalDateTime.now().minusMinutes(1));
+			named.setCreatedBy("someone-else");
+			repository.save(named);
+			FolderEntity own = folders.userFolder("dora");
+
+			assertThat(folders.rename(own.getId(), "dora", "admin").getName()).isEqualTo("dora");
+			assertThat(folders.move(own.getId(), null, "admin").getParentId()).isNull();
+			// A third folder of the name is still refused
+			assertThatThrownBy(() -> folders.create(null, "dora", "someone-else"))
 				.isInstanceOf(InvalidFolderException.class);
 		});
 	}

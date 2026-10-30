@@ -105,6 +105,25 @@ export function getPlugin(slotName) {
   return ensureSlot(slotName)
 }
 
+/** Whether plugin loading has finished, successfully or not. */
+const pluginsSettled = shallowRef(false)
+
+/**
+ * Returns the reactive flag telling whether plugin loading has finished. Plugins load next to the
+ * application, so a decision that needs every contribution (e.g. which start page tiles exist)
+ * waits for it rather than deciding on what happens to have arrived.
+ *
+ * @returns {import('vue').ShallowRef<boolean>}
+ */
+export function getPluginsSettled() {
+  return pluginsSettled
+}
+
+/** Records that plugin loading has finished; `false` is for tests. */
+export function setPluginsSettled(settled = true) {
+  pluginsSettled.value = settled
+}
+
 /**
  * Removes all registered contributions. Intended for tests. Reserved ids are kept:
  * they belong to the application, which claims them once while it loads.

@@ -17,7 +17,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { fetchPluginManifests, loadPlugins, initPlugins, syncPluginTranslations } from '@/plugins/pluginLoader.js'
 import { setPluginContext } from '@/plugins/pluginContext.js'
-import { getPlugin, resetPlugins, PLUGIN_API_VERSION } from '@/plugins/pluginsConfig.js'
+import { getPlugin, resetPlugins, PLUGIN_API_VERSION, getPluginsSettled, setPluginsSettled } from '@/plugins/pluginsConfig.js'
 import { axios } from '@/globals.js'
 import { setServicesBasePath } from '@/services.js'
 import { i18n, registerTranslationLoader } from '@/i18n'
@@ -355,6 +355,19 @@ describe('pluginLoader', () => {
 
       await expect(initPlugins('en', () => Promise.resolve({ register }))).resolves.toEqual(['demo'])
       expect(register).toHaveBeenCalled()
+    })
+
+    it('reports loading as finished, also when plugins are disabled or loading fails', async () => {
+      setPluginsSettled(false)
+      setPluginContext({ config: { pluginsEnabled: false } })
+      await initPlugins('en', vi.fn())
+      expect(getPluginsSettled().value).toBe(true)
+
+      setPluginsSettled(false)
+      setPluginContext({ config: {} })
+      mockHttp({ plugins: { plugins: [validManifest] } })
+      await initPlugins('en', () => Promise.reject(new Error('unreachable')))
+      expect(getPluginsSettled().value).toBe(true)
     })
 
     /**

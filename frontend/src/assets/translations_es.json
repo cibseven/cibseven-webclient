@@ -766,7 +766,7 @@
 				"property": "Propiedad"
 			},
 			"resourcesTypesDescriptions": {
-				"application": "Determina qué aplicaciones web puede abrir un usuario o grupo, por ejemplo {tasklist}, {cockpit}, {admin} u {modeler}. Este recurso solo admite el permiso {access}.",
+				"application": "Determina qué aplicaciones web puede abrir un usuario o grupo, por ejemplo {tasklist}, {cockpit}, {admin}, {userProfile}, {ins7ght} u {modeler}. Este recurso solo admite el permiso {access}.",
 				"user": "Determina quién puede ver, crear, editar o eliminar cuentas de usuario, y si los usuarios pueden ver la información básica de otros usuarios, por ejemplo al elegir un responsable para una tarea.",
 				"group": "Determina quién puede ver, crear, editar o eliminar grupos.",
 				"groupMembership": "Determina quién puede añadir usuarios a un grupo o eliminarlos de él.",
@@ -849,11 +849,9 @@
 		"email": "@:login.email"
 	},
 	"cib-header": {
+		"openMenu": "Menú {label}",
 		"languages": "Idioma",
-		"languagesMenu": "Idioma",
 		"engine": "Motor",
-		"engineMenu": "Selección de motor",
-		"helpMenu": "Ayuda",
 		"en": "English",
 		"de": "Deutsch",
 		"es": "Español",
@@ -1038,6 +1036,9 @@
 			"title": "@:process.startProcess",
 			"tooltip": "Abrir vista de inicio del proceso con opción de búsqueda"
 		},
+		"tasks": {
+			"title": "Tareas"
+		},
 		"taskList": {
 			"title": "Tasklist",
 			"tooltip": "Abrir Tasklist"
@@ -1045,6 +1046,9 @@
 		"cockpit": {
 			"title": "Cockpit",
 			"tooltip": "Abrir Cockpit",
+			"dashboard": {
+				"title": "Dashboard"
+			},
 			"processes": {
 				"title": "Procesos",
 				"tooltip": "Explora las definiciones de procesos disponibles"
@@ -1079,15 +1083,21 @@
 			}
 		},
 		"admin": {
-			"title": "Admin",
-			"tooltip": "Abrir Admin"
+			"title": "Admin"
+		},
+		"accessManagement": {
+			"title": "Gestión de acceso"
+		},
+		"builder": {
+			"title": "Builder"
 		},
 		"modeler": {
 			"title": "Modeler",
-			"tooltip": "Abrir Modeler para diseñar y editar BPMN, DMN y formularios"
+			"tooltip": "Abrir Modeler para diseñar y editar BPMN, DMN y formularios",
+			"loading": "Cargando el Modeler...",
+			"loadFailed": "No se pudo cargar el Modeler. Recargue la página para intentarlo de nuevo."
 		},
 		"account": {
-			"tooltip": "Ver y editar la información de su cuenta o cerrar sesión",
 			"profile": {
 				"title": "Perfil de usuario",
 				"tooltip": "Ver y editar la información de su cuenta"
@@ -1193,7 +1203,6 @@
 	},
 	"navigation": {
 		"home": "Inicio",
-		"navigation": "Navegación",
 		"menu": "Menú de Navegación",
 		"infoAndHelp": "Información y ayuda"
 	},

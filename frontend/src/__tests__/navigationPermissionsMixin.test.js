@@ -206,3 +206,17 @@ describe('navigationPermissionsMixin', () => {
     })
   })
 })
+
+describe('navigationPermissionsMixin startableProcesses', () => {
+  const startable = (list) => navigationPermissionsMixin.computed.startableProcesses.call({ $store: { state: { process: { list } } } })
+
+  it('is true when the loaded list has a process startable from the tasklist', () => {
+    expect(startable([{ startableInTasklist: true, suspended: 'false' }])).toBe(true)
+  })
+
+  it('is false for revoked or suspended processes, an empty list or no store', () => {
+    expect(startable([{ startableInTasklist: true, revoked: true }, { startableInTasklist: true, suspended: 'true' }])).toBe(false)
+    expect(startable(undefined)).toBe(false)
+    expect(navigationPermissionsMixin.computed.startableProcesses.call({})).toBe(false)
+  })
+})

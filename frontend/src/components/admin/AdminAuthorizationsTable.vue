@@ -26,6 +26,8 @@
         <template #tasklist><strong>tasklist</strong></template>
         <template #cockpit><strong>cockpit</strong></template>
         <template #admin><strong>admin</strong></template>
+        <template #userProfile><strong>userProfile</strong></template>
+        <template #ins7ght><strong>ins7ght</strong></template>
         <template #modeler><strong>modeler</strong></template>
         <template #access><strong>Access</strong></template>
         <template #all><strong>All</strong></template>

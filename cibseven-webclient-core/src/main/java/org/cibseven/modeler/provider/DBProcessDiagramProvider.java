@@ -43,10 +43,18 @@ public class DBProcessDiagramProvider implements IProcessDiagramProvider {
 
 	@Override
 	public List<ProcessDiagramReduce> getDiagrams(String keyword, String diagramType, int firstResult, int maxResults) throws SystemException {
+		return getDiagrams(keyword, diagramType, ProjectGuard.HiddenProjects.NONE, firstResult, maxResults);
+	}
+
+	/** Leaves out the diagrams of the hidden projects, counting only what is left for the paging. */
+	public List<ProcessDiagramReduce> getDiagrams(String keyword, String diagramType, ProjectGuard.HiddenProjects hidden,
+			int firstResult, int maxResults) throws SystemException {
 		String kw = keyword == null ? "" : keyword;
 		String dt = diagramType == null ? "" : diagramType;
-		PageRequest page = PageRequest.of(firstResult / maxResults, maxResults, Sort.by("updated").descending());
-		return processDiagramDao.findAllFiltered(kw, dt, page);
+		return ProjectGuard.visiblePage(hidden, firstResult, maxResults,
+			(hiddenProjectIds, page, size) -> processDiagramDao.findAllFiltered(kw, dt, hiddenProjectIds,
+				PageRequest.of(page, size, Sort.by("updated").descending())),
+			ProcessDiagramReduce::getFolderId);
 	}
 
 	@Override

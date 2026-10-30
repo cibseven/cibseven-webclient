@@ -20,13 +20,17 @@ import org.cibseven.modeler.config.ModelerPersistenceConfiguration;
 import org.cibseven.modeler.model.FolderEntity;
 import org.cibseven.modeler.model.FormEntity;
 import org.cibseven.modeler.model.ProcessDiagramEntity;
+import org.cibseven.modeler.provider.ProjectGuard;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
-import org.springframework.boot.autoconfigure.sql.init.SqlInitializationAutoConfiguration;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
+import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceInitializationAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.data.domain.PageRequest;
+
+import java.util.Collection;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -39,6 +43,8 @@ class UnifiedDiagramFolderQueryTest {
 
 	private static final String GENERAL = "00000000-0000-0000-0000-0000000000d1";
 	private static final PageRequest FIRST_PAGE = PageRequest.of(0, 10);
+	// Nothing is hidden here: these tests are about folders, not projects
+	private static final Collection<String> NONE_HIDDEN = ProjectGuard.notEmpty(List.of());
 
 	/** Each test gets a database of its own, as they move models around. */
 	private ApplicationContextRunner runner(String database) {
@@ -49,7 +55,7 @@ class UnifiedDiagramFolderQueryTest {
 				"spring.sql.init.schema-locations=classpath:modeler-folders-before.sql,classpath:modeler-folders-migration.sql",
 				"spring.jpa.hibernate.ddl-auto=none")
 			.withConfiguration(AutoConfigurations.of(DataSourceAutoConfiguration.class,
-				HibernateJpaAutoConfiguration.class, SqlInitializationAutoConfiguration.class))
+				HibernateJpaAutoConfiguration.class, DataSourceInitializationAutoConfiguration.class))
 			.withUserConfiguration(ModelerPersistenceConfiguration.class);
 	}
 
@@ -59,7 +65,7 @@ class UnifiedDiagramFolderQueryTest {
 			ProcessDiagramRepository diagrams = context.getBean(ProcessDiagramRepository.class);
 
 			// Two diagrams and one form, the whole fixture
-			assertThat(diagrams.findAllUnified(null, null, null, FIRST_PAGE)).hasSize(3);
+			assertThat(diagrams.findAllUnified(null, null, null, NONE_HIDDEN, FIRST_PAGE)).hasSize(3);
 		});
 	}
 
@@ -73,10 +79,10 @@ class UnifiedDiagramFolderQueryTest {
 			moved.setFolderId(archive);
 			diagrams.save(moved);
 
-			assertThat(diagrams.findAllUnified(null, null, archive, FIRST_PAGE))
+			assertThat(diagrams.findAllUnified(null, null, archive, NONE_HIDDEN, FIRST_PAGE))
 				.singleElement()
 				.satisfies(only -> assertThat(only.getId()).isEqualTo("diagram-2"));
-			assertThat(diagrams.findAllUnified(null, null, GENERAL, FIRST_PAGE)).hasSize(2);
+			assertThat(diagrams.findAllUnified(null, null, GENERAL, NONE_HIDDEN, FIRST_PAGE)).hasSize(2);
 		});
 	}
 
@@ -91,10 +97,10 @@ class UnifiedDiagramFolderQueryTest {
 			moved.setFolderId(archive);
 			forms.save(moved);
 
-			assertThat(diagrams.findAllUnified(null, null, archive, FIRST_PAGE))
+			assertThat(diagrams.findAllUnified(null, null, archive, NONE_HIDDEN, FIRST_PAGE))
 				.singleElement()
 				.satisfies(only -> assertThat(only.getType()).isEqualTo("form"));
-			assertThat(diagrams.findAllUnified(null, null, GENERAL, FIRST_PAGE))
+			assertThat(diagrams.findAllUnified(null, null, GENERAL, NONE_HIDDEN, FIRST_PAGE))
 				.hasSize(2)
 				.noneMatch(model -> "form".equals(model.getType()));
 		});
@@ -111,7 +117,7 @@ class UnifiedDiagramFolderQueryTest {
 			moved.setFolderId(archive);
 			diagrams.save(moved);
 
-			assertThat(diagrams.findAllUnified("%invoice%", null, null, FIRST_PAGE))
+			assertThat(diagrams.findAllUnified("%invoice%", null, null, NONE_HIDDEN, FIRST_PAGE))
 				.extracting(model -> model.getId())
 				.contains("diagram-1");
 		});

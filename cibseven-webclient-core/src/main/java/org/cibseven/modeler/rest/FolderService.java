@@ -33,6 +33,9 @@ import org.cibseven.modeler.model.FolderEntity;
 import org.cibseven.modeler.provider.FolderProvider;
 import org.cibseven.modeler.provider.FolderProvider.FolderChange;
 import org.cibseven.modeler.provider.FolderProvider.FolderContents;
+import org.cibseven.modeler.provider.ProjectAccess.Action;
+import org.cibseven.modeler.provider.ProjectGuard;
+import org.cibseven.modeler.provider.ProjectGuard.AccessOverview;
 import org.cibseven.webapp.auth.AuthorizationChecker;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
@@ -62,6 +65,10 @@ public class FolderService extends ModelerBaseService {
 	@Autowired
 	private AuthorizationChecker authorizationChecker;
 
+	// Replaced by the bean; open until then, so a service built by hand works as before
+	@Autowired
+	private ProjectGuard projectGuard = ProjectGuard.OPEN;
+
 	/**
 	 * The caller's folder, and whether the caller may rename, move or delete user folders:
 	 * administrators may, so the folder of somebody who left can be cleaned up.
@@ -74,14 +81,24 @@ public class FolderService extends ModelerBaseService {
 		description = "<strong>Return: every folder, each with its parent")
 	@GetMapping
 	public List<FolderEntity> findAll(HttpServletRequest rq) {
-		checkModelerAccess(rq);
-		return folderProvider.findAll();
+		CIBUser user = checkModelerAccess(rq);
+		return projectGuard.visible(user, folderProvider.findAll());
+	}
+
+	@Operation(
+		summary = "Get what the caller may do in each project",
+		description = "<strong>Return: the caller's rights per project they can see, and whether anything may move between projects")
+	@GetMapping("/access")
+	public AccessOverview access(HttpServletRequest rq) {
+		CIBUser user = checkModelerAccess(rq);
+		return projectGuard.overview(user);
 	}
 
 	@Operation(summary = "Get one folder", description = "<strong>Return: the folder")
 	@GetMapping("/{id}")
 	public FolderEntity find(@PathVariable String id, HttpServletRequest rq) {
-		checkModelerAccess(rq);
+		CIBUser user = checkModelerAccess(rq);
+		projectGuard.require(user, id, Action.VIEW);
 		return folderProvider.find(id);
 	}
 
@@ -90,7 +107,8 @@ public class FolderService extends ModelerBaseService {
 		description = "<strong>Return: the number of folders, diagrams and forms below it, for a delete confirmation")
 	@GetMapping("/{id}/contents")
 	public FolderContents contents(@PathVariable String id, HttpServletRequest rq) {
-		checkModelerAccess(rq);
+		CIBUser user = checkModelerAccess(rq);
+		projectGuard.require(user, id, Action.VIEW);
 		return folderProvider.contents(id);
 	}
 
@@ -107,7 +125,12 @@ public class FolderService extends ModelerBaseService {
 	@PostMapping
 	public FolderEntity create(@RequestBody Map<String, String> folder, HttpServletRequest rq) {
 		CIBUser user = checkModelerAccess(rq);
-		return folderProvider.create(folder.get("parentId"), folder.get("name"), user.getUserID());
+		// Anyone may start a project; a folder inside one is up to its editors
+		String parentId = folder.get("parentId");
+		if (parentId != null && !parentId.isBlank()) {
+			projectGuard.require(user, parentId, Action.EDIT);
+		}
+		return folderProvider.create(parentId, folder.get("name"), user.getUserID());
 	}
 
 	@Operation(
@@ -121,6 +144,13 @@ public class FolderService extends ModelerBaseService {
 		// to the top level
 		FolderChange change = new FolderChange(folder.containsKey("name"), folder.get("name"),
 			folder.containsKey("parentId"), folder.get("parentId"));
+		if (change.renaming()) {
+			projectGuard.requireFolderChange(user, folderProvider.find(id));
+		}
+		if (change.moving()) {
+			String parentId = change.parentId() == null || change.parentId().isBlank() ? null : change.parentId();
+			projectGuard.requireFolderMove(user, folderProvider.find(id), parentId);
+		}
 		return folderProvider.update(id, change, user.getUserID(), () -> mayManageUserFolders(user));
 	}
 
@@ -130,6 +160,7 @@ public class FolderService extends ModelerBaseService {
 	@DeleteMapping("/{id}")
 	public FolderContents delete(@PathVariable String id, HttpServletRequest rq) {
 		CIBUser user = checkModelerAccess(rq);
+		projectGuard.requireFolderChange(user, folderProvider.find(id));
 		return folderProvider.delete(id, () -> mayManageUserFolders(user));
 	}
 

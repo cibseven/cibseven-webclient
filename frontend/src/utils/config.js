@@ -50,7 +50,6 @@ const DEFAULT_CONFIG = {
     updateInstanceProcessDefinition: { processDefinition: ["UPDATE_INSTANCE"] },
     updateProcessDefinition : { processDefinition: ["UPDATE"] },
     deleteProcessDefinition: { processDefinition: ["DELETE"] },
-    suspendProcessInstance: {processInstance: ["SUSPEND"] },
 	  updateProcessInstance: { processInstance: ["UPDATE"] },
   },
   taskSorting: {
@@ -140,7 +139,7 @@ const DEFAULT_CONFIG = {
       "8": { "id": "8", "key": "task", "permissions": [
         "READ","UPDATE","DELETE","CREATE","TASK_ASSIGN","TASK_WORK","READ_VARIABLE","UPDATE_VARIABLE"
       ] },
-      "12": { "id": "12", "key": "system", "permissions": ["READ","UPDATE","DELETE"] },
+      "21": { "id": "21", "key": "system", "permissions": ["READ","SET","DELETE"] },
       "1": { "id": "1", "key": "user", "permissions": ["READ","UPDATE","CREATE","DELETE"] }
     }
   },
@@ -193,7 +192,7 @@ const DEFAULT_CONFIG = {
  * @param {Object} source - The source object
  * @returns {Object} - Merged object
  */
-function deepMerge(target, source) {
+export function deepMerge(target, source) {
   const result = { ...target }
 
   for (const key in source) {

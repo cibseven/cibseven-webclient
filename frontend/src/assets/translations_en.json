@@ -766,7 +766,7 @@
 				"property": "Property"
 			},
 			"resourcesTypesDescriptions": {
-				"application": "Controls which web applications a user or group is allowed to open, e.g. {tasklist}, {cockpit}, {admin}, or {modeler}. This resource only supports the {access} permission.",
+				"application": "Controls which web applications a user or group is allowed to open, e.g. {tasklist}, {cockpit}, {admin}, {userProfile}, {ins7ght} or {modeler}. This resource only supports the {access} permission.",
 				"user": "Controls who may view, create, edit, or delete user accounts, and whether users can see each other’s basic information, e.g. when picking a task assignee.",
 				"group": "Controls who may view, create, edit, or delete groups.",
 				"groupMembership": "Controls who may add users to a group or remove them from it.",
@@ -849,11 +849,9 @@
 		"email": "@:login.email"
 	},
 	"cib-header": {
+		"openMenu": "{label} menu",
 		"languages": "Language",
-		"languagesMenu": "Language",
 		"engine": "Engine",
-		"engineMenu": "Engine selection",
-		"helpMenu": "Help",
 		"en": "English",
 		"de": "Deutsch",
 		"es": "Español",
@@ -1038,6 +1036,9 @@
 			"title": "@:process.startProcess",
 			"tooltip": "Open Start Process view with search possibility"
 		},
+		"tasks": {
+			"title": "Tasks"
+		},
 		"taskList": {
 			"title": "Tasklist",
 			"tooltip": "Open Tasklist"
@@ -1045,6 +1046,9 @@
 		"cockpit": {
 			"title": "Cockpit",
 			"tooltip": "Open Cockpit",
+			"dashboard": {
+				"title": "Dashboard"
+			},
 			"processes": {
 				"title": "Processes",
 				"tooltip": "Explore available process definitions"
@@ -1079,15 +1083,21 @@
 			}
 		},
 		"admin": {
-			"title": "Admin",
-			"tooltip": "Open Admin"
+			"title": "Admin"
+		},
+		"accessManagement": {
+			"title": "Access management"
+		},
+		"builder": {
+			"title": "Builder"
 		},
 		"modeler": {
 			"title": "Modeler",
-			"tooltip": "Open Modeler to design and edit BPMN, DMN, and Forms"
+			"tooltip": "Open Modeler to design and edit BPMN, DMN, and Forms",
+			"loading": "Loading the modeler...",
+			"loadFailed": "The modeler could not be loaded. Reload the page to try again."
 		},
 		"account": {
-			"tooltip": "View and edit your account information or log out",
 			"profile": {
 				"title": "User Profile",
 				"tooltip": "View and edit your account information"
@@ -1194,7 +1204,6 @@
 	},
 	"navigation": {
 		"home": "Home",
-		"navigation": "Navigation",
 		"menu": "Navigation menu",
 		"infoAndHelp": "Info & help"
 	},

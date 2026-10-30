@@ -22,9 +22,9 @@ import org.cibseven.modeler.model.FormEntity;
 import org.cibseven.modeler.model.ProcessDiagramEntity;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
-import org.springframework.boot.autoconfigure.sql.init.SqlInitializationAutoConfiguration;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
+import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceInitializationAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,7 +45,7 @@ class FolderMigrationTest {
 			"spring.sql.init.schema-locations=classpath:modeler-folders-before.sql,classpath:modeler-folders-migration.sql",
 			"spring.jpa.hibernate.ddl-auto=none")
 		.withConfiguration(AutoConfigurations.of(DataSourceAutoConfiguration.class,
-			HibernateJpaAutoConfiguration.class, SqlInitializationAutoConfiguration.class))
+			HibernateJpaAutoConfiguration.class, DataSourceInitializationAutoConfiguration.class))
 		.withUserConfiguration(ModelerPersistenceConfiguration.class);
 
 	@Test
@@ -82,6 +82,7 @@ class FolderMigrationTest {
 
 			assertThat(general.getId()).isEqualTo(GENERAL);
 			assertThat(general.getParentId()).isNull();
+			assertThat(general.getProjectId()).isEqualTo(GENERAL);
 			// Nothing above it: the upgrade adds one folder, not a tree
 			assertThat(folders.findAll()).hasSize(1);
 		});

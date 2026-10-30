@@ -766,7 +766,7 @@
 				"property": "Eigenschaft"
 			},
 			"resourcesTypesDescriptions": {
-				"application": "Legt fest, welche Web-Anwendungen ein Benutzer oder eine Gruppe öffnen darf, z. B. {tasklist}, {cockpit}, {admin} oder {modeler}. Diese Ressource unterstützt nur die Berechtigung {access}.",
+				"application": "Legt fest, welche Web-Anwendungen ein Benutzer oder eine Gruppe öffnen darf, z. B. {tasklist}, {cockpit}, {admin}, {userProfile}, {ins7ght} oder {modeler}. Diese Ressource unterstützt nur die Berechtigung {access}.",
 				"user": "Legt fest, wer Benutzerkonten anzeigen, anlegen, bearbeiten oder löschen darf, sowie ob Benutzer die Basisinformationen anderer Benutzer sehen können, z. B. bei der Auswahl eines Bearbeiters.",
 				"group": "Legt fest, wer Gruppen anzeigen, anlegen, bearbeiten oder löschen darf.",
 				"groupMembership": "Legt fest, wer Benutzer zu einer Gruppe hinzufügen oder daraus entfernen darf.",
@@ -849,11 +849,9 @@
 		"email": "@:login.email"
 	},
 	"cib-header": {
+		"openMenu": "Menü {label}",
 		"languages": "Sprache",
-		"languagesMenu": "Sprache",
 		"engine": "Engine",
-		"engineMenu": "Engine-Auswahl",
-		"helpMenu": "Hilfe",
 		"en": "English",
 		"de": "Deutsch",
 		"es": "Español",
@@ -1038,6 +1036,9 @@
 			"title": "@:process.startProcess",
 			"tooltip": "Startprozess-Ansicht mit Suchfunktion öffnen"
 		},
+		"tasks": {
+			"title": "Aufgaben"
+		},
 		"taskList": {
 			"title": "Tasklist",
 			"tooltip": "Tasklist öffnen"
@@ -1045,6 +1046,9 @@
 		"cockpit": {
 			"title": "Cockpit",
 			"tooltip": "Cockpit öffnen",
+			"dashboard": {
+				"title": "Dashboard"
+			},
 			"processes": {
 				"title": "Prozesse",
 				"tooltip": "Verfügbare Prozessdefinitionen durchsuchen"
@@ -1079,15 +1083,21 @@
 			}
 		},
 		"admin": {
-			"title": "Admin",
-			"tooltip": "Admin öffnen"
+			"title": "Admin"
+		},
+		"accessManagement": {
+			"title": "Zugriffsverwaltung"
+		},
+		"builder": {
+			"title": "Builder"
 		},
 		"modeler": {
 			"title": "Modeler",
-			"tooltip": "Modeler öffnen, um BPMN, DMN und Formulare zu entwerfen und zu bearbeiten"
+			"tooltip": "Modeler öffnen, um BPMN, DMN und Formulare zu entwerfen und zu bearbeiten",
+			"loading": "Modeler wird geladen...",
+			"loadFailed": "Der Modeler konnte nicht geladen werden. Laden Sie die Seite neu, um es erneut zu versuchen."
 		},
 		"account": {
-			"tooltip": "Kontoinformationen ansehen und bearbeiten oder abmelden",
 			"profile": {
 				"title": "Benutzerprofil",
 				"tooltip": "Kontoinformationen ansehen und bearbeiten"
@@ -1193,7 +1203,6 @@
 	},
 	"navigation": {
 		"home": "Startseite",
-		"navigation": "Navigation",
 		"menu": "Navigationsmenü",
 		"infoAndHelp": "Infos & Hilfe"
 	},
