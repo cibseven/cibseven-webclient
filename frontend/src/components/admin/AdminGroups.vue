@@ -138,7 +138,7 @@ export default {
       })
     },
     edit: function(group) {
-      this.$router.push({ name: 'adminGroup', params: { groupId: group.id }, query: { tab: 'information' } })
+      this.$router.push({ name: 'adminGroupInformation', params: { groupId: group.id } })
     },
     showMore: function(el) {
       if (this.firstResult <= this.groups.length && !this.loading) {

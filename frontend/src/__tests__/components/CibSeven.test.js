@@ -268,6 +268,14 @@ describe('CibSeven.vue', () => {
       expect(CibSeven.methods.isMenuItemActive.call({ $route: { name: 'adminGroups', path: '/seven/auth/admin/groups' } }, usersItem)).toBe(false)
     })
 
+    // The tabs of a detail page are its child routes, so the page's name is only among the matched records
+    it('should match the page a tab belongs to via routeName/activeRouteNames', () => {
+      const usersItem = { routeName: 'adminUsers', activeRouteNames: ['adminUser', 'createUser'] }
+      const $route = { name: 'adminUserGroups', path: '/seven/auth/admin/user/42/groups', matched: [{ name: 'auth' }, { name: 'admin' }, { name: 'adminUser' }, { name: 'adminUserGroups' }] }
+      expect(CibSeven.methods.isMenuItemActive.call({ $route }, usersItem)).toBe(true)
+      expect(CibSeven.methods.isMenuItemActive.call({ $route }, { routeName: 'adminGroups', activeRouteNames: ['adminGroup'] })).toBe(false)
+    })
+
     it('should not mark an item with only activeRouteNames active on a route without a name', () => {
       const item = { activeRouteNames: ['eeArea'] }
       expect(CibSeven.methods.isMenuItemActive.call({ $route: { name: undefined, path: '/seven/auth/somewhere' } }, item)).toBe(false)
@@ -321,6 +329,11 @@ describe('CibSeven.vue', () => {
       expect(full('setup')).toBe(true)
       expect(full('tasklist')).toBe(false)
       expect(full('adminUser')).toBe(false)
+    })
+
+    it('shows the full logo on every tab of the account page', () => {
+      const $route = { name: 'accountPreferences', matched: [{ name: 'seven' }, { name: 'auth' }, { name: 'account' }, { name: 'accountPreferences' }] }
+      expect(CibSeven.computed.showFullLogo.call({ $route, isStartPage: false })).toBe(true)
     })
 
     it('should generate helpMenuItems with configured links', () => {
@@ -431,13 +444,13 @@ describe('CibSeven.vue', () => {
     })
 
     it('lists every tab of the account page when user settings are shown, marking the open one', () => {
-      const vm = shell({ $route: { ...route('account', '/seven/auth/account/ada'), query: { tab: 'groups' } } })
+      const vm = shell({ $route: route('accountGroups', '/seven/auth/account/ada/groups') })
       const items = CibSeven.computed.userMenuItems.call(vm)
 
       expect(items.map(i => i.key)).toEqual(['profile', 'groups', 'tenants', 'preferences'])
       expect(items[0]).toEqual({
         key: 'profile', label: 't:start.account.profile.title', tooltip: 't:start.account.profile.tooltip',
-        to: { name: 'account', params: { userId: 'ada' }, query: { tab: 'profile' } }, active: false
+        to: { name: 'accountProfile', params: { userId: 'ada' } }, active: false
       })
       expect(items.filter(i => i.active).map(i => i.key)).toEqual(['groups'])
       expect(items[1].tooltip).toBe('t:admin.users.groups')
@@ -446,9 +459,9 @@ describe('CibSeven.vue', () => {
       expect(CibSeven.computed.userMenuItems.call(vm)).toEqual([])
     })
 
-    it('marks the profile entry on the account page without a tab, and nothing elsewhere', () => {
-      const onAccount = CibSeven.computed.userMenuItems.call(shell({ $route: route('account', '/seven/auth/account/ada') }))
-      expect(onAccount.filter(i => i.active).map(i => i.key)).toEqual(['profile'])
+    it('marks the entry of the open tab, and nothing elsewhere', () => {
+      const onAccount = CibSeven.computed.userMenuItems.call(shell({ $route: route('accountPreferences', '/seven/auth/account/ada/preferences') }))
+      expect(onAccount.filter(i => i.active).map(i => i.key)).toEqual(['preferences'])
 
       const elsewhere = CibSeven.computed.userMenuItems.call(shell())
       expect(elsewhere.some(i => i.active)).toBe(false)
@@ -459,10 +472,10 @@ describe('CibSeven.vue', () => {
       const vm = shell()
       vm.$root.config.userEditable = true
       vm.$root.config.userPasswordChangeEnabled = true
-      expect(CibSeven.computed.userMenuItems.call(vm).map(i => i.key)).toContain('account')
+      expect(CibSeven.computed.userMenuItems.call(vm).map(i => i.key)).toContain('password')
 
       vm.$root.config.userPasswordChangeEnabled = false
-      expect(CibSeven.computed.userMenuItems.call(vm).map(i => i.key)).not.toContain('account')
+      expect(CibSeven.computed.userMenuItems.call(vm).map(i => i.key)).not.toContain('password')
     })
 
     it('opens the dialog a header item asks for', () => {

@@ -144,7 +144,7 @@ export default {
       })
     },
     openUser: function (user) {
-      this.$router.push({ name: 'adminUser', params: { userId: user.id }, query: { tab: 'profile' } })
+      this.$router.push({ name: 'adminUserProfile', params: { userId: user.id } })
     },
     showMore: function(el) {
       if (this.firstResult <= this.users.length && !this.loading) {

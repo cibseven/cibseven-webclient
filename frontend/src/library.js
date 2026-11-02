@@ -34,6 +34,7 @@ export { appRoutes,
 export { updateAppTitle, checkExternalReturn, isMobile, hasHeader, getTheme, loadTheme, applyTheme, handleAxiosError, fetchAndStoreProcesses, fetchDecisionsIfEmpty, setupTaskNotifications } from './utils/init'
 export { parseXMLDocumentation } from './utils/parser.js'
 export { applyConfigDefaults } from './utils/config.js'
+export { profileTabRouteName } from '@/components/admin/utils.js'
 export { ENGINE_STORAGE_KEY, ENGINE_TOKENS_STORAGE_KEY } from './constants.js'
 export { 
   getEngineTokens, 
@@ -115,8 +116,15 @@ export { default as AuthorizationsNavBar } from '@/components/admin/Authorizatio
 export { default as CreateGroup } from '@/components/admin/CreateGroup.vue'
 export { default as CreateUser } from '@/components/admin/CreateUser.vue'
 export { default as ProfileGroup } from '@/components/admin/ProfileGroup.vue'
+export { default as ProfileGroupInformationTab } from '@/components/admin/profile/ProfileGroupInformationTab.vue'
+export { default as ProfileGroupTenantsTab } from '@/components/admin/profile/ProfileGroupTenantsTab.vue'
+export { default as ProfileGroupUsersTab } from '@/components/admin/profile/ProfileGroupUsersTab.vue'
 export { default as ProfilePreferencesTab } from '@/components/admin/ProfilePreferencesTab.vue'
 export { default as ProfileUser } from '@/components/admin/ProfileUser.vue'
+export { default as ProfileUserGroupsTab } from '@/components/admin/profile/ProfileUserGroupsTab.vue'
+export { default as ProfileUserInformationTab } from '@/components/admin/profile/ProfileUserInformationTab.vue'
+export { default as ProfileUserPasswordTab } from '@/components/admin/profile/ProfileUserPasswordTab.vue'
+export { default as ProfileUserTenantsTab } from '@/components/admin/profile/ProfileUserTenantsTab.vue'
 export { default as UsersManagement } from '@/components/admin/UsersManagement.vue'
 export { default as DeploymentList } from '@/components/deployment/DeploymentList.vue'
 export { default as DeploymentsView } from '@/components/deployment/DeploymentsView.vue'

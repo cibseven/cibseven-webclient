@@ -38,8 +38,17 @@ import UsersManagement from '@/components/admin/UsersManagement.vue'
 import AdminUsers from '@/components/admin/AdminUsers.vue'
 import CreateUser from '@/components/admin/CreateUser.vue'
 import ProfileUser from '@/components/admin/ProfileUser.vue'
+import ProfileUserInformationTab from '@/components/admin/profile/ProfileUserInformationTab.vue'
+import ProfileUserPasswordTab from '@/components/admin/profile/ProfileUserPasswordTab.vue'
+import ProfileUserGroupsTab from '@/components/admin/profile/ProfileUserGroupsTab.vue'
+import ProfileUserTenantsTab from '@/components/admin/profile/ProfileUserTenantsTab.vue'
+import ProfilePreferencesTab from '@/components/admin/ProfilePreferencesTab.vue'
 import AdminGroups from '@/components/admin/AdminGroups.vue'
 import ProfileGroup from '@/components/admin/ProfileGroup.vue'
+import ProfileGroupInformationTab from '@/components/admin/profile/ProfileGroupInformationTab.vue'
+import ProfileGroupUsersTab from '@/components/admin/profile/ProfileGroupUsersTab.vue'
+import ProfileGroupTenantsTab from '@/components/admin/profile/ProfileGroupTenantsTab.vue'
+import { profileTabRouteName } from '@/components/admin/utils.js'
 import CreateGroup from '@/components/admin/CreateGroup.vue'
 import AdminAuthorizations from '@/components/admin/AdminAuthorizations.vue'
 import AdminAuthorizationsTable from '@/components/admin/AdminAuthorizationsTable.vue'
@@ -63,6 +72,22 @@ import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 import ModelerView from '@/components/modeler/ModelerView.vue'
 import { redirectToProcessInstance, redirectToProcessDefinition, redirectToTask } from '@/utils/redirects.js'
+
+// The tabs of the user and the group page, by the path of their child route
+const USER_TABS = {
+  profile: ProfileUserInformationTab,
+  password: ProfileUserPasswordTab,
+  groups: ProfileUserGroupsTab,
+  tenants: ProfileUserTenantsTab,
+  preferences: ProfilePreferencesTab
+}
+const GROUP_TABS = {
+  information: ProfileGroupInformationTab,
+  users: ProfileGroupUsersTab,
+  tenants: ProfileGroupTenantsTab
+}
+// Tabs whose ?tab= value differs from their path, for links from before the tabs had routes of their own
+const RENAMED_PROFILE_TABS = { account: 'password' }
 
 const appRoutes = [
   { path: '/', name: 'root', redirect: '/seven/auth/start-configurable' },
@@ -166,6 +191,7 @@ const appRoutes = [
 
           {
             path: 'account/:userId', name: 'account', component: ProfileUser,
+            redirect: redirectToProfileTab('profile'), children: profileTabRoutes('account', USER_TABS),
             beforeEnter: [
               permissionsGuard('userProfile'),
               (to, from) => {
@@ -288,10 +314,14 @@ const appRoutes = [
               {
                 path: 'user/:userId', name: 'adminUser',
                 beforeEnter: permissionsGuard('usersManagement', 'user'), component: ProfileUser,
-                props: () => ({ editMode: true })
+                props: () => ({ editMode: true }),
+                redirect: redirectToProfileTab('profile'), children: profileTabRoutes('adminUser', USER_TABS)
               },
               { path: 'groups', name: 'adminGroups', beforeEnter: permissionsGuard('groupsManagement', 'group'), component: AdminGroups },
-              { path: 'group/:groupId', name: 'adminGroup', beforeEnter: permissionsGuard('groupsManagement', 'group'), component: ProfileGroup },
+              {
+                path: 'group/:groupId', name: 'adminGroup', beforeEnter: permissionsGuard('groupsManagement', 'group'), component: ProfileGroup,
+                redirect: redirectToProfileTab('information'), children: profileTabRoutes('adminGroup', GROUP_TABS)
+              },
               // Tenants
               { path: 'tenants', name: 'adminTenants', beforeEnter: permissionsGuard('tenantsManagement', 'tenant'), component: TenantsView },
               { path: 'tenant/:tenantId', name: 'adminTenant', beforeEnter: permissionsGuard('tenantsManagement', 'tenant'), component: EditTenant },
@@ -338,6 +368,24 @@ const appRoutes = [
 ];
 
 let router = null
+
+// The child routes of a page's tabs, e.g. 'account/:userId/preferences' named 'accountPreferences'
+function profileTabRoutes(page, tabs) {
+  return Object.entries(tabs).map(([tab, component]) => ({ path: tab, name: profileTabRouteName(page, tab), component }))
+}
+
+// Backward compatibility for profile tab routing before CIB seven 3.0.0.
+// Opens a tab of the page when the page itself is opened: the one in ?tab=, which picked the tab before the
+// tabs had routes of their own and which old links and bookmarks still carry, or else the default one
+function redirectToProfileTab(defaultTab) {
+  return function(to) {
+    const { tab: oldTab, ...query } = to.query
+    // A link may repeat ?tab=, which gives a list rather than a tab
+    const tab = typeof oldTab === 'string' ? RENAMED_PROFILE_TABS[oldTab] ?? oldTab : null
+    const name = tab && router.hasRoute(profileTabRouteName(to.name, tab)) ? profileTabRouteName(to.name, tab) : profileTabRouteName(to.name, defaultTab)
+    return { name, params: to.params, query, hash: to.hash }
+  }
+}
 
 function authGuard(strict) {
   return async function(to) {

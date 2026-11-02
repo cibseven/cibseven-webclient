@@ -98,6 +98,14 @@ import FeedbackModal from '@/components/modals/FeedbackModal.vue'
 import PluginSlot from '@/components/common/PluginSlot.vue'
 import { updateAppTitle } from '@/utils/init'
 import { buildNavGroups, extendNavGroups, projectGroupsForNavbar, permissionFlagsFromVm, itemsToSections, singleDestination } from '@/navigation/navGroups.js'
+import { profileTabRouteName } from '@/components/admin/utils.js'
+
+// The names of the route and of the routes it is nested in, so a tab of a page (a child route) counts as the page.
+// That includes the layout routes every page sits in ('seven', 'auth', 'admin'), so no menu item may name one of
+// those in routeName or activeRouteNames, or it would be marked on every page below it.
+function routeNames(route) {
+  return [route.name, ...(route.matched ?? []).map(record => record.name)].filter(Boolean)
+}
 
 export default {
   name: 'CibSeven',
@@ -138,7 +146,7 @@ export default {
     // The account page and the pages before sign-in have no page title next to the logo, so they
     // keep the full one like the start page
     showFullLogo: function() {
-      return this.isStartPage || ['account', 'login', 'loggedOut', 'setup'].includes(this.$route.name)
+      return this.isStartPage || routeNames(this.$route).some(name => ['account', 'login', 'loggedOut', 'setup'].includes(name))
     },
     // The catalog as header clusters: the icon leads to the section, the menu title to its overview page
     navClusters: function() {
@@ -189,22 +197,20 @@ export default {
     userMenuItems: function() {
       if (!this.$root.user || !this.$root.config.layout.showUserSettings || !this.permissionsUserProfile) return []
       const config = this.$root.config
-      // One entry per tab of the account page (ProfileUser), which reads the tab from ?tab=
+      // One entry per tab of the account page (ProfileUser), each tab a child route of the page
       const tabs = [
         { tab: 'profile', label: 'start.account.profile.title', tooltip: 'start.account.profile.tooltip' },
-        { tab: 'account', label: 'password.recover.changePassword', show: !!(config.userEditable && config.userPasswordChangeEnabled) },
+        { tab: 'password', label: 'password.recover.changePassword', show: !!(config.userEditable && config.userPasswordChangeEnabled) },
         { tab: 'groups', label: 'admin.users.groups' },
         { tab: 'tenants', label: 'admin.tenants.title' },
         { tab: 'preferences', label: 'admin.preferences.title' }
       ]
-      const onAccountPage = this.isMenuItemActive({ active: ['seven/auth/account'] })
-      const currentTab = this.$route.query?.tab ?? 'profile'
       return tabs.filter(entry => entry.show !== false).map(({ tab, label, tooltip }) => ({
         key: tab,
         label: this.$t(label),
         tooltip: this.$t(tooltip ?? label),
-        to: { name: 'account', params: { userId: this.$root.user.id }, query: { tab } },
-        active: onAccountPage && currentTab === tab
+        to: { name: profileTabRouteName('account', tab), params: { userId: this.$root.user.id } },
+        active: this.$route.name === profileTabRouteName('account', tab)
       }))
     },
     helpMenuItems: function() {
@@ -316,9 +322,7 @@ export default {
     },
     isMenuItemActive: function(item) {
       if (item.routeName || item.activeRouteNames) {
-        // A route without a name matches none of them (undefined === undefined must not count)
-        const name = this.$route.name
-        return !!name && (name === item.routeName || !!item.activeRouteNames?.includes(name))
+        return routeNames(this.$route).some(name => name === item.routeName || !!item.activeRouteNames?.includes(name))
       }
       if (!item.active) {
         return false
