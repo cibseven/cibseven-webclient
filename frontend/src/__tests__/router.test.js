@@ -118,6 +118,9 @@ describe('router', () => {
       ['/seven/auth/account/demo?tab=unknown', 'accountProfile', '/seven/auth/account/demo/profile'],
       // A repeated ?tab= gives a list, which names no tab
       ['/seven/auth/account/demo?tab=groups&tab=tenants', 'accountProfile', '/seven/auth/account/demo/profile'],
+      // The password tab was picked with ?tab=account
+      ['/seven/auth/account/demo?tab=account', 'accountPassword', '/seven/auth/account/demo/password'],
+      ['/seven/auth/admin/user/john?tab=account', 'adminUserPassword', '/seven/auth/admin/user/john/password'],
       ['/seven/auth/admin/user/john?tab=groups', 'adminUserGroups', '/seven/auth/admin/user/john/groups'],
       ['/seven/auth/admin/group/sales', 'adminGroupInformation', '/seven/auth/admin/group/sales/information'],
       ['/seven/auth/admin/group/sales?tab=tenants', 'adminGroupTenants', '/seven/auth/admin/group/sales/tenants']

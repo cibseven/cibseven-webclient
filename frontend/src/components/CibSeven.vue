@@ -200,7 +200,7 @@ export default {
       // One entry per tab of the account page (ProfileUser), each tab a child route of the page
       const tabs = [
         { tab: 'profile', label: 'start.account.profile.title', tooltip: 'start.account.profile.tooltip' },
-        { tab: 'account', label: 'password.recover.changePassword', show: !!(config.userEditable && config.userPasswordChangeEnabled) },
+        { tab: 'password', label: 'password.recover.changePassword', show: !!(config.userEditable && config.userPasswordChangeEnabled) },
         { tab: 'groups', label: 'admin.users.groups' },
         { tab: 'tenants', label: 'admin.tenants.title' },
         { tab: 'preferences', label: 'admin.preferences.title' }

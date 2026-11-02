@@ -53,7 +53,7 @@ beforeEach(() => {
 describe('ProfileUser tabs', () => {
   it('offers every tab of a user the engine knows, on their own account', () => {
     const vm = context({ user: { ...ADA } })
-    expect(vm.visibleTabs.map(tab => tab.id)).toEqual(['profile', 'account', 'groups', 'tenants', 'preferences'])
+    expect(vm.visibleTabs.map(tab => tab.id)).toEqual(['profile', 'password', 'groups', 'tenants', 'preferences'])
   })
 
   it.each([
@@ -132,7 +132,7 @@ describe('ProfileUser openShownTab', () => {
   })
 
   it('swaps to the first tab shown when a user with details opens a hidden one', () => {
-    const vm = context({ user: { ...ADA }, $route: { name: 'accountAccount', params: { userId: 'ada' } } })
+    const vm = context({ user: { ...ADA }, $route: { name: 'accountPassword', params: { userId: 'ada' } } })
     vm.$root.config.userPasswordChangeEnabled = false
     vm.openShownTab()
     expect(vm.$router.replace).toHaveBeenCalledWith({ name: 'accountProfile', params: { userId: 'ada' } })

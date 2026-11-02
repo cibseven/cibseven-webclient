@@ -76,7 +76,7 @@ import { redirectToProcessInstance, redirectToProcessDefinition, redirectToTask 
 // The tabs of the user and the group page, by the path of their child route
 const USER_TABS = {
   profile: ProfileUserInformationTab,
-  account: ProfileUserPasswordTab,
+  password: ProfileUserPasswordTab,
   groups: ProfileUserGroupsTab,
   tenants: ProfileUserTenantsTab,
   preferences: ProfilePreferencesTab
@@ -86,6 +86,8 @@ const GROUP_TABS = {
   users: ProfileGroupUsersTab,
   tenants: ProfileGroupTenantsTab
 }
+// Tabs whose ?tab= value differs from their path, for links from before the tabs had routes of their own
+const RENAMED_PROFILE_TABS = { account: 'password' }
 
 const appRoutes = [
   { path: '/', name: 'root', redirect: '/seven/auth/start-configurable' },
@@ -377,9 +379,10 @@ function profileTabRoutes(page, tabs) {
 // tabs had routes of their own and which old links and bookmarks still carry, or else the default one
 function redirectToProfileTab(defaultTab) {
   return function(to) {
-    const { tab, ...query } = to.query
+    const { tab: oldTab, ...query } = to.query
     // A link may repeat ?tab=, which gives a list rather than a tab
-    const name = typeof tab === 'string' && router.hasRoute(profileTabRouteName(to.name, tab)) ? profileTabRouteName(to.name, tab) : profileTabRouteName(to.name, defaultTab)
+    const tab = typeof oldTab === 'string' ? RENAMED_PROFILE_TABS[oldTab] ?? oldTab : null
+    const name = tab && router.hasRoute(profileTabRouteName(to.name, tab)) ? profileTabRouteName(to.name, tab) : profileTabRouteName(to.name, defaultTab)
     return { name, params: to.params, query, hash: to.hash }
   }
 }

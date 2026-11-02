@@ -55,8 +55,8 @@ const ROUTE_PERMISSIONS = {
 
   account: { permission: 'userProfile' },
   // The tabs of the profile pages are child routes, gated by their page
-  ...tabRules('account', ['profile', 'account', 'groups', 'tenants', 'preferences'], { permission: 'userProfile' }),
-  ...tabRules('adminUser', ['profile', 'account', 'groups', 'tenants', 'preferences'], { permission: 'usersManagement', condition: 'user' }),
+  ...tabRules('account', ['profile', 'password', 'groups', 'tenants', 'preferences'], { permission: 'userProfile' }),
+  ...tabRules('adminUser', ['profile', 'password', 'groups', 'tenants', 'preferences'], { permission: 'usersManagement', condition: 'user' }),
   ...tabRules('adminGroup', ['information', 'users', 'tenants'], { permission: 'groupsManagement', condition: 'group' }),
   'start-process': { permission: 'tasklist' },
   'task-id': { permission: 'tasklist' },

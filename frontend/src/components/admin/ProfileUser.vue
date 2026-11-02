@@ -93,7 +93,7 @@ export default {
       // saved user. An extension of the page adds its own tabs here, and their routes to the router.
       tabs: [
         { id: 'profile', label: 'admin.users.profile', show: vm => !vm.user.noInfo },
-        { id: 'account', label: 'password.recover.changePassword', show: vm => vm.canChangePassword },
+        { id: 'password', label: 'password.recover.changePassword', show: vm => vm.canChangePassword },
         { id: 'groups', label: 'admin.users.groups', show: vm => !vm.user.noInfo },
         { id: 'tenants', label: 'admin.tenants.title', show: vm => !vm.user.noInfo },
         { id: 'preferences', label: 'admin.preferences.title', show: vm => vm.$root.user?.id === vm.user.id, props: () => ({}) }

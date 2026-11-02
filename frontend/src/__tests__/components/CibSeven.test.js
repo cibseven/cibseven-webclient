@@ -472,10 +472,10 @@ describe('CibSeven.vue', () => {
       const vm = shell()
       vm.$root.config.userEditable = true
       vm.$root.config.userPasswordChangeEnabled = true
-      expect(CibSeven.computed.userMenuItems.call(vm).map(i => i.key)).toContain('account')
+      expect(CibSeven.computed.userMenuItems.call(vm).map(i => i.key)).toContain('password')
 
       vm.$root.config.userPasswordChangeEnabled = false
-      expect(CibSeven.computed.userMenuItems.call(vm).map(i => i.key)).not.toContain('account')
+      expect(CibSeven.computed.userMenuItems.call(vm).map(i => i.key)).not.toContain('password')
     })
 
     it('opens the dialog a header item asks for', () => {
