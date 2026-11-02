@@ -94,10 +94,17 @@ describe('ProfileUser tabs', () => {
 
   it('gives a tab the user and the edit mode, and the preferences nothing', () => {
     const vm = context({ user: { ...ADA }, editMode: true, $route: { name: 'adminUserProfile', params: {} } })
-    expect(vm.tabProps).toEqual({ user: vm.user, editMode: true })
+    expect(vm.tabProps).toEqual({ user: vm.user, editMode: true, 'onUpdate:user': expect.any(Function) })
 
     vm.$route.name = 'adminUserPreferences'
     expect(vm.tabProps).toEqual({})
+  })
+
+  // The information tab saves a copy of the user, which the page then shows
+  it('takes the user a tab saved', () => {
+    const vm = context({ user: { ...ADA }, $route: { name: 'accountProfile', params: {} } })
+    vm.tabProps['onUpdate:user']({ ...ADA, lastName: 'Byron' })
+    expect(vm.user.lastName).toBe('Byron')
   })
 
   // This is how an extension of the page adds a tab

@@ -48,7 +48,8 @@ const settle = async () => { for (let i = 0; i < 5; i++) await Promise.resolve()
 /** A stand-in for the tab, given its props and the alerts and dialogs it reaches through $refs. */
 function context(Component, overrides = {}) {
   const vm = createComponentContext({
-    ...Component.data.call({}),
+    // The forms start from a copy of the props
+    ...Component.data.call(overrides),
     ...overrides
   })
   vm.$root.config = { userEditable: true, ...overrides.config }
@@ -66,12 +67,39 @@ beforeEach(() => {
 })
 
 describe('ProfileUserInformationTab', () => {
-  it('saves the user and says so', async () => {
-    const vm = context(ProfileUserInformationTab, { user: { ...ADA }, $refs: { updateProfile: alert() } })
+  const tab = (user = { ...ADA }) => context(ProfileUserInformationTab, { user, $refs: { updateProfile: alert() } })
+
+  it('saves the edited user, hands it to the page and says so', async () => {
+    const vm = tab()
+    vm.form.lastName = 'Byron'
     vm.update()
     await settle()
-    expect(AdminService.updateUserProfile).toHaveBeenCalledWith('ada', vm.user)
+    const saved = { ...ADA, lastName: 'Byron' }
+    expect(AdminService.updateUserProfile).toHaveBeenCalledWith('ada', saved)
+    expect(vm.$emit).toHaveBeenCalledWith('update:user', saved)
     expect(vm.$refs.updateProfile.show).toHaveBeenCalledWith(2)
+  })
+
+  // Switching tabs remounts the tab: unsaved changes must not survive in the page's user while Update is disabled
+  it('keeps unsaved changes to itself, so the tab opens again with the stored user', () => {
+    const user = { ...ADA }
+    const vm = tab(user)
+    vm.form.lastName = 'Byron'
+    vm.dirty = true
+    expect(user.lastName).toBe('Lovelace')
+
+    const reopened = tab(user)
+    expect(reopened.form).toEqual(ADA)
+    expect(reopened.dirty).toBe(false)
+  })
+
+  it('starts over from the user the page holds once it changes', () => {
+    const vm = tab()
+    vm.form.lastName = 'Byron'
+    vm.dirty = true
+    ProfileUserInformationTab.watch.user.call(vm, { ...ADA, lastName: 'King' })
+    expect(vm.form.lastName).toBe('King')
+    expect(vm.dirty).toBe(false)
   })
 })
 
@@ -244,12 +272,26 @@ describe('ProfileUserTenantsTab', () => {
 describe('ProfileGroupInformationTab', () => {
   const tab = () => context(ProfileGroupInformationTab, { group: { ...SALES }, $refs: { updateGroup: alert(), deleteGroup: alert() } })
 
-  it('saves the group and says so', async () => {
+  it('saves the edited group, hands it to the page and says so', async () => {
     const vm = tab()
+    vm.form.name = 'Sales EMEA'
     vm.update()
     await settle()
-    expect(AdminService.updateGroup).toHaveBeenCalledWith('sales', vm.group)
+    const saved = { ...SALES, name: 'Sales EMEA' }
+    expect(AdminService.updateGroup).toHaveBeenCalledWith('sales', saved)
+    expect(vm.$emit).toHaveBeenCalledWith('update:group', saved)
     expect(vm.$refs.updateGroup.show).toHaveBeenCalledWith(2)
+  })
+
+  it('keeps unsaved changes to itself, and starts over from the group the page holds once it changes', () => {
+    const vm = tab()
+    vm.form.name = 'Sales EMEA'
+    vm.dirty = true
+    expect(vm.group.name).toBe('Sales')
+
+    ProfileGroupInformationTab.watch.group.call(vm, { ...SALES, name: 'Sales DACH' })
+    expect(vm.form.name).toBe('Sales DACH')
+    expect(vm.dirty).toBe(false)
   })
 
   it('deletes the group and goes back to the list', async () => {

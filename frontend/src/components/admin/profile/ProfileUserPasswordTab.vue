@@ -99,7 +99,7 @@ export default {
   },
   methods: {
     resetPasswordValidation: function () {
-      this.passwordValid = null,
+      this.passwordValid = null
       this.passwordRules = []
     },
     validatePassword: function () {

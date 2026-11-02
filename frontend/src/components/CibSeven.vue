@@ -100,7 +100,9 @@ import { updateAppTitle } from '@/utils/init'
 import { buildNavGroups, extendNavGroups, projectGroupsForNavbar, permissionFlagsFromVm, itemsToSections, singleDestination } from '@/navigation/navGroups.js'
 import { profileTabRouteName } from '@/components/admin/utils.js'
 
-// The names of the route and of the routes it is nested in, so a tab of a page (a child route) counts as the page
+// The names of the route and of the routes it is nested in, so a tab of a page (a child route) counts as the page.
+// That includes the layout routes every page sits in ('seven', 'auth', 'admin'), so no menu item may name one of
+// those in routeName or activeRouteNames, or it would be marked on every page below it.
 function routeNames(route) {
   return [route.name, ...(route.matched ?? []).map(record => record.name)].filter(Boolean)
 }

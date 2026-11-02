@@ -378,7 +378,8 @@ function profileTabRoutes(page, tabs) {
 function redirectToProfileTab(defaultTab) {
   return function(to) {
     const { tab, ...query } = to.query
-    const name = tab && router.hasRoute(profileTabRouteName(to.name, tab)) ? profileTabRouteName(to.name, tab) : profileTabRouteName(to.name, defaultTab)
+    // A link may repeat ?tab=, which gives a list rather than a tab
+    const name = typeof tab === 'string' && router.hasRoute(profileTabRouteName(to.name, tab)) ? profileTabRouteName(to.name, tab) : profileTabRouteName(to.name, defaultTab)
     return { name, params: to.params, query, hash: to.hash }
   }
 }

@@ -116,6 +116,8 @@ describe('router', () => {
       ['/seven/auth/account/demo', 'accountProfile', '/seven/auth/account/demo/profile'],
       // A tab this deployment does not have (e.g. one of an extension) opens the default one
       ['/seven/auth/account/demo?tab=unknown', 'accountProfile', '/seven/auth/account/demo/profile'],
+      // A repeated ?tab= gives a list, which names no tab
+      ['/seven/auth/account/demo?tab=groups&tab=tenants', 'accountProfile', '/seven/auth/account/demo/profile'],
       ['/seven/auth/admin/user/john?tab=groups', 'adminUserGroups', '/seven/auth/admin/user/john/groups'],
       ['/seven/auth/admin/group/sales', 'adminGroupInformation', '/seven/auth/admin/group/sales/information'],
       ['/seven/auth/admin/group/sales?tab=tenants', 'adminGroupTenants', '/seven/auth/admin/group/sales/tenants']

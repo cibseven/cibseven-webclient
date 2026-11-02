@@ -60,8 +60,8 @@ export default {
       leftOpen: true,
       group: { id: null, name: null,  type: null },
       // The tabs of the page, in menu order. Each one is a child route of the page (see profileTabRouteName), shown
-      // when show(vm) holds and given props(vm), or by default the group. An extension of the page adds its
-      // own tabs here, and their routes to the router.
+      // when show(vm) holds and given props(vm), or by default the group and a handler taking the saved group. An
+      // extension of the page adds its own tabs here, and their routes to the router.
       tabs: [
         { id: 'information', label: 'admin.groups.information', show: () => true },
         { id: 'users', label: 'admin.groups.users', show: () => true },
@@ -85,7 +85,7 @@ export default {
       return this.tabs.find(tab => this.$route.name === profileTabRouteName('adminGroup', tab.id))
     },
     tabProps() {
-      return this.selectedTab?.props?.(this) ?? { group: this.group }
+      return this.selectedTab?.props?.(this) ?? { group: this.group, 'onUpdate:group': group => { this.group = group } }
     }
   },
   created: function() {

@@ -89,8 +89,8 @@ export default {
       leftOpen: true,
       user: { id: null, firstName: null, lastName: null, email: null, noInfo: true },
       // The tabs of the page, in menu order. Each one is a child route of the page (see profileTabRouteName), shown
-      // when show(vm) holds and given props(vm), or by default the user and the edit mode. An extension of
-      // the page adds its own tabs here, and their routes to the router.
+      // when show(vm) holds and given props(vm), or by default the user, the edit mode and a handler taking the
+      // saved user. An extension of the page adds its own tabs here, and their routes to the router.
       tabs: [
         { id: 'profile', label: 'admin.users.profile', show: vm => !vm.user.noInfo },
         { id: 'account', label: 'password.recover.changePassword', show: vm => vm.canChangePassword },
@@ -124,7 +124,7 @@ export default {
       return this.tabs.find(tab => this.$route.name === profileTabRouteName(this.page, tab.id))
     },
     tabProps() {
-      return this.selectedTab?.props?.(this) ?? { user: this.user, editMode: this.editMode }
+      return this.selectedTab?.props?.(this) ?? { user: this.user, editMode: this.editMode, 'onUpdate:user': user => { this.user = user } }
     },
     canChangePassword() {
       return !this.user.noInfo && this.$root.config.userEditable && this.$root.config.userPasswordChangeEnabled

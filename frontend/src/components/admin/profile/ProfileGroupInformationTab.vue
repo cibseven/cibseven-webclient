@@ -16,8 +16,6 @@
      limitations under the License.
 
 -->
-<!-- The form edits the group of the page in place, so the page shows the new name -->
-<!-- eslint-disable vue/no-mutating-props -->
 <template>
   <div class="col-sm-12 col-md-12 col-lg-8 col-xl-6 p-4">
     <b-card class="p-5 shadow-sm border rounded" :title="$t('admin.groups.editMessage', [group.name])">
@@ -25,10 +23,10 @@
         <CIBForm @submitted="update()">
           <b-form-group :label="$t('admin.groups.name') + '*'" label-for="profile-group-name" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
             :invalid-feedback="$t('errors.invalid')">
-            <b-form-input id="profile-group-name" v-model="group.name" @update:modelValue="dirty=true" :state="notEmpty(group.name)" required></b-form-input>
+            <b-form-input id="profile-group-name" v-model="form.name" @update:modelValue="dirty=true" :state="notEmpty(form.name)" required></b-form-input>
           </b-form-group>
           <b-form-group :label="$t('admin.groups.type')" label-for="profile-group-type" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4">
-            <b-form-input id="profile-group-type" v-model="group.type" @update:modelValue="dirty = true"></b-form-input>
+            <b-form-input id="profile-group-type" v-model="form.type" @update:modelValue="dirty = true"></b-form-input>
           </b-form-group>
           <div class="d-flex justify-content-between" v-if="$root.config.userProvider === 'org.cibseven.webapp.auth.SevenUserProvider'">
             <b-button variant="light" @click="$refs.deleteModal.show()">{{ $t('admin.groups.deleteGroup') }}</b-button>
@@ -65,14 +63,25 @@ export default {
   props: {
     group: { type: Object, required: true }
   },
+  emits: ['update:group'],
   data: function() {
     return {
+      // The form edits a copy, so unsaved changes stay in this tab and leave the page's group as stored
+      form: { ...this.group },
       dirty: false
+    }
+  },
+  watch: {
+    group: function(group) {
+      this.form = { ...group }
+      this.dirty = false
     }
   },
   methods: {
     update: function() {
-      AdminService.updateGroup(this.group.id, this.group).then(() => {
+      const group = { ...this.form }
+      AdminService.updateGroup(group.id, group).then(() => {
+        this.$emit('update:group', group)
         this.$refs.updateGroup.show(2)
       })
     },

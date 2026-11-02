@@ -63,7 +63,9 @@ describe('ProfileGroup tabs', () => {
 
   it('gives a tab the group, and an added tab its own props', () => {
     const vm = context({ group: { ...SALES } })
-    expect(vm.tabProps).toEqual({ group: vm.group })
+    expect(vm.tabProps).toEqual({ group: vm.group, 'onUpdate:group': expect.any(Function) })
+    vm.tabProps['onUpdate:group']({ ...SALES, name: 'Sales EMEA' })
+    expect(vm.group.name).toBe('Sales EMEA')
 
     vm.tabs.push({ id: 'extra', label: 'extra', show: () => true, props: v => ({ groupId: v.group.id }) })
     vm.$route.name = 'adminGroupExtra'

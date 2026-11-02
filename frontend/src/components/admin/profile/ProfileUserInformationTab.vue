@@ -16,25 +16,23 @@
      limitations under the License.
 
 -->
-<!-- The form edits the user of the page in place, so the page and its other tabs show the new name -->
-<!-- eslint-disable vue/no-mutating-props -->
 <template>
   <div class="col-lg-6 col-md-8 col-sm-12">
     <ContentBlock :title="$t('admin.users.editMessage', [user.firstName + ' ' + user.lastName])">
       <CIBForm @submitted="update()">
         <b-form-group :label="$t('admin.users.firstName') + '*'" label-for="profile-user-first-name" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
           :invalid-feedback="$t('errors.invalid')">
-          <b-form-input id="profile-user-first-name" v-model="user.firstName"  @update:modelValue="dirty=true"
-            :state="notEmpty(user.firstName)" :readonly="!$root.config.userEditable || !editMode" required></b-form-input>
+          <b-form-input id="profile-user-first-name" v-model="form.firstName"  @update:modelValue="dirty=true"
+            :state="notEmpty(form.firstName)" :readonly="!$root.config.userEditable || !editMode" required></b-form-input>
         </b-form-group>
         <b-form-group :label="$t('admin.users.lastName') + '*'" label-for="profile-user-last-name" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
           :invalid-feedback="$t('errors.invalid')">
-          <b-form-input id="profile-user-last-name" v-model="user.lastName"  @update:modelValue="dirty=true"
-            :state="notEmpty(user.lastName)" :readonly="!$root.config.userEditable || !editMode" required></b-form-input>
+          <b-form-input id="profile-user-last-name" v-model="form.lastName"  @update:modelValue="dirty=true"
+            :state="notEmpty(form.lastName)" :readonly="!$root.config.userEditable || !editMode" required></b-form-input>
         </b-form-group>
         <b-form-group :label="$t('admin.users.email')" label-for="profile-user-email" label-cols-sm="6" label-cols-md="6" label-cols-lg="4" label-align-sm="left" label-class="pb-4"
           :invalid-feedback="$t('errors.invalid')">
-          <b-form-input id="profile-user-email" v-model="user.email" type="email" autocomplete="email"  @update:modelValue="dirty = true" :readonly="!$root.config.userEditable || !editMode"></b-form-input>
+          <b-form-input id="profile-user-email" v-model="form.email" type="email" autocomplete="email"  @update:modelValue="dirty = true" :readonly="!$root.config.userEditable || !editMode"></b-form-input>
         </b-form-group>
         <div class="float-end" v-if="$root.config.userEditable">
           <b-button type="submit" variant="secondary" :disabled="!dirty" >{{ $t('admin.users.update') }}</b-button>
@@ -57,14 +55,25 @@ export default {
     user: { type: Object, required: true },
     editMode: { type: Boolean, default: false }
   },
+  emits: ['update:user'],
   data: function() {
     return {
+      // The form edits a copy, so unsaved changes stay in this tab and leave the page's user as stored
+      form: { ...this.user },
       dirty: false
+    }
+  },
+  watch: {
+    user: function(user) {
+      this.form = { ...user }
+      this.dirty = false
     }
   },
   methods: {
     update: function() {
-      AdminService.updateUserProfile(this.user.id, this.user).then(() => {
+      const user = { ...this.form }
+      AdminService.updateUserProfile(user.id, user).then(() => {
+        this.$emit('update:user', user)
         this.$refs.updateProfile.show(2)
       })
     },
