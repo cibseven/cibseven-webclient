@@ -50,7 +50,6 @@ const DEFAULT_CONFIG = {
     updateInstanceProcessDefinition: { processDefinition: ["UPDATE_INSTANCE"] },
     updateProcessDefinition : { processDefinition: ["UPDATE"] },
     deleteProcessDefinition: { processDefinition: ["DELETE"] },
-    suspendProcessInstance: {processInstance: ["SUSPEND"] },
 	  updateProcessInstance: { processInstance: ["UPDATE"] },
   },
   taskSorting: {
@@ -136,13 +135,11 @@ const DEFAULT_CONFIG = {
         "TASK_ASSIGN","TASK_WORK","READ_TASK_VARIABLE","UPDATE_TASK_VARIABLE","READ_VARIABLE",
         "UPDATE_VARIABLE","READ_HISTORY","READ_HISTORY_VARIABLE","DELETE_HISTORY"
       ] },
-      "11": { "id": "11", "key": "report", "permissions": ["READ"] },
+      "11": { "id": "11", "key": "tenant", "permissions": ["READ","UPDATE","CREATE","DELETE"] },
       "8": { "id": "8", "key": "task", "permissions": [
         "READ","UPDATE","DELETE","CREATE","TASK_ASSIGN","TASK_WORK","READ_VARIABLE","UPDATE_VARIABLE"
       ] },
-      "15": { "id": "15", "key": "optimize", "permissions": ["READ"] },
-      "16": { "id": "16", "key": "operationLogCategory", "permissions": ["READ","DELETE"] },
-      "12": { "id": "12", "key": "system", "permissions": ["READ","UPDATE","DELETE"] },
+      "21": { "id": "21", "key": "system", "permissions": ["READ","SET","DELETE"] },
       "1": { "id": "1", "key": "user", "permissions": ["READ","UPDATE","CREATE","DELETE"] }
     }
   },
@@ -195,7 +192,7 @@ const DEFAULT_CONFIG = {
  * @param {Object} source - The source object
  * @returns {Object} - Merged object
  */
-function deepMerge(target, source) {
+export function deepMerge(target, source) {
   const result = { ...target }
 
   for (const key in source) {

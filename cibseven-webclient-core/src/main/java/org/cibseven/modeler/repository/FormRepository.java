@@ -34,10 +34,17 @@ public interface FormRepository extends JpaRepository<FormEntity, String> {
 
 	FormEntity findByFormId(String formId);
 
+	/**
+	 * Leaves out the forms of the hidden projects, through the project kept on each folder. The
+	 * hidden projects never come back empty: an empty list is not valid SQL on every database.
+	 */
 	@Query("select f from FormEntity f " +
-		"where lower(f.formId) like lower(concat('%', :keyword, '%')) " +
-		"or lower(f.description) like lower(concat('%', :keyword, '%'))")
-	List<FormEntity> findAllFiltered(@Param("keyword") String keyword, Pageable pageable);
+		"where (lower(f.formId) like lower(concat('%', :keyword, '%')) " +
+		"or lower(f.description) like lower(concat('%', :keyword, '%'))) " +
+		"and (f.folderId is null or f.folderId not in " +
+		"(select hf.id from FolderEntity hf where hf.projectId in :hiddenProjectIds))")
+	List<FormEntity> findAllFiltered(@Param("keyword") String keyword,
+		@Param("hiddenProjectIds") Collection<String> hiddenProjectIds, Pageable pageable);
 
 	List<FormEntity> findByFolderIdIn(Collection<String> folderIds);
 

@@ -45,9 +45,17 @@ public class FormProvider implements IFormProvider {
 
 	@Override
 	public List<FormEntity> getForms(String keyword, int firstResult, int maxResults) throws SystemException {
+		return getForms(keyword, ProjectGuard.HiddenProjects.NONE, firstResult, maxResults);
+	}
+
+	/** Leaves out the forms of the hidden projects, counting only what is left for the paging. */
+	public List<FormEntity> getForms(String keyword, ProjectGuard.HiddenProjects hidden, int firstResult, int maxResults)
+			throws SystemException {
 		String kw = keyword == null ? "" : keyword;
-		PageRequest page = PageRequest.of(firstResult / maxResults, maxResults, Sort.by("updated").descending());
-		return formRepositoryDao.findAllFiltered(kw, page);
+		return ProjectGuard.visiblePage(hidden, firstResult, maxResults,
+			(hiddenProjectIds, page, size) -> formRepositoryDao.findAllFiltered(kw, hiddenProjectIds,
+				PageRequest.of(page, size, Sort.by("updated").descending())),
+			FormEntity::getFolderId);
 	}
 
 	@Override

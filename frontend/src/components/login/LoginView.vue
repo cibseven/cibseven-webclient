@@ -33,16 +33,17 @@
         </div>
       </div>
     </div>
-    <footer class="fixed-bottom text-center text-muted">CIB seven &copy; CIB, {{ new Date().getFullYear() }}</footer>
+    <AppFooter />
   </div>
 </template>
 
 <script>
 import LoginForm from '@/components/login/LoginForm.vue'
+import AppFooter from '@/components/common-components/AppFooter.vue';
 
 export default {
   name: 'LoginView',
-  components: { LoginForm },
+  components: { LoginForm, AppFooter },
   inject: ['AuthService'],
   data: function() {
     return {

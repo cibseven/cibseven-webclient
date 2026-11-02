@@ -28,8 +28,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.BeanFactoryAnnotationUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
+import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -175,7 +175,7 @@ class CibsevenPersistenceConfigurationTest {
 
 		@Bean
 		org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean appEntityManagerFactory(
-				org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder builder, DataSource dataSource) {
+				org.springframework.boot.jpa.EntityManagerFactoryBuilder builder, DataSource dataSource) {
 			// Deliberately scans a package without entities: the host's unit knows nothing of ours.
 			return builder.dataSource(dataSource).packages("org.cibseven.modeler.config")
 				.persistenceUnit("app").build();

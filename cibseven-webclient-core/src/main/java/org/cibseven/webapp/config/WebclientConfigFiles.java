@@ -37,7 +37,7 @@ import org.springframework.core.io.ResourceLoader;
  *
  * <p>The files rank just above the default properties: every configuration file of the
  * application, environment variables and system properties override them. The YAML file overrides
- * the properties file. Called by the {@code EnvironmentPostProcessor} of each web module, after
+ * the properties file. Called by the {@code EnvironmentPostProcessor} of the web module, after
  * Spring Boot has loaded the application's configuration.</p>
  */
 public final class WebclientConfigFiles {
@@ -46,7 +46,7 @@ public final class WebclientConfigFiles {
 	static final List<String> LOCATIONS = List.of(
 		"classpath:cibseven-webclient.properties", "classpath:cibseven-webclient.yaml");
 
-	/** Name of the property source holding the default properties in both Spring Boot 3 and 4 */
+	/** Name of the property source holding the default properties */
 	private static final String DEFAULT_PROPERTIES = "defaultProperties";
 
 	private WebclientConfigFiles() {

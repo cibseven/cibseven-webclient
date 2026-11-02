@@ -1,1 +1,0 @@
-org.springframework.boot.EnvironmentPostProcessor=org.cibseven.webapp.config.WebclientConfigFilesEnvironmentPostProcessor

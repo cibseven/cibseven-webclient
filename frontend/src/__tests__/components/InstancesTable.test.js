@@ -38,4 +38,29 @@ describe('InstancesTable', () => {
       expect(vm.canDeleteRuntimeProcessInstance).not.toHaveBeenCalled()
     })
   })
+
+  describe.each([
+    ['hasSuspendInstanceButton', 'ACTIVE'],
+    ['hasActivateInstanceButton', 'SUSPENDED'],
+  ])('%s', (method, shownState) => {
+    const context = (allowed = true) => ({ canSuspendProcessInstance: vi.fn(() => allowed) })
+    const instance = (state) => ({ id: 'pi-1', processDefinitionKey: 'order-process', state })
+
+    it(`is shown for a ${shownState} instance the user may suspend`, () => {
+      const vm = context()
+      expect(InstancesTable.methods[method].call(vm, instance(shownState))).toBe(true)
+      expect(vm.canSuspendProcessInstance).toHaveBeenCalledWith('pi-1', 'order-process')
+    })
+
+    it('is hidden without the permission to suspend the instance', () => {
+      expect(InstancesTable.methods[method].call(context(false), instance(shownState))).toBe(false)
+    })
+
+    it.each(['ACTIVE', 'SUSPENDED', 'COMPLETED', 'EXTERNALLY_TERMINATED', 'INTERNALLY_TERMINATED']
+      .filter(state => state !== shownState))('is hidden for a %s instance', (state) => {
+      const vm = context()
+      expect(InstancesTable.methods[method].call(vm, instance(state))).toBe(false)
+      expect(vm.canSuspendProcessInstance).not.toHaveBeenCalled()
+    })
+  })
 })

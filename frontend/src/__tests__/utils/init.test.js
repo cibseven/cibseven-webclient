@@ -219,6 +219,13 @@ describe('loadTheme', () => {
 
     expect(document.head.querySelector('style')).not.toBeNull()
   })
+
+  /** Styles loaded later, the modeler's, are placed before the theme by this mark. */
+  it('should mark the style element with the theme name', async () => {
+    await loadTheme('cib')
+
+    expect(document.head.querySelector('style[data-theme="cib"]')).not.toBeNull()
+  })
 })
 
 describe('fetchAndStoreProcesses', () => {

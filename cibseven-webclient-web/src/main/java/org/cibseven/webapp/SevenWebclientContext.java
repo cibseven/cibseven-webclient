@@ -18,6 +18,7 @@ package org.cibseven.webapp;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
@@ -36,18 +37,18 @@ import org.springframework.http.CacheControl;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverters;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
-import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.mvc.WebContentInterceptor;
 
@@ -73,6 +74,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 })
 public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArgumentResolver {
 
+	@SuppressWarnings("rawtypes")
 	BaseUserProvider provider;
 
 	final SevenWebclientProperties properties;
@@ -81,48 +83,40 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 		this.properties = properties;
 	}
 
-	@Bean
-	public ObjectMapper objectMapper() {
-		ObjectMapper objectMapper = new ObjectMapper();
-		StreamReadConstraints streamReadConstraints = StreamReadConstraints
-				.builder()
-				.maxStringLength(properties.getCustom().getSpring().getJackson().getParser().getMaxSize())
-				.build();
-		objectMapper.getFactory().setStreamReadConstraints(streamReadConstraints);
-		objectMapper.registerModule(new JavaTimeModule());
-		objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-		// Deprecated interim opt-out, remove together with the Jackson 3 migration
-		boolean writeDatesAsTimestamps = properties.getCustom().getSpring().getJackson().getSerialization().isWriteDatesAsTimestamps();
-		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, writeDatesAsTimestamps);
-		objectMapper.configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, writeDatesAsTimestamps);
-		return objectMapper;
-	}
+    @Bean
+    public ObjectMapper objectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        StreamReadConstraints streamReadConstraints = StreamReadConstraints
+                .builder()
+                .maxStringLength(properties.getCustom().getSpring().getJackson().getParser().getMaxSize())
+                .build();
+        objectMapper.getFactory().setStreamReadConstraints(streamReadConstraints);
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        // Deprecated interim opt-out, remove together with the Jackson 3 migration
+        boolean writeDatesAsTimestamps = properties.getCustom().getSpring().getJackson().getSerialization().isWriteDatesAsTimestamps();
+        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, writeDatesAsTimestamps);
+        objectMapper.configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, writeDatesAsTimestamps);
+        return objectMapper;
+    }
 
 	@Override
-	public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-		converters.add(new ResourceHttpMessageConverter()); // needed for DocumentService.download
-		converters.add(new StringHttpMessageConverter(StandardCharsets.UTF_8)); // needed for UiService
-		converters.add(new ByteArrayHttpMessageConverter()); // needed for fetching data variables
-		converters.add(new FormHttpMessageConverter());
-		MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
-		converter.setObjectMapper(objectMapper());
-		converters.add(converter);
+	@SuppressWarnings("removal")
+	public void configureMessageConverters(HttpMessageConverters.ServerBuilder builder) {
+		MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter();
+		jacksonConverter.setObjectMapper(objectMapper());
+		builder.registerDefaults()
+				.withStringConverter(new StringHttpMessageConverter(StandardCharsets.UTF_8)) // needed for UiService
+				.withJsonConverter(jacksonConverter)
+				.addCustomConverter(new FormHttpMessageConverter())
+				.addCustomConverter(new ResourceHttpMessageConverter()) // needed for DocumentService.download
+				.addCustomConverter(new ByteArrayHttpMessageConverter()); // needed for fetching data variables
 	}
 
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
 		registry.addMapping("/**").allowedMethods("GET", "POST", "DELETE", "PUT", "PATCH");
 	}
-
-	@Override // https://stackoverflow.com/questions/16332092/spring-mvc-pathvariable-with-dot-is-getting-truncated
-	public void configurePathMatch(PathMatchConfigurer configurer) {
-		configurer.setUseSuffixPatternMatch(false);
-	}
-
-	@Override
-    public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
-        configurer.favorPathExtension(false);
-    }
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
@@ -167,6 +161,7 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 		return (BpmProvider) providerClass.getConstructor().newInstance();
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Bean
 	public BaseUserProvider baseUserProvider()
 			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
@@ -200,10 +195,16 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 		havingValue = "true",
 		matchIfMissing = true
 	)
+	@SuppressWarnings("removal")
 	public CustomRestTemplate customRestTemplate() {
-		// Create a new CustomRestTemplate instance
 		// It will be configured via @PostConstruct using @Autowired dependencies
-		return new CustomRestTemplate();
+		CustomRestTemplate template = new CustomRestTemplate();
+		MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter();
+		jacksonConverter.setObjectMapper(objectMapper());
+		List<HttpMessageConverter<?>> converters = new ArrayList<>(template.getMessageConverters());
+		converters.replaceAll(c -> c instanceof JacksonJsonHttpMessageConverter ? jacksonConverter : c);
+		template.setMessageConverters(converters);
+		return template;
 	}
 
 }

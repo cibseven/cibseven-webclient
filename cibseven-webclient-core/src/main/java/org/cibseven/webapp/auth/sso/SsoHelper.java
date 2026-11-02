@@ -69,11 +69,6 @@ public class SsoHelper {
 		formUrlEncodedHeader.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 	}
 
-	private static MultiValueMap<String, String> toMultiValueMap(HttpHeaders headers) {
-		LinkedMultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-		headers.forEach(map::put);
-		return map;
-	}
 	
 	@Getter
 	KeyResolver keyResolver;
@@ -130,7 +125,7 @@ public class SsoHelper {
 
 		TokenResponse tokens = null;
 		try {
-			HttpEntity<MultiValueMap<String, String>> tokenRequest = new HttpEntity<>(rqParams, toMultiValueMap(formUrlEncodedHeader));
+			HttpEntity<MultiValueMap<String, String>> tokenRequest = new HttpEntity<>(rqParams, formUrlEncodedHeader);
 			RestTemplate template = new RestTemplate();
 			tokens = template.postForObject(tokenEndpoint, tokenRequest, TokenResponse.class);
 			if (tokens != null) log.debug(tokens.getId_token());
@@ -175,7 +170,7 @@ public class SsoHelper {
 		params.add("grant_type", "refresh_token");
 		params.add("refresh_token", refreshToken);
 		try {
-			HttpEntity<MultiValueMap<String, String>> tokenRequest = new HttpEntity<>(params, toMultiValueMap(formUrlEncodedHeader));
+			HttpEntity<MultiValueMap<String, String>> tokenRequest = new HttpEntity<>(params, formUrlEncodedHeader);
 			return template.postForObject(tokenEndpoint, tokenRequest, TokenResponse.class);
 		} catch (RestClientResponseException e) {
 			throw new AuthenticationException(e.getResponseBodyAsString());
@@ -226,7 +221,7 @@ public class SsoHelper {
 			addClientAuthentication(params);
 			params.add("token", token);
 			params.add("token_type_hint", tokenTypeHint);
-			HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, toMultiValueMap(formUrlEncodedHeader));
+			HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, formUrlEncodedHeader);
 			quickTemplate().postForLocation(revocationEndpoint, request);
 			log.info("Revoked {} at {}", tokenTypeHint, revocationEndpoint);
 			return true;
@@ -305,7 +300,7 @@ public class SsoHelper {
 
 		TokenResponse tokens = null;
 		try {
-			HttpEntity<MultiValueMap<String, String>> tokenRequest = new HttpEntity<>(rqParams, toMultiValueMap(formUrlEncodedHeader));
+			HttpEntity<MultiValueMap<String, String>> tokenRequest = new HttpEntity<>(rqParams, formUrlEncodedHeader);
 			RestTemplate template = new RestTemplate();
 			tokens = template.postForObject(tokenEndpoint, tokenRequest, TokenResponse.class);
 			if (tokens != null) log.debug(tokens.getId_token());
@@ -368,7 +363,7 @@ public class SsoHelper {
 	        HttpHeaders headers = new HttpHeaders();
 	        headers.set("Authorization", "Bearer " + accessToken);
 
-	        HttpEntity<Void> userInfoRequest = new HttpEntity<>(null, toMultiValueMap(headers));
+	        HttpEntity<Void> userInfoRequest = new HttpEntity<>(null, headers);
 
 	        RestTemplate template = new RestTemplate();
 	        ParameterizedTypeReference<Map<String, String>> typeRef = new ParameterizedTypeReference<>() {};
@@ -408,7 +403,7 @@ public class SsoHelper {
 				HttpHeaders headers = new HttpHeaders();
 				headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 				
-				HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(formData, toMultiValueMap(headers));
+				HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(formData, headers);
 				RestTemplate restTemplate = new RestTemplate();
 				
 				ResponseEntity<Map<String, Object>> response = restTemplate.exchange(

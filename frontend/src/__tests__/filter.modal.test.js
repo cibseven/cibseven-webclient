@@ -17,6 +17,7 @@
 import { mount } from '@vue/test-utils'
 import { describe, it, expect, vi } from 'vitest'
 import { i18n } from '@/i18n'
+import { moment } from '@/globals.js'
 import FilterModal from '@/components/task/filter/FilterModal.vue'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -173,6 +174,54 @@ describe('FilterModal', () => {
       wrapper.vm.selectedCriteriaValue = 'a, b,c'
       wrapper.vm.addCriteria()
       expect(wrapper.vm.criteriasToAdd[0].value).toEqual(['a', 'b', 'c'])
+    })
+  })
+
+  describe('date criteria', () => {
+    const addDate = (wrapper, key, value) => {
+      wrapper.vm.criterias = [{ value: key, type: 'text' }]
+      wrapper.vm.selectedCriteriaKey = key
+      wrapper.vm.selectCriteria(key)
+      wrapper.vm.selectedCriteriaValue = value
+      wrapper.vm.addCriteria()
+    }
+
+    it('converts a typed date into the engine format when the criteria is added', () => {
+      const wrapper = getWrapper()
+      addDate(wrapper, 'dueAfter', '2026.03.03')
+      expect(wrapper.vm.criteriasToAdd[0].value).toMatch(/^2026-03-03T00:00:00\.000[+-]\d{4}$/)
+      expect(wrapper.vm.invalidDateValue).toBe(false)
+    })
+
+    it('does not add a criteria with an unparsable date and flags it', () => {
+      const wrapper = getWrapper()
+      addDate(wrapper, 'dueAfter', 'tomorrow')
+      expect(wrapper.vm.criteriasToAdd).toEqual([])
+      expect(wrapper.vm.invalidDateValue).toBe(true)
+    })
+
+    it('shows today\'s date in the invalid date hint instead of fixed values', () => {
+      const wrapper = getWrapper()
+      const hint = wrapper.vm.$t('nav-bar.filters.invalidDate', wrapper.vm.dateExamples())
+      expect(hint).toContain(moment().format('YYYY-MM-DD'))
+      expect(hint).toContain(moment().format('DD.MM.YYYY'))
+      expect(hint).not.toMatch(/[{}]/)
+    })
+
+    it('leaves non-date criteria untouched', () => {
+      const wrapper = getWrapper()
+      addDate(wrapper, 'name', '2026.03.03')
+      expect(wrapper.vm.criteriasToAdd[0].value).toBe('2026.03.03')
+    })
+
+    it('converts the date when an edited criteria is saved', () => {
+      const wrapper = getWrapper()
+      wrapper.vm.criteriasToAdd = [{ key: 'dueBefore', value: 'x' }]
+      wrapper.vm.criteriaEdited = { key: 'dueBefore', rowIndex: 0 }
+      wrapper.vm.selectedCriteriaKey = 'dueBefore'
+      wrapper.vm.selectedCriteriaValue = '03.03.2026 14:30'
+      wrapper.vm.updateCriteria()
+      expect(wrapper.vm.criteriasToAdd[0].value).toMatch(/^2026-03-03T14:30:00\.000[+-]\d{4}$/)
     })
   })
 })

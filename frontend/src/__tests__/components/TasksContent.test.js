@@ -16,6 +16,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import TasksContent from '@/components/task/TasksContent.vue'
+import { mountWithDefaults } from '../support/mountWithDefaults.js'
 import { TaskService, ProcessService, HistoryService } from '@/services.js'
 
 vi.mock('@/services.js', async (importOriginal) => {
@@ -1442,5 +1443,76 @@ describe('TasksContent - automatic task opening', () => {
       expect(HistoryService.findTasksByTaskIdHistory).not.toHaveBeenCalled()
       expect(vm.$router.push).not.toHaveBeenCalled()
     })
+  })
+})
+
+/**
+ * CIB7-1104: the resize and collapse buttons of the task list were given to SidebarsFlow through
+ * leftIcon, which it renders inside its header button, so they ended up as buttons inside a button.
+ * They now go through leftActions, next to the header toggle. SidebarsFlow is stubbed with one that
+ * shows where each slot lands, so this does not depend on the installed common-frontend.
+ */
+describe('TasksContent - task list header', () => {
+  const SidebarsFlowStub = {
+    name: 'SidebarsFlow',
+    template: `<div class="sidebars-stub">
+      <div class="left-icon"><slot name="leftIcon"></slot></div>
+      <div class="left-actions"><slot name="leftActions"></slot></div>
+      <slot name="left"></slot><slot name="filter"></slot><slot></slot><slot name="right"></slot>
+    </div>`
+  }
+
+  function mountTasksContent(mobile = false) {
+    return mountWithDefaults(TasksContent, {
+      global: {
+        provide: { isMobile: () => mobile, AuthService: {} },
+        mocks: {
+          // Mounted standalone, $root is the component itself, so $root.config resolves to this
+          config: {
+            taskListTime: '0', maxTaskResults: 20, taskSorting: { default: {} },
+            layout: {}, taskFilter: { tasksNumber: { enabled: false } }
+          },
+          user: { id: 'demo' },
+          $route: { params: {}, query: {} },
+          $router: { push: vi.fn(), replace: vi.fn() },
+          $store: {
+            state: { filter: { selected: { id: 'f1', name: 'All tasks', properties: {} }, list: [], settings: {} }, task: {}, process: { list: [] } },
+            getters: {},
+            dispatch: vi.fn(() => Promise.resolve()),
+            commit: vi.fn()
+          }
+        },
+        stubs: {
+          SidebarsFlow: SidebarsFlowStub,
+          FilterNavBar: true, TasksNavBar: true, FilterNavCollapsed: true, GlobalEvents: true,
+          SuccessAlert: true, BWaitingBox: true
+        }
+      }
+    })
+  }
+
+  const taskList = (wrapper) => wrapper.findComponent({ ref: 'regionTasks' })
+
+  it('puts the resize and collapse buttons next to the header toggle, with names', () => {
+    const header = taskList(mountTasksContent())
+    const actions = header.find('.left-actions').findAll('button')
+
+    expect(actions.map(button => button.attributes('aria-label'))).toEqual(['task.collapse', 'task.expand'])
+    expect(actions.every(button => button.find('.mdi').attributes('aria-hidden') === 'true')).toBe(true)
+  })
+
+  it('gives the header toggle no content of its own, so no button lands inside it', () => {
+    const header = taskList(mountTasksContent())
+
+    expect(header.find('.left-icon').findAll('button')).toHaveLength(0)
+  })
+
+  // On mobile the filters button replaces them and stays in front of the title
+  it('shows the filters button first on mobile', () => {
+    const actions = taskList(mountTasksContent(true)).find('.left-actions').findAll('button')
+
+    expect(actions).toHaveLength(1)
+    expect(actions[0].attributes('aria-label')).toBe('nav-bar.filtersTitle')
+    expect(actions[0].classes()).toContain('order-first')
   })
 })

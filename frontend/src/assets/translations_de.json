@@ -190,7 +190,6 @@
 		"loadVersions": "Alle Versionen der Historie laden",
 		"externalProcessStarted": "Prozess erfolgreich gestarted",
 		"exportInstances": "Instanzen exportieren",
-		"days": "Tage",
 		"deleteProcessDefinition": {
 			"tooltip": "Prozessdefinition löschen",
 			"confirm": {
@@ -761,17 +760,13 @@
 				"tenantMembership": "Mandantenmitgliedschaft",
 				"batch": "Stapel",
 				"decisionRequirements": "Anforderungsdefinition für Entscheidung",
-				"report": "Bericht",
-				"dashboard": "Dashboard",
 				"userOperationLogCategory": "Kategorie des Benutzeraktionsprotokolls",
 				"historicTask": "Historische Aufgabe",
 				"historicProcessInstance": "Historische Prozessinstanz",
-				"optimize": "Optimieren",
-				"operationLogCategory": "Kategorie des Operationsprotokolls",
 				"property": "Eigenschaft"
 			},
 			"resourcesTypesDescriptions": {
-				"application": "Legt fest, welche Web-Anwendungen ein Benutzer oder eine Gruppe öffnen darf, z. B. {tasklist}, {cockpit}, {admin} oder {modeler}. Diese Ressource unterstützt nur die Berechtigung {access}.",
+				"application": "Legt fest, welche Web-Anwendungen ein Benutzer oder eine Gruppe öffnen darf, z. B. {tasklist}, {cockpit}, {admin}, {userProfile}, {ins7ght} oder {modeler}. Diese Ressource unterstützt nur die Berechtigung {access}.",
 				"user": "Legt fest, wer Benutzerkonten anzeigen, anlegen, bearbeiten oder löschen darf, sowie ob Benutzer die Basisinformationen anderer Benutzer sehen können, z. B. bei der Auswahl eines Bearbeiters.",
 				"group": "Legt fest, wer Gruppen anzeigen, anlegen, bearbeiten oder löschen darf.",
 				"groupMembership": "Legt fest, wer Benutzer zu einer Gruppe hinzufügen oder daraus entfernen darf.",
@@ -787,19 +782,14 @@
 				"tenantMembership": "Legt fest, wer Benutzer und Gruppen einem Mandanten zuordnen oder daraus entfernen darf.",
 				"batch": "Legt fest, wer Stapelvorgänge anlegen oder abbrechen darf, also Massenaktionen wie die Migration, den Neustart, das Löschen oder die Massenänderung von Variablen von Prozessinstanzen.{br}{create} steuert alle Stapelvorgänge. Jede Berechtigung {createBatch} steuert einen bestimmten Vorgang zusätzlich zu {create} und setzt sich gegenüber ihr durch.",
 				"decisionRequirements": "Legt fest, wer eine Anforderungsdefinition für Entscheidungen anzeigen darf, also den Graphen, der zeigt, wie eine Gruppe zusammengehöriger {dmn}-Entscheidungen voneinander abhängt.",
-				"report": "Legt fest, wer gespeicherte Berichte anzeigen oder verwalten darf.",
-				"dashboard": "Legt fest, wer gespeicherte Dashboards anzeigen oder verwalten darf.",
 				"userOperationLogCategory": "Legt fest, wer das {userOperationLog} lesen darf, das pro Aufgabe oder Prozessinstanz geführt wird und in Kategorien wie Aktionen von Bearbeitern, Administratoren oder Operatoren unterteilt ist.",
 				"historicTask": "Legt fest, wer die historischen Daten einsehen darf, die nach Abschluss einer Aufgabe aufbewahrt werden.",
 				"historicProcessInstance": "Legt fest, wer die historischen Daten einer beendeten Prozessinstanz einsehen oder löschen darf.",
-				"optimize": "Legt fest, wer auf {optimize}, die Anwendung für Prozess-Reporting und -Analyse, zugreifen darf.",
-				"operationLogCategory": "Legt fest, wer Einträge im systemweiten {operationLog} in Cockpit lesen oder löschen darf — einem einzigen durchsuchbaren Prüfpfad über die gesamte Engine.",
 				"property": "Legt fest, wer interne Konfigurationseinträge der Engine, die als Schlüssel-Wert-Eigenschaften gespeichert sind, einsehen oder ändern darf – nicht die Anwendungseinstellungen."
 			},
 			"resourcesTypesDescriptionsTerms": {
 				"systemSettings": "Systemeinstellungen",
-				"userOperationLog": "Benutzeraktionsprotokoll",
-				"operationLog": "Operationsprotokoll"
+				"userOperationLog": "Benutzeraktionsprotokoll"
 			},
 			"unselectAll": "Alle abwählen",
 			"selectAll": "Alle auswählen",
@@ -859,11 +849,9 @@
 		"email": "@:login.email"
 	},
 	"cib-header": {
+		"openMenu": "Menü {label}",
 		"languages": "Sprache",
-		"languagesMenu": "Sprache",
 		"engine": "Engine",
-		"engineMenu": "Engine-Auswahl",
-		"helpMenu": "Hilfe",
 		"en": "English",
 		"de": "Deutsch",
 		"es": "Español",
@@ -903,6 +891,7 @@
 			"filterPriorityLabel": "Priorität",
 			"selectProperty": "Schlüssel auswählen",
 			"insertValue": "Wert eingeben",
+			"invalidDate": "Ungültiges Datum. Verwende z. B. {iso}, {dotted}, {german} oder {isoTime}",
 			"insertVariableKey": "Variablennamen eingeben",
 			"addCriteria": "Kriterium hinzufügen",
 			"filterExists": "Dieser Filter existiert bereits",
@@ -1047,6 +1036,9 @@
 			"title": "@:process.startProcess",
 			"tooltip": "Startprozess-Ansicht mit Suchfunktion öffnen"
 		},
+		"tasks": {
+			"title": "Aufgaben"
+		},
 		"taskList": {
 			"title": "Tasklist",
 			"tooltip": "Tasklist öffnen"
@@ -1054,6 +1046,9 @@
 		"cockpit": {
 			"title": "Cockpit",
 			"tooltip": "Cockpit öffnen",
+			"dashboard": {
+				"title": "Dashboard"
+			},
 			"processes": {
 				"title": "Prozesse",
 				"tooltip": "Verfügbare Prozessdefinitionen durchsuchen"
@@ -1088,15 +1083,21 @@
 			}
 		},
 		"admin": {
-			"title": "Admin",
-			"tooltip": "Admin öffnen"
+			"title": "Admin"
+		},
+		"accessManagement": {
+			"title": "Zugriffsverwaltung"
+		},
+		"builder": {
+			"title": "Builder"
 		},
 		"modeler": {
 			"title": "Modeler",
-			"tooltip": "Modeler öffnen, um BPMN, DMN und Formulare zu entwerfen und zu bearbeiten"
+			"tooltip": "Modeler öffnen, um BPMN, DMN und Formulare zu entwerfen und zu bearbeiten",
+			"loading": "Modeler wird geladen...",
+			"loadFailed": "Der Modeler konnte nicht geladen werden. Laden Sie die Seite neu, um es erneut zu versuchen."
 		},
 		"account": {
-			"tooltip": "Kontoinformationen ansehen und bearbeiten oder abmelden",
 			"profile": {
 				"title": "Benutzerprofil",
 				"tooltip": "Kontoinformationen ansehen und bearbeiten"
@@ -1202,7 +1203,6 @@
 	},
 	"navigation": {
 		"home": "Startseite",
-		"navigation": "Navigation",
 		"menu": "Navigationsmenü",
 		"infoAndHelp": "Infos & Hilfe"
 	},
@@ -1326,7 +1326,6 @@
 		"decision": "Entscheidung",
 		"refreshVersions": "Historische Versionen aktualisieren",
 		"loadVersions": "Alle Versionen der Historie laden",
-		"days": "Tage",
 		"instances": "Instanzen",
 		"showInstance": "Instanz anzeigen",
 		"evaluationTime": "Auswertungszeit",
@@ -1365,8 +1364,7 @@
 		"decisionInstanceId": "Entscheidungsinstanz-ID"
 	},
 	"decision-instance": {
-		"edit": "@:commons.edit",
-		"save": "@:commons.save"
+		"edit": "@:commons.edit"
 	},
 	"human-tasks": {
 		"assignmentsByType": "Zuweisungen nach Typ",
@@ -1425,5 +1423,17 @@
 	},
 	"deepLink": {
 		"tooltip": "Öffnen {text}\n{url}"
+	},
+	"historyTimeToLive": {
+		"title": "Verlaufsaufbewahrungsdauer bearbeiten",
+		"ttl": "Verlaufsaufbewahrungsdauer:",
+		"choiceUnlimited": "Unbegrenzt (Verlauf wird nie bereinigt)",
+		"choiceZero": "0 Tage (Verlauf wird bei der nächsten Bereinigung entfernt)",
+		"choiceCustom": "Benutzerdefiniert",
+		"days": "Tage",
+		"placeholder": "Tage eingeben (z. B. 30)",
+		"validation": "Bitte eine gültige Zahl zwischen {min} und {max} eingeben",
+		"engineDefaultHint": "Standardwert dieser Engine.",
+		"enforcedHint": "Diese Engine erfordert eine explizite Verlaufsaufbewahrungsdauer; \"Unbegrenzt\" ist nicht verfügbar."
 	}
 }

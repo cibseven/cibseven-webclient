@@ -236,8 +236,7 @@ pipeline {
                                 [path: 'cibseven-interfaces/src/main/java'],
                                 [path: 'cibseven-webclient-core/src/main/java'],
                                 [path: 'cibseven-direct-provider/src/main/java'],
-                                [path: 'cibseven-webclient-web/src/main/java'],
-                                [path: 'cibseven-webclient-web-sb4/src/main/java']
+                                [path: 'cibseven-webclient-web/src/main/java']
                             ]
                         )
                     }
@@ -455,8 +454,7 @@ pipeline {
                                 [path: 'cibseven-interfaces/src/main/java'],
                                 [path: 'cibseven-webclient-core/src/main/java'],
                                 [path: 'cibseven-direct-provider/src/main/java'],
-                                [path: 'cibseven-webclient-web/src/main/java'],
-                                [path: 'cibseven-webclient-web-sb4/src/main/java']
+                                [path: 'cibseven-webclient-web/src/main/java']
                             ]
                         )
                     }

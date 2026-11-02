@@ -20,7 +20,7 @@ import java.util.Map;
 
 /**
  * Spring Boot and springdoc defaults of the standalone CIB seven webclient
- * application, shared by the Spring Boot 3 and 4 builds.
+ * application.
  *
  * <p>They are registered as default properties by {@code SevenWebclientApplication}, both
  * when started via {@code main} and when deployed as a WAR, so every other configuration

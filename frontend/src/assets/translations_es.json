@@ -190,7 +190,6 @@
 		"loadVersions": "Cargar todo el historial de versiones",
 		"externalProcessStarted": "Proceso iniciado con éxito",
 		"exportInstances": "Exportar instancias",
-		"days": "días",
 		"deleteProcessDefinition": {
 			"tooltip": "Eliminar definición de proceso",
 			"confirm": {
@@ -761,17 +760,13 @@
 				"tenantMembership": "Membresía de arrendatario",
 				"batch": "Lote",
 				"decisionRequirements": "Definición de requisitos de decisión",
-				"report": "Informe",
-				"dashboard": "Tablero",
 				"userOperationLogCategory": "Categoría de registro de operaciones de usuario",
 				"historicTask": "Tarea histórica",
 				"historicProcessInstance": "Instancia histórica de proceso",
-				"optimize": "Optimizar",
-				"operationLogCategory": "Categoría del registro de operaciones",
 				"property": "Propiedad"
 			},
 			"resourcesTypesDescriptions": {
-				"application": "Determina qué aplicaciones web puede abrir un usuario o grupo, por ejemplo {tasklist}, {cockpit}, {admin} u {modeler}. Este recurso solo admite el permiso {access}.",
+				"application": "Determina qué aplicaciones web puede abrir un usuario o grupo, por ejemplo {tasklist}, {cockpit}, {admin}, {userProfile}, {ins7ght} u {modeler}. Este recurso solo admite el permiso {access}.",
 				"user": "Determina quién puede ver, crear, editar o eliminar cuentas de usuario, y si los usuarios pueden ver la información básica de otros usuarios, por ejemplo al elegir un responsable para una tarea.",
 				"group": "Determina quién puede ver, crear, editar o eliminar grupos.",
 				"groupMembership": "Determina quién puede añadir usuarios a un grupo o eliminarlos de él.",
@@ -787,19 +782,14 @@
 				"tenantMembership": "Determina quién puede asignar usuarios y grupos a un tenant, o eliminarlos de él.",
 				"batch": "Determina quién puede crear o cancelar operaciones por lotes, es decir, acciones masivas como la migración, el reinicio, la eliminación o la actualización masiva de variables de instancias de proceso.{br}{create} controla todas las operaciones por lotes. Cada permiso {createBatch} controla una operación específica además de {create}, y tiene prioridad sobre él.",
 				"decisionRequirements": "Determina quién puede ver una definición de requisitos de decisión, es decir, el grafo que muestra cómo depende entre sí un conjunto de decisiones {dmn} relacionadas.",
-				"report": "Determina quién puede ver o gestionar los informes guardados.",
-				"dashboard": "Determina quién puede ver o gestionar los paneles guardados.",
 				"userOperationLogCategory": "Determina quién puede leer el {userOperationLog}, un registro de auditoría por tarea o instancia de proceso, agrupado en categorías como acciones de responsables, administradores u operadores.",
 				"historicTask": "Determina quién puede ver los datos históricos que se conservan de una tarea una vez completada.",
 				"historicProcessInstance": "Determina quién puede ver o eliminar los datos históricos de una instancia de proceso una vez finalizada.",
-				"optimize": "Determina quién puede acceder a {optimize}, la aplicación de informes y análisis de procesos.",
-				"operationLogCategory": "Determina quién puede leer o eliminar entradas del {operationLog} de todo el motor que se muestra en Cockpit — un único registro de auditoría consultable para todo el motor.",
 				"property": "Determina quién puede ver o modificar entradas de configuración internas del motor almacenadas como propiedades clave-valor, no la configuración a nivel de aplicación."
 			},
 			"resourcesTypesDescriptionsTerms": {
 				"systemSettings": "Configuración del sistema",
-				"userOperationLog": "registro de operaciones de usuario",
-				"operationLog": "registro de operaciones"
+				"userOperationLog": "registro de operaciones de usuario"
 			},
 			"unselectAll": "Deseleccionar todos",
 			"selectAll": "Seleccionar todos",
@@ -859,11 +849,9 @@
 		"email": "@:login.email"
 	},
 	"cib-header": {
+		"openMenu": "Menú {label}",
 		"languages": "Idioma",
-		"languagesMenu": "Idioma",
 		"engine": "Motor",
-		"engineMenu": "Selección de motor",
-		"helpMenu": "Ayuda",
 		"en": "English",
 		"de": "Deutsch",
 		"es": "Español",
@@ -903,6 +891,7 @@
 			"filterPriorityLabel": "Prioridad",
 			"selectProperty": "Seleccionar propiedad",
 			"insertValue": "Insertar valor",
+			"invalidDate": "Fecha no válida. Usa p. ej. {iso}, {dotted}, {german} o {isoTime}",
 			"insertVariableKey": "Ingresa el nombre de la variable",
 			"addCriteria": "Añadir criterio",
 			"filterExists": "Este filtro ya existe",
@@ -1047,6 +1036,9 @@
 			"title": "@:process.startProcess",
 			"tooltip": "Abrir vista de inicio del proceso con opción de búsqueda"
 		},
+		"tasks": {
+			"title": "Tareas"
+		},
 		"taskList": {
 			"title": "Tasklist",
 			"tooltip": "Abrir Tasklist"
@@ -1054,6 +1046,9 @@
 		"cockpit": {
 			"title": "Cockpit",
 			"tooltip": "Abrir Cockpit",
+			"dashboard": {
+				"title": "Dashboard"
+			},
 			"processes": {
 				"title": "Procesos",
 				"tooltip": "Explora las definiciones de procesos disponibles"
@@ -1088,15 +1083,21 @@
 			}
 		},
 		"admin": {
-			"title": "Admin",
-			"tooltip": "Abrir Admin"
+			"title": "Admin"
+		},
+		"accessManagement": {
+			"title": "Gestión de acceso"
+		},
+		"builder": {
+			"title": "Builder"
 		},
 		"modeler": {
 			"title": "Modeler",
-			"tooltip": "Abrir Modeler para diseñar y editar BPMN, DMN y formularios"
+			"tooltip": "Abrir Modeler para diseñar y editar BPMN, DMN y formularios",
+			"loading": "Cargando el Modeler...",
+			"loadFailed": "No se pudo cargar el Modeler. Recargue la página para intentarlo de nuevo."
 		},
 		"account": {
-			"tooltip": "Ver y editar la información de su cuenta o cerrar sesión",
 			"profile": {
 				"title": "Perfil de usuario",
 				"tooltip": "Ver y editar la información de su cuenta"
@@ -1202,7 +1203,6 @@
 	},
 	"navigation": {
 		"home": "Inicio",
-		"navigation": "Navegación",
 		"menu": "Menú de Navegación",
 		"infoAndHelp": "Información y ayuda"
 	},
@@ -1325,7 +1325,6 @@
 		"decision": "Decisión",
 		"refreshVersions": "Actualizar versiones históricas",
 		"loadVersions": "Cargar todas las versiones históricas",
-		"days": "días",
 		"instances": "Instancias",
 		"showInstance": "Ver instancia",
 		"evaluationTime": "Tiempo de evaluación",
@@ -1364,8 +1363,7 @@
 		"decisionInstanceId": "ID de instancia de decisión"
 	},
 	"decision-instance": {
-		"edit": "@:commons.edit",
-		"save": "@:commons.save"
+		"edit": "@:commons.edit"
 	},
 	"human-tasks": {
 		"assignmentsByType": "Asignaciones por tipo",
@@ -1424,5 +1422,17 @@
 	},
 	"deepLink": {
 		"tooltip": "Abrir {text}\n{url}"
+	},
+	"historyTimeToLive": {
+		"title": "Editar tiempo de vida del historial",
+		"ttl": "Tiempo de vida del historial:",
+		"choiceUnlimited": "Ilimitado (el historial nunca se limpia)",
+		"choiceZero": "0 días (el historial se elimina en la próxima limpieza)",
+		"choiceCustom": "Personalizado",
+		"days": "días",
+		"placeholder": "Introduzca días (p. ej., 30)",
+		"validation": "Introduzca un número válido entre {min} y {max}",
+		"engineDefaultHint": "Valor predeterminado de este motor.",
+		"enforcedHint": "Este motor requiere un tiempo de vida del historial explícito; \"ilimitado\" no está disponible."
 	}
 }

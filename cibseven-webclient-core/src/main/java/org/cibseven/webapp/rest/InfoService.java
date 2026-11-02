@@ -136,6 +136,12 @@ public class InfoService extends BaseService {
 		configJson.put("engineRestPath", properties.getEngineRest().getPath());
 		configJson.put("engineRestUrl", properties.getEngineRest().getUrl());
 		configJson.put("authorizationEnabled", engineConfig.isAuthorizationEnabled() || properties.getLegacy().getAuthorization().isEnabled());
+
+		// Both are passed through as-is, including null: null means the engine does not report the
+		// value (engines before 3.0.0) and the frontend must treat it as "unknown", not as a default.
+		configJson.put("historyTimeToLive", engineConfig.getHistoryTimeToLive());
+		configJson.put("enforceHistoryTimeToLive", engineConfig.getEnforceHistoryTimeToLive());
+
 		configJson.put("modelerEnabled", properties.getModeler().isEnabled());
 		configJson.put("pluginsEnabled", properties.getPlugins().isEnabled());
 		configJson.put("startProcessDefaultFormEnabled", properties.getStartProcess().isDefaultFormEnabled());

@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.cibseven.webapp.rest.RestTemplateConfiguration;
+import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 
@@ -83,7 +84,7 @@ public class SevenWebclientProperties {
 	 * i.e. engine-rest versions before 2.2.0 (audit, full, activity, none). Newer engines report
 	 * their own history level.
 	 */
-	private String historyLevel = "full";
+	private String historyLevel = EngineConfiguration.DEFAULT_HISTORY_LEVEL;
 
 	/** Bootstrap-based theme of the frontend. Only "cib" is supported. */
 	private String theme = "cib";

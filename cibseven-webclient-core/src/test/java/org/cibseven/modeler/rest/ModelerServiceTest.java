@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
+import org.cibseven.modeler.provider.ProjectGuard;
 import org.cibseven.modeler.model.FormEntity;
 import org.cibseven.modeler.model.FolderEntity;
 import org.cibseven.modeler.model.FormUsageEntity;
@@ -145,30 +146,30 @@ public class ModelerServiceTest {
 
 	@Test
 	void getDiagrams_forwardsThePagingAndFilters() {
-		when(dbProcessDiagramProvider.getDiagrams("invoice", "bpmn-c7", 0, 10)).thenReturn(List.of());
+		when(dbProcessDiagramProvider.getDiagrams("invoice", "bpmn-c7", ProjectGuard.HiddenProjects.NONE, 0, 10)).thenReturn(List.of());
 
 		service.getDiagrams(request, 0, 10, "bpmn-c7", "invoice");
 
-		verify(dbProcessDiagramProvider).getDiagrams("invoice", "bpmn-c7", 0, 10);
+		verify(dbProcessDiagramProvider).getDiagrams("invoice", "bpmn-c7", ProjectGuard.HiddenProjects.NONE, 0, 10);
 	}
 
 	@Test
 	void getUnifiedDiagrams_forwardsThePagingAndFilters() {
-		when(unifiedDiagramProvider.getDiagrams("invoice", "bpmn", null, 5, 20)).thenReturn(List.of());
+		when(unifiedDiagramProvider.getDiagrams("invoice", "bpmn", null, ProjectGuard.HiddenProjects.NONE, 5, 20)).thenReturn(List.of());
 
 		service.getUnifiedDiagrams(request, 5, 20, "invoice", "bpmn", null);
 
-		verify(unifiedDiagramProvider).getDiagrams("invoice", "bpmn", null, 5, 20);
+		verify(unifiedDiagramProvider).getDiagrams("invoice", "bpmn", null, ProjectGuard.HiddenProjects.NONE, 5, 20);
 	}
 
 	/** The folder tree asks one folder at a time, so the filter has to reach the query. */
 	@Test
 	void getUnifiedDiagrams_forwardsTheFolder() {
-		when(unifiedDiagramProvider.getDiagrams(null, null, "folder-1", 0, 20)).thenReturn(List.of());
+		when(unifiedDiagramProvider.getDiagrams(null, null, "folder-1", ProjectGuard.HiddenProjects.NONE, 0, 20)).thenReturn(List.of());
 
 		service.getUnifiedDiagrams(request, 0, 20, null, null, "folder-1");
 
-		verify(unifiedDiagramProvider).getDiagrams(null, null, "folder-1", 0, 20);
+		verify(unifiedDiagramProvider).getDiagrams(null, null, "folder-1", ProjectGuard.HiddenProjects.NONE, 0, 20);
 	}
 
 	@Test
@@ -282,11 +283,11 @@ public class ModelerServiceTest {
 
 	@Test
 	void getForms_forwardsThePagingAndKeyword() {
-		when(formProvider.getForms("invoice", 0, 10)).thenReturn(List.of());
+		when(formProvider.getForms("invoice", ProjectGuard.HiddenProjects.NONE, 0, 10)).thenReturn(List.of());
 
 		service.getForms(request, 0, 10, "invoice");
 
-		verify(formProvider).getForms("invoice", 0, 10);
+		verify(formProvider).getForms("invoice", ProjectGuard.HiddenProjects.NONE, 0, 10);
 	}
 
 	@Test
