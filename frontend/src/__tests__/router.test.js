@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { appRoutes, createAppRouter } from '@/router.js'
 import { findComponents } from './utils.js'
 import fs from 'node:fs'
@@ -73,6 +73,44 @@ describe('router', () => {
       checkRoutes(appRoutes)
 
       expect(duplicateNames.size, `Duplicate route names found: ${Array.from(duplicateNames).join(', ')}`).toBe(0)
+    })
+  })
+
+  // The tabs of the profile pages were once picked with ?tab=, which old links and bookmarks still carry
+  describe('profile page tabs', () => {
+    let router
+
+    // The guards read the module's router, which every createAppRouter call replaces
+    beforeEach(() => {
+      router = createAppRouter(appRoutes)
+      router.setRoot({
+        user: { id: 'demo' },
+        config: { permissions: {}, layout: { showUserSettings: true } },
+        applicationPermissions: () => true
+      })
+    })
+
+    it.each([
+      ['/seven/auth/account/demo?tab=preferences', 'accountPreferences', '/seven/auth/account/demo/preferences'],
+      ['/seven/auth/account/demo', 'accountProfile', '/seven/auth/account/demo/profile'],
+      // A tab this deployment does not have (e.g. one of an extension) opens the default one
+      ['/seven/auth/account/demo?tab=unknown', 'accountProfile', '/seven/auth/account/demo/profile'],
+      ['/seven/auth/admin/user/john?tab=groups', 'adminUserGroups', '/seven/auth/admin/user/john/groups'],
+      ['/seven/auth/admin/group/sales', 'adminGroupInformation', '/seven/auth/admin/group/sales/information'],
+      ['/seven/auth/admin/group/sales?tab=tenants', 'adminGroupTenants', '/seven/auth/admin/group/sales/tenants']
+    ])('opens %s as the tab %s', async (link, name, path) => {
+      await router.push(link)
+      expect(router.currentRoute.value).toMatchObject({ name, path, query: {} })
+    })
+
+    it('keeps the rest of the query and the hash', async () => {
+      await router.push('/seven/auth/account/demo?tab=groups&lang=de#top')
+      expect(router.currentRoute.value).toMatchObject({ name: 'accountGroups', query: { lang: 'de' }, hash: '#top' })
+    })
+
+    it('opens a tab by its own link without a redirect', async () => {
+      await router.push({ name: 'adminUserTenants', params: { userId: 'john' } })
+      expect(router.currentRoute.value.fullPath).toBe('/seven/auth/admin/user/john/tenants')
     })
   })
 

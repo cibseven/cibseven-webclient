@@ -17,6 +17,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { appRoutes, createAppRouter } from '@/router.js'
 import { axios } from '@/globals.js'
+import { profileTabRouteName } from '@/components/admin/utils.js'
 
 vi.mock('@/globals.js', async (importOriginal) => {
   const actual = await importOriginal()
@@ -30,6 +31,10 @@ const enumerationRouter = createAppRouter(appRoutes)
 const AUTH_ROUTE_NAMES = enumerationRouter.getRoutes()
   .filter(r => r.path === '/seven/auth' || r.path.startsWith('/seven/auth/'))
   .map(r => r.name)
+
+function tabRules(page, tabs, rule) {
+  return Object.fromEntries(tabs.map(tab => [profileTabRouteName(page, tab), rule]))
+}
 
 // The specific permission each route (directly or via an ancestor) requires, mirroring
 // router.js. `null` means "authentication only, no additional permission gate". Every
@@ -49,6 +54,10 @@ const ROUTE_PERMISSIONS = {
   builderHome: { permission: 'modeler' },
 
   account: { permission: 'userProfile' },
+  // The tabs of the profile pages are child routes, gated by their page
+  ...tabRules('account', ['profile', 'account', 'groups', 'tenants', 'preferences'], { permission: 'userProfile' }),
+  ...tabRules('adminUser', ['profile', 'account', 'groups', 'tenants', 'preferences'], { permission: 'usersManagement', condition: 'user' }),
+  ...tabRules('adminGroup', ['information', 'users', 'tenants'], { permission: 'groupsManagement', condition: 'group' }),
   'start-process': { permission: 'tasklist' },
   'task-id': { permission: 'tasklist' },
   tasks: { permission: 'tasklist' },
