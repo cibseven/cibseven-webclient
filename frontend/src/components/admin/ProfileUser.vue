@@ -144,10 +144,12 @@ export default {
       return { name: profileTabRouteName(this.page, tab.id), params: this.$route.params }
     },
     // A tab that is not shown for this user (e.g. the profile of a user the engine has no details of) is
-    // swapped for the first one that is
+    // swapped for the first one that is. A user without details opens their preferences, the one tab
+    // that is theirs, even when an extension puts a tab of its own before it.
     openShownTab: function() {
       if (!this.selectedTab || this.selectedTab.show(this) || this.visibleTabs.length === 0) return
-      this.$router.replace(this.tabRoute(this.visibleTabs[0]))
+      const preferences = this.user.noInfo && this.visibleTabs.find(tab => tab.id === 'preferences')
+      this.$router.replace(this.tabRoute(preferences || this.visibleTabs[0]))
     },
     deleteUser: function() {
       AdminService.deleteUser(this.user.id).then(() => {

@@ -16,6 +16,9 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest'
 import { appRoutes, createAppRouter } from '@/router.js'
+import { profileTabRouteName } from '@/components/admin/utils.js'
+import ProfileUser from '@/components/admin/ProfileUser.vue'
+import ProfileGroup from '@/components/admin/ProfileGroup.vue'
 import { findComponents } from './utils.js'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -73,6 +76,24 @@ describe('router', () => {
       checkRoutes(appRoutes)
 
       expect(duplicateNames.size, `Duplicate route names found: ${Array.from(duplicateNames).join(', ')}`).toBe(0)
+    })
+  })
+
+  // The pages link their tabs, and the account menu and the ?tab= redirect find them, by profileTabRouteName alone:
+  // a tab route named otherwise, or a tab without a route, would be unreachable
+  describe('profile page tab routes', () => {
+    const routes = createAppRouter(appRoutes).getRoutes()
+
+    it.each([
+      ['account', ProfileUser],
+      ['adminUser', ProfileUser],
+      ['adminGroup', ProfileGroup]
+    ])('names every tab route of %s after the page and the tab, one route per tab of the page', (page, component) => {
+      const children = routes.find(route => route.name === page).children
+
+      expect(children.length).toBeGreaterThan(0)
+      children.forEach(child => expect(child.name).toBe(profileTabRouteName(page, child.path)))
+      expect(children.map(child => child.path)).toEqual(component.data.call({}).tabs.map(tab => tab.id))
     })
   })
 

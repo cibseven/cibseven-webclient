@@ -116,6 +116,21 @@ describe('ProfileUser openShownTab', () => {
     expect(vm.$router.replace).toHaveBeenCalledWith({ name: 'accountPreferences', params: { userId: 'ada' } })
   })
 
+  // EE adds the authorizations before the preferences; a user without details still opens the preferences
+  it('swaps to the preferences of a user without details, ahead of an added tab', () => {
+    const vm = context({ user: { id: 'ada', noInfo: true } })
+    vm.tabs.splice(4, 0, { id: 'extra', label: 'extra', show: () => true })
+    vm.openShownTab()
+    expect(vm.$router.replace).toHaveBeenCalledWith({ name: 'accountPreferences', params: { userId: 'ada' } })
+  })
+
+  it('swaps to the first tab shown when a user with details opens a hidden one', () => {
+    const vm = context({ user: { ...ADA }, $route: { name: 'accountAccount', params: { userId: 'ada' } } })
+    vm.$root.config.userPasswordChangeEnabled = false
+    vm.openShownTab()
+    expect(vm.$router.replace).toHaveBeenCalledWith({ name: 'accountProfile', params: { userId: 'ada' } })
+  })
+
   it.each([
     ['a tab that is shown', { user: { ...ADA } }],
     ['a route that is no tab', { user: { id: 'ada', noInfo: true }, $route: { name: 'account', params: {} } }],
