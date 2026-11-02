@@ -38,6 +38,7 @@
               </li>
             </ul>
           </div>
+          <div v-if="passwordPolicyError" class="text-danger">{{ $t('errors.PasswordPolicyException') }}</div>
         </b-form-group>
         <b-form-group :label="$t('password.recover.newPasswordRepeat') + '*'" label-cols-sm="4"
           label-align-sm="left" label-class="pb-4" :invalid-feedback="$t('errors.invalid')">
@@ -84,6 +85,7 @@ export default {
     return {
       credentials: { authenticatedUserPassword: null, password: null },
       passwordRepeat: null,
+      // The server refused the new password for its policy
       passwordPolicyError: false,
       sendingEmail: false,
       passwordValid: null,
@@ -101,18 +103,18 @@ export default {
     resetPasswordValidation: function () {
       this.passwordValid = null
       this.passwordRules = []
+      this.passwordPolicyError = false
+    },
+    // Tells the user when the server refuses the password for its policy, which the app's error handler does not
+    notePasswordPolicyError: function (error) {
+      this.passwordPolicyError = error?.response?.data?.type === 'PasswordPolicyException'
     },
     validatePassword: function () {
       if (notEmpty(this.credentials.password)) {
         SetupService.validatePasswordPolicy(this.credentials.password, this.user).then((response) => {
           this.passwordValid = response.data.valid
           this.passwordRules = response.data.rules
-        }, error => {
-          const data = error.response.data
-          if (data && data.type === 'PasswordPolicyException') {
-            this.passwordPolicyError = true
-          }
-        })
+        }, this.notePasswordPolicyError)
       }
     },
     notEmpty: function(value) {
@@ -128,12 +130,7 @@ export default {
           this.credentials.authenticatedUserPassword).then(() => {
             this.passwordPolicyError = false
             this.$refs.updatePassword.show(2)
-          }, error => {
-            const data = error.response.data
-            if (data && data.type === 'PasswordPolicyException') {
-              this.passwordPolicyError = true
-            }
-          })
+          }, this.notePasswordPolicyError)
       }
     },
     onSendEmail: function() {

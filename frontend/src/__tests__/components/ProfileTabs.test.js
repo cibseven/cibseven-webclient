@@ -130,7 +130,8 @@ describe('ProfileUserPasswordTab', () => {
     expect(AdminService.updateUserCredentials).not.toHaveBeenCalled()
   })
 
-  it('notes a password the policy refuses', async () => {
+  // The app's error handler does not show this exception, so the tab has to
+  it('tells the user when the server refuses the new password for its policy, until it is edited', async () => {
     AdminService.updateUserCredentials.mockRejectedValueOnce({ response: { data: { type: 'PasswordPolicyException' } } })
     const vm = tab()
     vm.credentials = { authenticatedUserPassword: 'old', password: 'new' }
@@ -138,6 +139,23 @@ describe('ProfileUserPasswordTab', () => {
     vm.changePassword(event())
     await settle()
     expect(vm.passwordPolicyError).toBe(true)
+    expect(vm.$refs.updatePassword.show).not.toHaveBeenCalled()
+
+    vm.resetPasswordValidation()
+    expect(vm.passwordPolicyError).toBe(false)
+  })
+
+  it.each([
+    ['another refusal', { response: { data: { type: 'AuthenticationException' } } }],
+    ['a failure without a response', new Error('offline')]
+  ])('does not blame the policy for %s', async (_, failure) => {
+    SetupService.validatePasswordPolicy.mockRejectedValueOnce(failure)
+    const vm = tab()
+    vm.credentials.password = 'new'
+    vm.validatePassword()
+    await settle()
+    expect(vm.passwordPolicyError).toBe(false)
+    expect(vm.passwordValid).toBeNull()
   })
 
   it('checks the new password against the policy and lists the rules it breaks', async () => {
