@@ -40,6 +40,8 @@ public final class StandaloneDefaults {
 			Map.entry("spring.servlet.multipart.max-file-size", "10MB"),
 			// Maximum size of the entire request, including all files and form data
 			Map.entry("spring.servlet.multipart.max-request-size", "1GB"),
+			// The webclient's repositories use their own persistence unit, which open-in-view does not bind
+			Map.entry("spring.jpa.open-in-view", "false"),
 
 			Map.entry("springdoc.swagger-ui.path", "/swagger-ui"),
 			Map.entry("springdoc.swagger-ui.operationsSorter", "alpha"),

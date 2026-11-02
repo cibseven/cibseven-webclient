@@ -54,10 +54,12 @@ when `cibseven.webclient.enabled` is `false`.
 The Run distribution also imports both files in its `default.yml` and `production.yml`, so there they
 keep overriding Run's own configuration.
 
-The webclient's tables (modeler, folders, history) live in its own JPA persistence unit, so the global
-`spring.jpa.*` settings of your application do not apply to them and vice versa. Hibernate settings for
-that unit go under `cibseven.webclient.persistence.properties`, for example
-`cibseven.webclient.persistence.properties.hibernate.default_schema`.
+The webclient's tables (modeler, folders, history) live in its own JPA persistence unit. Its naming strategy
+(`PhysicalNamingStrategyStandardImpl`, matching the engine's DDL) and schema generation (`none`, the engine
+creates the tables) are fixed, so `spring.jpa.hibernate.ddl-auto` and `spring.jpa.hibernate.naming.*` of your
+application do not apply to it. Other settings, such as `spring.jpa.properties.*`, still do. Hibernate
+settings for that unit alone go under `cibseven.webclient.persistence.properties`, for example
+`cibseven.webclient.persistence.properties.hibernate.default_schema`; they also override the two fixed ones.
 
 #### Defaults of the standalone application
 
@@ -71,6 +73,7 @@ They have the lowest precedence, so any configured value overrides them.
 | `spring.servlet.register-default-servlet` | `true` | `false` |
 | `spring.servlet.multipart.max-file-size` | `10MB` | `1MB` |
 | `spring.servlet.multipart.max-request-size` | `1GB` | `10MB` |
+| `spring.jpa.open-in-view` | `false` | `true` (with a startup warning) |
 | `springdoc.swagger-ui.path` | `/swagger-ui` | `/swagger-ui.html` |
 | `springdoc.swagger-ui.operationsSorter`, `tagsSorter` | `alpha` | unsorted |
 | `springdoc.swagger-ui.doc-expansion` | `none` | `list` |
