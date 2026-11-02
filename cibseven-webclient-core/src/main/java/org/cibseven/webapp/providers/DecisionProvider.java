@@ -61,7 +61,7 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	@Override
 	public Object evaluateDecisionDefinitionByKey(Map<String, Object> data, String key, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/decision-definition/key/" + key + "/evaluate";
-		return ((ResponseEntity<Object>) doPost(url, data, null, user)).getBody();
+		return ((ResponseEntity<Object>) doPost(url, data, Object.class, user)).getBody();
 	}
 
 	@Override
@@ -84,8 +84,8 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 
 	@Override
 	public Object evaluateDecisionDefinitionByKeyAndTenant(Map<String, Object> data, String key, String tenant, CIBUser user) {
-		String url = getEngineRestUrl(user) + "/decision-definition/key/" + key + "/tenant" + tenant + "/evaluate";
-		return ((ResponseEntity<Object>) doPost(url, data, null, user)).getBody();
+		String url = getEngineRestUrl(user) + "/decision-definition/key/" + key + "/tenant-id/" + tenant + "/evaluate";
+		return ((ResponseEntity<Object>) doPost(url, data, Object.class, user)).getBody();
 	}
 
 	@Override
@@ -97,13 +97,13 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	@Override
 	public Object getXmlByKey(String key, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/decision-definition/key/" + key + "/xml";
-		return ((ResponseEntity<Decision>) doGet(url, Decision.class, user, false)).getBody();
+		return ((ResponseEntity<Object>) doGet(url, Object.class, user, false)).getBody();
 	}
 
 	@Override
 	public Object getXmlByKeyAndTenant(String key, String tenant, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/decision-definition/key/" + key + "/tenant-id/" + tenant + "/xml";
-		return ((ResponseEntity<Decision>) doGet(url, Decision.class, user, false)).getBody();
+		return ((ResponseEntity<Object>) doGet(url, Object.class, user, false)).getBody();
 	}
 
 	@Override
@@ -129,7 +129,7 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	@Override
 	public Object evaluateDecisionDefinitionById(String id, Map<String, Object> data, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/decision-definition/" + id + "/evaluate";
-		return ((ResponseEntity<Object>) doPost(url, data, null, user)).getBody();
+		return ((ResponseEntity<Object>) doPost(url, data, Object.class, user)).getBody();
 	}
 
 	@Override
