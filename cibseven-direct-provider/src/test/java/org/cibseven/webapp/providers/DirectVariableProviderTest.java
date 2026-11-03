@@ -154,6 +154,52 @@ public class DirectVariableProviderTest {
 			.hasMessageContaining("is not a binary value");
 	}
 
+	// ---------- process instance binary variable download ----------
+
+	@Test
+	void fetchProcessInstanceVariableData_servesAFileAsOctetStreamWhateverItsMimeType() {
+		byte[] payload = "hello".getBytes(StandardCharsets.UTF_8);
+		when(runtimeService.getVariableTyped(eq("instance-1"), eq("invoice"), anyBoolean()))
+			.thenReturn(Variables.fileValue("invoice.txt").file(payload).mimeType("text/plain").create());
+
+		ResponseEntity<byte[]> response = variableProvider.fetchProcessInstanceVariableData("instance-1", "invoice", user);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).isEqualTo(payload);
+		// same as the default provider, so a browser downloads the file instead of rendering it
+		assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_OCTET_STREAM);
+		assertThat(response.getHeaders().getCacheControl()).isEqualTo("no-cache");
+	}
+
+	@Test
+	void fetchProcessInstanceVariableData_servesAByteArrayAsOctetStream() {
+		byte[] payload = "pdf-bytes".getBytes(StandardCharsets.UTF_8);
+		when(runtimeService.getVariableTyped(eq("instance-1"), eq("attachment"), anyBoolean()))
+			.thenReturn(Variables.byteArrayValue(payload));
+
+		ResponseEntity<byte[]> response = variableProvider.fetchProcessInstanceVariableData("instance-1", "attachment", user);
+
+		assertThat(response.getBody()).isEqualTo(payload);
+		assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_OCTET_STREAM);
+	}
+
+	@Test
+	void fetchProcessInstanceVariableData_throwsNoObjectFoundWhenTheInstanceDoesNotHoldTheVariable() {
+		when(runtimeService.getVariableTyped(eq("instance-1"), eq("doesNotExist"), anyBoolean())).thenReturn(null);
+
+		// NoObjectFoundException is answered with 404, anything else with 500
+		assertThatThrownBy(() -> variableProvider.fetchProcessInstanceVariableData("instance-1", "doesNotExist", user))
+			.isInstanceOf(NoObjectFoundException.class);
+	}
+
+	@Test
+	void fetchVariableByProcessInstanceId_throwsNoObjectFoundWhenTheInstanceDoesNotHoldTheVariable() {
+		when(runtimeService.getVariableTyped(eq("instance-1"), eq("doesNotExist"), anyBoolean())).thenReturn(null);
+
+		assertThatThrownBy(() -> variableProvider.fetchVariableByProcessInstanceId("instance-1", "doesNotExist", user))
+			.isInstanceOf(NoObjectFoundException.class);
+	}
+
 	// ---------- historic binary variable download ----------
 
 	@Test
