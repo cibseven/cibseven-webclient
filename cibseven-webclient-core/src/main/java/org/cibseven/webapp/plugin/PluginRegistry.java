@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -59,7 +60,7 @@ public class PluginRegistry {
 
 	private static final String PLUGINS_ROOT = "META-INF/cibseven-plugins/";
 	private static final String MANIFESTS_PATTERN = "classpath*:/" + PLUGINS_ROOT + "*/plugin.json";
-	private static final String DISABLED_PROPERTY = "cibseven.webclient.plugins.disabled";
+	private static final String DISABLED_PROPERTY = SevenWebclientProperties.PLUGINS_PREFIX + ".disabled";
 
 	/** Ids end up in URLs, so anything that could leave the plugin folder is rejected */
 	private static final Pattern VALID_ID = Pattern.compile("[A-Za-z0-9][A-Za-z0-9._-]*");
@@ -76,8 +77,8 @@ public class PluginRegistry {
 	// Needed because of the other constructors: Spring picks one on its own only when
 	// there is exactly one.
 	@Autowired
-	public PluginRegistry(PluginProperties properties) {
-		this(new PathMatchingResourcePatternResolver(), properties.getDisabled());
+	public PluginRegistry(SevenWebclientProperties properties) {
+		this(new PathMatchingResourcePatternResolver(), properties.getPlugins().getDisabled());
 	}
 
 	PluginRegistry(ResourcePatternResolver resolver) {

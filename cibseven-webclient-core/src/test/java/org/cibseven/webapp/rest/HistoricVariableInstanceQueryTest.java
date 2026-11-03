@@ -84,7 +84,7 @@ public class HistoricVariableInstanceQueryTest {
 		ReflectionTestUtils.setField(service, "bpmProvider", bpmProvider);
 		// checkPermission short-circuits when authorization is disabled, keeping these tests on
 		// the routing and payload handling rather than the authorization chain.
-		ReflectionTestUtils.setField(service, "authorizationEnabled", false);
+		service.properties.getDeprecated().getAuthorization().setEnabled(false);
 
 		mvc = MockMvcBuilders.standaloneSetup(service)
 				.setCustomArgumentResolvers(userResolver)

@@ -91,6 +91,8 @@
 		<version.mssql>12.8.2.jre11</version.mssql>
 		<version.db2>11.5.9.0</version.db2>
 
+		<version.archunit>1.4.1</version.archunit>
+
 		<!-- NPM publish tag configuration - empty by default (uses 'latest'), can be overridden with tag dev -->
 		<npm.publish.tag.arg></npm.publish.tag.arg>
 

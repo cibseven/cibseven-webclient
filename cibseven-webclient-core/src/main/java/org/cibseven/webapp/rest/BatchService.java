@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.providers.PermissionConstants;
 import org.cibseven.webapp.rest.model.Batch;
@@ -31,7 +32,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 
-@RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/batch")
+@RestController @RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH + "/batch")
 public class BatchService extends BaseService implements InitializingBean {
 
     @Autowired BpmProvider bpmProvider;

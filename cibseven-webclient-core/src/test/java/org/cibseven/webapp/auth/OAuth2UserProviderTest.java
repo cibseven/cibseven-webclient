@@ -96,20 +96,20 @@ public class OAuth2UserProviderTest {
 
 	private OAuth2UserProvider newProvider(boolean forwardToken, String endSessionEndpoint, boolean revocation) throws Exception {
 		OAuth2UserProvider created = new OAuth2UserProvider();
-		ReflectionTestUtils.setField(created, "tokenEndpoint", server.url("/token").toString());
-		ReflectionTestUtils.setField(created, "certEndpoint", server.url("/certs").toString());
-		ReflectionTestUtils.setField(created, "userEndpoint", server.url("/userinfo").toString());
-		ReflectionTestUtils.setField(created, "introspectionEndpoint", server.url("/introspect").toString());
-		ReflectionTestUtils.setField(created, "revocationEndpoint", revocation ? server.url("/revoke").toString() : "");
-		ReflectionTestUtils.setField(created, "endSessionEndpoint", endSessionEndpoint);
-		ReflectionTestUtils.setField(created, "clientId", "cibseven");
-		ReflectionTestUtils.setField(created, "clientSecret", "s3cret");
-		ReflectionTestUtils.setField(created, "userIdProperty", "sub");
-		ReflectionTestUtils.setField(created, "userNameProperty", "name");
-		ReflectionTestUtils.setField(created, "forwardToken", forwardToken);
-		ReflectionTestUtils.setField(created, "secret", SECRET);
-		ReflectionTestUtils.setField(created, "validMinutes", 60L);
-		ReflectionTestUtils.setField(created, "prolongMinutes", 30L);
+		created.properties.getSso().getEndpoints().setToken(server.url("/token").toString());
+		created.properties.getSso().getEndpoints().setJwks(server.url("/certs").toString());
+		created.properties.getSso().getEndpoints().setUser(server.url("/userinfo").toString());
+		created.properties.getSso().getEndpoints().setIntrospection(server.url("/introspect").toString());
+		created.properties.getSso().getEndpoints().setRevocation(revocation ? server.url("/revoke").toString() : "");
+		created.properties.getSso().getEndpoints().setEndSession(endSessionEndpoint);
+		created.properties.getSso().setClientId("cibseven");
+		created.properties.getSso().setClientSecret("s3cret");
+		created.properties.getSso().setUserIdProperty("sub");
+		created.properties.getSso().setUserNameProperty("name");
+		created.properties.getSso().setAccessTokenToEngineRest(forwardToken);
+		created.properties.getAuthentication().setJwtSecret(SECRET);
+		created.properties.getAuthentication().setTokenValidMinutes(60L);
+		created.properties.getAuthentication().setTokenProlongMinutes(30L);
 		enqueueJson(jwks);
 		created.init();
 		server.takeRequest(); // drain the JWKS fetch
@@ -165,8 +165,8 @@ public class OAuth2UserProviderTest {
 	@Test
 	void init_requiresEitherASecretOrAnAssertionType() {
 		OAuth2UserProvider misconfigured = new OAuth2UserProvider();
-		ReflectionTestUtils.setField(misconfigured, "clientSecret", "");
-		ReflectionTestUtils.setField(misconfigured, "assertionType", null);
+		misconfigured.properties.getSso().setClientSecret("");
+		misconfigured.properties.getSso().getAssertion().setType(null);
 
 		assertThatThrownBy(misconfigured::init)
 			.isInstanceOf(IllegalStateException.class)

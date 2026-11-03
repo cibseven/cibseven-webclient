@@ -45,7 +45,6 @@ import org.cibseven.webapp.rest.model.SevenUser;
 import org.cibseven.webapp.rest.model.SevenVerifyUser;
 import org.cibseven.webapp.rest.model.User;
 import org.cibseven.webapp.rest.model.UserGroup;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -64,8 +63,6 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class UserProvider extends SevenProviderBase implements IUserProvider {
 	
-	@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") String userProvider;
-	@Value("${cibseven.webclient.users.search.wildcard:}") String wildcard;
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	/** engine-rest URLs known not to offer {@code GET /authorization/self}, keyed per engine. */
 	private final Set<String> selfAuthorizationEndpointUnsupported = ConcurrentHashMap.newKeySet();
@@ -501,9 +498,10 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 
 	private String getWildcard () {
 		String wcard = "";
+		String wildcard = properties.getUsers().getSearch().getWildcard();
 		if (!wildcard.equals("")) wcard = wildcard;
 		else {
-			if (userProvider.equals("org.cibseven.webapp.auth.LdapUserProvider") || userProvider.equals("org.cibseven.webapp.auth.AdfsUserProvider")) {
+			if (properties.getUser().getProvider().equals("org.cibseven.webapp.auth.LdapUserProvider") || properties.getUser().getProvider().equals("org.cibseven.webapp.auth.AdfsUserProvider")) {
 				wcard = "*";				
 			} else wcard = "%";
 		}

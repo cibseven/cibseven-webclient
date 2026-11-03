@@ -17,6 +17,7 @@
 package org.cibseven.modeler.util;
 
 import org.cibseven.modeler.provider.FolderProvider;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -30,7 +31,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Component
 @ConditionalOnProperty(
-    prefix = "cibseven.webclient.modeler",
+    prefix = SevenWebclientProperties.MODELER_PREFIX,
     name = "enabled",
     havingValue = "true",
     matchIfMissing = false

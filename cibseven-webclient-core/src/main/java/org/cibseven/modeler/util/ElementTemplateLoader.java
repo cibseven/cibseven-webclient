@@ -21,7 +21,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.cibseven.modeler.config.ElementTemplateProperties;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.persistence.CibsevenJpa;
 import org.cibseven.modeler.model.ElementTemplate;
 import org.cibseven.modeler.model.ElementTemplateOrigin;
@@ -42,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Component
 @ConditionalOnProperty(
-    prefix = "cibseven.webclient.modeler",
+    prefix = SevenWebclientProperties.MODELER_PREFIX,
     name = "enabled",
     havingValue = "true",
     matchIfMissing = false
@@ -52,7 +52,7 @@ public class ElementTemplateLoader implements InitializingBean {
 
 	private final ObjectMapper mapper;
 	private final ElementTemplateRepository elementTemplateRepository;
-	private final ElementTemplateProperties properties;
+	private final SevenWebclientProperties.Modeler.Templates templates;
 	private final TransactionTemplate transactionTemplate;
 	private final ResourcePatternResolver resourcePatternResolver;
 
@@ -62,19 +62,19 @@ public class ElementTemplateLoader implements InitializingBean {
 	 *        an embedding application belongs to the host and cannot run the modeler's JPA work.
 	 */
 	public ElementTemplateLoader(ElementTemplateRepository elementTemplateRepository, ObjectMapper mapper,
-			ElementTemplateProperties properties,
+			SevenWebclientProperties properties,
 			@Qualifier(CibsevenJpa.TRANSACTION_MANAGER) PlatformTransactionManager transactionManager,
 			ResourcePatternResolver resourcePatternResolver) {
 		this.elementTemplateRepository = elementTemplateRepository;
 		this.mapper = mapper;
-		this.properties = properties;
+		this.templates = properties.getModeler().getTemplates();
 		this.transactionTemplate = new TransactionTemplate(transactionManager);
 		this.resourcePatternResolver = resourcePatternResolver;
 	}
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		if (properties.getPaths() == null || properties.getPaths().isEmpty()) {
+		if (templates.getPaths() == null || templates.getPaths().isEmpty()) {
 			return;
 		}
 
@@ -85,7 +85,7 @@ public class ElementTemplateLoader implements InitializingBean {
 		if (!awaitElementTemplatesTable()) {
 			log.error("Table MOD_ELEMENT_TEMPLATES is not available after {} attempt(s); "
 					+ "skipping element template loading for this startup. The webclient will start "
-					+ "without (re)loading element templates.", properties.getSchemaReadyMaxAttempts());
+					+ "without (re)loading element templates.", templates.getSchemaReadyMaxAttempts());
 			return;
 		}
 
@@ -99,8 +99,8 @@ public class ElementTemplateLoader implements InitializingBean {
 	 * {@code false} if it is still unavailable after the configured number of attempts.
 	 */
 	private boolean awaitElementTemplatesTable() {
-		int maxAttempts = Math.max(1, properties.getSchemaReadyMaxAttempts());
-		long delayMs = Math.max(0, properties.getSchemaReadyRetryDelayMs());
+		int maxAttempts = Math.max(1, templates.getSchemaReadyMaxAttempts());
+		long delayMs = Math.max(0, templates.getSchemaReadyRetryDelayMs());
 
 		for (int attempt = 1; attempt <= maxAttempts; attempt++) {
 			try {
@@ -128,7 +128,7 @@ public class ElementTemplateLoader implements InitializingBean {
 	}
 
 	private void populateElementTemplatesDatabase() {
-		for (String path : properties.getPaths()) {
+		for (String path : templates.getPaths()) {
 			loadElementTemplatesFromPath(path);
 		}
 	}

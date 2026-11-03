@@ -59,11 +59,11 @@ public class GenericUserProviderTest {
 		server.start();
 
 		provider = new GenericUserProvider();
-		ReflectionTestUtils.setField(provider, "secret", SECRET);
-		ReflectionTestUtils.setField(provider, "cibsevenAdminUrl", server.url("/admin").toString());
-		ReflectionTestUtils.setField(provider, "cibsevenWebclientUrl", server.url("/webclient").toString());
-		ReflectionTestUtils.setField(provider, "validMinutes", 60L);
-		ReflectionTestUtils.setField(provider, "prolongMinutes", 30L);
+		provider.properties.getAuthentication().setJwtSecret(SECRET);
+		provider.properties.getAdmin().setUrl(server.url("/admin").toString());
+		provider.properties.setUrl(server.url("/webclient").toString());
+		provider.properties.getAuthentication().setTokenValidMinutes(60L);
+		provider.properties.getAuthentication().setTokenProlongMinutes(30L);
 		provider.init();
 
 		request = mock(HttpServletRequest.class);
@@ -189,7 +189,7 @@ public class GenericUserProviderTest {
 
 	@Test
 	void verifyToken_isNullWhenNoWebclientUrlIsConfigured() {
-		ReflectionTestUtils.setField(provider, "cibsevenWebclientUrl", "");
+		provider.properties.setUrl("");
 
 		assertThat(provider.verify("the-token")).isNull();
 	}

@@ -22,6 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -49,7 +50,7 @@ public class PluginResourceServingTest {
 
 	@Configuration
 	@EnableWebMvc
-	@EnableConfigurationProperties(PluginProperties.class)
+	@EnableConfigurationProperties(SevenWebclientProperties.class)
 	static class WebConfig implements WebMvcConfigurer {
 
 		// Same JSON converter as SevenWebclientContext: the payloads are Jackson 2 nodes

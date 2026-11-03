@@ -32,7 +32,6 @@ import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.rest.model.SevenUser;
 import org.cibseven.webapp.rest.model.SevenVerifyUser;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,15 +48,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 	
-	@Value("${cibseven.webclient.authentication.jwtSecret:}") String secret;
 	
-	@Value("${cibseven.webclient.engineRest.url:./}") String cibsevenUrl;
 	
 	@Autowired BpmProvider bpmProvider;
 	
 	@PostConstruct
 	public void init() {
-		settings = new JwtTokenSettings(secret, validMinutes, prolongMinutes);
+		settings = new JwtTokenSettings(properties.getAuthentication().getJwtSecret(), getValidMinutes(), getProlongMinutes());
 		checkKey();
 	}
 	
@@ -70,7 +67,7 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 			
 			// Get the appropriate token settings for this engine
 			TokenSettings tokenSettings = EngineTokenUtils.getSettingsForEngine(
-				user.getEngine(), engineRestProperties, getSettings(), validMinutes, prolongMinutes);
+				user.getEngine(), getEngineRestProperties(), getSettings(), getValidMinutes(), getProlongMinutes());
 			
 			SevenVerifyUser sevenVerifyUser = bpmProvider.verifyUser(login, user);
 			
@@ -156,7 +153,7 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
 	public User parse(String token, TokenSettings settings) {
 		// Determine the correct settings based on the engine in the token
 		TokenSettings effectiveSettings = EngineTokenUtils.getEffectiveSettingsForToken(
-			token, engineRestProperties, settings, validMinutes, prolongMinutes);
+			token, getEngineRestProperties(), settings, getValidMinutes(), getProlongMinutes());
 		
 		try {
 			SecretKey key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(effectiveSettings.getSecret()));

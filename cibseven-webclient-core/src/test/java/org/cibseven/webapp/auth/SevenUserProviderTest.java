@@ -64,11 +64,10 @@ public class SevenUserProviderTest {
 	@BeforeEach
 	void setUp() {
 		provider = new SevenUserProvider();
-		ReflectionTestUtils.setField(provider, "secret", SECRET);
-		ReflectionTestUtils.setField(provider, "cibsevenUrl", "http://localhost:8080");
+		provider.properties.getAuthentication().setJwtSecret(SECRET);
 		ReflectionTestUtils.setField(provider, "bpmProvider", bpmProvider);
-		ReflectionTestUtils.setField(provider, "validMinutes", 60L);
-		ReflectionTestUtils.setField(provider, "prolongMinutes", 30L);
+		provider.properties.getAuthentication().setTokenValidMinutes(60);
+		provider.properties.getAuthentication().setTokenProlongMinutes(30);
 		provider.init();
 
 		request = mock(HttpServletRequest.class);
@@ -242,10 +241,10 @@ public class SevenUserProviderTest {
 
 		SevenUserProvider otherProvider = new SevenUserProvider();
 		String otherSecret = Base64.getEncoder().encodeToString("a-completely-different-secret-of-64-bytes-length-padding-here!!".getBytes());
-		ReflectionTestUtils.setField(otherProvider, "secret", otherSecret);
+		otherProvider.properties.getAuthentication().setJwtSecret(otherSecret);
 		ReflectionTestUtils.setField(otherProvider, "bpmProvider", bpmProvider);
-		ReflectionTestUtils.setField(otherProvider, "validMinutes", 60L);
-		ReflectionTestUtils.setField(otherProvider, "prolongMinutes", 30L);
+		otherProvider.properties.getAuthentication().setTokenValidMinutes(60L);
+		otherProvider.properties.getAuthentication().setTokenProlongMinutes(30L);
 		otherProvider.init();
 
 		// a token minted for one deployment must not be accepted by another
