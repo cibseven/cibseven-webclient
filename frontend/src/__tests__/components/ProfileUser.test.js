@@ -172,9 +172,25 @@ describe('ProfileUser loadUser', () => {
 
   it('stands in a user without details when the engine has none', async () => {
     AdminService.findUsers.mockResolvedValue([])
-    const vm = context({ openShownTab: vi.fn() })
+    const vm = context({ openShownTab: vi.fn(), $route: { name: 'accountProfile', params: { userId: 'sso-user' } } })
     await vm.loadUser('sso-user')
     expect(vm.user).toEqual({ id: 'sso-user', firstName: null, lastName: null, email: null, noInfo: true })
+  })
+
+  // Browser back from bob to ada, with the response for bob coming last
+  it('ignores the response for a user the route no longer names', async () => {
+    let resolveBob
+    AdminService.findUsers
+      .mockReturnValueOnce(new Promise(resolve => { resolveBob = resolve }))
+      .mockResolvedValueOnce([ADA])
+    const vm = context({ openShownTab: vi.fn(), $route: { name: 'accountProfile', params: { userId: 'bob' } } })
+    const bob = vm.loadUser('bob')
+    vm.$route.params.userId = 'ada'
+    await vm.loadUser('ada')
+    resolveBob([{ ...ADA, id: 'bob', firstName: 'Bob' }])
+    await bob
+    expect(vm.user).toEqual(ADA)
+    expect(vm.openShownTab).toHaveBeenCalledTimes(1)
   })
 
   it('loads the user again when the route names another one', () => {

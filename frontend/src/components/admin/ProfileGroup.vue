@@ -18,9 +18,9 @@
 -->
 <template>
   <SidebarsFlow ref="sidebars" header-margin="55px" v-model:left-open="leftOpen"
-    :left-caption="$t('admin.groups.title') + ' - ' + group.id" :left-size="[12, 6, 4, 3, 2]">
+    :left-caption="$t('admin.groups.title') + ' - ' + $route.params.groupId" :left-size="[12, 6, 4, 3, 2]">
     <template v-slot:left>
-      <b-list-group>
+      <b-list-group v-if="!notFound">
         <b-list-group-item v-for="tab in visibleTabs" :key="tab.id" class="border-0 px-3 py-2"
           :active="selectedTab === tab" exact :to="tabRoute(tab)">
           <span> {{ $t(tab.label) }}</span>
@@ -29,12 +29,13 @@
     </template>
 
     <transition name="slide-in" mode="out-in">
-      <div v-if="group.id" class="d-flex flex-column h-100 bg-light">
+      <div v-if="group.id || notFound" class="d-flex flex-column h-100 bg-light">
         <b-button variant="light" style="min-height: 40px; line-height: 20px;" :block="true" class="rounded-0 border-bottom text-start" :to="{ name: 'adminGroups' }">
           <span class="mdi mdi-arrow-left me-2"></span>
           <span class="fw-semibold">{{ $t('admin.groups.title') }}</span>
         </b-button>
-        <div class="container-fluid overflow-auto">
+        <WarningBox v-if="notFound" :message="$t('admin.groups.notFound')"></WarningBox>
+        <div v-else class="container-fluid overflow-auto">
           <!-- Each tab is a child route; a new group means a new tab, so it loads that group's data -->
           <div class="row">
             <router-view v-slot="{ Component }">
@@ -50,15 +51,18 @@
 <script>
 import { AdminService } from '@/services.js'
 import { profileTabRouteName } from '@/components/admin/utils.js'
+import WarningBox from '@/components/common-components/WarningBox.vue'
 import { SidebarsFlow } from '@cib/common-frontend'
 
 export default {
   name: 'ProfileGroup',
-  components: { SidebarsFlow },
+  components: { SidebarsFlow, WarningBox },
   data: function() {
     return {
       leftOpen: true,
       group: { id: null, name: null,  type: null },
+      // The engine knows no group of the id in the route (e.g. a deleted group, or a mistyped or old link)
+      notFound: false,
       // The tabs of the page, in menu order. Each one is a child route of the page (see profileTabRouteName), shown
       // when show(vm) holds and given props(vm), or by default the group and a handler taking the saved group. An
       // extension of the page adds its own tabs here, and their routes to the router.
@@ -92,11 +96,13 @@ export default {
     if (this.$route.params.groupId) this.loadGroup(this.$route.params.groupId)
   },
   methods: {
-    loadGroup: function(groupId) {
-      AdminService.findGroups({ id: groupId }).then(response => {
-        this.group = response[0]
-        this.openShownTab()
-      })
+    loadGroup: async function(groupId) {
+      const response = await AdminService.findGroups({ id: groupId })
+      // The route has moved on to another group (e.g. browser back), whose response may have come first
+      if (groupId !== this.$route.params.groupId) return
+      this.notFound = !response[0]
+      this.group = response[0] ?? { id: null, name: null, type: null }
+      if (!this.notFound) this.openShownTab()
     },
     tabRoute: function(tab) {
       return { name: profileTabRouteName('adminGroup', tab.id), params: this.$route.params }
