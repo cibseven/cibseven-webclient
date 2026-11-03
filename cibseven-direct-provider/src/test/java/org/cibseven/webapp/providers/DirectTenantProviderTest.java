@@ -104,6 +104,15 @@ public class DirectTenantProviderTest {
 	}
 
 	@Test
+	void fetchTenant_throwsWhenTheTenantDoesNotExist() {
+		when(tenantQuery.singleResult()).thenReturn(null);
+
+		// answered as 404 by the ExceptionConverter, like engine-rest does for the same id
+		assertThatThrownBy(() -> tenantProvider.fetchTenant("missing", user))
+			.isInstanceOf(NoObjectFoundException.class);
+	}
+
+	@Test
 	void fetchTenant_wrapsAFailingTenantQuery() {
 		when(identityService.createTenantQuery()).thenThrow(new ProcessEngineException("db down"));
 
