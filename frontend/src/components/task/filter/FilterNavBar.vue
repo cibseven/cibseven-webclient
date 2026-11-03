@@ -298,15 +298,4 @@ export default {
 .action-buttons-hidden:focus-within {
   opacity: 1;
 }
-
-/* Ring the whole row, as when the row itself was the link */
-@supports selector(:has(a)) {
-  .list-group-item:has(> a:focus-visible) {
-    outline: 2px solid currentColor;
-    outline-offset: -2px;
-  }
-  .list-group-item > a:focus-visible {
-    outline: none;
-  }
-}
 </style>
