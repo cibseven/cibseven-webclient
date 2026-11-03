@@ -74,6 +74,7 @@
 import { AdminService } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
 import { profileTabRouteName, findProfileUser } from '@/components/admin/utils.js'
+import { profileTabs } from '@/components/admin/profileTabs.js'
 import { SidebarsFlow, SuccessAlert } from '@cib/common-frontend'
 
 export default {
@@ -90,16 +91,8 @@ export default {
     return {
       leftOpen: true,
       user: { id: null, firstName: null, lastName: null, email: null, noInfo: true },
-      // The tabs of the page, in menu order. Each one is a child route of the page (see profileTabRouteName), shown
-      // when show(vm) holds and given props(vm), or by default the user, the edit mode and a handler taking the
-      // saved user. An extension of the page adds its own tabs here, and their routes to the router.
-      tabs: [
-        { id: 'profile', label: 'admin.users.profile', show: vm => !vm.user.noInfo },
-        { id: 'password', label: 'password.recover.changePassword', show: vm => vm.canChangePassword },
-        { id: 'groups', label: 'admin.users.groups', show: vm => !vm.user.noInfo },
-        { id: 'tenants', label: 'admin.tenants.title', show: vm => !vm.user.noInfo },
-        { id: 'preferences', label: 'admin.preferences.title', show: vm => vm.$root.user?.id === vm.user.id, props: () => ({}) }
-      ]
+      // Without props(page), a tab gets the user, the edit mode and a handler taking the saved user (see profileTabs.js)
+      tabs: profileTabs('user')
     }
   },
   watch: {
@@ -128,8 +121,12 @@ export default {
     tabProps() {
       return this.selectedTab?.props?.(this) ?? { user: this.user, editMode: this.editMode, 'onUpdate:user': user => { this.user = user } }
     },
-    canChangePassword() {
-      return !this.user.noInfo && this.$root.config.userEditable && this.$root.config.userPasswordChangeEnabled
+    // For the tabs' show() (see profileTabs.js)
+    ownAccount() {
+      return this.$root.user?.id === this.user.id
+    },
+    config() {
+      return this.$root.config
     }
   },
   created: function () {

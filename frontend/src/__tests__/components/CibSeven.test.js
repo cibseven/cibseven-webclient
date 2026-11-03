@@ -491,6 +491,37 @@ describe('CibSeven.vue', () => {
       expect(CibSeven.computed.userMenuItems.call(vm).map(i => i.key)).toEqual(['preferences'])
     })
 
+    // The menu and the page read one list of tabs, where an extension registers its own
+    it('offers a tab an extension registered, under its condition', async () => {
+      const { registerProfileTab, resetProfileTabs } = await import('@/components/admin/profileTabs.js')
+      try {
+        registerProfileTab('user', { id: 'extra', label: 'extra.title', show: ({ user }) => !user.noInfo }, { before: 'preferences' })
+        expect(CibSeven.computed.userMenuItems.call(shell()).map(i => i.key)).toEqual(['profile', 'groups', 'tenants', 'extra', 'preferences'])
+        expect(CibSeven.computed.userMenuItems.call(shell()).find(i => i.key === 'extra')).toMatchObject({
+          label: 't:extra.title', tooltip: 't:extra.title', to: { name: 'accountExtra', params: { userId: 'ada' } }
+        })
+        expect(CibSeven.computed.userMenuItems.call(shell({ accountUser: { id: 'ada', noInfo: true } })).map(i => i.key)).toEqual(['preferences'])
+      } finally {
+        resetProfileTabs()
+      }
+    })
+
+    // e.g. a tab offered only to authorization admins
+    it('lets a tab check a permission, as on the page', async () => {
+      const { registerProfileTab, resetProfileTabs } = await import('@/components/admin/profileTabs.js')
+      try {
+        registerProfileTab('user', { id: 'extra', label: 'extra.title',
+          show: ({ config, applicationPermissions }) => applicationPermissions(config.permissions.extra, 'extra') })
+        const vm = shell({ applicationPermissions: vi.fn((permissions, access) => permissions === 'granted' && access === 'extra') })
+        vm.$root.config.permissions = { extra: 'granted' }
+        expect(CibSeven.computed.userMenuItems.call(vm).map(i => i.key)).toContain('extra')
+        vm.$root.config.permissions = { extra: 'denied' }
+        expect(CibSeven.computed.userMenuItems.call(vm).map(i => i.key)).not.toContain('extra')
+      } finally {
+        resetProfileTabs()
+      }
+    })
+
     it('knows the signed-in user only while the account menu is offered', () => {
       const vm = shell()
       expect(vm.accountMenuUserId).toBe('ada')

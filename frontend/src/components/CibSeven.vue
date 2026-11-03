@@ -99,6 +99,7 @@ import PluginSlot from '@/components/common/PluginSlot.vue'
 import { updateAppTitle } from '@/utils/init'
 import { buildNavGroups, extendNavGroups, projectGroupsForNavbar, permissionFlagsFromVm, itemsToSections, singleDestination } from '@/navigation/navGroups.js'
 import { profileTabRouteName, findProfileUser } from '@/components/admin/utils.js'
+import { profileTabs } from '@/components/admin/profileTabs.js'
 
 // The names of the route and of the routes it is nested in, so a tab of a page (a child route) counts as the page.
 // That includes the layout routes every page sits in ('seven', 'auth', 'admin'), so no menu item may name one of
@@ -209,24 +210,21 @@ export default {
     },
     userMenuItems: function() {
       if (!this.accountMenuUserId) return []
-      const config = this.$root.config
-      // One entry per tab of the account page (ProfileUser), each tab a child route of the page, under the same
-      // conditions: a user the engine has no details of (e.g. from SSO) has only their preferences
-      const hasDetails = !this.accountUser.noInfo
-      const tabs = [
-        { tab: 'profile', label: 'start.account.profile.title', tooltip: 'start.account.profile.tooltip', show: hasDetails },
-        { tab: 'password', label: 'password.recover.changePassword', show: hasDetails && !!(config.userEditable && config.userPasswordChangeEnabled) },
-        { tab: 'groups', label: 'admin.users.groups', show: hasDetails },
-        { tab: 'tenants', label: 'admin.tenants.title', show: hasDetails },
-        { tab: 'preferences', label: 'admin.preferences.title' }
-      ]
-      return tabs.filter(entry => entry.show !== false).map(({ tab, label, tooltip }) => ({
-        key: tab,
-        label: this.$t(label),
-        tooltip: this.$t(tooltip ?? label),
-        to: { name: profileTabRouteName('account', tab), params: { userId: this.$root.user.id } },
-        active: this.$route.name === profileTabRouteName('account', tab)
-      }))
+      // The tabs the account page shows (see profileTabs.js)
+      const context = {
+        user: this.accountUser, editMode: false, ownAccount: true, config: this.$root.config,
+        applicationPermissions: this.applicationPermissions
+      }
+      return profileTabs('user').filter(tab => tab.show(context)).map(tab => {
+        const label = tab.menuLabel ?? tab.label
+        return {
+          key: tab.id,
+          label: this.$t(label),
+          tooltip: this.$t(tab.menuTooltip ?? label),
+          to: { name: profileTabRouteName('account', tab.id), params: { userId: this.accountMenuUserId } },
+          active: this.$route.name === profileTabRouteName('account', tab.id)
+        }
+      })
     },
     helpMenuItems: function() {
       const items = []

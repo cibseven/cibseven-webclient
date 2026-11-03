@@ -51,26 +51,23 @@
 <script>
 import { AdminService } from '@/services.js'
 import { profileTabRouteName } from '@/components/admin/utils.js'
+import { profileTabs } from '@/components/admin/profileTabs.js'
+import { permissionsMixin } from '@/permissions.js'
 import WarningBox from '@/components/common-components/WarningBox.vue'
 import { SidebarsFlow } from '@cib/common-frontend'
 
 export default {
   name: 'ProfileGroup',
   components: { SidebarsFlow, WarningBox },
+  mixins: [permissionsMixin],
   data: function() {
     return {
       leftOpen: true,
       group: { id: null, name: null,  type: null },
       // The engine knows no group of the id in the route (e.g. a deleted group, or a mistyped or old link)
       notFound: false,
-      // The tabs of the page, in menu order. Each one is a child route of the page (see profileTabRouteName), shown
-      // when show(vm) holds and given props(vm), or by default the group and a handler taking the saved group. An
-      // extension of the page adds its own tabs here, and their routes to the router.
-      tabs: [
-        { id: 'information', label: 'admin.groups.information', show: () => true },
-        { id: 'users', label: 'admin.groups.users', show: () => true },
-        { id: 'tenants', label: 'admin.tenants.title', show: () => true }
-      ]
+      // Without props(page), a tab gets the group and a handler taking the saved group (see profileTabs.js)
+      tabs: profileTabs('group')
     }
   },
   watch: {
@@ -82,6 +79,10 @@ export default {
     }
   },
   computed: {
+    // For the tabs' show() (see profileTabs.js)
+    config() {
+      return this.$root.config
+    },
     visibleTabs() {
       return this.tabs.filter(tab => tab.show(this))
     },
