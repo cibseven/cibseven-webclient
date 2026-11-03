@@ -130,15 +130,9 @@ const DEFAULT_CONFIG = {
         "UPDATE_TASK","TASK_ASSIGN","TASK_WORK","READ_TASK_VARIABLE","READ_HISTORY","READ_HISTORY_VARIABLE",
         "DELETE_HISTORY","READ_INSTANCE_VARIABLE","UPDATE_INSTANCE_VARIABLE","UPDATE_TASK_VARIABLE","UPDATE_HISTORY"
       ] },
-      "7": { "id": "7", "key": "processInstance", "permissions": [
-        "READ","UPDATE","DELETE","SUSPEND","RETRY_JOB","CREATE","READ_TASK","UPDATE_TASK",
-        "TASK_ASSIGN","TASK_WORK","READ_TASK_VARIABLE","UPDATE_TASK_VARIABLE","READ_VARIABLE",
-        "UPDATE_VARIABLE","READ_HISTORY","READ_HISTORY_VARIABLE","DELETE_HISTORY"
-      ] },
+      "8": { "id": "8", "key": "processInstance", "permissions": ["CREATE","READ","UPDATE","DELETE","RETRY_JOB","SUSPEND","UPDATE_VARIABLE"] },
       "11": { "id": "11", "key": "tenant", "permissions": ["READ","UPDATE","CREATE","DELETE"] },
-      "8": { "id": "8", "key": "task", "permissions": [
-        "READ","UPDATE","DELETE","CREATE","TASK_ASSIGN","TASK_WORK","READ_VARIABLE","UPDATE_VARIABLE"
-      ] },
+      "7": { "id": "7", "key": "task", "permissions": ["CREATE","READ","UPDATE","DELETE","TASK_ASSIGN","TASK_WORK","UPDATE_VARIABLE","READ_VARIABLE"] },
       "21": { "id": "21", "key": "system", "permissions": ["READ","SET","DELETE"] },
       "1": { "id": "1", "key": "user", "permissions": ["READ","UPDATE","CREATE","DELETE"] }
     }
