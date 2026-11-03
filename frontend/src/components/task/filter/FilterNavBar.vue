@@ -23,24 +23,18 @@
       <FilterModal ref="filterModal" @select-filter="selectFilter($event)" @filter-alert="$emit('filter-alert', $event)" @set-filter="$emit('set-filter', $event)" @new-filter-tasks-count="updateSelectedFilterTasksCountIfNeeded(true)"></FilterModal>
 
       <div v-if="$root.config.filtersSearch" class="p-2" style="background-color: rgb(98, 142, 199, 0.3)">
-        <b-input-group>
-          <template v-slot:prepend>
-            <b-input-group-text class="py-0 border-light"><span class="mdi mdi-18px mdi-magnify"
-            style="line-height: initial"></span></b-input-group-text>
-          </template>
-          <label for="filter-navbar-search" class="visually-hidden">{{ $t('searches.searchByFilterName') }}</label>
-          <b-form-input id="filter-navbar-search" :title="$t('searches.searchByFilterName')" size="sm" ref="input" type="search" v-model.trim="filter"
-          class="form-control border-start-0 ps-0 form-control border-light shadow-none" :placeholder="$t('searches.searchByFilterName')"/>
+        <SearchInput input-id="filter-navbar-search" size="sm" type="search" v-model.trim="filter"
+          :label="$t('searches.searchByFilterName')">
           <template #append>
-            <b-button size="sm" variant="light"
-              @click="sortOrder === 'desc' ? sortOrder = 'asc' : sortOrder = 'desc'" class="mdi mdi-16px py-0 border-0"
-              :class="sortOrder === 'desc' ? 'mdi-arrow-down' : 'mdi-arrow-up'"
+            <button type="button" class="search-field-button"
+              @click="sortOrder === 'desc' ? sortOrder = 'asc' : sortOrder = 'desc'"
               :title="sortOrder === 'desc' ? $t('sorting.desc') : $t('sorting.asc')">
+              <span class="mdi mdi-16px" :class="sortOrder === 'desc' ? 'mdi-arrow-down' : 'mdi-arrow-up'" aria-hidden="true"></span>
               <span v-if="sortOrder === 'desc'" class="visually-hidden">{{ $t('sorting.desc') }}</span>
               <span v-else class="visually-hidden">{{ $t('sorting.asc') }}</span>
-            </b-button>
+            </button>
           </template>
-        </b-input-group>
+        </SearchInput>
       </div>
       <div v-if="filtersFiltered.length > 0" class="overflow-auto flex-fill">
         <b-list-group>
@@ -111,12 +105,13 @@ import { formatDate } from '@/utils/dates.js'
 import { mapActions } from 'vuex'
 
 import { TaskPool } from "@/taskpool.js"
+import SearchInput from '@/components/common-components/SearchInput.vue'
 
 const MIN_TASKNUMBER_INTERVAL = 10000
 
 export default {
   name: 'FilterNavBar',
-  components: { FilterModal, ConfirmDialog, BWaitingBox },
+  components: { FilterModal, ConfirmDialog, BWaitingBox, SearchInput },
   mixins: [permissionsMixin],
   emits: ['filter-alert', 'n-filters-shown', 'selected-filter', 'set-filter'],
   data: function () {

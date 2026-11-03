@@ -21,7 +21,7 @@
     <div style="background-color: rgba(98, 142, 199, 0.2);">
       <div class="d-flex align-items-center py-2 container-fluid">
         <div class="col-8 d-flex align-items-center gap-2">
-          <SearchInput class="border rounded" size="sm" v-model.trim="filter"/>
+          <SearchInput size="sm" v-model.trim="filter"/>
           <span 
             ref="wildcardHelper"
             class="mdi mdi-help-circle mdi-18px text-secondary me-3" 
