@@ -23,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 
 import org.cibseven.webapp.SevenWebclientApplication;
-import org.cibseven.webapp.providers.SevenDirectProvider;
 import org.cibseven.webapp.rest.InfoService;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -59,7 +58,7 @@ class WebclientSettingsArchTest {
 	static class BackendMainClasses implements ImportOption {
 
 		private static final List<String> MODULES = List.of(
-			"cibseven-interfaces", "cibseven-direct-provider", "cibseven-webclient-core", "cibseven-webclient-web");
+			"cibseven-interfaces", "cibseven-webclient-core", "cibseven-webclient-web");
 
 		private static final ImportOption MAIN = new ImportOption.DoNotIncludeTests();
 
@@ -101,8 +100,8 @@ class WebclientSettingsArchTest {
 	@ArchTest
 	static void everyBackendModuleIsAnalyzed(JavaClasses classes) {
 		// One class of each module, in the order of BackendMainClasses.MODULES
-		for (Class<?> type : List.of(SevenWebclientProperties.class, SevenDirectProvider.class,
-				InfoService.class, SevenWebclientApplication.class)) {
+		for (Class<?> type : List.of(SevenWebclientProperties.class, InfoService.class,
+				SevenWebclientApplication.class)) {
 			assertTrue(classes.contain(type), type.getName() + " was not analyzed");
 		}
 	}

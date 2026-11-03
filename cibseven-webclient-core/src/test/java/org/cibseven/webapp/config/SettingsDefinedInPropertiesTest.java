@@ -44,8 +44,7 @@ public class SettingsDefinedInPropertiesTest {
 
 	/** Backend modules of this repository, as sibling directories of this module */
 	private static final List<String> SOURCE_MODULES = List.of(
-		"cibseven-interfaces", "cibseven-direct-provider", "cibseven-webclient-core",
-		"cibseven-webclient-web");
+		"cibseven-interfaces", "cibseven-webclient-core", "cibseven-webclient-web");
 
 	private static final Pattern LITERAL = Pattern.compile("\"[^\"\n]*" + Pattern.quote(SevenWebclientProperties.PREFIX) + "[^\"\n]*\"");
 
