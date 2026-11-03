@@ -362,6 +362,95 @@ describe('BpmnViewer - getProcessMergedStatisticsFullHistory', () => {
   })
 })
 
+// Statistics captured from a local engine with an asyncBefore task whose job failed
+// in 3 instances ("Fail") and a user task waiting in 2 ("Wait"). Tokens waiting in an async job
+// have no open history activity instance, so history reports 0 running instances for "Fail".
+describe('BpmnViewer - useRuntimeStats', () => {
+  const runtimeStatistics = [
+    { id: 'Fail', instances: 3, failedJobs: 3, incidents: [{ incidentType: 'failedJob', incidentCount: 3 }] },
+    { id: 'Wait', instances: 2, failedJobs: 0, incidents: [] }
+  ]
+  const historyStatistics = [
+    { id: 'Fail', instances: 0, canceled: 0, finished: 0, openIncidents: 3, resolvedIncidents: 0, deletedIncidents: 0 },
+    { id: 'Gw', instances: 0, canceled: 0, finished: 5, openIncidents: 0, resolvedIncidents: 0, deletedIncidents: 0 },
+    { id: 'Start', instances: 0, canceled: 0, finished: 5, openIncidents: 0, resolvedIncidents: 0, deletedIncidents: 0 },
+    { id: 'Wait', instances: 2, canceled: 0, finished: 0, openIncidents: 0, resolvedIncidents: 0, deletedIncidents: 0 }
+  ]
+  const byId = (merged, id) => merged.find(s => s.id === id)
+
+  const audit = (vm) => BpmnViewer.methods.getProcessMergedStatistics.call(vm, historyStatistics)
+  const full = (vm, history = historyStatistics) =>
+    BpmnViewer.methods.getProcessMergedStatisticsFullHistory.call(vm, history)
+
+  it('shows the running tokens of a failed async job with history level audit', () => {
+    const vm = viewerContext({ statistics: runtimeStatistics, useRuntimeStats: true })
+
+    const merged = audit(vm)
+
+    expect(byId(merged, 'Fail')).toMatchObject({ instances: 3, openIncidents: 3 })
+    expect(byId(merged, 'Wait')).toMatchObject({ instances: 2 })
+    expect(byId(merged, 'Start')).toMatchObject({ instances: 0, finished: 5 })
+  })
+
+  it('shows the running tokens and open incidents of a failed async job with history level full', () => {
+    const vm = viewerContext({ statistics: runtimeStatistics, useRuntimeStats: true })
+
+    const merged = full(vm)
+
+    expect(byId(merged, 'Fail')).toMatchObject({ instances: 3, openIncidents: 3 })
+    expect(byId(merged, 'Wait')).toMatchObject({ instances: 2 })
+    expect(byId(merged, 'Gw')).toMatchObject({ instances: 0, finished: 5 })
+  })
+
+  it('takes open incidents from runtime even when history already counts other ones', () => {
+    const vm = viewerContext({ statistics: runtimeStatistics, useRuntimeStats: true })
+    const history = [{ ...historyStatistics[0], openIncidents: 7, resolvedIncidents: 2 }]
+
+    expect(byId(full(vm, history), 'Fail')).toMatchObject({ openIncidents: 3, resolvedIncidents: 2 })
+  })
+
+  it('appends activities that only runtime knows with history level full', () => {
+    const vm = viewerContext({ statistics: runtimeStatistics, useRuntimeStats: true })
+
+    expect(full(vm, [])).toEqual([
+      { id: 'Fail', instances: 3, finished: 0, canceled: 0, openIncidents: 3, resolvedIncidents: 0, deletedIncidents: 0 },
+      { id: 'Wait', instances: 2, finished: 0, canceled: 0, openIncidents: 0, resolvedIncidents: 0, deletedIncidents: 0 }
+    ])
+  })
+
+  it('defaults missing runtime counts to zero with history level full', () => {
+    const vm = viewerContext({ statistics: [{ id: 'Fail' }, { id: 'New' }], useRuntimeStats: true })
+
+    const merged = full(vm, [{ id: 'Fail', instances: 4 }])
+
+    expect(byId(merged, 'Fail')).toMatchObject({ instances: 0, openIncidents: 0 })
+    expect(byId(merged, 'New')).toMatchObject({ instances: 0, openIncidents: 0 })
+  })
+
+  it('keeps history entries unchanged when runtime statistics are absent', () => {
+    const vm = viewerContext({ statistics: null, useRuntimeStats: true })
+
+    expect(full(vm)).toEqual(historyStatistics)
+  })
+
+  // A filtered instance list keeps the filtered history values, since runtime statistics are unfiltered
+  it('keeps the history instance counts when not preferring runtime', () => {
+    const vm = viewerContext({ statistics: runtimeStatistics })
+
+    expect(byId(audit(vm), 'Fail')).toMatchObject({ instances: 0 })
+    expect(byId(full(vm), 'Fail')).toMatchObject({ instances: 0 })
+  })
+
+  it('redraws the diagram when the flag changes and a viewer exists', () => {
+    const vm = { viewer: {}, drawDiagramState: vi.fn() }
+
+    BpmnViewer.watch.useRuntimeStats.call(vm)
+    BpmnViewer.watch.useRuntimeStats.call({ ...vm, viewer: null })
+
+    expect(vm.drawDiagramState).toHaveBeenCalledTimes(1)
+  })
+})
+
 describe('BpmnViewer - badge placement', () => {
   const stat = (overrides = {}) => ({
     id: 'task_1', instances: 0, finished: 0, canceled: 0,

@@ -548,7 +548,9 @@ public class DirectProcessProvider implements IProcessProvider {
 	@Override
 	public Collection<ProcessStatistics> findProcessStatistics(String processId, CIBUser user)
 			throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
-		ActivityStatisticsQuery query = directProviderUtil.getProcessEngine(user).getManagementService().createActivityStatisticsQuery(processId);
+		ActivityStatisticsQuery query = directProviderUtil.getProcessEngine(user).getManagementService().createActivityStatisticsQuery(processId)
+				.includeFailedJobs()
+				.includeIncidents();
 		List<ActivityStatistics> queryResults = query.unlimitedList();
 
 		Collection<ProcessStatistics> processStatistics = new ArrayList<>();

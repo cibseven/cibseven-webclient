@@ -41,6 +41,27 @@ describe('ProcessInstancesView', () => {
     })
   })
 
+  describe('isUnfiltered', () => {
+    const unfiltered = (computedFilter) => ProcessInstancesView.computed.isUnfiltered.call({ computedFilter })
+
+    it.each([
+      ['an empty filter', {}],
+      ['only the unfinished switch on', { unfinished: true }],
+      ['the unfinished switch off', { unfinished: undefined }],
+      ['empty values', { editField: '', processInstanceIds: [], businessKey: null }]
+    ])('is unfiltered with %s', (_, filter) => {
+      expect(unfiltered(filter)).toBe(true)
+    })
+
+    it.each([
+      ['a text search', { unfinished: true, editField: 'abc' }],
+      ['a selected activity', { unfinished: true, activityIdIn: ['Fail'] }],
+      ['another criterion', { withIncidents: true }]
+    ])('is filtered with %s', (_, filter) => {
+      expect(unfiltered(filter)).toBe(false)
+    })
+  })
+
   describe('matchedDeepLinkParams', () => {
     it('builds process definition context and language params', () => {
       const context = {

@@ -77,6 +77,10 @@ export default {
     processDefinitionId: String,
     activeTab: String,
     selectedInstance: Object,
+    useRuntimeStats: {
+      type: Boolean,
+      default: false
+    },
     badgeOptions: {
       type: Object,
       default: () => ({
@@ -118,6 +122,9 @@ export default {
     statistics: {
       handler() { if (this.viewer) this.drawDiagramState() },
       deep: true
+    },
+    useRuntimeStats: function() {
+      if (this.viewer) this.drawDiagramState()
     },
     activityInstance: {
       handler() { if (this.viewer) this.drawDiagramState() },
@@ -450,7 +457,9 @@ export default {
         const historyStat = historyMap.get(stat.id)
         return {
           id: stat.id,
-          instances: historyStat?.instances ?? (stat.instances || 0),
+          instances: this.useRuntimeStats
+            ? (stat.instances || 0)
+            : historyStat?.instances ?? (stat.instances || 0),
           finished: historyStat?.finished || 0,
           canceled: historyStat?.canceled || 0,
           openIncidents: stat.incidents?.reduce((sum, inc) => sum + (inc.incidentCount || 0), 0) || 0,
@@ -469,6 +478,8 @@ export default {
       return merged
     },
     getProcessMergedStatisticsFullHistory: function(historyStatistics) {
+      // Unfiltered, runtime and history agree on open incidents, so the same merge applies
+      if (this.useRuntimeStats) return this.getProcessMergedStatistics(historyStatistics)
       return historyStatistics.map(hs => {
         const stat = this.statistics?.find(s => s.id === hs.id)
         return stat ? { ...hs, instances: hs.instances ?? stat.instances } : hs

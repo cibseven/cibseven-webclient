@@ -44,6 +44,7 @@
       <component :is="BpmnViewerPlugin" v-if="BpmnViewerPlugin" ref="diagram" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
         @viewbox-changed="onViewboxChanged"
         :process-definition-id="process.id" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
+        :use-runtime-stats="isUnfiltered"
         :active-tab="activeTab" class="h-100">
       </component>
       <BpmnViewer v-else ref="diagram"
@@ -51,6 +52,7 @@
         :activity-instance="activityInstance"
         :activity-instance-history="activityInstanceHistory"
         :statistics="process.statistics"
+        :use-runtime-stats="isUnfiltered"
         :selected-instance="null"
         :active-tab="activeTab"
         @task-selected="selectTask($event)"
@@ -329,6 +331,14 @@ export default {
       }
 
       return result
+    },
+    // Runtime statistics ignore the filter; `unfinished` does not change running tokens
+    isUnfiltered() {
+      return Object.entries(this.computedFilter).every(([key, value]) =>
+        key === 'unfinished' ||
+        value === undefined || value === null || value === '' ||
+        (Array.isArray(value) && value.length === 0)
+      )
     },
     ProcessActionsPlugin: function() {
       return this.$options.components && this.$options.components.ProcessActionsPlugin
