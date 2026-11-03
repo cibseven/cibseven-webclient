@@ -19,8 +19,8 @@
 <template>
   <div class="h-100 d-flex flex-column">
     <CIBHeaderFlow v-if="$root.header === 'true'" ref="headerFlow" class="flex-shrink-0" :languages="$root.config.supportedLanguages.sort()" :user="$root.user"
-      :nav-clusters="navClusters" :utility-clusters="utilityClusters" :user-items="userMenuItems"
-      @logout="logout" @select="onHeaderSelect">
+      :nav-clusters="navClusters" :utility-clusters="utilityClusters" :user-items="userMenuItems" :user-to="userMenuTo"
+      @logout="logout" @select="onHeaderSelect" @open="onHeaderOpen">
       <div class="me-auto d-flex flex-row overflow-hidden" style="min-height: 38px;">
         <!-- Product name on the home page, the user's own account page and the pages before sign-in; elsewhere the icon and the page title -->
         <b-navbar-brand ref="brandHome" class="py-0 flex-shrink-0" :aria-label="brandLabel" :title="brandLabel" to="/seven/auth/start">
@@ -117,17 +117,12 @@ export default {
   data: function() {
     return {
        rememberNotShow: false,
-       // The signed-in user's details, which decide the account menu's tabs
-       accountUser: { id: null, noInfo: true }
+       // The details of the user accountUserId, which decide the account menu's tabs: loaded when the menu first opens
+       accountUserId: null,
+       accountUser: null
     }
   },
   watch: {
-    accountMenuUserId: {
-      immediate: true,
-      handler: function(userId) {
-        if (userId) this.loadAccountUser(userId)
-      }
-    },
     // when the title of the view inside top navbar is changed
     // => let's change title of the whole web-page in browser
     pageTitle: function(title) {
@@ -208,11 +203,17 @@ export default {
       if (!this.$root.user || !this.$root.config.layout.showUserSettings || !this.permissionsUserProfile) return null
       return this.$root.user.id
     },
+    // The account page, which opens the first tab it shows, so the avatar needs no details to link to it
+    userMenuTo: function() {
+      return this.accountMenuUserId ? { name: 'account', params: { userId: this.accountMenuUserId } } : null
+    },
     userMenuItems: function() {
       if (!this.accountMenuUserId) return []
       // The tabs the account page shows (see profileTabs.js)
+      // Until the signed-in user's details are loaded, a user without details: just the preferences
+      const user = (this.accountUserId === this.accountMenuUserId && this.accountUser) || { id: this.accountMenuUserId, noInfo: true }
       const context = {
-        user: this.accountUser, editMode: false, ownAccount: true, config: this.$root.config,
+        user, editMode: false, ownAccount: true, config: this.$root.config,
         applicationPermissions: this.applicationPermissions
       }
       return profileTabs('user').filter(tab => tab.show(context)).map(tab => {
@@ -307,10 +308,24 @@ export default {
     }
   },
   methods: {
-    loadAccountUser: async function(userId) {
-      const user = await findProfileUser(userId, this.canReadUser(userId))
-      // Signed out or in as somebody else meanwhile
-      if (this.accountMenuUserId === userId) this.accountUser = user
+    // A header menu opened: its cluster's id, or null for the mobile menu, which holds them all
+    onHeaderOpen: function(clusterId) {
+      if (clusterId === 'user' || clusterId === null) this.loadAccountUser()
+    },
+    // Once per signed-in user
+    loadAccountUser: async function() {
+      const userId = this.accountMenuUserId
+      if (!userId || this.accountUserId === userId) return
+      this.accountUserId = userId
+      this.accountUser = null
+      try {
+        const user = await findProfileUser(userId, this.canSearchUsers())
+        // Not if signed in as somebody else meanwhile
+        if (this.accountUserId === userId) this.accountUser = user
+      } catch {
+        // The error handler has reported it; the menu tries again when it next opens
+        if (this.accountUserId === userId) this.accountUserId = null
+      }
     },
     // Browsers ring a focus set on load as if it came from the keyboard. The ring stays
     // hidden until the first key press, so keyboard users still see where they are. The header

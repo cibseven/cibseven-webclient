@@ -149,12 +149,16 @@ const permissionsMixin = {
 			return this.$_permissionsMixin_checkPermissionsAllowed({id: deploymentId}, 'id', permissionsCheck)
 		},
 		/**
-		 * Checks if the user may search for the given user's details (`AdminService.findUsers` needs `READ`).
-		 * @param {string} userId
-		 * @returns {boolean} `true` if the user has `READ` (or `ALL`) on the given user or on all users, `false` otherwise
+		 * Mirrors the backend check of the user search (`AdminService.findUsers`), which ignores the resource id:
+		 * a revoke of `READ` or `ALL` on any user refuses it, else a grant of either on any user allows it.
+		 * @returns {boolean} `true` if the backend lets the user search for users, `false` otherwise
 		 */
-		canReadUser(userId) {
-			return this.$_permissionsMixin_checkAnyAllowed([['user', 'READ', userId]])
+		canSearchUsers() {
+			if (!this.$root.config.authorizationEnabled) return true
+			const authorizations = this.$root.user.permissions.user ?? []
+			const readsUsers = auth => auth.permissions.some(permission => permission === 'READ' || permission === 'ALL')
+			return !authorizations.some(auth => auth.type === 2 && readsUsers(auth)) &&
+				authorizations.some(auth => auth.type !== 2 && readsUsers(auth))
 		},
 		filtersByPermissions: function(permissionsRequired, filters) {
 			const tmpFilters = []

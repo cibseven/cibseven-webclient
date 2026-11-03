@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
 import CibSeven from '@/components/CibSeven.vue'
 import { AdminService } from '@/services.js'
@@ -384,6 +384,7 @@ describe('CibSeven.vue', () => {
         $route: route(),
         $root: { user: { id: 'ada' }, config: { layout: { showFeedbackButton: true, showInfoAndHelp: true, showUserSettings: true } } },
         permissionsUserProfile: true,
+        accountUserId: 'ada',
         accountUser: { id: 'ada', firstName: 'Ada' },
         helpMenuItems: [
           { type: 'link', href: 'https://help', title: 'help.title', tooltip: 'help.tooltip' },
@@ -491,6 +492,19 @@ describe('CibSeven.vue', () => {
       expect(CibSeven.computed.userMenuItems.call(vm).map(i => i.key)).toEqual(['preferences'])
     })
 
+    // Not yet loaded, or loaded for the user signed in before
+    it('offers only the preferences until the details of the signed-in user are loaded', () => {
+      expect(CibSeven.computed.userMenuItems.call(shell({ accountUserId: null, accountUser: null })).map(i => i.key)).toEqual(['preferences'])
+      expect(CibSeven.computed.userMenuItems.call(shell({ accountUserId: 'ada', accountUser: null })).map(i => i.key)).toEqual(['preferences'])
+      expect(CibSeven.computed.userMenuItems.call(shell({ accountUserId: 'bob', accountUser: { id: 'bob' } })).map(i => i.key)).toEqual(['preferences'])
+    })
+
+    // The page opens the first tab it shows, so the avatar's link needs no details
+    it('leads the avatar to the account page of the signed-in user', () => {
+      expect(CibSeven.computed.userMenuTo.call(shell())).toEqual({ name: 'account', params: { userId: 'ada' } })
+      expect(CibSeven.computed.userMenuTo.call(shell({ permissionsUserProfile: false }))).toBeNull()
+    })
+
     // The menu and the page read one list of tabs, where an extension registers its own
     it('offers a tab an extension registered, under its condition', async () => {
       const { registerProfileTab, resetProfileTabs } = await import('@/components/admin/profileTabs.js')
@@ -543,45 +557,69 @@ describe('CibSeven.vue', () => {
   // The account menu offers the tabs of the account page, which depend on the engine's details of the user
   describe('account user', () => {
     const ADA = { id: 'ada', firstName: 'Ada', lastName: 'Lovelace', email: 'ada@example.org' }
-    const shell = ({ canRead = true, menuUserId = 'ada' } = {}) => ({
-      accountUser: { id: null, noInfo: true },
+    const shell = ({ canSearch = true, menuUserId = 'ada' } = {}) => ({
+      accountUserId: null,
+      accountUser: null,
       accountMenuUserId: menuUserId,
-      canReadUser: vi.fn(() => canRead)
+      canSearchUsers: vi.fn(() => canSearch)
+    })
+    const load = vm => CibSeven.methods.loadAccountUser.call(vm)
+
+    beforeEach(() => {
+      AdminService.findUsers.mockReset()
     })
 
-    it('loads the details of the signed-in user once the account menu is offered to them', () => {
+    // Not on every page load: only for the menu that offers the tabs
+    it('loads the details when the user menu or the mobile menu opens', () => {
       const vm = { loadAccountUser: vi.fn() }
-      CibSeven.watch.accountMenuUserId.handler.call(vm, 'ada')
-      expect(vm.loadAccountUser).toHaveBeenCalledWith('ada')
-
-      vm.loadAccountUser.mockClear()
-      CibSeven.watch.accountMenuUserId.handler.call(vm, null)
+      CibSeven.methods.onHeaderOpen.call(vm, 'help')
       expect(vm.loadAccountUser).not.toHaveBeenCalled()
+      CibSeven.methods.onHeaderOpen.call(vm, 'user')
+      CibSeven.methods.onHeaderOpen.call(vm, null)
+      expect(vm.loadAccountUser).toHaveBeenCalledTimes(2)
     })
 
-    it('takes the details the engine has of the user', async () => {
+    it('takes the details the engine has of the signed-in user, once', async () => {
       AdminService.findUsers.mockResolvedValue([ADA])
       const vm = shell()
-      await CibSeven.methods.loadAccountUser.call(vm, 'ada')
-      expect(vm.canReadUser).toHaveBeenCalledWith('ada')
+      await load(vm)
+      await load(vm)
+      expect(AdminService.findUsers).toHaveBeenCalledTimes(1)
       expect(AdminService.findUsers).toHaveBeenCalledWith({ id: 'ada' })
-      expect(vm.accountUser).toEqual(ADA)
+      expect(vm).toMatchObject({ accountUserId: 'ada', accountUser: ADA })
     })
 
-    // The search would fail with an error dialog on every page
-    it('does not ask for the details of a user who may not read them, and treats them as without details', async () => {
-      AdminService.findUsers.mockClear()
-      const vm = shell({ canRead: false })
-      await CibSeven.methods.loadAccountUser.call(vm, 'ada')
+    it('does not search where the backend would refuse, and treats the user as without details', async () => {
+      const vm = shell({ canSearch: false })
+      await load(vm)
       expect(AdminService.findUsers).not.toHaveBeenCalled()
       expect(vm.accountUser).toMatchObject({ id: 'ada', noInfo: true })
     })
 
-    it('drops details that arrive after the user signed out', async () => {
-      AdminService.findUsers.mockResolvedValue([ADA])
-      const vm = shell({ menuUserId: null })
-      await CibSeven.methods.loadAccountUser.call(vm, 'ada')
-      expect(vm.accountUser).toEqual({ id: null, noInfo: true })
+    it('loads nothing while the account menu is not offered', async () => {
+      await load(shell({ menuUserId: null }))
+      expect(AdminService.findUsers).not.toHaveBeenCalled()
+    })
+
+    it('drops details that arrive after somebody else signed in', async () => {
+      let resolveAda
+      AdminService.findUsers.mockReturnValueOnce(new Promise(resolve => { resolveAda = resolve }))
+      const vm = shell()
+      const ada = load(vm)
+      vm.accountUserId = 'bob'
+      resolveAda([ADA])
+      await ada
+      expect(vm.accountUser).toBeNull()
+    })
+
+    // The error handler reports the failure; the next opening of the menu tries again
+    it('keeps the user without details when the search fails, and tries again next time', async () => {
+      AdminService.findUsers.mockRejectedValueOnce(new Error('Network Error')).mockResolvedValueOnce([ADA])
+      const vm = shell()
+      await expect(load(vm)).resolves.toBeUndefined()
+      expect(vm).toMatchObject({ accountUserId: null, accountUser: null })
+      await load(vm)
+      expect(vm.accountUser).toEqual(ADA)
     })
   })
 

@@ -493,24 +493,27 @@ describe('canDeleteHistoryProcessInstance', () => {
 })
 
 // ---------------------------------------------------------------------------
-// canReadUser
+// canSearchUsers
 // ---------------------------------------------------------------------------
-describe('canReadUser', () => {
-  it('requires READ or ALL on the given user or on all users', () => {
-    expect(createContext({ user: [allow('demo', ['READ'])] }).canReadUser('demo')).toBe(true)
-    expect(createContext({ user: [allow('demo', ['ALL'])] }).canReadUser('demo')).toBe(true)
-    expect(createContext({ user: [allow('*', ['READ'])] }).canReadUser('demo')).toBe(true)
-    expect(createContext({ user: [allow('other', ['READ'])] }).canReadUser('demo')).toBe(false)
-    expect(createContext({ user: [allow('demo', ['UPDATE'])] }).canReadUser('demo')).toBe(false)
-    expect(createContext({}).canReadUser('demo')).toBe(false)
+// Like the backend's user search (SevenAuthorizationUtils.checkPermission(USER, READ_ALL)), whatever the user
+describe('canSearchUsers', () => {
+  it('requires a grant of READ or ALL on any user', () => {
+    expect(createContext({ user: [allow('demo', ['READ'])] }).canSearchUsers()).toBe(true)
+    expect(createContext({ user: [allow('demo', ['ALL'])] }).canSearchUsers()).toBe(true)
+    expect(createContext({ user: [allow('other', ['READ'])] }).canSearchUsers()).toBe(true)
+    expect(createContext({ user: [{ ...allow('*', ['READ']), type: 0 }] }).canSearchUsers()).toBe(true)
+    expect(createContext({ user: [allow('demo', ['UPDATE'])] }).canSearchUsers()).toBe(false)
+    expect(createContext({}).canSearchUsers()).toBe(false)
   })
 
-  it('is not granted when revoked', () => {
-    expect(createContext({ user: [allow('*', ['READ']), deny('demo', ['READ'])] }).canReadUser('demo')).toBe(false)
+  it('is refused by a revoke of READ or ALL on any user', () => {
+    expect(createContext({ user: [allow('demo', ['ALL']), deny('other', ['READ'])] }).canSearchUsers()).toBe(false)
+    expect(createContext({ user: [allow('demo', ['ALL']), deny('other', ['ALL'])] }).canSearchUsers()).toBe(false)
+    expect(createContext({ user: [allow('demo', ['ALL']), deny('other', ['UPDATE'])] }).canSearchUsers()).toBe(true)
   })
 
   it('returns true when authorizationEnabled is false', () => {
-    expect(createContext({}, { authorizationEnabled: false }).canReadUser('demo')).toBe(true)
+    expect(createContext({}, { authorizationEnabled: false }).canSearchUsers()).toBe(true)
   })
 })
 

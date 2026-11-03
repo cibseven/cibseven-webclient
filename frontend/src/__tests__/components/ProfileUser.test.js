@@ -33,7 +33,7 @@ function context(overrides = {}) {
     ...ProfileUser.data.call({}),
     editMode: false,
     $route: { name: 'accountProfile', params: { userId: 'ada' }, query: {} },
-    canReadUser: () => true,
+    canSearchUsers: () => true,
     ...overrides
   })
   vm.$root.user = { id: 'ada' }
@@ -194,11 +194,11 @@ describe('ProfileUser loadUser', () => {
     expect(vm.openShownTab).toHaveBeenCalledTimes(1)
   })
 
-  // The search fails with an error dialog without READ on users; the user still gets their preferences
-  it('does not ask for the details of the own account without the permission to read them', async () => {
-    const vm = context({ openShownTab: vi.fn(), canReadUser: vi.fn(() => false) })
+  // The backend would refuse the search with an error dialog; the user still gets their preferences
+  it('does not ask for the details of the own account where the backend would refuse the search', async () => {
+    const vm = context({ openShownTab: vi.fn(), canSearchUsers: vi.fn(() => false) })
     await vm.loadUser('ada')
-    expect(vm.canReadUser).toHaveBeenCalledWith('ada')
+    expect(vm.canSearchUsers).toHaveBeenCalled()
     expect(AdminService.findUsers).not.toHaveBeenCalled()
     expect(vm.user).toMatchObject({ id: 'ada', noInfo: true })
     expect(vm.openShownTab).toHaveBeenCalled()
@@ -207,9 +207,9 @@ describe('ProfileUser loadUser', () => {
   // The admin pages are open only to those who manage users
   it('asks for the details on an admin page without checking further', async () => {
     AdminService.findUsers.mockResolvedValue([ADA])
-    const vm = context({ editMode: true, openShownTab: vi.fn(), canReadUser: vi.fn(() => false) })
+    const vm = context({ editMode: true, openShownTab: vi.fn(), canSearchUsers: vi.fn(() => false) })
     await vm.loadUser('ada')
-    expect(vm.canReadUser).not.toHaveBeenCalled()
+    expect(vm.canSearchUsers).not.toHaveBeenCalled()
     expect(vm.user).toEqual(ADA)
   })
 

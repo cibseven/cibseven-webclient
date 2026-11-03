@@ -133,9 +133,9 @@ export default {
     if (this.$route.params.userId) this.loadUser(this.$route.params.userId)
   },
   methods: {
-    // Without READ on their user, the account page gets a user without details rather than a failed search
+    // Where the backend would refuse the search, the account page gets a user without details instead
     loadUser: async function(userId) {
-      const user = await findProfileUser(userId, this.editMode || this.canReadUser(userId))
+      const user = await findProfileUser(userId, this.editMode || this.canSearchUsers())
       // The route has moved on to another user (e.g. browser back), whose response may have come first
       if (userId !== this.$route.params.userId) return
       this.user = user
