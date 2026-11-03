@@ -101,7 +101,7 @@ public class DirectVariableProvider implements IVariableProvider {
 
 		List<String> variableDeletions = patch.getDeletions();
 		try {
-			((RuntimeServiceImpl) directProviderUtil.getProcessEngine(user).getRuntimeService()).updateVariables(executionId, variableModifications, variableDeletions);
+			((RuntimeServiceImpl) directProviderUtil.getProcessEngine(user).getRuntimeService()).updateVariablesLocal(executionId, variableModifications, variableDeletions);
 		} catch (AuthorizationException e) {
 			throw e;
 		} catch (ProcessEngineException e) {
@@ -122,7 +122,7 @@ public class DirectVariableProvider implements IVariableProvider {
 				try {
 					TypedValue typedValue = valueDto.toTypedValue(directProviderUtil.getProcessEngine(user), directProviderUtil.getObjectMapper(user));// creates FileValueImpl
 
-					directProviderUtil.getProcessEngine(user).getRuntimeService().setVariable(executionId, variableName, typedValue);
+					directProviderUtil.getProcessEngine(user).getRuntimeService().setVariableLocal(executionId, variableName, typedValue);
 				} catch (AuthorizationException e) {
 					throw e;
 				} catch (ProcessEngineException e) {
@@ -142,7 +142,7 @@ public class DirectVariableProvider implements IVariableProvider {
 				}
 
 				if (object != null) {
-					directProviderUtil.getProcessEngine(user).getRuntimeService().setVariable(executionId, variableName, Variables.objectValue(object).create());
+					directProviderUtil.getProcessEngine(user).getRuntimeService().setVariableLocal(executionId, variableName, Variables.objectValue(object).create());
 				}
 			}
 		} catch (IOException e) { // from data.getBytes()
@@ -550,7 +550,7 @@ public class DirectVariableProvider implements IVariableProvider {
 		try {
 			VariableValueDto variable = directProviderUtil.getObjectMapper(user).convertValue(data, VariableValueDto.class);
 			TypedValue typedValue = variable.toTypedValue(directProviderUtil.getProcessEngine(user), directProviderUtil.getObjectMapper(user));
-			directProviderUtil.getProcessEngine(user).getRuntimeService().setVariable(executionId, varName, typedValue);
+			directProviderUtil.getProcessEngine(user).getRuntimeService().setVariableLocal(executionId, varName, typedValue);
 
 		} catch (AuthorizationException e) {
 			throw new SystemException(e.getMessage(), e);
