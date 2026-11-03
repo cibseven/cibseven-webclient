@@ -127,10 +127,10 @@
                   </span>
                 </b-form-checkbox>
                 <b-dropdown-divider></b-dropdown-divider>
-                <b-form-checkbox class="ms-2" v-for="permission in resourcesTypes[$route.params.resourceTypeId].permissions"
-                  :value="permission" :key="permission" v-model="selected">
-                  {{ permission }}
-                </b-form-checkbox>
+                <template v-for="permission in resourcesTypes[$route.params.resourceTypeId].permissions" :key="permission">
+                  <b-dropdown-divider v-if="hasSeparatorBefore($route.params.resourceTypeId, permission)"></b-dropdown-divider>
+                  <b-form-checkbox class="ms-2" :value="permission" v-model="selected">{{ permission }}</b-form-checkbox>
+                </template>
               </b-dropdown>
             </div>
             <div v-else>
@@ -541,6 +541,22 @@ export default {
       const filter = this.$store.state.filter.list.find(obj => obj.name === item.name)
       if (filter) item.resourceId = filter.id
       else item.resourceId = '*'
+    },
+    hasSeparatorBefore: function(resourceTypeId, permission) {
+      switch (resourceTypeId) {
+        case '6': // processDefinition
+          return ['SUSPEND', 'READ_TASK'].includes(permission)
+        case '7': // task
+          return ['TASK_ASSIGN', 'UPDATE_VARIABLE'].includes(permission)
+        case '8': // processInstance
+          return ['RETRY_JOB'].includes(permission)
+        case '10': // decisionDefinition
+          return ['CREATE_INSTANCE', 'READ_HISTORY'].includes(permission)
+        case '13': // batch
+          return ['READ_HISTORY', 'CREATE_BATCH_MIGRATE_PROCESS_INSTANCES'].includes(permission)
+        default:
+          return false
+      }
     },
     exportCSV: function() {
       this.exporting = true
