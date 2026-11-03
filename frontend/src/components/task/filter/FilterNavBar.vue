@@ -45,23 +45,23 @@
       <div v-if="filtersFiltered.length > 0" class="overflow-auto flex-fill">
         <b-list-group>
           <li v-for="filter of filtersFiltered" :key="filter.id"
-            class="list-group-item list-group-item-action border-0 rounded-0 p-2 d-flex align-items-center" :class="{ active: isSelected(filter) }">
+            class="list-group-item list-group-item-action list-group-item-light border-0 rounded-0 p-2 d-flex align-items-center" :class="{ active: isSelected(filter) }">
             <router-link :to="'/seven/auth/tasks/' + filter.id" :aria-current="isSelected(filter) ? 'page' : null"
               class="col-7 p-0 stretched-link text-reset text-decoration-none" style="word-wrap: break-word">
               {{ filter.name }}
               <b-badge v-if="(filter.tasksNumber || isSelected(filter)) && filter.tasksNumberLastUpdated > 0" pill variant="light"
-                :title="
+                class="position-relative z-2" :title="
                 $t('nav-bar.tasks-count', { count: filter.tasksNumber || 0 }) + '\n' +
                 $t('commons.actualisation.lastUpdate', { date: formatDate(filter.tasksNumberLastUpdated, 'HH:mm') })"
               >{{ filter.tasksNumber }}</b-badge>
             </router-link>
             <div class="action-buttons-hidden ms-auto position-relative z-2">
-              <button v-if="filterByPermissions($root.config.permissions.editFilter, $store.state.filter.selected)"
+              <button v-if="filterByPermissions($root.config.permissions.editFilter, filter)"
                 class="btn btn-light btn-sm border-0 me-1" type="button" :title="$t('nav-bar.filters.edit')" @click="selectFilter(filter); showFilterDialog('edit')">
                 <span class="visually-hidden">{{ $t('nav-bar.filters.editFilter', { filterName: filter.name }) }}</span>
                 <span class="mdi mdi-pencil" aria-hidden="true"></span>
               </button>
-              <button v-if="filterByPermissions($root.config.permissions.deleteFilter, $store.state.filter.selected)"
+              <button v-if="filterByPermissions($root.config.permissions.deleteFilter, filter)"
                 class="btn btn-light btn-sm border-0 me-1" type="button" :title="$t('nav-bar.filters.delete')"
                 @click="workingFilter = filter; $refs.confirmDeleteFilter.show()">
                 <span class="visually-hidden">{{ $t('nav-bar.filters.deleteFilter', { filterName: filter.name }) }}</span>
@@ -258,7 +258,7 @@ export default {
       }
     },
     isSelected: function(filter) {
-      return filter.id === this.$store.state.filter.selected.id
+      return filter.id === this.$store.state.filter.selected?.id
     },
     deleteFilter: function() {
       this.$store.dispatch('deleteFilter', { filterId: this.workingFilter.id }).then(() => {
@@ -297,5 +297,16 @@ export default {
 .list-group-item:focus-within .action-buttons-hidden,
 .action-buttons-hidden:focus-within {
   opacity: 1;
+}
+
+/* Ring the whole row, as when the row itself was the link */
+@supports selector(:has(a)) {
+  .list-group-item:has(> a:focus-visible) {
+    outline: 2px solid currentColor;
+    outline-offset: -2px;
+  }
+  .list-group-item > a:focus-visible {
+    outline: none;
+  }
 }
 </style>

@@ -36,7 +36,9 @@ describe('FilterNavBar', () => {
     await router.isReady()
   })
 
-  function createWrapper() {
+  const defaultConfig = { authorizationEnabled: false, filtersSearch: false, permissions: {}, taskFilter: { tasksNumber: { enabled: false } } }
+
+  function createWrapper({ list = filters, config = defaultConfig, user = { id: 'demo', permissions: {} } } = {}) {
     return mountWithDefaults(FilterNavBar, {
       global: {
         plugins: [router],
@@ -50,14 +52,14 @@ describe('FilterNavBar', () => {
         },
         mocks: {
           $store: {
-            state: { filter: { list: filters, selected: { id: 'f1' }, settings: {} } },
+            state: { filter: { list, selected: { id: 'f1' }, settings: {} } },
             // Never settles: the test is about the list markup, not the fetch that follows it
             dispatch: vi.fn(() => new Promise(() => {})),
             commit: vi.fn()
           },
           // Mounted standalone, $root is this instance, so these stand in for $root.*
-          user: { id: 'demo', permissions: {} },
-          config: { authorizationEnabled: false, filtersSearch: false, permissions: {}, taskFilter: { tasksNumber: { enabled: false } } }
+          user,
+          config
         }
       }
     })
@@ -90,5 +92,45 @@ describe('FilterNavBar', () => {
       expect(item.findAll(':scope > div > button, :scope > button').map(b => b.attributes('title')))
         .toEqual(['nav-bar.filters.edit', 'nav-bar.filters.delete', 'nav-bar.filters.pin'])
     }
+  })
+
+  it('highlights only the selected row', () => {
+    const items = createWrapper().findAll('ul > li')
+
+    expect(items[0].classes()).toContain('active')
+    expect(items[1].classes()).not.toContain('active')
+  })
+
+  // The stretched link covers the row; the badge must sit above it so its count tooltip stays reachable
+  it('lifts the task count badge above the stretched link', () => {
+    const badge = createWrapper().find('ul > li > a > [title]')
+
+    expect(badge.attributes('title')).toContain('nav-bar.tasks-count')
+    expect(badge.classes()).toEqual(expect.arrayContaining(['position-relative', 'z-2']))
+  })
+
+  // The buttons are siblings of the link, so a click on them must not navigate to the filter
+  it.each([
+    [false, 'nav-bar.filters.pin', 'addFavoriteFilter'],
+    [true, 'nav-bar.filters.unpin', 'deleteFavoriteFilter']
+  ])('with favorite %s, the %s button dispatches %s without navigating', async (favorite, title, action) => {
+    const wrapper = createWrapper({ list: [{ ...filters[1], favorite }] })
+
+    await wrapper.find(`button[title="${title}"]`).trigger('click')
+
+    expect(wrapper.vm.$store.dispatch).toHaveBeenCalledWith(action, { filterId: 'f2' })
+    expect(router.currentRoute.value.fullPath).toBe('/seven/auth/tasks/f1/t1')
+  })
+
+  // Each row's edit and delete buttons follow that row's permissions, not the selected filter's
+  it('checks the edit and delete permissions against the filter of each row', () => {
+    const items = createWrapper({
+      config: { ...defaultConfig, authorizationEnabled: true, permissions: { editFilter: { filter: ['UPDATE'] }, deleteFilter: { filter: ['DELETE'] } } },
+      user: { id: 'demo', permissions: { filter: [{ userId: 'demo', groupId: null, type: 1, resourceId: 'f2', permissions: ['UPDATE', 'DELETE'] }] } }
+    }).findAll('ul > li')
+    const titles = item => item.findAll('button').map(b => b.attributes('title'))
+
+    expect(titles(items[0])).toEqual(['nav-bar.filters.pin'])
+    expect(titles(items[1])).toEqual(['nav-bar.filters.edit', 'nav-bar.filters.delete', 'nav-bar.filters.pin'])
   })
 })
