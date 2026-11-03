@@ -81,6 +81,7 @@ export default {
       type: Boolean,
       default: false
     },
+    runtimeActivityId: String,
     badgeOptions: {
       type: Object,
       default: () => ({
@@ -124,6 +125,9 @@ export default {
       deep: true
     },
     useRuntimeStats: function() {
+      if (this.viewer) this.drawDiagramState()
+    },
+    runtimeActivityId: function() {
       if (this.viewer) this.drawDiagramState()
     },
     activityInstance: {
@@ -457,7 +461,7 @@ export default {
         const historyStat = historyMap.get(stat.id)
         return {
           id: stat.id,
-          instances: this.useRuntimeStats
+          instances: this.useRuntimeStats || stat.id === this.runtimeActivityId
             ? (stat.instances || 0)
             : historyStat?.instances ?? (stat.instances || 0),
           finished: historyStat?.finished || 0,
@@ -480,10 +484,17 @@ export default {
     getProcessMergedStatisticsFullHistory: function(historyStatistics) {
       // Unfiltered, runtime and history agree on open incidents, so the same merge applies
       if (this.useRuntimeStats) return this.getProcessMergedStatistics(historyStatistics)
-      return historyStatistics.map(hs => {
+      const merged = historyStatistics.map(hs => {
         const stat = this.statistics?.find(s => s.id === hs.id)
-        return stat ? { ...hs, instances: hs.instances ?? stat.instances } : hs
+        if (!stat) return hs
+        return { ...hs, instances: hs.id === this.runtimeActivityId ? (stat.instances || 0) : hs.instances ?? stat.instances }
       })
+      // Tokens waiting in an async job of the selected activity have no history entry yet
+      const selected = this.statistics?.find(s => s.id === this.runtimeActivityId)
+      if (selected && !historyStatistics.some(hs => hs.id === selected.id)) {
+        merged.push({ id: selected.id, instances: selected.instances || 0, finished: 0, canceled: 0, openIncidents: 0, resolvedIncidents: 0, deletedIncidents: 0 })
+      }
+      return merged
     },
     drawActivityBadges: function(stat, elementRegistry) {
       const element = elementRegistry.get(stat.id)

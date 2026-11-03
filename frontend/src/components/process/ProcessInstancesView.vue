@@ -44,7 +44,7 @@
       <component :is="BpmnViewerPlugin" v-if="BpmnViewerPlugin" ref="diagram" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
         @viewbox-changed="onViewboxChanged"
         :process-definition-id="process.id" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
-        :use-runtime-stats="isUnfiltered"
+        :use-runtime-stats="useRuntimeStats" :runtime-activity-id="runtimeActivityId"
         :active-tab="activeTab" class="h-100">
       </component>
       <BpmnViewer v-else ref="diagram"
@@ -52,7 +52,8 @@
         :activity-instance="activityInstance"
         :activity-instance-history="activityInstanceHistory"
         :statistics="process.statistics"
-        :use-runtime-stats="isUnfiltered"
+        :use-runtime-stats="useRuntimeStats"
+        :runtime-activity-id="runtimeActivityId"
         :selected-instance="null"
         :active-tab="activeTab"
         @task-selected="selectTask($event)"
@@ -332,13 +333,18 @@ export default {
 
       return result
     },
-    // Runtime statistics ignore the filter; `unfinished` does not change running tokens
+    // Runtime statistics ignore the filter; neither `unfinished` nor an active selected activity narrow its tokens
     isUnfiltered() {
-      return Object.entries(this.computedFilter).every(([key, value]) =>
-        key === 'unfinished' ||
-        value === undefined || value === null || value === '' ||
-        (Array.isArray(value) && value.length === 0)
-      )
+      const ignored = ['unfinished', 'activityIdIn', 'activeOrExecutedActivityIdIn']
+      return Object.entries(this.computedFilter)
+        .filter(([key]) => !ignored.includes(key))
+        .every(([, value]) => (value ?? '').length === 0)
+    },
+    useRuntimeStats() {
+      return this.isUnfiltered && !this.selectedActivityId
+    },
+    runtimeActivityId() {
+      return this.isUnfiltered ? this.selectedActivityId : null
     },
     ProcessActionsPlugin: function() {
       return this.$options.components && this.$options.components.ProcessActionsPlugin

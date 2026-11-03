@@ -441,13 +441,49 @@ describe('BpmnViewer - useRuntimeStats', () => {
     expect(byId(full(vm), 'Fail')).toMatchObject({ instances: 0 })
   })
 
-  it('redraws the diagram when the flag changes and a viewer exists', () => {
+  it.each(['useRuntimeStats', 'runtimeActivityId'])('redraws the diagram when %s changes and a viewer exists', (prop) => {
     const vm = { viewer: {}, drawDiagramState: vi.fn() }
 
-    BpmnViewer.watch.useRuntimeStats.call(vm)
-    BpmnViewer.watch.useRuntimeStats.call({ ...vm, viewer: null })
+    BpmnViewer.watch[prop].call(vm)
+    BpmnViewer.watch[prop].call({ ...vm, viewer: null })
 
     expect(vm.drawDiagramState).toHaveBeenCalledTimes(1)
+  })
+
+  // Filtering by the activity lists every instance with a token in it, so only that activity reads runtime
+  describe('runtimeActivityId', () => {
+    const selected = () => viewerContext({ statistics: runtimeStatistics, runtimeActivityId: 'Fail' })
+
+    it('takes the selected activity tokens from runtime with history level audit', () => {
+      const merged = audit(selected())
+
+      expect(byId(merged, 'Fail')).toMatchObject({ instances: 3, openIncidents: 3 })
+      expect(byId(merged, 'Wait')).toMatchObject({ instances: 2 })
+    })
+
+    it('takes only the selected activity tokens from runtime with history level full', () => {
+      const vm = selected()
+      const history = historyStatistics.map(hs => hs.id === 'Wait' ? { ...hs, instances: 1 } : hs)
+
+      const merged = full(vm, history)
+
+      expect(byId(merged, 'Fail')).toMatchObject({ instances: 3, openIncidents: 3 })
+      expect(byId(merged, 'Wait')).toMatchObject({ instances: 1 })
+    })
+
+    it('appends the selected activity when history has no entry for it with history level full', () => {
+      const merged = full(selected(), historyStatistics.filter(hs => hs.id !== 'Fail'))
+
+      expect(byId(merged, 'Fail')).toEqual({
+        id: 'Fail', instances: 3, finished: 0, canceled: 0, openIncidents: 0, resolvedIncidents: 0, deletedIncidents: 0
+      })
+    })
+
+    it('appends nothing when runtime does not know the selected activity', () => {
+      const vm = viewerContext({ statistics: runtimeStatistics, runtimeActivityId: 'Gone' })
+
+      expect(full(vm)).toHaveLength(historyStatistics.length)
+    })
   })
 })
 

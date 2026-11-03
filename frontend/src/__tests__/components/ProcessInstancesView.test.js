@@ -114,12 +114,44 @@ describe('ProcessInstancesView', () => {
       expect(unfiltered(filter)).toBe(true)
     })
 
+    // Every instance with a token in the selected activity is listed in these modes
+    it.each([
+      ['active', { unfinished: true, activityIdIn: ['Fail'] }],
+      ['activeOrExecuted', { unfinished: true, activeOrExecutedActivityIdIn: ['Fail'] }]
+    ])('is unfiltered with a selected activity in %s mode', (_, filter) => {
+      expect(unfiltered(filter)).toBe(true)
+    })
+
     it.each([
       ['a text search', { unfinished: true, editField: 'abc' }],
-      ['a selected activity', { unfinished: true, activityIdIn: ['Fail'] }],
-      ['another criterion', { withIncidents: true }]
+      ['another criterion', { withIncidents: true }],
+      // Tokens still waiting in the activity belong to instances that have not executed it yet
+      ['a selected activity in executed mode', { executedActivityIdIn: ['Fail'] }],
+      ['a selected activity and a text search', { activityIdIn: ['Fail'], editField: 'abc' }]
     ])('is filtered with %s', (_, filter) => {
       expect(unfiltered(filter)).toBe(false)
+    })
+  })
+
+  describe('useRuntimeStats and runtimeActivityId', () => {
+    const props = (isUnfiltered, selectedActivityId) => {
+      const context = { isUnfiltered, selectedActivityId }
+      return {
+        useRuntimeStats: ProcessInstancesView.computed.useRuntimeStats.call(context),
+        runtimeActivityId: ProcessInstancesView.computed.runtimeActivityId.call(context)
+      }
+    }
+
+    it('uses runtime for every activity without filter', () => {
+      expect(props(true, null)).toEqual({ useRuntimeStats: true, runtimeActivityId: null })
+    })
+
+    it('uses runtime only for the selected activity when it is the only filter', () => {
+      expect(props(true, 'Fail')).toEqual({ useRuntimeStats: false, runtimeActivityId: 'Fail' })
+    })
+
+    it('uses no runtime when other criteria narrow the list', () => {
+      expect(props(false, 'Fail')).toEqual({ useRuntimeStats: false, runtimeActivityId: null })
     })
   })
 
