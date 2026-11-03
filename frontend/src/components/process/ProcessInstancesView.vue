@@ -389,7 +389,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'setDiagramXml', 'clearHistoricActivityStatistics','loadHistoricActivityStatisticsForInstances']),
+    ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'setDiagramXml', 'clearHistoricActivityStatistics','loadHistoricActivityStatisticsForInstances', 'setStatistics']),
     ...mapActions('calledProcessDefinitions', ['loadStaticCalledProcessDefinitions']),
     applySorting: function(sortingCriteria) {
       this.sorting = true
@@ -475,6 +475,13 @@ export default {
      syncStatisticsWithInstances: function(filter) {
       if (!this.process?.id) return
       this.loadHistoricActivityStatisticsForInstances({ processDefinitionId: this.process.id, filter})
+      this.reloadRuntimeStatistics()
+    },
+    // Running tokens and open incidents come from runtime, so they must refresh together with history
+    async reloadRuntimeStatistics() {
+      const process = this.process
+      const statistics = await ProcessService.findProcessStatistics(process.id)
+      this.setStatistics({ process, statistics })
     },
     onInput: debounce(800, function(freeText) {
       this.$emit('filter-instances', {

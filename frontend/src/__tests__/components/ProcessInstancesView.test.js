@@ -14,10 +14,71 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import ProcessInstancesView from '@/components/process/ProcessInstancesView.vue'
+import { ProcessService } from '@/services.js'
+
+vi.mock('@/services.js', async (importOriginal) => ({
+  ...(await importOriginal()),
+  ProcessService: { findProcessStatistics: vi.fn() }
+}))
 
 describe('ProcessInstancesView', () => {
+  describe('syncStatisticsWithInstances', () => {
+    const viewContext = (process) => {
+      const ctx = {
+        process,
+        loadHistoricActivityStatisticsForInstances: vi.fn(),
+        setStatistics: vi.fn()
+      }
+      ctx.reloadRuntimeStatistics = ProcessInstancesView.methods.reloadRuntimeStatistics.bind(ctx)
+      return ctx
+    }
+    const sync = (ctx, filter) => ProcessInstancesView.methods.syncStatisticsWithInstances.call(ctx, filter)
+
+    beforeEach(() => {
+      ProcessService.findProcessStatistics.mockReset()
+    })
+
+    // The diagram reads running tokens from runtime, so they must not go stale while history refreshes
+    it('reloads the runtime statistics together with the filtered history', async () => {
+      const process = { id: 'pd-1' }
+      const statistics = [{ id: 'Fail', instances: 3 }]
+      ProcessService.findProcessStatistics.mockResolvedValue(statistics)
+      const ctx = viewContext(process)
+
+      sync(ctx, { unfinished: true })
+      await vi.waitFor(() => expect(ctx.setStatistics).toHaveBeenCalled())
+
+      expect(ctx.loadHistoricActivityStatisticsForInstances).toHaveBeenCalledWith({ processDefinitionId: 'pd-1', filter: { unfinished: true } })
+      expect(ProcessService.findProcessStatistics).toHaveBeenCalledWith('pd-1')
+      expect(ctx.setStatistics).toHaveBeenCalledWith({ process, statistics })
+    })
+
+    it('stores the statistics on the process they were requested for', async () => {
+      const first = { id: 'pd-1' }
+      let resolve
+      ProcessService.findProcessStatistics.mockReturnValue(new Promise(r => { resolve = r }))
+      const ctx = viewContext(first)
+
+      sync(ctx, {})
+      ctx.process = { id: 'pd-2' }
+      resolve([])
+      await vi.waitFor(() => expect(ctx.setStatistics).toHaveBeenCalled())
+
+      expect(ctx.setStatistics).toHaveBeenCalledWith({ process: first, statistics: [] })
+    })
+
+    it('loads nothing without a process', () => {
+      const ctx = viewContext(null)
+
+      sync(ctx, {})
+
+      expect(ctx.loadHistoricActivityStatisticsForInstances).not.toHaveBeenCalled()
+      expect(ProcessService.findProcessStatistics).not.toHaveBeenCalled()
+    })
+  })
+
   describe('matchedDeepLink', () => {
     it('returns the deep link entry matching the active tab', () => {
       const context = {
