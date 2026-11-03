@@ -126,7 +126,6 @@ You may obtain a copy of the License at
 				<module>cibseven-interfaces</module>
 				<module>cibseven-webclient-web</module>
 				<module>cibseven-webclient-core</module>
-				<module>cibseven-direct-provider</module>
 				<module>cibseven-webclient-web-sb4</module>
 				<!-- must stay last: aggregates the coverage of every module above -->
 				<module>cibseven-coverage-aggregate</module>
