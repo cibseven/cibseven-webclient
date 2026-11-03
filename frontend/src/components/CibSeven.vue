@@ -98,7 +98,7 @@ import FeedbackModal from '@/components/modals/FeedbackModal.vue'
 import PluginSlot from '@/components/common/PluginSlot.vue'
 import { updateAppTitle } from '@/utils/init'
 import { buildNavGroups, extendNavGroups, projectGroupsForNavbar, permissionFlagsFromVm, itemsToSections, singleDestination } from '@/navigation/navGroups.js'
-import { profileTabRouteName } from '@/components/admin/utils.js'
+import { profileTabRouteName, findProfileUser } from '@/components/admin/utils.js'
 
 // The names of the route and of the routes it is nested in, so a tab of a page (a child route) counts as the page.
 // That includes the layout routes every page sits in ('seven', 'auth', 'admin'), so no menu item may name one of
@@ -115,10 +115,18 @@ export default {
   emits: [],
   data: function() {
     return {
-       rememberNotShow: false
+       rememberNotShow: false,
+       // The signed-in user's details, which decide the account menu's tabs
+       accountUser: { id: null, noInfo: true }
     }
   },
   watch: {
+    accountMenuUserId: {
+      immediate: true,
+      handler: function(userId) {
+        if (userId) this.loadAccountUser(userId)
+      }
+    },
     // when the title of the view inside top navbar is changed
     // => let's change title of the whole web-page in browser
     pageTitle: function(title) {
@@ -194,15 +202,22 @@ export default {
       }
       return clusters
     },
+    // The signed-in user while the account menu is offered to them
+    accountMenuUserId: function() {
+      if (!this.$root.user || !this.$root.config.layout.showUserSettings || !this.permissionsUserProfile) return null
+      return this.$root.user.id
+    },
     userMenuItems: function() {
-      if (!this.$root.user || !this.$root.config.layout.showUserSettings || !this.permissionsUserProfile) return []
+      if (!this.accountMenuUserId) return []
       const config = this.$root.config
-      // One entry per tab of the account page (ProfileUser), each tab a child route of the page
+      // One entry per tab of the account page (ProfileUser), each tab a child route of the page, under the same
+      // conditions: a user the engine has no details of (e.g. from SSO) has only their preferences
+      const hasDetails = !this.accountUser.noInfo
       const tabs = [
-        { tab: 'profile', label: 'start.account.profile.title', tooltip: 'start.account.profile.tooltip' },
-        { tab: 'password', label: 'password.recover.changePassword', show: !!(config.userEditable && config.userPasswordChangeEnabled) },
-        { tab: 'groups', label: 'admin.users.groups' },
-        { tab: 'tenants', label: 'admin.tenants.title' },
+        { tab: 'profile', label: 'start.account.profile.title', tooltip: 'start.account.profile.tooltip', show: hasDetails },
+        { tab: 'password', label: 'password.recover.changePassword', show: hasDetails && !!(config.userEditable && config.userPasswordChangeEnabled) },
+        { tab: 'groups', label: 'admin.users.groups', show: hasDetails },
+        { tab: 'tenants', label: 'admin.tenants.title', show: hasDetails },
         { tab: 'preferences', label: 'admin.preferences.title' }
       ]
       return tabs.filter(entry => entry.show !== false).map(({ tab, label, tooltip }) => ({
@@ -294,6 +309,11 @@ export default {
     }
   },
   methods: {
+    loadAccountUser: async function(userId) {
+      const user = await findProfileUser(userId, this.canReadUser(userId))
+      // Signed out or in as somebody else meanwhile
+      if (this.accountMenuUserId === userId) this.accountUser = user
+    },
     // Browsers ring a focus set on load as if it came from the keyboard. The ring stays
     // hidden until the first key press, so keyboard users still see where they are. The header
     // hides it (CIBHeaderFlow): EE renders this template from its own component, where this

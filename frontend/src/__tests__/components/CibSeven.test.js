@@ -17,12 +17,14 @@
 import { describe, it, expect, vi } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
 import CibSeven from '@/components/CibSeven.vue'
+import { AdminService } from '@/services.js'
 
 // Mock services
 vi.mock('@/services.js', () => ({
   EngineService: {
     getEngines: vi.fn(() => Promise.resolve([{ name: 'default' }]))
-  }
+  },
+  AdminService: { findUsers: vi.fn() }
 }))
 
 describe('CibSeven.vue', () => {
@@ -382,6 +384,7 @@ describe('CibSeven.vue', () => {
         $route: route(),
         $root: { user: { id: 'ada' }, config: { layout: { showFeedbackButton: true, showInfoAndHelp: true, showUserSettings: true } } },
         permissionsUserProfile: true,
+        accountUser: { id: 'ada', firstName: 'Ada' },
         helpMenuItems: [
           { type: 'link', href: 'https://help', title: 'help.title', tooltip: 'help.tooltip' },
           { type: 'button', ref: 'about', title: 'about.title', tooltip: 'about.tooltip' }
@@ -391,6 +394,7 @@ describe('CibSeven.vue', () => {
       vm.isMenuItemActive = item => CibSeven.methods.isMenuItemActive.call(vm, item)
       vm.isToolActive = tool => CibSeven.methods.isToolActive.call(vm, tool)
       vm.getToolDefaultTo = tool => CibSeven.methods.getToolDefaultTo.call(vm, tool)
+      Object.defineProperty(vm, 'accountMenuUserId', { get: () => CibSeven.computed.accountMenuUserId.call(vm), configurable: true })
       return vm
     }
     const tasksTool = {
@@ -478,11 +482,75 @@ describe('CibSeven.vue', () => {
       expect(CibSeven.computed.userMenuItems.call(vm).map(i => i.key)).not.toContain('password')
     })
 
+    // Like the account page, which hides the other tabs of a user without details (e.g. from SSO, or who may
+    // not read their own details); the menu must not offer them either
+    it('offers only the preferences of a user the engine has no details of', () => {
+      const vm = shell({ accountUser: { id: 'ada', noInfo: true } })
+      vm.$root.config.userEditable = true
+      vm.$root.config.userPasswordChangeEnabled = true
+      expect(CibSeven.computed.userMenuItems.call(vm).map(i => i.key)).toEqual(['preferences'])
+    })
+
+    it('knows the signed-in user only while the account menu is offered', () => {
+      const vm = shell()
+      expect(vm.accountMenuUserId).toBe('ada')
+      vm.$root.config.layout.showUserSettings = false
+      expect(vm.accountMenuUserId).toBeNull()
+      vm.$root.config.layout.showUserSettings = true
+      vm.$root.user = null
+      expect(vm.accountMenuUserId).toBeNull()
+    })
+
     it('opens the dialog a header item asks for', () => {
       const show = vi.fn()
       CibSeven.methods.onHeaderSelect.call({ $refs: { about: { show } } }, { modal: 'about' })
       expect(show).toHaveBeenCalled()
       expect(() => CibSeven.methods.onHeaderSelect.call({ $refs: {} }, { key: 'other' })).not.toThrow()
+    })
+  })
+
+  // The account menu offers the tabs of the account page, which depend on the engine's details of the user
+  describe('account user', () => {
+    const ADA = { id: 'ada', firstName: 'Ada', lastName: 'Lovelace', email: 'ada@example.org' }
+    const shell = ({ canRead = true, menuUserId = 'ada' } = {}) => ({
+      accountUser: { id: null, noInfo: true },
+      accountMenuUserId: menuUserId,
+      canReadUser: vi.fn(() => canRead)
+    })
+
+    it('loads the details of the signed-in user once the account menu is offered to them', () => {
+      const vm = { loadAccountUser: vi.fn() }
+      CibSeven.watch.accountMenuUserId.handler.call(vm, 'ada')
+      expect(vm.loadAccountUser).toHaveBeenCalledWith('ada')
+
+      vm.loadAccountUser.mockClear()
+      CibSeven.watch.accountMenuUserId.handler.call(vm, null)
+      expect(vm.loadAccountUser).not.toHaveBeenCalled()
+    })
+
+    it('takes the details the engine has of the user', async () => {
+      AdminService.findUsers.mockResolvedValue([ADA])
+      const vm = shell()
+      await CibSeven.methods.loadAccountUser.call(vm, 'ada')
+      expect(vm.canReadUser).toHaveBeenCalledWith('ada')
+      expect(AdminService.findUsers).toHaveBeenCalledWith({ id: 'ada' })
+      expect(vm.accountUser).toEqual(ADA)
+    })
+
+    // The search would fail with an error dialog on every page
+    it('does not ask for the details of a user who may not read them, and treats them as without details', async () => {
+      AdminService.findUsers.mockClear()
+      const vm = shell({ canRead: false })
+      await CibSeven.methods.loadAccountUser.call(vm, 'ada')
+      expect(AdminService.findUsers).not.toHaveBeenCalled()
+      expect(vm.accountUser).toMatchObject({ id: 'ada', noInfo: true })
+    })
+
+    it('drops details that arrive after the user signed out', async () => {
+      AdminService.findUsers.mockResolvedValue([ADA])
+      const vm = shell({ menuUserId: null })
+      await CibSeven.methods.loadAccountUser.call(vm, 'ada')
+      expect(vm.accountUser).toEqual({ id: null, noInfo: true })
     })
   })
 

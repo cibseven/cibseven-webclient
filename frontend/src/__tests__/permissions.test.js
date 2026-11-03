@@ -493,6 +493,28 @@ describe('canDeleteHistoryProcessInstance', () => {
 })
 
 // ---------------------------------------------------------------------------
+// canReadUser
+// ---------------------------------------------------------------------------
+describe('canReadUser', () => {
+  it('requires READ or ALL on the given user or on all users', () => {
+    expect(createContext({ user: [allow('demo', ['READ'])] }).canReadUser('demo')).toBe(true)
+    expect(createContext({ user: [allow('demo', ['ALL'])] }).canReadUser('demo')).toBe(true)
+    expect(createContext({ user: [allow('*', ['READ'])] }).canReadUser('demo')).toBe(true)
+    expect(createContext({ user: [allow('other', ['READ'])] }).canReadUser('demo')).toBe(false)
+    expect(createContext({ user: [allow('demo', ['UPDATE'])] }).canReadUser('demo')).toBe(false)
+    expect(createContext({}).canReadUser('demo')).toBe(false)
+  })
+
+  it('is not granted when revoked', () => {
+    expect(createContext({ user: [allow('*', ['READ']), deny('demo', ['READ'])] }).canReadUser('demo')).toBe(false)
+  })
+
+  it('returns true when authorizationEnabled is false', () => {
+    expect(createContext({}, { authorizationEnabled: false }).canReadUser('demo')).toBe(true)
+  })
+})
+
+// ---------------------------------------------------------------------------
 // canDeleteRuntimeProcessInstance
 // ---------------------------------------------------------------------------
 describe('canDeleteRuntimeProcessInstance', () => {

@@ -72,12 +72,14 @@
 
 <script>
 import { AdminService } from '@/services.js'
-import { profileTabRouteName } from '@/components/admin/utils.js'
+import { permissionsMixin } from '@/permissions.js'
+import { profileTabRouteName, findProfileUser } from '@/components/admin/utils.js'
 import { SidebarsFlow, SuccessAlert } from '@cib/common-frontend'
 
 export default {
   name: 'ProfileUser',
   components: { SidebarsFlow, SuccessAlert },
+  mixins: [permissionsMixin],
   props: {
     editMode: {
       type: Boolean,
@@ -134,11 +136,12 @@ export default {
     if (this.$route.params.userId) this.loadUser(this.$route.params.userId)
   },
   methods: {
+    // Without READ on their user, the account page gets a user without details rather than a failed search
     loadUser: async function(userId) {
-      const response = await AdminService.findUsers({ id: userId })
+      const user = await findProfileUser(userId, this.editMode || this.canReadUser(userId))
       // The route has moved on to another user (e.g. browser back), whose response may have come first
       if (userId !== this.$route.params.userId) return
-      this.user = response[0] || { id: userId, firstName: null, lastName: null, email: null, noInfo: true }
+      this.user = user
       this.openShownTab()
     },
     tabRoute: function(tab) {

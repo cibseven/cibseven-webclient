@@ -148,6 +148,14 @@ const permissionsMixin = {
 			const permissionsCheck = this.$_permissionsMixin_setAllPermissionsObject(requiredPermissions)
 			return this.$_permissionsMixin_checkPermissionsAllowed({id: deploymentId}, 'id', permissionsCheck)
 		},
+		/**
+		 * Checks if the user may search for the given user's details (`AdminService.findUsers` needs `READ`).
+		 * @param {string} userId
+		 * @returns {boolean} `true` if the user has `READ` (or `ALL`) on the given user or on all users, `false` otherwise
+		 */
+		canReadUser(userId) {
+			return this.$_permissionsMixin_checkAnyAllowed([['user', 'READ', userId]])
+		},
 		filtersByPermissions: function(permissionsRequired, filters) {
 			const tmpFilters = []
 			if (!filters || !Array.isArray(filters) || !filters.length) return tmpFilters // Return empty array if no filters are provided or filters is not an array
