@@ -182,6 +182,21 @@ describe('ProfileUser loadUser', () => {
     ProfileUser.watch['$route.params.userId'].call(vm)
     expect(vm.loadUser).toHaveBeenCalledWith('bob')
   })
+
+  // The route's own-account check does not run for a new id on the same route; the watcher does it (CIB7-2509)
+  it('sends the account page of another user to the start page', () => {
+    const vm = context({ $route: { name: 'accountProfile', params: { userId: 'bob' } }, loadUser: vi.fn() })
+    ProfileUser.watch['$route.params.userId'].call(vm)
+    expect(vm.$router.push).toHaveBeenCalledWith({ name: 'start' })
+    expect(vm.loadUser).not.toHaveBeenCalled()
+  })
+
+  it('loads the account page again for the signed-in user', () => {
+    const vm = context({ loadUser: vi.fn() })
+    ProfileUser.watch['$route.params.userId'].call(vm)
+    expect(vm.loadUser).toHaveBeenCalledWith('ada')
+    expect(vm.$router.push).not.toHaveBeenCalled()
+  })
 })
 
 describe('ProfileUser rendered', () => {
@@ -191,7 +206,7 @@ describe('ProfileUser rendered', () => {
   async function mountAt(path) {
     const router = createRouter({
       history: createMemoryHistory(),
-      routes: [{
+      routes: [{ path: '/', name: 'start', component: { template: '<div class="start"></div>' } }, {
         path: '/account/:userId', name: 'account', component: ProfileUser, children: [
           { path: 'profile', name: 'accountProfile', component: ProfileTab },
           { path: 'preferences', name: 'accountPreferences', component: PreferencesTab }
@@ -239,5 +254,18 @@ describe('ProfileUser rendered', () => {
     expect(router.currentRoute.value.name).toBe('accountPreferences')
     expect(wrapper.findAll('li').map(li => li.text())).toEqual(['admin.preferences.title'])
     expect(wrapper.find('.tab').text()).toBe('preferences')
+  })
+
+  // Vue Router 4 has no router.app, which the page once read the signed-in user from (CIB7-2509)
+  it('leaves for the start page when the URL names another user', async () => {
+    AdminService.findUsers.mockResolvedValue([ADA])
+    const { wrapper, router } = await mountAt('/account/ada/profile')
+
+    await router.push('/account/bob/profile')
+    await flushPromises()
+
+    expect(router.currentRoute.value.name).toBe('start')
+    expect(wrapper.find('.start').exists()).toBe(true)
+    expect(AdminService.findUsers).not.toHaveBeenCalledWith({ id: 'bob' })
   })
 })

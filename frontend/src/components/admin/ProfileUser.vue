@@ -102,7 +102,7 @@ export default {
   },
   watch: {
     '$route.params.userId': function() {
-      if (!this.editMode && this.$route.params.userId !== this.$router.app.user.id) {
+      if (!this.editMode && this.$route.params.userId !== this.$root.user.id) {
         this.$router.push({ name: 'start' })
       } else {
         this.loadUser(this.$route.params.userId)
