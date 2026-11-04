@@ -89,12 +89,8 @@
             </div>
             <template v-else>
               <div class="col-4 p-3">
-                <b-input-group size="sm">
-                  <template #prepend>
-                    <b-button :title="$t('searches.search')" aria-hidden="true" size="sm" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
-                  </template>
-                  <label for="process-instances-search" class="visually-hidden">{{ $t('searches.search') }}</label>
-                  <b-form-input id="process-instances-search" :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="(evt) => onInput(evt.target.value.trim())"></b-form-input>
+                <div class="d-flex align-items-center">
+                  <SearchInput input-id="process-instances-search" size="sm" @update:model-value="value => onInput(value.trim())"/>
                   <b-button size="sm" variant="light" @click="$refs.sortModal.show()" class="ms-1 border"><span class="mdi mdi-sort" style="line-height: initial"></span></b-button>
                   <b-form-checkbox
                     v-model="unfinishedFilter"
@@ -104,7 +100,7 @@
                   >
                   {{ $t('process-instance.onlyUnfinished.title') }}
                   </b-form-checkbox>
-                </b-input-group>
+                </div>
               </div>
               <div v-if="selectedActivityId" class="col-3 p-3">
                 <RemovableBadge
@@ -210,12 +206,13 @@ import PluginSlot from '@/components/common/PluginSlot.vue'
 import DeepLinkButtons from '@/components/common-components/DeepLinkButtons.vue'
 import { getDeepLinkEntries } from '@/utils/deepLinks.js'
 import { mapGetters, mapActions } from 'vuex'
+import SearchInput from '@/components/common-components/SearchInput.vue'
 
 export default {
   name: 'ProcessInstancesView',
   components: { InstancesTable, JobDefinitionsTable, BpmnViewer, MultisortModal,
      SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable, CalledProcessDefinitionsTable,
-     ProcessInstancesTabs, ScrollableTabsContainer, ViewerFrame, RemovableBadge, DeepLinkFrame, DeepLinkButtons, PluginSlot },
+     ProcessInstancesTabs, ScrollableTabsContainer, ViewerFrame, RemovableBadge, DeepLinkFrame, DeepLinkButtons, PluginSlot, SearchInput },
   inject: ['loadProcesses', 'currentLanguage'],
   mixins: [permissionsMixin, navigationPermissionsMixin, resizerMixin, copyToClipboardMixin, tabUrlMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
   emits: ['task-selected', 'filter-instances', 'instance-deleted'],
