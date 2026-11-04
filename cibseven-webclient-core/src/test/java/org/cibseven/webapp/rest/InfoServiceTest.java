@@ -33,6 +33,7 @@ import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.providers.EngineProvider;
+import org.cibseven.webapp.providers.WebclientExtensions;
 import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -76,6 +77,40 @@ public class InfoServiceTest {
 
 		properties.getPlugins().setEnabled(true);
 		assertTrue(infoService.getConfig(null).get("pluginsEnabled").asBoolean());
+	}
+
+	private ObjectNode configWithEngineSwitch(Boolean engineSwitch, boolean modelerProperty) {
+		EngineConfiguration config = new EngineConfiguration("default", "full", true, false, -1, true);
+		config.setWebclientExtensionsEnabled(engineSwitch);
+		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
+		ReflectionTestUtils.setField(infoService, "webclientExtensions", new WebclientExtensions(bpmProvider));
+		properties.getModeler().setEnabled(modelerProperty);
+		return infoService.getConfig(null);
+	}
+
+	/** What the engine has switched off, the webclient property cannot switch on. */
+	@Test
+	public void testGetConfig_engineSwitchOff_keepsTheModelerOff() {
+		ObjectNode config = configWithEngineSwitch(false, true);
+
+		assertFalse(config.get("modelerEnabled").asBoolean());
+		assertFalse(config.get("webclientExtensionsEnabled").asBoolean());
+	}
+
+	@Test
+	public void testGetConfig_engineSwitchOn_leavesTheModelerToItsProperty() {
+		assertTrue(configWithEngineSwitch(true, true).get("modelerEnabled").asBoolean());
+		assertFalse(configWithEngineSwitch(true, false).get("modelerEnabled").asBoolean());
+		assertTrue(configWithEngineSwitch(true, false).get("webclientExtensionsEnabled").asBoolean());
+	}
+
+	/** Engines before 3.0 do not report it, which the frontend gets as null rather than a guess. */
+	@Test
+	public void testGetConfig_engineSwitchNotReported_leavesTheModelerToItsProperty() {
+		ObjectNode config = configWithEngineSwitch(null, true);
+
+		assertTrue(config.get("modelerEnabled").asBoolean());
+		assertTrue(config.get("webclientExtensionsEnabled").isNull());
 	}
 
 	@Test

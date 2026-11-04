@@ -22,6 +22,7 @@ import org.cibseven.webapp.auth.SevenUserProvider;
 import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.providers.IEngineProvider;
+import org.cibseven.webapp.providers.WebclientExtensions;
 import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.cibseven.webapp.rest.model.InfoVersion;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +64,10 @@ public class InfoService extends BaseService {
 
 	@Autowired
 	BpmProvider bpmProvider;
+
+	// Replaced by the bean; unknown until then, so a service built by hand works as before
+	@Autowired
+	WebclientExtensions webclientExtensions = WebclientExtensions.UNKNOWN;
 
 	@Operation(
 			summary = "Get info version",
@@ -142,7 +147,10 @@ public class InfoService extends BaseService {
 		configJson.put("historyTimeToLive", engineConfig.getHistoryTimeToLive());
 		configJson.put("enforceHistoryTimeToLive", engineConfig.getEnforceHistoryTimeToLive());
 
-		configJson.put("modelerEnabled", properties.getModeler().isEnabled());
+		// The engine switch comes first; it is also passed on as reported, null for unknown, so the
+		// frontend can tell a feature the engine has switched off from one the webclient has
+		configJson.put("modelerEnabled", webclientExtensions.enabled(properties.getModeler().isEnabled()));
+		configJson.put("webclientExtensionsEnabled", webclientExtensions.engineSwitch());
 		configJson.put("pluginsEnabled", properties.getPlugins().isEnabled());
 		configJson.put("startProcessDefaultFormEnabled", properties.getStartProcess().isDefaultFormEnabled());
 		

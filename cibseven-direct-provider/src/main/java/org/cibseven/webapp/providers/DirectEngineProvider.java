@@ -101,6 +101,7 @@ public class DirectEngineProvider implements IEngineProvider {
 			Integer historyTimeToLive = ParseUtil.parseHistoryTimeToLive(impl.getHistoryTimeToLive());
 			result.setHistoryTimeToLive(historyTimeToLive != null ? historyTimeToLive : -1);
 			result.setEnforceHistoryTimeToLive(impl.isEnforceHistoryTimeToLive());
+			result.setWebclientExtensionsEnabled(impl.isWebclientExtensionsEnabled());
 		}
 		return result;
 	}

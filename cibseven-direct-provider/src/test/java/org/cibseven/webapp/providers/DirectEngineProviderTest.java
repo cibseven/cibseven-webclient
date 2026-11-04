@@ -78,6 +78,16 @@ public class DirectEngineProviderTest {
 		assertThat(result.getHistoryTimeToLive()).isEqualTo(expected);
 	}
 
+	@ParameterizedTest
+	@CsvSource({"true", "false"})
+	void getEngineConfiguration_reportsWhetherTheEngineHasTheWebclientTables(boolean enabled) {
+		ProcessEngineConfigurationImpl config = mock(ProcessEngineConfigurationImpl.class);
+		when(config.isWebclientExtensionsEnabled()).thenReturn(enabled);
+		when(processEngine.getProcessEngineConfiguration()).thenReturn(config);
+
+		assertThat(provider.getEngineConfiguration("default").getWebclientExtensionsEnabled()).isEqualTo(enabled);
+	}
+
 	@Test
 	void getEngineConfiguration_engineNotFound_returnsNull() {
 		doReturn(null).when(directProviderUtil).getProcessEngine(any(String.class));
@@ -99,5 +109,6 @@ public class DirectEngineProviderTest {
 
 		assertThat(result.getHistoryTimeToLive()).isNull();
 		assertThat(result.getEnforceHistoryTimeToLive()).isNull();
+		assertThat(result.getWebclientExtensionsEnabled()).isNull();
 	}
 }

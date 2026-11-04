@@ -44,7 +44,9 @@ import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.auth.exception.AuthenticationException;
+import org.cibseven.webapp.exception.FeatureDisabledException;
 import org.cibseven.webapp.providers.BpmProvider;
+import org.cibseven.webapp.providers.WebclientExtensions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -63,6 +65,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -109,6 +112,32 @@ class ModelerServiceAuthorizationTest {
 		ReflectionTestUtils.setField(modelerService, "modelerAccessChecker", new ModelerAccessChecker(new AuthorizationChecker(bpmProvider)));
 
 		when(baseUserProvider.checkAuthorization(any(), anyBoolean())).thenReturn(USER);
+	}
+
+	/** The modeler's tables are not there, so the endpoints answer before reaching for them. */
+	@Test
+	void theModelerIsOffOnceTheEngineHasSwitchedTheWebclientTablesOff() {
+		WebclientExtensions extensions = mock(WebclientExtensions.class);
+		doThrow(new FeatureDisabledException("modeler")).when(extensions).require("modeler");
+		ReflectionTestUtils.setField(modelerService, "webclientExtensions", extensions);
+
+		assertThrows(FeatureDisabledException.class, () -> modelerService.getDiagrams(request, 0, 10, null, null));
+		assertThrows(FeatureDisabledException.class, () -> modelerService.delete("diagram-1", request));
+		verify(baseUserProvider, never()).checkAuthorization(any(), anyBoolean());
+		verify(dbProcessDiagramProvider, never()).getDiagrams(any(), any(), any(), anyInt(), anyInt());
+		verify(dbProcessDiagramProvider, never()).delete(any());
+	}
+
+	/** An engine that does not report the switch leaves the modeler as it was. */
+	@Test
+	void theModelerStaysOnWhileTheEngineDoesNotReportTheSwitch() {
+		modelerAccess(true);
+		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(null);
+		ReflectionTestUtils.setField(modelerService, "webclientExtensions", new WebclientExtensions(bpmProvider));
+
+		modelerService.getDiagrams(request, 0, 10, null, null);
+
+		verify(dbProcessDiagramProvider).getDiagrams(null, null, ProjectGuard.HiddenProjects.NONE, 0, 10);
 	}
 
 	@Test

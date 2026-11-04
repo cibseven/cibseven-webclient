@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cibseven.webapp.config.SevenWebclientProperties;
+import org.cibseven.webapp.providers.WebclientExtensions;
 import org.cibseven.persistence.CibsevenJpa;
 import org.cibseven.modeler.model.ElementTemplate;
 import org.cibseven.modeler.model.ElementTemplateOrigin;
@@ -55,6 +56,7 @@ public class ElementTemplateLoader implements InitializingBean {
 	private final SevenWebclientProperties.Modeler.Templates templates;
 	private final TransactionTemplate transactionTemplate;
 	private final ResourcePatternResolver resourcePatternResolver;
+	private final WebclientExtensions webclientExtensions;
 
 	/**
 	 * @param transactionManager the modeler's own transaction manager. An unqualified
@@ -64,12 +66,13 @@ public class ElementTemplateLoader implements InitializingBean {
 	public ElementTemplateLoader(ElementTemplateRepository elementTemplateRepository, ObjectMapper mapper,
 			SevenWebclientProperties properties,
 			@Qualifier(CibsevenJpa.TRANSACTION_MANAGER) PlatformTransactionManager transactionManager,
-			ResourcePatternResolver resourcePatternResolver) {
+			ResourcePatternResolver resourcePatternResolver, WebclientExtensions webclientExtensions) {
 		this.elementTemplateRepository = elementTemplateRepository;
 		this.mapper = mapper;
 		this.templates = properties.getModeler().getTemplates();
 		this.transactionTemplate = new TransactionTemplate(transactionManager);
 		this.resourcePatternResolver = resourcePatternResolver;
+		this.webclientExtensions = webclientExtensions;
 	}
 
 	@Override
@@ -81,8 +84,12 @@ public class ElementTemplateLoader implements InitializingBean {
 		// The MOD_ELEMENT_TEMPLATES table is created by the process engine (MyBatis), which
 		// runs outside the Spring context and cannot be ordered against this deployment. Wait
 		// for it to exist before loading; if it never appears, log and skip rather than failing
-		// the whole webclient deployment.
-		if (!awaitElementTemplatesTable()) {
+		// the whole webclient deployment. An engine that has switched the table off is not waited for.
+		if (switchedOffByEngine() || !awaitElementTemplatesTable()) {
+			if (switchedOffByEngine()) {
+				log.info("The engine has switched off the webclient tables; no element templates are loaded");
+				return;
+			}
 			log.error("Table MOD_ELEMENT_TEMPLATES is not available after {} attempt(s); "
 					+ "skipping element template loading for this startup. The webclient will start "
 					+ "without (re)loading element templates.", templates.getSchemaReadyMaxAttempts());
@@ -112,7 +119,7 @@ public class ElementTemplateLoader implements InitializingBean {
 			} catch (Exception e) {
 				log.info("Table MOD_ELEMENT_TEMPLATES not ready yet (attempt {}/{}): {}",
 						attempt, maxAttempts, e.getMessage());
-				if (attempt == maxAttempts) {
+				if (attempt == maxAttempts || switchedOffByEngine()) {
 					break;
 				}
 				try {
@@ -125,6 +132,11 @@ public class ElementTemplateLoader implements InitializingBean {
 			}
 		}
 		return false;
+	}
+
+	/** Asked afresh, as the engine may only answer once it has started. */
+	private boolean switchedOffByEngine() {
+		return Boolean.FALSE.equals(webclientExtensions.readEngineSwitch());
 	}
 
 	private void populateElementTemplatesDatabase() {

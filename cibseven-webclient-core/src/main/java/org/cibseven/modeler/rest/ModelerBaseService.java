@@ -20,6 +20,8 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.ModelerAccessChecker;
 import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.auth.exception.AuthenticationException;
+import org.cibseven.webapp.exception.FeatureDisabledException;
+import org.cibseven.webapp.providers.WebclientExtensions;
 import org.cibseven.webapp.rest.BaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -33,6 +35,10 @@ public abstract class ModelerBaseService extends BaseService {
 
 	@Autowired
 	protected ModelerAccessChecker modelerAccessChecker;
+
+	// Replaced by the bean; unknown until then, so a service built by hand works as before
+	@Autowired
+	protected WebclientExtensions webclientExtensions = WebclientExtensions.UNKNOWN;
 
 	/**
 	 * Authenticates the caller and verifies that it may use the modeler.
@@ -63,8 +69,11 @@ public abstract class ModelerBaseService extends BaseService {
 	 *
 	 * @return the calling user, never {@code null}
 	 * @throws AuthenticationException if the caller could not be authenticated
+	 * @throws FeatureDisabledException once the engine has switched off the webclient tables
 	 */
 	protected CIBUser checkModelerAuthentication(HttpServletRequest rq) {
+		// Before anything else: the modeler's tables are not there once the engine has switched them off
+		webclientExtensions.require("modeler");
 		CIBUser user = checkAuthorization(rq, true);
 		if (user == null) {
 			// The providers throw on bad credentials, but the contract does not promise a user:
