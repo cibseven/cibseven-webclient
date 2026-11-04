@@ -99,11 +99,12 @@ public class EngineConfiguration {
 
 	/**
 	 * Whether the engine has the webclient tables, which hold the modeler, the chat and the
-	 * notifications (engine property {@code webclientExtensionsEnabled}). Off, these features are
-	 * off, whatever the webclient's own properties say.
+	 * notifications. Without them these features are off, whatever the webclient's own properties
+	 * say. The engine creates them when its {@code webclientExtensionsEnabled} property is set, and
+	 * reports what is in its database: the version of the tables, none when they are not there.
 	 * <ul>
-	 *   <li>{@code true} / {@code false}: as the engine reports it. engine-rest reports the version
-	 *   of the tables instead, see {@link #readWebclientExtensionsVersion(String)}.</li>
+	 *   <li>{@code true} / {@code false}: the engine reports a version, or reports none. engine-rest
+	 *   sends the version itself, see {@link #readWebclientExtensionsVersion(String)}.</li>
 	 *   <li>{@code null}: <b>unknown</b>, the engine does not report it (engines before 3.0.0).</li>
 	 * </ul>
 	 * Boxed on purpose, see {@link #historyTimeToLive}.

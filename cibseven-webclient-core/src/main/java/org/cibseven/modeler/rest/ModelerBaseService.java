@@ -69,17 +69,17 @@ public abstract class ModelerBaseService extends BaseService {
 	 *
 	 * @return the calling user, never {@code null}
 	 * @throws AuthenticationException if the caller could not be authenticated
-	 * @throws FeatureDisabledException once the engine has switched off the webclient tables
+	 * @throws FeatureDisabledException once the engine reports the webclient tables as not there
 	 */
 	protected CIBUser checkModelerAuthentication(HttpServletRequest rq) {
-		// Before anything else: the modeler's tables are not there once the engine has switched them off
-		webclientExtensions.require("modeler");
 		CIBUser user = checkAuthorization(rq, true);
 		if (user == null) {
 			// The providers throw on bad credentials, but the contract does not promise a user:
 			// fail with 401 rather than dereferencing null further down.
 			throw new AuthenticationException("Authentication required");
 		}
+		// Before any data is read: the modeler's tables are not there without the engine's webclient tables
+		webclientExtensions.require("modeler");
 		return user;
 	}
 }

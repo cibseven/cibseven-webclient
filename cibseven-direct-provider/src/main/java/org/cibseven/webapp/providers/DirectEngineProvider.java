@@ -101,7 +101,14 @@ public class DirectEngineProvider implements IEngineProvider {
 			Integer historyTimeToLive = ParseUtil.parseHistoryTimeToLive(impl.getHistoryTimeToLive());
 			result.setHistoryTimeToLive(historyTimeToLive != null ? historyTimeToLive : -1);
 			result.setEnforceHistoryTimeToLive(impl.isEnforceHistoryTimeToLive());
-			result.setWebclientExtensionsEnabled(impl.isWebclientExtensionsEnabled());
+		}
+		// What is in the database, as engine-rest reports it: the version of the webclient tables,
+		// none when they are not there. An engine before 3.0.0 knows no such version, which leaves
+		// it unknown rather than failing the whole configuration.
+		try {
+			result.setWebclientExtensionsEnabled(config.getWebclientExtensionsVersion() != null);
+		} catch (LinkageError e) {
+			result.setWebclientExtensionsEnabled(null);
 		}
 		return result;
 	}

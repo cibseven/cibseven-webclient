@@ -123,9 +123,19 @@ class ModelerServiceAuthorizationTest {
 
 		assertThrows(FeatureDisabledException.class, () -> modelerService.getDiagrams(request, 0, 10, null, null));
 		assertThrows(FeatureDisabledException.class, () -> modelerService.delete("diagram-1", request));
-		verify(baseUserProvider, never()).checkAuthorization(any(), anyBoolean());
 		verify(dbProcessDiagramProvider, never()).getDiagrams(any(), any(), any(), anyInt(), anyInt());
 		verify(dbProcessDiagramProvider, never()).delete(any());
+	}
+
+	/** A caller that is not logged in learns nothing more, and makes the webclient ask the engine for nothing. */
+	@Test
+	void anUnauthenticatedCallerIsRejectedBeforeTheSwitchIsAsked() {
+		WebclientExtensions extensions = mock(WebclientExtensions.class);
+		ReflectionTestUtils.setField(modelerService, "webclientExtensions", extensions);
+		when(baseUserProvider.checkAuthorization(any(), anyBoolean())).thenReturn(null);
+
+		assertThrows(AuthenticationException.class, () -> modelerService.getDiagrams(request, 0, 10, null, null));
+		verify(extensions, never()).require(any());
 	}
 
 	/** An engine that does not report the switch leaves the modeler as it was. */

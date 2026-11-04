@@ -34,7 +34,7 @@ class FolderProjectFillTest {
 
 	@Test
 	void storesTheProjectsOfTheFoldersOnStart() {
-		when(extensions.readEngineSwitch()).thenReturn(null);
+		when(extensions.switchedOffNow()).thenReturn(false);
 		when(folders.fillProjects()).thenReturn(3).thenReturn(0);
 
 		fill.fill();
@@ -46,7 +46,7 @@ class FolderProjectFillTest {
 	/** The engine may not have created the table yet; the webclient starts all the same. */
 	@Test
 	void letsTheStartGoOnWhenTheFoldersCannotBeRead() {
-		when(extensions.readEngineSwitch()).thenReturn(true);
+		when(extensions.switchedOffNow()).thenReturn(false);
 		when(folders.fillProjects()).thenThrow(new IllegalStateException("MOD_FOLDERS not found"));
 
 		assertThatCode(fill::fill).doesNotThrowAnyException();
@@ -55,7 +55,7 @@ class FolderProjectFillTest {
 	/** Without the webclient tables there are no folders to read. */
 	@Test
 	void leavesTheFoldersAloneOnceTheEngineHasSwitchedTheTablesOff() {
-		when(extensions.readEngineSwitch()).thenReturn(false);
+		when(extensions.switchedOffNow()).thenReturn(true);
 
 		fill.fill();
 

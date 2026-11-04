@@ -20,15 +20,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
+import javax.sql.DataSource;
+
 import org.cibseven.webapp.exception.FeatureDisabledException;
 import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.ObjectProvider;
 
 class WebclientExtensionsTest {
 
@@ -106,9 +111,9 @@ class WebclientExtensionsTest {
 		assertThat(asked).hasValue(2);
 	}
 
-	/** It may not be up yet; the features behave as before until it answers. */
+	/** It may not be up yet: the features behave as before, and it is asked again a minute later, not on every call. */
 	@Test
-	void asksAnEngineThatCannotBeReachedAgainNextTime() {
+	void asksAnEngineThatCannotBeReachedAgainAMinuteLater() {
 		AtomicInteger calls = new AtomicInteger();
 		WebclientExtensions extensions = asking(() -> {
 			if (calls.incrementAndGet() == 1) {
@@ -120,8 +125,59 @@ class WebclientExtensionsTest {
 		});
 
 		assertThat(extensions.engineSwitch()).isNull();
+		assertThat(extensions.enabled(true)).isTrue();
+		assertThat(asked).hasValue(1);
+
+		now.addAndGet(WebclientExtensions.KEPT_MILLIS);
 		assertThat(extensions.enabled(true)).isFalse();
 		assertThat(asked).hasValue(2);
+	}
+
+	/** An engine that goes down for a while does not switch the features back on. */
+	@Test
+	void keepsTheLastAnswerWhileTheEngineCannotBeReached() {
+		AtomicInteger calls = new AtomicInteger();
+		WebclientExtensions extensions = asking(() -> {
+			if (calls.incrementAndGet() > 1) {
+				throw new IllegalStateException("connection refused");
+			}
+			EngineConfiguration configuration = new EngineConfiguration();
+			configuration.setWebclientExtensionsEnabled(false);
+			return configuration;
+		});
+
+		assertThat(extensions.switchedOff()).isTrue();
+		now.addAndGet(WebclientExtensions.KEPT_MILLIS);
+		assertThat(extensions.switchedOff()).isTrue();
+		assertThat(extensions.switchedOffNow()).isTrue();
+		assertThat(asked).hasValue(3);
+	}
+
+	/** Tables in a database of their own are none of the engine's business. */
+	@Test
+	void leavesTheFeaturesToTheirPropertiesWhenTheTablesHaveADatabaseOfTheirOwn() {
+		BpmProvider bpmProvider = mock(BpmProvider.class);
+		@SuppressWarnings("unchecked")
+		ObjectProvider<DataSource> ownDataSource = mock(ObjectProvider.class);
+		when(ownDataSource.getIfAvailable()).thenReturn(mock(DataSource.class));
+
+		WebclientExtensions extensions = new WebclientExtensions(bpmProvider, ownDataSource);
+
+		assertThat(extensions.engineSwitch()).isNull();
+		assertThat(extensions.enabled(true)).isTrue();
+		verify(bpmProvider, never()).getEffectiveDefaultEngineConfiguration();
+	}
+
+	@Test
+	void asksTheDefaultEngineWhenTheTablesShareItsDatabase() {
+		BpmProvider bpmProvider = mock(BpmProvider.class);
+		EngineConfiguration configuration = new EngineConfiguration();
+		configuration.setWebclientExtensionsEnabled(false);
+		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(configuration);
+		@SuppressWarnings("unchecked")
+		ObjectProvider<DataSource> ownDataSource = mock(ObjectProvider.class);
+
+		assertThat(new WebclientExtensions(bpmProvider, ownDataSource).switchedOff()).isTrue();
 	}
 
 	@Test

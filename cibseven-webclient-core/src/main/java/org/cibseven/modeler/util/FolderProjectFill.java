@@ -55,8 +55,8 @@ public class FolderProjectFill {
 	 */
 	@EventListener(ApplicationReadyEvent.class)
 	public void fill() {
-		if (Boolean.FALSE.equals(webclientExtensions.readEngineSwitch())) {
-			log.info("The engine has switched off the webclient tables; the modeler is off");
+		if (webclientExtensions.switchedOffNow()) {
+			log.info("The engine has no webclient tables; the modeler is off");
 			return;
 		}
 		try {
@@ -65,8 +65,10 @@ public class FolderProjectFill {
 				log.info("Stored the project of {} modeler folder(s)", filled);
 			}
 		} catch (RuntimeException e) {
+			// Most often a table the engine has not created, which needs no stack trace to explain
 			log.warn("Could not store the project of the modeler folders; lists may not leave out "
-				+ "the models of hidden projects in them until the next start", e);
+				+ "the models of hidden projects in them until the next start: {}", e.getMessage());
+			log.debug("Storing the project of the modeler folders failed", e);
 		}
 	}
 }
