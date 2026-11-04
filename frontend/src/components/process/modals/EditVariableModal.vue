@@ -72,7 +72,7 @@ props: {
   computed: {
     historyLevel() {
       // keep 'config?' for proper unit tests run
-      return this.$root.config?.camundaHistoryLevel || 'full'
+      return this.$root.config?.camundaHistoryLevel || 'audit'
     },
     computedDisabled() {
       return this.effectiveHistoric || this.disabled

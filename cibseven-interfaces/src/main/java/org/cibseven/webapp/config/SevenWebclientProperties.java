@@ -82,7 +82,7 @@ public class SevenWebclientProperties {
 	/**
 	 * History level reported to the frontend when the engine does not expose its configuration,
 	 * i.e. engine-rest versions before 2.2.0 (audit, full, activity, none). Newer engines report
-	 * their own history level.
+	 * their own history level. Defaults to {@code audit}, the engine default.
 	 */
 	private String historyLevel = EngineConfiguration.DEFAULT_HISTORY_LEVEL;
 
