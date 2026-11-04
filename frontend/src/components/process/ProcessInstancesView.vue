@@ -335,10 +335,10 @@ export default {
     },
     // Runtime statistics ignore the filter; neither `unfinished` nor an active selected activity narrow its tokens
     isUnfiltered() {
-      const ignored = ['unfinished', 'activityIdIn', 'activeOrExecutedActivityIdIn']
+      const ignored = this.selectedActivityId ? ['unfinished', 'activityIdIn', 'activeOrExecutedActivityIdIn'] : ['unfinished']
       return Object.entries(this.computedFilter)
         .filter(([key]) => !ignored.includes(key))
-        .every(([, value]) => (value ?? '').length === 0)
+        .every(([, value]) => value === false || (value ?? '').length === 0)
     },
     useRuntimeStats() {
       return this.isUnfiltered && !this.selectedActivityId
@@ -395,7 +395,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'setDiagramXml', 'clearHistoricActivityStatistics','loadHistoricActivityStatisticsForInstances', 'setStatistics']),
+    ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'setDiagramXml', 'clearHistoricActivityStatistics','loadHistoricActivityStatisticsForInstances', 'loadStatistics']),
     ...mapActions('calledProcessDefinitions', ['loadStaticCalledProcessDefinitions']),
     applySorting: function(sortingCriteria) {
       this.sorting = true
@@ -481,13 +481,8 @@ export default {
      syncStatisticsWithInstances: function(filter) {
       if (!this.process?.id) return
       this.loadHistoricActivityStatisticsForInstances({ processDefinitionId: this.process.id, filter})
-      this.reloadRuntimeStatistics()
-    },
-    // Running tokens and open incidents come from runtime, so they must refresh together with history
-    async reloadRuntimeStatistics() {
-      const process = this.process
-      const statistics = await ProcessService.findProcessStatistics(process.id)
-      this.setStatistics({ process, statistics })
+      // Running tokens and open incidents come from runtime, so they must refresh together with history
+      this.loadStatistics(this.process)
     },
     onInput: debounce(800, function(freeText) {
       this.$emit('filter-instances', {

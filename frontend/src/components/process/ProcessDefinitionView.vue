@@ -372,9 +372,7 @@ export default {
       }
     },
     async loadStatistics() {
-      await ProcessService.findProcessStatistics(this.process.id).then(statistics => {
-        this.$store.dispatch('setStatistics', { process: this.process, statistics: statistics })
-      })
+      await this.$store.dispatch('loadStatistics', this.process)
     },
     async onInstanceDeleted() {
       await this.setSelectedInstance({ selectedInstance: null })

@@ -14,59 +14,27 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import ProcessInstancesView from '@/components/process/ProcessInstancesView.vue'
-import { ProcessService } from '@/services.js'
-
-vi.mock('@/services.js', async (importOriginal) => ({
-  ...(await importOriginal()),
-  ProcessService: { findProcessStatistics: vi.fn() }
-}))
 
 describe('ProcessInstancesView', () => {
   describe('syncStatisticsWithInstances', () => {
-    const viewContext = (process) => {
-      const ctx = {
-        process,
-        loadHistoricActivityStatisticsForInstances: vi.fn(),
-        setStatistics: vi.fn()
-      }
-      ctx.reloadRuntimeStatistics = ProcessInstancesView.methods.reloadRuntimeStatistics.bind(ctx)
-      return ctx
-    }
+    const viewContext = (process) => ({
+      process,
+      loadHistoricActivityStatisticsForInstances: vi.fn(),
+      loadStatistics: vi.fn()
+    })
     const sync = (ctx, filter) => ProcessInstancesView.methods.syncStatisticsWithInstances.call(ctx, filter)
 
-    beforeEach(() => {
-      ProcessService.findProcessStatistics.mockReset()
-    })
-
     // The diagram reads running tokens from runtime, so they must not go stale while history refreshes
-    it('reloads the runtime statistics together with the filtered history', async () => {
+    it('reloads the runtime statistics together with the filtered history', () => {
       const process = { id: 'pd-1' }
-      const statistics = [{ id: 'Fail', instances: 3 }]
-      ProcessService.findProcessStatistics.mockResolvedValue(statistics)
       const ctx = viewContext(process)
 
       sync(ctx, { unfinished: true })
-      await vi.waitFor(() => expect(ctx.setStatistics).toHaveBeenCalled())
 
       expect(ctx.loadHistoricActivityStatisticsForInstances).toHaveBeenCalledWith({ processDefinitionId: 'pd-1', filter: { unfinished: true } })
-      expect(ProcessService.findProcessStatistics).toHaveBeenCalledWith('pd-1')
-      expect(ctx.setStatistics).toHaveBeenCalledWith({ process, statistics })
-    })
-
-    it('stores the statistics on the process they were requested for', async () => {
-      const first = { id: 'pd-1' }
-      let resolve
-      ProcessService.findProcessStatistics.mockReturnValue(new Promise(r => { resolve = r }))
-      const ctx = viewContext(first)
-
-      sync(ctx, {})
-      ctx.process = { id: 'pd-2' }
-      resolve([])
-      await vi.waitFor(() => expect(ctx.setStatistics).toHaveBeenCalled())
-
-      expect(ctx.setStatistics).toHaveBeenCalledWith({ process: first, statistics: [] })
+      expect(ctx.loadStatistics).toHaveBeenCalledWith(process)
     })
 
     it('loads nothing without a process', () => {
@@ -75,7 +43,7 @@ describe('ProcessInstancesView', () => {
       sync(ctx, {})
 
       expect(ctx.loadHistoricActivityStatisticsForInstances).not.toHaveBeenCalled()
-      expect(ProcessService.findProcessStatistics).not.toHaveBeenCalled()
+      expect(ctx.loadStatistics).not.toHaveBeenCalled()
     })
   })
 
@@ -103,13 +71,15 @@ describe('ProcessInstancesView', () => {
   })
 
   describe('isUnfiltered', () => {
-    const unfiltered = (computedFilter) => ProcessInstancesView.computed.isUnfiltered.call({ computedFilter })
+    const unfiltered = (computedFilter, selectedActivityId = 'Fail') =>
+      ProcessInstancesView.computed.isUnfiltered.call({ computedFilter, selectedActivityId })
 
     it.each([
       ['an empty filter', {}],
       ['only the unfinished switch on', { unfinished: true }],
       ['the unfinished switch off', { unfinished: undefined }],
-      ['empty values', { editField: '', processInstanceIds: [], businessKey: null }]
+      ['empty values', { editField: '', processInstanceIds: [], businessKey: null }],
+      ['a switched off flag', { variableNamesIgnoreCase: false }]
     ])('is unfiltered with %s', (_, filter) => {
       expect(unfiltered(filter)).toBe(true)
     })
@@ -130,6 +100,14 @@ describe('ProcessInstancesView', () => {
       ['a selected activity and a text search', { activityIdIn: ['Fail'], editField: 'abc' }]
     ])('is filtered with %s', (_, filter) => {
       expect(unfiltered(filter)).toBe(false)
+    })
+
+    // Typed in the search box, without a diagram selection, they narrow the instance list
+    it.each([
+      ['activityIdIn', { activityIdIn: ['Fail'] }],
+      ['activeOrExecutedActivityIdIn', { activeOrExecutedActivityIdIn: ['Fail'] }]
+    ])('is filtered with a searched %s and no selected activity', (_, filter) => {
+      expect(unfiltered(filter, null)).toBe(false)
     })
   })
 

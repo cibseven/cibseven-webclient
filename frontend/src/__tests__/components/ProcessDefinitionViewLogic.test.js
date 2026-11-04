@@ -391,16 +391,12 @@ describe('ProcessDefinitionView - statistics placeholders', () => {
     expect(vm.processDefinitions[0].runningInstances).toBe(5)
   })
 
-  it('loadStatistics should publish the statistics for the loaded definition', async () => {
+  it('loadStatistics should load the statistics for the loaded definition', async () => {
     const vm = context({ process: version() })
-    ProcessService.findProcessStatistics.mockResolvedValue([{ id: 'task_1' }])
 
     await m.loadStatistics.call(vm)
 
-    expect(ProcessService.findProcessStatistics).toHaveBeenCalledWith('pd:2:abc')
-    expect(vm.$store.dispatch).toHaveBeenCalledWith('setStatistics', {
-      process: vm.process, statistics: [{ id: 'task_1' }]
-    })
+    expect(vm.$store.dispatch).toHaveBeenCalledWith('loadStatistics', vm.process)
   })
 })
 

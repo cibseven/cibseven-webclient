@@ -17,6 +17,8 @@
 
 import { ProcessService, HistoryService } from '@/services.js'
 
+const statisticsRequests = {}
+
 const ProcessStore = {
   state: { list: [], historicActivityStatistics: {} },
   getters: {
@@ -79,6 +81,12 @@ const ProcessStore = {
     },
     setStatistics: function(ctx, params) {
       ctx.commit('setStatistics', { process: params.process, statistics: params.statistics })
+    },
+    async loadStatistics({ commit }, process) {
+      const request = statisticsRequests[process.id] = ProcessService.findProcessStatistics(process.id)
+      const statistics = await request.catch(() => null)
+      if (statistics && statisticsRequests[process.id] === request) 
+        commit('setStatistics', { process, statistics })
     },
     clearHistoricActivityStatistics: function({ commit }, key) {
       commit('clearHistoricActivityStatistics', key)
