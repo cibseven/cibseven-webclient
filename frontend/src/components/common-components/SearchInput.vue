@@ -33,9 +33,10 @@
       :type="type"
       :placeholder="placeholder || computedLabel"
       :title="computedLabel"
-      :value="modelValue"
+      :value="currentValue"
       :disabled="disabled"
       :autocomplete="autocomplete"
+      :list="list"
       :aria-describedby="describedBy || null"
       @input="onInput"
       @keydown.enter="onEnter"
@@ -62,6 +63,8 @@ export default {
     type: { type: String, default: 'text' },
     autocomplete: { type: String, default: null },
     describedBy: { type: String, default: '' },
+    // Id of a <datalist> with suggestions
+    list: { type: String, default: null },
     // Renders the magnifier as a button that triggers the same 'search' action as pressing Enter.
     // Without it the magnifier is decorative only and not focusable.
     searchButton: { type: Boolean, default: false },
@@ -70,6 +73,16 @@ export default {
       type: String,
       default: 'md',
       validator: value => ['sm', 'md', 'lg'].includes(value)
+    }
+  },
+  // The typed text lives here, so a re-render never writes it back: not when no modelValue is bound,
+  // and not when the trim modifier hands back "order" for "order "
+  data() {
+    return { currentValue: this.modelValue }
+  },
+  watch: {
+    modelValue(value) {
+      if (value !== this.normalize(this.currentValue)) this.currentValue = value
     }
   },
   computed: {
@@ -91,7 +104,8 @@ export default {
       return this.modelModifiers.trim ? value.trim() : value
     },
     onInput(event) {
-      this.$emit('update:modelValue', this.normalize(event.target.value))
+      this.currentValue = event.target.value
+      this.$emit('update:modelValue', this.normalize(this.currentValue))
     },
     onSearch() {
       this.$emit('search', this.normalize(this.$refs.input.value))

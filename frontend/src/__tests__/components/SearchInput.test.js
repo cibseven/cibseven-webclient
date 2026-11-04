@@ -134,6 +134,51 @@ describe('SearchInput', () => {
       expect(wrapper.emitted('update:modelValue')).toEqual([['abcd']])
     })
 
+    // Callers that only listen to update:modelValue (incidents, process instances, decision instances)
+    it('keeps the typed text over a re-render when no modelValue is bound', async () => {
+      wrapper = mountSearch()
+      const input = wrapper.find('input')
+      await input.setValue('order')
+
+      await wrapper.setProps({ label: 'Filtern...' })
+
+      expect(wrapper.find('input').attributes('placeholder')).toBe('Filtern...')
+      expect(input.element.value).toBe('order')
+    })
+
+    // v-model.trim hands back "order" for "order ": the space being typed must stay in the field
+    it('keeps a trailing space while the trimmed value comes back through v-model', async () => {
+      wrapper = mountSearch({ modelValue: '', modelModifiers: { trim: true } })
+      const input = wrapper.find('input')
+      await input.setValue('order ')
+      expect(wrapper.emitted('update:modelValue')).toEqual([['order']])
+
+      await wrapper.setProps({ modelValue: 'order' })
+      await wrapper.setProps({ label: 'Filter...' })
+
+      expect(input.element.value).toBe('order ')
+    })
+
+    it('shows a value the parent sets, such as a cleared filter', async () => {
+      wrapper = mountSearch({ modelValue: 'order' })
+      const input = wrapper.find('input')
+      await input.setValue('orders')
+      await wrapper.setProps({ modelValue: 'orders' })
+
+      await wrapper.setProps({ modelValue: '' })
+
+      expect(input.element.value).toBe('')
+    })
+
+    it('links a datalist with suggestions only when one is given', () => {
+      wrapper = mountSearch({ list: 'task-names' })
+      expect(wrapper.find('input').attributes('list')).toBe('task-names')
+
+      wrapper.unmount()
+      wrapper = mountSearch()
+      expect(wrapper.find('input').attributes('list')).toBeUndefined()
+    })
+
     it('focus() focuses the inner input', () => {
       wrapper = mountSearch({}, { attachTo: document.body })
       wrapper.vm.focus()
