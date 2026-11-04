@@ -21,13 +21,7 @@
     <div class="container pt-4">
       <div class="row align-items-center pb-2">
         <div class="col-4">
-          <b-input-group size="sm">
-            <template #prepend>
-              <b-button :title="$t('searches.search')" aria-hidden="true" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
-            </template>
-            <label for="admin-users-search" class="visually-hidden">{{ $t('searches.search') }}</label>
-            <b-form-input id="admin-users-search" :title="$t('searches.search')" :placeholder="$t('searches.search')" v-model.trim="filter"></b-form-input>
-          </b-input-group>
+          <SearchInput input-id="admin-users-search" size="sm" v-model.trim="filter"/>
         </div>
         <div class="col-8 text-end">
           <b-button class="me-1" size="sm" variant="secondary" v-if="$root.config.userEditable" @click="add()">
@@ -85,10 +79,11 @@ import { debounce } from '@/utils/debounce.js'
 import { getStringObjByKeys } from '@/components/admin/utils.js'
 import { FlowTable, TaskPopper, ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
+import SearchInput from '@/components/common-components/SearchInput.vue'
 
 export default {
   name: 'AdminUsers',
-  components: { FlowTable, TaskPopper, BWaitingBox, ConfirmDialog, CellActionButton },
+  components: { FlowTable, TaskPopper, BWaitingBox, ConfirmDialog, CellActionButton, SearchInput },
   data: function () {
     return {
       selected: null,
