@@ -259,6 +259,30 @@ public class DirectDecisionProviderTest {
 	}
 
 	@Test
+	void getDecisionVersionsByKey_listsTheVersionsOfATenantsDecision() {
+		// CIB7-2425: the key alone must find a decision that is deployed only for a tenant
+		DecisionDefinition definition = mockDefinition("dec-1", "risk", "Risk rating");
+		when(definition.getTenantId()).thenReturn("tenant-a");
+		when(definitionQuery.unlimitedList()).thenReturn(List.of(definition));
+
+		Collection<Decision> decisions = decisionProvider.getDecisionVersionsByKey("risk", Optional.of(true), user);
+
+		assertThat(decisions).extracting(Decision::getTenantId).containsExactly("tenant-a");
+		verify(definitionQuery).decisionDefinitionKey("risk");
+		verify(definitionQuery, Mockito.never()).withoutTenantId();
+		verify(definitionQuery, Mockito.never()).tenantIdIn(any());
+	}
+
+	@Test
+	void getDecisionVersionsByKey_throwsWhenNothingMatches() {
+		when(definitionQuery.unlimitedList()).thenReturn(List.of());
+
+		assertThatThrownBy(() -> decisionProvider.getDecisionVersionsByKey("missing", Optional.of(true), user))
+			.isInstanceOf(SystemException.class)
+			.hasMessageEndingWith("No matching decision definition with key: missing");
+	}
+
+	@Test
 	void getDecisionVersionsByKey_skipsTheInstanceCountWhenLazy() {
 		DecisionDefinition definition = mockDefinition("dec-1", "risk", "Risk rating");
 		when(definitionQuery.unlimitedList()).thenReturn(List.of(definition));
