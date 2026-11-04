@@ -466,7 +466,7 @@ export default {
             : historyStat?.instances ?? (stat.instances || 0),
           finished: historyStat?.finished || 0,
           canceled: historyStat?.canceled || 0,
-          openIncidents: stat.incidents?.reduce((sum, inc) => sum + (inc.incidentCount || 0), 0) || 0,
+          openIncidents: this.countRuntimeIncidents(stat),
           resolvedIncidents: historyStat?.resolvedIncidents || 0,
           deletedIncidents: historyStat?.deletedIncidents || 0
         }
@@ -489,12 +489,16 @@ export default {
         if (!stat) return hs
         return { ...hs, instances: hs.id === this.runtimeActivityId ? (stat.instances || 0) : hs.instances ?? stat.instances }
       })
-      // Tokens waiting in an async job of the selected activity have no history entry yet
+      // Tokens waiting in an async job of the selected activity have no history entry yet;
+      // runtimeActivityId is only set unfiltered, so its runtime incidents can be trusted
       const selected = this.statistics?.find(s => s.id === this.runtimeActivityId)
       if (selected && !historyStatistics.some(hs => hs.id === selected.id)) {
-        merged.push({ id: selected.id, instances: selected.instances || 0, finished: 0, canceled: 0, openIncidents: 0, resolvedIncidents: 0, deletedIncidents: 0 })
+        merged.push({ id: selected.id, instances: selected.instances || 0, finished: 0, canceled: 0, openIncidents: this.countRuntimeIncidents(selected), resolvedIncidents: 0, deletedIncidents: 0 })
       }
       return merged
+    },
+    countRuntimeIncidents: function(stat) {
+      return stat.incidents?.reduce((sum, inc) => sum + (inc.incidentCount || 0), 0) || 0
     },
     drawActivityBadges: function(stat, elementRegistry) {
       const element = elementRegistry.get(stat.id)

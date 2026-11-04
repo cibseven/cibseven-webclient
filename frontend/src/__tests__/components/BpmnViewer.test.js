@@ -471,12 +471,21 @@ describe('BpmnViewer - useRuntimeStats', () => {
       expect(byId(merged, 'Wait')).toMatchObject({ instances: 1 })
     })
 
-    it('appends the selected activity when history has no entry for it with history level full', () => {
+    // The failed job that keeps the token waiting is an open incident, and runtime is unfiltered here
+    it('appends the selected activity with its runtime incidents when history has no entry for it with history level full', () => {
       const merged = full(selected(), historyStatistics.filter(hs => hs.id !== 'Fail'))
 
       expect(byId(merged, 'Fail')).toEqual({
-        id: 'Fail', instances: 3, finished: 0, canceled: 0, openIncidents: 0, resolvedIncidents: 0, deletedIncidents: 0
+        id: 'Fail', instances: 3, finished: 0, canceled: 0, openIncidents: 3, resolvedIncidents: 0, deletedIncidents: 0
       })
+    })
+
+    it('appends the selected activity without open incidents when runtime reports none', () => {
+      const vm = viewerContext({ statistics: runtimeStatistics, runtimeActivityId: 'Wait' })
+
+      const merged = full(vm, historyStatistics.filter(hs => hs.id !== 'Wait'))
+
+      expect(byId(merged, 'Wait')).toMatchObject({ instances: 2, openIncidents: 0 })
     })
 
     it('appends nothing when runtime does not know the selected activity', () => {

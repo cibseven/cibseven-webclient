@@ -85,8 +85,9 @@ const ProcessStore = {
     async loadStatistics({ commit }, process) {
       const request = statisticsRequests[process.id] = ProcessService.findProcessStatistics(process.id)
       const statistics = await request.catch(() => null)
-      if (statistics && statisticsRequests[process.id] === request) 
+      if (statistics && statisticsRequests[process.id] === request) {
         commit('setStatistics', { process, statistics })
+      }
     },
     clearHistoricActivityStatistics: function({ commit }, key) {
       commit('clearHistoricActivityStatistics', key)
