@@ -44,6 +44,7 @@
       <component :is="BpmnViewerPlugin" v-if="BpmnViewerPlugin" ref="diagram" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
         @viewbox-changed="onViewboxChanged"
         :process-definition-id="process.id" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
+        :use-runtime-stats="useRuntimeStats" :runtime-activity-id="runtimeActivityId"
         :active-tab="activeTab" class="h-100">
       </component>
       <BpmnViewer v-else ref="diagram"
@@ -51,6 +52,8 @@
         :activity-instance="activityInstance"
         :activity-instance-history="activityInstanceHistory"
         :statistics="process.statistics"
+        :use-runtime-stats="useRuntimeStats"
+        :runtime-activity-id="runtimeActivityId"
         :selected-instance="null"
         :active-tab="activeTab"
         @task-selected="selectTask($event)"
@@ -327,6 +330,19 @@ export default {
 
       return result
     },
+    // Runtime statistics ignore the filter; neither `unfinished` nor an active selected activity narrow its tokens
+    isUnfiltered() {
+      const ignored = this.selectedActivityId ? ['unfinished', 'activityIdIn', 'activeOrExecutedActivityIdIn'] : ['unfinished']
+      return Object.entries(this.computedFilter)
+        .filter(([key]) => !ignored.includes(key))
+        .every(([, value]) => value === false || (value ?? '').length === 0)
+    },
+    useRuntimeStats() {
+      return this.isUnfiltered && !this.selectedActivityId
+    },
+    runtimeActivityId() {
+      return this.isUnfiltered ? this.selectedActivityId : null
+    },
     ProcessActionsPlugin: function() {
       return this.$options.components && this.$options.components.ProcessActionsPlugin
         ? this.$options.components.ProcessActionsPlugin
@@ -376,7 +392,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'setDiagramXml', 'clearHistoricActivityStatistics','loadHistoricActivityStatisticsForInstances']),
+    ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'setDiagramXml', 'clearHistoricActivityStatistics','loadHistoricActivityStatisticsForInstances', 'loadStatistics']),
     ...mapActions('calledProcessDefinitions', ['loadStaticCalledProcessDefinitions']),
     applySorting: function(sortingCriteria) {
       this.sorting = true
@@ -462,6 +478,8 @@ export default {
      syncStatisticsWithInstances: function(filter) {
       if (!this.process?.id) return
       this.loadHistoricActivityStatisticsForInstances({ processDefinitionId: this.process.id, filter})
+      // Running tokens and open incidents come from runtime, so they must refresh together with history
+      this.loadStatistics(this.process)
     },
     onInput: debounce(800, function(freeText) {
       this.$emit('filter-instances', {

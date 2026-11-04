@@ -391,16 +391,12 @@ describe('ProcessDefinitionView - statistics placeholders', () => {
     expect(vm.processDefinitions[0].runningInstances).toBe(5)
   })
 
-  it('loadStatistics should publish the statistics for the loaded definition', async () => {
+  it('loadStatistics should load the statistics for the loaded definition', async () => {
     const vm = context({ process: version() })
-    ProcessService.findProcessStatistics.mockResolvedValue([{ id: 'task_1' }])
 
     await m.loadStatistics.call(vm)
 
-    expect(ProcessService.findProcessStatistics).toHaveBeenCalledWith('pd:2:abc')
-    expect(vm.$store.dispatch).toHaveBeenCalledWith('setStatistics', {
-      process: vm.process, statistics: [{ id: 'task_1' }]
-    })
+    expect(vm.$store.dispatch).toHaveBeenCalledWith('loadStatistics', vm.process)
   })
 })
 
@@ -416,12 +412,21 @@ describe('ProcessDefinitionView - loadProcessVersion', () => {
     expect(vm.loadStatistics).not.toHaveBeenCalled()
   })
 
-  it('should load statistics when the version has none yet', async () => {
-    const vm = context({ findProcessAndAssignData: vi.fn(), loadStatistics: vi.fn() })
+  it('should load statistics when the version has none yet and an instance is shown', async () => {
+    const vm = context({ instanceId: 'pi-1', findProcessAndAssignData: vi.fn(), loadStatistics: vi.fn() })
 
     await m.loadProcessVersion.call(vm, version())
 
     expect(vm.loadStatistics).toHaveBeenCalled()
+  })
+
+  // ProcessInstancesView loads them with its instances; loading here too doubled the request
+  it('should leave statistics to the instances view when no instance is shown', async () => {
+    const vm = context({ findProcessAndAssignData: vi.fn(), loadStatistics: vi.fn() })
+
+    await m.loadProcessVersion.call(vm, version())
+
+    expect(vm.loadStatistics).not.toHaveBeenCalled()
   })
 
   // Arriving from a call activity, the parent is shown as a breadcrumb.

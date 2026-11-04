@@ -230,7 +230,7 @@ public class DirectProcessProviderHistoryTest {
 
 	@Test
 	void findProcessStatistics_mapsTheActivityStatistics() {
-		ActivityStatisticsQuery query = mock(ActivityStatisticsQuery.class);
+		ActivityStatisticsQuery query = mock(ActivityStatisticsQuery.class, RETURNS_SELF);
 		when(managementService.createActivityStatisticsQuery("id-1")).thenReturn(query);
 		ActivityStatistics statistics = mock(ActivityStatistics.class);
 		when(statistics.getId()).thenReturn("serviceTask");
@@ -244,9 +244,22 @@ public class DirectProcessProviderHistoryTest {
 			.containsExactly("serviceTask", 3L);
 	}
 
+	// The REST provider asks for ?failedJobs=true&incidents=true, so the direct provider must too
+	@Test
+	void findProcessStatistics_includesFailedJobsAndIncidents() {
+		ActivityStatisticsQuery query = mock(ActivityStatisticsQuery.class, RETURNS_SELF);
+		when(managementService.createActivityStatisticsQuery("id-1")).thenReturn(query);
+		when(query.unlimitedList()).thenReturn(List.of());
+
+		processProvider.findProcessStatistics("id-1", user);
+
+		verify(query).includeFailedJobs();
+		verify(query).includeIncidents();
+	}
+
 	@Test
 	void findProcessStatistics_returnsEmptyWhenTheProcessHasNoActivityStatistics() {
-		ActivityStatisticsQuery query = mock(ActivityStatisticsQuery.class);
+		ActivityStatisticsQuery query = mock(ActivityStatisticsQuery.class, RETURNS_SELF);
 		when(managementService.createActivityStatisticsQuery("id-1")).thenReturn(query);
 		when(query.unlimitedList()).thenReturn(List.of());
 
