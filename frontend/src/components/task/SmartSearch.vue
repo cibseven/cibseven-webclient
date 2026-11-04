@@ -21,30 +21,27 @@
     <datalist :id="id">
       <option v-for="(opt, index) in options" :key="index">{{ opt }}</option>
     </datalist>
-    <b-input-group>
-      <template v-slot:prepend>
-        <b-input-group-text class="py-0 border-light"><span class="mdi mdi-18px mdi-magnify"
-          style="line-height: initial"></span></b-input-group-text>
-      </template>
-      <label :for="id" class="visually-hidden">{{ $t('searches.searchByTaskName').replace('...', '') }}</label>
-      <b-form-input :title="$t('searches.searchByTaskName')" size="sm" ref="input" type="search" v-model="filter" :id="id"
-        class="form-control border-start-0 ps-0 form-control border-light shadow-none"
-        :placeholder="$t('searches.searchByTaskName')" @input="onInput"/>
-      <template v-slot:append v-if="$root.config.taskFilter.advancedSearch.criteriaKeys.length > 0 &&
-        $root.config.taskFilter.advancedSearch.modalEnabled">
-        <b-button variant="light" class="py-0" @click="$emit('open-advanced-search')" :title="$t('advanced-search.title')">
-          <span class="mdi mdi-18px mdi-filter-variant" style="line-height: initial"></span>
+    <SearchInput ref="input" :input-id="id" size="sm" type="search" :model-value="filter"
+      :label="$t('searches.searchByTaskName')" @update:model-value="onInput">
+      <template v-if="$root.config.taskFilter.advancedSearch.criteriaKeys.length > 0 &&
+        $root.config.taskFilter.advancedSearch.modalEnabled" #append>
+        <button type="button" class="search-field-button position-relative" @click="$emit('open-advanced-search')"
+          :title="$t('advanced-search.title')" :aria-label="$t('advanced-search.title')">
+          <span class="mdi mdi-18px mdi-filter-variant" aria-hidden="true"></span>
           <span v-if="$store.state.advancedSearch.criterias.length > 0" class="bg-danger position-absolute rounded"
-            style="bottom: 5px; width: 7px; height: 7px; right: 5px;"></span>
-        </b-button>
+            style="bottom: 0; width: 7px; height: 7px; right: 0;"></span>
+        </button>
       </template>
-    </b-input-group>
+    </SearchInput>
   </div>
 </template>
 
 <script>
+import SearchInput from '@/components/common-components/SearchInput.vue'
+
 export default {
   name: 'SmartSearch',
+  components: { SearchInput },
   props: { 
     options: Array, 
     initialFilter: { type: String, default: '' }
@@ -62,8 +59,9 @@ export default {
   },
   methods: {
     focus: function() { this.$refs.input.focus() },
-    onInput: function(event) {
-      this.$emit('search-filter', event.target.value.trim())
+    onInput: function(value) {
+      this.filter = value
+      this.$emit('search-filter', value.trim())
     }
   }
 }

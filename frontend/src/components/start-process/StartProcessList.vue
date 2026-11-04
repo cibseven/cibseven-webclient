@@ -27,13 +27,7 @@
           </b-button>
         </div>
         <div :class="isMobile() ? 'col-12' : 'col-md-6 p-0 d-flex'">
-          <b-input-group size="sm">
-            <template #prepend>
-              <b-button :title="$t('searches.search')" aria-hidden="true" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
-            </template>
-            <label class="visually-hidden" for="process-search">{{ $t('searches.search').replace('...', '') }}</label>
-            <b-form-input id="process-search" :title="$t('searches.search')" :placeholder="$t('searches.search')" v-model.trim="filter"></b-form-input>
-          </b-input-group>
+          <SearchInput input-id="process-search" size="sm" v-model.trim="filter"/>
         </div>
         <div v-if="!isMobile()" class="col-md-3 d-flex align-items-center justify-content-end p-0">
           <div class="d-inline me-1">{{ $t('process.' + view) }}</div>
@@ -96,10 +90,11 @@ import BpmnViewer from '@/components/process/BpmnViewer.vue'
 import { SuccessAlert } from '@cib/common-frontend'
 import { ProcessService } from '@/services.js'
 import { isStartableInTasklist } from '@/utils/process.js'
+import SearchInput from '@/components/common-components/SearchInput.vue'
 
 export default {
   name: 'StartProcessList',
-  components: { ProcessTable, ProcessCard, StartProcess, BpmnViewer, SuccessAlert },
+  components: { ProcessTable, ProcessCard, StartProcess, BpmnViewer, SuccessAlert, SearchInput },
   inject: ['loadProcesses', 'isMobile'],
   mixins: [permissionsMixin],
   data: function () {

@@ -47,47 +47,38 @@ export default {
 </script>
 
 <style lang="css" scoped>
-/* common styles for both link and button */
+/* "Simple icon" for both link and button: $secondary, $dark on hover plus a grey background, $dark plus
+   an outline on keyboard focus only. The background belongs to hover alone, so there is no box after a
+   mouse click; the outline is drawn inside the button so it is not clipped by the table cell */
 
 .hovered-link,
 .hovered-button {
   display: block;
-  transition: background-color 0.3s ease;
-  color: var(--bs-gray-800);
+  margin: 0px;
+  padding: 4px 8px;
+  border-radius: var(--bs-border-radius);
+  background-color: transparent;
+  color: var(--bs-secondary);
+  transition: color 0.15s ease, background-color 0.15s ease;
 }
 .hovered-link:hover,
-.hovered-button:hover  {
-  background-color: var(--bs-gray-500) !important;
-  color: var(--bs-dark) !important;
+.hovered-button:not(:disabled):hover {
+  background-color: var(--bs-gray-500);
 }
-.hovered-link:focus,
+.hovered-link:hover,
+.hovered-button:not(:disabled):hover,
 .hovered-link:focus-visible,
-.hovered-button:focus,
 .hovered-button:focus-visible {
-  background-color: var(--bs-gray-500) !important;
   color: var(--bs-dark) !important;
-  outline: 2px solid var(--bs-dark);
-  outline-offset: 0px !important;
 }
-
-/* Specific styles for link and button to prevent layout shift on focus */
-
-.hovered-link {
-  margin: 0px;
-  padding: 4px 8px;
+.hovered-link:focus:not(:focus-visible),
+.hovered-button:focus:not(:focus-visible) {
+  outline: 0 !important;
 }
-.hovered-link:focus {
-  margin: 0px 2px;
-  padding: 0px 6px;
-}
-
-.hovered-button {
-  margin: 0px;
-  padding: 4px 8px;
-}
-.hovered-button:focus {
-  margin: 2px;
-  padding: 0px 6px;
+.hovered-link:focus-visible,
+.hovered-button:focus-visible {
+  outline: 2px solid var(--bs-dark) !important;
+  outline-offset: -2px !important;
 }
 
 </style>
