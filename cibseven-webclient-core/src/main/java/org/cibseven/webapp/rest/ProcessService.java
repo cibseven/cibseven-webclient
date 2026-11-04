@@ -820,14 +820,14 @@ public class ProcessService extends BaseService implements InitializingBean {
 	public Variable fetchChatComments(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			@Parameter(description = "Process definition Id") @RequestParam String processDefinitionKey,
-			@Parameter(description = "Deserialize value") @RequestParam(required = false) String deserialize,
+			@Parameter(description = "Deserialize value (default: true)") @RequestParam(required = false) Boolean deserialize,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
-		
+
 		try {
-			boolean deserializeValue = (deserialize == null) || (deserialize != null && deserialize == "true");
-			return bpmProvider.fetchProcessInstanceVariable(processInstanceId, "chatComments", deserializeValue, user);	
+			boolean deserializeValue = !Boolean.FALSE.equals(deserialize);
+			return bpmProvider.fetchProcessInstanceVariable(processInstanceId, "chatComments", deserializeValue, user);
 		} catch(NoObjectFoundException e) {
 			return null;
 		}
@@ -842,14 +842,14 @@ public class ProcessService extends BaseService implements InitializingBean {
 	public Variable fetchStatusDataset(
 			@Parameter(description = "Process instance Id") @PathVariable String processInstanceId,
 			@Parameter(description = "Process definition Id") @RequestParam String processDefinitionKey,
-			@Parameter(description = "Deserialize value") @RequestParam(required = false) String deserialize,
+			@Parameter(description = "Deserialize value (default: true)") @RequestParam(required = false) Boolean deserialize,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
 		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_INSTANCE_VARIABLE_ALL);
-		
+
 		try {
-			boolean deserializeValue = (deserialize == null) || (deserialize != null && deserialize == "true");
-			return bpmProvider.fetchProcessInstanceVariable(processInstanceId, "_statusDataset", deserializeValue, user);	
+			boolean deserializeValue = !Boolean.FALSE.equals(deserialize);
+			return bpmProvider.fetchProcessInstanceVariable(processInstanceId, "_statusDataset", deserializeValue, user);
 		} catch(NoObjectFoundException e) {
 			return null;
 		}
