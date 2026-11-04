@@ -48,9 +48,9 @@ public class EngineConfigurationTest {
 	}
 
 	@Test
-	public void testDefaultValues_historyLevelIsFull() {
+	public void testDefaultValues_historyLevelIsAudit() {
 		EngineConfiguration config = new EngineConfiguration();
-		assertEquals("full", config.getHistoryLevel());
+		assertEquals("audit", config.getHistoryLevel());
 	}
 
 	@Test
@@ -116,7 +116,7 @@ public class EngineConfigurationTest {
 		"AuDiT, audit",
 		"audit, audit",
 		"Custom, custom",
-		"null, full"
+		"null, audit"
 	}, nullValues = "null")
 	public void testGetHistoryLevel_normalizesValue(String input, String expected) {
 		EngineConfiguration config = new EngineConfiguration();

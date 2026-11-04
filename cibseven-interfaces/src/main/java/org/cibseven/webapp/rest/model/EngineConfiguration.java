@@ -43,12 +43,13 @@ public class EngineConfiguration {
 	 * prior to 2.2.0 (no configuration endpoint) and the legacy {@code cibseven.webclient.historyLevel}
 	 * property not set.
 	 * <p>
-	 * {@code full} matches every shipped distribution (Tomcat {@code bpm-platform.xml}, WildFly
-	 * {@code standalone.xml}, Run) and the Spring Boot starter default ({@code CamundaBpmProperties}).
-	 * The bare engine default {@code audit} ({@code ProcessEngineConfiguration.HISTORY_DEFAULT})
-	 * only applies to custom engine configurations that omit the history property.
+	 * {@code audit} is the engine default ({@code ProcessEngineConfiguration.HISTORY_DEFAULT}), as in
+	 * Camunda 7. The shipped distributions (Tomcat {@code bpm-platform.xml}, WildFly
+	 * {@code standalone.xml}, Run) configure {@code full} explicitly, and Run also sets
+	 * {@code cibseven.webclient.historyLevel: full}; with an older engine-rest and {@code full} history,
+	 * set {@code cibseven.webclient.historyLevel} to match.
 	 */
-	public static final String DEFAULT_HISTORY_LEVEL = "full";
+	public static final String DEFAULT_HISTORY_LEVEL = "audit";
 
 	private String engineName;
 	private String historyLevel = DEFAULT_HISTORY_LEVEL;
