@@ -18,10 +18,10 @@
 -->
 <template>
   <div>
-    <datalist :id="id">
+    <datalist :id="`${id}-options`">
       <option v-for="(opt, index) in options" :key="index">{{ opt }}</option>
     </datalist>
-    <SearchInput ref="input" :input-id="id" size="sm" type="search" :model-value="filter"
+    <SearchInput ref="input" :input-id="id" :list="`${id}-options`" size="sm" type="search" :model-value="filter"
       :label="$t('searches.searchByTaskName')" @update:model-value="onInput">
       <template v-if="$root.config.taskFilter.advancedSearch.criteriaKeys.length > 0 &&
         $root.config.taskFilter.advancedSearch.modalEnabled" #append>

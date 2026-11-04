@@ -46,6 +46,20 @@ describe('SmartSearch', () => {
     expect(field.find('input').attributes('placeholder')).toBe('searches.searchByTaskName')
   })
 
+  // The datalist used to share the input's id, so the label pointed at the datalist and the field had no name
+  it('labels the search field and connects the suggestions through their own id', () => {
+    wrapper = mountSmartSearch({ props: { options: ['Approve invoice', 'Review'] } })
+    const input = wrapper.find('input')
+    const datalist = wrapper.find('datalist')
+    const id = input.attributes('id')
+
+    expect(wrapper.find('label').attributes('for')).toBe(id)
+    expect(wrapper.find('label').text()).toBe('searches.searchByTaskName')
+    expect(datalist.attributes('id')).not.toBe(id)
+    expect(input.attributes('list')).toBe(datalist.attributes('id'))
+    expect(datalist.findAll('option').map(option => option.text())).toEqual(['Approve invoice', 'Review'])
+  })
+
   it('shows the initial filter and emits the trimmed value on input', async () => {
     wrapper = mountSmartSearch({ props: { initialFilter: 'review' } })
     const input = wrapper.find('input')
