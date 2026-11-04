@@ -83,6 +83,7 @@ public class InfoServiceTest {
 		EngineConfiguration config = new EngineConfiguration("default", "full", true, false, -1, true);
 		config.setWebclientExtensionsEnabled(engineSwitch);
 		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
+		when(bpmProvider.getEngineConfiguration(null)).thenReturn(config);
 		ReflectionTestUtils.setField(infoService, "webclientExtensions", new WebclientExtensions(bpmProvider));
 		properties.getModeler().setEnabled(modelerProperty);
 		return infoService.getConfig(null);

@@ -142,7 +142,7 @@ class ModelerServiceAuthorizationTest {
 	@Test
 	void theModelerStaysOnWhileTheEngineDoesNotReportTheSwitch() {
 		modelerAccess(true);
-		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(null);
+		when(bpmProvider.getEngineConfiguration(null)).thenReturn(null);
 		ReflectionTestUtils.setField(modelerService, "webclientExtensions", new WebclientExtensions(bpmProvider));
 
 		modelerService.getDiagrams(request, 0, 10, null, null);

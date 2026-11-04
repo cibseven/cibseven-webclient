@@ -165,7 +165,7 @@ class WebclientExtensionsTest {
 
 		assertThat(extensions.engineSwitch()).isNull();
 		assertThat(extensions.enabled(true)).isTrue();
-		verify(bpmProvider, never()).getEffectiveDefaultEngineConfiguration();
+		verify(bpmProvider, never()).getEngineConfiguration(null);
 	}
 
 	@Test
@@ -173,7 +173,7 @@ class WebclientExtensionsTest {
 		BpmProvider bpmProvider = mock(BpmProvider.class);
 		EngineConfiguration configuration = new EngineConfiguration();
 		configuration.setWebclientExtensionsEnabled(false);
-		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(configuration);
+		when(bpmProvider.getEngineConfiguration(null)).thenReturn(configuration);
 		@SuppressWarnings("unchecked")
 		ObjectProvider<DataSource> ownDataSource = mock(ObjectProvider.class);
 
@@ -186,13 +186,19 @@ class WebclientExtensionsTest {
 		assertThat(WebclientExtensions.UNKNOWN.enabled(true)).isTrue();
 	}
 
+	/**
+	 * The default engine of the main engine-rest, asked without listing the engines: an additional
+	 * engine-rest that is down neither delays the answer nor logs an error for it.
+	 */
 	@Test
-	void asksTheDefaultEngine() {
+	void asksTheDefaultEngineOfTheMainEngineRestOnly() {
 		BpmProvider bpmProvider = mock(BpmProvider.class);
 		EngineConfiguration configuration = new EngineConfiguration();
 		configuration.setWebclientExtensionsEnabled(false);
-		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(configuration);
+		when(bpmProvider.getEngineConfiguration(null)).thenReturn(configuration);
 
 		assertThat(new WebclientExtensions(bpmProvider).switchedOff()).isTrue();
+		verify(bpmProvider, never()).getEffectiveDefaultEngineConfiguration();
+		verify(bpmProvider, never()).getProcessEngineDefinitions();
 	}
 }

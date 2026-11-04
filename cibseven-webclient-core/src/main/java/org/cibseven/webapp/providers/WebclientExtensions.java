@@ -39,8 +39,9 @@ import lombok.extern.slf4j.Slf4j;
  * properties say. What it reports as there, or does not report at all (engines before 3.0), is left
  * to those properties.
  * <p>
- * The tables share the database of the default engine, so its answer counts, also with several
- * engines. A host that gives them a database of their own ({@link CibsevenJpa#DATA_SOURCE}) leaves
+ * The tables share the database of the default engine of the main engine-rest, so its answer counts,
+ * also with several engines; the others, such as those of additional engine-rest URLs, are not asked.
+ * A host that gives them a database of their own ({@link CibsevenJpa#DATA_SOURCE}) leaves
  * the engine nothing to say about them, and the properties decide alone.
  * <p>
  * The answer is read at runtime, as the engine may not be reachable when the webclient starts, and
@@ -66,8 +67,7 @@ public class WebclientExtensions {
 	@Autowired
 	public WebclientExtensions(BpmProvider bpmProvider,
 			@Qualifier(CibsevenJpa.DATA_SOURCE) ObjectProvider<DataSource> ownDataSource) {
-		this(ownDataSource.getIfAvailable() == null ? bpmProvider::getEffectiveDefaultEngineConfiguration : () -> null,
-			System::currentTimeMillis);
+		this(ownDataSource.getIfAvailable() == null ? mainEngine(bpmProvider) : () -> null, System::currentTimeMillis);
 		if (ownDataSource.getIfAvailable() != null) {
 			log.info("The webclient tables have a database of their own, so the engine is not asked whether they are there");
 		}
@@ -75,7 +75,12 @@ public class WebclientExtensions {
 
 	/** Asks the default engine, as when the webclient tables share its database. */
 	public WebclientExtensions(BpmProvider bpmProvider) {
-		this(bpmProvider::getEffectiveDefaultEngineConfiguration, System::currentTimeMillis);
+		this(mainEngine(bpmProvider), System::currentTimeMillis);
+	}
+
+	/** No engine named: the default engine of the main engine-rest, without listing every engine. */
+	private static Supplier<EngineConfiguration> mainEngine(BpmProvider bpmProvider) {
+		return () -> bpmProvider.getEngineConfiguration(null);
 	}
 
 	WebclientExtensions(Supplier<EngineConfiguration> engineConfiguration, LongSupplier clock) {
