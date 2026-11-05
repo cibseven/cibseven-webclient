@@ -19,13 +19,20 @@ export default {
         copyValueToClipboard: function(val) {
             if (val) {
                 const textToCopy = (typeof val === 'object') ? JSON.stringify(val) : val
+                const previousFocus = document.activeElement
+                // Append inside an open modal, otherwise its focus trap prevents select()
+                const container = previousFocus?.closest('.modal') ?? document.body
                 const tmpHtml = document.createElement('textarea')
-                document.body.appendChild(tmpHtml)
                 tmpHtml.value = textToCopy
+                tmpHtml.setAttribute('readonly', '')
+                tmpHtml.style.position = 'fixed'
+                tmpHtml.style.opacity = '0'
+                container.appendChild(tmpHtml)
                 tmpHtml.select()
-                document.execCommand('copy')
-                document.body.removeChild(tmpHtml)
-                this.$refs.messageCopy.show()
+                const copied = document.execCommand('copy')
+                container.removeChild(tmpHtml)
+                previousFocus?.focus()
+                if (copied) this.$refs.messageCopy.show()
             }
         }
     }
