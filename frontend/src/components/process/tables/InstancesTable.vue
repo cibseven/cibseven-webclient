@@ -70,6 +70,10 @@
       <template v-slot:cell(tenantId)="table">
         <span v-if="table.item.tenantId" class="text-truncate d-block" :title="$t('process.tenant') + ':\n' + table.item.tenantId">{{ table.item.tenantId }}</span>
       </template>
+	  
+	  <template v-slot:cell(startUserId)="table">
+	    <UserNameDisplay :name="table.item.startUserId" @copy="copyValueToClipboard" />
+	  </template>
 
       <template v-slot:cell(actions)="table">
         <div class="d-flex">
@@ -103,7 +107,7 @@
 import { ProcessService, HistoryService } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
-import { CopyableActionButton, FlowTable, SuccessAlert, BWaitingBox } from '@cib/common-frontend'
+import { CopyableActionButton, FlowTable, SuccessAlert, BWaitingBox, UserNameDisplay } from '@cib/common-frontend'
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import ConfirmActionOnProcessInstanceModal from '@/components/process/modals/ConfirmActionOnProcessInstanceModal.vue'
 import { mapGetters, mapActions } from 'vuex'
@@ -111,7 +115,7 @@ import CellActionButton from '@/components/common-components/CellActionButton.vu
 
 export default {
   name: 'InstancesTable',
-  components: { FlowTable, SuccessAlert, ConfirmActionOnProcessInstanceModal, BWaitingBox, CopyableActionButton, CellActionButton },
+  components: { FlowTable, SuccessAlert, ConfirmActionOnProcessInstanceModal, BWaitingBox, CopyableActionButton, CellActionButton, UserNameDisplay },
   emits: ['instance-deleted', 'filter-instances','load-statistics'],
   mixins: [copyToClipboardMixin, permissionsMixin],
   props: {

@@ -41,6 +41,9 @@
         <template v-slot:cell(startTime)="table">
           <div :title="formatDateForTooltips(table.item.startTime)">{{ formatDate(table.item.startTime) }}</div>
         </template>
+		<template v-slot:cell(createUserId)="table">
+          <UserNameDisplay :name="table.item.createUserId" @copy="copyValueToClipboard" />
+        </template>
         <template v-slot:cell(failedJobs)="table">
           <div class="text-center w-100">{{ table.item.failedJobs }}</div>
         </template>
@@ -58,17 +61,20 @@
       </div>
     </div>
   </ContentBlock>
+  <SuccessAlert ref="messageCopy"> {{ $t('process.copySuccess') }} </SuccessAlert>
 </template>
 
 <script>
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
-import { FlowTable, ContentBlock, BWaitingBox } from '@cib/common-frontend'
+import { FlowTable, ContentBlock, BWaitingBox, SuccessAlert, UserNameDisplay } from '@cib/common-frontend'
 import { mapGetters, mapActions } from 'vuex'
+import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 
 export default {
   name: 'RuntimeBatches',
-  components: { FlowTable, BWaitingBox, ContentBlock },
+  components: { FlowTable, BWaitingBox, ContentBlock, SuccessAlert, UserNameDisplay },
   inject: ['currentLanguage'],
+  mixins: [copyToClipboardMixin],
   data: function () {
     return {
       loading: true,

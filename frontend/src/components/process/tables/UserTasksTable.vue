@@ -37,14 +37,14 @@
       </template>
 
       <template v-slot:cell(assignee)="table">
-        <CopyableActionButton
-          :displayValue="table.item.assignee"
-          :clickable="false"
-          @copy="copyValueToClipboard"
-        />
-        <CellActionButton @click="$refs.taskAssignationModal.show(table.item.id, true)" :title="$t('process-instance.assignModal.manageAssignee')" icon="mdi-pencil-outline"></CellActionButton>
+        <UserNameDisplay :name="table.item.assignee" @copy="copyValueToClipboard" />
+		<CellActionButton @click="$refs.taskAssignationModal.show(table.item.id, true)" :title="$t('process-instance.assignModal.manageAssignee')" icon="mdi-pencil-outline"></CellActionButton>
       </template>
 
+	  <template v-slot:cell(owner)="table">
+        <UserNameDisplay :name="table.item.owner" @copy="copyValueToClipboard" />
+	  </template>
+	  
       <template v-slot:cell(created)="table">
         <span :title="formatDateForTooltips(table.item.created)" class="text-truncate d-block">{{ formatDate(table.item.created) }}</span>
       </template>
@@ -79,12 +79,12 @@ import { TaskService } from '@/services.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import TaskAssignationModal from '@/components/process/modals/TaskAssignationModal.vue'
-import { FlowTable, SuccessAlert, CopyableActionButton, BWaitingBox } from '@cib/common-frontend'
+import { FlowTable, SuccessAlert, CopyableActionButton, BWaitingBox, UserNameDisplay } from '@cib/common-frontend'
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
 
 export default {
   name: 'UserTasksTable',
-  components: { TaskAssignationModal, FlowTable, SuccessAlert, CopyableActionButton, BWaitingBox, CellActionButton },
+  components: { TaskAssignationModal, FlowTable, SuccessAlert, CopyableActionButton, BWaitingBox, CellActionButton, UserNameDisplay },
   mixins: [copyToClipboardMixin],
   props: { selectedInstance: Object },
   data: function() {
