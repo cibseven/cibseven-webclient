@@ -17,20 +17,24 @@
 package org.cibseven.modeler.util;
 
 import org.cibseven.modeler.provider.FolderProvider;
+import org.cibseven.webapp.providers.WebclientExtensions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class FolderProjectFillTest {
 
 	private final FolderProvider folders = Mockito.mock(FolderProvider.class);
-	private final FolderProjectFill fill = new FolderProjectFill(folders);
+	private final WebclientExtensions extensions = Mockito.mock(WebclientExtensions.class);
+	private final FolderProjectFill fill = new FolderProjectFill(folders, extensions);
 
 	@Test
 	void storesTheProjectsOfTheFoldersOnStart() {
+		when(extensions.switchedOffNow()).thenReturn(false);
 		when(folders.fillProjects()).thenReturn(3).thenReturn(0);
 
 		fill.fill();
@@ -42,8 +46,19 @@ class FolderProjectFillTest {
 	/** The engine may not have created the table yet; the webclient starts all the same. */
 	@Test
 	void letsTheStartGoOnWhenTheFoldersCannotBeRead() {
+		when(extensions.switchedOffNow()).thenReturn(false);
 		when(folders.fillProjects()).thenThrow(new IllegalStateException("MOD_FOLDERS not found"));
 
 		assertThatCode(fill::fill).doesNotThrowAnyException();
+	}
+
+	/** Without the webclient tables there are no folders to read. */
+	@Test
+	void leavesTheFoldersAloneOnceTheEngineHasSwitchedTheTablesOff() {
+		when(extensions.switchedOffNow()).thenReturn(true);
+
+		fill.fill();
+
+		verify(folders, never()).fillProjects();
 	}
 }
