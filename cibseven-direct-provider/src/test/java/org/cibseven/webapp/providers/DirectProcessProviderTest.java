@@ -60,6 +60,8 @@ import org.cibseven.webapp.rest.model.ProcessInstance;
 import org.cibseven.webapp.rest.model.Variable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.springframework.http.ResponseEntity;
 
@@ -318,11 +320,13 @@ public class DirectProcessProviderTest {
 			.isInstanceOf(SystemException.class);
 	}
 
-	@Test
-	void fetchProcessInstanceVariable_throwsNoObjectFoundWhenTheInstanceDoesNotHoldTheVariable() {
+	// the variables behind the status-dataset and chat-comments endpoints
+	@ParameterizedTest
+	@ValueSource(strings = { "_statusDataset", "chatComments" })
+	void fetchProcessInstanceVariable_throwsNoObjectFoundWhenTheInstanceDoesNotHoldTheVariable(String variableName) {
 		doReturn(List.of()).when(directProviderUtil).queryVariableInstances(any(), any(), any(), anyBoolean(), any(CIBUser.class));
 
-		assertThatThrownBy(() -> processProvider.fetchProcessInstanceVariable(INSTANCE_ID_1, "_statusDataset", true, user))
+		assertThatThrownBy(() -> processProvider.fetchProcessInstanceVariable(INSTANCE_ID_1, variableName, true, user))
 			.isInstanceOf(NoObjectFoundException.class);
 	}
 
