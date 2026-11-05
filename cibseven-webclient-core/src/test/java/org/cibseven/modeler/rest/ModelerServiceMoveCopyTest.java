@@ -30,7 +30,6 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.ModelerAccessChecker;
 import org.cibseven.webapp.exception.ExistingFormIdException;
 import org.cibseven.webapp.exception.ExistingProcessKeyException;
-import org.cibseven.webapp.exception.InvalidFolderException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -47,8 +46,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -167,24 +164,25 @@ class ModelerServiceMoveCopyTest {
 		assertThat(copy.getName()).isEqualTo("Invoice (copy)");
 	}
 
+	/** A key is unique only within a folder, so a copy elsewhere may keep it (CIB7-2277). */
 	@Test
-	void refusesADiagramCopyWithoutAKey() {
+	void keepsTheKeyOfADiagramCopiedWithoutOne() {
 		storedDiagram();
 
-		assertThatThrownBy(() -> service.copyProcess("diagram-1", Map.of("folderId", TARGET_FOLDER), request))
-			.isInstanceOf(InvalidFolderException.class);
-		verify(diagrams, never()).createDiagram(any());
+		ProcessDiagramEntity copy = service.copyProcess("diagram-1", Map.of("folderId", TARGET_FOLDER), request);
+
+		assertThat(copy.getProcesskey()).isEqualTo("invoice");
+		assertThat(copy.getFolderId()).isEqualTo(TARGET_FOLDER);
 	}
 
+	/** The provider refuses a key the folder has already, and the copy is not stored. */
 	@Test
-	void refusesADiagramCopyWhoseKeyIsTaken() {
+	void passesOnTheRefusalOfAKeyTheFolderHas() {
 		storedDiagram();
-		when(diagrams.findByProcessKey("invoice-copy")).thenReturn(new ProcessDiagramEntity());
+		when(diagrams.createDiagram(any())).thenThrow(new ExistingProcessKeyException("invoice"));
 
-		assertThatThrownBy(() -> service.copyProcess("diagram-1",
-				Map.of("folderId", TARGET_FOLDER, "processkey", "invoice-copy"), request))
+		assertThatThrownBy(() -> service.copyProcess("diagram-1", Map.of("folderId", TARGET_FOLDER), request))
 			.isInstanceOf(ExistingProcessKeyException.class);
-		verify(diagrams, never()).createDiagram(any());
 	}
 
 	@Test
@@ -201,23 +199,22 @@ class ModelerServiceMoveCopyTest {
 	}
 
 	@Test
-	void refusesAFormCopyWithoutAFormId() {
+	void keepsTheFormIdOfAFormCopiedWithoutOne() {
 		storedForm();
 
-		assertThatThrownBy(() -> service.copyForm("form-1", Map.of("folderId", TARGET_FOLDER), request))
-			.isInstanceOf(InvalidFolderException.class);
-		verify(forms, never()).createForm(any());
+		FormEntity copy = service.copyForm("form-1", Map.of("folderId", TARGET_FOLDER), request);
+
+		assertThat(copy.getFormId()).isEqualTo("invoice-form");
+		assertThat(copy.getFolderId()).isEqualTo(TARGET_FOLDER);
 	}
 
 	@Test
-	void refusesAFormCopyWhoseFormIdIsTaken() {
+	void passesOnTheRefusalOfAFormIdTheFolderHas() {
 		storedForm();
-		when(forms.findByFormId("invoice-form-copy")).thenReturn(new FormEntity());
+		when(forms.createForm(any())).thenThrow(new ExistingFormIdException("invoice-form"));
 
-		assertThatThrownBy(() -> service.copyForm("form-1",
-				Map.of("folderId", TARGET_FOLDER, "formId", "invoice-form-copy"), request))
+		assertThatThrownBy(() -> service.copyForm("form-1", Map.of("folderId", TARGET_FOLDER), request))
 			.isInstanceOf(ExistingFormIdException.class);
-		verify(forms, never()).createForm(any());
 	}
 
 	/** Every one of these is behind the modeler permission, not only the reads. */

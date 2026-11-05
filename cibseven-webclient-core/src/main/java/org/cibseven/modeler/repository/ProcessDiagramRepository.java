@@ -36,7 +36,10 @@ public interface ProcessDiagramRepository extends JpaRepository<ProcessDiagramEn
 
 	ProcessDiagramEntity findByName(String name);
 
-	ProcessDiagramEntity findByProcesskey(String processkey);
+	/** The key is unique only within a folder, so this may find several: the latest change first. */
+	List<ProcessDiagramEntity> findByProcesskeyOrderByUpdatedDesc(String processkey);
+
+	ProcessDiagramEntity findByProcesskeyAndFolderId(String processkey, String folderId);
 
 	List<ProcessDiagramReduce> findAllBy(Pageable pageable);
 

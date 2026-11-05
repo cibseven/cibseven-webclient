@@ -42,7 +42,8 @@ public interface IFormProvider {
 	Optional<FormEntity> findById(String id) throws SystemException;
 
 	/**
-	 * Find a form by its (unique) formId. Returns null when none exists.
+	 * The latest form with this formId, in any folder: a form id is unique only within a folder.
+	 * Returns null when none exists.
 	 *
 	 * @param formId
 	 */

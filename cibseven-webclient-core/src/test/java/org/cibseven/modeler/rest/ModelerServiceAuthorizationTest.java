@@ -238,7 +238,7 @@ class ModelerServiceAuthorizationTest {
 			}
 		}
 
-		assertEquals(32, checked, "endpoints of ModelerService covered by this sweep");
+		assertEquals(35, checked, "endpoints of ModelerService covered by this sweep");
 		assertEquals(List.of(), unprotected, "endpoints reachable without modeler access");
 	}
 

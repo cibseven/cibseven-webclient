@@ -17,6 +17,7 @@
 package org.cibseven.modeler.rest;
 
 import java.io.ByteArrayInputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -52,6 +53,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -106,7 +108,7 @@ class ModelerServiceProjectAccessTest {
 		diagram.setDiagram("<bpmn/>".getBytes());
 		diagram.setFolderId(folderId);
 		when(diagrams.findById("diagram-1")).thenReturn(Optional.of(diagram));
-		when(diagrams.findByProcessKey("invoice")).thenReturn(diagram);
+		when(diagrams.findByProcessKey(eq("invoice"), any())).thenReturn(List.of(diagram));
 		return diagram;
 	}
 
@@ -116,7 +118,7 @@ class ModelerServiceProjectAccessTest {
 		form.setFormId("invoice-form");
 		form.setFolderId(folderId);
 		when(forms.findById("form-1")).thenReturn(Optional.of(form));
-		when(forms.findByFormId("invoice-form")).thenReturn(form);
+		when(forms.findByFormId(eq("invoice-form"), any())).thenReturn(List.of(form));
 		return form;
 	}
 
@@ -140,8 +142,8 @@ class ModelerServiceProjectAccessTest {
 
 		assertThatThrownBy(() -> service.findById("diagram-1", request)).isInstanceOf(AccessDeniedException.class);
 		assertThatThrownBy(() -> service.findByIdData("diagram-1", request)).isInstanceOf(AccessDeniedException.class);
-		assertThatThrownBy(() -> service.findByKeyEntity("invoice", request)).isInstanceOf(AccessDeniedException.class);
-		assertThatThrownBy(() -> service.findByKey("invoice", request)).isInstanceOf(AccessDeniedException.class);
+		assertThatThrownBy(() -> service.findByKeyEntity("invoice", null, request)).isInstanceOf(AccessDeniedException.class);
+		assertThatThrownBy(() -> service.findByKey("invoice", null, request)).isInstanceOf(AccessDeniedException.class);
 	}
 
 	/** Nothing found stays a 404: there is no project to ask. */
@@ -218,8 +220,6 @@ class ModelerServiceProjectAccessTest {
 	void copiesFromAProjectTheUserSeesIntoOneTheyEdit() {
 		diagramIn("claims");
 		formIn("claims");
-		when(diagrams.findByProcessKey("invoice-copy")).thenReturn(null);
-		when(forms.findByFormId("form-copy")).thenReturn(null);
 
 		service.copyProcess("diagram-1", Map.of("folderId", "sales", "processkey", "invoice-copy"), request);
 		service.copyForm("form-1", Map.of("folderId", "sales", "formId", "form-copy"), request);
@@ -252,12 +252,70 @@ class ModelerServiceProjectAccessTest {
 			anyInt());
 	}
 
+	/** A key repeats across folders, so a lookup by it chooses among the visible models only (CIB7-2277). */
+	@Test
+	void looksUpAKeyAmongTheModelsTheUserMaySee() {
+		ProjectGuard.HiddenProjects hidden = new ProjectGuard.HiddenProjects(Set.of("claims"), folderId -> folderId);
+		when(guard.hiddenProjects(USER)).thenReturn(hidden);
+		ProcessDiagramEntity visible = diagramIn("sales");
+		when(diagrams.findByProcessKey("invoice", hidden)).thenReturn(List.of(visible));
+
+		assertThat(service.findByKeyEntity("invoice", null, request).getBody()).isSameAs(visible);
+	}
+
+	@Test
+	void looksUpAKeyInTheFolderNamedForWhoMayViewIt() {
+		ProcessDiagramEntity diagram = diagramIn("sales");
+		when(diagrams.findByProcessKeyInFolder("invoice", "sales")).thenReturn(diagram);
+		FormEntity form = formIn("sales");
+		when(forms.findByFormIdInFolder("invoice-form", "sales")).thenReturn(form);
+
+		assertThat(service.findByKeyEntity("invoice", "sales", request).getBody()).isSameAs(diagram);
+		assertThat(service.findByFormId("invoice-form", "sales", request).getBody()).isSameAs(form);
+		verify(guard, times(4)).require(USER, "sales", Action.VIEW);
+
+		refuse("claims", Action.VIEW);
+		assertThatThrownBy(() -> service.findByKey("invoice", "claims", request)).isInstanceOf(AccessDeniedException.class);
+		verify(diagrams, never()).findByProcessKeyInFolder("invoice", "claims");
+	}
+
+	@Test
+	void listsTheFormsWithAFormIdTheUserMaySee() {
+		ProjectGuard.HiddenProjects hidden = new ProjectGuard.HiddenProjects(Set.of("claims"), folderId -> folderId);
+		when(guard.hiddenProjects(USER)).thenReturn(hidden);
+		FormEntity form = formIn("sales");
+		when(forms.findByFormId("invoice-form", hidden)).thenReturn(List.of(form));
+
+		assertThat(service.findAllByFormId("invoice-form", request)).containsExactly(form);
+	}
+
+	/** It may be in a project hidden from the user, so the answer says only whether there is one. */
+	@Test
+	void tellsWhetherAnotherModelHasTheKey() {
+		when(diagrams.isKeyUsedElsewhere("invoice", "diagram-1")).thenReturn(true);
+		when(forms.isFormIdUsedElsewhere("invoice-form", null)).thenReturn(false);
+
+		assertThat(service.isKeyInUse("invoice", "diagram-1", request)).isTrue();
+		assertThat(service.isFormIdInUse("invoice-form", null, request)).isFalse();
+	}
+
+	@Test
+	void deploysByKeyTheDiagramInTheFolderNamed() {
+		ProcessDiagramEntity diagram = diagramIn("sales");
+		when(diagrams.findByProcessKeyInFolder("invoice", "sales")).thenReturn(diagram);
+		refuse("sales", Action.EDIT);
+
+		assertThatThrownBy(() -> service.deployBpmnReduce("invoice", new LinkedMultiValueMap<>(), "sales", request))
+			.isInstanceOf(AccessDeniedException.class);
+		verify(diagrams).findByProcessKeyInFolder("invoice", "sales");
+	}
+
 	@Test
 	void readsAFormOnlyForWhoMayViewItsProject() {
 		formIn("claims");
 		refuse("claims", Action.VIEW);
 
 		assertThatThrownBy(() -> service.findFormById("form-1", request)).isInstanceOf(AccessDeniedException.class);
-		assertThatThrownBy(() -> service.findByFormId("invoice-form", request)).isInstanceOf(AccessDeniedException.class);
+		assertThatThrownBy(() -> service.findByFormId("invoice-form", null, request)).isInstanceOf(AccessDeniedException.class);
 	}
 }

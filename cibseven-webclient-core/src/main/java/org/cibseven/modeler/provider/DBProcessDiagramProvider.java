@@ -28,6 +28,7 @@ import org.springframework.stereotype.Component;
 import org.cibseven.persistence.CibsevenJpa;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.cibseven.webapp.exception.ExistingProcessKeyException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.ValueTooLongException;
 import org.cibseven.modeler.model.ProcessDiagramEntity;
@@ -72,14 +73,36 @@ public class DBProcessDiagramProvider implements IProcessDiagramProvider {
 		return processDiagramDao.findByName(name);
 	}
 	
+	/** The latest of the diagrams with this key, whichever folder it is in. */
 	@Override
 	public ProcessDiagramEntity findByProcessKey(String key) throws SystemException {
-		return processDiagramDao.findByProcesskey(key);
+		return processDiagramDao.findByProcesskeyOrderByUpdatedDesc(key).stream().findFirst().orElse(null);
+	}
+
+	/** The diagrams with this key the user may see, the latest change first. */
+	public List<ProcessDiagramEntity> findByProcessKey(String key, ProjectGuard.HiddenProjects hidden) throws SystemException {
+		return processDiagramDao.findByProcesskeyOrderByUpdatedDesc(key).stream()
+			.filter(diagram -> !hidden.hides(diagram.getFolderId()))
+			.toList();
+	}
+
+	public ProcessDiagramEntity findByProcessKeyInFolder(String key, String folderId) throws SystemException {
+		return processDiagramDao.findByProcesskeyAndFolderId(key, folderId);
+	}
+
+	/**
+	 * Whether a diagram other than this one has the key, in any folder and any project. The engine
+	 * keeps one definition per key, so deploying either adds a version to what the other deployed.
+	 */
+	public boolean isKeyUsedElsewhere(String key, String id) throws SystemException {
+		return processDiagramDao.findByProcesskeyOrderByUpdatedDesc(key).stream()
+			.anyMatch(diagram -> !diagram.getId().equals(id));
 	}
 
 	@Override
 	public ProcessDiagramEntity createDiagram(ProcessDiagramEntity entity) throws SystemException {
 		requireFits(entity);
+		requireKeyFree(entity.getProcesskey(), entity.getFolderId(), null);
 		entity.setCreated(Timestamp.valueOf(LocalDateTime.now()));
 		entity.setUpdated(Timestamp.valueOf(LocalDateTime.now()));
 		return processDiagramDao.save(entity);
@@ -94,6 +117,20 @@ public class DBProcessDiagramProvider implements IProcessDiagramProvider {
 		requireFits("name", entity.getName(), 255);
 		requireFits("processkey", entity.getProcesskey(), 100);
 		requireFits("description", entity.getDescription(), 150);
+	}
+
+	/**
+	 * A key is unique within a folder. Refused here as the request error the user can act on,
+	 * rather than left to the database constraint, which fails as a system error.
+	 */
+	private void requireKeyFree(String key, String folderId, String id) {
+		if (key == null || folderId == null) {
+			return;
+		}
+		ProcessDiagramEntity holder = processDiagramDao.findByProcesskeyAndFolderId(key, folderId);
+		if (holder != null && !holder.getId().equals(id)) {
+			throw new ExistingProcessKeyException(key);
+		}
 	}
 
 	private void requireFits(String field, String value, int limit) {
@@ -116,6 +153,8 @@ public class DBProcessDiagramProvider implements IProcessDiagramProvider {
 	 */
 	protected void applyUpdate(ProcessDiagramEntity source, ProcessDiagramEntity stored) {
 		requireFits(source);
+		requireKeyFree(source.getProcesskey(), source.getFolderId() != null ? source.getFolderId() : stored.getFolderId(),
+			stored.getId());
 		stored.setName(source.getName());
 		stored.setProcesskey(source.getProcesskey());
 		stored.setDescription(source.getDescription());

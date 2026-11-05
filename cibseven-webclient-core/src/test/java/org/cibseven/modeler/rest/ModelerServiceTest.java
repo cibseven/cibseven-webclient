@@ -19,6 +19,7 @@ package org.cibseven.modeler.rest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -246,30 +247,26 @@ public class ModelerServiceTest {
 
 	@Test
 	void findByKey_servesTheDiagram() {
-		when(dbProcessDiagramProvider.findByProcessKey("invoice")).thenReturn(diagram("d-1", "Invoice", "invoice"));
+		when(dbProcessDiagramProvider.findByProcessKey(eq("invoice"), any())).thenReturn(List.of(diagram("d-1", "Invoice", "invoice")));
 
-		assertThat(service.findByKey("invoice", request).getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(service.findByKey("invoice", null, request).getStatusCode()).isEqualTo(HttpStatus.OK);
 	}
 
 	@Test
 	void findByKey_answers404WhenThereIsNoSuchKey() {
-		when(dbProcessDiagramProvider.findByProcessKey("nope")).thenReturn(null);
-
-		assertThat(service.findByKey("nope", request).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+		assertThat(service.findByKey("nope", null, request).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 	}
 
 	@Test
 	void findByKeyEntity_returnsTheEntity() {
-		when(dbProcessDiagramProvider.findByProcessKey("invoice")).thenReturn(diagram("d-1", "Invoice", "invoice"));
+		when(dbProcessDiagramProvider.findByProcessKey(eq("invoice"), any())).thenReturn(List.of(diagram("d-1", "Invoice", "invoice")));
 
-		assertThat(service.findByKeyEntity("invoice", request).getBody().getId()).isEqualTo("d-1");
+		assertThat(service.findByKeyEntity("invoice", null, request).getBody().getId()).isEqualTo("d-1");
 	}
 
 	@Test
 	void findByKeyEntity_answers404WhenThereIsNoSuchKey() {
-		when(dbProcessDiagramProvider.findByProcessKey("nope")).thenReturn(null);
-
-		assertThat(service.findByKeyEntity("nope", request).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+		assertThat(service.findByKeyEntity("nope", null, request).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 	}
 
 	@Test
@@ -389,16 +386,14 @@ public class ModelerServiceTest {
 
 	@Test
 	void findByFormId_returnsTheForm() {
-		when(formProvider.findByFormId("invoice-form")).thenReturn(form("f-1", "invoice-form"));
+		when(formProvider.findByFormId(eq("invoice-form"), any())).thenReturn(List.of(form("f-1", "invoice-form")));
 
-		assertThat(service.findByFormId("invoice-form", request).getBody().getId()).isEqualTo("f-1");
+		assertThat(service.findByFormId("invoice-form", null, request).getBody().getId()).isEqualTo("f-1");
 	}
 
 	@Test
 	void findByFormId_answers404WhenThereIsNoSuchForm() {
-		when(formProvider.findByFormId("nope")).thenReturn(null);
-
-		assertThat(service.findByFormId("nope", request).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+		assertThat(service.findByFormId("nope", null, request).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 	}
 
 	// ---------- deployment ----------

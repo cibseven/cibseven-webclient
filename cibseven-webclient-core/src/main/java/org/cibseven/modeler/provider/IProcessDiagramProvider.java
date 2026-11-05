@@ -50,9 +50,10 @@ public interface IProcessDiagramProvider {
 	ProcessDiagramEntity findByName(String name) throws SystemException;
     
 	/**
-	 * Find diagram by name
-	 * 
-	 * @param name
+	 * The latest diagram with this key, in any folder: a key is unique only within a folder.
+	 * Returns null when none exists.
+	 *
+	 * @param key
 	 */
 	ProcessDiagramEntity findByProcessKey(String key) throws SystemException;
     
