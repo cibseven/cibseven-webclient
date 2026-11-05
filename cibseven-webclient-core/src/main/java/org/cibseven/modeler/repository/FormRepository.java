@@ -37,6 +37,10 @@ public interface FormRepository extends JpaRepository<FormEntity, String> {
 
 	FormEntity findByFormIdAndFolderId(String formId, String folderId);
 
+	boolean existsByFormId(String formId);
+
+	boolean existsByFormIdAndIdNot(String formId, String id);
+
 	/**
 	 * Leaves out the forms of the hidden projects, through the project kept on each folder. The
 	 * hidden projects never come back empty: an empty list is not valid SQL on every database.

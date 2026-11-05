@@ -52,6 +52,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.modeler.model.DiagramUsageEntity;
@@ -138,6 +139,28 @@ public class ModelerService extends ModelerBaseService {
 			.findFirst().orElse(null);
 	}
 
+	/**
+	 * As {@link #diagramByKey}, but for a change: the latest diagram the user may edit, so a later
+	 * one they may only look at does not hide it. With none, the latest they may see, to be refused.
+	 */
+	private ProcessDiagramEntity editableDiagramByKey(CIBUser user, String key, String folderId) {
+		if (folderId != null && !folderId.isBlank()) {
+			return diagramByKey(user, key, folderId);
+		}
+		List<ProcessDiagramEntity> visible = dbProcessDiagramProvider.findByProcessKey(key, projectGuard.hiddenProjects(user));
+		return visible.stream().filter(diagram -> mayEdit(user, diagram.getFolderId())).findFirst()
+			.orElse(visible.isEmpty() ? null : visible.get(0));
+	}
+
+	private boolean mayEdit(CIBUser user, String folderId) {
+		try {
+			projectGuard.require(user, folderId, Action.EDIT);
+			return true;
+		} catch (AccessDeniedException e) {
+			return false;
+		}
+	}
+
 	private FormEntity formByFormId(CIBUser user, String formId, String folderId) {
 		if (folderId != null && !folderId.isBlank()) {
 			projectGuard.require(user, folderId, Action.VIEW);
@@ -216,7 +239,7 @@ public class ModelerService extends ModelerBaseService {
 			@RequestParam(required = false) String folderId,
 			HttpServletRequest rq) {
 		CIBUser user = checkModelerAccess(rq);
-		ProcessDiagramEntity diagramEntity = checked(user, diagramByKey(user, deploymentName, folderId), Action.EDIT);
+		ProcessDiagramEntity diagramEntity = checked(user, editableDiagramByKey(user, deploymentName, folderId), Action.EDIT);
 		if (diagramEntity == null) throw new SystemException(new IllegalArgumentException("Diagram not found for key: " + deploymentName));
 		String type = diagramEntity.getType();
 		if (type.contains("bpmn")) type = "bpmn";
@@ -233,18 +256,22 @@ public class ModelerService extends ModelerBaseService {
 		String originalFilename = multipartFile.getOriginalFilename() != null ? multipartFile.getOriginalFilename() : "";
 		String tagName = originalFilename.endsWith(".dmn") ? "decision" : "process";
 		String type = originalFilename.endsWith(".dmn") ? "dmn" : "bpmn-c7";
+		String targetFolder = folderFor(user, folderId);
 		ProcessDiagramEntity artifactExists = null;
 		if (multipartFile != null) {
 			try {
-				byte[] fileContent = multipartFile.getBytes();                
+				byte[] fileContent = multipartFile.getBytes();
 	            String prefix = getBpmnPrefix(fileContent);
 	    		entity.setName(getXmlAttribute(fileContent, tagName.equals("process") ? prefix + tagName : tagName, "name"));
 	    		entity.setProcesskey(getXmlAttribute(fileContent, tagName.equals("process") ? prefix + tagName : tagName, "id"));
 	    		entity.setActive(true);
 				entity.setDiagram(fileContent);
 				entity.setType(type);
-				artifactExists = dbProcessDiagramProvider.findByName(entity.getName());
-				
+				// A key is unique within a folder, so what the file may overwrite is the model with its
+				// key in the folder it goes into, not one of the same name anywhere
+				artifactExists = entity.getProcesskey() == null ? null
+					: dbProcessDiagramProvider.findByProcessKeyInFolder(entity.getProcesskey(), targetFolder);
+
 				if(artifactExists != null && overwrite) {
 					checked(user, artifactExists, Action.EDIT);
 					entity.setId(artifactExists.getId());
@@ -255,9 +282,9 @@ public class ModelerService extends ModelerBaseService {
 				
 	        } catch (IOException e) {}
 		}
-		entity.setFolderId(folderFor(user, folderId));
+		entity.setFolderId(targetFolder);
 		entity.setUpdatedBy(user.getUserID());
-		return dbProcessDiagramProvider.createDiagram(entity);			
+		return dbProcessDiagramProvider.createDiagram(entity);
 	}
 
 	@RequestMapping(value = "/deployment/create/{id}", method = RequestMethod.POST)
@@ -521,7 +548,7 @@ public class ModelerService extends ModelerBaseService {
 	@RequestMapping(value = "/process/find-by-name/data", method = RequestMethod.POST)
 	public ResponseEntity<byte[]> findByName(@RequestParam String name, HttpServletRequest rq) {
 		CIBUser user = checkModelerAccess(rq);
-		ProcessDiagramEntity diagram = checked(user, dbProcessDiagramProvider.findByName(name), Action.VIEW);
+		ProcessDiagramEntity diagram = checked(user, dbProcessDiagramProvider.findByName(name, projectGuard.hiddenProjects(user)), Action.VIEW);
 		if (diagram == null) return ResponseEntity.notFound().build();
 		byte[] file = diagram.getDiagram();
 		HttpHeaders headers = new HttpHeaders();

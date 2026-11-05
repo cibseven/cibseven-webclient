@@ -42,8 +42,9 @@ public interface IFormProvider {
 	Optional<FormEntity> findById(String id) throws SystemException;
 
 	/**
-	 * The latest form with this formId, in any folder: a form id is unique only within a folder.
-	 * Returns null when none exists.
+	 * The latest form with this formId, in any folder and any project, so also in one hidden from a
+	 * user: a form id is unique only within a folder, and a lookup for a user takes the overload that
+	 * leaves the hidden projects out. Returns null when none exists.
 	 *
 	 * @param formId
 	 */

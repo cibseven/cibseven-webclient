@@ -29,6 +29,7 @@ import org.cibseven.webapp.exception.ExistingProcessKeyException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -147,13 +148,60 @@ class ModelKeyPerFolderTest {
 
 	@Test
 	void tellsWhetherAnotherDiagramHasTheKey() {
-		when(diagrams.findByProcesskeyOrderByUpdatedDesc("invoice")).thenReturn(List.of(diagram("d-1", "invoice", "sales")));
+		when(diagrams.existsByProcesskeyAndIdNot("invoice", "d-2")).thenReturn(true);
+		when(diagrams.existsByProcesskey("invoice")).thenReturn(true);
 
 		assertThat(diagramProvider.isKeyUsedElsewhere("invoice", "d-1")).isFalse();
 		assertThat(diagramProvider.isKeyUsedElsewhere("invoice", "d-2")).isTrue();
 		// A diagram not saved yet is no diagram the key could belong to
 		assertThat(diagramProvider.isKeyUsedElsewhere("invoice", null)).isTrue();
 		assertThat(diagramProvider.isKeyUsedElsewhere("order", null)).isFalse();
+	}
+
+	/**
+	 * The folder check passed, so the database refusing the row means the key was taken: by a save
+	 * meanwhile, or by a schema from before 3.0 that keeps it unique across folders.
+	 */
+	@Test
+	void refusesAsTakenAKeyTheDatabaseRefuses() {
+		when(diagrams.save(any())).thenThrow(new DataIntegrityViolationException("MOD_UK_DIAGRAMS_KEY_FOLDER"));
+		when(forms.save(any())).thenThrow(new DataIntegrityViolationException("UNIQUE (FORMID)"));
+
+		assertThatThrownBy(() -> diagramProvider.createDiagram(diagram(null, "invoice", "sales")))
+			.isInstanceOf(ExistingProcessKeyException.class);
+		assertThatThrownBy(() -> formProvider.createForm(form(null, "invoice-form", "sales")))
+			.isInstanceOf(ExistingFormIdException.class);
+	}
+
+	/** Left to the commit, the refusal would come as a system error carrying the SQL. */
+	@Test
+	void writesAtOnceSoTheRefusalComesHere() {
+		diagramProvider.createDiagram(diagram(null, "invoice", "sales"));
+		formProvider.createForm(form(null, "invoice-form", "sales"));
+
+		verify(diagrams).flush();
+		verify(forms).flush();
+	}
+
+	@Test
+	void passesOnARefusalThatCannotBeTheKey() {
+		when(diagrams.save(any())).thenThrow(new DataIntegrityViolationException("NOT NULL"));
+
+		assertThatThrownBy(() -> diagramProvider.createDiagram(diagram(null, null, "sales")))
+			.isInstanceOf(DataIntegrityViolationException.class);
+	}
+
+	/** A name was never unique, and the same file may now sit in two folders. */
+	@Test
+	void findsTheLatestDiagramWithANameTheUserMaySee() {
+		ProcessDiagramEntity hiddenDiagram = diagram("d-2", "invoice", "claims");
+		ProcessDiagramEntity visible = diagram("d-1", "invoice", "sales");
+		when(diagrams.findByNameOrderByUpdatedDesc("Invoice")).thenReturn(List.of(hiddenDiagram, visible));
+		ProjectGuard.HiddenProjects hidden = new ProjectGuard.HiddenProjects(Set.of("claims"), folderId -> folderId);
+
+		assertThat(diagramProvider.findByName("Invoice")).isSameAs(hiddenDiagram);
+		assertThat(diagramProvider.findByName("Invoice", hidden)).isSameAs(visible);
+		assertThat(diagramProvider.findByName("Nope", hidden)).isNull();
 	}
 
 	@Test
@@ -188,7 +236,9 @@ class ModelKeyPerFolderTest {
 
 		assertThat(formProvider.findByFormId("invoice-form")).isSameAs(latest);
 		assertThat(formProvider.findByFormId("invoice-form", hidden)).extracting(FormEntity::getId).containsExactly("f-2", "f-1");
+		when(forms.existsByFormIdAndIdNot("invoice-form", "f-1")).thenReturn(true);
 		assertThat(formProvider.isFormIdUsedElsewhere("invoice-form", "f-1")).isTrue();
+		assertThat(formProvider.isFormIdUsedElsewhere("invoice-form", null)).isFalse();
 		assertThat(formProvider.findByFormIdInFolder("invoice-form", "sales")).isNull();
 	}
 }

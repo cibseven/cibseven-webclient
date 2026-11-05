@@ -43,15 +43,17 @@ public interface IProcessDiagramProvider {
 	Optional<ProcessDiagramEntity> findById(String id) throws SystemException;
     
     /**
-	 * Find diagram by name
-	 * 
+	 * The latest diagram with this name, in any folder and any project, so also in one hidden from
+	 * a user: a lookup for a user takes the overload that leaves those out. Returns null when none exists.
+	 *
 	 * @param name
 	 */
 	ProcessDiagramEntity findByName(String name) throws SystemException;
-    
+
 	/**
-	 * The latest diagram with this key, in any folder: a key is unique only within a folder.
-	 * Returns null when none exists.
+	 * The latest diagram with this key, in any folder and any project, so also in one hidden from a
+	 * user: a key is unique only within a folder, and a lookup for a user takes the overload that
+	 * leaves the hidden projects out. Returns null when none exists.
 	 *
 	 * @param key
 	 */

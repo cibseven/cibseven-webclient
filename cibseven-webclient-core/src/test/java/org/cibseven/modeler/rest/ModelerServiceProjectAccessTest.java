@@ -34,6 +34,7 @@ import org.cibseven.modeler.provider.UnifiedDiagramProvider;
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.ModelerAccessChecker;
+import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.exception.AccessDeniedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,6 +54,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -308,6 +310,49 @@ class ModelerServiceProjectAccessTest {
 		assertThatThrownBy(() -> service.deployBpmnReduce("invoice", new LinkedMultiValueMap<>(), "sales", request))
 			.isInstanceOf(AccessDeniedException.class);
 		verify(diagrams).findByProcessKeyInFolder("invoice", "sales");
+	}
+
+	/** A later diagram the user may only look at does not stand in the way of one they may deploy. */
+	@Test
+	void deploysByKeyTheLatestDiagramTheUserMayEdit() throws Exception {
+		ProcessDiagramEntity viewOnly = diagramIn("claims");
+		ProcessDiagramEntity editable = new ProcessDiagramEntity();
+		editable.setId("diagram-2");
+		editable.setProcesskey("invoice");
+		editable.setType("bpmn-c7");
+		editable.setFolderId("sales");
+		when(diagrams.findByProcessKey(eq("invoice"), any())).thenReturn(List.of(viewOnly, editable));
+		refuse("claims", Action.EDIT);
+		BpmProvider bpm = mock(BpmProvider.class);
+		ReflectionTestUtils.setField(service, "bpmProvider", bpm);
+		MultipartFile upload = mock(MultipartFile.class);
+		when(upload.getBytes()).thenReturn("<bpmn/>".getBytes());
+		MultiValueMap<String, MultipartFile> file = new LinkedMultiValueMap<>();
+		file.add("file", upload);
+
+		service.deployBpmnReduce("invoice", file, null, request);
+
+		verify(guard, atLeastOnce()).require(USER, "sales", Action.EDIT);
+		verify(bpm).deployBpmn(any(), any(), eq(USER));
+	}
+
+	/** A key is unique within a folder, so an import overwrites the model with its key there, not one of its name elsewhere. */
+	@Test
+	void overwritesOnImportTheDiagramWithTheKeyInTheFolderItGoesInto() throws Exception {
+		ProcessDiagramEntity stored = diagramIn("sales");
+		when(diagrams.findByProcessKeyInFolder("invoice", "sales")).thenReturn(stored);
+		MultipartFile upload = mock(MultipartFile.class);
+		when(upload.getOriginalFilename()).thenReturn("invoice.bpmn");
+		when(upload.getBytes()).thenReturn(("<bpmn:definitions xmlns:bpmn=\"http://www.omg.org/spec/BPMN/20100524/MODEL\">"
+			+ "<bpmn:process id=\"invoice\" name=\"Invoice\"/></bpmn:definitions>").getBytes());
+		MultiValueMap<String, MultipartFile> file = new LinkedMultiValueMap<>();
+		file.add("file", upload);
+
+		service.createProcessFromFile(file, true, "sales", request);
+
+		verify(diagrams).updateDiagram(stored);
+		verify(diagrams, never()).createDiagram(any());
+		verify(diagrams, never()).findByName(any());
 	}
 
 	@Test

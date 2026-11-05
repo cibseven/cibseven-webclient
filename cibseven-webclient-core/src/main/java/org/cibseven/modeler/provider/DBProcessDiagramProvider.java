@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
@@ -68,11 +69,19 @@ public class DBProcessDiagramProvider implements IProcessDiagramProvider {
 		return processDiagramDao.findById(id);
 	}
 
+	/** The latest of the diagrams with this name, whichever folder it is in. */
 	@Override
 	public ProcessDiagramEntity findByName(String name) throws SystemException {
-		return processDiagramDao.findByName(name);
+		return processDiagramDao.findByNameOrderByUpdatedDesc(name).stream().findFirst().orElse(null);
 	}
-	
+
+	/** The latest of the diagrams with this name the user may see. */
+	public ProcessDiagramEntity findByName(String name, ProjectGuard.HiddenProjects hidden) throws SystemException {
+		return processDiagramDao.findByNameOrderByUpdatedDesc(name).stream()
+			.filter(diagram -> !hidden.hides(diagram.getFolderId()))
+			.findFirst().orElse(null);
+	}
+
 	/** The latest of the diagrams with this key, whichever folder it is in. */
 	@Override
 	public ProcessDiagramEntity findByProcessKey(String key) throws SystemException {
@@ -95,8 +104,7 @@ public class DBProcessDiagramProvider implements IProcessDiagramProvider {
 	 * keeps one definition per key, so deploying either adds a version to what the other deployed.
 	 */
 	public boolean isKeyUsedElsewhere(String key, String id) throws SystemException {
-		return processDiagramDao.findByProcesskeyOrderByUpdatedDesc(key).stream()
-			.anyMatch(diagram -> !diagram.getId().equals(id));
+		return id == null ? processDiagramDao.existsByProcesskey(key) : processDiagramDao.existsByProcesskeyAndIdNot(key, id);
 	}
 
 	@Override
@@ -105,7 +113,26 @@ public class DBProcessDiagramProvider implements IProcessDiagramProvider {
 		requireKeyFree(entity.getProcesskey(), entity.getFolderId(), null);
 		entity.setCreated(Timestamp.valueOf(LocalDateTime.now()));
 		entity.setUpdated(Timestamp.valueOf(LocalDateTime.now()));
-		return processDiagramDao.save(entity);
+		return store(entity);
+	}
+
+	/**
+	 * Writes at once, so a key the database refuses is refused here as the request error. The check
+	 * of the folder passed, so another save took the key meanwhile, or the schema is one from before
+	 * 3.0, where a key is unique across all folders. Left to the commit, it fails as a system error
+	 * carrying the SQL.
+	 */
+	private ProcessDiagramEntity store(ProcessDiagramEntity entity) {
+		try {
+			ProcessDiagramEntity saved = processDiagramDao.save(entity);
+			processDiagramDao.flush();
+			return saved;
+		} catch (DataIntegrityViolationException e) {
+			if (entity.getProcesskey() == null) {
+				throw e;
+			}
+			throw new ExistingProcessKeyException(entity.getProcesskey());
+		}
 	}
 
 	/**
@@ -143,7 +170,7 @@ public class DBProcessDiagramProvider implements IProcessDiagramProvider {
 	public ProcessDiagramEntity updateDiagram(ProcessDiagramEntity entity) throws SystemException {
 		ProcessDiagramEntity stored = processDiagramDao.findById(entity.getId()).orElseThrow(() -> new EntityNotFoundException("ProcessDiagramEntity not found"));
 		applyUpdate(entity, stored);
-		return processDiagramDao.save(stored);
+		return store(stored);
 	}
 
 	/**

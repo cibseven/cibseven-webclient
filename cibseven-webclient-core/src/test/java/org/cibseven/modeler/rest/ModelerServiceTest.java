@@ -230,7 +230,7 @@ public class ModelerServiceTest {
 
 	@Test
 	void findByName_servesTheDiagram() {
-		when(dbProcessDiagramProvider.findByName("Invoice")).thenReturn(diagram("d-1", "Invoice", "invoice"));
+		when(dbProcessDiagramProvider.findByName(eq("Invoice"), any())).thenReturn(diagram("d-1", "Invoice", "invoice"));
 
 		ResponseEntity<byte[]> response = service.findByName("Invoice", request);
 
@@ -240,7 +240,7 @@ public class ModelerServiceTest {
 
 	@Test
 	void findByName_answers404WhenThereIsNoSuchName() {
-		when(dbProcessDiagramProvider.findByName("Nope")).thenReturn(null);
+		when(dbProcessDiagramProvider.findByName(eq("Nope"), any())).thenReturn(null);
 
 		assertThat(service.findByName("Nope", request).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 	}

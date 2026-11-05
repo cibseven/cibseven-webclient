@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
@@ -86,8 +87,7 @@ public class FormProvider implements IFormProvider {
 	 * resolves a form reference by it, so deploying either adds a version to what the other deployed.
 	 */
 	public boolean isFormIdUsedElsewhere(String formId, String id) throws SystemException {
-		return formRepositoryDao.findByFormIdOrderByUpdatedDesc(formId).stream()
-			.anyMatch(form -> !form.getId().equals(id));
+		return id == null ? formRepositoryDao.existsByFormId(formId) : formRepositoryDao.existsByFormIdAndIdNot(formId, id);
 	}
 
 	@Override
@@ -96,7 +96,7 @@ public class FormProvider implements IFormProvider {
 		requireFormIdFree(entity.getFormId(), entity.getFolderId(), null);
 		entity.setCreated(Timestamp.valueOf(LocalDateTime.now()));
 		entity.setUpdated(Timestamp.valueOf(LocalDateTime.now()));
-		return formRepositoryDao.save(entity);
+		return store(entity);
 	}
 
 	@Override
@@ -104,7 +104,26 @@ public class FormProvider implements IFormProvider {
 		FormEntity stored = formRepositoryDao.findById(entity.getId())
 			.orElseThrow(() -> new EntityNotFoundException("FormEntity not found"));
 		applyUpdate(entity, stored);
-		return formRepositoryDao.save(stored);
+		return store(stored);
+	}
+
+	/**
+	 * Writes at once, so a form id the database refuses is refused here as the request error. The
+	 * check of the folder passed, so another save took it meanwhile, or the schema is one from before
+	 * 3.0, where a form id is unique across all folders. Left to the commit, it fails as a system
+	 * error carrying the SQL.
+	 */
+	private FormEntity store(FormEntity entity) {
+		try {
+			FormEntity saved = formRepositoryDao.save(entity);
+			formRepositoryDao.flush();
+			return saved;
+		} catch (DataIntegrityViolationException e) {
+			if (entity.getFormId() == null) {
+				throw e;
+			}
+			throw new ExistingFormIdException(entity.getFormId());
+		}
 	}
 
 	/**
