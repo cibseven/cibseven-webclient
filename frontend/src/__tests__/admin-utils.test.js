@@ -14,8 +14,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect } from 'vitest'
-import { isValidEmail, same, isValidId, notEmpty, getStringObjByKeys, profileTabRouteName } from '@/components/admin/utils'
+import { describe, it, expect, vi } from 'vitest'
+import { isValidEmail, same, isValidId, notEmpty, getStringObjByKeys, profileTabRouteName, findProfileUser } from '@/components/admin/utils'
+import { AdminService } from '@/services.js'
+
+vi.mock('@/services.js', () => ({ AdminService: { findUsers: vi.fn() } }))
 
 describe('notEmpty', () => {
   it('null', () => {
@@ -177,5 +180,27 @@ describe('profileTabRouteName', () => {
     ['adminGroup', 'information', 'adminGroupInformation']
   ])('names the %s tab %s %s', (page, tab, name) => {
     expect(profileTabRouteName(page, tab)).toBe(name)
+  })
+})
+
+describe('findProfileUser', () => {
+  const ADA = { id: 'ada', firstName: 'Ada', lastName: 'Lovelace', email: 'ada@example.org' }
+  const NO_INFO = { id: 'ada', firstName: null, lastName: null, email: null, noInfo: true }
+
+  it('gives the details the engine has of the user', async () => {
+    AdminService.findUsers.mockResolvedValue([ADA])
+    expect(await findProfileUser('ada')).toEqual(ADA)
+    expect(AdminService.findUsers).toHaveBeenCalledWith({ id: 'ada' })
+  })
+
+  it('stands in a user without details when the engine has none', async () => {
+    AdminService.findUsers.mockResolvedValue([])
+    expect(await findProfileUser('ada')).toEqual(NO_INFO)
+  })
+
+  it('does not ask the engine when the details may not be read', async () => {
+    AdminService.findUsers.mockClear()
+    expect(await findProfileUser('ada', false)).toEqual(NO_INFO)
+    expect(AdminService.findUsers).not.toHaveBeenCalled()
   })
 })

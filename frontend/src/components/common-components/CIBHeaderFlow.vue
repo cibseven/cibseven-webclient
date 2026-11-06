@@ -42,7 +42,7 @@
       </div>
 
       <button type="button" class="cib-nav-action cib-nav-burger d-md-none flex-shrink-0"
-        @click.stop="isCollapsed = !isCollapsed"
+        @click.stop="toggleMenu"
         :aria-expanded="isCollapsed ? 'true' : 'false'"
         :aria-label="$t('navigation.menu')">
         <span :class="['mdi', 'mdi-24px', isCollapsed ? 'mdi-close' : 'mdi-menu']" aria-hidden="true"></span>
@@ -93,11 +93,13 @@ export default {
     navClusters: { type: Array, default: () => [] },
     // Standard clusters placed before language and user (feedback, help)
     utilityClusters: { type: Array, default: () => [] },
-    // Entries of the user menu above "Logout"; the first one with `to` is where the avatar leads.
+    // Entries of the user menu above "Logout"; the first one with `to` is where the avatar leads, unless userTo is given.
     // Parents built for the old header may still use the `userItems` and `customNavItems` slots instead.
-    userItems: { type: Array, default: () => [] }
+    userItems: { type: Array, default: () => [] },
+    userTo: { type: [Object, String], default: null }
   },
-  emits: ['logout', 'select'],
+  // open: a menu opened, with its cluster's id, or null for the mobile menu, which holds them all
+  emits: ['logout', 'select', 'open'],
   data() {
     return {
       engines: [],
@@ -152,7 +154,7 @@ export default {
         id: 'user',
         label: this.user.displayName || this.user.id,
         avatar: this.userInitials,
-        to: this.userItems.find(item => item.to)?.to ?? null,
+        to: this.userTo ?? this.userItems.find(item => item.to)?.to ?? null,
         active: this.userItems.some(item => item.active),
         // Logout in a section of its own, so a line sets it apart from the account entries
         sections: [this.userItems, [{
@@ -220,8 +222,14 @@ export default {
       this.isCollapsed = false
     },
     setOpenCluster(id, open) {
-      if (open) this.openCluster = id
-      else if (this.openCluster === id) this.openCluster = null
+      if (open) {
+        this.openCluster = id
+        this.$emit('open', id)
+      } else if (this.openCluster === id) this.openCluster = null
+    },
+    toggleMenu() {
+      this.isCollapsed = !this.isCollapsed
+      if (this.isCollapsed) this.$emit('open', null)
     },
     // Engine, language and logout are the header's own; anything else goes to the parent
     onSelect(item) {

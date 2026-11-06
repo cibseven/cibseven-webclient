@@ -35,6 +35,7 @@ export { updateAppTitle, checkExternalReturn, isMobile, hasHeader, getTheme, loa
 export { parseXMLDocumentation } from './utils/parser.js'
 export { applyConfigDefaults } from './utils/config.js'
 export { profileTabRouteName } from '@/components/admin/utils.js'
+export { profileTabs, registerProfileTab, addProfileTabRoutes } from '@/components/admin/profileTabs.js'
 export { ENGINE_STORAGE_KEY, ENGINE_TOKENS_STORAGE_KEY } from './constants.js'
 export { 
   getEngineTokens, 

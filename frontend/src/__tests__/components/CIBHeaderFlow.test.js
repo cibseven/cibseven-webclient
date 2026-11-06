@@ -378,6 +378,22 @@ describe('CIBHeaderFlow.vue', () => {
       expect(wrapper.vm.userCluster.to).toBeNull()
     })
 
+    it('lets the avatar lead to userTo when given, whatever the entries', () => {
+      const preferences = { key: 'preferences', label: 'Preferences', to: '/seven/auth/account/1/preferences' }
+      wrapper = createWrapper({ userItems: [preferences], userTo: '/seven/auth/account/1' })
+      expect(wrapper.vm.userCluster.to).toBe('/seven/auth/account/1')
+    })
+
+    // e.g. so the parent loads what a menu shows only when it opens
+    it('tells which menu opened, and null for the mobile menu', async () => {
+      wrapper = createWrapper()
+      wrapper.vm.setOpenCluster('user', true)
+      wrapper.vm.setOpenCluster('user', false)
+      await wrapper.find('.cib-nav-burger').trigger('click')
+      await wrapper.find('.cib-nav-burger').trigger('click')
+      expect(wrapper.emitted('open')).toEqual([['user'], [null]])
+    })
+
     it('keeps one menu open at a time', () => {
       wrapper = createWrapper()
       wrapper.vm.setOpenCluster('tasks', true)

@@ -76,6 +76,20 @@ describe('ProfileGroup tabs', () => {
     expect(vm.tabProps).toEqual({ groupId: 'sales' })
   })
 
+  // e.g. a tab offered only to authorization admins
+  it('lets a tab check a permission with the permissions of the page', () => {
+    const vm = context()
+    for (const mixin of ProfileGroup.mixins) {
+      for (const [name, method] of Object.entries(mixin.methods)) vm[name] = method.bind(vm)
+    }
+    vm.tabs.push({ id: 'extra', label: 'extra', show: ({ config, applicationPermissions }) =>
+      applicationPermissions(config.permissions.authorizationsManagement, 'authorization') })
+    vm.$root.config = { authorizationEnabled: false, permissions: {} }
+    expect(vm.visibleTabs.map(tab => tab.id)).toContain('extra')
+    vm.$root.config = { authorizationEnabled: true, permissions: {} }
+    expect(vm.visibleTabs.map(tab => tab.id)).not.toContain('extra')
+  })
+
   it('swaps a tab that is not shown for the first one that is', () => {
     const vm = context({ $route: { name: 'adminGroupExtra', params: { groupId: 'sales' } } })
     vm.tabs.push({ id: 'extra', label: 'extra', show: () => false })

@@ -33,6 +33,7 @@ function context(overrides = {}) {
     ...ProfileUser.data.call({}),
     editMode: false,
     $route: { name: 'accountProfile', params: { userId: 'ada' }, query: {} },
+    canSearchUsers: () => true,
     ...overrides
   })
   vm.$root.user = { id: 'ada' }
@@ -193,6 +194,25 @@ describe('ProfileUser loadUser', () => {
     expect(vm.openShownTab).toHaveBeenCalledTimes(1)
   })
 
+  // The backend would refuse the search with an error dialog; the user still gets their preferences
+  it('does not ask for the details of the own account where the backend would refuse the search', async () => {
+    const vm = context({ openShownTab: vi.fn(), canSearchUsers: vi.fn(() => false) })
+    await vm.loadUser('ada')
+    expect(vm.canSearchUsers).toHaveBeenCalled()
+    expect(AdminService.findUsers).not.toHaveBeenCalled()
+    expect(vm.user).toMatchObject({ id: 'ada', noInfo: true })
+    expect(vm.openShownTab).toHaveBeenCalled()
+  })
+
+  // The admin pages are open only to those who manage users
+  it('asks for the details on an admin page without checking further', async () => {
+    AdminService.findUsers.mockResolvedValue([ADA])
+    const vm = context({ editMode: true, openShownTab: vi.fn(), canSearchUsers: vi.fn(() => false) })
+    await vm.loadUser('ada')
+    expect(vm.canSearchUsers).not.toHaveBeenCalled()
+    expect(vm.user).toEqual(ADA)
+  })
+
   it('loads the user again when the route names another one', () => {
     const vm = { editMode: true, $route: { params: { userId: 'bob' } }, loadUser: vi.fn() }
     ProfileUser.watch['$route.params.userId'].call(vm)
@@ -233,7 +253,7 @@ describe('ProfileUser rendered', () => {
     await router.isReady()
     // VTU mounts into a root of its own, which the page reads the signed-in user and the config from
     const App = {
-      created() { Object.assign(this.$root, { user: { id: 'ada' }, config: {} }) },
+      created() { Object.assign(this.$root, { user: { id: 'ada', permissions: {} }, config: {} }) },
       template: '<router-view></router-view>'
     }
     const wrapper = mount(App, {
