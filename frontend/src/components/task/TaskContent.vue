@@ -20,14 +20,14 @@
   <div class="h-100 d-flex flex-column">
     <div class="visually-hidden" ref="ariaLiveText" aria-live="polite"></div>
     <div v-if="isMobile()" class="border-bottom bg-white">
-      <div v-if="task" class="d-flex align-items-center" style="min-height: 40px;">
-        <b-button variant="link" class="text-dark border-0 border-end rounded-0 align-self-stretch px-2"
+      <div v-if="task" class="d-flex align-items-center" style="min-height: 45px;">
+        <b-button variant="link" class="text-dark border-0 border-end rounded-0 align-self-stretch p-0" style="width: 45px;"
           :title="$t('task.backToTaskList')" :aria-label="$t('task.backToTaskList')" @click="$emit('show-task-list')">
-          <span class="mdi mdi-18px mdi-clipboard-text-outline" aria-hidden="true"></span>
+          <span class="mdi mdi-18px mdi-chevron-left" aria-hidden="true"></span>
         </b-button>
-        <h3 ref="titleTask" tabindex="-1" class="h6 fw-bold mb-0 px-2 flex-grow-1 text-truncate">{{ task.name }}</h3>
-        <b-dropdown ref="assigneeMenu" variant="link" toggle-class="text-dark border-0 px-2" no-caret right
-          :label="assigneeStatus">
+        <h3 ref="titleTask" tabindex="-1" class="h5 fw-bold mb-0 mx-3 flex-grow-1 text-truncate">{{ task.name }}</h3>
+        <b-dropdown ref="assigneeMenu" variant="link" class="align-self-stretch" style="width: 45px;"
+          toggle-class="text-dark border-0 rounded-0 p-0 w-100 h-100" no-caret right :label="assigneeStatus">
           <template #button-content>
             <span class="mdi mdi-18px" :class="task.assignee == null ? 'mdi-account-question' : 'mdi-account'" aria-hidden="true"></span>
           </template>
@@ -51,7 +51,7 @@
             <span class="mdi mdi-18px mdi-account-multiple-plus me-2" aria-hidden="true"></span>{{ $t('admin.groups.addCandidateGroups') }}
           </b-dropdown-item-button>
         </b-dropdown>
-        <b-button v-if="hasOptions" variant="link" class="text-dark border-0 border-start rounded-0 align-self-stretch px-2"
+        <b-button v-if="hasOptions" variant="link" class="text-dark border-0 border-start rounded-0 align-self-stretch p-0" style="width: 45px;"
           :title="$t('task.options')" :aria-label="$t('task.options')" @click="$emit('show-options')">
           <span class="mdi mdi-18px mdi-dots-vertical" aria-hidden="true"></span>
         </b-button>
