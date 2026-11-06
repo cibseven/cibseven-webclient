@@ -34,6 +34,7 @@ import org.cibseven.bpm.engine.identity.GroupQuery;
 import org.cibseven.bpm.engine.identity.UserQuery;
 import org.cibseven.bpm.engine.impl.identity.Authentication;
 import org.cibseven.bpm.engine.impl.util.PermissionConverter;
+import org.cibseven.bpm.engine.rest.dto.AbstractQueryDto;
 import org.cibseven.bpm.engine.rest.dto.authorization.AuthorizationDto;
 import org.cibseven.bpm.engine.rest.dto.authorization.AuthorizationQueryDto;
 import org.cibseven.bpm.engine.rest.dto.identity.GroupQueryDto;
@@ -310,10 +311,10 @@ public class DirectUserProvider implements IUserProvider {
 			queryDto.setMember(member.get());
 		if (memberOfTenant.isPresent())
 			queryDto.setMemberOfTenant(memberOfTenant.get());
-		if (sortBy.isPresent())
+		if (sortBy.isPresent()) {
 			queryDto.setSortBy(sortBy.get());
-		if (sortOrder.isPresent())
-			queryDto.setSortOrder(sortOrder.get().equals("asc") ? "asc" : "desc");
+			queryDto.setSortOrder(isSortDescending(sortOrder) ? AbstractQueryDto.SORT_ORDER_DESC_VALUE : AbstractQueryDto.SORT_ORDER_ASC_VALUE);
+		}
 		GroupQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 
 		Integer first = firstResult.isPresent() ? Integer.parseInt(firstResult.get()) : null;
@@ -511,6 +512,7 @@ public class DirectUserProvider implements IUserProvider {
 			query.memberOfTenant(memberOfTenant.get());
 		if (sortBy.isPresent()) {
 			String sortByValue = sortBy.get();
+			boolean ordered = true;
 			switch (sortByValue) {
 			case "userId":
 				query.orderByUserId();
@@ -525,6 +527,14 @@ public class DirectUserProvider implements IUserProvider {
 				query.orderByUserEmail();
 				break;
 			default:
+				ordered = false;
+			}
+			// the engine requires a direction after every orderByXX()
+			if (ordered) {
+				if (isSortDescending(sortOrder))
+					query.desc();
+				else
+					query.asc();
 			}
 		}
 		if (email.isPresent())
@@ -547,6 +557,13 @@ public class DirectUserProvider implements IUserProvider {
 
 		Collection<User> userCollection = createUsers(resultList);
 		return userCollection;
+	}
+
+	/**
+	 * Like the engine REST API, only "desc" sorts descending; a missing or any other value sorts ascending.
+	 */
+	private static boolean isSortDescending(Optional<String> sortOrder) {
+		return sortOrder.map(AbstractQueryDto.SORT_ORDER_DESC_VALUE::equals).orElse(false);
 	}
 
 	private Collection<User> createUsers(List<org.cibseven.bpm.engine.identity.User> resultList) {

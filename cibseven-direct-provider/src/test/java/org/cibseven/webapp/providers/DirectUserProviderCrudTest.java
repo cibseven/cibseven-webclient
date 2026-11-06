@@ -30,10 +30,12 @@ import static org.mockito.Mockito.withSettings;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.cibseven.bpm.engine.IdentityService;
 import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.identity.Group;
+import org.cibseven.bpm.engine.identity.GroupQuery;
 import org.cibseven.bpm.engine.identity.UserQuery;
 import org.cibseven.bpm.engine.impl.identity.Authentication;
 import org.cibseven.bpm.engine.impl.persistence.entity.UserEntity;
@@ -199,6 +201,93 @@ public class DirectUserProviderCrudTest {
 		SevenUser profile = userProvider.getUserProfile("demo", user);
 
 		assertThat(profile.getId()).isEqualTo("DEMO");
+	}
+
+	// ---------- sorting ----------
+
+	private void findUsersSorted(Optional<String> sortBy, Optional<String> sortOrder) {
+		userProvider.findUsers(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), sortBy, sortOrder, Optional.empty(), user);
+	}
+
+	private GroupQuery findGroupsSorted(Optional<String> sortBy, Optional<String> sortOrder) {
+		GroupQuery groupQuery = mock(GroupQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
+		when(identityService.createGroupQuery()).thenReturn(groupQuery);
+		userProvider.findGroups(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), sortBy, sortOrder, Optional.empty(), Optional.empty(), user);
+		return groupQuery;
+	}
+
+	@Test
+	void findUsers_sortsAscending() {
+		findUsersSorted(Optional.of("userId"), Optional.of("asc"));
+
+		verify(userQuery).orderByUserId();
+		verify(userQuery).asc();
+		verify(userQuery, never()).desc();
+	}
+
+	@Test
+	void findUsers_sortsDescending() {
+		findUsersSorted(Optional.of("lastName"), Optional.of("desc"));
+
+		verify(userQuery).orderByUserLastName();
+		verify(userQuery).desc();
+		verify(userQuery, never()).asc();
+	}
+
+	@Test
+	void findUsers_sortsAscendingWithoutSortOrder() {
+		// the engine rejects an orderByXX() without a direction (CIB7-2363)
+		findUsersSorted(Optional.of("firstName"), Optional.empty());
+
+		verify(userQuery).orderByUserFirstName();
+		verify(userQuery).asc();
+	}
+
+	@Test
+	void findUsers_sortsAscendingForAnUnknownSortOrder() {
+		// like the engine REST API, only "desc" sorts descending
+		findUsersSorted(Optional.of("email"), Optional.of("DESC"));
+
+		verify(userQuery).orderByUserEmail();
+		verify(userQuery).asc();
+		verify(userQuery, never()).desc();
+	}
+
+	@Test
+	void findUsers_setsNoDirectionForAnUnknownSortBy() {
+		findUsersSorted(Optional.of("unknown"), Optional.of("asc"));
+
+		verify(userQuery, never()).asc();
+		verify(userQuery, never()).desc();
+	}
+
+	@Test
+	void findGroups_sortsDescending() {
+		GroupQuery groupQuery = findGroupsSorted(Optional.of("id"), Optional.of("desc"));
+
+		verify(groupQuery).orderByGroupId();
+		verify(groupQuery).desc();
+		verify(groupQuery, never()).asc();
+	}
+
+	@Test
+	void findGroups_sortsAscendingWithoutSortOrder() {
+		GroupQuery groupQuery = findGroupsSorted(Optional.of("name"), Optional.empty());
+
+		verify(groupQuery).orderByGroupName();
+		verify(groupQuery).asc();
+	}
+
+	@Test
+	void findGroups_sortsAscendingForAnUnknownSortOrder() {
+		GroupQuery groupQuery = findGroupsSorted(Optional.of("id"), Optional.of("descending"));
+
+		verify(groupQuery).orderByGroupId();
+		verify(groupQuery).asc();
+		verify(groupQuery, never()).desc();
 	}
 
 	// ---------- credentials ----------
