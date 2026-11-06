@@ -40,22 +40,7 @@ public class BatchProvider extends SevenProviderBase implements IBatchProvider {
 	    List<Batch> batches = Arrays.asList(
 	        ((ResponseEntity<Batch[]>) doGet(url, Batch[].class, user, true)).getBody()
 	    );
-
-	    batches.forEach(batch -> {
-	    	String batchId = batch.getId();
-
-	        Map<String, Object> statParams = new HashMap<>();
-	        statParams.put("batchId", batchId);
-
-	        Collection<Batch> statList = getBatchStatistics(statParams, user);
-	        if (!statList.isEmpty()) {
-	        	Batch stats = statList.iterator().next();
-	            batch.setCompletedJobs(stats.getCompletedJobs());
-	            batch.setRemainingJobs(stats.getRemainingJobs());
-	            batch.setFailedJobs(stats.getFailedJobs());
-	        }
-        });
-	    
+	    addBatchStatistics(batches, user);
 	    return batches;
 	}
 	
