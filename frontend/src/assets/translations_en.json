@@ -187,7 +187,8 @@
 		"activateInstance": "Activate process instance",
 		"copySuccess": "Selected value copied",
 		"refreshVersions": "Refresh history versions",
-		"loadVersions": "Load all history versions",
+		"loadVersions": "Load all instance statistics",
+		"loadData": "Load data",
 		"externalProcessStarted": "Process successfully started",
 		"exportInstances": "Export instances",
 		"deleteProcessDefinition": {

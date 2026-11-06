@@ -187,7 +187,8 @@
 		"activateInstance": "Активувати екземпляр процесу",
 		"copySuccess": "Значення скопійовано",
 		"refreshVersions": "Оновити історію версій",
-		"loadVersions": "Завантажити всі версії історії",
+		"loadVersions": "Завантажити всю статистику екземплярів",
+		"loadData": "Завантажити дані",
 		"externalProcessStarted": "Процес успішно запущено",
 		"exportInstances": "Експортувати екземпляри",
 		"deleteProcessDefinition": {

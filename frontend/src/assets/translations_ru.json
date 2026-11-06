@@ -187,7 +187,8 @@
 		"activateInstance": "Активировать экземпляр процесса",
 		"copySuccess": "Выбранное значение скопировано",
 		"refreshVersions": "Обновить версии истории",
-		"loadVersions": "Загрузить все версии истории",
+		"loadVersions": "Загрузить всю статистику экземпляров",
+		"loadData": "Загрузить данные",
 		"externalProcessStarted": "Процесс успешно запущен",
 		"exportInstances": "Экспорт экземпляров",
 		"deleteProcessDefinition": {
