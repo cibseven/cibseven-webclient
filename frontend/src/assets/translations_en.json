@@ -1206,7 +1206,8 @@
 	"navigation": {
 		"home": "Home",
 		"menu": "Navigation menu",
-		"infoAndHelp": "Info & help"
+		"infoAndHelp": "Info & help",
+		"skipToContent": "Skip to main content"
 	},
 	"infoAndHelp": {
 		"flowLinkTerms": "Terms of use",
