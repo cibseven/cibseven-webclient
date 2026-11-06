@@ -29,7 +29,6 @@ import org.cibseven.webapp.rest.model.TaskFiltering;
 import org.cibseven.webapp.rest.model.TaskHistory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
 
@@ -208,7 +207,6 @@ public class TaskProviderTest {
 	 * null-safe.
 	 */
 	@Test
-	@Disabled("KNOWN BUG: setAssignee compares assignee.equals(\"null\"), so a null reference NPEs instead of unclaiming")
 	void setAssignee_unclaimsOnANullAssigneeReference() throws Exception {
 		engine.enqueueJson("");
 
