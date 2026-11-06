@@ -18,6 +18,8 @@ package org.cibseven.webapp.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -30,8 +32,11 @@ import java.util.Optional;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.exception.NoObjectFoundException;
+import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.rest.model.Deployment;
+import org.cibseven.webapp.rest.model.Variable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -316,5 +321,39 @@ public class ProcessServiceDeploymentsTest {
 
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 		verify(bpmProvider).deleteVariableByExecutionId("exec-1", "amount", user);
+	}
+
+	// a missing variable answers 200 with an empty body, not 404 or 500 (CIB7-2380)
+
+	@Test
+	void fetchStatusDataset_returnsNullWhenTheInstanceHasNoStatusDataset() {
+		when(bpmProvider.fetchProcessInstanceVariable(eq("pi-1"), eq("_statusDataset"), anyBoolean(), eq(user)))
+			.thenThrow(new NoObjectFoundException(new SystemException("Variable _statusDataset not found")));
+
+		assertThat(processService.fetchStatusDataset("pi-1", "invoice", null, Locale.ENGLISH, request)).isNull();
+	}
+
+	@Test
+	void fetchChatComments_returnsNullWhenTheInstanceHasNoChatComments() {
+		when(bpmProvider.fetchProcessInstanceVariable(eq("pi-1"), eq("chatComments"), anyBoolean(), eq(user)))
+			.thenThrow(new NoObjectFoundException(new SystemException("Variable chatComments not found")));
+
+		assertThat(processService.fetchChatComments("pi-1", "invoice", null, Locale.ENGLISH, request)).isNull();
+	}
+
+	@Test
+	void fetchStatusDataset_returnsTheStatusDatasetVariable() {
+		Variable statusDataset = new Variable();
+		when(bpmProvider.fetchProcessInstanceVariable("pi-1", "_statusDataset", true, user)).thenReturn(statusDataset);
+
+		assertThat(processService.fetchStatusDataset("pi-1", "invoice", null, Locale.ENGLISH, request)).isSameAs(statusDataset);
+	}
+
+	@Test
+	void fetchChatComments_returnsTheChatCommentsVariable() {
+		Variable chatComments = new Variable();
+		when(bpmProvider.fetchProcessInstanceVariable("pi-1", "chatComments", true, user)).thenReturn(chatComments);
+
+		assertThat(processService.fetchChatComments("pi-1", "invoice", null, Locale.ENGLISH, request)).isSameAs(chatComments);
 	}
 }

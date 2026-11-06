@@ -706,7 +706,9 @@ public class DirectProcessProvider implements IProcessProvider {
 		Variable variableDeserialized = variablesDeserialized.size() == 1 ? variablesDeserialized.get(0) : null;
 		Variable variableSerialized = variablesSerialized.size() == 1 ? variablesSerialized.get(0) : null;
 		if (variableDeserialized == null || variableSerialized == null)
-			throw new SystemException("Variable " + variableName + " not found in process instance " + processInstanceId);
+			// same exception the REST provider gets from the engine's 404, so callers like
+			// fetchStatusDataset / fetchChatComments can treat a missing variable as "no value"
+			throw new NoObjectFoundException(new SystemException("Variable " + variableName + " not found in process instance " + processInstanceId));
 		if (deserializeValue) {
 			variableDeserialized.setValueSerialized(variableSerialized.getValue());
 			variableDeserialized.setValueDeserialized(variableDeserialized.getValue());

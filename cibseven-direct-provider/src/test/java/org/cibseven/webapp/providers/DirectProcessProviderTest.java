@@ -25,7 +25,9 @@ import static org.cibseven.webapp.providers.ProcessInstanceRuntimeHistoryTestDat
 import static org.cibseven.webapp.providers.ProcessInstanceRuntimeHistoryTestData.PROCESS_DEFINITION_ID;
 import static org.cibseven.webapp.providers.ProcessInstanceRuntimeHistoryTestData.PROCESS_DEFINITION_KEY;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_SELF;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -55,8 +57,11 @@ import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.ProcessInstance;
+import org.cibseven.webapp.rest.model.Variable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.springframework.http.ResponseEntity;
 
@@ -314,5 +319,33 @@ public class DirectProcessProviderTest {
 
 		assertThatThrownBy(() -> processProvider.getRenderedForm("def-1", Map.of(), user))
 			.isInstanceOf(SystemException.class);
+	}
+
+	// the variables behind the status-dataset and chat-comments endpoints
+	@ParameterizedTest
+	@ValueSource(strings = { "_statusDataset", "chatComments" })
+	void fetchProcessInstanceVariable_throwsNoObjectFoundWhenTheInstanceDoesNotHoldTheVariable(String variableName) {
+		doReturn(List.of()).when(directProviderUtil).queryVariableInstances(any(), any(), any(), anyBoolean(), any(CIBUser.class));
+
+		assertThatThrownBy(() -> processProvider.fetchProcessInstanceVariable(INSTANCE_ID_1, variableName, true, user))
+			.isInstanceOf(NoObjectFoundException.class);
+	}
+
+	@Test
+	void fetchProcessInstanceVariable_returnsTheVariableWithBothValueForms() {
+		Variable deserialized = new Variable();
+		deserialized.setName("_statusDataset");
+		deserialized.setValue(Map.of("step", "1"));
+		Variable serialized = new Variable();
+		serialized.setName("_statusDataset");
+		serialized.setValue("{\"step\":\"1\"}");
+		doReturn(List.of(deserialized)).when(directProviderUtil).queryVariableInstances(any(), any(), any(), eq(true), any(CIBUser.class));
+		doReturn(List.of(serialized)).when(directProviderUtil).queryVariableInstances(any(), any(), any(), eq(false), any(CIBUser.class));
+
+		Variable variable = processProvider.fetchProcessInstanceVariable(INSTANCE_ID_1, "_statusDataset", true, user);
+
+		assertThat(variable).isSameAs(deserialized);
+		assertThat(variable.getValueSerialized()).isEqualTo("{\"step\":\"1\"}");
+		assertThat(variable.getValueDeserialized()).isEqualTo(Map.of("step", "1"));
 	}
 }
