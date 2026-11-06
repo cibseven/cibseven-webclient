@@ -42,15 +42,39 @@ public class EngineConfigurationTest {
 	}
 
 	@Test
+	public void webclientExtensionsAreOnWhenTheEngineReportsTheirVersion() throws Exception {
+		EngineConfiguration config = MAPPER.readValue(
+			"{\"engineName\":\"default\",\"webclientExtensionsVersion\":\"3.0.0\"}", EngineConfiguration.class);
+		assertEquals(Boolean.TRUE, config.getWebclientExtensionsEnabled());
+	}
+
+	/** engine-rest sends the field with null when the tables are not there. */
+	@Test
+	public void webclientExtensionsAreOffWhenTheEngineReportsNoVersion() throws Exception {
+		EngineConfiguration config = MAPPER.readValue(
+			"{\"engineName\":\"default\",\"webclientExtensionsVersion\":null}", EngineConfiguration.class);
+		assertEquals(Boolean.FALSE, config.getWebclientExtensionsEnabled());
+	}
+
+	/** Engines before 3.0.0 do not know the field, so whether they have the tables stays unknown. */
+	@Test
+	public void webclientExtensionsStayUnknownWhenTheEngineDoesNotReportThem() throws Exception {
+		EngineConfiguration config = MAPPER.readValue(
+			"{\"engineName\":\"default\",\"historyLevel\":\"full\"}", EngineConfiguration.class);
+		assertNull(config.getWebclientExtensionsEnabled());
+		assertNull(new EngineConfiguration("default", "full", true, false, -1, true).getWebclientExtensionsEnabled());
+	}
+
+	@Test
 	public void testDefaultValues_engineNameIsNull() {
 		EngineConfiguration config = new EngineConfiguration();
 		assertNull(config.getEngineName());
 	}
 
 	@Test
-	public void testDefaultValues_historyLevelIsFull() {
+	public void testDefaultValues_historyLevelIsAudit() {
 		EngineConfiguration config = new EngineConfiguration();
-		assertEquals("full", config.getHistoryLevel());
+		assertEquals("audit", config.getHistoryLevel());
 	}
 
 	@Test
@@ -116,7 +140,7 @@ public class EngineConfigurationTest {
 		"AuDiT, audit",
 		"audit, audit",
 		"Custom, custom",
-		"null, full"
+		"null, audit"
 	}, nullValues = "null")
 	public void testGetHistoryLevel_normalizesValue(String input, String expected) {
 		EngineConfiguration config = new EngineConfiguration();

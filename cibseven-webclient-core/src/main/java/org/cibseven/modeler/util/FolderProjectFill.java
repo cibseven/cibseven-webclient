@@ -18,6 +18,7 @@ package org.cibseven.modeler.util;
 
 import org.cibseven.modeler.provider.FolderProvider;
 import org.cibseven.webapp.config.SevenWebclientProperties;
+import org.cibseven.webapp.providers.WebclientExtensions;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -40,25 +41,34 @@ import lombok.extern.slf4j.Slf4j;
 public class FolderProjectFill {
 
 	private final FolderProvider folderProvider;
+	private final WebclientExtensions webclientExtensions;
 
-	public FolderProjectFill(FolderProvider folderProvider) {
+	public FolderProjectFill(FolderProvider folderProvider, WebclientExtensions webclientExtensions) {
 		this.folderProvider = folderProvider;
+		this.webclientExtensions = webclientExtensions;
 	}
 
 	/**
 	 * Once the application is up. The engine creates the table on its own schedule, so a database
 	 * that cannot be read yet is logged and the start goes on; the next start fills the folders.
+	 * Without the webclient tables, which the engine may have switched off, there is nothing to fill.
 	 */
 	@EventListener(ApplicationReadyEvent.class)
 	public void fill() {
+		if (webclientExtensions.switchedOffNow()) {
+			log.info("The engine has no webclient tables; the modeler is off");
+			return;
+		}
 		try {
 			int filled = folderProvider.fillProjects();
 			if (filled > 0) {
 				log.info("Stored the project of {} modeler folder(s)", filled);
 			}
 		} catch (RuntimeException e) {
+			// Most often a table the engine has not created, which needs no stack trace to explain
 			log.warn("Could not store the project of the modeler folders; lists may not leave out "
-				+ "the models of hidden projects in them until the next start", e);
+				+ "the models of hidden projects in them until the next start: {}", e.getMessage());
+			log.debug("Storing the project of the modeler folders failed", e);
 		}
 	}
 }

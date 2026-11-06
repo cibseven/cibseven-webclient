@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -43,12 +44,13 @@ public class EngineConfiguration {
 	 * prior to 2.2.0 (no configuration endpoint) and the legacy {@code cibseven.webclient.historyLevel}
 	 * property not set.
 	 * <p>
-	 * {@code full} matches every shipped distribution (Tomcat {@code bpm-platform.xml}, WildFly
-	 * {@code standalone.xml}, Run) and the Spring Boot starter default ({@code CamundaBpmProperties}).
-	 * The bare engine default {@code audit} ({@code ProcessEngineConfiguration.HISTORY_DEFAULT})
-	 * only applies to custom engine configurations that omit the history property.
+	 * {@code audit} is the engine default ({@code ProcessEngineConfiguration.HISTORY_DEFAULT}), as in
+	 * Camunda 7. The shipped distributions (Tomcat {@code bpm-platform.xml}, WildFly
+	 * {@code standalone.xml}, Run) configure {@code full} explicitly, and Run also sets
+	 * {@code cibseven.webclient.historyLevel: full}; with an older engine-rest and {@code full} history,
+	 * set {@code cibseven.webclient.historyLevel} to match.
 	 */
-	public static final String DEFAULT_HISTORY_LEVEL = "full";
+	public static final String DEFAULT_HISTORY_LEVEL = "audit";
 
 	private String engineName;
 	private String historyLevel = DEFAULT_HISTORY_LEVEL;
@@ -94,6 +96,39 @@ public class EngineConfiguration {
 	 * @since 3.0.0 (engine version)
 	 */
 	private Boolean enforceHistoryTimeToLive;
+
+	/**
+	 * Whether the engine has the webclient tables, which hold the modeler, the chat and the
+	 * notifications. Without them these features are off, whatever the webclient's own properties
+	 * say. The engine creates them when its {@code webclientExtensionsEnabled} property is set, and
+	 * reports what is in its database: the version of the tables, none when they are not there.
+	 * <ul>
+	 *   <li>{@code true} / {@code false}: the engine reports a version, or reports none. engine-rest
+	 *   sends the version itself, see {@link #readWebclientExtensionsVersion(String)}.</li>
+	 *   <li>{@code null}: <b>unknown</b>, the engine does not report it (engines before 3.0.0).</li>
+	 * </ul>
+	 * Boxed on purpose, see {@link #historyTimeToLive}.
+	 *
+	 * @since 3.0.0 (engine version)
+	 */
+	private Boolean webclientExtensionsEnabled;
+
+	/** As before the engine reported whether it has the webclient tables, which stays unknown. */
+	public EngineConfiguration(String engineName, String historyLevel, boolean authorizationEnabled,
+			boolean enablePasswordPolicy, Integer historyTimeToLive, Boolean enforceHistoryTimeToLive) {
+		this(engineName, historyLevel, authorizationEnabled, enablePasswordPolicy, historyTimeToLive,
+			enforceHistoryTimeToLive, null);
+	}
+
+	/**
+	 * engine-rest reports the version of the webclient tables, and always sends the field: with
+	 * {@code null} when the tables are not there. So a field that is there tells whether the engine
+	 * has them, and one that is not leaves it unknown, as with engines before 3.0.0.
+	 */
+	@JsonSetter("webclientExtensionsVersion")
+	void readWebclientExtensionsVersion(String version) {
+		webclientExtensionsEnabled = version != null;
+	}
 
 	public String getHistoryLevel() {
 		return historyLevel != null ? historyLevel.toLowerCase() : DEFAULT_HISTORY_LEVEL;

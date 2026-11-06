@@ -21,6 +21,7 @@ import javax.sql.DataSource;
 import org.cibseven.modeler.model.ProcessDiagramEntity;
 import org.cibseven.modeler.repository.ProcessDiagramRepository;
 import org.cibseven.modeler.util.ElementTemplateLoader;
+import org.cibseven.webapp.providers.WebclientExtensions;
 import org.cibseven.persistence.CibsevenJpa;
 import org.cibseven.webapp.config.SevenWebclientPropertiesAutoConfiguration;
 import org.junit.jupiter.api.Test;
@@ -91,6 +92,7 @@ class ModelerPersistenceConfigurationTest {
 				.of(TransactionAutoConfiguration.class))
 			.withUserConfiguration(HostDrivingItsOwnDataSourceTransactions.class)
 			.withBean(ObjectMapper.class)
+			.withBean(WebclientExtensions.class, () -> WebclientExtensions.UNKNOWN)
 			.withBean(ElementTemplateLoader.class)
 			.run(context -> {
 				assertThat(context).hasNotFailed();

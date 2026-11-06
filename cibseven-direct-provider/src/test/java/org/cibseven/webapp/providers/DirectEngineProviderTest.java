@@ -78,6 +78,31 @@ public class DirectEngineProviderTest {
 		assertThat(result.getHistoryTimeToLive()).isEqualTo(expected);
 	}
 
+	/** Like engine-rest: what is in the database, not what the engine was configured to create. */
+	@ParameterizedTest
+	@CsvSource(value = {"3.0.0,true", "null,false"}, nullValues = "null")
+	void getEngineConfiguration_reportsWhetherTheEngineHasTheWebclientTables(String version, boolean enabled) {
+		ProcessEngineConfigurationImpl config = mock(ProcessEngineConfigurationImpl.class);
+		when(config.getWebclientExtensionsVersion()).thenReturn(version);
+		when(processEngine.getProcessEngineConfiguration()).thenReturn(config);
+
+		assertThat(provider.getEngineConfiguration("default").getWebclientExtensionsEnabled()).isEqualTo(enabled);
+	}
+
+	/** An engine before 3.0.0 has no such method; the rest of its configuration is still read. */
+	@Test
+	void getEngineConfiguration_engineBefore3_leavesTheWebclientTablesUnknown() {
+		ProcessEngineConfigurationImpl config = mock(ProcessEngineConfigurationImpl.class);
+		when(config.getHistory()).thenReturn("full");
+		when(config.getWebclientExtensionsVersion()).thenThrow(new NoSuchMethodError("getWebclientExtensionsVersion"));
+		when(processEngine.getProcessEngineConfiguration()).thenReturn(config);
+
+		EngineConfiguration result = provider.getEngineConfiguration("default");
+
+		assertThat(result.getHistoryLevel()).isEqualTo("full");
+		assertThat(result.getWebclientExtensionsEnabled()).isNull();
+	}
+
 	@Test
 	void getEngineConfiguration_engineNotFound_returnsNull() {
 		doReturn(null).when(directProviderUtil).getProcessEngine(any(String.class));
@@ -99,5 +124,7 @@ public class DirectEngineProviderTest {
 
 		assertThat(result.getHistoryTimeToLive()).isNull();
 		assertThat(result.getEnforceHistoryTimeToLive()).isNull();
+		// The version of the webclient tables is on the public configuration, so it is still read
+		assertThat(result.getWebclientExtensionsEnabled()).isFalse();
 	}
 }
