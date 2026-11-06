@@ -114,7 +114,7 @@ export default {
 <style scoped>
 .cib-nav-mobile {
   position: fixed;
-  inset: 55px 0 0 0;
+  inset: var(--cib-navbar-height, 55px) 0 0 0;
   overflow: auto;
   background: var(--bs-body-bg);
   z-index: 1029;

@@ -1515,4 +1515,17 @@ describe('TasksContent - task list header', () => {
     expect(actions[0].attributes('aria-label')).toBe('nav-bar.filtersTitle')
     expect(actions[0].classes()).toContain('order-first')
   })
+
+  // Mobile design: 45x45px header buttons, so the headers grow and SidebarsFlow must subtract their full height
+  it('sizes the sidebar headers for the mobile design only on mobile', () => {
+    const mobile = mountTasksContent(true)
+    const desktop = mountTasksContent()
+
+    for (const ref of ['regionFilter', 'regionTasks']) {
+      expect(mobile.findComponent({ ref }).attributes('header-calc')).toBe('46px')
+      expect(desktop.findComponent({ ref }).attributes('header-calc')).toBe('40px')
+    }
+    expect(mobile.findComponent({ ref: 'regionFilter' }).classes()).toContain('sidebars-mobile')
+    expect(desktop.findComponent({ ref: 'regionFilter' }).classes()).not.toContain('sidebars-mobile')
+  })
 })
