@@ -24,6 +24,7 @@ import java.util.List;
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.User;
 import org.cibseven.webapp.config.SevenWebclientProperties;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.rest.CustomRestTemplate;
 import org.cibseven.webapp.rest.model.InfoVersion;
@@ -41,7 +42,6 @@ import org.springframework.http.converter.HttpMessageConverters;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.ServletWebRequest;
@@ -52,11 +52,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.mvc.WebContentInterceptor;
 
-import com.fasterxml.jackson.core.StreamReadConstraints;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.databind.json.JsonMapper;
 
 @Configuration
 @ConditionalOnProperty(
@@ -79,35 +75,30 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 
 	final SevenWebclientProperties properties;
 
+	private JsonMapper jsonMapper;
+
 	public SevenWebclientContext(SevenWebclientProperties properties) {
 		this.properties = properties;
 	}
 
-    @Bean
-    public ObjectMapper objectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        StreamReadConstraints streamReadConstraints = StreamReadConstraints
-                .builder()
-                .maxStringLength(properties.getCustom().getSpring().getJackson().getParser().getMaxSize())
-                .build();
-        objectMapper.getFactory().setStreamReadConstraints(streamReadConstraints);
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        // Deprecated interim opt-out, remove together with the Jackson 3 migration
-        boolean writeDatesAsTimestamps = properties.getCustom().getSpring().getJackson().getSerialization().isWriteDatesAsTimestamps();
-        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, writeDatesAsTimestamps);
-        objectMapper.configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, writeDatesAsTimestamps);
-        return objectMapper;
-    }
+	/**
+	 * The JSON mapper of the webclient's REST services and of its engine REST client, see
+	 * {@link WebclientJsonMapper#create(SevenWebclientProperties)}. Deliberately not a bean: a
+	 * {@code JsonMapper} bean would replace Spring Boot's own one in an application that embeds the
+	 * webclient.
+	 */
+	public synchronized JsonMapper jsonMapper() {
+		if (jsonMapper == null) {
+			jsonMapper = WebclientJsonMapper.create(properties);
+		}
+		return jsonMapper;
+	}
 
 	@Override
-	@SuppressWarnings("removal")
 	public void configureMessageConverters(HttpMessageConverters.ServerBuilder builder) {
-		MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter();
-		jacksonConverter.setObjectMapper(objectMapper());
 		builder.registerDefaults()
 				.withStringConverter(new StringHttpMessageConverter(StandardCharsets.UTF_8)) // needed for UiService
-				.withJsonConverter(jacksonConverter)
+				.withJsonConverter(new JacksonJsonHttpMessageConverter(jsonMapper()))
 				.addCustomConverter(new FormHttpMessageConverter())
 				.addCustomConverter(new ResourceHttpMessageConverter()) // needed for DocumentService.download
 				.addCustomConverter(new ByteArrayHttpMessageConverter()); // needed for fetching data variables
@@ -195,12 +186,10 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 		havingValue = "true",
 		matchIfMissing = true
 	)
-	@SuppressWarnings("removal")
 	public CustomRestTemplate customRestTemplate() {
 		// It will be configured via @PostConstruct using @Autowired dependencies
 		CustomRestTemplate template = new CustomRestTemplate();
-		MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter();
-		jacksonConverter.setObjectMapper(objectMapper());
+		JacksonJsonHttpMessageConverter jacksonConverter = new JacksonJsonHttpMessageConverter(jsonMapper());
 		List<HttpMessageConverter<?>> converters = new ArrayList<>(template.getMessageConverters());
 		converters.replaceAll(c -> c instanceof JacksonJsonHttpMessageConverter ? jacksonConverter : c);
 		template.setMessageConverters(converters);

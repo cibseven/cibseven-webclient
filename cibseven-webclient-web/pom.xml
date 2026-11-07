@@ -22,11 +22,6 @@
 			<groupId>org.cibseven.webapp</groupId>
 			<artifactId>cibseven-webclient-core</artifactId>
 			<version>${project.version}</version>
-			<!--
-				cibseven-webclient-core compiles against Jackson 2 (com.fasterxml.jackson.*).
-				SB4 ships Jackson 3 (tools.jackson.*) by default; we add Jackson 2
-				back explicitly below so the shared code still works at runtime.
-			-->
 		</dependency>
 
 		<!--
@@ -51,20 +46,13 @@
 		</dependency>
 
 		<!--
-		    Spring Boot 4 defaults to Jackson 3 and deprecates Jackson 2 support, 
-			but still provides Jackson 2 compatibility modules.
-			cibseven-webclient-core's REST providers / model
-			classes use Jackson 2 ObjectMapper / JsonNode directly; this keeps them
-			working. Coexists with Jackson 3 (tools.jackson.*) since they're in
-			different top-level packages.
+			The webclient reads and writes JSON with Jackson 3 (tools.jackson.*), see SevenWebclientContext.
+			Jackson 2 still reaches the war through cibseven-direct-provider (cibseven-engine-rest-core)
+			and springdoc (swagger-core, YAML); nothing of the webclient's own JSON goes through it.
 		-->
 		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
+			<groupId>tools.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-jsr310</artifactId>
 		</dependency>
 
 		<dependency>

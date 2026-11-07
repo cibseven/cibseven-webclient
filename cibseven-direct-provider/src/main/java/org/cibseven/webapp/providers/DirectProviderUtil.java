@@ -78,6 +78,8 @@ public class DirectProviderUtil {
 			processEngines.put(engineId, processEngine);
 			ObjectMapper objectMapper = new ObjectMapper();
 			JacksonConfigurator.configureObjectMapper(objectMapper);
+			// The webclient's models carry Jackson 3 trees
+			Jackson2Bridge.register(objectMapper);
 			objectMappers.put(engineId, objectMapper);
 		}
 		return processEngine;

@@ -406,7 +406,7 @@ private List<VariableInstanceDto> queryVariableInstances(VariableInstanceQueryDt
 		String extendingQueryString;
 		try {
 			extendingQueryString = filters.json();
-		} catch (JsonProcessingException e) {
+		} catch (tools.jackson.core.JacksonException e) {
 			throw new SystemException("Failed json conversion", e);
 		}
 
@@ -643,7 +643,7 @@ private List<VariableInstanceDto> queryVariableInstances(VariableInstanceQueryDt
 		String extendingQuery;
 		try {
 			extendingQuery = filters.json();
-		} catch (JsonProcessingException e) {
+		} catch (tools.jackson.core.JacksonException e) {
 			throw new SystemException("Failed json conversion", e);
 		}
 		return executeFilterList(extendingQuery, filterId, firstResult, maxResults, user);

@@ -47,11 +47,10 @@
 		<common-auth.version>1.4.0</common-auth.version>
 		<version.spring.boot>4.1.1</version.spring.boot>
 		<version.openapi-starter-webmvc-ui>3.1.0</version.openapi-starter-webmvc-ui>
-		<!-- Spring Boot 4's own BOM still manages Jackson 2 (it imports com.fasterxml.jackson:jackson-bom
-		     and ships spring-boot-jackson2), but its starters default to Jackson 3 (tools.jackson.*)
-		     for the wire layer and don't pull Jackson 2 in transitively. The shared core compiles
-		     against com.fasterxml.jackson.* (Jackson 2) directly, so Spring Boot's own Jackson 2 BOM
-		     version is overridden explicitly to this patched release. -->
+		<!-- The webclient is on Jackson 3 (tools.jackson.*, version.jackson3). Jackson 2 is left only
+		     where others bring it: cibseven-engine-rest-core, which cibseven-direct-provider still talks
+		     to with Jackson 2 until it moves (CIB7-1535), and springdoc's swagger-core. Spring Boot's own
+		     Jackson 2 BOM version is overridden explicitly to this patched release. -->
 		<version.jackson2>2.21.7</version.jackson2>
 		<version.jackson3>3.1.7</version.jackson3>
 
@@ -413,8 +412,8 @@ You may obtain a copy of the License at
 
 			<!-- Import the Jackson 2 BOM before spring-boot-dependencies so it wins for every
 			     com.fasterxml.jackson.* artifact (core, annotations, databind, datatype-*, module-*,
-			     dataformat-*, jakarta-rs) pulled in by the modules via jjwt-jackson, the cibseven-engine
-			     REST client and the explicit Jackson 2 dependencies of cibseven-webclient-web.
+			     dataformat-*, jakarta-rs) still pulled in: by cibseven-engine-rest-core (direct
+			     provider), by springdoc's swagger-core, and jackson-annotations, which Jackson 3 uses too.
 			     spring-boot-dependencies imports this same jackson-bom itself (pinned to an older
 			     patch), so ours must be declared first to take precedence. -->
 			<dependency>

@@ -26,6 +26,23 @@
 	        <groupId>org.cibseven.bpm</groupId>
 	        <artifactId>cibseven-engine-rest-core</artifactId>
 			<version>${version.cibseven.engine}</version>
+			<exclusions>
+				<!-- The webclient reads and writes JSON web tokens with jjwt-gson (cibseven-interfaces) -->
+				<exclusion>
+					<groupId>io.jsonwebtoken</groupId>
+					<artifactId>jjwt-jackson</artifactId>
+				</exclusion>
+			</exclusions>
+	    </dependency>
+	    <!--
+	    	Jackson 2 for now: this module hands its ObjectMapper to the engine-rest DTOs of
+	    	cibseven-engine-rest-core, which are still on Jackson 2. The rest of the webclient is on
+	    	Jackson 3; Jackson2Bridge converts at the border. Moves to Jackson 3 together with
+	    	cibseven-engine-rest-core (CIB7-1535).
+	    -->
+	    <dependency>
+	        <groupId>com.fasterxml.jackson.core</groupId>
+	        <artifactId>jackson-databind</artifactId>
 	    </dependency>
         <dependency>
            <groupId>org.cibseven.bpm</groupId>

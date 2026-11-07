@@ -75,6 +75,8 @@ import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.mock.http.client.MockClientHttpRequest;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -88,8 +90,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.support.GenericWebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Pins, byte for byte, the JSON the webclient backend writes and reads: the bodies of its REST
@@ -108,6 +111,7 @@ class WebclientJsonContractTest {
 	private static final boolean RECORD = Boolean.getBoolean("webclient.json.contract.record");
 
 	private final ContractController controller = new ContractController();
+	private final SevenWebclientContext sevenWebclientContext = new SevenWebclientContext(new SevenWebclientProperties());
 	private GenericWebApplicationContext webContext;
 	private MockMvc mvc;
 
@@ -118,8 +122,7 @@ class WebclientJsonContractTest {
 		webContext.registerBean(MvcConfiguration.class);
 		// Registered as a plain WebMvcConfigurer: as a configuration class, its component scan would
 		// pull in the whole webclient
-		webContext.registerBean("sevenWebclientContext", WebMvcConfigurer.class,
-				() -> new SevenWebclientContext(new SevenWebclientProperties()));
+		webContext.registerBean("sevenWebclientContext", WebMvcConfigurer.class, () -> sevenWebclientContext);
 		webContext.registerBean(ContractController.class, () -> controller);
 		webContext.refresh();
 		mvc = MockMvcBuilders.webAppContextSetup(webContext).build();
@@ -131,6 +134,26 @@ class WebclientJsonContractTest {
 	}
 
 	// ---------------------------------------------------------------- services of the webclient
+
+	/**
+	 * Spring MVC writes and reads JSON with the Jackson 3 converter on the webclient's own mapper: a
+	 * Jackson 2 converter would write the Jackson 3 trees the services return as beans.
+	 */
+	@Test
+	void theEffectiveJsonConverterIsJackson3WithTheWebclientsMapper() {
+		List<HttpMessageConverter<?>> converters = webContext.getBean(RequestMappingHandlerAdapter.class)
+				.getMessageConverters();
+		HttpMessageConverter<?> json = converters.stream()
+				.filter(converter -> converter.canWrite(Map.class, MediaType.APPLICATION_JSON))
+				.findFirst().orElseThrow();
+
+		assertThat(json).isInstanceOf(JacksonJsonHttpMessageConverter.class);
+		assertThat(((JacksonJsonHttpMessageConverter) json).getMapper()).isSameAs(sevenWebclientContext.jsonMapper());
+		// no Jackson 2 converter behind it that could take over JSON (Spring still registers the Jackson 2
+		// YAML one, as swagger-core brings jackson-dataformat-yaml)
+		assertThat(converters).filteredOn(converter -> converter.canRead(Map.class, MediaType.APPLICATION_JSON)
+				|| converter.canWrite(Map.class, MediaType.APPLICATION_JSON)).containsExactly(json);
+	}
 
 	/** {@code GET /info/properties} with the defaults and an engine before 3.0 (nothing reported). */
 	@Test
@@ -440,8 +463,8 @@ class WebclientJsonContractTest {
 		return headers;
 	}
 
-	private static Object readTree(String json) throws IOException {
-		return new ObjectMapper().readTree(json);
+	private static Object readTree(String json) {
+		return JsonMapper.builderWithJackson2Defaults().build().readTree(json);
 	}
 
 	private static void assertMatchesFixture(String name, String actual) throws IOException {
