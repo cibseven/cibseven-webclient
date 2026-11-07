@@ -50,9 +50,7 @@ public class DirectSystemProvider implements ISystemProvider {
 	@Override
 	public JsonNode getTelemetryData(CIBUser user) {
 		TelemetryData data = directProviderUtil.getProcessEngine(user).getManagementService().getTelemetryData();
-		// Built with the engine's Jackson 2 mapper, handed on as the Jackson 3 tree of the interface
-		return Jackson2Bridge.toJackson3(
-				directProviderUtil.getObjectMapper(user).valueToTree(TelemetryDataDto.fromEngineDto(data)));
+		return directProviderUtil.getObjectMapper(user).valueToTree(TelemetryDataDto.fromEngineDto(data));
 	}
 
 	@Override

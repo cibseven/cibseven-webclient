@@ -53,6 +53,7 @@ import org.cibseven.bpm.engine.variable.value.FileValue;
 import org.cibseven.bpm.engine.variable.value.TypedValue;
 import org.cibseven.webapp.NamedByteArrayDataSource;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.exception.ExpressionEvaluationException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
@@ -67,9 +68,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.TypeFactory;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.ObjectMapper;
+
 
 import jakarta.activation.DataSource;
 import jakarta.activation.MimeType;
@@ -406,7 +407,7 @@ public class DirectVariableProvider implements IVariableProvider {
 				Class<?> clazz = Class.forName(objectType);
 
 				if (DataSource.class.isAssignableFrom(clazz)) {
-					final ObjectMapper mapper = new ObjectMapper();
+					final ObjectMapper mapper = WebclientJsonMapper.plain();
 					@SuppressWarnings("unchecked")
 					DataSource ds = mapper.convertValue(variable.getValue(), (Class<? extends DataSource>) clazz);
 
@@ -622,9 +623,11 @@ public class DirectVariableProvider implements IVariableProvider {
 
 	private Object deserializeJsonObject(String className, byte[] data, CIBUser user) {
 		try {
-			JavaType type = TypeFactory.defaultInstance().constructFromCanonical(className);
+			ObjectMapper mapper = directProviderUtil.getObjectMapper(user);
+			// the mapper's own type factory: Jackson 3 has no shared default instance
+			JavaType type = mapper.getTypeFactory().constructFromCanonical(className);
 			validateType(type, user);
-			return directProviderUtil.getObjectMapper(user).readValue(new String(data, Charset.forName("UTF-8")), type);
+			return mapper.readValue(new String(data, Charset.forName("UTF-8")), type);
 		} catch (Exception e) {
 			throw new SystemException("Could not deserialize JSON object: " + e.getMessage());
 		}

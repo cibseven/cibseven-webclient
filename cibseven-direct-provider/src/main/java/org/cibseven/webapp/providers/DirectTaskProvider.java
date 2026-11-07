@@ -92,8 +92,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import jakarta.ws.rs.core.MultivaluedHashMap;
 import jakarta.ws.rs.core.MultivaluedMap;
@@ -406,7 +406,7 @@ private List<VariableInstanceDto> queryVariableInstances(VariableInstanceQueryDt
 		String extendingQueryString;
 		try {
 			extendingQueryString = filters.json();
-		} catch (tools.jackson.core.JacksonException e) {
+		} catch (JacksonException e) {
 			throw new SystemException("Failed json conversion", e);
 		}
 
@@ -643,7 +643,7 @@ private List<VariableInstanceDto> queryVariableInstances(VariableInstanceQueryDt
 		String extendingQuery;
 		try {
 			extendingQuery = filters.json();
-		} catch (tools.jackson.core.JacksonException e) {
+		} catch (JacksonException e) {
 			throw new SystemException("Failed json conversion", e);
 		}
 		return executeFilterList(extendingQuery, filterId, firstResult, maxResults, user);
@@ -693,7 +693,7 @@ private List<VariableInstanceDto> queryVariableInstances(VariableInstanceQueryDt
 				throw new SystemException(
 						"Queries for resource type '" + resourceType + "' are currently not supported by filters.");
 			}
-		} catch (IOException e) {
+		} catch (JacksonException e) {
 			throw new SystemException("Invalid query for resource type '" + resourceType + "'", e);
 		}
 	}
@@ -728,7 +728,7 @@ private List<VariableInstanceDto> queryVariableInstances(VariableInstanceQueryDt
 		CompleteTaskDto dto;
 		try {
 			dto = objectMapper.readValue(formResult, CompleteTaskDto.class);
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			throw new SystemException(e.getMessage(), e);
 		} 
 

@@ -27,12 +27,12 @@ import org.cibseven.bpm.engine.identity.Group;
 import org.cibseven.bpm.engine.identity.User;
 import org.cibseven.bpm.engine.impl.identity.Authentication;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.rest.model.Authorizations;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -245,7 +245,7 @@ class DirectUserProviderAuthorizationsTest {
 	private DirectUserProvider providerFor(ProcessEngine processEngine) {
 		DirectProviderUtil providerUtil = new DirectProviderUtil();
 		providerUtil.processEngines.put(processEngine.getName(), processEngine);
-		providerUtil.objectMappers.put(processEngine.getName(), new ObjectMapper());
+		providerUtil.objectMappers.put(processEngine.getName(), WebclientJsonMapper.plain());
 		return new DirectUserProvider(providerUtil, "org.cibseven.webapp.auth.SevenUserProvider", "");
 	}
 

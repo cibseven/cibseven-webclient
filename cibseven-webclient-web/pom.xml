@@ -47,8 +47,8 @@
 
 		<!--
 			The webclient reads and writes JSON with Jackson 3 (tools.jackson.*), see SevenWebclientContext.
-			Jackson 2 still reaches the war through cibseven-direct-provider (cibseven-engine-rest-core)
-			and springdoc (swagger-core, YAML); nothing of the webclient's own JSON goes through it.
+			Jackson 2 still reaches the war through springdoc (swagger-core, YAML); nothing of the
+			webclient's own JSON goes through it.
 		-->
 		<dependency>
 			<groupId>tools.jackson.core</groupId>

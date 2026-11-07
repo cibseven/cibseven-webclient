@@ -45,9 +45,9 @@ import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.cibseven.bpm.engine.rest.util.EngineUtil;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import lombok.Setter;
 
@@ -76,11 +76,7 @@ public class DirectProviderUtil {
 					throw new SystemException("No process engine found with name " + engineId);
 			}
 			processEngines.put(engineId, processEngine);
-			ObjectMapper objectMapper = new ObjectMapper();
-			JacksonConfigurator.configureObjectMapper(objectMapper);
-			// The webclient's models carry Jackson 3 trees
-			Jackson2Bridge.register(objectMapper);
-			objectMappers.put(engineId, objectMapper);
+			objectMappers.put(engineId, JacksonConfigurator.configureObjectMapper());
 		}
 		return processEngine;
 	}
@@ -137,7 +133,7 @@ public class DirectProviderUtil {
 		if (value != null && !(value instanceof String) && ("json".equalsIgnoreCase(type) || "Object".equalsIgnoreCase(type))) {
 			try {
 				value = getObjectMapper(user).writeValueAsString(value);
-			} catch (JsonProcessingException e) {
+			} catch (JacksonException e) {
 				throw new SystemException("Cannot serialize value of variable " + variable.getName(), e);
 			}
 		}
