@@ -20,10 +20,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.ByteArrayOutputStream;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -37,6 +39,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import tools.jackson.core.exc.StreamConstraintsException;
+import tools.jackson.databind.DatabindException;
+import tools.jackson.databind.exc.InvalidDefinitionException;
 import tools.jackson.databind.exc.UnrecognizedPropertyException;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -337,6 +341,81 @@ class WebclientJsonMapperTest {
 			assertThat(mapper.writeValueAsString(Map.of("d", new java.sql.Date(0)))).isEqualTo("{\"d\":\"1969-12-31\"}");
 		} finally {
 			java.util.TimeZone.setDefault(previous);
+		}
+	}
+
+	/**
+	 * What the 2.2 webclient's Jackson 2 mapper wrote for {@link LocaleValue}: {@link Locale#toString()},
+	 * as value and as map key. Recorded on 2.2, keyed by the language tag.
+	 */
+	protected static final Map<String, String> LOCALE_JSON_FROM_JACKSON2 = Map.of(
+			"de-DE", "{\"locale\":\"de_DE\",\"keys\":{\"de_DE\":1}}",
+			"en", "{\"locale\":\"en\",\"keys\":{\"en\":1}}",
+			"zh-Hant-TW", "{\"locale\":\"zh_TW_#Hant\",\"keys\":{\"zh_TW_#Hant\":1}}",
+			"sr-Latn-RS", "{\"locale\":\"sr_RS_#Latn\",\"keys\":{\"sr_RS_#Latn\":1}}",
+			"th-TH-u-nu-thai", "{\"locale\":\"th_TH_#u-nu-thai\",\"keys\":{\"th_TH_#u-nu-thai\":1}}",
+			"en-Latn-US-u-ca-japanese", "{\"locale\":\"en_US_#Latn_u-ca-japanese\",\"keys\":{\"en_US_#Latn_u-ca-japanese\":1}}",
+			"ja-JP-u-ca-japanese-x-lvariant-JP", "{\"locale\":\"ja_JP_JP_#u-ca-japanese\",\"keys\":{\"ja_JP_JP_#u-ca-japanese\":1}}");
+
+	@Test
+	void bothMappersReadAndWriteLocalesAsJackson2Wrote() {
+		for (JsonMapper mapper : new JsonMapper[] { WebclientJsonMapper.plain(),
+				WebclientJsonMapper.create(new SevenWebclientProperties()) }) {
+			LOCALE_JSON_FROM_JACKSON2.forEach((tag, json) -> {
+				LocaleValue read = mapper.readValue(json, LocaleValue.class);
+
+				assertThat(read.locale.toLanguageTag()).as(json).isEqualTo(tag);
+				assertThat(read.keys).as(json).containsOnlyKeys(Locale.forLanguageTag(tag));
+				assertThat(mapper.writeValueAsString(read)).as(tag).isEqualTo(json);
+			});
+		}
+	}
+
+	public static class Amount {
+		public BigDecimal value;
+	}
+
+	/** As Jackson 2 wrote and read them: scale kept, no plain notation, untyped floats as Double. */
+	@Test
+	void bothMappersWriteAndReadBigDecimalLikeJackson2() {
+		for (JsonMapper mapper : new JsonMapper[] { WebclientJsonMapper.plain(),
+				WebclientJsonMapper.create(new SevenWebclientProperties()) }) {
+			for (String number : List.of("1.10", "1E+3", "0.000001", "1E-7", "12345678901234567890.123456789")) {
+				Amount amount = new Amount();
+				amount.value = new BigDecimal(number);
+				assertThat(mapper.writeValueAsString(amount)).isEqualTo("{\"value\":" + number + "}");
+			}
+			// equals() compares the scale too
+			assertThat(mapper.readValue("{\"value\":1.10}", Amount.class).value).isEqualTo(new BigDecimal("1.10"));
+			assertThat(mapper.readValue("{\"value\":1e3}", Amount.class).value).isEqualTo(new BigDecimal("1E+3"));
+			assertThat(mapper.readValue("{\"value\":\"2.50\"}", Amount.class).value).isEqualTo(new BigDecimal("2.50"));
+			assertThat(mapper.readValue("{\"value\":12345678901234567890.123456789}", Amount.class).value)
+					.isEqualTo(new BigDecimal("12345678901234567890.123456789"));
+
+			Map<?, ?> untyped = mapper.readValue("{\"v\":1.10,\"i\":3,\"l\":12345678901}", Map.class);
+			assertThat(untyped.get("v")).isEqualTo(1.1d);
+			assertThat(untyped.get("i")).isEqualTo(3);
+			assertThat(untyped.get("l")).isEqualTo(12345678901L);
+		}
+	}
+
+	public static class Empty {
+	}
+
+	/** Jackson 2 refused both; writing "{}" or a "null" key instead would change what is sent. */
+	@Test
+	void bothMappersRefuseEmptyBeansAndNullKeysLikeJackson2() {
+		Map<String, Integer> nullKey = new HashMap<>();
+		nullKey.put(null, 1);
+
+		for (JsonMapper mapper : new JsonMapper[] { WebclientJsonMapper.plain(),
+				WebclientJsonMapper.create(new SevenWebclientProperties()) }) {
+			assertThatThrownBy(() -> mapper.writeValueAsString(new Empty()))
+					.isInstanceOf(InvalidDefinitionException.class)
+					.hasMessageContaining("No serializer found for class");
+			assertThatThrownBy(() -> mapper.writeValueAsString(nullKey))
+					.isInstanceOf(DatabindException.class)
+					.hasMessageContaining("Null key for a Map not allowed in JSON");
 		}
 	}
 }

@@ -22,7 +22,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 import java.util.Set;
@@ -61,15 +60,22 @@ class DirectSystemProviderTest {
 				.thenReturn(new TelemetryDataImpl("8343cc7a", new ProductImpl("CIB seven", "3.0.0", "community", internals)));
 		DirectProviderUtil directProviderUtil = Mockito.spy(new DirectProviderUtil());
 		doReturn(engine).when(directProviderUtil).getProcessEngine(any(CIBUser.class));
-		doReturn(JacksonConfigurator.configureObjectMapper()).when(directProviderUtil).getObjectMapper(any(CIBUser.class));
-
-		JsonNode telemetry = new DirectSystemProvider(directProviderUtil).getTelemetryData(new CIBUser("demo"));
+		// the date format takes the default time zone when the mapper is built
+		java.util.TimeZone previous = java.util.TimeZone.getDefault();
+		java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("Europe/Berlin"));
+		JsonNode telemetry;
+		try {
+			doReturn(JacksonConfigurator.configureObjectMapper()).when(directProviderUtil).getObjectMapper(any(CIBUser.class));
+			telemetry = new DirectSystemProvider(directProviderUtil).getTelemetryData(new CIBUser("demo"));
+		} finally {
+			java.util.TimeZone.setDefault(previous);
+		}
 
 		assertThat(telemetry.get("installation").asString()).isEqualTo("8343cc7a");
 		assertThat(telemetry.get("product").get("name").asString()).isEqualTo("CIB seven");
 		assertThat(telemetry.get("product").get("internals").get("database").get("vendor").asString()).isEqualTo("h2");
-		assertThat(new SimpleDateFormat(JacksonConfigurator.DEFAULT_DATE_FORMAT)
-				.parse(telemetry.get("product").get("internals").get("data-collection-start-date").asString()))
-				.isEqualTo(new Date(0));
+		// byte for byte what engine-rest 2.2 wrote in Europe/Berlin
+		assertThat(telemetry.get("product").get("internals").get("data-collection-start-date").asString())
+				.isEqualTo("1970-01-01T01:00:00.000+0100");
 	}
 }
