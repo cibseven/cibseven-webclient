@@ -315,4 +315,28 @@ class WebclientJsonMapperTest {
 			}
 		}
 	}
+
+	@Test
+	void bothMappersWriteMonthAsEnumLikeJackson2() {
+		for (JsonMapper mapper : new JsonMapper[] { WebclientJsonMapper.plain(),
+				WebclientJsonMapper.create(new SevenWebclientProperties()) }) {
+			// Jackson 3 alone writes the month number
+			assertThat(mapper.writeValueAsString(Map.of("m", java.time.Month.MARCH))).isEqualTo("{\"m\":\"MARCH\"}");
+			assertThat(mapper.writeValueAsString(Map.of(java.time.Month.JANUARY, 1))).isEqualTo("{\"JANUARY\":1}");
+		}
+	}
+
+	@Test
+	void engineMapperWritesYearAndSqlDateAsTextLikeJackson2() {
+		// the engine/MVC mapper writes dates as text; Jackson 2 with JavaTimeModule wrote "2020" and toString()
+		java.util.TimeZone previous = java.util.TimeZone.getDefault();
+		java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("America/New_York"));
+		try {
+			JsonMapper mapper = WebclientJsonMapper.create(new SevenWebclientProperties());
+			assertThat(mapper.writeValueAsString(Map.of("y", java.time.Year.of(2020)))).isEqualTo("{\"y\":\"2020\"}");
+			assertThat(mapper.writeValueAsString(Map.of("d", new java.sql.Date(0)))).isEqualTo("{\"d\":\"1969-12-31\"}");
+		} finally {
+			java.util.TimeZone.setDefault(previous);
+		}
+	}
 }
