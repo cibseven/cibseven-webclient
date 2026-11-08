@@ -238,6 +238,15 @@ class WebclientJsonMapperTest {
 		public int getX() { return x; }
 	}
 
+	/** A record with additional getters; Jackson 3 names getURL() like the component URL. */
+	public record RecordAccessors(String URL, String getValue) {
+		public String getURL() { return "extra"; }
+		public boolean isOK() { return true; }
+	}
+
+	/** What Jackson 2 writes for {@code new RecordAccessors("u", "v")}. */
+	protected static final String RECORD_ACCESSORS_JSON = "{\"URL\":\"u\",\"getValue\":\"v\",\"url\":\"extra\",\"ok\":true}";
+
 	public static class VoidGetter {
 		public int getValue() { return 1; }
 		public Void getNothing() { return null; }
@@ -267,6 +276,16 @@ class WebclientJsonMapperTest {
 			Accessors accessors = mapper.readValue(ACCESSORS_JSON.replace("\"u\"", "\"U\"").replace("\"l\"", "\"L\""), Accessors.class);
 			assertThat(accessors.getURL()).isEqualTo("U");
 			assertThat(accessors.get_links()).isEqualTo("L");
+		}
+	}
+
+	@Test
+	void bothMappersNameAdditionalRecordGettersLikeJackson2() {
+		for (JsonMapper mapper : new JsonMapper[] { WebclientJsonMapper.plain(),
+				WebclientJsonMapper.create(new SevenWebclientProperties()) }) {
+			// Jackson 3 alone writes {"URL":"extra","getValue":"v","OK":true}: the component's value is lost
+			assertThat(mapper.readTree(mapper.writeValueAsString(new RecordAccessors("u", "v")))).isEqualTo(mapper.readTree(RECORD_ACCESSORS_JSON));
+			assertThat(mapper.readValue("{\"URL\":\"u\",\"getValue\":\"v\"}", RecordAccessors.class)).isEqualTo(new RecordAccessors("u", "v"));
 		}
 	}
 
