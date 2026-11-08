@@ -24,10 +24,13 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
 
 import org.cibseven.webapp.rest.model.Authorization;
 import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import tools.jackson.core.exc.StreamConstraintsException;
 import tools.jackson.databind.exc.UnrecognizedPropertyException;
@@ -124,5 +127,35 @@ class WebclientJsonMapperTest {
 			assertThat(out.toString(StandardCharsets.UTF_8)).isEqualTo("\"a\\uD83D\\uDE00ä https://example.com/a/b\"");
 			assertThat(mapper.writeValueAsString("</script>")).isEqualTo("\"</script>\"");
 		}
+	}
+
+	/** A date with {@code @JsonFormat(shape = STRING)} and no pattern. */
+	public static class FormattedDate {
+		@JsonFormat(shape = JsonFormat.Shape.STRING)
+		public Date date = new Date(0);
+	}
+
+	@Test
+	void bothMappersWriteLocaleAndStringShapedDatesLikeJackson2() {
+		// Jackson 3 alone writes "en-US" and "1970-01-01T00:00:00.000Z"
+		for (JsonMapper mapper : new JsonMapper[] { WebclientJsonMapper.plain(),
+				WebclientJsonMapper.create(new SevenWebclientProperties()) }) {
+			assertThat(mapper.writeValueAsString(Map.of("locale", Locale.US))).isEqualTo("{\"locale\":\"en_US\"}");
+			assertThat(mapper.readValue("\"en_US\"", Locale.class)).isEqualTo(Locale.US);
+			assertThat(mapper.readValue("\"en-US\"", Locale.class)).isEqualTo(Locale.US);
+			assertThat(mapper.writeValueAsString(new FormattedDate())).isEqualTo("{\"date\":\"1970-01-01T00:00:00.000+00:00\"}");
+		}
+		// other dates: a timestamp with the plain mapper, as with a plain Jackson 2 ObjectMapper
+		assertThat(WebclientJsonMapper.plain().writeValueAsString(Map.of("date", new Date(0)))).isEqualTo("{\"date\":0}");
+	}
+
+	@Test
+	void plainLimitsAStringTo20MillionCharactersLikeJackson2() {
+		// Jackson 3 alone accepts up to 100 million characters
+		String json = "\"" + "a".repeat(20_000_001) + "\"";
+
+		assertThatThrownBy(() -> WebclientJsonMapper.plain().readValue(json, String.class))
+				.isInstanceOf(StreamConstraintsException.class)
+				.hasMessageContaining("20000000");
 	}
 }

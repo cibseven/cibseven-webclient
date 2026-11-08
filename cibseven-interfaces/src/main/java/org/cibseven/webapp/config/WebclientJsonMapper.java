@@ -17,12 +17,19 @@
 package org.cibseven.webapp.config;
 
 
+import java.util.Locale;
+
+import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.StreamWriteConstraints;
 import tools.jackson.core.json.JsonFactory;
 import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.cfg.DateTimeFeature;
 import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.ser.std.StdSerializer;
+import tools.jackson.databind.util.StdDateFormat;
 
 /**
  * The Jackson 3 mappers of the webclient backend. Both start from Jackson 2's defaults, so the JSON
@@ -43,7 +50,10 @@ public final class WebclientJsonMapper {
 	 */
 	public static final int MAX_NESTING_DEPTH = 1000;
 
-	private static final JsonMapper PLAIN = JsonMapper.builder(jackson2Factory(null)).configureForJackson2().build();
+	/** Jackson 2's maximum length of a JSON string value, when none is configured (Jackson 3: 100,000,000). */
+	public static final int DEFAULT_MAX_STRING_LENGTH = 20_000_000;
+
+	private static final JsonMapper PLAIN = builderWithJackson2Defaults(DEFAULT_MAX_STRING_LENGTH).build();
 
 	private WebclientJsonMapper() {
 	}
@@ -81,14 +91,39 @@ public final class WebclientJsonMapper {
 	 * value, like a Jackson 2 {@code ObjectMapper} with that limit.
 	 */
 	public static JsonMapper.Builder builderWithJackson2Defaults(int maxStringLength) {
-		return JsonMapper.builder(jackson2Factory(maxStringLength)).configureForJackson2();
+		return withJackson2Output(JsonMapper.builder(jackson2Factory(maxStringLength)).configureForJackson2());
 	}
 
-	private static JsonFactory jackson2Factory(Integer maxStringLength) {
-		StreamReadConstraints.Builder read = StreamReadConstraints.builder().maxNestingDepth(MAX_NESTING_DEPTH);
-		if (maxStringLength != null) {
-			read.maxStringLength(maxStringLength);
+	/**
+	 * What Jackson 3 writes differently from Jackson 2 out of the box: a {@link Locale} as language tag
+	 * ("en-US" instead of "en_US") and a zero offset of a date written as text as "Z" (instead of "+00:00").
+	 */
+	private static JsonMapper.Builder withJackson2Output(JsonMapper.Builder builder) {
+		return builder
+				.defaultDateFormat(new StdDateFormat().withColonInTimeZone(true).withZeroOffsetAsZ(false))
+				// defaultDateFormat(...) turns WRITE_DATES_AS_TIMESTAMPS off; Jackson 2's default is on
+				.enable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+				.addModule(new SimpleModule("cibseven-webclient-jackson2-compatibility")
+						.addSerializer(Locale.class, new Jackson2LocaleSerializer()));
+	}
+
+	/** Writes a {@link Locale} with {@link Locale#toString()} ("en_US") like Jackson 2; both forms are read. */
+	private static final class Jackson2LocaleSerializer extends StdSerializer<Locale> {
+
+		Jackson2LocaleSerializer() {
+			super(Locale.class);
 		}
+
+		@Override
+		public void serialize(Locale value, JsonGenerator generator, SerializationContext context) {
+			generator.writeString(value.toString());
+		}
+	}
+
+	private static JsonFactory jackson2Factory(int maxStringLength) {
+		StreamReadConstraints.Builder read = StreamReadConstraints.defaults().rebuild()
+				.maxNestingDepth(MAX_NESTING_DEPTH)
+				.maxStringLength(maxStringLength);
 		// Jackson 2's defaults of the streaming layer too: "/" not escaped, characters outside the BMP
 		// (emoji) escaped as a surrogate pair, Jackson 2's number parsing; the same JSON either way,
 		// kept so the bytes stay the same too
