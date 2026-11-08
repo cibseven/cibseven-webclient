@@ -19,16 +19,14 @@ package org.cibseven.webapp.config;
 
 import java.util.Locale;
 
-import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.StreamReadConstraints;
 import tools.jackson.core.StreamWriteConstraints;
 import tools.jackson.core.json.JsonFactory;
 import tools.jackson.databind.DeserializationFeature;
-import tools.jackson.databind.SerializationContext;
 import tools.jackson.databind.cfg.DateTimeFeature;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.module.SimpleModule;
-import tools.jackson.databind.ser.std.StdSerializer;
+import tools.jackson.databind.ser.std.ToStringSerializer;
 import tools.jackson.databind.util.StdDateFormat;
 
 /**
@@ -103,21 +101,9 @@ public final class WebclientJsonMapper {
 				.defaultDateFormat(new StdDateFormat().withColonInTimeZone(true).withZeroOffsetAsZ(false))
 				// defaultDateFormat(...) turns WRITE_DATES_AS_TIMESTAMPS off; Jackson 2's default is on
 				.enable(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS)
+				// ToStringSerializer: "en_US" as in Jackson 2, also with type ids and "" as empty value (Locale.ROOT, NON_EMPTY)
 				.addModule(new SimpleModule("cibseven-webclient-jackson2-compatibility")
-						.addSerializer(Locale.class, new Jackson2LocaleSerializer()));
-	}
-
-	/** Writes a {@link Locale} with {@link Locale#toString()} ("en_US") like Jackson 2; both forms are read. */
-	private static final class Jackson2LocaleSerializer extends StdSerializer<Locale> {
-
-		Jackson2LocaleSerializer() {
-			super(Locale.class);
-		}
-
-		@Override
-		public void serialize(Locale value, JsonGenerator generator, SerializationContext context) {
-			generator.writeString(value.toString());
-		}
+						.addSerializer(Locale.class, new ToStringSerializer(Locale.class)));
 	}
 
 	private static JsonFactory jackson2Factory(int maxStringLength) {

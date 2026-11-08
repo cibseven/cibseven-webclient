@@ -31,6 +31,8 @@ import org.cibseven.webapp.rest.model.Authorization;
 import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import tools.jackson.core.exc.StreamConstraintsException;
 import tools.jackson.databind.exc.UnrecognizedPropertyException;
@@ -147,6 +149,30 @@ class WebclientJsonMapperTest {
 		}
 		// other dates: a timestamp with the plain mapper, as with a plain Jackson 2 ObjectMapper
 		assertThat(WebclientJsonMapper.plain().writeValueAsString(Map.of("date", new Date(0)))).isEqualTo("{\"date\":0}");
+	}
+
+	/** A Locale in a property with type information. */
+	public static class PolymorphicLocale {
+		@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS)
+		public Object value = Locale.US;
+	}
+
+	/** Locales that are left out when empty. */
+	public static class NonEmptyLocales {
+		@JsonInclude(JsonInclude.Include.NON_EMPTY)
+		public Locale root = Locale.ROOT;
+		@JsonInclude(JsonInclude.Include.NON_EMPTY)
+		public Locale locale = Locale.US;
+	}
+
+	@Test
+	void bothMappersWriteLocaleWithTypeInformationAndAsEmptyValueLikeJackson2() {
+		for (JsonMapper mapper : new JsonMapper[] { WebclientJsonMapper.plain(),
+				WebclientJsonMapper.create(new SevenWebclientProperties()) }) {
+			assertThat(mapper.writeValueAsString(new PolymorphicLocale())).isEqualTo("{\"value\":[\"java.util.Locale\",\"en_US\"]}");
+			// Locale.ROOT is written as "" and counts as empty, so NON_EMPTY leaves it out
+			assertThat(mapper.writeValueAsString(new NonEmptyLocales())).isEqualTo("{\"locale\":\"en_US\"}");
+		}
 	}
 
 	@Test
