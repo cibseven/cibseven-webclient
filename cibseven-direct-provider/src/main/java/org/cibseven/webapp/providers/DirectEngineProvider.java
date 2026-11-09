@@ -20,14 +20,23 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.cibseven.bpm.BpmPlatform;
+import org.cibseven.bpm.engine.AuthorizationService;
+import org.cibseven.bpm.engine.IdentityService;
+import org.cibseven.bpm.engine.ProcessEngine;
+import org.cibseven.bpm.engine.authorization.Authorization;
+import org.cibseven.bpm.engine.authorization.Groups;
+import org.cibseven.bpm.engine.authorization.Permissions;
+import org.cibseven.bpm.engine.authorization.Resource;
+import org.cibseven.bpm.engine.authorization.Resources;
+import org.cibseven.bpm.engine.identity.Group;
+import org.cibseven.bpm.engine.identity.User;
+import org.cibseven.bpm.engine.impl.identity.Authentication;
+import org.cibseven.bpm.engine.impl.persistence.entity.AuthorizationEntity;
 import org.cibseven.bpm.engine.impl.util.ParseUtil;
-import org.cibseven.bpm.engine.rest.dto.identity.UserCredentialsDto;
-import org.cibseven.bpm.engine.rest.dto.identity.UserDto;
-import org.cibseven.bpm.engine.rest.dto.identity.UserProfileDto;
 import org.cibseven.bpm.engine.rest.exception.RestException;
-import org.cibseven.bpm.engine.rest.impl.SetupRestServiceImpl;
 import org.cibseven.bpm.engine.rest.util.EngineUtil;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.SystemException;
@@ -121,26 +130,82 @@ public class DirectEngineProvider implements IEngineProvider {
 		return effectiveDefaultEngineId;
 	}
 
+	/*
+	 * The setup works on the engine from directProviderUtil, which also finds it through the
+	 * BpmPlatform, instead of on engine-rest's SetupRestServiceImpl: that one looks the engine up
+	 * only through the ProcessEngineProvider SPI, which the webclient on Tomcat and WildFly does not
+	 * have (CIB7-2554). What it checks and creates is the same as in SetupRestServiceImpl.
+	 */
+
 	@Override
 	public Boolean requiresSetup(String engineId) {
-		return new SetupRestServiceImpl(engineId, directProviderUtil.getObjectMapper(engineId)).requiresSetup();
+		ProcessEngine processEngine = directProviderUtil.getProcessEngine(engineId);
+		if (processEngine.getIdentityService().isReadOnly()) {
+			return false;
+		}
+		return runWithoutAuthorization(processEngine, () -> hasNoAdminGroup(processEngine));
 	}
-	
+
 	@Override
 	public void createSetupUser(NewUser user, String engineId) throws InvalidUserIdException {
-		UserDto userDto = new UserDto();
-		UserProfileDto profileDto = new UserProfileDto();
-		if (user.getProfile() == null || user.getCredentials() == null) 
-			throw new SystemException("User data not provided."); 
-		profileDto.setEmail(user.getProfile().getEmail());
-		profileDto.setFirstName(user.getProfile().getFirstName());
-		profileDto.setId(user.getProfile().getId());
-		profileDto.setLastName(user.getProfile().getLastName());
-		userDto.setProfile(profileDto);
-		UserCredentialsDto userCredentialsDto = new UserCredentialsDto();
-		userCredentialsDto.setPassword(user.getCredentials().getPassword());
-		userDto.setCredentials(userCredentialsDto);
-		new SetupRestServiceImpl(engineId, directProviderUtil.getObjectMapper(engineId)).createUser(userDto);
+		if (user.getProfile() == null || user.getProfile().getId() == null || user.getCredentials() == null)
+			throw new SystemException("User data not provided.");
+		ProcessEngine processEngine = directProviderUtil.getProcessEngine(engineId);
+		IdentityService identityService = processEngine.getIdentityService();
+		if (identityService.isReadOnly())
+			throw new SystemException("Identity service implementation is read-only.");
+		runWithoutAuthorization(processEngine, () -> {
+			// checked again here, without authorization, like SetupRestServiceImpl does
+			if (!hasNoAdminGroup(processEngine))
+				throw new SystemException("User creation not allowed - already initialized.");
+			User newUser = identityService.newUser(user.getProfile().getId());
+			newUser.setFirstName(user.getProfile().getFirstName());
+			newUser.setLastName(user.getProfile().getLastName());
+			newUser.setEmail(user.getProfile().getEmail());
+			newUser.setPassword(user.getCredentials().getPassword());
+			identityService.saveUser(newUser);
+			ensureAdminGroupExists(processEngine);
+			identityService.createMembership(newUser.getId(), Groups.CAMUNDA_ADMIN);
+			return null;
+		});
+	}
+
+	private static boolean hasNoAdminGroup(ProcessEngine processEngine) {
+		return processEngine.getIdentityService().createGroupQuery().groupId(Groups.CAMUNDA_ADMIN).count() == 0;
+	}
+
+	private static void ensureAdminGroupExists(ProcessEngine processEngine) {
+		IdentityService identityService = processEngine.getIdentityService();
+		AuthorizationService authorizationService = processEngine.getAuthorizationService();
+		if (identityService.createGroupQuery().groupId(Groups.CAMUNDA_ADMIN).count() == 0) {
+			Group adminGroup = identityService.newGroup(Groups.CAMUNDA_ADMIN);
+			adminGroup.setName("camunda BPM Administrators");
+			adminGroup.setType(Groups.GROUP_TYPE_SYSTEM);
+			identityService.saveGroup(adminGroup);
+		}
+		// ADMIN authorizations on all built-in resources
+		for (Resource resource : Resources.values()) {
+			if (authorizationService.createAuthorizationQuery().groupIdIn(Groups.CAMUNDA_ADMIN)
+					.resourceType(resource).resourceId(Authorization.ANY).count() == 0) {
+				AuthorizationEntity adminAuthorization = new AuthorizationEntity(Authorization.AUTH_TYPE_GRANT);
+				adminAuthorization.setGroupId(Groups.CAMUNDA_ADMIN);
+				adminAuthorization.setResource(resource);
+				adminAuthorization.setResourceId(Authorization.ANY);
+				adminAuthorization.addPermission(Permissions.ALL);
+				authorizationService.saveAuthorization(adminAuthorization);
+			}
+		}
+	}
+
+	private static <V> V runWithoutAuthorization(ProcessEngine processEngine, Supplier<V> action) {
+		IdentityService identityService = processEngine.getIdentityService();
+		Authentication currentAuthentication = identityService.getCurrentAuthentication();
+		try {
+			identityService.clearAuthentication();
+			return action.get();
+		} finally {
+			identityService.setAuthentication(currentAuthentication);
+		}
 	}
 
 }
