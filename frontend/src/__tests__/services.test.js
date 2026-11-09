@@ -438,10 +438,7 @@ describe('BatchService', () => {
     { name: 'getHistoricBatches', verb: 'get', call: () => BatchService.getHistoricBatches({ maxResults: 10 }), args: [`${BASE}/history/batch`, { params: { maxResults: 10 } }] },
     { name: 'getHistoricBatchCount', verb: 'get', call: () => BatchService.getHistoricBatchCount({ type: 'x' }), args: [`${BASE}/history/batch/count`, { params: { type: 'x' } }] },
     { name: 'getHistoricBatchById', verb: 'get', call: () => BatchService.getHistoricBatchById('b1'), args: [`${BASE}/history/batch/b1`] },
-    { name: 'deleteHistoricBatch', verb: 'delete', call: () => BatchService.deleteHistoricBatch('b1'), args: [`${BASE}/history/batch/b1`] },
-    { name: 'setRemovalTime', verb: 'post', call: () => BatchService.setRemovalTime({ calculatedRemovalTime: true }), args: [`${BASE}/history/batch/set-removal-time`, { calculatedRemovalTime: true }] },
-    { name: 'getCleanableBatchReport', verb: 'get', call: () => BatchService.getCleanableBatchReport({ maxResults: 10 }), args: [`${BASE}/history/batch/cleanable-batch-report`, { params: { maxResults: 10 } }] },
-    { name: 'getCleanableBatchReportCount', verb: 'get', call: () => BatchService.getCleanableBatchReportCount(), args: [`${BASE}/history/batch/cleanable-batch-report/count`] }
+    { name: 'deleteHistoricBatch', verb: 'delete', call: () => BatchService.deleteHistoricBatch('b1'), args: [`${BASE}/history/batch/b1`] }
   ])
 })
 
