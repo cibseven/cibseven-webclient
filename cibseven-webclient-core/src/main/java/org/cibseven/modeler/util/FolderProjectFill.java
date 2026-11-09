@@ -19,6 +19,7 @@ package org.cibseven.modeler.util;
 import org.cibseven.modeler.provider.FolderProvider;
 import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.providers.WebclientExtensions;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -38,10 +39,12 @@ import lombok.extern.slf4j.Slf4j;
     matchIfMissing = false
 )
 @Slf4j
-public class FolderProjectFill {
+public class FolderProjectFill implements DisposableBean {
 
 	private final FolderProvider folderProvider;
 	private final WebclientExtensions webclientExtensions;
+
+	private volatile Thread filling;
 
 	public FolderProjectFill(FolderProvider folderProvider, WebclientExtensions webclientExtensions) {
 		this.folderProvider = folderProvider;
@@ -49,14 +52,38 @@ public class FolderProjectFill {
 	}
 
 	/**
-	 * Once the application is up. The engine creates the table on its own schedule, so a database
-	 * that cannot be read yet is logged and the start goes on; the next start fills the folders.
-	 * Without the webclient tables, which the engine may have switched off, there is nothing to fill.
+	 * Once the application is up, and in a thread of its own: in Tomcat or WildFly the event comes
+	 * during the deployment, and an engine-rest in the same server answers only after it, so asking
+	 * the engine here would hold the deployment forever.
 	 */
 	@EventListener(ApplicationReadyEvent.class)
-	public void fill() {
+	public void fillInBackground() {
+		Thread thread = new Thread(this::fill, "cibseven-folder-projects");
+		thread.setDaemon(true);
+		filling = thread;
+		thread.start();
+	}
+
+	@Override
+	public void destroy() {
+		Thread thread = filling;
+		if (thread != null) {
+			thread.interrupt();
+		}
+	}
+
+	/**
+	 * The engine creates the table on its own schedule, so a database that cannot be read yet is
+	 * logged and the start goes on; the next start fills the folders. Without the webclient tables,
+	 * which the engine may have switched off, there is nothing to fill.
+	 */
+	void fill() {
 		if (webclientExtensions.switchedOffNow()) {
 			log.info("The engine has no webclient tables; the modeler is off");
+			return;
+		}
+		// Stopped while waiting for the engine: the application is shutting down
+		if (Thread.currentThread().isInterrupted()) {
 			return;
 		}
 		try {
