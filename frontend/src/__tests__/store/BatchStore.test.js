@@ -28,10 +28,7 @@ vi.mock('@/services.js', () => ({
     getBatchStatistics: vi.fn(),
     setBatchSuspensionState: vi.fn(),
     getHistoricBatchCount: vi.fn(),
-    getCleanableBatchReport: vi.fn(),
-    getCleanableBatchReportCount: vi.fn(),
-    deleteHistoricBatch: vi.fn(),
-    setHistoricBatchRemovalTime: vi.fn()
+    deleteHistoricBatch: vi.fn()
   }
 }))
 
@@ -47,10 +44,8 @@ createStoreTestSuite('BatchStore', BatchStore, {
       expect(getState()).toEqual({
         runtimeBatches: [],
         historicBatches: [],
-        cleanableBatchReport: [],
         selectedHistoricBatch: null,
-        historicBatchCount: 0,
-        cleanableBatchReportCount: 0
+        historicBatchCount: 0
       })
     })
   },
@@ -111,14 +106,6 @@ createStoreTestSuite('BatchStore', BatchStore, {
       })
     },
 
-    setCleanableBatchReport: (mutation, getState) => {
-      it('should replace the cleanable batch report', () => {
-        const state = getState()
-        mutation(state, [{ batchType: 'x', finishedBatchesCount: 2 }])
-        expect(state.cleanableBatchReport).toEqual([{ batchType: 'x', finishedBatchesCount: 2 }])
-      })
-    },
-
     setSelectedHistoricBatch: (mutation, getState) => {
       it('should store the selected historic batch', () => {
         const state = getState()
@@ -132,14 +119,6 @@ createStoreTestSuite('BatchStore', BatchStore, {
         const state = getState()
         mutation(state, 12)
         expect(state.historicBatchCount).toBe(12)
-      })
-    },
-
-    setCleanableBatchReportCount: (mutation, getState) => {
-      it('should store the cleanable batch report count', () => {
-        const state = getState()
-        mutation(state, 4)
-        expect(state.cleanableBatchReportCount).toBe(4)
       })
     }
   },
@@ -268,31 +247,6 @@ createStoreTestSuite('BatchStore', BatchStore, {
       })
     },
 
-    getCleanableBatchReport: (action, getContext) => {
-      it('should fetch, commit and return the report', async () => {
-        const context = getContext()
-        BatchService.getCleanableBatchReport.mockResolvedValue([{ batchType: 'x' }])
-
-        const result = await action(context, { maxResults: 10 })
-
-        expect(BatchService.getCleanableBatchReport).toHaveBeenCalledWith({ maxResults: 10 })
-        expect(context.commit).toHaveBeenCalledWith('setCleanableBatchReport', [{ batchType: 'x' }])
-        expect(result).toEqual([{ batchType: 'x' }])
-      })
-    },
-
-    getCleanableBatchReportCount: (action, getContext) => {
-      it('should unwrap and store the report count', async () => {
-        const context = getContext()
-        BatchService.getCleanableBatchReportCount.mockResolvedValue({ count: 3 })
-
-        const result = await action(context)
-
-        expect(context.commit).toHaveBeenCalledWith('setCleanableBatchReportCount', 3)
-        expect(result).toBe(3)
-      })
-    },
-
     deleteHistoricBatch: (action, getContext) => {
       it('should delete then drop the historic batch from state', async () => {
         const context = getContext()
@@ -309,14 +263,12 @@ createStoreTestSuite('BatchStore', BatchStore, {
   additional: (storeModule, getState) => {
     describe('field-exposing getters', () => {
       // Each getter just returns the identically-named state field, so a table covers all
-      // six without repeating the same three lines per getter.
+      // four without repeating the same three lines per getter.
       const cases = [
         ['runtimeBatches', [batch()]],
         ['historicBatches', [batch()]],
-        ['cleanableBatchReport', [{ batchType: 'x' }]],
         ['selectedHistoricBatch', batch()],
-        ['historicBatchCount', 7],
-        ['cleanableBatchReportCount', 9]
+        ['historicBatchCount', 7]
       ]
 
       it.each(cases)('%s should expose state.%s', (name, value) => {
@@ -342,16 +294,6 @@ createStoreTestSuite('BatchStore', BatchStore, {
         await storeModule.actions.setBatchSuspensionState({ commit: vi.fn() }, { id: 'b-1', params: { suspended: true } })
 
         expect(BatchService.setBatchSuspensionState).toHaveBeenCalledWith('b-1', { suspended: true })
-      })
-
-      it('setHistoricBatchRemovalTime should delegate to the service', async () => {
-        BatchService.setHistoricBatchRemovalTime.mockResolvedValue({ id: 'batch-op' })
-
-        const payload = { historicBatchQuery: {}, calculatedRemovalTime: true }
-        const result = await storeModule.actions.setHistoricBatchRemovalTime({ commit: vi.fn() }, payload)
-
-        expect(BatchService.setHistoricBatchRemovalTime).toHaveBeenCalledWith(payload)
-        expect(result).toEqual({ id: 'batch-op' })
       })
     })
   }

@@ -164,17 +164,6 @@ public class DirectVariableProviderFormsTest {
 			.hasMessageContaining("No matching process definition with key: missing");
 	}
 
-	@Test
-	void fetchProcessFormVariablesById_skipsTheDefinitionLookup() {
-		when(formService.getStartFormVariables("definition-1", null, true)).thenReturn(variables());
-
-		Map<String, Variable> result = variableProvider.fetchProcessFormVariablesById("definition-1", user);
-
-		assertThat(result).containsOnlyKeys("amount", "customer");
-		// addressing by id needs no query at all
-		verify(repositoryService, Mockito.never()).createProcessDefinitionQuery();
-	}
-
 	// ---------- activity variables ----------
 
 	@Test

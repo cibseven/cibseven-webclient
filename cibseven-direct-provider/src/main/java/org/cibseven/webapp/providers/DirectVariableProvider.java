@@ -545,17 +545,6 @@ public class DirectVariableProvider implements IVariableProvider {
 	}
 
 	@Override
-	public Map<String, Variable> fetchProcessFormVariablesById(String id, CIBUser user) throws SystemException {
-		VariableMap startFormVariables = directProviderUtil.getProcessEngine(user).getFormService().getStartFormVariables(id, null, true);
-		Map<String, Variable> resultMap = new HashMap<>();
-		Map<String, VariableValueDto> resultDtoMap = VariableValueDto.fromMap(startFormVariables);
-		for (Entry<String, VariableValueDto> resultDtoEntry : resultDtoMap.entrySet()) {
-			resultMap.put(resultDtoEntry.getKey(), directProviderUtil.convertValue(resultDtoEntry.getValue(), Variable.class, user));
-		}
-		return resultMap;
-	}
-
-	@Override
 	public void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user) {
 		try {
 			VariableValueDto variable = directProviderUtil.getObjectMapper(user).convertValue(data, VariableValueDto.class);

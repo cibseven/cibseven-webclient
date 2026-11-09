@@ -590,12 +590,6 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	}
 
 	@Override
-	public Map<String, Variable> fetchProcessFormVariablesById(String id, CIBUser user) throws SystemException {
-		String url = getEngineRestUrl(user) + "/process-definition/" + id + "/form-variables";
-		return doGet(url, new ParameterizedTypeReference<Map<String, Variable>>() {}, user).getBody();
-	}
-
-	@Override
 	public void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/execution/" + executionId + "/localVariables/" + varName;
 		doPut(url, data, user);
