@@ -46,8 +46,10 @@ export default {
     permissionsCockpit() {
       return this.$root.user && this.applicationPermissions(this.$root.config.permissions.cockpit, 'cockpit')
     },
+    // Only when the backend reports the modeler on, as the modeler route requires (modelerGuard): a backend
+    // that does not report it has no modeler, and Builder would lead nowhere but back to the start page
     permissionsModeler() {
-      return this.$root.user && this.$root.config.modelerEnabled !== false && this.applicationPermissions(this.$root.config.permissions.modeler, 'modeler')
+      return this.$root.user && this.$root.config.modelerEnabled === true && this.applicationPermissions(this.$root.config.permissions.modeler, 'modeler')
     },
     /** Whether the admin area is reachable at all: through a built-in section or a contributed one */
     permissionsUsers() {
