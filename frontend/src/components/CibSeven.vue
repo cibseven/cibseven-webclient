@@ -22,19 +22,21 @@
       :nav-clusters="navClusters" :utility-clusters="utilityClusters" :user-items="userMenuItems"
       @logout="logout" @select="onHeaderSelect">
       <div class="me-auto d-flex flex-row overflow-hidden" style="min-height: 38px;">
-        <!-- Product name on the home page, the user's own account page and the pages before sign-in; elsewhere the icon and the page title -->
-        <b-navbar-brand ref="brandHome" class="py-0 flex-shrink-0" :aria-label="brandLabel" :title="brandLabel" to="/seven/auth/start">
-          <img v-if="showFullLogo" height="38px" alt="" :src="$root.logoPath"/>
-          <!-- The mark at the size and place it has in the full logo, so it does not change when leaving
-               the start page: the icon file draws it about 1/0.62 times larger (matched by eye at 23.75px;
-               whole pixels look visibly too small or too big). Set on the element: EE renders this template
-               from its own component, where this component's scoped styles do not apply. -->
-          <img v-else style="height: 23.75px; margin: 7px 0 7.25px 9px" alt="" :src="$root.logoIconPath"/>
+        <!-- Always the theme's icon, so a customer's own icon is never replaced by CIB seven's. On the home page, the
+             user's own account page and the pages before sign-in it comes with the product name as text, in place of the
+             full logo; elsewhere it stands alone beside the page title. The icon file draws the mark about 1/0.62
+             times larger than the full logo did (matched by eye at 23.75px; whole pixels look visibly too small or too
+             big); no left margin, the navbar's own 1rem padding is the space to the edge. Styles are set on the
+             elements: EE renders this template from its own component, where this component's scoped styles do not apply. -->
+        <b-navbar-brand ref="brandHome" class="py-0 flex-shrink-0 d-flex align-items-center" :aria-label="brandLabel" :title="brandLabel" to="/seven/auth/start">
+          <img style="height: 23.75px; margin: 7px 0 7.25px 0" alt="" :src="$root.logoIconPath"/>
+          <span v-if="showFullLogo" class="ms-2" aria-hidden="true"
+            style="font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif; font-size: 22px; font-weight: 400; line-height: normal; color: var(--bs-dark); white-space: nowrap">{{ productName }}</span>
         </b-navbar-brand>
         <div v-if="pageTitle" style="max-height: 38px; min-width: 0;" class="d-flex align-items-center overflow-hidden flex-shrink-1">
-          <span class="border-start border-secondary py-3 me-2 me-md-3"></span>
+          <span class="border-start border-secondary py-3 me-3"></span>
           <h1 style="line-height: normal"
-          class="h3 m-0 text-secondary text-truncate">{{ pageTitle }}</h1>
+          class="h4 m-0 text-secondary text-truncate">{{ pageTitle }}</h1>
         </div>
         <h1 v-else-if="isStartPage" class="visually-hidden">{{ $t('navigation.home') + ' - ' + $t('navigation.menu') }}</h1>
       </div>
@@ -144,7 +146,7 @@ export default {
       return this.$route.name === 'start'
     },
     // The account page and the pages before sign-in have no page title next to the logo, so they
-    // keep the full one like the start page
+    // show the product name beside it like the start page (where the full logo used to be)
     showFullLogo: function() {
       return this.isStartPage || routeNames(this.$route).some(name => ['account', 'login', 'loggedOut', 'setup'].includes(name))
     },
@@ -156,6 +158,7 @@ export default {
           id: tool.id,
           label: this.$t(tool.title),
           icon: tool.icon,
+          iconImage: tool.iconImage,
           to: single ?? this.getToolDefaultTo(tool),
           // The menu title always opens the overview page, even when it has a single tile
           titleTo: tool.startTo ?? single ?? null,

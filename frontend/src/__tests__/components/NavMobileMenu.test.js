@@ -97,9 +97,36 @@ describe('NavMobileMenu.vue', () => {
     expect(wrapper.emitted('navigate')).toHaveLength(1)
   })
 
-  it('shows the account icon for the user row', () => {
+  it('shows the outlined account icon for the user row', () => {
     const wrapper = mountMenu({ main: [], utility: [user] })
-    expect(wrapper.find('.cib-nav-mobile-row .mdi-account').exists()).toBe(true)
+    expect(wrapper.find('.cib-nav-mobile-row .mdi-account-outline').exists()).toBe(true)
+    expect(wrapper.find('.cib-nav-mobile-row .mdi-account').exists()).toBe(false)
+  })
+
+  it('draws an image icon instead of the font icon on every kind of row', () => {
+    const image = '/img/cockpit.svg'
+    const expandable = { ...cockpit, iconImage: image }
+    const link = { id: 'link', label: 'Link', to: '/x', icon: 'mdi-link', iconImage: image }
+    const action = { id: 'act', label: 'Act', icon: 'mdi-flash', iconImage: image }
+    const wrapper = mountMenu({ main: [expandable, link, action] })
+
+    const rows = wrapper.findAll('.cib-nav-mobile-row')
+    expect(rows.map(row => row.find('.cib-nav-mobile-icon-image').attributes('style'))).toEqual(Array(3).fill('--cib-nav-icon: url("/img/cockpit.svg");'))
+    expect(wrapper.find('.mdi-speedometer').exists()).toBe(false)
+    expect(wrapper.find('.mdi-link').exists()).toBe(false)
+  })
+
+  it('shows the icon of an entry in front of its label, whatever kind of entry it is', () => {
+    const cluster = { id: 'user', label: 'Ada', avatar: 'AM', active: true, sections: [[
+      { key: 'profile', label: 'Profile', to: '/profile', icon: 'mdi-account-cog' },
+      { key: 'docs', label: 'Docs', href: 'https://docs', icon: 'mdi-book' },
+      { key: 'logout', label: 'Logout', icon: 'mdi-logout' },
+      { key: 'plain', label: 'Plain' }
+    ]] }
+    const wrapper = mountMenu({ main: [cluster] })
+
+    expect(wrapper.findAll('.cib-nav-mobile-item').map(item => item.find('.mdi').exists() ? item.find('.mdi').classes().find(c => c !== 'mdi' && c !== 'mdi-18px') : null))
+      .toEqual(['mdi-account-cog', 'mdi-book', 'mdi-logout', null])
   })
 
   it('keeps the page behind it from scrolling while open', () => {

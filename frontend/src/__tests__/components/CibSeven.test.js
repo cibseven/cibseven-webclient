@@ -58,6 +58,71 @@ describe('CibSeven.vue', () => {
     })
   })
 
+  // The theme's icon is always used. Where the full logo used to be, it comes with the product name as text;
+  // elsewhere it stands alone beside the page title
+  describe('brand', () => {
+    const mountBrand = (routeName, { matched = [], productNamePageTitle } = {}) => shallowMount(CibSeven, {
+      global: {
+        mocks: {
+          user: { id: 'demo' }, header: 'true', logoIconPath: 'themes/acme/logo-icon.svg', logoPath: 'themes/acme/logo.svg',
+          $t: key => key, $route: { path: '/seven/auth/x', name: routeName, meta: { title: 'page.title' }, matched },
+          config: { permissions: {}, layout: {}, supportedLanguages: [], productNamePageTitle },
+          $store: { state: { process: { list: [] } }, getters: {}, dispatch: vi.fn(() => Promise.resolve()) }
+        },
+        provide: { isMobile: false },
+        stubs: {
+          'router-view': true, 'b-modal': true, PluginSlot: true,
+          CIBHeaderFlow: { template: '<header><slot></slot></header>' },
+          'b-navbar-brand': { template: '<a class="brand"><slot></slot></a>' }
+        }
+      }
+    })
+
+    it.each(['start', 'account', 'login', 'loggedOut', 'setup'])('shows the icon with the product name as text on the %s page', (routeName) => {
+      const wrapper = mountBrand(routeName, { productNamePageTitle: 'ACME Flow' })
+
+      const brand = wrapper.find('.brand')
+      expect(brand.findAll('img')).toHaveLength(1)
+      expect(brand.find('img').attributes('src')).toBe('themes/acme/logo-icon.svg')
+      expect(brand.text()).toBe('ACME Flow')
+      expect(wrapper.find('img[src="themes/acme/logo.svg"]').exists()).toBe(false)
+    })
+
+    it('shows the icon with the name on every tab of the account page', () => {
+      const matched = [{ name: 'seven' }, { name: 'auth' }, { name: 'account' }, { name: 'accountPreferences' }]
+      expect(mountBrand('accountPreferences', { matched, productNamePageTitle: 'ACME Flow' }).find('.brand').text()).toBe('ACME Flow')
+    })
+
+    it.each(['tasklist', 'adminUser'])('shows just the icon, without the name, on the %s page', (routeName) => {
+      const brand = mountBrand(routeName, { productNamePageTitle: 'ACME Flow' }).find('.brand')
+
+      expect(brand.find('img').attributes('src')).toBe('themes/acme/logo-icon.svg')
+      expect(brand.find('span').exists()).toBe(false)
+      expect(brand.text()).toBe('')
+    })
+
+    it('styles the name as the design asks: Segoe UI, 22px, regular, dark', () => {
+      const style = mountBrand('start').find('.brand span').attributes('style')
+
+      expect(style).toContain('font-family: "Segoe UI"')
+      expect(style).toContain('font-size: 22px')
+      expect(style).toContain('font-weight: 400')
+      expect(style).toContain('color: var(--bs-dark)')
+    })
+
+    it('falls back to the CIB seven product name without a configured one', () => {
+      expect(mountBrand('start').find('.brand').text()).toBe('login.productName')
+    })
+
+    it('sets the page title as an h4 beside the icon', () => {
+      const title = mountBrand('tasklist').find('h1')
+
+      expect(title.text()).toBe('page.title')
+      expect(title.classes()).toContain('h4')
+      expect(title.classes()).not.toContain('h3')
+    })
+  })
+
   describe('admin menu', () => {
     const adminItems = (adminPluginEntries) => {
       const context = {
@@ -318,22 +383,6 @@ describe('CibSeven.vue', () => {
     // Used as the logo's aria-label and tooltip
     it('labels the logo with the product name and where it leads', () => {
       expect(CibSeven.computed.brandLabel.call({ productName: 'CIB seven', $t: key => key })).toBe('CIB seven - navigation.home')
-    })
-
-    it('shows the full logo on the start page, the account page and the pages before sign-in, the icon elsewhere', () => {
-      const full = (name) => CibSeven.computed.showFullLogo.call({ $route: { name }, isStartPage: name === 'start' })
-      expect(full('start')).toBe(true)
-      expect(full('account')).toBe(true)
-      expect(full('login')).toBe(true)
-      expect(full('loggedOut')).toBe(true)
-      expect(full('setup')).toBe(true)
-      expect(full('tasklist')).toBe(false)
-      expect(full('adminUser')).toBe(false)
-    })
-
-    it('shows the full logo on every tab of the account page', () => {
-      const $route = { name: 'accountPreferences', matched: [{ name: 'seven' }, { name: 'auth' }, { name: 'account' }, { name: 'accountPreferences' }] }
-      expect(CibSeven.computed.showFullLogo.call({ $route, isStartPage: false })).toBe(true)
     })
 
     it('should generate helpMenuItems with configured links', () => {

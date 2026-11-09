@@ -31,13 +31,14 @@
         @pointerenter="hoverOpen" @mouseenter="showTip = true" @mouseleave="showTip = false" @focus="showTip = true" @blur="showTip = false">
         <span class="cib-nav-current-bar" aria-hidden="true"></span>
         <span v-if="cluster.avatar" class="cib-nav-avatar" aria-hidden="true">{{ cluster.avatar }}</span>
+        <span v-else-if="cluster.iconImage" class="cib-nav-icon-image" :style="iconStyle(cluster.iconImage)" aria-hidden="true"></span>
         <span v-else :class="['mdi', 'mdi-24px', cluster.icon]" aria-hidden="true"></span>
         <span v-if="cluster.badge" class="cib-nav-badge" aria-hidden="true">{{ cluster.badge }}</span>
       </router-link>
       <button v-if="hasMenu" ref="toggle" type="button" class="cib-nav-btn cib-nav-btn-chevron"
         :aria-label="$t('cib-header.openMenu', { label: cluster.label })" aria-haspopup="true" :aria-expanded="open ? 'true' : 'false'"
         @click="toggle" @pointerenter="hoverOpen" @keydown.down.prevent="openAndFocusFirst" @keydown.esc="closeAndFocus">
-        <span class="mdi mdi-18px mdi-chevron-down" aria-hidden="true"></span>
+        <span class="mdi mdi-chevron-down cib-nav-chevron" aria-hidden="true"></span>
       </button>
     </template>
 
@@ -50,8 +51,9 @@
       @keydown.down.prevent="hasMenu && openAndFocusFirst()" @keydown.esc="closeAndFocus">
       <span class="cib-nav-current-bar" aria-hidden="true"></span>
       <span v-if="cluster.avatar" class="cib-nav-avatar" aria-hidden="true">{{ cluster.avatar }}</span>
+      <span v-else-if="cluster.iconImage" class="cib-nav-icon-image" :style="iconStyle(cluster.iconImage)" aria-hidden="true"></span>
       <span v-else :class="['mdi', 'mdi-24px', cluster.icon]" aria-hidden="true"></span>
-      <span v-if="hasMenu" class="mdi mdi-18px mdi-chevron-down" aria-hidden="true"></span>
+      <span v-if="hasMenu" class="mdi mdi-chevron-down cib-nav-chevron" aria-hidden="true"></span>
     </button>
 
     <span v-if="tipVisible" :id="tooltipId" role="tooltip" class="cib-nav-tooltip">{{ cluster.label }}</span>
@@ -67,16 +69,19 @@
         <template v-for="item in section" :key="item.key">
           <router-link v-if="item.to" :to="item.to" active-class="" exact-active-class="" class="cib-nav-menu-item" :class="{ active: item.active }"
             role="menuitem" :title="item.tooltip" :aria-current="item.active ? 'page' : null" @click="close">
+            <span v-if="item.icon" :class="['mdi', 'mdi-18px', item.icon]" aria-hidden="true"></span>
             <span v-if="item.tag" class="cib-nav-menu-tag">{{ item.tag }}</span>{{ item.label }}
           </router-link>
           <a v-else-if="item.href" :href="item.href" class="cib-nav-menu-item" role="menuitem" :title="item.tooltip"
             :target="item.external ? '_blank' : null" :rel="item.external ? 'noopener noreferrer' : null" @click="close">
+            <span v-if="item.icon" :class="['mdi', 'mdi-18px', item.icon]" aria-hidden="true"></span>
             {{ item.label }}<span v-if="item.external" class="mdi mdi-14px mdi-open-in-new ms-1" aria-hidden="true"></span>
           </a>
           <button v-else type="button" class="cib-nav-menu-item" :class="{ active: item.active }"
             :role="item.checkable ? 'menuitemradio' : 'menuitem'"
             :title="item.tooltip" :aria-checked="item.checkable ? (item.active ? 'true' : 'false') : null"
             @click="select(item)">
+            <span v-if="item.icon" :class="['mdi', 'mdi-18px', item.icon]" aria-hidden="true"></span>
             <span v-if="item.tag" class="cib-nav-menu-tag">{{ item.tag }}</span>{{ item.label }}
           </button>
         </template>
@@ -160,6 +165,10 @@ export default {
     this.$el.removeEventListener('focusout', this.onFocusOut)
   },
   methods: {
+    // Quoted: small files are inlined as data URIs, which hold characters an unquoted url() cannot
+    iconStyle(src) {
+      return { '--cib-nav-icon': `url("${src}")` }
+    },
     setOpen(value) {
       if (value !== this.open) this.$emit('update:open', value)
     },
@@ -277,6 +286,21 @@ export default {
   gap: 2px;
   padding: 0 6px;
   border-radius: 4px;
+}
+/* An icon drawn from an image file, in the colour of the text around it like the font icons: the image
+   only gives the shape (mask), the colour is the current one */
+.cib-nav-icon-image {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  background-color: currentColor;
+  -webkit-mask: var(--cib-nav-icon) center / contain no-repeat;
+  mask: var(--cib-nav-icon) center / contain no-repeat;
+}
+/* 16px: MDI's size classes jump from 14px to 18px */
+.cib-nav-chevron {
+  font-size: 16px;
 }
 /* Current section: dark icon plus a red bar on the header's bottom edge */
 .cib-nav-cluster-current .cib-nav-btn {

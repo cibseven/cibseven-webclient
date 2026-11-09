@@ -157,6 +157,7 @@ export default {
         // Logout in a section of its own, so a line sets it apart from the account entries
         sections: [this.userItems, [{
           key: 'logout',
+          icon: 'mdi-logout',
           label: this.$t('start.account.logout.title'),
           tooltip: this.$t('start.account.logout.tooltip', { productName: this.productName }),
           logout: true
@@ -329,6 +330,10 @@ export default {
   /* The theme's $gray-650 (input borders), which has no CSS variable */
   background: #8092A6;
 }
+/* 1rem between the page actions (Start process) and the divider that sets them apart */
+.cib-nav-actions .cib-nav-divider {
+  margin-left: 1rem;
+}
 /* Page actions from the parent and the burger: one button style, reacting like the nav buttons */
 .cib-nav-action,
 :slotted(.cib-nav-action) {
@@ -344,9 +349,13 @@ export default {
   font-size: 0.875rem;
   font-weight: 600;
 }
-.cib-nav-action:hover,
-:slotted(.cib-nav-action:hover) {
-  background: var(--bs-gray-300);
+/* Only where a pointer can hover: on touch screens :hover sticks to the button after a tap and left the
+   burger gray. The pressed state below still gives the touch feedback. */
+@media (hover: hover) {
+  .cib-nav-action:hover,
+  :slotted(.cib-nav-action:hover) {
+    background: var(--bs-gray-300);
+  }
 }
 .cib-nav-action:active,
 :slotted(.cib-nav-action:active) {
@@ -360,9 +369,11 @@ export default {
   padding: 0;
 }
 @media (max-width: 767.98px) {
-  /* 44px buttons + 2 × 8px navbar padding + 1px border */
-  .cib-navbar {
-    --cib-navbar-height: 61px;
+  /* 55px on mobile too, as the pages below expect: the 44px touch targets keep their size and the
+     navbar's padding gives way instead (44px + 2 × 5px + 1px border) */
+  .cib-navbar :deep(.navbar) {
+    padding-top: 5px;
+    padding-bottom: 5px;
   }
   :slotted(.cib-nav-action) {
     width: 44px;
