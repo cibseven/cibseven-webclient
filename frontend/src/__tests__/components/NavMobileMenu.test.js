@@ -111,7 +111,7 @@ describe('NavMobileMenu.vue', () => {
     const wrapper = mountMenu({ main: [expandable, link, action] })
 
     const rows = wrapper.findAll('.cib-nav-mobile-row')
-    expect(rows.map(row => row.find('.cib-nav-mobile-icon-image').attributes('style'))).toEqual(Array(3).fill('--cib-nav-icon: url("/img/cockpit.svg");'))
+    rows.forEach(row => expect(row.find('.cib-nav-icon-image').attributes('style')).toContain('--cib-nav-icon: url("/img/cockpit.svg");'))
     expect(wrapper.find('.mdi-speedometer').exists()).toBe(false)
     expect(wrapper.find('.mdi-link').exists()).toBe(false)
   })
@@ -125,8 +125,10 @@ describe('NavMobileMenu.vue', () => {
     ]] }
     const wrapper = mountMenu({ main: [cluster] })
 
-    expect(wrapper.findAll('.cib-nav-mobile-item').map(item => item.find('.mdi').exists() ? item.find('.mdi').classes().find(c => c !== 'mdi' && c !== 'mdi-18px') : null))
+    expect(wrapper.findAll('.cib-nav-mobile-item').map(item => item.find('.mdi').exists() ? item.find('.mdi').classes().find(c => c.startsWith('mdi-') && c !== 'mdi-18px') : null))
       .toEqual(['mdi-account-cog', 'mdi-book', 'mdi-logout', null])
+    // In the column of the row icons, out of the label's way, so the labels line up with or without one
+    expect(wrapper.find('.cib-nav-mobile-item .mdi-logout').classes()).toContain('cib-nav-mobile-item-icon')
   })
 
   it('keeps the page behind it from scrolling while open', () => {

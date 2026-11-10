@@ -24,19 +24,16 @@
         <button v-if="hasMenu(cluster)" type="button" class="cib-nav-mobile-row"
           :aria-expanded="expanded === cluster.id ? 'true' : 'false'" @click="toggle(cluster.id)">
           <span v-if="cluster.avatar" class="mdi mdi-24px mdi-account-outline text-secondary" aria-hidden="true"></span>
-          <span v-else-if="cluster.iconImage" class="cib-nav-mobile-icon-image text-secondary" :style="iconStyle(cluster.iconImage)" aria-hidden="true"></span>
-          <span v-else :class="['mdi', 'mdi-24px', 'text-secondary', cluster.icon]" aria-hidden="true"></span>
+          <NavIcon v-else class="text-secondary" :icon="cluster.icon" :image="cluster.iconImage"></NavIcon>
           <span class="cib-nav-mobile-label flex-grow-1 fw-semibold">{{ cluster.label }}</span>
           <span :class="['mdi', 'mdi-24px', 'cib-nav-mobile-chevron', expanded === cluster.id ? 'mdi-chevron-down' : 'mdi-chevron-right']" aria-hidden="true"></span>
         </button>
         <router-link v-else-if="cluster.to" :to="cluster.to" active-class="" exact-active-class="" class="cib-nav-mobile-row" @click="$emit('navigate')">
-          <span v-if="cluster.iconImage" class="cib-nav-mobile-icon-image text-secondary" :style="iconStyle(cluster.iconImage)" aria-hidden="true"></span>
-          <span v-else :class="['mdi', 'mdi-24px', 'text-secondary', cluster.icon]" aria-hidden="true"></span>
+          <NavIcon class="text-secondary" :icon="cluster.icon" :image="cluster.iconImage"></NavIcon>
           <span class="cib-nav-mobile-label flex-grow-1 fw-semibold">{{ cluster.label }}</span>
         </router-link>
         <button v-else type="button" class="cib-nav-mobile-row" @click="$emit('select', cluster)">
-          <span v-if="cluster.iconImage" class="cib-nav-mobile-icon-image text-secondary" :style="iconStyle(cluster.iconImage)" aria-hidden="true"></span>
-          <span v-else :class="['mdi', 'mdi-24px', 'text-secondary', cluster.icon]" aria-hidden="true"></span>
+          <NavIcon class="text-secondary" :icon="cluster.icon" :image="cluster.iconImage"></NavIcon>
           <span class="cib-nav-mobile-label flex-grow-1 fw-semibold">{{ cluster.label }}</span>
         </button>
 
@@ -47,17 +44,17 @@
               <!-- Marked by item.active only, as in NavCluster: Vue Router's active class ignores the query -->
               <router-link v-if="item.to" :to="item.to" active-class="" exact-active-class="" class="cib-nav-mobile-item" :class="{ active: item.active }"
                 :aria-current="item.active ? 'page' : null" @click="$emit('navigate')">
-                <span v-if="item.icon" :class="['mdi', 'mdi-18px', item.icon]" aria-hidden="true"></span>
+                <NavIcon v-if="item.icon" class="cib-nav-mobile-item-icon" :icon="item.icon" :size="18"></NavIcon>
                 <span v-if="item.tag" class="cib-nav-mobile-tag">{{ item.tag }}</span>{{ item.label }}
               </router-link>
               <a v-else-if="item.href" :href="item.href" class="cib-nav-mobile-item"
                 :target="item.external ? '_blank' : null" :rel="item.external ? 'noopener noreferrer' : null" @click="$emit('navigate')">
-                <span v-if="item.icon" :class="['mdi', 'mdi-18px', item.icon]" aria-hidden="true"></span>
+                <NavIcon v-if="item.icon" class="cib-nav-mobile-item-icon" :icon="item.icon" :size="18"></NavIcon>
                 {{ item.label }}<span v-if="item.external" class="mdi mdi-14px mdi-open-in-new ms-1" aria-hidden="true"></span>
               </a>
               <button v-else type="button" class="cib-nav-mobile-item" :class="{ active: item.active }"
                 :aria-current="item.checkable && item.active ? 'true' : null" @click="$emit('select', item)">
-                <span v-if="item.icon" :class="['mdi', 'mdi-18px', item.icon]" aria-hidden="true"></span>
+                <NavIcon v-if="item.icon" class="cib-nav-mobile-item-icon" :icon="item.icon" :size="18"></NavIcon>
                 <span v-if="item.tag" class="cib-nav-mobile-tag">{{ item.tag }}</span>{{ item.label }}
               </button>
             </li>
@@ -69,6 +66,8 @@
 </template>
 
 <script>
+import NavIcon from './NavIcon.vue'
+
 /**
  * Full-screen mobile navigation: every cluster is an accordion row (tapping a row expands it,
  * it does not navigate), main clusters first, then the standard menus (help, language, user).
@@ -76,6 +75,7 @@
  */
 export default {
   name: 'NavMobileMenu',
+  components: { NavIcon },
   props: {
     main: { type: Array, default: () => [] },
     utility: { type: Array, default: () => [] }
@@ -104,10 +104,6 @@ export default {
     document.body.style.overflow = this.previousBodyOverflow
   },
   methods: {
-    // Quoted: small files are inlined as data URIs, which hold characters an unquoted url() cannot
-    iconStyle(src) {
-      return { '--cib-nav-icon': `url("${src}")` }
-    },
     hasMenu(cluster) {
       return !!cluster.sections?.some(section => section.length)
     },
@@ -149,15 +145,6 @@ export default {
   text-align: left;
   text-decoration: none;
 }
-.cib-nav-mobile-icon-image {
-  display: inline-block;
-  flex-shrink: 0;
-  width: 24px;
-  height: 24px;
-  background-color: currentColor;
-  -webkit-mask: var(--cib-nav-icon) center / contain no-repeat;
-  mask: var(--cib-nav-icon) center / contain no-repeat;
-}
 .cib-nav-mobile-chevron {
   color: var(--bs-gray-800);
 }
@@ -183,10 +170,21 @@ export default {
   text-align: left;
   text-decoration: none;
 }
-/* Same feedback as the desktop menus (NavCluster) */
-.cib-nav-mobile-row:hover,
-.cib-nav-mobile-item:hover {
-  background: var(--bs-gray-200);
+/* An entry's icon (e.g. Logout) sits in the column of the row icons above, so its label stays in line with the others */
+.cib-nav-mobile-item-icon {
+  position: absolute;
+  left: calc(16px + (24px - 18px) / 2);
+}
+/* Same feedback as the desktop menus (NavCluster), only where a pointer can hover: on touch screens
+   :hover sticks after a tap and left the tapped row gray */
+@media (hover: hover) {
+  .cib-nav-mobile-row:hover,
+  .cib-nav-mobile-item:hover {
+    background: var(--bs-gray-200);
+  }
+  .cib-nav-mobile-item:hover .cib-nav-mobile-tag {
+    background: var(--bs-gray-400);
+  }
 }
 .cib-nav-mobile-item.active {
   background: var(--bs-gray-300);
@@ -208,9 +206,6 @@ export default {
   background: var(--bs-gray-200);
   font-size: 0.7rem;
   font-weight: 700;
-}
-.cib-nav-mobile-item:hover .cib-nav-mobile-tag {
-  background: var(--bs-gray-400);
 }
 .cib-nav-mobile-item.active .cib-nav-mobile-tag {
   background: var(--bs-gray-500);

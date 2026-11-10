@@ -31,8 +31,7 @@
         @pointerenter="hoverOpen" @mouseenter="showTip = true" @mouseleave="showTip = false" @focus="showTip = true" @blur="showTip = false">
         <span class="cib-nav-current-bar" aria-hidden="true"></span>
         <span v-if="cluster.avatar" class="cib-nav-avatar" aria-hidden="true">{{ cluster.avatar }}</span>
-        <span v-else-if="cluster.iconImage" class="cib-nav-icon-image" :style="iconStyle(cluster.iconImage)" aria-hidden="true"></span>
-        <span v-else :class="['mdi', 'mdi-24px', cluster.icon]" aria-hidden="true"></span>
+        <NavIcon v-else :icon="cluster.icon" :image="cluster.iconImage"></NavIcon>
         <span v-if="cluster.badge" class="cib-nav-badge" aria-hidden="true">{{ cluster.badge }}</span>
       </router-link>
       <button v-if="hasMenu" ref="toggle" type="button" class="cib-nav-btn cib-nav-btn-chevron"
@@ -51,8 +50,7 @@
       @keydown.down.prevent="hasMenu && openAndFocusFirst()" @keydown.esc="closeAndFocus">
       <span class="cib-nav-current-bar" aria-hidden="true"></span>
       <span v-if="cluster.avatar" class="cib-nav-avatar" aria-hidden="true">{{ cluster.avatar }}</span>
-      <span v-else-if="cluster.iconImage" class="cib-nav-icon-image" :style="iconStyle(cluster.iconImage)" aria-hidden="true"></span>
-      <span v-else :class="['mdi', 'mdi-24px', cluster.icon]" aria-hidden="true"></span>
+      <NavIcon v-else :icon="cluster.icon" :image="cluster.iconImage"></NavIcon>
       <span v-if="hasMenu" class="mdi mdi-chevron-down cib-nav-chevron" aria-hidden="true"></span>
     </button>
 
@@ -69,19 +67,19 @@
         <template v-for="item in section" :key="item.key">
           <router-link v-if="item.to" :to="item.to" active-class="" exact-active-class="" class="cib-nav-menu-item" :class="{ active: item.active }"
             role="menuitem" :title="item.tooltip" :aria-current="item.active ? 'page' : null" @click="close">
-            <span v-if="item.icon" :class="['mdi', 'mdi-18px', item.icon]" aria-hidden="true"></span>
+            <NavIcon v-if="hasItemIcons" class="cib-nav-menu-icon" :icon="item.icon" :size="18"></NavIcon>
             <span v-if="item.tag" class="cib-nav-menu-tag">{{ item.tag }}</span>{{ item.label }}
           </router-link>
           <a v-else-if="item.href" :href="item.href" class="cib-nav-menu-item" role="menuitem" :title="item.tooltip"
             :target="item.external ? '_blank' : null" :rel="item.external ? 'noopener noreferrer' : null" @click="close">
-            <span v-if="item.icon" :class="['mdi', 'mdi-18px', item.icon]" aria-hidden="true"></span>
+            <NavIcon v-if="hasItemIcons" class="cib-nav-menu-icon" :icon="item.icon" :size="18"></NavIcon>
             {{ item.label }}<span v-if="item.external" class="mdi mdi-14px mdi-open-in-new ms-1" aria-hidden="true"></span>
           </a>
           <button v-else type="button" class="cib-nav-menu-item" :class="{ active: item.active }"
             :role="item.checkable ? 'menuitemradio' : 'menuitem'"
             :title="item.tooltip" :aria-checked="item.checkable ? (item.active ? 'true' : 'false') : null"
             @click="select(item)">
-            <span v-if="item.icon" :class="['mdi', 'mdi-18px', item.icon]" aria-hidden="true"></span>
+            <NavIcon v-if="hasItemIcons" class="cib-nav-menu-icon" :icon="item.icon" :size="18"></NavIcon>
             <span v-if="item.tag" class="cib-nav-menu-tag">{{ item.tag }}</span>{{ item.label }}
           </button>
         </template>
@@ -91,6 +89,8 @@
 </template>
 
 <script>
+import NavIcon from './NavIcon.vue'
+
 let uid = 0
 
 // Grace period before a hover-opened menu closes, so moving the pointer from the chevron
@@ -103,12 +103,13 @@ const HOVER_CLOSE_DELAY = 150
  * action). The menu opens on click and on mouse hover; which cluster is open is owned by
  * the parent (v-model:open) so only one menu is open at a time.
  *
- * cluster: { id, label, icon, avatar?, badge?, to?, titleTo?, active?, sections: [[item]] }
- * item:    { key, label, tooltip?, to?, href?, external?, tag?, active?, checkable? }
+ * cluster: { id, label, icon, iconImage?, avatar?, badge?, to?, titleTo?, active?, sections: [[item]] }
+ * item:    { key, label, icon?, tooltip?, to?, href?, external?, tag?, active?, checkable? }
  * Items without to/href are emitted through `select`.
  */
 export default {
   name: 'NavCluster',
+  components: { NavIcon },
   props: {
     cluster: { type: Object, required: true },
     open: { type: Boolean, default: false },
@@ -132,6 +133,10 @@ export default {
     },
     hasMenu() {
       return !!this.cluster.sections?.some(section => section.length)
+    },
+    // When one entry has an icon (e.g. Logout), every entry gets the icon column, so the labels line up
+    hasItemIcons() {
+      return !!this.cluster.sections?.some(section => section.some(item => item.icon))
     },
     isSplit() {
       return !!this.cluster.to
@@ -165,10 +170,6 @@ export default {
     this.$el.removeEventListener('focusout', this.onFocusOut)
   },
   methods: {
-    // Quoted: small files are inlined as data URIs, which hold characters an unquoted url() cannot
-    iconStyle(src) {
-      return { '--cib-nav-icon': `url("${src}")` }
-    },
     setOpen(value) {
       if (value !== this.open) this.$emit('update:open', value)
     },
@@ -264,12 +265,18 @@ export default {
   text-decoration: none;
   cursor: pointer;
 }
-.cib-nav-btn:hover,
 .cib-nav-btn:focus-visible,
 .cib-nav-cluster-open .cib-nav-btn-chevron,
 .cib-nav-cluster-open .cib-nav-btn-single {
   background: var(--bs-gray-300);
   color: var(--bs-gray-900);
+}
+/* Hover only where a pointer can hover: on touch screens (tablets get this header) :hover sticks after a tap */
+@media (hover: hover) {
+  .cib-nav-btn:hover {
+    background: var(--bs-gray-300);
+    color: var(--bs-gray-900);
+  }
 }
 .cib-nav-btn:active {
   background: var(--bs-gray-400);
@@ -286,17 +293,6 @@ export default {
   gap: 2px;
   padding: 0 6px;
   border-radius: 4px;
-}
-/* An icon drawn from an image file, in the colour of the text around it like the font icons: the image
-   only gives the shape (mask), the colour is the current one */
-.cib-nav-icon-image {
-  display: inline-block;
-  flex-shrink: 0;
-  width: 24px;
-  height: 24px;
-  background-color: currentColor;
-  -webkit-mask: var(--cib-nav-icon) center / contain no-repeat;
-  mask: var(--cib-nav-icon) center / contain no-repeat;
 }
 /* 16px: MDI's size classes jump from 14px to 18px */
 .cib-nav-chevron {
@@ -392,9 +388,13 @@ export default {
   font-weight: 600;
   text-decoration: none;
 }
-.cib-nav-menu-title-link:hover,
 .cib-nav-menu-title-link:focus-visible {
   background: var(--bs-gray-200);
+}
+@media (hover: hover) {
+  .cib-nav-menu-title-link:hover {
+    background: var(--bs-gray-200);
+  }
 }
 .cib-nav-menu-section {
   padding: 4px 0;
@@ -419,10 +419,18 @@ export default {
   white-space: nowrap;
   cursor: pointer;
 }
-.cib-nav-menu-item:hover,
 .cib-nav-menu-item:focus-visible {
   background: var(--bs-gray-200);
   color: var(--bs-gray-900);
+}
+@media (hover: hover) {
+  .cib-nav-menu-item:hover {
+    background: var(--bs-gray-200);
+    color: var(--bs-gray-900);
+  }
+  .cib-nav-menu-item:hover .cib-nav-menu-tag {
+    background: var(--bs-gray-400);
+  }
 }
 .cib-nav-menu-item.active {
   background: var(--bs-gray-300);
@@ -447,7 +455,6 @@ export default {
   font-size: 11.2px;
   font-weight: 700;
 }
-.cib-nav-menu-item:hover .cib-nav-menu-tag,
 .cib-nav-menu-item:focus-visible .cib-nav-menu-tag {
   background: var(--bs-gray-400);
 }

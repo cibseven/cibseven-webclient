@@ -64,7 +64,7 @@ describe('CibSeven.vue', () => {
     const mountBrand = (routeName, { matched = [], productNamePageTitle } = {}) => shallowMount(CibSeven, {
       global: {
         mocks: {
-          user: { id: 'demo' }, header: 'true', logoIconPath: 'themes/acme/logo-icon.svg', logoPath: 'themes/acme/logo.svg',
+          user: { id: 'demo' }, header: 'true', logoIconPath: 'themes/acme/logo-icon.svg',
           $t: key => key, $route: { path: '/seven/auth/x', name: routeName, meta: { title: 'page.title' }, matched },
           config: { permissions: {}, layout: {}, supportedLanguages: [], productNamePageTitle },
           $store: { state: { process: { list: [] } }, getters: {}, dispatch: vi.fn(() => Promise.resolve()) }
@@ -85,7 +85,6 @@ describe('CibSeven.vue', () => {
       expect(brand.findAll('img')).toHaveLength(1)
       expect(brand.find('img').attributes('src')).toBe('themes/acme/logo-icon.svg')
       expect(brand.text()).toBe('ACME Flow')
-      expect(wrapper.find('img[src="themes/acme/logo.svg"]').exists()).toBe(false)
     })
 
     it('shows the icon with the name on every tab of the account page', () => {
@@ -108,6 +107,19 @@ describe('CibSeven.vue', () => {
       expect(style).toContain('font-size: 22px')
       expect(style).toContain('font-weight: 400')
       expect(style).toContain('color: var(--bs-dark)')
+    })
+
+    it('ends a name too long for the header in an ellipsis, while the icon keeps its size', () => {
+      const brand = mountBrand('start', { productNamePageTitle: 'Acme Process Automation Platform' }).find('.brand')
+
+      expect(brand.classes()).not.toContain('flex-shrink-0')
+      expect(brand.attributes('style')).toContain('min-width: 0')
+      expect(brand.find('span').classes()).toContain('text-truncate')
+      expect(brand.find('img').classes()).toContain('flex-shrink-0')
+    })
+
+    it('keeps the icon-only brand from shrinking beside the page title', () => {
+      expect(mountBrand('tasklist').find('.brand').classes()).toContain('flex-shrink-0')
     })
 
     it('falls back to the CIB seven product name without a configured one', () => {

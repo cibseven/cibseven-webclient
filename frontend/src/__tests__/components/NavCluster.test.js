@@ -118,9 +118,22 @@ describe('NavCluster.vue', () => {
         { key: 'plain', label: 'Plain', to: '/seven/auth/y' }
       ]] }, { open: true })
 
-      const icons = wrapper.findAll('.cib-nav-menu-item').map(item => item.find('.mdi').exists() ? item.find('.mdi').classes().find(c => c !== 'mdi' && c !== 'mdi-18px') : null)
+      const icons = wrapper.findAll('.cib-nav-menu-item').map(item => item.find('.cib-nav-menu-icon').classes().find(c => c.startsWith('mdi-') && c !== 'mdi-18px') ?? null)
       expect(icons).toEqual(['mdi-link', 'mdi-book', 'mdi-logout', null])
       expect(wrapper.find('.cib-nav-menu-item .mdi').attributes('aria-hidden')).toBe('true')
+    })
+
+    // e.g. Logout, the only entry of the user menu with an icon, would otherwise start further right than the rest
+    it('gives every entry the 18px icon column once one entry has an icon, so the labels line up', () => {
+      wrapper = mountCluster({ ...cockpit, sections: [[{ key: 'profile', label: 'Profile', to: '/profile' }], [{ key: 'logout', label: 'Logout', icon: 'mdi-logout' }]] }, { open: true })
+
+      const columns = wrapper.findAll('.cib-nav-menu-item').map(item => item.find('.cib-nav-menu-icon').attributes('style'))
+      expect(columns).toEqual(Array(2).fill('width: 18px; height: 18px;'))
+    })
+
+    it('has no icon column in a menu without entry icons', () => {
+      wrapper = mountCluster(cockpit, { open: true })
+      expect(wrapper.find('.cib-nav-menu-icon').exists()).toBe(false)
     })
 
     // Small files are inlined as data URIs, so the URL is quoted in the mask

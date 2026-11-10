@@ -87,7 +87,7 @@ Promise.all([
             user: null,
             config: config,
             consent: localStorage.getItem('consent'),
-            logoPath: 'themes/' + theme + '/logo.svg',
+            // The header shows this icon with the product name (productNamePageTitle) as text; a theme's logo.svg is no longer used
             logoIconPath: 'themes/' + theme + '/logo-icon.svg',
             loginImgPath: 'themes/' + theme + '/login-image.svg',
             resetPasswordImgPath: imagePath,

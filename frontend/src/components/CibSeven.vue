@@ -26,12 +26,14 @@
              user's own account page and the pages before sign-in it comes with the product name as text, in place of the
              full logo; elsewhere it stands alone beside the page title. The icon file draws the mark about 1/0.62
              times larger than the full logo did (matched by eye at 23.75px; whole pixels look visibly too small or too
-             big); no left margin, the navbar's own 1rem padding is the space to the edge. Styles are set on the
+             big); no left margin, the navbar's own 1rem padding is the space to the edge. A name too long for the
+             header ends in an ellipsis (the link's tooltip has it in full); the icon never shrinks. Styles are set on the
              elements: EE renders this template from its own component, where this component's scoped styles do not apply. -->
-        <b-navbar-brand ref="brandHome" class="py-0 flex-shrink-0 d-flex align-items-center" :aria-label="brandLabel" :title="brandLabel" to="/seven/auth/start">
-          <img style="height: 23.75px; margin: 7px 0 7.25px 0" alt="" :src="$root.logoIconPath"/>
-          <span v-if="showFullLogo" class="ms-2" aria-hidden="true"
-            style="font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif; font-size: 22px; font-weight: 400; line-height: normal; color: var(--bs-dark); white-space: nowrap">{{ productName }}</span>
+        <b-navbar-brand ref="brandHome" class="py-0 d-flex align-items-center" :class="{ 'flex-shrink-0': !showProductName }"
+          :style="showProductName ? 'min-width: 0' : null" :aria-label="brandLabel" :title="brandLabel" to="/seven/auth/start">
+          <img class="flex-shrink-0" style="height: 23.75px; margin: 7px 0 7.25px 0" alt="" :src="$root.logoIconPath"/>
+          <span v-if="showProductName" class="ms-2 text-truncate" aria-hidden="true"
+            style="font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif; font-size: 22px; font-weight: 400; line-height: normal; color: var(--bs-dark); min-width: 0">{{ productName }}</span>
         </b-navbar-brand>
         <div v-if="pageTitle" style="max-height: 38px; min-width: 0;" class="d-flex align-items-center overflow-hidden flex-shrink-1">
           <span class="border-start border-secondary py-3 me-3"></span>
@@ -145,9 +147,9 @@ export default {
     isStartPage: function() {
       return this.$route.name === 'start'
     },
-    // The account page and the pages before sign-in have no page title next to the logo, so they
-    // show the product name beside it like the start page (where the full logo used to be)
-    showFullLogo: function() {
+    // The account page and the pages before sign-in have no page title next to the icon, so they
+    // show the product name beside it like the start page
+    showProductName: function() {
       return this.isStartPage || routeNames(this.$route).some(name => ['account', 'login', 'loggedOut', 'setup'].includes(name))
     },
     // The catalog as header clusters: the icon leads to the section, the menu title to its overview page
