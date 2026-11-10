@@ -91,8 +91,8 @@ ProcessDefinitionQuery query = mock(ProcessDefinitionQuery.class,
     withSettings().defaultAnswer(RETURNS_SELF));
 when(repositoryService.createProcessDefinitionQuery()).thenReturn(query);
 
-ObjectMapper objectMapper = new ObjectMapper();
-JacksonConfigurator.configureObjectMapper(objectMapper);
+// engine-rest's mapper (Jackson 3, tools.jackson.databind.ObjectMapper)
+ObjectMapper objectMapper = JacksonConfigurator.configureObjectMapper();
 
 directProviderUtil = Mockito.spy(new DirectProviderUtil());
 doReturn(processEngine).when(directProviderUtil).getProcessEngine(any(CIBUser.class));

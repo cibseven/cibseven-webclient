@@ -50,7 +50,7 @@ public class EngineProviderTest {
 		mockWebServer.start();
 
 		provider = new EngineProvider();
-		ReflectionTestUtils.setField(provider, "customRestTemplate", TestRestTemplateConfiguration.jackson2CustomRestTemplate());
+		ReflectionTestUtils.setField(provider, "customRestTemplate", TestRestTemplateConfiguration.webclientCustomRestTemplate());
 		provider.properties.getEngineRest().setUrl("http://localhost:" + mockWebServer.getPort());
 		provider.properties.getEngineRest().setPath("/engine-rest");
 		provider.properties.getCustom().getSpring().getJackson().getParser().setMaxSize(20_000_000);

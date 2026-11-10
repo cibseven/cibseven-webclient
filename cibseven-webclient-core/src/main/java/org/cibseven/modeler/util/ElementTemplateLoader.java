@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cibseven.webapp.config.SevenWebclientProperties;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.providers.WebclientExtensions;
 import org.cibseven.persistence.CibsevenJpa;
 import org.cibseven.modeler.model.ElementTemplate;
@@ -38,8 +39,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -53,7 +55,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ElementTemplateLoader implements DisposableBean {
 
-	private final ObjectMapper mapper;
+	private final JsonMapper mapper;
 	private final ElementTemplateRepository elementTemplateRepository;
 	private final SevenWebclientProperties.Modeler.Templates templates;
 	private final TransactionTemplate transactionTemplate;
@@ -66,12 +68,13 @@ public class ElementTemplateLoader implements DisposableBean {
 	 *        {@code TransactionTemplate} would be built on the primary transaction manager, which in
 	 *        an embedding application belongs to the host and cannot run the modeler's JPA work.
 	 */
-	public ElementTemplateLoader(ElementTemplateRepository elementTemplateRepository, ObjectMapper mapper,
+	public ElementTemplateLoader(ElementTemplateRepository elementTemplateRepository,
 			SevenWebclientProperties properties,
 			@Qualifier(CibsevenJpa.TRANSACTION_MANAGER) PlatformTransactionManager transactionManager,
 			ResourcePatternResolver resourcePatternResolver, WebclientExtensions webclientExtensions) {
 		this.elementTemplateRepository = elementTemplateRepository;
-		this.mapper = mapper;
+		// The webclient's own mapper, which reads them like the uploads to its REST service
+		this.mapper = WebclientJsonMapper.create(properties);
 		this.templates = properties.getModeler().getTemplates();
 		this.transactionTemplate = new TransactionTemplate(transactionManager);
 		this.resourcePatternResolver = resourcePatternResolver;
@@ -210,8 +213,8 @@ public class ElementTemplateLoader implements DisposableBean {
 				log.error("Expected JSON object or array in '{}', but found: {}", description, root.getNodeType());
 				return;
 			}
-		} catch (IOException ioe) {
-			log.error("Failed to read element templates JSON at '{}'", description, ioe);
+		} catch (IOException | JacksonException e) {
+			log.error("Failed to read element templates JSON at '{}'", description, e);
 			return;
 		}
 
