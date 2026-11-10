@@ -25,7 +25,7 @@
 
     <b-button size="sm" variant="light" class="me-1 position-absolute" style="bottom: 90px; right: 11px;"
       @click="resizerMixin.toggleContent"
-      :title="resizerMixin.toggleIcon === 'mdi-chevron-up' ? $t('task.collapse') : $t('task.expand')">
+      :title="resizerMixin.toggleIcon === 'mdi-chevron-up' ? $t('task.expand') : $t('task.collapse')">
       <span class="mdi mdi-18px" :class="resizerMixin.toggleIcon"></span>
     </b-button>
 
