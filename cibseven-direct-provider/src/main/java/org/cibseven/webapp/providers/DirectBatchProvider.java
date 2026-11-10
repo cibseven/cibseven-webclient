@@ -134,9 +134,7 @@ public class DirectBatchProvider implements IBatchProvider {
 
 	@Override
 	public void setBatchSuspensionState(String id, Map<String, Object> params, CIBUser user) {
-		Boolean suspended = false;
-		if (params.containsKey("suspended"))
-			suspended = params.get("suspended").equals("true");
+		boolean suspended = isTrue(params.get("suspended"));
 
 		if (suspended) {
 			try {
@@ -210,5 +208,13 @@ public class DirectBatchProvider implements IBatchProvider {
 		BatchQueryDto queryDto = new BatchQueryDto(directProviderUtil.getObjectMapper(user), multiValueMap);
 		BatchQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 		return query.count();
+	}
+
+	/**
+	 * Reads a flag that arrives either as a JSON boolean (request body) or as the
+	 * String "true"/"false" (query parameter). A missing value counts as false.
+	 */
+	private static boolean isTrue(Object value) {
+		return Boolean.parseBoolean(String.valueOf(value));
 	}
 }
