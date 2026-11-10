@@ -111,6 +111,7 @@ public class CustomRestTemplateTest {
 			List<String> bodies = new ArrayList<>();
 			for (int i = 0; i < count; i++) {
 				if (i > 0) {
+					// stay well below HttpClient's 2 s stale check: a longer pause replaces the closed connection and hides the bug
 					Thread.sleep(200);
 				}
 				bodies.add(template.postForObject(server.url(), "request " + i, String.class));
