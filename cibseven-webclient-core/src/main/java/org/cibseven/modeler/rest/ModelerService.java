@@ -822,7 +822,9 @@ public class ModelerService extends ModelerBaseService {
 		copy.setDescription(source.getDescription());
 		copy.setActive(true);
 		copy.setType(source.getType());
-		copy.setDiagram(ModelKeys.rekeyDiagram(source.getDiagram(), source.getProcesskey(), processkey));
+		// A new key goes into the model too: the modeler saves the key it reads from there
+		copy.setDiagram(processkey.equals(source.getProcesskey()) ? source.getDiagram()
+			: ModelKeys.rekeyDiagram(source.getDiagram(), processkey));
 		copy.setFolderId(folderFor(user, target.get("folderId")));
 		copy.setUpdatedBy(user.getUserID());
 		return dbProcessDiagramProvider.createDiagram(copy);
@@ -864,7 +866,8 @@ public class ModelerService extends ModelerBaseService {
 		copy.setFormId(formId);
 		copy.setDescription(source.getDescription());
 		copy.setActive(true);
-		copy.setFormSchema(ModelKeys.rekeyForm(source.getFormSchema(), source.getFormId(), formId));
+		copy.setFormSchema(formId.equals(source.getFormId()) ? source.getFormSchema()
+			: ModelKeys.rekeyForm(source.getFormSchema(), formId));
 		copy.setFolderId(folderFor(user, target.get("folderId")));
 		copy.setUpdatedBy(user.getUserID());
 		return formProvider.createForm(copy);

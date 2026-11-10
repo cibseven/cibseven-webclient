@@ -205,9 +205,26 @@ class ModelerServiceMoveCopyTest {
 		assertThat(copy.getDiagram()).isEqualTo(processXml("invoice"));
 	}
 
+	/**
+	 * A model imported through the backend may be stored under another id than the one the modeler
+	 * reads; the copy carries its new key where the modeler reads it all the same.
+	 */
+	@Test
+	void writesTheNewKeyWhereTheModelerReadsItWhateverKeyIsStored() {
+		ProcessDiagramEntity stored = storedDiagram();
+		stored.setDiagram(processXml("Process_1"));
+
+		ProcessDiagramEntity copy = service.copyProcess("diagram-1",
+			Map.of("folderId", TARGET_FOLDER, "processkey", "invoice-copy"), request);
+
+		assertThat(copy.getDiagram()).isEqualTo(processXml("invoice-copy"));
+	}
+
 	private static byte[] processXml(String key) {
-		return ("<bpmn:definitions id=\"d\"><bpmn:process id=\"" + key + "\" name=\"Invoice\" /><bpmndi:BPMNPlane id=\"p\" bpmnElement=\""
-			+ key + "\" /></bpmn:definitions>").getBytes(StandardCharsets.UTF_8);
+		return ("<bpmn:definitions xmlns:bpmn=\"http://www.omg.org/spec/BPMN/20100524/MODEL\" "
+			+ "xmlns:bpmndi=\"http://www.omg.org/spec/BPMN/20100524/DI\" id=\"d\"><bpmn:process id=\"" + key
+			+ "\" name=\"Invoice\" /><bpmndi:BPMNDiagram id=\"D\"><bpmndi:BPMNPlane id=\"p\" bpmnElement=\"" + key
+			+ "\" /></bpmndi:BPMNDiagram></bpmn:definitions>").getBytes(StandardCharsets.UTF_8);
 	}
 
 	/** The provider refuses a key the folder has already, and the copy is not stored. */
