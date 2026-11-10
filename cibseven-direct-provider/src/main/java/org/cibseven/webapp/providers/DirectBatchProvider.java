@@ -17,11 +17,11 @@
 package org.cibseven.webapp.providers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.cibseven.bpm.engine.BadUserRequestException;
 import org.cibseven.bpm.engine.batch.BatchQuery;
@@ -29,20 +29,12 @@ import org.cibseven.bpm.engine.batch.BatchStatistics;
 import org.cibseven.bpm.engine.batch.BatchStatisticsQuery;
 import org.cibseven.bpm.engine.batch.history.HistoricBatch;
 import org.cibseven.bpm.engine.batch.history.HistoricBatchQuery;
-import org.cibseven.bpm.engine.history.CleanableHistoricBatchReport;
-import org.cibseven.bpm.engine.history.CleanableHistoricBatchReportResult;
-import org.cibseven.bpm.engine.history.SetRemovalTimeSelectModeForHistoricBatchesBuilder;
 import org.cibseven.bpm.engine.rest.dto.batch.BatchDto;
 import org.cibseven.bpm.engine.rest.dto.batch.BatchQueryDto;
 import org.cibseven.bpm.engine.rest.dto.batch.BatchStatisticsDto;
 import org.cibseven.bpm.engine.rest.dto.batch.BatchStatisticsQueryDto;
-import org.cibseven.bpm.engine.rest.dto.history.HistoricActivityInstanceDto;
-import org.cibseven.bpm.engine.rest.dto.history.HistoricIncidentQueryDto;
-import org.cibseven.bpm.engine.rest.dto.history.batch.CleanableHistoricBatchReportDto;
-import org.cibseven.bpm.engine.rest.dto.history.batch.CleanableHistoricBatchReportResultDto;
 import org.cibseven.bpm.engine.rest.dto.history.batch.HistoricBatchDto;
 import org.cibseven.bpm.engine.rest.dto.history.batch.HistoricBatchQueryDto;
-import org.cibseven.bpm.engine.rest.dto.history.batch.removaltime.SetRemovalTimeToHistoricBatchesDto;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.NoObjectFoundException;
@@ -104,9 +96,7 @@ public class DirectBatchProvider implements IBatchProvider {
 
 	@Override
 	public void setBatchSuspensionState(String id, Map<String, Object> params, CIBUser user) {
-		Boolean suspended = false;
-		if (params.containsKey("suspended"))
-			suspended = params.get("suspended").equals("true");
+		boolean suspended = isTrue(params.get("suspended"));
 
 		if (suspended) {
 			try {
@@ -165,61 +155,21 @@ public class DirectBatchProvider implements IBatchProvider {
 	}
 
 	@Override
-	public Object setRemovalTime(Map<String, Object> payload, CIBUser user) {
-		SetRemovalTimeToHistoricBatchesDto dto = directProviderUtil.getObjectMapper(user).convertValue(payload, SetRemovalTimeToHistoricBatchesDto.class);
-		HistoricBatchQuery historicBatchQuery = null;
-
-		if (dto.getHistoricBatchQuery() != null) {
-			historicBatchQuery = dto.getHistoricBatchQuery().toQuery(directProviderUtil.getProcessEngine(user));
-		}
-
-		SetRemovalTimeSelectModeForHistoricBatchesBuilder builder = directProviderUtil.getProcessEngine(user).getHistoryService().setRemovalTimeToHistoricBatches();
-
-		if (dto.isCalculatedRemovalTime()) {
-			builder.calculatedRemovalTime();
-		}
-
-		Date removalTime = dto.getAbsoluteRemovalTime();
-		if (dto.getAbsoluteRemovalTime() != null) {
-			builder.absoluteRemovalTime(removalTime);
-		}
-
-		if (dto.isClearedRemovalTime()) {
-			builder.clearedRemovalTime();
-		}
-
-		builder.byIds(dto.getHistoricBatchIds());
-		builder.byQuery(historicBatchQuery);
-
-		org.cibseven.bpm.engine.batch.Batch batch = builder.executeAsync();
-		return directProviderUtil.convertValue(BatchDto.fromBatch(batch), Batch.class, user);
-	}
-
-	@Override
-	public Object getCleanableBatchReport(Map<String, Object> queryParams, CIBUser user) {
-		MultivaluedMap<String, String> multiValueMap = directProviderUtil.toMultivaluedMap(queryParams);
-		CleanableHistoricBatchReportDto queryDto = new CleanableHistoricBatchReportDto(directProviderUtil.getObjectMapper(user), multiValueMap);
-		CleanableHistoricBatchReport query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
-
-		List<CleanableHistoricBatchReportResult> reportResult = QueryUtil.list(query, null, null);
-
-		return CleanableHistoricBatchReportResultDto.convert(reportResult);
-	}
-
-	@Override
-	public Object getCleanableBatchReportCount(CIBUser user) {
-		MultivaluedMap<String, String> multiValueMap = new MultivaluedHashMap<>();
-		CleanableHistoricBatchReportDto queryDto = new CleanableHistoricBatchReportDto(directProviderUtil.getObjectMapper(user), multiValueMap);
-		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
-		CleanableHistoricBatchReport query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
-		return query.count();
-	}
-
-	@Override
 	public Long getRuntimeBatchCount(Map<String, Object> queryParams, CIBUser user) {
-		MultivaluedMap<String, String> multiValueMap = directProviderUtil.toMultivaluedMap(queryParams);
+		MultivaluedMap<String, String> multiValueMap = new MultivaluedHashMap<>();
+		for (Entry<String, Object> entry : queryParams.entrySet()) {
+			multiValueMap.put(entry.getKey(), Arrays.asList((String) entry.getValue()));
+		}
 		BatchQueryDto queryDto = new BatchQueryDto(directProviderUtil.getObjectMapper(user), multiValueMap);
 		BatchQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 		return query.count();
+	}
+
+	/**
+	 * Reads a flag that arrives either as a JSON boolean (request body) or as the
+	 * String "true"/"false" (query parameter). A missing value counts as false.
+	 */
+	private static boolean isTrue(Object value) {
+		return Boolean.parseBoolean(String.valueOf(value));
 	}
 }

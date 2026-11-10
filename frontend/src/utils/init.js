@@ -89,7 +89,8 @@ export function handleAxiosError(router, root, error) {
         console && console.info('Prolonged token')
         if (sessionStorage.getItem('token')) sessionStorage.setItem('token', res.data.params[0])
         else if (localStorage.getItem('token')) localStorage.setItem('token', res.data.params[0])
-        axios.defaults.headers.common.authorization = root.user.authToken = res.data.params[0]
+        axios.defaults.headers.common.authorization = res.data.params[0]
+        if (root.user) root.user.authToken = res.data.params[0] // not there once the logout has cleared it
         // Repeat last request
         error.config.headers.authorization = res.data.params[0]
         return axios.request(error.config)
@@ -138,6 +139,8 @@ export async function loadTheme(themeName) {
       const module = await moduleLoader()
       const style = document.createElement('style')
       style.textContent = module.default
+      // Marked, so styles loaded later can be placed before it and the theme keeps the last word
+      style.dataset.theme = themeName
       document.head.appendChild(style)
     } else {
       console.warn(`Theme "${themeName}" not found, available themes:`, Object.keys(themeModules))

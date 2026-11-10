@@ -26,6 +26,7 @@ import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Map;
@@ -36,12 +37,14 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.web.client.ResourceAccessException;
 
 import io.jsonwebtoken.Jwts;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.QueueDispatcher;
 import okhttp3.mockwebserver.RecordedRequest;
+import okhttp3.mockwebserver.SocketPolicy;
 
 /**
  * Drives {@link SsoHelper} - and through its constructor {@link KeyResolver} - against a stand-in
@@ -466,5 +469,129 @@ public class SsoHelperTest {
 
 		assertThat(expiration).isNotNull().isAfter(new Date());
 		assertThat(server.takeRequest().getPath()).isEqualTo("/introspect");
+	}
+
+	// ---------- logout: token revocation ----------
+
+	private SsoHelper logoutHelper() throws Exception {
+		enqueueJson(jwks);
+		SsoHelper helper = new SsoHelper(url("/token"), CLIENT_ID, CLIENT_SECRET, null, null,
+			url("/certs"), url("/userinfo"), url("/introspect"), url("/revoke"), "https://idp.example/logout");
+		server.takeRequest(); // drain the JWKS fetch
+		return helper;
+	}
+
+	@Test
+	void revokeToken_postsTheTokenWithItsTypeHintAndTheClientCredentials() throws Exception {
+		SsoHelper helper = logoutHelper();
+		server.enqueue(new MockResponse().setResponseCode(200));
+
+		assertThat(helper.revokeToken("the-refresh", "refresh_token")).isTrue();
+
+		RecordedRequest request = server.takeRequest();
+		assertThat(request.getPath()).isEqualTo("/revoke");
+		assertThat(request.getBody().readUtf8())
+			.contains("token=the-refresh").contains("token_type_hint=refresh_token")
+			.contains("client_id=" + CLIENT_ID).contains("client_secret=" + CLIENT_SECRET);
+	}
+
+	@Test
+	void revokeToken_doesNothingWithoutARevocationEndpoint() throws Exception {
+		enqueueJson(jwks);
+		SsoHelper helper = new SsoHelper(url("/token"), CLIENT_ID, CLIENT_SECRET, null, null,
+			url("/certs"), url("/userinfo"), url("/introspect"));
+		int before = server.getRequestCount();
+
+		assertThat(helper.isRevocationConfigured()).isFalse();
+		assertThat(helper.revokeToken("the-refresh", "refresh_token")).isFalse();
+		assertThat(server.getRequestCount()).isEqualTo(before);
+	}
+
+	@Test
+	void revokeToken_skipsAMissingToken() throws Exception {
+		SsoHelper helper = logoutHelper();
+		int before = server.getRequestCount();
+
+		assertThat(helper.revokeToken(null, "refresh_token")).isFalse();
+		assertThat(helper.revokeToken("  ", "refresh_token")).isFalse();
+		assertThat(server.getRequestCount()).isEqualTo(before);
+	}
+
+	@Test
+	void revokeToken_swallowsAProviderFailure() throws Exception {
+		SsoHelper helper = logoutHelper();
+		server.enqueue(new MockResponse().setResponseCode(500));
+
+		// a broken provider must not keep the user from logging out
+		assertThat(helper.revokeToken("the-refresh", "refresh_token")).isFalse();
+	}
+
+	// ---------- logout: RP-initiated logout ----------
+
+	@Test
+	void buildEndSessionUrl_carriesTheClientTheIdTokenHintAndTheRedirect() throws Exception {
+		SsoHelper helper = logoutHelper();
+
+		String url = helper.buildEndSessionUrl("the.id.token", "https://app.example/seven/#/");
+
+		assertThat(url).isEqualTo("https://idp.example/logout?client_id=" + CLIENT_ID
+			+ "&id_token_hint=the.id.token&post_logout_redirect_uri=https://app.example/seven/%23/");
+	}
+
+	@Test
+	void buildEndSessionUrl_leavesOutWhatIsNotKnown() throws Exception {
+		SsoHelper helper = logoutHelper();
+
+		assertThat(helper.buildEndSessionUrl(null, null))
+			.isEqualTo("https://idp.example/logout?client_id=" + CLIENT_ID);
+		assertThat(helper.buildEndSessionUrl(" ", ""))
+			.isEqualTo("https://idp.example/logout?client_id=" + CLIENT_ID);
+	}
+
+	@Test
+	void isEndSessionConfigured_followsTheEndpoint() throws Exception {
+		assertThat(logoutHelper().isEndSessionConfigured()).isTrue();
+		assertThat(helper().isEndSessionConfigured()).isFalse();
+	}
+
+	@Test
+	void buildEndSessionUrl_isNullWithoutAnEndSessionEndpoint() throws Exception {
+		SsoHelper helper = helper();
+
+		assertThat(helper.buildEndSessionUrl("the.id.token", "https://app.example")).isNull();
+	}
+
+	// ---------- logout: a provider that stalls ----------
+
+	@Test
+	void revokeToken_givesUpOnAProviderThatStalls() throws Exception {
+		SsoHelper helper = logoutHelper();
+		server.enqueue(new MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE));
+		long start = System.nanoTime();
+
+		assertThat(helper.revokeToken("the-refresh", "refresh_token")).isFalse();
+
+		assertThat(Duration.ofNanos(System.nanoTime() - start)).isLessThan(Duration.ofSeconds(8));
+	}
+
+	@Test
+	void refreshTokenForLogout_givesUpOnAProviderThatStalls() throws Exception {
+		SsoHelper helper = logoutHelper();
+		server.enqueue(new MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE));
+		long start = System.nanoTime();
+
+		assertThatThrownBy(() -> helper.refreshTokenForLogout("the-refresh")).isInstanceOf(ResourceAccessException.class);
+
+		assertThat(Duration.ofNanos(System.nanoTime() - start)).isLessThan(Duration.ofSeconds(8));
+	}
+
+	@Test
+	void refreshTokenForLogout_asksLikeTheRegularRefresh() throws Exception {
+		SsoHelper helper = logoutHelper();
+		enqueueJson("{\"access_token\":\"a\",\"id_token\":\"the.id.token\"}");
+
+		assertThat(helper.refreshTokenForLogout("the-refresh").getId_token()).isEqualTo("the.id.token");
+
+		assertThat(server.takeRequest().getBody().readUtf8()).contains("grant_type=refresh_token").contains("refresh_token=the-refresh");
 	}
 }

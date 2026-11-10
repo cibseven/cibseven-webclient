@@ -611,6 +611,15 @@ describe('inline route hooks', () => {
       await expect(hook()(route({ query: {} }))).resolves.toBe(true)
     })
 
+    // Not tied to SSO: any provider may send the browser to an external system to log out
+    it('should show the logged-out page when the browser comes back from an external logout', async () => {
+      setRoot({ config: { ssoActive: false } })
+      sessionStorage.setItem('cibseven:loggedOut', '1')
+
+      await expect(hook()(route({ query: {} }))).resolves.toEqual({ name: 'loggedOut' })
+      sessionStorage.clear()
+    })
+
     // With SSO the app leaves the SPA entirely, so the hook cancels navigation. jsdom
     // refuses a real navigation, hence the stubbed location.
     describe('with SSO active', () => {
@@ -641,6 +650,17 @@ describe('inline route hooks', () => {
         await hook()(route({ query: {} }))
 
         expect(window.location.href).toBe('./sso-login.html?nextUrl=')
+      })
+
+      it('should show the logged-out page, not log in again, when back from an external logout', async () => {
+        setRoot({ config: { ssoActive: true } })
+        SetupService.getStatus.mockClear()
+        sessionStorage.setItem('cibseven:loggedOut', '1')
+
+        await expect(hook()(route({ query: {} }))).resolves.toEqual({ name: 'loggedOut' })
+        expect(SetupService.getStatus).not.toHaveBeenCalled()
+        expect(window.location.href).toBe('')
+        sessionStorage.clear()
       })
 
       it('should still hand over when the setup check fails', async () => {

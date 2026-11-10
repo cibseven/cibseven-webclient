@@ -297,10 +297,8 @@ export default {
       const content = await this.getContent(resource)
       this.diagramLoading = false
       if (content) {
-        // axios parses .form (JSON) responses, so serialize them back for the file
-        const data = typeof content === 'string' ? content : JSON.stringify(content, null, 2)
         const type = this.isForm(resource) ? 'application/json' : this.isHtml(resource) ? 'text/html' : 'application/xml'
-        const blob = new Blob([data], { type })
+        const blob = new Blob([content], { type })
         this.$refs.downloadPopper.triggerDownload(blob, resource.name)
       }
     },

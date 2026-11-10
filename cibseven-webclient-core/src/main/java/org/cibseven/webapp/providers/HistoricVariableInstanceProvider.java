@@ -16,11 +16,21 @@
  */
 package org.cibseven.webapp.providers;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.VariableHistory;
+import org.cibseven.webapp.providers.utils.URLUtils;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * Provider implementation for historic variable instance operations using Camunda History REST API
@@ -49,6 +59,34 @@ public class HistoricVariableInstanceProvider extends SevenProviderBase implemen
 			variableSerialized.setValueDeserialized(variableDeserialized.getValue());
 			return variableSerialized;
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Collection<VariableHistory> findHistoricVariableInstances(Map<String, Object> filters,
+			Optional<Integer> firstResult, Optional<Integer> maxResults, Boolean deserializeValues,
+			CIBUser user) throws SystemException {
+		// The engine takes the paging and the deserialization flag in the query string, the rest
+		// of the query in the body, which is how the sdk splits them too
+		Map<String, Object> params = new HashMap<>();
+		firstResult.ifPresent(value -> params.put("firstResult", value));
+		maxResults.ifPresent(value -> params.put("maxResults", value));
+		if (deserializeValues != null) {
+			params.put("deserializeValues", deserializeValues);
+		}
+		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/history/variable-instance", params);
+		return Arrays.asList(((ResponseEntity<VariableHistory[]>) doPost(url, filters, VariableHistory[].class, user)).getBody());
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public Integer findHistoricVariableInstancesCount(Map<String, Object> filters, CIBUser user) throws SystemException {
+		String url = getEngineRestUrl(user) + "/history/variable-instance/count";
+		JsonNode body = ((ResponseEntity<JsonNode>) doPost(url, filters, JsonNode.class, user)).getBody();
+		if (body == null) {
+			throw new SystemException("No count returned for the historic variable instance query");
+		}
+		return body.get("count").asInt();
 	}
 
 }

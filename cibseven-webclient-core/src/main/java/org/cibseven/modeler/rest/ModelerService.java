@@ -27,6 +27,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.w3c.dom.Document;
@@ -51,9 +52,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import org.cibseven.webapp.exception.ExistingFormIdException;
-import org.cibseven.webapp.exception.ExistingProcessKeyException;
-import org.cibseven.webapp.exception.InvalidFolderException;
+import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.modeler.model.DiagramUsageEntity;
@@ -68,6 +67,8 @@ import org.cibseven.modeler.provider.DiagramUsageProvider;
 import org.cibseven.modeler.provider.FormProvider;
 import org.cibseven.modeler.provider.FolderProvider;
 import org.cibseven.modeler.provider.FormUsageProvider;
+import org.cibseven.modeler.provider.ProjectAccess.Action;
+import org.cibseven.modeler.provider.ProjectGuard;
 import org.cibseven.modeler.provider.UnifiedDiagramProvider;
 import org.cibseven.modeler.provider.UserSessionProvider;
 import io.swagger.v3.oas.annotations.Operation;
@@ -85,7 +86,7 @@ import java.io.ByteArrayInputStream;
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
 	@ApiResponse(responseCode = "401", description = "Unauthorized")
 })
-@RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}/modeler")
+@RestController @RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH + "/modeler")
 public class ModelerService extends ModelerBaseService {
 
 	@Autowired DBProcessDiagramProvider dbProcessDiagramProvider;
@@ -95,10 +96,78 @@ public class ModelerService extends ModelerBaseService {
 	@Autowired FormProvider formProvider;
 	@Autowired UnifiedDiagramProvider unifiedDiagramProvider;
 	@Autowired FolderProvider folderProvider;
+	// Replaced by the bean; open until then, so a service built by hand works as before
+	@Autowired ProjectGuard projectGuard = ProjectGuard.OPEN;
 
 	/** The folder a new model goes into. A model lives in one, so the request has to name it. */
 	private String folderFor(String folderId) {
 		return folderProvider.requireModelFolder(folderId).getId();
+	}
+
+	/** The folder a new model goes into, once the user may add to its project. */
+	private String folderFor(CIBUser user, String folderId) {
+		String folder = folderFor(folderId);
+		projectGuard.require(user, folder, Action.EDIT);
+		return folder;
+	}
+
+	/** The diagram, once the user may do this in its project; none stays none, for a 404. */
+	private ProcessDiagramEntity checked(CIBUser user, ProcessDiagramEntity diagram, Action action) {
+		if (diagram != null) {
+			projectGuard.require(user, diagram.getFolderId(), action);
+		}
+		return diagram;
+	}
+
+	private FormEntity checked(CIBUser user, FormEntity form, Action action) {
+		if (form != null) {
+			projectGuard.require(user, form.getFolderId(), action);
+		}
+		return form;
+	}
+
+	/**
+	 * The diagram with this key in the folder named, or else the latest among those the user may
+	 * see: a key is unique only within a folder, and a hidden one must neither be picked nor shown.
+	 */
+	private ProcessDiagramEntity diagramByKey(CIBUser user, String key, String folderId) {
+		if (folderId != null && !folderId.isBlank()) {
+			projectGuard.require(user, folderId, Action.VIEW);
+			return dbProcessDiagramProvider.findByProcessKeyInFolder(key, folderId);
+		}
+		return dbProcessDiagramProvider.findByProcessKey(key, projectGuard.hiddenProjects(user)).stream()
+			.findFirst().orElse(null);
+	}
+
+	/**
+	 * As {@link #diagramByKey}, but for a change: the latest diagram the user may edit, so a later
+	 * one they may only look at does not hide it. With none, the latest they may see, to be refused.
+	 */
+	private ProcessDiagramEntity editableDiagramByKey(CIBUser user, String key, String folderId) {
+		if (folderId != null && !folderId.isBlank()) {
+			return diagramByKey(user, key, folderId);
+		}
+		List<ProcessDiagramEntity> visible = dbProcessDiagramProvider.findByProcessKey(key, projectGuard.hiddenProjects(user));
+		return visible.stream().filter(diagram -> mayEdit(user, diagram.getFolderId())).findFirst()
+			.orElse(visible.isEmpty() ? null : visible.get(0));
+	}
+
+	private boolean mayEdit(CIBUser user, String folderId) {
+		try {
+			projectGuard.require(user, folderId, Action.EDIT);
+			return true;
+		} catch (AccessDeniedException e) {
+			return false;
+		}
+	}
+
+	private FormEntity formByFormId(CIBUser user, String formId, String folderId) {
+		if (folderId != null && !folderId.isBlank()) {
+			projectGuard.require(user, folderId, Action.VIEW);
+			return formProvider.findByFormIdInFolder(formId, folderId);
+		}
+		return formProvider.findByFormId(formId, projectGuard.hiddenProjects(user)).stream()
+			.findFirst().orElse(null);
 	}
 
 	@RequestMapping(value = "/processes", method = RequestMethod.GET)
@@ -109,8 +178,8 @@ public class ModelerService extends ModelerBaseService {
 		@RequestParam(required = false) String diagramType,
 		@RequestParam(required = false) String keyword
 	) {
-		checkModelerAccess(rq);
-		return dbProcessDiagramProvider.getDiagrams(keyword, diagramType, firstResult, maxResults);
+		CIBUser user = checkModelerAccess(rq);
+		return dbProcessDiagramProvider.getDiagrams(keyword, diagramType, projectGuard.hiddenProjects(user), firstResult, maxResults);
 	}
 	
 	@RequestMapping(value = "/unified-diagrams", method = RequestMethod.GET)
@@ -122,17 +191,24 @@ public class ModelerService extends ModelerBaseService {
 		@RequestParam(required = false) String type,
 		@Parameter(description = "Only the models in this folder; every folder when absent")
 		@RequestParam(required = false) String folderId) {
-		checkModelerAccess(rq);
-		return unifiedDiagramProvider.getDiagrams(keyword, type, folderId, firstResult, maxResults);
+		CIBUser user = checkModelerAccess(rq);
+		if (folderId != null && !folderId.isBlank()) {
+			projectGuard.require(user, folderId, Action.VIEW);
+		}
+		return unifiedDiagramProvider.getDiagrams(keyword, type, folderId, projectGuard.hiddenProjects(user),
+			firstResult, maxResults);
 	}
 
 	@RequestMapping(value = "/unified-diagrams/{id}", method = RequestMethod.GET)
 	public ResponseEntity<UnifiedDiagram> getUnifiedDiagramById(
 		@PathVariable String id,
 		HttpServletRequest rq) {
-		checkModelerAccess(rq);
+		CIBUser user = checkModelerAccess(rq);
 		return unifiedDiagramProvider.getDiagramById(id)
-			.map(ResponseEntity::ok)
+			.map(diagram -> {
+				projectGuard.require(user, diagram.getFolderId(), Action.VIEW);
+				return ResponseEntity.ok(diagram);
+			})
 			.orElse(ResponseEntity.notFound().build());
 	}
 
@@ -159,9 +235,11 @@ public class ModelerService extends ModelerBaseService {
 	public Deployment deployBpmnReduce(
 			@Parameter(description = "Metadata of the diagram to be deployed (deployment-name, deployment-source, deploy-changed-only)") @RequestParam String deploymentName,
 			@Parameter(description = "Diagram to be deployed") @RequestParam MultiValueMap<String, MultipartFile> file,
+			@Parameter(description = "The folder of the diagram; the latest one the user may see when absent")
+			@RequestParam(required = false) String folderId,
 			HttpServletRequest rq) {
 		CIBUser user = checkModelerAccess(rq);
-		ProcessDiagramEntity diagramEntity = dbProcessDiagramProvider.findByProcessKey(deploymentName);
+		ProcessDiagramEntity diagramEntity = checked(user, editableDiagramByKey(user, deploymentName, folderId), Action.EDIT);
 		if (diagramEntity == null) throw new SystemException(new IllegalArgumentException("Diagram not found for key: " + deploymentName));
 		String type = diagramEntity.getType();
 		if (type.contains("bpmn")) type = "bpmn";
@@ -178,19 +256,24 @@ public class ModelerService extends ModelerBaseService {
 		String originalFilename = multipartFile.getOriginalFilename() != null ? multipartFile.getOriginalFilename() : "";
 		String tagName = originalFilename.endsWith(".dmn") ? "decision" : "process";
 		String type = originalFilename.endsWith(".dmn") ? "dmn" : "bpmn-c7";
+		String targetFolder = folderFor(user, folderId);
 		ProcessDiagramEntity artifactExists = null;
 		if (multipartFile != null) {
 			try {
-				byte[] fileContent = multipartFile.getBytes();                
+				byte[] fileContent = multipartFile.getBytes();
 	            String prefix = getBpmnPrefix(fileContent);
 	    		entity.setName(getXmlAttribute(fileContent, tagName.equals("process") ? prefix + tagName : tagName, "name"));
 	    		entity.setProcesskey(getXmlAttribute(fileContent, tagName.equals("process") ? prefix + tagName : tagName, "id"));
 	    		entity.setActive(true);
 				entity.setDiagram(fileContent);
 				entity.setType(type);
-				artifactExists = dbProcessDiagramProvider.findByName(entity.getName());
-				
+				// A key is unique within a folder, so what the file may overwrite is the model with its
+				// key in the folder it goes into, not one of the same name anywhere
+				artifactExists = entity.getProcesskey() == null ? null
+					: dbProcessDiagramProvider.findByProcessKeyInFolder(entity.getProcesskey(), targetFolder);
+
 				if(artifactExists != null && overwrite) {
+					checked(user, artifactExists, Action.EDIT);
 					entity.setId(artifactExists.getId());
 					artifactExists.setDiagram(fileContent);
 					artifactExists.setUpdatedBy(user.getUserID());
@@ -199,9 +282,9 @@ public class ModelerService extends ModelerBaseService {
 				
 	        } catch (IOException e) {}
 		}
-		entity.setFolderId(folderFor(folderId));
+		entity.setFolderId(targetFolder);
 		entity.setUpdatedBy(user.getUserID());
-		return dbProcessDiagramProvider.createDiagram(entity);			
+		return dbProcessDiagramProvider.createDiagram(entity);
 	}
 
 	@RequestMapping(value = "/deployment/create/{id}", method = RequestMethod.POST)
@@ -210,8 +293,8 @@ public class ModelerService extends ModelerBaseService {
 			@Parameter(description = "id of the diagram") @PathVariable String id,
 			HttpServletRequest rq) {
 		CIBUser user = checkModelerAccess(rq);
-		ProcessDiagramEntity entity = dbProcessDiagramProvider.findById(id).get();
-		byte[] bytes = entity.getDiagram(); 
+		ProcessDiagramEntity entity = checked(user, dbProcessDiagramProvider.findById(id).get(), Action.EDIT);
+		byte[] bytes = entity.getDiagram();
 		String type = entity.getType();
 		if (type.contains("bpmn")) type = "bpmn";
 		MultiValueMap<String, MultipartFile> file = byteArrayToMultiValueMap(bytes, entity.getProcesskey(), type);
@@ -263,7 +346,7 @@ public class ModelerService extends ModelerBaseService {
 		} catch (IOException e) {
 			entity.setDiagram(null);
 		}
-		entity.setFolderId(folderFor(data.containsKey("folderId") ? data.get("folderId").get(0) : null));
+		entity.setFolderId(folderFor(user, data.containsKey("folderId") ? data.get("folderId").get(0) : null));
 		entity.setUpdatedBy(user.getUserID());
 		return dbProcessDiagramProvider.createDiagram(entity);
 	}
@@ -286,8 +369,8 @@ public class ModelerService extends ModelerBaseService {
 		            newFormUsageEntity.setUserId(user.getUserID());
 		            if (data.containsKey("id")) {
 		                String formId = data.get("id").get(0);
-		                FormEntity formEntity = formProvider.findById(formId)
-		                        .orElseThrow(() -> new RuntimeException("Form not found"));
+		                FormEntity formEntity = checked(user, formProvider.findById(formId)
+		                        .orElseThrow(() -> new RuntimeException("Form not found")), Action.EDIT);
 		                newFormUsageEntity.setUserSession(newSession);
 		                newFormUsageEntity.setForm(formEntity);
 		            }
@@ -297,8 +380,8 @@ public class ModelerService extends ModelerBaseService {
 		            newDiagramUsageEntity.setUserId(user.getUserID());
 		            if (data.containsKey("id")) {
 		                String diagramId = data.get("id").get(0);
-		                ProcessDiagramEntity diagramEntity = dbProcessDiagramProvider.findById(diagramId)
-		                        .orElseThrow(() -> new RuntimeException("Diagram not found"));
+		                ProcessDiagramEntity diagramEntity = checked(user, dbProcessDiagramProvider.findById(diagramId)
+		                        .orElseThrow(() -> new RuntimeException("Diagram not found")), Action.EDIT);
 
 		                newDiagramUsageEntity.setUserSession(newSession);
 		                newDiagramUsageEntity.setDiagram(diagramEntity);
@@ -349,6 +432,7 @@ public class ModelerService extends ModelerBaseService {
 	public ResponseEntity<Map<String, String>> checkProcessSession(@PathVariable String id,  HttpServletRequest rq) {
 
 		CIBUser user = checkModelerAccess(rq);
+		checked(user, dbProcessDiagramProvider.findById(id).orElse(null), Action.VIEW);
 		DiagramUsageEntity newDiagramUsageEntity = diagramUsageProvider.checkSessionUser(id);
 		Map<String, String> response = new HashMap<>();
 		
@@ -374,6 +458,7 @@ public class ModelerService extends ModelerBaseService {
 	public ResponseEntity<Map<String, String>> checkFormSession(@PathVariable String id,  HttpServletRequest rq) {
 		
 		CIBUser user = checkModelerAccess(rq);
+		checked(user, formProvider.findById(id).orElse(null), Action.VIEW);
 		FormUsageEntity newFormUsageEntity = formUsageProvider.checkSessionUser(id);
 		Map<String, String> response = new HashMap<>();
 		
@@ -410,10 +495,11 @@ public class ModelerService extends ModelerBaseService {
 			newEntity.setActive(data.getActive());
 			newEntity.setType(data.getType());
 			newEntity.setDiagram(data.getDiagram());
-			newEntity.setFolderId(folderFor(data.getFolderId()));
+			newEntity.setFolderId(folderFor(user, data.getFolderId()));
 			newEntity.setUpdatedBy(updatedBy);
 			return dbProcessDiagramProvider.createDiagram(newEntity);
 		} else {
+			checked(user, entity.get(), Action.EDIT);
 			entity.get().setName(data.getName());
 			entity.get().setProcesskey(data.getProcesskey());
 			entity.get().setDescription(data.getDescription());
@@ -443,6 +529,10 @@ public class ModelerService extends ModelerBaseService {
 			entity.setDiagram(null);
 		}
 		entity.setUpdatedBy(user.getUserID());
+		// The request carries no folder, so the stored diagram tells which project it is in
+		if (entity.getId() != null) {
+			checked(user, dbProcessDiagramProvider.findById(entity.getId()).orElse(null), Action.EDIT);
+		}
 
 		ProcessDiagramEntity updatedDiagram = dbProcessDiagramProvider.updateDiagram(entity);
 		
@@ -457,8 +547,8 @@ public class ModelerService extends ModelerBaseService {
 	
 	@RequestMapping(value = "/process/find-by-name/data", method = RequestMethod.POST)
 	public ResponseEntity<byte[]> findByName(@RequestParam String name, HttpServletRequest rq) {
-		checkModelerAccess(rq);
-		ProcessDiagramEntity diagram = dbProcessDiagramProvider.findByName(name);
+		CIBUser user = checkModelerAccess(rq);
+		ProcessDiagramEntity diagram = checked(user, dbProcessDiagramProvider.findByName(name, projectGuard.hiddenProjects(user)), Action.VIEW);
 		if (diagram == null) return ResponseEntity.notFound().build();
 		byte[] file = diagram.getDiagram();
 		HttpHeaders headers = new HttpHeaders();
@@ -468,9 +558,12 @@ public class ModelerService extends ModelerBaseService {
 	}
 	
 	@RequestMapping(value = "/process/find-by-key/data", method = RequestMethod.POST)
-	public ResponseEntity<byte[]> findByKey(@RequestParam String key, HttpServletRequest rq) {
-		checkModelerAccess(rq);
-		ProcessDiagramEntity diagram = dbProcessDiagramProvider.findByProcessKey(key);
+	public ResponseEntity<byte[]> findByKey(@RequestParam String key,
+			@Parameter(description = "The folder to look in; the latest diagram the user may see when absent")
+			@RequestParam(required = false) String folderId,
+			HttpServletRequest rq) {
+		CIBUser user = checkModelerAccess(rq);
+		ProcessDiagramEntity diagram = checked(user, diagramByKey(user, key, folderId), Action.VIEW);
 		if (diagram == null) return ResponseEntity.notFound().build();
 		byte[] file = diagram.getDiagram();
 		HttpHeaders headers = new HttpHeaders();
@@ -481,8 +574,8 @@ public class ModelerService extends ModelerBaseService {
 	
 	@RequestMapping(value = "/process/{id}/data", method = RequestMethod.GET)
 	public ResponseEntity<byte[]> findByIdData(@PathVariable String id,  HttpServletRequest rq) {
-		checkModelerAccess(rq);
-		ProcessDiagramEntity entity = dbProcessDiagramProvider.findById(id).orElse(null);
+		CIBUser user = checkModelerAccess(rq);
+		ProcessDiagramEntity entity = checked(user, dbProcessDiagramProvider.findById(id).orElse(null), Action.VIEW);
 		if (entity == null) {
 			return ResponseEntity.notFound().build();
 		}
@@ -496,8 +589,8 @@ public class ModelerService extends ModelerBaseService {
 
 	@RequestMapping(value = "/process/{id}", method = RequestMethod.GET)
 	public ResponseEntity<ProcessDiagramEntity> findById(@PathVariable String id, HttpServletRequest rq) {
-		checkModelerAccess(rq);
-		ProcessDiagramEntity entity = dbProcessDiagramProvider.findById(id).orElse(null);
+		CIBUser user = checkModelerAccess(rq);
+		ProcessDiagramEntity entity = checked(user, dbProcessDiagramProvider.findById(id).orElse(null), Action.VIEW);
 		if (entity == null) {
 			return ResponseEntity.notFound().build();
 		}
@@ -505,18 +598,35 @@ public class ModelerService extends ModelerBaseService {
 	}
 
 	@RequestMapping(value = "/process/find-by-key", method = RequestMethod.GET)
-	public ResponseEntity<ProcessDiagramEntity> findByKeyEntity(@RequestParam String key, HttpServletRequest rq) {
-		checkModelerAccess(rq);
-		ProcessDiagramEntity entity = dbProcessDiagramProvider.findByProcessKey(key);
+	public ResponseEntity<ProcessDiagramEntity> findByKeyEntity(@RequestParam String key,
+			@Parameter(description = "The folder to look in; the latest diagram the user may see when absent")
+			@RequestParam(required = false) String folderId,
+			HttpServletRequest rq) {
+		CIBUser user = checkModelerAccess(rq);
+		ProcessDiagramEntity entity = checked(user, diagramByKey(user, key, folderId), Action.VIEW);
 		if (entity == null) {
 			return ResponseEntity.notFound().build();
 		}
 		return ResponseEntity.ok(entity);
 	}
+
+	@Operation(
+		summary = "Whether another diagram has the key",
+		description = "<strong>Return: true when a diagram other than the one given has the key, in any folder, "
+			+ "including those the user may not see; it names none of them. The engine keeps one definition per "
+			+ "key, so deploying either adds a version to what the other deployed")
+	@RequestMapping(value = "/process/key-in-use", method = RequestMethod.GET)
+	public boolean isKeyInUse(@RequestParam String key,
+			@Parameter(description = "The diagram to leave out, when it is saved") @RequestParam(required = false) String id,
+			HttpServletRequest rq) {
+		checkModelerAccess(rq);
+		return dbProcessDiagramProvider.isKeyUsedElsewhere(key, id);
+	}
 	
 	@RequestMapping(value = "/process/delete/{id}", method = RequestMethod.DELETE)
 	public void delete(@PathVariable String id, HttpServletRequest rq) {
-		checkModelerAccess(rq);
+		CIBUser user = checkModelerAccess(rq);
+		checked(user, dbProcessDiagramProvider.findById(id).orElse(null), Action.EDIT);
 		dbProcessDiagramProvider.delete(id);
 	}
 	
@@ -531,7 +641,7 @@ public class ModelerService extends ModelerBaseService {
 	    } catch (IOException e) {
 	        entity.setFormSchema(null);
 	    }
-	    entity.setFolderId(folderFor(folderId));
+	    entity.setFolderId(folderFor(user, folderId));
 	    entity.setUpdatedBy(user.getUserID());
 	    return formProvider.createForm(entity);
 	}
@@ -539,7 +649,8 @@ public class ModelerService extends ModelerBaseService {
 	@Transactional(CibsevenJpa.TRANSACTION_MANAGER)
 	@RequestMapping(value = "/form/delete/{id}", method = RequestMethod.DELETE)
 	public void deleteForm(@PathVariable String id, HttpServletRequest rq) {
-		checkModelerAccess(rq);
+		CIBUser user = checkModelerAccess(rq);
+		checked(user, formProvider.findById(id).orElse(null), Action.EDIT);
 		formProvider.delete(id);
 	}
 	
@@ -557,6 +668,7 @@ public class ModelerService extends ModelerBaseService {
 	        entity.setFormSchema(null);
 	    }
 	    entity.setUpdatedBy(user.getUserID());
+	    checked(user, formProvider.findById(id).orElse(null), Action.EDIT);
 
 	    FormEntity updatedForm = formProvider.updateForm(entity);
 	    
@@ -575,14 +687,14 @@ public class ModelerService extends ModelerBaseService {
 		@RequestParam int firstResult,
 		@RequestParam int maxResults,
 		@RequestParam(required = false) String keyword) {
-		checkModelerAccess(rq);
-		return formProvider.getForms(keyword, firstResult, maxResults);
+		CIBUser user = checkModelerAccess(rq);
+		return formProvider.getForms(keyword, projectGuard.hiddenProjects(user), firstResult, maxResults);
 	}
-	
+
 	@RequestMapping(value = "/form/{id}/data", method = RequestMethod.GET)
 	public ResponseEntity<byte[]> findFormById(@PathVariable String id,  HttpServletRequest rq) {
-		checkModelerAccess(rq);
-		FormEntity form = formProvider.findById(id).orElse(null);
+		CIBUser user = checkModelerAccess(rq);
+		FormEntity form = checked(user, formProvider.findById(id).orElse(null), Action.VIEW);
 		if (form == null) return ResponseEntity.notFound().build();
 		byte[] file = form.getFormSchema();
 		HttpHeaders headers = new HttpHeaders();
@@ -591,13 +703,38 @@ public class ModelerService extends ModelerBaseService {
 	}
 
 	@RequestMapping(value = "/form/find-by-formid", method = RequestMethod.GET)
-	public ResponseEntity<FormEntity> findByFormId(@RequestParam String formId, HttpServletRequest rq) {
-		checkModelerAccess(rq);
-		FormEntity form = formProvider.findByFormId(formId);
+	public ResponseEntity<FormEntity> findByFormId(@RequestParam String formId,
+			@Parameter(description = "The folder to look in; the latest form the user may see when absent")
+			@RequestParam(required = false) String folderId,
+			HttpServletRequest rq) {
+		CIBUser user = checkModelerAccess(rq);
+		FormEntity form = checked(user, formByFormId(user, formId, folderId), Action.VIEW);
 		if (form == null) {
 			return ResponseEntity.notFound().build();
 		}
 		return ResponseEntity.ok(form);
+	}
+
+	@Operation(
+		summary = "The forms with a form id",
+		description = "<strong>Return: the forms with this form id the user may see, the latest change first. "
+			+ "A form id is unique only within a folder, so a reference to it may match several")
+	@RequestMapping(value = "/form/find-all-by-formid", method = RequestMethod.GET)
+	public List<FormEntity> findAllByFormId(@RequestParam String formId, HttpServletRequest rq) {
+		CIBUser user = checkModelerAccess(rq);
+		return formProvider.findByFormId(formId, projectGuard.hiddenProjects(user));
+	}
+
+	@Operation(
+		summary = "Whether another form has the form id",
+		description = "<strong>Return: true when a form other than the one given has the form id, in any folder, "
+			+ "including those the user may not see; it names none of them")
+	@RequestMapping(value = "/form/key-in-use", method = RequestMethod.GET)
+	public boolean isFormIdInUse(@RequestParam String formId,
+			@Parameter(description = "The form to leave out, when it is saved") @RequestParam(required = false) String id,
+			HttpServletRequest rq) {
+		checkModelerAccess(rq);
+		return formProvider.isFormIdUsedElsewhere(formId, id);
 	}
 
 	/**
@@ -648,33 +785,34 @@ public class ModelerService extends ModelerBaseService {
 
 	@Operation(
 		summary = "Move a diagram to another folder",
-		description = "<strong>Return: the diagram, keeping its id and key so deployments and links hold")
+		description = "<strong>Return: the diagram, keeping its id and key so deployments and links hold. A folder "
+			+ "that has the key already refuses it")
 	@RequestMapping(value = "/process/{id}/move", method = RequestMethod.POST)
 	public ProcessDiagramEntity moveProcess(@PathVariable String id,
 			@RequestBody Map<String, String> target, HttpServletRequest rq) {
 		CIBUser user = checkModelerAccess(rq);
 		ProcessDiagramEntity entity = dbProcessDiagramProvider.findById(id)
 			.orElseThrow(() -> new NoObjectFoundException("No diagram with id " + id));
-		entity.setFolderId(folderProvider.requireModelFolder(target.get("folderId")).getId());
+		String folderId = folderFor(target.get("folderId"));
+		projectGuard.requireMove(user, entity.getFolderId(), folderId);
+		entity.setFolderId(folderId);
 		entity.setUpdatedBy(user.getUserID());
 		return dbProcessDiagramProvider.updateDiagram(entity);
 	}
 
 	@Operation(
 		summary = "Copy a diagram into a folder",
-		description = "<strong>Return: the copy. It needs a key of its own, as the engine resolves a process by key")
+		description = "<strong>Return: the copy. It keeps the key unless one is given; only a folder that has the key "
+			+ "already refuses it")
 	@RequestMapping(value = "/process/{id}/copy", method = RequestMethod.POST)
 	public ProcessDiagramEntity copyProcess(@PathVariable String id,
 			@RequestBody Map<String, String> target, HttpServletRequest rq) {
 		CIBUser user = checkModelerAccess(rq);
-		ProcessDiagramEntity source = dbProcessDiagramProvider.findById(id)
-			.orElseThrow(() -> new NoObjectFoundException("No diagram with id " + id));
+		ProcessDiagramEntity source = checked(user, dbProcessDiagramProvider.findById(id)
+			.orElseThrow(() -> new NoObjectFoundException("No diagram with id " + id)), Action.VIEW);
 		String processkey = target.get("processkey");
 		if (processkey == null || processkey.isBlank()) {
-			throw new InvalidFolderException("processkey", "a copy needs a process key of its own");
-		}
-		if (dbProcessDiagramProvider.findByProcessKey(processkey) != null) {
-			throw new ExistingProcessKeyException(processkey);
+			processkey = source.getProcesskey();
 		}
 
 		ProcessDiagramEntity copy = new ProcessDiagramEntity();
@@ -684,40 +822,41 @@ public class ModelerService extends ModelerBaseService {
 		copy.setActive(true);
 		copy.setType(source.getType());
 		copy.setDiagram(source.getDiagram());
-		copy.setFolderId(folderProvider.requireModelFolder(target.get("folderId")).getId());
+		copy.setFolderId(folderFor(user, target.get("folderId")));
 		copy.setUpdatedBy(user.getUserID());
 		return dbProcessDiagramProvider.createDiagram(copy);
 	}
 
 	@Operation(
 		summary = "Move a form to another folder",
-		description = "<strong>Return: the form, keeping its id and form id")
+		description = "<strong>Return: the form, keeping its id and form id. A folder that has the form id already "
+			+ "refuses it")
 	@RequestMapping(value = "/form/{id}/move", method = RequestMethod.POST)
 	public FormEntity moveForm(@PathVariable String id,
 			@RequestBody Map<String, String> target, HttpServletRequest rq) {
 		CIBUser user = checkModelerAccess(rq);
 		FormEntity entity = formProvider.findById(id)
 			.orElseThrow(() -> new NoObjectFoundException("No form with id " + id));
-		entity.setFolderId(folderProvider.requireModelFolder(target.get("folderId")).getId());
+		String folderId = folderFor(target.get("folderId"));
+		projectGuard.requireMove(user, entity.getFolderId(), folderId);
+		entity.setFolderId(folderId);
 		entity.setUpdatedBy(user.getUserID());
 		return formProvider.updateForm(entity);
 	}
 
 	@Operation(
 		summary = "Copy a form into a folder",
-		description = "<strong>Return: the copy. It needs a form id of its own, as a form is referenced by it")
+		description = "<strong>Return: the copy. It keeps the form id unless one is given; only a folder that has the "
+			+ "form id already refuses it")
 	@RequestMapping(value = "/form/{id}/copy", method = RequestMethod.POST)
 	public FormEntity copyForm(@PathVariable String id,
 			@RequestBody Map<String, String> target, HttpServletRequest rq) {
 		CIBUser user = checkModelerAccess(rq);
-		FormEntity source = formProvider.findById(id)
-			.orElseThrow(() -> new NoObjectFoundException("No form with id " + id));
+		FormEntity source = checked(user, formProvider.findById(id)
+			.orElseThrow(() -> new NoObjectFoundException("No form with id " + id)), Action.VIEW);
 		String formId = target.get("formId");
 		if (formId == null || formId.isBlank()) {
-			throw new InvalidFolderException("formId", "a copy needs a form id of its own");
-		}
-		if (formProvider.findByFormId(formId) != null) {
-			throw new ExistingFormIdException(formId);
+			formId = source.getFormId();
 		}
 
 		FormEntity copy = new FormEntity();
@@ -725,7 +864,7 @@ public class ModelerService extends ModelerBaseService {
 		copy.setDescription(source.getDescription());
 		copy.setActive(true);
 		copy.setFormSchema(source.getFormSchema());
-		copy.setFolderId(folderProvider.requireModelFolder(target.get("folderId")).getId());
+		copy.setFolderId(folderFor(user, target.get("folderId")));
 		copy.setUpdatedBy(user.getUserID());
 		return formProvider.createForm(copy);
 	}

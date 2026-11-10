@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.cibseven.bpm.engine.AuthorizationException;
-import org.cibseven.bpm.engine.BadUserRequestException;
 import org.cibseven.bpm.engine.FormService;
 import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.ProcessEngineException;
@@ -416,7 +415,7 @@ public class DirectProcessProvider implements IProcessProvider {
 
 	@Override
 	public void deleteProcessInstance(String processInstanceId, CIBUser user) {
-		directProviderUtil.getProcessEngine(user).getRuntimeService().deleteProcessInstance(processInstanceId, null);
+		directProviderUtil.getProcessEngine(user).getRuntimeService().deleteProcessInstance(processInstanceId, null, false, true);
 	}
 
 	@Override
@@ -533,7 +532,9 @@ public class DirectProcessProvider implements IProcessProvider {
 	@Override
 	public Collection<ProcessStatistics> findProcessStatistics(String processId, CIBUser user)
 			throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
-		ActivityStatisticsQuery query = directProviderUtil.getProcessEngine(user).getManagementService().createActivityStatisticsQuery(processId);
+		ActivityStatisticsQuery query = directProviderUtil.getProcessEngine(user).getManagementService().createActivityStatisticsQuery(processId)
+				.includeFailedJobs()
+				.includeIncidents();
 		List<ActivityStatistics> queryResults = query.unlimitedList();
 
 		Collection<ProcessStatistics> processStatistics = new ArrayList<>();
@@ -759,8 +760,10 @@ public class DirectProcessProvider implements IProcessProvider {
 	public void deleteProcessInstanceFromHistory(String id, CIBUser user) {
 		try {
 			directProviderUtil.getProcessEngine(user).getHistoryService().deleteHistoricProcessInstance(id);
-		} catch (BadUserRequestException e) {
-			throw new SystemException(e.getMessage());
+		} catch (AuthorizationException e) {
+			throw e;
+		} catch (ProcessEngineException e) {
+			throw new NoObjectFoundException(new SystemException("Historic process instance with id " + id + " does not exist", e));
 		}
 	}
 
@@ -973,12 +976,9 @@ public class DirectProcessProvider implements IProcessProvider {
 
 	@Override
 	public Long countProcessesInstancesRuntime(Map<String, Object> filters, CIBUser user) {
-		ObjectMapper objectMapper = directProviderUtil.getObjectMapper(user);
-		HistoricProcessInstanceQueryDto historicProcessInstanceQueryDto = objectMapper.convertValue(filters,
-				HistoricProcessInstanceQueryDto.class);
-    ProcessEngine engine = directProviderUtil.getProcessEngine(user);
-    historicProcessInstanceQueryDto.setObjectMapper(objectMapper);
-    HistoricProcessInstanceQuery query = historicProcessInstanceQueryDto.toQuery(engine);
+		ProcessInstanceQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(filters, ProcessInstanceQueryDto.class);
+		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
+		ProcessInstanceQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
     return query.count();
 	}
 

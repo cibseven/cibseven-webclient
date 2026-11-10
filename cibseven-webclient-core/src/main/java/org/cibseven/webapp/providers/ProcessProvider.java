@@ -55,7 +55,6 @@ import org.cibseven.webapp.rest.model.TaskSorting;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.providers.utils.URLUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -75,21 +74,14 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	 @Autowired private IIncidentProvider incidentProvider;
 	 @Autowired private IEngineProvider engineProvider;
 
-	@Value("${cibseven.webclient.fetchInstances:true}") boolean fetchInstances;
-	@Value("${cibseven.webclient.fetchIncidents:true}") boolean fetchIncidents;
 	/** engine-rest URLs known not to offer the filtered historic activity statistics query, keyed per engine. */
 	private final Set<String> historicActivityStatisticsQueryUnsupported = ConcurrentHashMap.newKeySet();
-	/**
-	 * Legacy fallback used only with engine-rest versions prior to 2.2.0, where the
-	 * engine configuration endpoint (which exposes the history level dynamically) is not available.
-	 */
-	@Value("${cibseven.webclient.historyLevel:full}") String legacyHistoryLevel;
 
 	private String getHistoryLevel(CIBUser user) {
 		EngineConfiguration engineConfig = IEngineProvider.isEngineUnspecified(user.getEngine())
 				? engineProvider.getEffectiveDefaultEngineConfiguration()
 				: engineProvider.getEngineConfiguration(user.getEngine());
-		return engineConfig != null ? engineConfig.getHistoryLevel() : legacyHistoryLevel;
+		return engineConfig != null ? engineConfig.getHistoryLevel() : properties.getHistoryLevel();
 	}
 
 	@Override

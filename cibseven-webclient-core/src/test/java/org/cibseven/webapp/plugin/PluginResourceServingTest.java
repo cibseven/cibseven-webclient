@@ -22,18 +22,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.converter.HttpMessageConverters;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.test.context.support.TestPropertySourceUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
  * Serves the plugin fixture below {@code src/test/resources/META-INF/cibseven-plugins}
@@ -46,8 +50,16 @@ public class PluginResourceServingTest {
 
 	@Configuration
 	@EnableWebMvc
-	@EnableConfigurationProperties(PluginProperties.class)
-	static class WebConfig {
+	@EnableConfigurationProperties(SevenWebclientProperties.class)
+	static class WebConfig implements WebMvcConfigurer {
+
+		// Same JSON converter as SevenWebclientContext: the payloads are Jackson 2 nodes
+		// (goes with the Jackson 3 migration)
+		@Override
+		@SuppressWarnings("removal")
+		public void configureMessageConverters(HttpMessageConverters.ServerBuilder builder) {
+			builder.registerDefaults().withJsonConverter(new MappingJackson2HttpMessageConverter());
+		}
 
 		// PluginService extends BaseService, which autowires these
 		@Bean

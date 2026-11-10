@@ -34,6 +34,7 @@ export { appRoutes,
 export { updateAppTitle, checkExternalReturn, isMobile, hasHeader, getTheme, loadTheme, applyTheme, handleAxiosError, fetchAndStoreProcesses, fetchDecisionsIfEmpty, setupTaskNotifications } from './utils/init'
 export { parseXMLDocumentation } from './utils/parser.js'
 export { applyConfigDefaults } from './utils/config.js'
+export { profileTabRouteName } from '@/components/admin/utils.js'
 export { ENGINE_STORAGE_KEY, ENGINE_TOKENS_STORAGE_KEY } from './constants.js'
 export { 
   getEngineTokens, 
@@ -45,8 +46,9 @@ export {
   restoreTokenForEngine 
 } from './utils/engineTokens.js'
 export { TaskService, FilterService, ProcessService, VariableInstanceService, HistoricVariableInstanceService, AdminService, JobService, JobDefinitionService, SystemService,
-  HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService,
+  HistoryService, IncidentService, AuthService, InfoService, ElementTemplateService, FormsService, TemplateService, DecisionService,
   AnalyticsService, BatchService, TenantService, ExternalTaskService, DeploymentService, EngineService, SetupService, getServicesBasePath, setServicesBasePath, createDocumentEndpointUrl } from '@/services.js';
+export { loadModeler, installModeler, addStylesBeforeTheme } from '@/utils/modelerLoader.js'
 export { getEnabledShortcuts, getShortcutsForModal,
   getGlobalNavigationShortcuts, getTaskEventShortcuts, checkKeyMatch } from './utils/shortcuts.js'
 export { createProvideObject } from '@/utils/provide.js'
@@ -54,7 +56,7 @@ export { createProvideObject } from '@/utils/provide.js'
 // plugins — the mechanism is shared with the applications embedding this
 // library; each supplies its own plugin-runtime entry, since module instances
 // only exist within one build
-export { registerPlugin, getPlugin, resetPlugins, reserveSlotIds, PLUGIN_API_VERSION, getRuntimeInfo } from '@/plugins/pluginsConfig.js'
+export { registerPlugin, getPlugin, resetPlugins, reserveSlotIds, PLUGIN_API_VERSION, getRuntimeInfo, getPluginsSettled } from '@/plugins/pluginsConfig.js'
 export { defineTabBar } from '@/utils/tabBar.js'
 // as one object, so a downstream plugin runtime can hand it over without listing every service
 export * as services from '@/services.js'
@@ -75,6 +77,17 @@ export { default as usersMixin } from '@/mixins/usersMixin.js'
 export { default as copyToClipboardMixin } from '@/mixins/copyToClipboardMixin.js'
 export { default as assigneeMixin } from '@/mixins/assigneeMixin.js'
 export { default as navigationPermissionsMixin, ADMIN_ENTRY_SLOT } from '@/mixins/navigationPermissionsMixin.js'
+// Navigation catalog: only what editions (EE/Flow) build on
+export {
+  SURFACES,
+  buildNavGroups,
+  buildVisibleNavGroups,
+  filterVisibleNavGroups,
+  projectStartHoverOptions,
+  permissionFlagsFromVm,
+  registerNavGroupsExtender
+} from '@/navigation/navGroups.js'
+export { isStartableInTasklist, hasStartableProcesses } from '@/utils/process.js'
 
 // components
 export { default as CibSeven } from '@/components/CibSeven.vue'
@@ -83,8 +96,11 @@ export { default as SearchInput } from '@/components/common-components/SearchInp
 export { default as AboutModal } from '@/components/modals/AboutModal.vue'
 export { default as FeedbackModal } from '@/components/modals/FeedbackModal.vue'
 export { default as FeedbackScreenshot } from '@/components/modals/FeedbackScreenshot.vue'
+export { default as EditHistoryTimeToLiveModal } from '@/components/modals/EditHistoryTimeToLiveModal.vue'
 export { default as TaskList } from '@/components/common-components/TaskList.vue'
 export { default as CIBHeaderFlow } from '@/components/common-components/CIBHeaderFlow.vue'
+export { default as NavCluster } from '@/components/common-components/navigation/NavCluster.vue'
+export { default as NavMobileMenu } from '@/components/common-components/navigation/NavMobileMenu.vue'
 export { default as ResetDialog } from '@/components/login/ResetDialog.vue'
 export { default as OtpDialog } from '@/components/login/OtpDialog.vue'
 export { default as SecureInput } from '@/components/login/SecureInput.vue'
@@ -100,8 +116,15 @@ export { default as AuthorizationsNavBar } from '@/components/admin/Authorizatio
 export { default as CreateGroup } from '@/components/admin/CreateGroup.vue'
 export { default as CreateUser } from '@/components/admin/CreateUser.vue'
 export { default as ProfileGroup } from '@/components/admin/ProfileGroup.vue'
+export { default as ProfileGroupInformationTab } from '@/components/admin/profile/ProfileGroupInformationTab.vue'
+export { default as ProfileGroupTenantsTab } from '@/components/admin/profile/ProfileGroupTenantsTab.vue'
+export { default as ProfileGroupUsersTab } from '@/components/admin/profile/ProfileGroupUsersTab.vue'
 export { default as ProfilePreferencesTab } from '@/components/admin/ProfilePreferencesTab.vue'
 export { default as ProfileUser } from '@/components/admin/ProfileUser.vue'
+export { default as ProfileUserGroupsTab } from '@/components/admin/profile/ProfileUserGroupsTab.vue'
+export { default as ProfileUserInformationTab } from '@/components/admin/profile/ProfileUserInformationTab.vue'
+export { default as ProfileUserPasswordTab } from '@/components/admin/profile/ProfileUserPasswordTab.vue'
+export { default as ProfileUserTenantsTab } from '@/components/admin/profile/ProfileUserTenantsTab.vue'
 export { default as UsersManagement } from '@/components/admin/UsersManagement.vue'
 export { default as DeploymentList } from '@/components/deployment/DeploymentList.vue'
 export { default as DeploymentsView } from '@/components/deployment/DeploymentsView.vue'
@@ -143,6 +166,7 @@ export { default as UserTasksTable } from '@/components/process/tables/UserTasks
 export { default as ExternalTasksTable } from '@/components/process/tables/ExternalTasksTable.vue'
 export { default as RenderTemplate } from '@/components/render-template/RenderTemplate.vue'
 export { default as AdvancedSearchModal } from '@/components/task/AdvancedSearchModal.vue'
+export { default as AssignUserModal } from '@/components/task/AssignUserModal.vue'
 export { default as TaskContent } from '@/components/task/TaskContent.vue'
 export { default as TaskVariables } from '@/components/render-template/TaskVariables.vue'
 export { default as TaskView } from '@/components/task/TaskView.vue'
@@ -176,7 +200,12 @@ export { default as DmnViewer } from '@/components/decision/DmnViewer.vue'
 export { default as TemplateBase } from '@/components/forms/TemplateBase.vue'
 export { default as StartView } from '@/components/start/StartView.vue'
 export { default as StartViewItem } from '@/components/start/StartViewItem.vue'
+export { default as StartHubView } from '@/components/start/StartHubView.vue'
+export { default as TasksStartView } from '@/components/start/TasksStartView.vue'
+export { default as BuilderStartView } from '@/components/start/BuilderStartView.vue'
+export { default as AccessManagement } from '@/components/admin/AccessManagement.vue'
 export { default as LoginView } from '@/components/login/LoginView.vue'
+export { default as LoggedOutView } from '@/components/login/LoggedOutView.vue'
 export { default as InitialSetup } from '@/components/setup/InitialSetup.vue'
 export { default as ModelerView } from '@/components/modeler/ModelerView.vue'
 export { default as StackTraceModal } from '@/components/process/modals/StackTraceModal.vue'
@@ -201,6 +230,7 @@ export { default as RemovableBadge } from '@/components/common-components/Remova
 export { default as WarningBox } from '@/components/common-components/WarningBox.vue'
 export { default as DeepLinkFrame } from '@/components/common-components/DeepLinkFrame.vue'
 export { default as DeepLinkButtons } from '@/components/common-components/DeepLinkButtons.vue'
+export { default as AppFooter } from '@/components/common-components/AppFooter.vue'
 
 // re-export common frontend library
 export * from '@cib/common-frontend'

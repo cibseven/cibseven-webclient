@@ -77,6 +77,11 @@ export default {
     processDefinitionId: String,
     activeTab: String,
     selectedInstance: Object,
+    useRuntimeStats: {
+      type: Boolean,
+      default: false
+    },
+    runtimeActivityId: String,
     badgeOptions: {
       type: Object,
       default: () => ({
@@ -105,7 +110,7 @@ export default {
     ...mapGetters(['highlightedElement', 'getHistoricActivityStatistics']),
     ...mapGetters('calledProcessDefinitions', ['getStaticCalledProcessDefinitions']),
     ...mapGetters('job', ['jobDefinitions']),
-    ...mapGetters('modeler/elementTemplates', { allElementTemplateContents: 'allElementTemplateContents' }),
+    ...mapGetters('elementTemplates', { allElementTemplateContents: 'allElementTemplateContents' }),
     historicActivityStatistics() {
       return this.getHistoricActivityStatistics(this.processDefinitionId)
     }
@@ -118,6 +123,12 @@ export default {
     statistics: {
       handler() { if (this.viewer) this.drawDiagramState() },
       deep: true
+    },
+    useRuntimeStats: function() {
+      if (this.viewer) this.drawDiagramState()
+    },
+    runtimeActivityId: function() {
+      if (this.viewer) this.drawDiagramState()
     },
     activityInstance: {
       handler() { if (this.viewer) this.drawDiagramState() },
@@ -159,7 +170,7 @@ export default {
   methods: {
     ...mapActions(['selectActivity', 'clearActivitySelection', 'setHighlightedElement', 'loadActivitiesInstanceHistory', 'getProcessById']),
     ...mapActions('diagram', ['setDiagramReady']),
-    ...mapActions('modeler/elementTemplates', ['fetchAllElementTemplates']),
+    ...mapActions('elementTemplates', ['fetchAllElementTemplates']),
     ensureElementTemplatesLoaded: function() {
       if (!this.$root?.config?.modelerEnabled) return
       if (this.allElementTemplateContents && this.allElementTemplateContents.length > 0) return
@@ -343,13 +354,19 @@ export default {
     },
     buildActivityMap: function(elementRegistry) {
       const activityMap = {}
+      const externalTaskActivityIds = []
       elementRegistry.getAll().forEach(el => {
         const bo = el.businessObject
         if (bo?.id && bo?.name) {
           activityMap[bo.id] = bo.name
         }
+        // same check as the engine (BpmnParse)
+        if (bo?.id && bo.get?.('camunda:type')?.toLowerCase() === 'external') {
+          externalTaskActivityIds.push(bo.id)
+        }
       })
       this.$store.commit('setProcessActivities', activityMap)
+      this.$store.commit('setExternalTaskActivityIds', externalTaskActivityIds)
     },
     setSelectableOnAllowedElements: function() {
       const elementRegistry = this.viewer.get('elementRegistry')
@@ -444,10 +461,12 @@ export default {
         const historyStat = historyMap.get(stat.id)
         return {
           id: stat.id,
-          instances: historyStat?.instances ?? (stat.instances || 0),
+          instances: this.useRuntimeStats || stat.id === this.runtimeActivityId
+            ? (stat.instances || 0)
+            : historyStat?.instances ?? (stat.instances || 0),
           finished: historyStat?.finished || 0,
           canceled: historyStat?.canceled || 0,
-          openIncidents: stat.incidents?.reduce((sum, inc) => sum + (inc.incidentCount || 0), 0) || 0,
+          openIncidents: this.countRuntimeIncidents(stat),
           resolvedIncidents: historyStat?.resolvedIncidents || 0,
           deletedIncidents: historyStat?.deletedIncidents || 0
         }
@@ -463,10 +482,23 @@ export default {
       return merged
     },
     getProcessMergedStatisticsFullHistory: function(historyStatistics) {
-      return historyStatistics.map(hs => {
+      // Unfiltered, runtime and history agree on open incidents, so the same merge applies
+      if (this.useRuntimeStats) return this.getProcessMergedStatistics(historyStatistics)
+      const merged = historyStatistics.map(hs => {
         const stat = this.statistics?.find(s => s.id === hs.id)
-        return stat ? { ...hs, instances: hs.instances ?? stat.instances } : hs
+        if (!stat) return hs
+        return { ...hs, instances: hs.id === this.runtimeActivityId ? (stat.instances || 0) : hs.instances ?? stat.instances }
       })
+      // Tokens waiting in an async job of the selected activity have no history entry yet;
+      // runtimeActivityId is only set unfiltered, so its runtime incidents can be trusted
+      const selected = this.statistics?.find(s => s.id === this.runtimeActivityId)
+      if (selected && !historyStatistics.some(hs => hs.id === selected.id)) {
+        merged.push({ id: selected.id, instances: selected.instances || 0, finished: 0, canceled: 0, openIncidents: this.countRuntimeIncidents(selected), resolvedIncidents: 0, deletedIncidents: 0 })
+      }
+      return merged
+    },
+    countRuntimeIncidents: function(stat) {
+      return stat.incidents?.reduce((sum, inc) => sum + (inc.incidentCount || 0), 0) || 0
     },
     drawActivityBadges: function(stat, elementRegistry) {
       const element = elementRegistry.get(stat.id)

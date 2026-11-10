@@ -66,7 +66,7 @@ export async function redirectToProcessDefinition(to, from) {
 
 export async function redirectToProcessInstance(router, to, from) {
   const instanceId = to.params.instanceId
-  const historyLevel = router.root.config.camundaHistoryLevel || 'full'
+  const historyLevel = router.root.config.camundaHistoryLevel || 'audit'
   const method = historyLevel !== 'none' ? getHistoryProcessInstanceData : getRuntimeProcessInstanceData
   try {
     const instanceData = await method(instanceId)

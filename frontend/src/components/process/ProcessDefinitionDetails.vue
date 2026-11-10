@@ -96,7 +96,7 @@
       <button @click="editHistoryTimeToLive()" class="btn btn-sm mdi mdi-pencil float-end border-0"
         :title="$t('process-instance.edit')"></button>
     </span>
-    <span class="col-12">{{ historyTimeToLive !== 0 ? historyTimeToLive : '∞' }}{{ ' ' + $t('process.days') }}</span>
+    <span class="col-12">{{ historyTimeToLiveDisplay }}</span>
   </div>
   <hr class="my-2">
   <div class="row">
@@ -124,24 +124,7 @@
     <span class="col-4 text-end">{{ version.completedInstances }}</span>
   </div>
 
-  <b-modal ref="historyTimeToLive" :title="$t('process.details.historyTimeToLive')">
-    <p>
-      <span>{{ $t('process.details.definitionName') }}: </span>
-      <strong>{{ version.name }}</strong>
-      <br>
-      <span class="">{{ $t('process.details.definitionVersion') }}: </span>
-      <strong>{{ version.version }}</strong>
-    </p>
-    <label class="form-check-label pb-2" for="historyTimeToLiveInput">{{ $t('process.details.historyTimeToLive') }}</label>
-    <div class="input-group">
-      <input id="historyTimeToLiveInput" class="form-control" min="0" max="9999" type="number" v-model="historyTimeToLiveChanged">
-      <span class="input-group-text">{{ $t('process.days') }}</span>
-    </div>
-    <template v-slot:modal-footer>
-      <b-button @click="$refs.historyTimeToLive.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
-      <b-button @click="updateHistoryTimeToLive()" variant="primary">{{ $t('process-instance.save') }}</b-button>
-    </template>
-  </b-modal>
+  <EditHistoryTimeToLiveModal ref="ttlModal" :description-items="ttlDescriptionItems" @ttl-updated="onTtlUpdated" />
 
   <SuccessAlert ref="messageCopy"> {{ $t('process.copySuccess') }} </SuccessAlert>
 </template>
@@ -152,10 +135,12 @@ import { ProcessService, HistoryService } from '@/services.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { SuccessAlert } from '@cib/common-frontend'
 import { permissionsMixin } from '@/permissions.js'
+import EditHistoryTimeToLiveModal from '@/components/modals/EditHistoryTimeToLiveModal.vue'
+import { formatHistoryTimeToLive } from '@/utils/historyTimeToLive.js'
 
 export default {
   name: 'ProcessDefinitionDetails',
-  components: { SuccessAlert },
+  components: { SuccessAlert, EditHistoryTimeToLiveModal },
   mixins: [ copyToClipboardMixin, permissionsMixin ],
   props: {
     version: Object,
@@ -167,7 +152,6 @@ export default {
     return {
       selectedDeployment: null,
       historyTimeToLive: null,
-      historyTimeToLiveChanged: null,
       minTimestamp: null,
       maxTimestamp: null,
       timestampsLoaded: false
@@ -211,6 +195,15 @@ export default {
     },
     hasDeploymentReadPermission() {
       return this.canReadDeployment(this.version.deploymentId)
+    },
+    ttlDescriptionItems() {
+      return [
+        { title: this.$t('process.details.definitionName'), value: this.version.name },
+        { title: this.$t('process.details.definitionVersion'), value: this.version.version }
+      ]
+    },
+    historyTimeToLiveDisplay() {
+      return formatHistoryTimeToLive(this.$t, this.historyTimeToLive)
     }
   },
   mounted() {
@@ -247,18 +240,13 @@ export default {
     formatDate,
     formatDateForTooltips,
     editHistoryTimeToLive: function() {
-      this.historyTimeToLiveChanged = this.historyTimeToLive
-      this.$refs.historyTimeToLive.show()
+      this.$refs.ttlModal.show({ historyTimeToLive: this.historyTimeToLive })
     },
-    updateHistoryTimeToLive: function() {
-      if (this.historyTimeToLiveChanged === '') {
-        this.historyTimeToLiveChanged = 0
-      }
-      const data = { historyTimeToLive: this.historyTimeToLiveChanged }
+    onTtlUpdated({ ttlValue }) {
+      const data = { historyTimeToLive: ttlValue }
       ProcessService.updateHistoryTimeToLive(this.version.id, data).then(() => {
-        this.historyTimeToLive = data.historyTimeToLive
-        this.$refs.historyTimeToLive.hide()
-        this.$emit('onUpdateHistoryTimeToLive', this.version.id, data.historyTimeToLive);
+        this.historyTimeToLive = ttlValue
+        this.$emit('onUpdateHistoryTimeToLive', this.version.id, ttlValue)
       }).catch(error => {
         this.$root.$refs.error.show(error.response?.data)
       })

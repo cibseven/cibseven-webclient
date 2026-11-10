@@ -43,6 +43,14 @@ public interface ITaskProvider {
 	public Task findTaskById(String id, CIBUser user);
 	public void update(Task task, CIBUser user);
 	public void setAssignee(String taskId, String assignee, CIBUser user);
+	/** Takes the task for a user, refused by the engine when someone else holds it. */
+	public void claim(String taskId, String userId, CIBUser user);
+	/** Hands the task to a user to act on behalf of its owner. */
+	public void delegate(String taskId, String userId, CIBUser user);
+	/** The variables held by the task itself rather than by its process instance. */
+	public Map<String, Object> findLocalVariables(String taskId, CIBUser user);
+	/** The comments written on the task, newest first as the engine returns them. */
+	public Collection<Map<String, Object>> findComments(String taskId, CIBUser user);
 	public void submit(String taskId, CIBUser user);
 	public void submit(Task task, List<Variable> formResult, CIBUser user);
 	public void submit(String taskId, String formResult, CIBUser user);

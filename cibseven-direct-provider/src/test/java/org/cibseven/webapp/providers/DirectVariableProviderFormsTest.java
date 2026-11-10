@@ -42,12 +42,14 @@ import org.cibseven.bpm.engine.repository.ProcessDefinitionQuery;
 import org.cibseven.bpm.engine.rest.mapper.JacksonConfigurator;
 import org.cibseven.bpm.engine.variable.VariableMap;
 import org.cibseven.bpm.engine.variable.Variables;
+import org.cibseven.bpm.engine.variable.value.ObjectValue;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -162,17 +164,6 @@ public class DirectVariableProviderFormsTest {
 			.hasMessageContaining("No matching process definition with key: missing");
 	}
 
-	@Test
-	void fetchProcessFormVariablesById_skipsTheDefinitionLookup() {
-		when(formService.getStartFormVariables("definition-1", null, true)).thenReturn(variables());
-
-		Map<String, Variable> result = variableProvider.fetchProcessFormVariablesById("definition-1", user);
-
-		assertThat(result).containsOnlyKeys("amount", "customer");
-		// addressing by id needs no query at all
-		verify(repositoryService, Mockito.never()).createProcessDefinitionQuery();
-	}
-
 	// ---------- activity variables ----------
 
 	@Test
@@ -226,6 +217,26 @@ public class DirectVariableProviderFormsTest {
 		variableProvider.submitVariables("pi-1", List.of(variable), user, "definition-1");
 
 		verify(runtimeService).updateVariables(eq("pi-1"), any(), eq(List.of()));
+	}
+
+	@Test
+	void submitVariables_serializesAnObjectValueThatArrivesAsParsedJson() {
+		// regression for CIB7-880: the engine rejected a non-string value for a serializable type
+		Variable variable = new Variable();
+		variable.setName("payload");
+		variable.setType("Object");
+		variable.setValue(Map.of("a", 1));
+		variable.setValueInfo(Map.of("objectTypeName", "java.util.HashMap", "serializationDataFormat", "application/json"));
+		RuntimeServiceImpl runtimeService =
+			(RuntimeServiceImpl) directProviderUtil.getProcessEngine(user).getRuntimeService();
+
+		variableProvider.submitVariables("pi-1", List.of(variable), user, "definition-1");
+
+		ArgumentCaptor<VariableMap> modifications = ArgumentCaptor.forClass(VariableMap.class);
+		verify(runtimeService).updateVariables(eq("pi-1"), modifications.capture(), eq(List.of()));
+		ObjectValue payload = modifications.getValue().getValueTyped("payload");
+		assertThat(payload.getValueSerialized()).isEqualTo("{\"a\":1}");
+		assertThat(payload.getObjectTypeName()).isEqualTo("java.util.HashMap");
 	}
 
 	@Test

@@ -17,6 +17,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { appRoutes, createAppRouter } from '@/router.js'
 import { axios } from '@/globals.js'
+import { profileTabRouteName } from '@/components/admin/utils.js'
 
 vi.mock('@/globals.js', async (importOriginal) => {
   const actual = await importOriginal()
@@ -31,6 +32,10 @@ const AUTH_ROUTE_NAMES = enumerationRouter.getRoutes()
   .filter(r => r.path === '/seven/auth' || r.path.startsWith('/seven/auth/'))
   .map(r => r.name)
 
+function tabRules(page, tabs, rule) {
+  return Object.fromEntries(tabs.map(tab => [profileTabRouteName(page, tab), rule]))
+}
+
 // The specific permission each route (directly or via an ancestor) requires, mirroring
 // router.js. `null` means "authentication only, no additional permission gate". Every
 // name in AUTH_ROUTE_NAMES must be classified here (enforced below) so a newly added
@@ -43,8 +48,16 @@ const ROUTE_PERMISSIONS = {
   'not-found-instanceId': null,
   admin: null,
   usersManagement: null,
+  // Any one identity permission opens it (see the anyPermissionGuard test); the first one is reported
+  accessManagement: { permission: 'usersManagement', condition: 'user' },
+  tasksHome: { permission: 'tasklist' },
+  builderHome: { permission: 'modeler' },
 
   account: { permission: 'userProfile' },
+  // The tabs of the profile pages are child routes, gated by their page
+  ...tabRules('account', ['profile', 'password', 'groups', 'tenants', 'preferences'], { permission: 'userProfile' }),
+  ...tabRules('adminUser', ['profile', 'password', 'groups', 'tenants', 'preferences'], { permission: 'usersManagement', condition: 'user' }),
+  ...tabRules('adminGroup', ['information', 'users', 'tenants'], { permission: 'groupsManagement', condition: 'group' }),
   'start-process': { permission: 'tasklist' },
   'task-id': { permission: 'tasklist' },
   tasks: { permission: 'tasklist' },
@@ -214,6 +227,20 @@ describe('router guards', () => {
         name: 'no-permission',
         query: { permission, refPath: from.fullPath },
       })
+    })
+  })
+
+  describe('accessManagement opens with any identity management permission', () => {
+    it.each(['user', 'group', 'tenant', 'authorization'])('lets a user with only "%s" access in', (access) => {
+      router.setRoot(createRootStub({ applicationPermissions: vi.fn((_, granted) => granted === access) }))
+      const guard = ownGuardOf(router, 'accessManagement')
+      expect(guard(resolveRoute(router, 'accessManagement'), router.resolve('/'))).toBe(true)
+    })
+
+    it('does not count the system permission', () => {
+      router.setRoot(createRootStub({ applicationPermissions: vi.fn((_, granted) => granted === 'system') }))
+      const guard = ownGuardOf(router, 'accessManagement')
+      expect(guard(resolveRoute(router, 'accessManagement'), router.resolve('/')).name).toBe('no-permission')
     })
   })
 

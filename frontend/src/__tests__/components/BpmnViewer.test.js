@@ -362,6 +362,140 @@ describe('BpmnViewer - getProcessMergedStatisticsFullHistory', () => {
   })
 })
 
+// Statistics captured from a local engine with an asyncBefore task whose job failed
+// in 3 instances ("Fail") and a user task waiting in 2 ("Wait"). Tokens waiting in an async job
+// have no open history activity instance, so history reports 0 running instances for "Fail".
+describe('BpmnViewer - useRuntimeStats', () => {
+  const runtimeStatistics = [
+    { id: 'Fail', instances: 3, failedJobs: 3, incidents: [{ incidentType: 'failedJob', incidentCount: 3 }] },
+    { id: 'Wait', instances: 2, failedJobs: 0, incidents: [] }
+  ]
+  const historyStatistics = [
+    { id: 'Fail', instances: 0, canceled: 0, finished: 0, openIncidents: 3, resolvedIncidents: 0, deletedIncidents: 0 },
+    { id: 'Gw', instances: 0, canceled: 0, finished: 5, openIncidents: 0, resolvedIncidents: 0, deletedIncidents: 0 },
+    { id: 'Start', instances: 0, canceled: 0, finished: 5, openIncidents: 0, resolvedIncidents: 0, deletedIncidents: 0 },
+    { id: 'Wait', instances: 2, canceled: 0, finished: 0, openIncidents: 0, resolvedIncidents: 0, deletedIncidents: 0 }
+  ]
+  const byId = (merged, id) => merged.find(s => s.id === id)
+
+  const audit = (vm) => BpmnViewer.methods.getProcessMergedStatistics.call(vm, historyStatistics)
+  const full = (vm, history = historyStatistics) =>
+    BpmnViewer.methods.getProcessMergedStatisticsFullHistory.call(vm, history)
+
+  it('shows the running tokens of a failed async job with history level audit', () => {
+    const vm = viewerContext({ statistics: runtimeStatistics, useRuntimeStats: true })
+
+    const merged = audit(vm)
+
+    expect(byId(merged, 'Fail')).toMatchObject({ instances: 3, openIncidents: 3 })
+    expect(byId(merged, 'Wait')).toMatchObject({ instances: 2 })
+    expect(byId(merged, 'Start')).toMatchObject({ instances: 0, finished: 5 })
+  })
+
+  it('shows the running tokens and open incidents of a failed async job with history level full', () => {
+    const vm = viewerContext({ statistics: runtimeStatistics, useRuntimeStats: true })
+
+    const merged = full(vm)
+
+    expect(byId(merged, 'Fail')).toMatchObject({ instances: 3, openIncidents: 3 })
+    expect(byId(merged, 'Wait')).toMatchObject({ instances: 2 })
+    expect(byId(merged, 'Gw')).toMatchObject({ instances: 0, finished: 5 })
+  })
+
+  it('takes open incidents from runtime even when history already counts other ones', () => {
+    const vm = viewerContext({ statistics: runtimeStatistics, useRuntimeStats: true })
+    const history = [{ ...historyStatistics[0], openIncidents: 7, resolvedIncidents: 2 }]
+
+    expect(byId(full(vm, history), 'Fail')).toMatchObject({ openIncidents: 3, resolvedIncidents: 2 })
+  })
+
+  it('appends activities that only runtime knows with history level full', () => {
+    const vm = viewerContext({ statistics: runtimeStatistics, useRuntimeStats: true })
+
+    expect(full(vm, [])).toEqual([
+      { id: 'Fail', instances: 3, finished: 0, canceled: 0, openIncidents: 3, resolvedIncidents: 0, deletedIncidents: 0 },
+      { id: 'Wait', instances: 2, finished: 0, canceled: 0, openIncidents: 0, resolvedIncidents: 0, deletedIncidents: 0 }
+    ])
+  })
+
+  it('defaults missing runtime counts to zero with history level full', () => {
+    const vm = viewerContext({ statistics: [{ id: 'Fail' }, { id: 'New' }], useRuntimeStats: true })
+
+    const merged = full(vm, [{ id: 'Fail', instances: 4 }])
+
+    expect(byId(merged, 'Fail')).toMatchObject({ instances: 0, openIncidents: 0 })
+    expect(byId(merged, 'New')).toMatchObject({ instances: 0, openIncidents: 0 })
+  })
+
+  it('keeps history entries unchanged when runtime statistics are absent', () => {
+    const vm = viewerContext({ statistics: null, useRuntimeStats: true })
+
+    expect(full(vm)).toEqual(historyStatistics)
+  })
+
+  // A filtered instance list keeps the filtered history values, since runtime statistics are unfiltered
+  it('keeps the history instance counts when not preferring runtime', () => {
+    const vm = viewerContext({ statistics: runtimeStatistics })
+
+    expect(byId(audit(vm), 'Fail')).toMatchObject({ instances: 0 })
+    expect(byId(full(vm), 'Fail')).toMatchObject({ instances: 0 })
+  })
+
+  it.each(['useRuntimeStats', 'runtimeActivityId'])('redraws the diagram when %s changes and a viewer exists', (prop) => {
+    const vm = { viewer: {}, drawDiagramState: vi.fn() }
+
+    BpmnViewer.watch[prop].call(vm)
+    BpmnViewer.watch[prop].call({ ...vm, viewer: null })
+
+    expect(vm.drawDiagramState).toHaveBeenCalledTimes(1)
+  })
+
+  // Filtering by the activity lists every instance with a token in it, so only that activity reads runtime
+  describe('runtimeActivityId', () => {
+    const selected = () => viewerContext({ statistics: runtimeStatistics, runtimeActivityId: 'Fail' })
+
+    it('takes the selected activity tokens from runtime with history level audit', () => {
+      const merged = audit(selected())
+
+      expect(byId(merged, 'Fail')).toMatchObject({ instances: 3, openIncidents: 3 })
+      expect(byId(merged, 'Wait')).toMatchObject({ instances: 2 })
+    })
+
+    it('takes only the selected activity tokens from runtime with history level full', () => {
+      const vm = selected()
+      const history = historyStatistics.map(hs => hs.id === 'Wait' ? { ...hs, instances: 1 } : hs)
+
+      const merged = full(vm, history)
+
+      expect(byId(merged, 'Fail')).toMatchObject({ instances: 3, openIncidents: 3 })
+      expect(byId(merged, 'Wait')).toMatchObject({ instances: 1 })
+    })
+
+    // The failed job that keeps the token waiting is an open incident, and runtime is unfiltered here
+    it('appends the selected activity with its runtime incidents when history has no entry for it with history level full', () => {
+      const merged = full(selected(), historyStatistics.filter(hs => hs.id !== 'Fail'))
+
+      expect(byId(merged, 'Fail')).toEqual({
+        id: 'Fail', instances: 3, finished: 0, canceled: 0, openIncidents: 3, resolvedIncidents: 0, deletedIncidents: 0
+      })
+    })
+
+    it('appends the selected activity without open incidents when runtime reports none', () => {
+      const vm = viewerContext({ statistics: runtimeStatistics, runtimeActivityId: 'Wait' })
+
+      const merged = full(vm, historyStatistics.filter(hs => hs.id !== 'Wait'))
+
+      expect(byId(merged, 'Wait')).toMatchObject({ instances: 2, openIncidents: 0 })
+    })
+
+    it('appends nothing when runtime does not know the selected activity', () => {
+      const vm = viewerContext({ statistics: runtimeStatistics, runtimeActivityId: 'Gone' })
+
+      expect(full(vm)).toHaveLength(historyStatistics.length)
+    })
+  })
+})
+
 describe('BpmnViewer - badge placement', () => {
   const stat = (overrides = {}) => ({
     id: 'task_1', instances: 0, finished: 0, canceled: 0,
@@ -848,6 +982,36 @@ describe('BpmnViewer - buildActivityMap', () => {
     BpmnViewer.methods.buildActivityMap.call({ $store: { commit } }, elementRegistry)
 
     expect(commit).toHaveBeenCalledWith('setProcessActivities', { task_1: 'Approve' })
+  })
+
+  // The incident list filters external task incidents differently: the engine decides it the same
+  // way (camunda:type="external", case-insensitive).
+  it('should publish the ids of the external tasks, named or not', () => {
+    const commit = vi.fn()
+    // a business object reads its attributes through get(), as in bpmn-js
+    const shape = (properties) => ({ businessObject: { ...properties, get: (key) => ({ 'camunda:type': properties.type })[key] } })
+    const elementRegistry = {
+      getAll: () => [
+        shape({ id: 'external_1', name: 'Charge', type: 'external' }),
+        shape({ id: 'external_2', type: 'External' }),
+        shape({ id: 'mail_1', name: 'Mail', type: 'mail' }),
+        shape({ id: 'task_1', name: 'Approve' }),
+        { businessObject: { id: 'task_2', name: 'Reject' } },
+        shape({ type: 'external' })
+      ]
+    }
+
+    BpmnViewer.methods.buildActivityMap.call({ $store: { commit } }, elementRegistry)
+
+    expect(commit).toHaveBeenCalledWith('setExternalTaskActivityIds', ['external_1', 'external_2'])
+  })
+
+  it('should publish no external tasks when the diagram has none', () => {
+    const commit = vi.fn()
+
+    BpmnViewer.methods.buildActivityMap.call({ $store: { commit } }, { getAll: () => [] })
+
+    expect(commit).toHaveBeenCalledWith('setExternalTaskActivityIds', [])
   })
 })
 

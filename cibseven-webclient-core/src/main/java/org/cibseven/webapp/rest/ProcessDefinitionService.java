@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.providers.PermissionConstants;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.StartForm;
@@ -44,7 +45,7 @@ import jakarta.ws.rs.core.MediaType;
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occurred"),
 	@ApiResponse(responseCode = "401", description = "Unauthorized")
 })
-@RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/process-definition")
+@RestController @RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH + "/process-definition")
 public class ProcessDefinitionService extends BaseService implements InitializingBean {
 	
 

@@ -1,0 +1,556 @@
+/*
+ * Copyright CIB software GmbH and/or licensed to CIB software GmbH
+ * under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright
+ * ownership. CIB software licenses this file to you under the Apache License,
+ * Version 2.0; you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { createComponentContext } from '../support/callWithContext.js'
+import EditHistoryTimeToLiveModal from '@/components/modals/EditHistoryTimeToLiveModal.vue'
+import { HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY } from '@/constants'
+
+// The modal only wraps a b-modal shell around plain data/validation logic, so it is
+// exercised against a hand-built `this` rather than mounted.
+function context(overrides = {}) {
+  const vm = createComponentContext({
+    ...EditHistoryTimeToLiveModal.data(),
+    $refs: { modal: { show: vi.fn(), hide: vi.fn() } },
+    ...overrides
+  })
+  for (const [name, method] of Object.entries(EditHistoryTimeToLiveModal.methods)) {
+    if (typeof method === 'function' && !(name in vm)) vm[name] = method.bind(vm)
+  }
+  for (const [name, def] of Object.entries(EditHistoryTimeToLiveModal.computed)) {
+    if (name in vm || typeof def !== 'function') continue
+    Object.defineProperty(vm, name, { get: () => def.call(vm), configurable: true })
+  }
+  return vm
+}
+
+describe('EditHistoryTimeToLiveModal.vue', () => {
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  describe('element ids', () => {
+    // The sidebars mount one modal per version; a shared id would make <label for> toggle the
+    // radio of another instance and clear the selection in the visible one.
+    it('gives every instance its own id prefix', () => {
+      const first = EditHistoryTimeToLiveModal.data().idPrefix
+      const second = EditHistoryTimeToLiveModal.data().idPrefix
+
+      expect(first).toBeTruthy()
+      expect(second).toBeTruthy()
+      expect(first).not.toBe(second)
+    })
+  })
+
+  describe('show', () => {
+    it.each([
+      ['null', { historyTimeToLive: null }, 'unlimited'],
+      ['undefined', {}, 'unlimited'],
+      ['zero', { historyTimeToLive: 0 }, 'zero']
+    ])('preselects the %s choice from the item TTL and prefills the 30-day default', async (_, item, expectedChoice) => {
+      const vm = context()
+
+      vm.show(item)
+      await vm.$nextTick()
+
+      expect(vm.choice).toBe(expectedChoice)
+      expect(vm.editTtlValue).toBe(30)
+      expect(vm.$refs.modal.show).toHaveBeenCalled()
+    })
+
+    it('preselects the custom choice with the item TTL for a positive number', async () => {
+      const vm = context()
+
+      vm.show({ historyTimeToLive: 45 })
+      await vm.$nextTick()
+
+      expect(vm.choice).toBe('custom')
+      expect(vm.editTtlValue).toBe(45)
+      expect(vm.$refs.modal.show).toHaveBeenCalled()
+    })
+
+    // A definition without a TTL is unlimited, whatever the engine default is - the default is
+    // only applied to models at deployment time - so 'unlimited' is preselected as it is.
+    it('preselects unlimited for a definition without TTL even if the engine has a default', () => {
+      const vm = context({ $root: { config: { historyTimeToLive: 180, enforceHistoryTimeToLive: false } } })
+
+      vm.show({ historyTimeToLive: null })
+
+      expect(vm.choice).toBe('unlimited')
+    })
+
+    it('preselects the engine default choice for a definition that uses the engine default', () => {
+      localStorage.setItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY, '90')
+      const vm = context({ $root: { config: { historyTimeToLive: 180, enforceHistoryTimeToLive: false } } })
+
+      vm.show({ historyTimeToLive: 180 })
+
+      expect(vm.choice).toBe('engineDefault')
+      expect(vm.editTtlValue).toBe(90) // the custom field keeps the last custom value
+    })
+
+    it('preselects custom for a definition whose TTL differs from the engine default', () => {
+      const vm = context({ $root: { config: { historyTimeToLive: 180, enforceHistoryTimeToLive: false } } })
+
+      vm.show({ historyTimeToLive: 45 })
+
+      expect(vm).toMatchObject({ choice: 'custom', editTtlValue: 45 })
+    })
+
+    it('does not prefill the custom field with the engine default (it has a choice of its own)', () => {
+      localStorage.setItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY, '90')
+      const vm = context({ $root: { config: { historyTimeToLive: 180, enforceHistoryTimeToLive: false } } })
+
+      vm.show({ historyTimeToLive: null })
+      expect(vm.editTtlValue).toBe(90)
+
+      vm.show({ historyTimeToLive: 0 })
+      expect(vm.editTtlValue).toBe(90)
+    })
+
+    it('prefills the last saved custom value for the unlimited and zero choices when there is no engine default', () => {
+      localStorage.setItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY, '90')
+      const vm = context()
+
+      vm.show({ historyTimeToLive: null })
+      expect(vm.editTtlValue).toBe(90)
+
+      vm.show({ historyTimeToLive: 0 })
+      expect(vm.editTtlValue).toBe(90)
+    })
+
+    // A definition without a TTL can exist on an enforcing engine (deployed before enforcement
+    // was switched on, or with enforcement skipped). The 'unlimited' radio is disabled there, so
+    // it must never be preselected - saving it would send null and the engine rejects that.
+    describe('definition without TTL on an engine that enforces one', () => {
+      it.each([
+        ['null', { historyTimeToLive: null }],
+        ['undefined', {}]
+      ])('never preselects the disabled unlimited choice (%s TTL)', async (_, item) => {
+        const vm = context({ $root: { config: { enforceHistoryTimeToLive: true, historyTimeToLive: -1 } } })
+
+        vm.show(item)
+        await vm.$nextTick()
+
+        expect(vm.unlimitedChoiceDisabled).toBe(true)
+        expect(vm.choice).not.toBe('unlimited')
+        expect(vm.saveDisabled).toBe(false)
+        expect(vm.$refs.modal.show).toHaveBeenCalled()
+      })
+
+      it('preselects the engine default choice, keeping the engine policy', () => {
+        localStorage.setItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY, '90')
+        const vm = context({ $root: { config: { enforceHistoryTimeToLive: true, historyTimeToLive: 180 } } })
+
+        vm.show({ historyTimeToLive: null })
+
+        expect(vm.choice).toBe('engineDefault')
+        expect(vm.editTtlValue).toBe(90)
+        expect(vm.saveDisabled).toBe(false)
+      })
+
+      it('preselects zero when the engine default is 0', () => {
+        const vm = context({ $root: { config: { enforceHistoryTimeToLive: true, historyTimeToLive: 0 } } })
+
+        vm.show({ historyTimeToLive: null })
+
+        expect(vm.choice).toBe('zero')
+        expect(vm.editTtlValue).toBe(30)
+      })
+
+      it.each([
+        ['no default configured (-1)', -1],
+        ['unknown default (null)', null]
+      ])('preselects custom prefilled with the last custom value when there is %s', (_, historyTimeToLive) => {
+        localStorage.setItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY, '90')
+        const vm = context({ $root: { config: { enforceHistoryTimeToLive: true, historyTimeToLive } } })
+
+        vm.show({ historyTimeToLive: null })
+
+        expect(vm.choice).toBe('custom')
+        expect(vm.editTtlValue).toBe(90)
+      })
+
+      it('keeps the unlimited choice when enforcement is off or unknown', () => {
+        for (const enforceHistoryTimeToLive of [false, null, undefined]) {
+          const vm = context({ $root: { config: { enforceHistoryTimeToLive, historyTimeToLive: 180 } } })
+
+          vm.show({ historyTimeToLive: null })
+
+          expect(vm.choice).toBe('unlimited')
+        }
+      })
+
+      it('keeps an explicit TTL preselected as usual', () => {
+        const vm = context({ $root: { config: { enforceHistoryTimeToLive: true, historyTimeToLive: 180 } } })
+
+        vm.show({ historyTimeToLive: 45 })
+        expect(vm).toMatchObject({ choice: 'custom', editTtlValue: 45 })
+
+        vm.show({ historyTimeToLive: 0 })
+        expect(vm.choice).toBe('zero')
+      })
+    })
+  })
+
+  describe('resetTtlDialog', () => {
+    it('clears the dialog back to its defaults', () => {
+      const vm = context({ selectedItem: { historyTimeToLive: 45 }, choice: 'custom', editTtlValue: 45 })
+
+      vm.resetTtlDialog()
+
+      expect(vm).toMatchObject({ selectedItem: null, choice: 'unlimited', editTtlValue: 30 })
+    })
+
+    it('does not prefill the engine default', () => {
+      localStorage.setItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY, '90')
+      const vm = context({ choice: 'custom', editTtlValue: 45, $root: { config: { historyTimeToLive: 180 } } })
+
+      vm.resetTtlDialog()
+
+      expect(vm.editTtlValue).toBe(90)
+    })
+
+    it('restores the last saved custom value', () => {
+      localStorage.setItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY, '90')
+      const vm = context({ choice: 'custom', editTtlValue: 45 })
+
+      vm.resetTtlDialog()
+
+      expect(vm.editTtlValue).toBe(90)
+    })
+  })
+
+  describe('unlimitedChoiceDisabled', () => {
+    it.each([
+      [true, true],
+      [false, false],
+      [null, false],
+      [undefined, false]
+    ])('only a known enforceHistoryTimeToLive=true disables "unlimited" (got %j)', (enforceHistoryTimeToLive, expectedDisabled) => {
+      const vm = context({ $root: { config: { enforceHistoryTimeToLive } } })
+
+      expect(vm.unlimitedChoiceDisabled).toBe(expectedDisabled)
+    })
+  })
+
+  describe('engine default', () => {
+    // How the engine default (config.historyTimeToLive) shows up in the dialog:
+    // unknown -> nothing, -1 -> hint on 'unlimited' (only while selectable), 0 -> hint on 'zero',
+    // n > 0 -> an extra 'engineDefault' choice saving n.
+    it.each([
+      // [engine default, enforce, unlimitedIsEngineDefault, zeroIsEngineDefault, engineDefaultDays]
+      [undefined, false, false, false, null],
+      [null, false, false, false, null],
+      ['180', false, false, false, null], // not a number: treated as unknown
+      [1.5, false, false, false, null],
+      [-1, false, true, false, null],
+      [-1, null, true, false, null], // enforcement unknown: 'unlimited' stays selectable
+      [-1, true, false, false, null], // enforced: 'unlimited' is disabled, so not the default
+      [0, false, false, true, null],
+      [0, true, false, true, null],
+      [180, false, false, false, 180],
+      [180, true, false, false, 180],
+      [356001, false, false, false, 356001] // not limited to the custom field's range
+    ])('engine default %j, enforce %j', (historyTimeToLive, enforceHistoryTimeToLive, unlimited, zero, days) => {
+      const vm = context({ $root: { config: { historyTimeToLive, enforceHistoryTimeToLive } } })
+
+      expect(vm.unlimitedIsEngineDefault).toBe(unlimited)
+      expect(vm.zeroIsEngineDefault).toBe(zero)
+      expect(vm.engineDefaultDays).toBe(days)
+    })
+
+    it('labels the engine default choice like the details views', () => {
+      const vm = context({ $root: { config: { historyTimeToLive: 180 } } })
+
+      expect(vm.engineDefaultLabel).toBe('180 historyTimeToLive.days')
+    })
+  })
+
+  describe('errorInCustomChoice', () => {
+    it.each(['unlimited', 'zero'])('is never an error outside the custom choice (%s)', (choice) => {
+      const vm = context({ choice, editTtlValue: 'abc' })
+
+      expect(vm.errorInCustomChoice).toBe(false)
+    })
+
+    it.each([
+      ['not a number', 'abc', true],
+      ['empty', '', true],
+      ['negative', '-1', true],
+      ['above the 356000 ceiling', '356001', true],
+      ['the 356000 ceiling', '356000', false],
+      ['zero', '0', false],
+      ['within range', '30', false],
+      ['a number', 30, false],
+      // Number.parseInt would have read these as 1 and accepted them
+      ['a fraction', '1.5', true],
+      ['a fractional number', 1.5, true],
+      ['exponent notation (1000)', '1e3', false],
+      ['exponent notation above the ceiling', '1e6', true],
+      ['trailing garbage', '30abc', true],
+      // Number() alone would have read these as 0 and accepted them
+      ['whitespace only', '   ', true],
+      ['null', null, true],
+      ['undefined', undefined, true],
+      ['Infinity', 'Infinity', true]
+    ])('treats %s (%j) as error=%s', (_, rawValue, expectedError) => {
+      const vm = context({ choice: 'custom', editTtlValue: rawValue })
+
+      expect(vm.errorInCustomChoice).toBe(expectedError)
+    })
+
+    it('exposes the input bounds', () => {
+      const vm = context()
+
+      expect(vm.customValueMin).toBe(0)
+      expect(vm.customValueMax).toBe(356000)
+    })
+  })
+
+  describe('captionValue / captionHint', () => {
+    it.each([
+      ['Unlimited (history is never cleaned up)', 'Unlimited', 'history is never cleaned up'],
+      ['Custom', 'Custom', ''],
+      ['', '', ''],
+      ['a', 'a', ''],
+      ['a (b)', 'a', 'b'],
+      ['a (b c)', 'a', 'b c'],
+      ['a (b) (x)', 'a', 'b) (x'],
+      [undefined, '', '']
+    ])('splits %j into the value and the parenthesised hint', (caption, expectedValue, expectedHint) => {
+      const vm = context()
+
+      expect(vm.captionValue(caption)).toBe(expectedValue)
+      expect(vm.captionHint(caption)).toBe(expectedHint)
+    })
+  })
+
+  describe('last custom value storage', () => {
+    it('falls back to 30 when nothing was saved', () => {
+      const vm = context()
+
+      expect(vm.loadLastCustomValue()).toBe(30)
+    })
+
+    it('round-trips a saved value', () => {
+      const vm = context()
+
+      vm.saveLastCustomValue(120)
+
+      expect(localStorage.getItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY)).toBe('120')
+      expect(vm.loadLastCustomValue()).toBe(120)
+    })
+
+    it.each(['abc', '-1', '356001', '1.5', '', '   '])('falls back to 30 when the stored value (%j) is not a valid number of days', (stored) => {
+      localStorage.setItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY, stored)
+      const vm = context()
+
+      expect(vm.loadLastCustomValue()).toBe(30)
+    })
+
+    it.each(['0', '356000'])('accepts the boundary value %s', (stored) => {
+      localStorage.setItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY, stored)
+      const vm = context()
+
+      expect(vm.loadLastCustomValue()).toBe(Number(stored))
+    })
+
+    describe('when storage is not available', () => {
+      afterEach(() => {
+        vi.restoreAllMocks()
+      })
+
+      it('falls back to 30 and still opens the dialog when reading fails', async () => {
+        vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+          throw new DOMException('The operation is insecure.', 'SecurityError')
+        })
+        const vm = context()
+
+        expect(vm.loadLastCustomValue()).toBe(30)
+
+        vm.show({ historyTimeToLive: null })
+        await vm.$nextTick()
+        expect(vm.$refs.modal.show).toHaveBeenCalled()
+      })
+
+      it('still emits the save when writing fails', async () => {
+        vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+          throw new DOMException('The quota has been exceeded.', 'QuotaExceededError')
+        })
+        const vm = context({ choice: 'custom', editTtlValue: '45', selectedItem: { id: 'def-1' } })
+
+        await vm.saveTtlValue()
+
+        expect(vm.$emit).toHaveBeenCalledWith('ttl-updated', expect.objectContaining({ ttlValue: 45 }))
+      })
+    })
+
+    it('does not save an empty value', () => {
+      const vm = context()
+
+      vm.saveLastCustomValue(null)
+      vm.saveLastCustomValue('')
+
+      expect(localStorage.getItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY)).toBeNull()
+    })
+  })
+
+  describe('saveTtlValue', () => {
+    // Regression coverage for the 3-choice redesign: 'unlimited' must emit ttlValue: null
+    // (no TTL - the history is never cleaned up, the engine default does not apply) and 'zero'
+    // must emit ttlValue: 0 (the opposite - removed by the next cleanup run) - the two must
+    // never collapse into each other the way the old unlimited-checkbox implementation once did.
+    // ttlDisplay is the same label the definition details views show for the saved value.
+    it('emits ttlValue: null for the unlimited choice', async () => {
+      // The engine default (180) must not change what is saved or shown: null stays unlimited.
+      const vm = context({ choice: 'unlimited', selectedItem: { id: 'def-1' }, $root: { config: { historyTimeToLive: 180, enforceHistoryTimeToLive: false } } })
+
+      await vm.saveTtlValue()
+      await vm.$nextTick()
+
+      expect(vm.$emit).toHaveBeenCalledWith('ttl-updated', {
+        item: { id: 'def-1' },
+        ttlValue: null,
+        ttlDisplay: 'historyTimeToLive.choiceUnlimited'
+      })
+      expect(vm.$refs.modal.hide).toHaveBeenCalled()
+    })
+
+    it('emits ttlValue: 0 for the zero choice', async () => {
+      const vm = context({ choice: 'zero', selectedItem: { id: 'def-1' } })
+
+      await vm.saveTtlValue()
+
+      expect(vm.$emit).toHaveBeenCalledWith('ttl-updated', {
+        item: { id: 'def-1' },
+        ttlValue: 0,
+        ttlDisplay: 'historyTimeToLive.choiceZero'
+      })
+    })
+
+    it('emits the parsed day count for the custom choice', async () => {
+      const vm = context({ choice: 'custom', editTtlValue: '45', selectedItem: { id: 'def-1' } })
+
+      await vm.saveTtlValue()
+
+      expect(vm.$emit).toHaveBeenCalledWith('ttl-updated', {
+        item: { id: 'def-1' },
+        ttlValue: 45,
+        ttlDisplay: '45 historyTimeToLive.days'
+      })
+    })
+
+    it('emits the engine default for the engine default choice, without remembering it as custom value', async () => {
+      const vm = context({ choice: 'engineDefault', selectedItem: { id: 'def-1' }, $root: { config: { historyTimeToLive: 180 } } })
+
+      await vm.saveTtlValue()
+
+      expect(vm.$emit).toHaveBeenCalledWith('ttl-updated', {
+        item: { id: 'def-1' },
+        ttlValue: 180,
+        ttlDisplay: '180 historyTimeToLive.days'
+      })
+      expect(localStorage.getItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY)).toBeNull()
+    })
+
+    it('emits the full value for exponent notation instead of truncating it', async () => {
+      // Number.parseInt('1e3') is 1 - the value the user meant is 1000
+      const vm = context({ choice: 'custom', editTtlValue: '1e3', selectedItem: { id: 'def-1' } })
+
+      await vm.saveTtlValue()
+
+      expect(vm.$emit).toHaveBeenCalledWith('ttl-updated', {
+        item: { id: 'def-1' },
+        ttlValue: 1000,
+        ttlDisplay: '1000 historyTimeToLive.days'
+      })
+    })
+
+    it('does not emit a truncated value for a fraction', async () => {
+      // Number.parseInt('1.5') is 1, which used to be saved silently
+      const vm = context({ choice: 'custom', editTtlValue: '1.5', selectedItem: { id: 'def-1' } })
+
+      await vm.saveTtlValue()
+
+      expect(vm.$emit).not.toHaveBeenCalled()
+      expect(vm.$refs.modal.hide).not.toHaveBeenCalled()
+      expect(localStorage.getItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY)).toBeNull()
+    })
+
+    it('remembers the custom value, but not the unlimited or zero choices', async () => {
+      const zero = context({ choice: 'zero', selectedItem: { id: 'def-1' } })
+      await zero.saveTtlValue()
+      expect(localStorage.getItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY)).toBeNull()
+
+      const custom = context({ choice: 'custom', editTtlValue: '45', selectedItem: { id: 'def-1' } })
+      await custom.saveTtlValue()
+      expect(localStorage.getItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY)).toBe('45')
+    })
+
+    it('does not emit or close when the entered value fails validation', async () => {
+      const vm = context({ choice: 'custom', editTtlValue: '-1' })
+
+      await vm.saveTtlValue()
+
+      expect(vm.$emit).not.toHaveBeenCalled()
+      expect(vm.$refs.modal.hide).not.toHaveBeenCalled()
+      expect(localStorage.getItem(HISTORY_TTL_LAST_CUSTOM_VALUE_STORAGE_KEY)).toBeNull()
+    })
+
+    // Safeguard: a disabled 'unlimited' would send null, which an enforcing engine rejects with
+    // a NotAllowedException (HTTP 400) - it must never reach the engine.
+    it('does not emit or close for the unlimited choice when the engine enforces a TTL', async () => {
+      const vm = context({
+        choice: 'unlimited',
+        selectedItem: { id: 'def-1' },
+        $root: { config: { enforceHistoryTimeToLive: true, historyTimeToLive: 180 } }
+      })
+
+      await vm.saveTtlValue()
+
+      expect(vm.$emit).not.toHaveBeenCalled()
+      expect(vm.$refs.modal.hide).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('saveDisabled', () => {
+    it.each([
+      // [choice, enforceHistoryTimeToLive, editTtlValue, expected]
+      ['unlimited', true, 30, true],
+      ['unlimited', false, 30, false],
+      ['unlimited', null, 30, false], // unknown (engine before 3.0.0): left selectable
+      ['zero', true, 30, false],
+      ['custom', true, 30, false],
+      ['custom', true, -1, true] // invalid custom value
+    ])('choice %s, enforce %j, value %j -> disabled %j', (choice, enforceHistoryTimeToLive, editTtlValue, expected) => {
+      const vm = context({ choice, editTtlValue, $root: { config: { enforceHistoryTimeToLive } } })
+
+      expect(vm.saveDisabled).toBe(expected)
+    })
+
+    it.each([
+      [180, false],
+      [0, true], // no engine default choice is offered for 0 - nothing to save
+      [-1, true],
+      [undefined, true]
+    ])('engine default choice with engine default %j -> disabled %j', (historyTimeToLive, expected) => {
+      const vm = context({ choice: 'engineDefault', $root: { config: { historyTimeToLive } } })
+
+      expect(vm.saveDisabled).toBe(expected)
+    })
+  })
+})

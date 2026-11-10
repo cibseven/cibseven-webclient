@@ -16,6 +16,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import TasksContent from '@/components/task/TasksContent.vue'
+import { mountWithDefaults } from '../support/mountWithDefaults.js'
 import { TaskService, ProcessService, HistoryService } from '@/services.js'
 
 vi.mock('@/services.js', async (importOriginal) => {
@@ -52,7 +53,6 @@ const DEFAULT_CONFIG = {
   automaticallyOpenTask: false,
   productNamePageTitle: 'CIB seven',
   layout: { showTaskDetailsSidebar: false, showChat: false, showStatusBar: false },
-  permissions: { displayTasks: { user: ['*'] } },
   taskFilter: { advancedSearch: { filterEnabled: false } },
   taskSorting: { default: { sortBy: 'created', sortOrder: 'desc' } }
 }
@@ -70,6 +70,7 @@ const taskLoader = () => ({ done: false })
 function context(overrides = {}) {
   const vm = {
     $t: (key) => key,
+    $nextTick: (fn) => fn(),
     $root: { config: structuredClone(DEFAULT_CONFIG), user: { permissions: [], authToken: 'tok' } },
     $route: { params: {}, query: {}, path: '/seven/auth/tasks/f1' },
     $router: { push: vi.fn(), currentRoute: { path: '/seven/auth/tasks/f1' } },
@@ -90,7 +91,6 @@ function context(overrides = {}) {
     },
     isMobile: () => false,
     AuthService: { fetchAuths: vi.fn(() => Promise.resolve(['READ'])) },
-    tasksByPermissions: vi.fn((_permissions, tasks) => tasks),
     TasksRightSidebar: {},
     tasks: [],
     task: null,
@@ -127,7 +127,7 @@ afterEach(() => {
 })
 
 describe('TasksContent - data', () => {
-  const buildData = (thisArg = { canOpenRightTask: () => true }) => TasksContent.data.call(thisArg)
+  const buildData = (thisArg = {}) => TasksContent.data.call({ canOpenRightTask: () => true, isMobile: () => false, ...thisArg })
 
   it('should open the filter sidebar by default', () => {
     expect(buildData().leftOpenFilter).toBe(true)
@@ -149,6 +149,23 @@ describe('TasksContent - data', () => {
     localStorage.setItem('rightOpenTask', 'true')
 
     expect(buildData({ canOpenRightTask: () => false }).rightOpenTask).toBe(false)
+  })
+
+  // On a phone the filter panel would cover the task list, so it starts hidden.
+  it('should hide the filter sidebar on mobile even if it was persisted open', () => {
+    localStorage.setItem('leftOpenFilter', 'true')
+
+    const data = buildData({ isMobile: () => true })
+
+    expect(data.leftOpenFilter).toBe(false)
+    expect(data.leftOpenTask).toBe(true)
+  })
+
+  // The options panel would cover the list on a phone; it is opened from the task header.
+  it('should keep the task sidebar closed on mobile even if it was persisted open', () => {
+    localStorage.setItem('rightOpenTask', 'true')
+
+    expect(buildData({ isMobile: () => true }).rightOpenTask).toBe(false)
   })
 
   // External mode embeds a single task, so both side panels start collapsed.
@@ -207,10 +224,36 @@ describe('TasksContent - computed', () => {
     expect(TasksContent.computed.leftCaptionTask.call(context())).toBe('My tasks')
   })
 
+  // An empty caption drops SidebarsFlow's vertical "All tasks" tab and its gutter.
+  it('leftCaptionTask should be empty on mobile while a task covers the list', () => {
+    const caption = (leftOpenTask) => TasksContent.computed.leftCaptionTask.call(context({ isMobile: () => true, leftOpenTask }))
+
+    expect(caption(false)).toBe('')
+    expect(caption(true)).toBe('My tasks')
+  })
+
+  it('rightCaptionTask should only name the panel on mobile while it is open', () => {
+    const caption = (rightOpenTask) => TasksContent.computed.rightCaptionTask.call(
+      context({ isMobile: () => true, canOpenRightTask: () => true, rightOpenTask }))
+
+    expect(caption(false)).toBeNull()
+    expect(caption(true)).toBe('task.options')
+  })
+
   // The filter heading is suppressed while the task list is collapsed.
   it('leftCaptionFilter should only be set while the task list is open', () => {
     expect(TasksContent.computed.leftCaptionFilter.call(context({ leftOpenTask: true }))).toBe('nav-bar.filtersTitle')
     expect(TasksContent.computed.leftCaptionFilter.call(context({ leftOpenTask: false }))).toBe('')
+  })
+
+  // On mobile the heading only exists while the panel is open, which also drops the
+  // collapsed vertical tab and the 40px gutter SidebarsFlow reserves for it.
+  it('leftCaptionFilter should only be set on mobile while the filter panel is open', () => {
+    const caption = (state) => TasksContent.computed.leftCaptionFilter.call(context({ isMobile: () => true, ...state }))
+
+    expect(caption({ leftOpenTask: true, leftOpenFilter: true })).toBe('nav-bar.filtersTitle')
+    expect(caption({ leftOpenTask: true, leftOpenFilter: false })).toBe('')
+    expect(caption({ leftOpenTask: false, leftOpenFilter: true })).toBe('')
   })
 
   it('getTasksNavbarSize should pick the column layout for the current size step', () => {
@@ -515,15 +558,14 @@ describe('TasksContent - fetchTasks', () => {
     })
   })
 
-  it('should filter the result by the display-tasks permission', async () => {
+  it('should list every task returned by the engine without filtering it client-side (CIB7-2260)', async () => {
     const vm = context({ updateProcessesInstances: vi.fn() })
-    TaskService.findTasksByFilter.mockResolvedValue([{ id: 't1' }])
+    TaskService.findTasksByFilter.mockResolvedValue([{ id: 't1' }, { id: 't2' }])
 
     fetchTasks.call(vm, 0, 20)
     await flush()
 
-    expect(vm.tasksByPermissions).toHaveBeenCalledWith({ user: ['*'] }, [{ id: 't1' }])
-    expect(vm.updateProcessesInstances).toHaveBeenCalledWith([{ id: 't1' }], undefined)
+    expect(vm.updateProcessesInstances).toHaveBeenCalledWith([{ id: 't1' }, { id: 't2' }], undefined)
   })
 
   it('should preserve already loaded variables on a background refresh', async () => {
@@ -701,6 +743,23 @@ describe('TasksContent - selection', () => {
     expect(vm.listTasksWithFilter).toHaveBeenCalled()
   })
 
+  it('selectedFilter should close the filter panel on mobile', () => {
+    const vm = context({ isMobile: () => true, leftOpenFilter: true, listTasksWithFilter: vi.fn() })
+
+    selectedFilter.call(vm)
+
+    expect(vm.leftOpenFilter).toBe(false)
+    expect(vm.listTasksWithFilter).toHaveBeenCalled()
+  })
+
+  it('selectedFilter should keep the filter panel open on desktop', () => {
+    const vm = context({ leftOpenFilter: true, listTasksWithFilter: vi.fn() })
+
+    selectedFilter.call(vm)
+
+    expect(vm.leftOpenFilter).toBe(true)
+  })
+
   it('cleanSelectedTask should clear the task and return to the filter route', () => {
     const vm = context({ task: { id: 't1' }, processInstanceHistory: {} })
     vm.$route.params.filterId = 'f1'
@@ -857,6 +916,193 @@ describe('TasksContent - updateAssignee', () => {
     updateAssignee.call(vm, { taskId: 't1', assignee: 'demo' })
 
     expect(vm.listTasksWithFilterAuto).toHaveBeenCalled()
+  })
+})
+
+describe('TasksContent - setTaskListOpen', () => {
+  const { setTaskListOpen } = TasksContent.methods
+
+  // Regression: tapping the task list header on mobile showed an empty task pane.
+  it('should ignore header requests to hide the task list on mobile', () => {
+    const vm = context({ isMobile: () => true, leftOpenTask: true })
+
+    setTaskListOpen.call(vm, false)
+
+    expect(vm.leftOpenTask).toBe(true)
+  })
+
+  it('should still show the task list on mobile', () => {
+    const vm = context({ isMobile: () => true, leftOpenTask: false })
+
+    setTaskListOpen.call(vm, true)
+
+    expect(vm.leftOpenTask).toBe(true)
+  })
+
+  // On desktop clicking the header keeps collapsing the list, as before.
+  it('should hide the task list from its header on desktop', () => {
+    const vm = context({ leftOpenTask: true })
+
+    setTaskListOpen.call(vm, false)
+
+    expect(vm.leftOpenTask).toBe(false)
+  })
+})
+
+describe('TasksContent - task watcher', () => {
+  const onTask = (vm, task) => TasksContent.watch.task.handler.call(vm, task)
+
+  // Regression: leaving a task from the header menu left an empty task pane with no way back.
+  it('should bring the task list back on mobile once no task is open', () => {
+    const vm = context({ isMobile: () => true, leftOpenTask: false })
+
+    onTask(vm, null)
+
+    expect(vm.leftOpenTask).toBe(true)
+  })
+
+  it('should keep the task list collapsed on mobile while a task is open', () => {
+    const vm = context({ isMobile: () => true, leftOpenTask: false })
+
+    onTask(vm, { id: 't1', assignee: 'demo' })
+
+    expect(vm.leftOpenTask).toBe(false)
+    expect(vm.assignee).toBe('demo')
+  })
+
+  // On desktop the list and the empty task pane are both visible, so nothing is stuck.
+  it('should leave a collapsed task list alone on desktop', () => {
+    const vm = context({ leftOpenTask: false })
+
+    onTask(vm, null)
+
+    expect(vm.leftOpenTask).toBe(false)
+  })
+
+  it('should keep the task list hidden in external mode while its task loads', () => {
+    const vm = context({ isMobile: () => true, leftOpenTask: false })
+    vm.$route.query.externalMode = 'true'
+
+    onTask(vm, null)
+
+    expect(vm.leftOpenTask).toBe(false)
+  })
+})
+
+describe('TasksContent - filter sidebar watchers', () => {
+  const { leftOpenTask, leftOpenFilter } = TasksContent.watch
+
+  it('reopening the task list should restore the persisted filter panel on desktop', () => {
+    localStorage.setItem('leftOpenFilter', 'true')
+    const vm = context({ leftOpenFilter: false })
+
+    leftOpenTask.call(vm, true)
+
+    expect(vm.leftOpenFilter).toBe(true)
+  })
+
+  it('reopening the task list should keep the filter panel hidden on mobile', () => {
+    localStorage.setItem('leftOpenFilter', 'true')
+    const vm = context({ isMobile: () => true, leftOpenFilter: false })
+
+    leftOpenTask.call(vm, true)
+
+    expect(vm.leftOpenFilter).toBe(false)
+  })
+
+  it('reopening the task list should bring the selected task into view', () => {
+    const vm = context({ revealSelectedTask: vi.fn() })
+
+    leftOpenTask.call(vm, true)
+
+    expect(vm.revealSelectedTask).toHaveBeenCalled()
+  })
+
+  it('collapsing the task list should hide the filter panel', () => {
+    const vm = context({ leftOpenFilter: true })
+
+    leftOpenTask.call(vm, false)
+
+    expect(vm.leftOpenFilter).toBe(false)
+  })
+
+  it('should persist the filter panel state on desktop', () => {
+    const vm = context({ leftOpenFilter: false })
+
+    leftOpenFilter.call(vm)
+
+    expect(localStorage.getItem('leftOpenFilter')).toBe('false')
+  })
+
+  it('should persist the task sidebar state only on desktop', () => {
+    TasksContent.watch.rightOpenTask.call(context({ isMobile: () => true }), true)
+    expect(localStorage.getItem('rightOpenTask')).toBeNull()
+
+    TasksContent.watch.rightOpenTask.call(context(), true)
+    expect(localStorage.getItem('rightOpenTask')).toBe('true')
+  })
+
+  // Opening filters on a phone must not change the desktop default.
+  it('should not persist the filter panel state on mobile', () => {
+    const vm = context({ isMobile: () => true, leftOpenFilter: true })
+
+    leftOpenFilter.call(vm)
+
+    expect(localStorage.getItem('leftOpenFilter')).toBeNull()
+  })
+})
+
+describe('TasksContent - revealSelectedTask', () => {
+  const withNavbar = (overrides, pendingScrollToTaskId = null) => {
+    const vm = context(overrides)
+    vm.$route.params.taskId = 't1'
+    vm.$refs.navbar = { pendingScrollToTaskId, tasksFiltered: [{ id: 't1' }], scrollToSelectedTask: vi.fn() }
+    return vm
+  }
+
+  // A hidden list loses its scroll position, so on mobile the open task is always brought back.
+  it('should scroll to the selected task on mobile', () => {
+    const vm = withNavbar({ isMobile: () => true })
+
+    TasksContent.methods.revealSelectedTask.call(vm)
+
+    expect(vm.$refs.navbar.scrollToSelectedTask).toHaveBeenCalled()
+  })
+
+  it('should finish a scroll left pending while the list was hidden', () => {
+    const vm = withNavbar({}, 't1')
+
+    TasksContent.methods.revealSelectedTask.call(vm)
+
+    expect(vm.$refs.navbar.scrollToSelectedTask).toHaveBeenCalled()
+  })
+
+  // On desktop the list keeps its own scroll position, which must not be overridden.
+  it('should leave the desktop scroll position alone when nothing is pending', () => {
+    const vm = withNavbar({})
+
+    TasksContent.methods.revealSelectedTask.call(vm)
+
+    expect(vm.$refs.navbar.scrollToSelectedTask).not.toHaveBeenCalled()
+  })
+
+  // Only the loaded pages have rows; a task further down cannot be scrolled to.
+  it('should not try to scroll to a task beyond the loaded pages', () => {
+    const vm = withNavbar({ isMobile: () => true })
+    vm.$refs.navbar.tasksFiltered = [{ id: 't2' }]
+
+    TasksContent.methods.revealSelectedTask.call(vm)
+
+    expect(vm.$refs.navbar.scrollToSelectedTask).not.toHaveBeenCalled()
+  })
+
+  it('should do nothing without a selected task', () => {
+    const vm = withNavbar({ isMobile: () => true })
+    vm.$route.params.taskId = undefined
+
+    TasksContent.methods.revealSelectedTask.call(vm)
+
+    expect(vm.$refs.navbar.scrollToSelectedTask).not.toHaveBeenCalled()
   })
 })
 
@@ -1197,5 +1443,89 @@ describe('TasksContent - automatic task opening', () => {
       expect(HistoryService.findTasksByTaskIdHistory).not.toHaveBeenCalled()
       expect(vm.$router.push).not.toHaveBeenCalled()
     })
+  })
+})
+
+/**
+ * CIB7-1104: the resize and collapse buttons of the task list were given to SidebarsFlow through
+ * leftIcon, which it renders inside its header button, so they ended up as buttons inside a button.
+ * They now go through leftActions, next to the header toggle. SidebarsFlow is stubbed with one that
+ * shows where each slot lands, so this does not depend on the installed common-frontend.
+ */
+describe('TasksContent - task list header', () => {
+  const SidebarsFlowStub = {
+    name: 'SidebarsFlow',
+    template: `<div class="sidebars-stub">
+      <div class="left-icon"><slot name="leftIcon"></slot></div>
+      <div class="left-actions"><slot name="leftActions"></slot></div>
+      <slot name="left"></slot><slot name="filter"></slot><slot></slot><slot name="right"></slot>
+    </div>`
+  }
+
+  function mountTasksContent(mobile = false) {
+    return mountWithDefaults(TasksContent, {
+      global: {
+        provide: { isMobile: () => mobile, AuthService: {} },
+        mocks: {
+          // Mounted standalone, $root is the component itself, so $root.config resolves to this
+          config: {
+            taskListTime: '0', maxTaskResults: 20, taskSorting: { default: {} },
+            layout: {}, taskFilter: { tasksNumber: { enabled: false } }
+          },
+          user: { id: 'demo' },
+          $route: { params: {}, query: {} },
+          $router: { push: vi.fn(), replace: vi.fn() },
+          $store: {
+            state: { filter: { selected: { id: 'f1', name: 'All tasks', properties: {} }, list: [], settings: {} }, task: {}, process: { list: [] } },
+            getters: {},
+            dispatch: vi.fn(() => Promise.resolve()),
+            commit: vi.fn()
+          }
+        },
+        stubs: {
+          SidebarsFlow: SidebarsFlowStub,
+          FilterNavBar: true, TasksNavBar: true, FilterNavCollapsed: true, GlobalEvents: true,
+          SuccessAlert: true, BWaitingBox: true
+        }
+      }
+    })
+  }
+
+  const taskList = (wrapper) => wrapper.findComponent({ ref: 'regionTasks' })
+
+  it('puts the resize and collapse buttons next to the header toggle, with names', () => {
+    const header = taskList(mountTasksContent())
+    const actions = header.find('.left-actions').findAll('button')
+
+    expect(actions.map(button => button.attributes('aria-label'))).toEqual(['task.collapse', 'task.expand'])
+    expect(actions.every(button => button.find('.mdi').attributes('aria-hidden') === 'true')).toBe(true)
+  })
+
+  it('gives the header toggle no content of its own, so no button lands inside it', () => {
+    const header = taskList(mountTasksContent())
+
+    expect(header.find('.left-icon').findAll('button')).toHaveLength(0)
+  })
+
+  // On mobile the filters button replaces them and stays in front of the title
+  it('shows the filters button first on mobile', () => {
+    const actions = taskList(mountTasksContent(true)).find('.left-actions').findAll('button')
+
+    expect(actions).toHaveLength(1)
+    expect(actions[0].attributes('aria-label')).toBe('nav-bar.filtersTitle')
+    expect(actions[0].classes()).toContain('order-first')
+  })
+
+  // Mobile design: 45x45px header buttons, so the headers grow and SidebarsFlow must subtract their full height
+  it('sizes the sidebar headers for the mobile design only on mobile', () => {
+    const mobile = mountTasksContent(true)
+    const desktop = mountTasksContent()
+
+    for (const ref of ['regionFilter', 'regionTasks']) {
+      expect(mobile.findComponent({ ref }).attributes('header-calc')).toBe('46px')
+      expect(desktop.findComponent({ ref }).attributes('header-calc')).toBe('40px')
+    }
+    expect(mobile.findComponent({ ref: 'regionFilter' }).classes()).toContain('sidebars-mobile')
+    expect(desktop.findComponent({ ref: 'regionFilter' }).classes()).not.toContain('sidebars-mobile')
   })
 })

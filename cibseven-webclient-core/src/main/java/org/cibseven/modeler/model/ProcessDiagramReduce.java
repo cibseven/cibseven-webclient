@@ -29,4 +29,5 @@ public interface ProcessDiagramReduce {
 	Boolean getActive();
 	String getType();
 	Integer getVersion();
+	String getFolderId();
 }

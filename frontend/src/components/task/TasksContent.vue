@@ -17,7 +17,8 @@
 
 -->
 <template>
-  <SidebarsFlow ref="regionFilter" role="region" :aria-label="$t('nav-bar.filtersTitle')" @selected-filter="selectedFilter()" v-model:left-open="leftOpenFilter" :left-caption="leftCaptionFilter" :rightSize="[12, 4, 2, 2, 2]" :leftSize="[12, 4, 2, 2, 2]">
+  <SidebarsFlow ref="regionFilter" role="region" :aria-label="$t('nav-bar.filtersTitle')" @selected-filter="selectedFilter()" v-model:left-open="leftOpenFilter" :left-caption="leftCaptionFilter" :rightSize="[12, 4, 2, 2, 2]" :leftSize="[12, 4, 2, 2, 2]"
+    :class="{ 'sidebars-mobile': isMobile() }" :header-calc="sidebarsHeaderHeight">
     <GlobalEvents
       v-for="shortcut in taskShortcuts"
       :key="shortcut.id"
@@ -28,16 +29,20 @@
         @selected-filter="selectedFilter()" @set-filter="filter = $event;listTasksWithFilter()" @selected-task="selectedTask($event)"
         @refresh-tasks="listTasksWithFilter()" @refresh-tasks-number="refreshTasksNumber" @n-filters-shown="nFiltersShown = $event" class="border-0 bg-white"></FilterNavBar>
     </template>
+    <template v-if="isMobile()" v-slot:leftIcon>
+      <span class="mdi mdi-18px mdi-close float-end" aria-hidden="true"></span>
+    </template>
     <template v-slot:filter>
       <FilterNavCollapsed v-if="!leftOpenFilter && leftCaptionFilter" v-model:left-open="leftOpenFilter"></FilterNavCollapsed>
     </template>
     <SidebarsFlow ref="regionTasks" role="region" :aria-label="$t('seven.allTasks')" class="h-100 bg-light"
       :number="totalTasksInFilter"
-      :number-tooltip="totalTasksInFilterTooltip"
-      header-margin="55px" v-model:left-open="leftOpenTask" v-model:right-open="rightOpenTask"
+      :number-tooltip="totalTasksInFilterTooltip" :header-calc="sidebarsHeaderHeight"
+      :left-open="leftOpenTask" @update:left-open="setTaskListOpen" v-model:right-open="rightOpenTask"
       :leftSize="getTasksNavbarSize" :left-caption="leftCaptionTask" :right-caption="TasksRightSidebar ? rightCaptionTask : null">
       <template v-slot:left>
         <TasksNavBar @filter-alert="showFilterAlert($event)" ref="navbar" :tasks="tasks" @selected-task="selectedTask($event)"
+          @show-task="leftOpenTask = false"
           @update-assignee="updateAssignee($event, 'task')" @set-filter="filter = $event; listTasksWithFilter()"
           @open-sidebar-date="rightOpenTask = true" @show-more="showMore()" :taskResultsIndex="taskResultsIndex"
           @process-started="listTasksWithFilter();$refs.processStarted.show(10); checkAndOpenTask($event, true)"
@@ -48,7 +53,8 @@
       <router-view v-if="task !== null" role="region" :aria-label="$t('task.selectedTask')" ref="down" class="h-100" style="overflow-y: auto" v-slot="{ Component }">
         <transition name="slide-in" mode="out-in">
           <component :is="Component" ref="taskComponent" @update-task="updateTask($event)"
-            @update-assignee="updateAssignee($event, 'taskList')" :task="task" @complete-task="completedTask($event)" />
+            @update-assignee="updateAssignee($event, 'taskList')" :task="task" @complete-task="completedTask($event)"
+            :has-options="canOpenRightTask()" @show-task-list="leftOpenTask = true" @show-options="rightOpenTask = true" />
         </transition>
       </router-view>
       <transition name="slide-in" mode="out-in">
@@ -58,16 +64,27 @@
           <h3 class="h5">{{ $t('seven.selectTask') }}</h3>
         </div>
       </transition>
-      <template v-slot:leftIcon>
-        <div>
-          <b-button v-if="tasksNavbarSize !== 2" style="top: 3px; right: 0" :title="$t('task.expand')"
-          class="border-0 position-absolute" size="sm" variant="link" @click.stop="tasksNavbarSize++">
-            <span class="mdi mdi-18px mdi-chevron-right"></span>
+      <!-- The header shows no chevron of its own: the buttons below resize and collapse the list.
+           The empty span keeps SidebarsFlow's default chevron out, which an empty slot would show -->
+      <template v-slot:leftIcon><span></span></template>
+      <!-- Next to the header toggle, not inside it: a button may not contain other buttons -->
+      <template v-slot:leftActions>
+        <b-button v-if="isMobile()" variant="link" class="order-first border-0 border-end rounded-0 p-0"
+          :title="$t('nav-bar.filtersTitle')" :aria-label="$t('nav-bar.filtersTitle')" :aria-expanded="String(leftOpenFilter)"
+          @click.stop="leftOpenFilter = true">
+          <span class="mdi mdi-18px mdi-filter-outline" aria-hidden="true"></span>
+        </b-button>
+        <!-- In the order they show, left to right, so Tab follows the screen -->
+        <template v-else>
+          <b-button style="top: 3px; right: 60px" class="border-0 position-absolute" variant="link" size="sm" :title="$t('task.collapse')" :aria-label="$t('task.collapse')"
+            @click.stop="collapseNavbar()">
+            <span class="mdi mdi-18px mdi-chevron-left" aria-hidden="true"></span>
           </b-button>
-          <b-button style="top: 3px; right: 60px" class="border-0 position-absolute" variant="link" size="sm" :title="$t('task.collapse')" @click.stop="collapseNavbar()">
-            <span class="mdi mdi-18px mdi-chevron-left"></span>
+          <b-button v-if="tasksNavbarSize !== 2" style="top: 3px; right: 0" :title="$t('task.expand')" :aria-label="$t('task.expand')"
+            class="border-0 position-absolute" size="sm" variant="link" @click.stop="tasksNavbarSize++">
+            <span class="mdi mdi-18px mdi-chevron-right" aria-hidden="true"></span>
           </b-button>
-        </div>
+        </template>
       </template>
       <template v-slot:right>
         <component :is="TasksRightSidebar" v-if="TasksRightSidebar"
@@ -113,11 +130,11 @@ export default {
     let leftOpenFilter = localStorage.getItem('leftOpenFilter') ?
       localStorage.getItem('leftOpenFilter') === 'true' : true
     const externalMode = window.location.href.includes('externalMode')
-    if (externalMode) leftOpenFilter = false
+    if (externalMode || this.isMobile()) leftOpenFilter = false
     return {
       leftOpenFilter: leftOpenFilter,
       leftOpenTask: !externalMode,
-      rightOpenTask: localStorage.getItem('rightOpenTask') === 'true' && this.canOpenRightTask(),
+      rightOpenTask: !this.isMobile() && localStorage.getItem('rightOpenTask') === 'true' && this.canOpenRightTask(),
       tasks: [],
       task: null,
       processInstanceHistory: null,
@@ -138,20 +155,26 @@ export default {
       'selectedFilterTasksNumber',
       'selectedFilterTasksNumberLastUpdated'
     ]),
+    // Height of the sidebar headers, which SidebarsFlow subtracts from the content below them
+    sidebarsHeaderHeight: function() {
+      return this.isMobile() ? '46px' : '40px'
+    },
     TasksRightSidebar: function() {
       return this.$options.components && this.$options.components.TasksRightSidebar
         ? this.$options.components.TasksRightSidebar
         : null
     },
     rightCaptionTask: function() {
-      if (this.canOpenRightTask())
+      if (this.canOpenRightTask() && (!this.isMobile() || this.rightOpenTask))
         return this.$t('task.options')
       return null
     },
     leftCaptionTask: function() {
+      if (this.isMobile() && !this.leftOpenTask) return ''
       return this.$store.state.filter.selected.name
     },
     leftCaptionFilter: function() {
+      if (this.isMobile()) return this.leftOpenTask && this.leftOpenFilter ? this.$t('nav-bar.filtersTitle') : ''
       return this.leftOpenTask ? this.$t('nav-bar.filtersTitle') : ''
     },
     getTasksNavbarSize: function() { return this.tasksNavbarSizes[this.tasksNavbarSize] },
@@ -172,21 +195,23 @@ export default {
     task: {
       handler(newTask) {
         this.assignee = newTask ? newTask.assignee : null
+        if (!newTask && this.isMobile() && this.$route.query.externalMode === undefined) this.leftOpenTask = true
       },
       immediate: true
     },
     rightOpenTask: function(newVal) {
-      localStorage.setItem('rightOpenTask', newVal)
+      if (!this.isMobile()) localStorage.setItem('rightOpenTask', newVal)
     },
     '$route.params.taskId': function() { if (!this.$route.params.taskId) this.cleanSelectedTask() },
     '$route.params.filterId': function() { if (!this.$route.params.filterId) this.cleanSelectedFilter() },
     leftOpenTask: function(leftOpen) {
-      if (leftOpen) {
+      if (leftOpen && !this.isMobile()) {
         this.leftOpenFilter = !localStorage.getItem('leftOpenFilter') || localStorage.getItem('leftOpenFilter') === 'true'
       } else this.leftOpenFilter = false
+      if (leftOpen) this.$nextTick(() => this.revealSelectedTask())
     },
     leftOpenFilter: function() {
-      if (this.leftOpenTask) localStorage.setItem('leftOpenFilter', this.leftOpenFilter)
+      if (this.leftOpenTask && !this.isMobile()) localStorage.setItem('leftOpenFilter', this.leftOpenFilter)
     },
     '$route.query.tasksFilter': {
       immediate: true,
@@ -294,10 +319,10 @@ export default {
         applyDatePresenceFilters(filters, this.$store.state.filter.settings)
         TaskService.findTasksByFilter(this.$store.state.filter.selected.id, filters,
           { firstResult: firstResult, maxResults: maxResults }).then(result => {
-          const tasks = this.tasksByPermissions(this.$root.config.permissions.displayTasks, result)
-          if (skipVariables) this.preserveExistingVariables(tasks)
+          // The engine already applies the user's authorizations, and the filter counter relies on the same query.
+          if (skipVariables) this.preserveExistingVariables(result)
           //Only needed to fetch the businessKey of every instance.
-          this.updateProcessesInstances(tasks, showMore)
+          this.updateProcessesInstances(result, showMore)
         }, () => {
           this.setTaskLoaderDone(true)
         })
@@ -414,6 +439,7 @@ export default {
       }
     },
     selectedFilter: function() {
+      if (this.isMobile()) this.leftOpenFilter = false
       this.listTasksWithFilter()
     },
     showFilterAlert: function(evt) {
@@ -487,6 +513,19 @@ export default {
       this.tasks = []
       this.cleanSelectedTask()
     },
+    // Open/close requests from the task list's SidebarsFlow header
+    setTaskListOpen: function(open) {
+      // On mobile hiding the list without opening a task would leave an empty task pane
+      if (!open && this.isMobile()) return
+      this.leftOpenTask = open
+    },
+    // Called once the task list is shown again
+    revealSelectedTask: function() {
+      const navbar = this.$refs.navbar
+      const taskId = this.$route.params.taskId
+      if (!navbar || !taskId || !navbar.tasksFiltered?.some(t => t.id === taskId)) return
+      if (this.isMobile() || navbar.pendingScrollToTaskId) navbar.scrollToSelectedTask()
+    },
     collapseNavbar: function () {
       if (this.tasksNavbarSize === 0) this.leftOpenTask = false
       else this.tasksNavbarSize--
@@ -557,3 +596,25 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+/* Mobile design of the filter, task list and right sidebar headers, as in the task header (TaskContent):
+   45x45px icon buttons and the title with 1rem on each side. SidebarsFlow (@cib/common-frontend) renders them. */
+.sidebars-mobile :deep(.sidebars-header) {
+  min-height: 46px !important; /* 45px buttons + the bottom border */
+  padding: 0;
+  border-width: 0 0 1px;
+}
+.sidebars-mobile :deep(.sidebars-header > .stretched-link),
+.sidebars-mobile :deep(.sidebars-header-actions > .btn) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  flex-shrink: 0;
+  width: 45px;
+}
+.sidebars-mobile :deep(.sidebars-header > h2) {
+  margin: 0 1rem !important;
+}
+</style>

@@ -13,6 +13,7 @@ import org.springframework.util.MultiValueMap;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.providers.PermissionConstants;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -24,7 +25,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
     @ApiResponse(responseCode = "401", description = "Unauthorized")
 })
 @RestController
-@RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/deployment")
+@RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH + "/deployment")
 public class DeploymentService extends BaseService {
 
     /**

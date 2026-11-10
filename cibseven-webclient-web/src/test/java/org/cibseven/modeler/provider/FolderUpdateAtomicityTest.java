@@ -19,13 +19,14 @@ package org.cibseven.modeler.provider;
 import org.cibseven.modeler.config.ModelerPersistenceConfiguration;
 import org.cibseven.modeler.model.FolderEntity;
 import org.cibseven.modeler.provider.FolderProvider.FolderChange;
+import org.cibseven.webapp.config.SevenWebclientPropertiesAutoConfiguration;
 import org.cibseven.webapp.exception.InvalidFolderException;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
-import org.springframework.boot.autoconfigure.sql.init.SqlInitializationAutoConfiguration;
-import org.springframework.boot.autoconfigure.transaction.TransactionAutoConfiguration;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
+import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceInitializationAutoConfiguration;
+import org.springframework.boot.transaction.autoconfigure.TransactionAutoConfiguration;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,15 +40,16 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class FolderUpdateAtomicityTest {
 
 	private final ApplicationContextRunner runner = new ApplicationContextRunner()
+		.withConfiguration(AutoConfigurations.of(SevenWebclientPropertiesAutoConfiguration.class))
 		.withPropertyValues("spring.datasource.url=jdbc:h2:mem:folderupdate;DB_CLOSE_DELAY=-1",
 			"spring.datasource.driver-class-name=org.h2.Driver",
 			"spring.sql.init.mode=always",
 			"spring.sql.init.schema-locations=classpath:modeler-folders-before.sql,classpath:modeler-folders-migration.sql",
 			"spring.jpa.hibernate.ddl-auto=none")
 		.withConfiguration(AutoConfigurations.of(DataSourceAutoConfiguration.class,
-			HibernateJpaAutoConfiguration.class, SqlInitializationAutoConfiguration.class,
+			HibernateJpaAutoConfiguration.class, DataSourceInitializationAutoConfiguration.class,
 			TransactionAutoConfiguration.class))
-		.withUserConfiguration(ModelerPersistenceConfiguration.class, FolderProvider.class);
+		.withUserConfiguration(ModelerPersistenceConfiguration.class, FolderProvider.class, OpenProjectAccess.class);
 
 	@Test
 	void appliesARenameAndAMoveTogether() {
@@ -57,7 +59,7 @@ class FolderUpdateAtomicityTest {
 			FolderEntity folder = folders.create(null, "Drafts", "tester");
 
 			FolderEntity updated = folders.update(folder.getId(),
-				new FolderChange(true, "Old drafts", true, target.getId()), "tester");
+				new FolderChange(true, "Old drafts", true, target.getId()), "tester", () -> false);
 
 			assertThat(updated.getName()).isEqualTo("Old drafts");
 			assertThat(updated.getParentId()).isEqualTo(target.getId());
@@ -75,7 +77,7 @@ class FolderUpdateAtomicityTest {
 			FolderEntity folder = folders.create(null, "Sketches", "tester");
 
 			assertThatThrownBy(() -> folders.update(folder.getId(),
-					new FolderChange(true, "Billing", true, target.getId()), "tester"))
+					new FolderChange(true, "Billing", true, target.getId()), "tester", () -> false))
 				.isInstanceOf(InvalidFolderException.class);
 
 			FolderEntity unchanged = folders.find(folder.getId());

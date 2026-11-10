@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -110,6 +111,7 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 
 		if(task.getName() != null) taskUpdate.put("name", task.getName());
 		if(task.getDescription() != null) taskUpdate.put("description", task.getDescription());
+		taskUpdate.put("priority", task.getPriority());
 		if(task.getAssignee() != null) taskUpdate.put("assignee", task.getAssignee());
 		if(task.getOwner() != null) taskUpdate.put("owner", task.getOwner());
 		if(task.getDelegationState() != null) taskUpdate.put("delegationState", task.getDelegationState());
@@ -128,6 +130,32 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	}
 
 	@Override
+	public void claim(String taskId, String userId, CIBUser user) {
+		String url = getEngineRestUrl(user) + "/task/" + taskId + "/claim";
+		// singletonMap, not Map.of: engine-rest accepts a null userId, Map.of throws on it
+		doPost(url, Collections.singletonMap("userId", userId), String.class, user);
+	}
+
+	@Override
+	public void delegate(String taskId, String userId, CIBUser user) {
+		String url = getEngineRestUrl(user) + "/task/" + taskId + "/delegate";
+		doPost(url, Collections.singletonMap("userId", userId), String.class, user);
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public Map<String, Object> findLocalVariables(String taskId, CIBUser user) {
+		String url = getEngineRestUrl(user) + "/task/" + taskId + "/localVariables";
+		return ((ResponseEntity<Map>) doGet(url, Map.class, user, false)).getBody();
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@Override
+	public Collection<Map<String, Object>> findComments(String taskId, CIBUser user) {
+		String url = getEngineRestUrl(user) + "/task/" + taskId + "/comment";
+		return Arrays.asList(((ResponseEntity<Map[]>) doGet(url, Map[].class, user, false)).getBody());
+	}
+
 	public void setAssignee(String taskId, String assignee, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/task/" + taskId;
 		String variables = "{}";

@@ -139,13 +139,13 @@ describe('AddVariableModal.vue UI interactions', () => {
     })
 
     it('changing type to Object shows objectTypeName and serializationDataFormat inputs', async () => {
-      expect(wrapper.findAll('input').length).toBe(1)
-      expect(wrapper.findAll('textarea').length).toBe(1)
+      expect(wrapper.findAll('input')).toHaveLength(1)
+      expect(wrapper.findAll('textarea')).toHaveLength(1)
 
       // Select Object type
       await changeType('Object')
-      expect(wrapper.findAll('input').length).toBe(3)
-      expect(wrapper.findAll('textarea').length).toBe(1)
+      expect(wrapper.findAll('input')).toHaveLength(3)
+      expect(wrapper.findAll('textarea')).toHaveLength(1)
     })
 
     it('changing type to Boolean updates value and displays switch', async () => {
@@ -691,5 +691,18 @@ describe('AddVariableModal.vue UI interactions', () => {
 
     // Null conversions
     testTypeConversion('Null', [null, ''], zeroValues)
+  })
+
+  describe('computedTitle', () => {
+    it.each([
+      [{ disabled: true, runtimeVariable: true }, 'Runtime variable'],
+      [{ disabled: true, runtimeVariable: false }, 'Historic variable'],
+      [{ disabled: true }, 'Historic variable'],
+      [{ editMode: true }, 'Edit variable'],
+      [{ editMode: true, runtimeVariable: true }, 'Edit variable'],
+      [{}, 'Add variable'],
+    ])('%o -> "%s"', (props, expected) => {
+      expect(createWrapper(props).vm.computedTitle).toBe(expected)
+    })
   })
 })

@@ -68,7 +68,7 @@ public class ProcessServiceTest {
 		processService = new ProcessService();
 		ReflectionTestUtils.setField(processService, "bpmProvider", bpmProvider);
 		// the deprecated in-webclient permission check is off by default
-		ReflectionTestUtils.setField(processService, "authorizationEnabled", false);
+		processService.properties.getDeprecated().getAuthorization().setEnabled(false);
 		user = new CIBUser("demo");
 	}
 
@@ -221,7 +221,7 @@ public class ProcessServiceTest {
 
 	@Test
 	void permissionCheck_consultsTheEngineWhenLegacyAuthorizationIsEnabled() {
-		ReflectionTestUtils.setField(processService, "authorizationEnabled", true);
+		processService.properties.getDeprecated().getAuthorization().setEnabled(true);
 		when(bpmProvider.getUserAuthorization(user)).thenReturn(authorizationsGranting("ALL"));
 		when(bpmProvider.findProcesses(user)).thenReturn(List.of());
 
@@ -232,7 +232,7 @@ public class ProcessServiceTest {
 
 	@Test
 	void permissionCheck_refusesWhenTheUserLacksThePermission() {
-		ReflectionTestUtils.setField(processService, "authorizationEnabled", true);
+		processService.properties.getDeprecated().getAuthorization().setEnabled(true);
 		when(bpmProvider.getUserAuthorization(user)).thenReturn(authorizationsGranting("NOTHING_USEFUL"));
 
 		assertThatThrownBy(() -> processService.findProcesses(Locale.ENGLISH, user))

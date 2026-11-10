@@ -38,6 +38,7 @@ import org.apache.hc.core5.http.message.BasicHeader;
 import org.apache.hc.core5.http.protocol.HttpContext;
 import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,7 +65,6 @@ public class CustomRestTemplate extends RestTemplate {
 
     private static final Logger log = LoggerFactory.getLogger(CustomRestTemplate.class);
 
-    @Autowired(required = false)
     private RestTemplateConfiguration config;
 
     private Object meterRegistry;
@@ -115,6 +115,11 @@ public class CustomRestTemplate extends RestTemplate {
                 .filter(StringHttpMessageConverter.class::isInstance)
                 .map(StringHttpMessageConverter.class::cast)
                 .forEach(converter -> converter.setDefaultCharset(StandardCharsets.UTF_8));
+    }
+
+    @Autowired(required = false)
+    void setProperties(SevenWebclientProperties properties) {
+        this.config = properties.getRest();
     }
 
     /**

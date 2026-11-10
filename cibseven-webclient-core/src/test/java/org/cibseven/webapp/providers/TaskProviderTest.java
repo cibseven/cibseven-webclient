@@ -168,6 +168,38 @@ public class TaskProviderTest {
 		assertThat(request.getBody().readUtf8()).isEqualTo("{}");
 	}
 
+	@Test
+	void claim_postsTheUserToTheEngine() throws Exception {
+		engine.enqueueJson("");
+
+		taskProvider.claim("task-1", "demo", user);
+
+		var request = engine.take();
+		assertThat(request.getPath()).endsWith("/task/task-1/claim");
+		assertThat(request.getBody().readUtf8()).contains("\"userId\":\"demo\"");
+	}
+
+	@Test
+	void claim_passesAMissingUserOnInsteadOfFailing() throws Exception {
+		engine.enqueueJson("");
+
+		// engine-rest accepts a null userId; failing here would turn a form's call into a 500
+		taskProvider.claim("task-1", null, user);
+
+		assertThat(engine.take().getBody().readUtf8()).contains("\"userId\":null");
+	}
+
+	@Test
+	void delegate_passesAMissingUserOnInsteadOfFailing() throws Exception {
+		engine.enqueueJson("");
+
+		taskProvider.delegate("task-1", null, user);
+
+		var request = engine.take();
+		assertThat(request.getPath()).endsWith("/task/task-1/delegate");
+		assertThat(request.getBody().readUtf8()).contains("\"userId\":null");
+	}
+
 	/**
 	 * TODO KNOWN BUG (not fixed): the unclaim path is chosen by comparing the assignee to the
 	 * string "null", so an actual null reference reaches {@code assignee.equals(...)} and throws a
@@ -204,6 +236,21 @@ public class TaskProviderTest {
 		// unset fields are omitted so the engine does not clear them
 		assertThat(body).contains("\"name\":\"new name\"").contains("\"assignee\":\"demo\"");
 		assertThat(body).doesNotContain("description").doesNotContain("owner");
+	}
+
+	@Test
+	void update_keepsThePriorityWhenSettingADueDate() throws Exception {
+		engine.enqueueEmpty(204);
+		Task task = new Task();
+		task.setId("task-1");
+		task.setPriority(73);
+		task.setDue("2026-11-06T23:59:00.000+0100");
+
+		taskProvider.update(task, user);
+
+		// the engine replaces the whole task, so a priority left out of the body is stored as 0
+		String body = engine.take().getBody().readUtf8();
+		assertThat(body).contains("\"priority\":73").contains("\"due\":\"2026-11-06T23:59:00.000+0100\"");
 	}
 
 	// ---------- submitting ----------

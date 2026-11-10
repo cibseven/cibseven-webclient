@@ -28,11 +28,12 @@ import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Engine;
 import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.cibseven.webapp.rest.model.NewUser;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -46,9 +47,6 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 
 	private String effectiveDefaultEngineName = null;
 
-	@Autowired(required = false)
-	private EngineRestProperties engineRestProperties;
-
 	private String getNamedEngineRestUrl(String engine) {
 		String url = getEngineRestUrl();
 		if (engine != null && !engine.isEmpty()) {
@@ -56,7 +54,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 			if (IEngineProvider.isExternalEngine(engine)) {
 				String[] parts = engine.split("\\|", 3);
 				if (parts.length == 3) {
-					url = buildUrl(parts[0], parts[1]);
+					url = buildEngineRestUrl(parts[0], parts[1]);
 				} else {
 					log.warn("Invalid engine ID format: {}, expected 'url|path|engineName'", engine);
 				}
@@ -74,18 +72,14 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 	public Collection<Engine> getProcessEngineDefinitions() {
 		List<Engine> allEngines = new ArrayList<>();
 		
-		// Get default URL and path from properties, fallback to @Value fields from parent if not configured
-		String defaultUrl = engineRestProperties != null && engineRestProperties.getUrl() != null 
-			? engineRestProperties.getUrl() 
-			: cibsevenUrl;
-		String defaultPath = engineRestProperties != null && engineRestProperties.getPath() != null && !engineRestProperties.getPath().isEmpty()
-			? engineRestProperties.getPath() 
-			: engineRestPath;
-		String defaultDisplayName = engineRestProperties != null ? engineRestProperties.getDisplayName() : null;
-		String defaultTooltip = engineRestProperties != null ? engineRestProperties.getTooltip() : null;
+		EngineRestProperties engineRestProperties = properties.getEngineRest();
+		String defaultUrl = engineRestProperties.getUrl();
+		String defaultPath = engineRestProperties.getPath();
+		String defaultDisplayName = engineRestProperties.getDisplayName();
+		String defaultTooltip = engineRestProperties.getTooltip();
 		
 		try {
-			String fullUrl = buildUrl(defaultUrl, defaultPath) + ENGINE_SUB_PATH;
+			String fullUrl = buildEngineRestUrl(defaultUrl, defaultPath) + ENGINE_SUB_PATH;
 			Engine[] defaultEngines = ((ResponseEntity<Engine[]>) doGet(fullUrl, Engine[].class, null, false)).getBody();
 			
 			if (defaultEngines != null) {
@@ -102,13 +96,13 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 		}
 		
 		// Fetch engines from additional URLs
-		if (engineRestProperties != null && engineRestProperties.getAdditionalEngineRest() != null) {
+		if (engineRestProperties.getAdditionalEngineRest() != null) {
 			for (EngineRestSource additional : engineRestProperties.getAdditionalEngineRest()) {
 				try {
 					String additionalPath = additional.getPath() != null && !additional.getPath().isEmpty() 
 						? additional.getPath() 
 						: "/engine-rest";
-					String additionalUrl = buildUrl(additional.getUrl(), additionalPath) + ENGINE_SUB_PATH;
+					String additionalUrl = buildEngineRestUrl(additional.getUrl(), additionalPath) + ENGINE_SUB_PATH;
 					Engine[] additionalEngines = ((ResponseEntity<Engine[]>) doGet(additionalUrl, Engine[].class, null, false)).getBody();
 					
 					if (additionalEngines != null) {
@@ -179,6 +173,20 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 		String url = getNamedEngineRestUrl(engineId) + "/configuration";
 		try {
 			return doGet(url, EngineConfiguration.class, null, false).getBody();
+		} catch (RestClientException e) {
+			// The endpoint answered, but its body cannot be mapped onto EngineConfiguration.
+			// EngineConfiguration's own readers are lenient (e.g. historyTimeToLive accepts "P180D"),
+			// so this is a last line of defense against engine-rest builds that report a field in a
+			// shape this webclient does not know. Rethrowing would make /info/properties fail with
+			// HTTP 500, and the frontend, which waits for it on startup, would stay blank. Instead,
+			// fall back to the legacy configuration, like for an engine without this endpoint.
+			// Only unreadable responses are handled here: connection errors and HTTP errors keep
+			// their current handling.
+			if (isUnreadableResponse(e)) {
+				log.warn("Engine configuration at {} could not be read, falling back to legacy configuration", url, e);
+				return null;
+			}
+			throw e;
 		} catch (SystemException e) {
 			if (e.getCause() instanceof HttpClientErrorException.NotFound ||
 				// for CIB seven before 2.2.0, with auth enabled, the endpoint returns 401 instead of 404 when not found
@@ -190,27 +198,29 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 		}
 	}
 
+	/**
+	 * Whether the given error means that a response arrived but its body could not be read into
+	 * the expected type (Spring wraps the {@link HttpMessageNotReadableException} of the message
+	 * converter into a {@link RestClientException}).
+	 */
+	private static boolean isUnreadableResponse(Throwable error) {
+		for (Throwable cause = error; cause != null; cause = cause.getCause()) {
+			if (cause instanceof HttpMessageNotReadableException) {
+				return true;
+			}
+			if (cause.getCause() == cause) {
+				break;
+			}
+		}
+		return false;
+	}
+
 	@Override
 	public String getEffectiveDefaultEngineId() {
 		if (effectiveDefaultEngineName == null) {
 			effectiveDefaultEngineName = IEngineProvider.super.getEffectiveDefaultEngineId();
 		}
 		return effectiveDefaultEngineName;
-	}
-
-	/**
-	 * Builds a URL from base URL and path.
-	 */
-	private String buildUrl(String url, String path) {
-		String baseUrl = url;
-		if (baseUrl.endsWith("/")) {
-			baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
-		}
-		String restPath = path;
-		if (!restPath.startsWith("/")) {
-			restPath = "/" + restPath;
-		}
-		return baseUrl + restPath;
 	}
 
 	@Override

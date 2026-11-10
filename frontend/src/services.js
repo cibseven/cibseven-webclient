@@ -27,6 +27,13 @@ function filterToUrlParams(filters) {
   return filter
 }
 
+// axios sends arrays as 'key[]=a&key[]=b', which the backend can neither forward nor keep in full;
+// the engine expects list parameters ('...In') as one comma-separated value
+function joinArrayParams(params) {
+  if (!params) return params
+  return Object.fromEntries(Object.entries(params).map(([key, value]) => [key, Array.isArray(value) ? value.join(',') : value]))
+}
+
 let servicesBasePath = ''
 
 function getServicesBasePath() {
@@ -552,6 +559,10 @@ const IncidentService = {
 }
 
 const AuthService = {
+  // Bounded: a stalled identity provider must not leave the user waiting for the logout
+  logout: function(returnUrl) {
+    return axios.post(getServicesBasePath() + "/auth/logout", { returnUrl }, { timeout: 6000 })
+  },
   fetchAuths: function() { return axios.get(getServicesBasePath() + "/auth/authorizations") },
   passwordRecover: function(data) { return axios.post(getServicesBasePath() + "/auth/password-recover", data) },
   passwordRecoverCheck: function(recoverToken) { return axios.get(getServicesBasePath() + "/auth/password-recover-check",
@@ -572,6 +583,13 @@ const InfoService = {
   },
   getVersion: function() {
     return axios.get('info')
+  }
+}
+
+// The modeler's element templates, read without the modeler package so diagrams can show their icons
+const ElementTemplateService = {
+  findAll: function() {
+    return axios.get(getServicesBasePath() + '/modeler/element-templates')
   }
 }
 
@@ -688,10 +706,12 @@ const DecisionService = {
     return axios.put(getServicesBasePath() + "/decision/id/" + id + "/history-ttl", data)
   },
   getHistoricDecisionInstances: function (params) {
-    return axios.get(getServicesBasePath() + "/decision/history/instances", { params })
+    // send list params comma-separated (key=a,b) instead of axios' key[]=a&key[]=b, see joinArrayParams
+    return axios.get(getServicesBasePath() + "/decision/history/instances", { params: joinArrayParams(params) })
   },
   getHistoricDecisionInstanceCount: function (params) {
-    return axios.get(getServicesBasePath() + "/decision/history/instances/count", { params })
+    // send list params comma-separated (key=a,b) instead of axios' key[]=a&key[]=b, see joinArrayParams
+    return axios.get(getServicesBasePath() + "/decision/history/instances/count", { params: joinArrayParams(params) })
   },
   getHistoricDecisionInstanceById: function (id, params) {
     return axios.get(getServicesBasePath() + "/decision/history/instances/" + id, { params })
@@ -752,15 +772,6 @@ const BatchService = {
   },
   deleteHistoricBatch: function(id) {
     return axios.delete(getServicesBasePath() + '/history/batch/' + id)
-  },
-  setRemovalTime(payload) {
-    return axios.post(getServicesBasePath() + '/history/batch/set-removal-time', payload)
-  },
-  getCleanableBatchReport(params) {
-    return axios.get(getServicesBasePath() + '/history/batch/cleanable-batch-report', { params })
-  },
-  getCleanableBatchReportCount() {
-    return axios.get(getServicesBasePath() + '/history/batch/cleanable-batch-report/count')
   }
 }
 
@@ -847,8 +858,9 @@ const DeploymentService = {
     )
   },
   fetchDataFromDeploymentResource: function(deploymentId, resourceId, fileName, token) {
+    // As text: axios would parse a .form file's JSON, and a download has to stay byte for byte the deployed file
     return axios.get(getServicesBasePath() + '/process/deployments/' + deploymentId + '/resources/' + resourceId + '/data',
-      { params: { filename: fileName, token: token } })
+      { params: { filename: fileName, token: token }, responseType: 'text' })
   }
 }
 
@@ -883,6 +895,7 @@ const SetupService = {
 }
 export {
   TaskService, FilterService, ProcessService, VariableInstanceService, HistoricVariableInstanceService, AdminService, JobService, JobDefinitionService, SystemService,
-  HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService,
-  AnalyticsService, BatchService, TenantService, ExternalTaskService, DeploymentService, EngineService, SetupService, getServicesBasePath, setServicesBasePath, createDocumentEndpointUrl
+  HistoryService, IncidentService, AuthService, InfoService, ElementTemplateService, FormsService, TemplateService, DecisionService,
+  AnalyticsService, BatchService, TenantService, ExternalTaskService, DeploymentService, EngineService, SetupService, getServicesBasePath, setServicesBasePath, createDocumentEndpointUrl,
+  joinArrayParams
 }

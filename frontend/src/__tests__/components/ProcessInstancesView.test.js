@@ -14,10 +14,39 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import ProcessInstancesView from '@/components/process/ProcessInstancesView.vue'
 
 describe('ProcessInstancesView', () => {
+  describe('syncStatisticsWithInstances', () => {
+    const viewContext = (process) => ({
+      process,
+      loadHistoricActivityStatisticsForInstances: vi.fn(),
+      loadStatistics: vi.fn()
+    })
+    const sync = (ctx, filter) => ProcessInstancesView.methods.syncStatisticsWithInstances.call(ctx, filter)
+
+    // The diagram reads running tokens from runtime, so they must not go stale while history refreshes
+    it('reloads the runtime statistics together with the filtered history', () => {
+      const process = { id: 'pd-1' }
+      const ctx = viewContext(process)
+
+      sync(ctx, { unfinished: true })
+
+      expect(ctx.loadHistoricActivityStatisticsForInstances).toHaveBeenCalledWith({ processDefinitionId: 'pd-1', filter: { unfinished: true } })
+      expect(ctx.loadStatistics).toHaveBeenCalledWith(process)
+    })
+
+    it('loads nothing without a process', () => {
+      const ctx = viewContext(null)
+
+      sync(ctx, {})
+
+      expect(ctx.loadHistoricActivityStatisticsForInstances).not.toHaveBeenCalled()
+      expect(ctx.loadStatistics).not.toHaveBeenCalled()
+    })
+  })
+
   describe('matchedDeepLink', () => {
     it('returns the deep link entry matching the active tab', () => {
       const context = {
@@ -38,6 +67,69 @@ describe('ProcessInstancesView', () => {
         $root: { config: { deepLinks: { processDefinition: [{ id: 'myButtonLinkId', url: 'https://external.example', type: 'button' }] } } }
       }
       expect(ProcessInstancesView.computed.matchedDeepLink.call(context)).toBeUndefined()
+    })
+  })
+
+  describe('isUnfiltered', () => {
+    const unfiltered = (computedFilter, selectedActivityId = 'Fail') =>
+      ProcessInstancesView.computed.isUnfiltered.call({ computedFilter, selectedActivityId })
+
+    it.each([
+      ['an empty filter', {}],
+      ['only the unfinished switch on', { unfinished: true }],
+      ['the unfinished switch off', { unfinished: undefined }],
+      ['empty values', { editField: '', processInstanceIds: [], businessKey: null }],
+      ['a switched off flag', { variableNamesIgnoreCase: false }]
+    ])('is unfiltered with %s', (_, filter) => {
+      expect(unfiltered(filter)).toBe(true)
+    })
+
+    // Every instance with a token in the selected activity is listed in these modes
+    it.each([
+      ['active', { unfinished: true, activityIdIn: ['Fail'] }],
+      ['activeOrExecuted', { unfinished: true, activeOrExecutedActivityIdIn: ['Fail'] }]
+    ])('is unfiltered with a selected activity in %s mode', (_, filter) => {
+      expect(unfiltered(filter)).toBe(true)
+    })
+
+    it.each([
+      ['a text search', { unfinished: true, editField: 'abc' }],
+      ['another criterion', { withIncidents: true }],
+      // Tokens still waiting in the activity belong to instances that have not executed it yet
+      ['a selected activity in executed mode', { executedActivityIdIn: ['Fail'] }],
+      ['a selected activity and a text search', { activityIdIn: ['Fail'], editField: 'abc' }]
+    ])('is filtered with %s', (_, filter) => {
+      expect(unfiltered(filter)).toBe(false)
+    })
+
+    // Typed in the search box, without a diagram selection, they narrow the instance list
+    it.each([
+      ['activityIdIn', { activityIdIn: ['Fail'] }],
+      ['activeOrExecutedActivityIdIn', { activeOrExecutedActivityIdIn: ['Fail'] }]
+    ])('is filtered with a searched %s and no selected activity', (_, filter) => {
+      expect(unfiltered(filter, null)).toBe(false)
+    })
+  })
+
+  describe('useRuntimeStats and runtimeActivityId', () => {
+    const props = (isUnfiltered, selectedActivityId) => {
+      const context = { isUnfiltered, selectedActivityId }
+      return {
+        useRuntimeStats: ProcessInstancesView.computed.useRuntimeStats.call(context),
+        runtimeActivityId: ProcessInstancesView.computed.runtimeActivityId.call(context)
+      }
+    }
+
+    it('uses runtime for every activity without filter', () => {
+      expect(props(true, null)).toEqual({ useRuntimeStats: true, runtimeActivityId: null })
+    })
+
+    it('uses runtime only for the selected activity when it is the only filter', () => {
+      expect(props(true, 'Fail')).toEqual({ useRuntimeStats: false, runtimeActivityId: 'Fail' })
+    })
+
+    it('uses no runtime when other criteria narrow the list', () => {
+      expect(props(false, 'Fail')).toEqual({ useRuntimeStats: false, runtimeActivityId: null })
     })
   })
 
