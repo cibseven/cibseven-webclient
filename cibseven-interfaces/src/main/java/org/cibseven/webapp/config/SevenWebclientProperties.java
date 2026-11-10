@@ -136,9 +136,6 @@ public class SevenWebclientProperties {
 	/** JPA persistence unit holding the webclient's own tables. */
 	private Persistence persistence = new Persistence();
 
-	/** Behavior that is deprecated and will be removed. */
-	private DeprecatedFeatures deprecated = new DeprecatedFeatures();
-
 	/** Compatibility with engines before 2.2.0. */
 	private LegacyFeatures legacy = new LegacyFeatures();
 
@@ -440,21 +437,6 @@ public class SevenWebclientProperties {
 		 * definition has no start form. Disabled by default to keep the instant start.
 		 */
 		private boolean defaultFormEnabled = false;
-	}
-
-	@Data
-	public static class DeprecatedFeatures {
-		/** Permission checks in the webclient backend. */
-		private BackendAuthorization authorization = new BackendAuthorization();
-
-		@Data
-		public static class BackendAuthorization {
-			/**
-			 * Check permissions for some use cases in the webclient backend as well, the behavior
-			 * until 2.2.0. Since then the engine checks them. Will be removed.
-			 */
-			private boolean enabled = false;
-		}
 	}
 
 	@Data
