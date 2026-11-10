@@ -17,8 +17,8 @@
 
 -->
 <template>
-  <span v-if="image" class="cib-nav-icon-image" :style="[boxStyle, maskStyle]" aria-hidden="true"></span>
-  <span v-else :class="['mdi', `mdi-${size}px`, icon]" :style="boxStyle" aria-hidden="true"></span>
+  <span v-if="image" class="cib-nav-icon cib-nav-icon-image" :style="[boxStyle, maskStyle]" aria-hidden="true"></span>
+  <span v-else :class="['cib-nav-icon', 'mdi', `mdi-${size}px`, icon]" :style="boxStyle" aria-hidden="true"></span>
 </template>
 
 <script>
@@ -48,8 +48,8 @@ export default {
 </script>
 
 <style scoped>
-.cib-nav-icon-image,
-.mdi {
+/* On its own class rather than MDI's, which stays untouched: the glyph centred in the box */
+.cib-nav-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;

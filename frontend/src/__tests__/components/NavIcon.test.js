@@ -22,7 +22,7 @@ describe('NavIcon.vue', () => {
   it('draws the font icon at 24px by default', () => {
     const icon = mount(NavIcon, { props: { icon: 'mdi-speedometer' } })
 
-    expect(icon.classes()).toEqual(['mdi', 'mdi-24px', 'mdi-speedometer'])
+    expect(icon.classes()).toEqual(['cib-nav-icon', 'mdi', 'mdi-24px', 'mdi-speedometer'])
     expect(icon.attributes('style')).toBe('width: 24px; height: 24px;')
     expect(icon.attributes('aria-hidden')).toBe('true')
   })
@@ -32,7 +32,7 @@ describe('NavIcon.vue', () => {
     const image = "data:image/svg+xml,%3csvg width='24'%3e"
     const icon = mount(NavIcon, { props: { icon: 'mdi-speedometer', image } })
 
-    expect(icon.classes()).toEqual(['cib-nav-icon-image'])
+    expect(icon.classes()).toEqual(['cib-nav-icon', 'cib-nav-icon-image'])
     expect(icon.attributes('style')).toContain(`--cib-nav-icon: url("${image}")`)
     expect(icon.attributes('style')).toContain('width: 24px; height: 24px;')
   })
@@ -40,7 +40,7 @@ describe('NavIcon.vue', () => {
   it('keeps its box without an icon, so a column of labels stays lined up', () => {
     const icon = mount(NavIcon, { props: { size: 18 } })
 
-    expect(icon.classes()).toEqual(['mdi', 'mdi-18px'])
+    expect(icon.classes()).toEqual(['cib-nav-icon', 'mdi', 'mdi-18px'])
     expect(icon.attributes('style')).toBe('width: 18px; height: 18px;')
   })
 })
