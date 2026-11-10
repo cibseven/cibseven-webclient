@@ -34,7 +34,7 @@ beforeEach(() => {
 createStoreTestSuite('UserStore', UserStore, {
   initialState: (getState) => {
     it('should start with empty candidate and search lists', () => {
-      expect(getState()).toEqual({ listCandidates: [], searchUsers: [] })
+      expect(getState()).toEqual({ listCandidates: [], searchUsers: [], displayNames: {} })
     })
   },
 
@@ -194,6 +194,51 @@ createStoreTestSuite('UserStore', UserStore, {
 
         expect(result).toEqual({})
         expect(AdminService.findUsers).not.toHaveBeenCalled()
+      })
+    },
+    
+    addUsersByIds: (action, getContext) => {
+      const contextReturning = (userMap) => {
+        const context = getContext()
+        context.dispatch = vi.fn(() => Promise.resolve(userMap))
+        return context
+      }
+
+      it('should fetch the missing ids once each, skipping unassigned tasks', async () => {
+        const context = contextReturning({ a: user({ id: 'a' }) })
+
+        await action(context, ['a', null, 'a', undefined])
+
+        expect(context.dispatch).toHaveBeenCalledWith('fetchUsersByIds', ['a'])
+        expect(context.state.displayNames).toEqual({ a: user({ id: 'a' }) })
+      })
+
+      // Ein unbekannter User wird als null gemerkt, damit ihn der nächste Poll nicht erneut anfragt.
+      it('should remember ids the backend does not know as null', async () => {
+        const context = contextReturning({})
+
+        await action(context, ['ghost'])
+
+        expect(context.state.displayNames).toEqual({ ghost: null })
+      })
+
+      it('should not fetch ids that are already cached, including unknown ones', async () => {
+        const context = contextReturning({})
+        context.state.displayNames = { a: user({ id: 'a' }), ghost: null }
+
+        await action(context, ['a', 'ghost'])
+
+        expect(context.dispatch).not.toHaveBeenCalled()
+      })
+
+      // User-IDs sind case-sensitiv (CIB7-136): "Demo" im Cache sagt nichts über "demo".
+      it('should treat ids differing only in case as different users', async () => {
+        const context = contextReturning({ demo: user({ id: 'demo' }) })
+        context.state.displayNames = { Demo: user({ id: 'Demo' }) }
+
+        await action(context, ['demo'])
+
+        expect(context.dispatch).toHaveBeenCalledWith('fetchUsersByIds', ['demo'])
       })
     }
   }

@@ -20,7 +20,8 @@ import { AdminService } from "@/services.js"
 const UserStore = {
   state: {
     listCandidates: [],
-    searchUsers: []
+    searchUsers: [],
+    displayNames: {}
   },
   mutations: {
     setCandidateUsers: function(state, users) {
@@ -78,6 +79,13 @@ const UserStore = {
         users.forEach(u => { userMap[u.id] = u })
         return userMap
       })
+    },
+    addUsersByIds: async function(ctx, userIds) {
+      const filteredIds = [...new Set(userIds)].filter(id => id && !Object.hasOwn(ctx.state.displayNames, id))
+      if (filteredIds.length === 0) return
+	  
+	  const userNamesMap = await ctx.dispatch('fetchUsersByIds', filteredIds);
+      filteredIds.forEach(id => { ctx.state.displayNames[id] = userNamesMap[id] ?? null })
     },
   }
 }

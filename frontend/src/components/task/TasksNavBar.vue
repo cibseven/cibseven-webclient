@@ -144,7 +144,7 @@
                 <div class="h6 fw-normal m-0" :title="formatDateForTooltips(task.created)">{{ getDateFormatted(task.created) }}</div><br>
                 <div class="d-flex ms-auto">
                   <div class="h6 text-end p-0 fw-normal m-0" v-if="task.assignee != null">
-                    <HighlightedText :text="getCompleteName(task)" :keyword="search" class="mdi mdi-18px mdi-account text-secondary p-1"></HighlightedText>
+                    <HighlightedText :text="getDisplayName(task.assignee)" :keyword="search" class="mdi mdi-18px mdi-account text-secondary p-1"></HighlightedText>
                   </div>
                   <div class="h6 text-end p-0 fw-normal n-0" v-if="hasAssignToMeButton(task)">
                     <b-button variant="link" class="p-0 lh-1 text-dark" @click.stop="checkAssignee(task)" @keydown.enter.stop="checkAssignee(task)" @keyup.enter.stop.prevent @keydown.space.prevent.stop="checkAssignee(task)">
@@ -243,11 +243,12 @@ import { ConfirmDialog, BWaitingBox, HighlightedText } from '@cib/common-fronten
 import { mapActions } from 'vuex'
 import variableUtils from '@/components/process/mixins/variableUtils.js'
 import { permissionsMixin } from '@/permissions.js'
+import usersMixin from '@/mixins/usersMixin.js'
 
 export default {
   name: 'TasksNavBar',
   components: { StartProcess, AdvancedSearchModal, SmartSearch, ConfirmDialog, BWaitingBox, HighlightedText },
-  mixins: [permissionsMixin],
+  mixins: [permissionsMixin, usersMixin ],
   props: { tasks: Array, taskResultsIndex: Number, search: String },
   inject: ['currentLanguage','isMobile'],
   emits: ['search-filter', 'process-started', 'selected-task', 'update-assignee', 'show-more', 'refresh-tasks', 'refresh-tasks-number', 'show-task'],
@@ -538,6 +539,7 @@ export default {
     getReminderClasses: function(task) {
       const classes = []
       if (!this.isMobile() && task !== this.focused && task.id !== this.selectedDateT.id && !task.followUp) classes.push('action-button-hidden')
+      console.log("getReminderClasses() aufgerufen")
       return classes
     },
     hasAssignToMeButton: function(task) {
@@ -576,18 +578,6 @@ export default {
         return (item.id.split(':')[0] === processDefinitionId.split(':')[0])
       })
       return process && process.name ? process.name : ''
-    },
-    getCompleteName: function(task) {
-      if (this.$root.user.id.toLowerCase() === task.assignee.toLowerCase()) return this.$root.user.id // .displayName
-      else {
-        if (this.$store.state.user.listCandidates) {
-          const user = this.$store.state.user.listCandidates.find(user => {
-            return user.id.toLowerCase() === task.assignee.toLowerCase()
-          })
-          if ((user) && (user.displayName)) return user.displayName
-        }
-        return task.assignee
-      }
     },
     dateFitsFilter: function(date, filter) {
       return filter && date
