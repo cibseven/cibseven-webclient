@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.rest.StandardLogin;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.exception.BatchOperationException;
 import org.cibseven.webapp.exception.DmnTransformationException;
 import org.cibseven.webapp.exception.ExistingGroupRequestException;
@@ -52,7 +53,6 @@ import org.cibseven.webapp.exception.VariableModificationException;
 import org.cibseven.webapp.exception.WrongDeploymenIdException;
 import org.cibseven.webapp.exception.InvalidGroupIdException;
 import org.cibseven.webapp.rest.model.Authorization;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
@@ -65,7 +65,6 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import com.fasterxml.jackson.core.StreamReadConstraints;
@@ -78,9 +77,8 @@ public abstract class SevenProviderBase {
 
   protected static final String USER_ID_HEADER = "Context-User-ID";
 
-	@Value("${cibseven.webclient.custom.spring.jackson.parser.max-size:20000000}") int jacksonParserMaxSize;
-	@Value("${cibseven.webclient.engineRest.url:./}") protected String cibsevenUrl;
-	@Value("${cibseven.webclient.engineRest.path:/engine-rest}") protected String engineRestPath;
+	@Autowired(required = false)
+	protected SevenWebclientProperties properties = new SevenWebclientProperties();
 
 	@Autowired
 	protected CustomRestTemplate customRestTemplate;
@@ -104,35 +102,26 @@ public abstract class SevenProviderBase {
 			// Parse the engine ID format: "url|path|engineName"
 			String[] parts = engineId.split("\\|", 3);
 			if (parts.length == 3) {
-				String url = parts[0];
-				String path = parts[1];
+				String restUrl = buildEngineRestUrl(parts[0], parts[1]);
 				String engineName = parts[2];
-				
-				// Build the full URL
-				String baseUrl = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
-				String restPath = path.startsWith("/") ? path : "/" + path;
-				
+
 				// Always use base engine REST URL for "default" engine (without /engine/default suffix)
 				if ("default".equals(engineName)) {
-					return baseUrl + restPath;
+					return restUrl;
 				}
-				
-				return baseUrl + restPath + "/engine/" + engineName;
+
+				return restUrl + "/engine/" + engineName;
 			}
 		}
-		
+
 		// Fall back to default configuration (for legacy engine names or when no engine specified)
-		String baseUrl = cibsevenUrl.endsWith("/") ? cibsevenUrl.substring(0, cibsevenUrl.length() - 1) : cibsevenUrl;
-		String restPath = engineRestPath.startsWith("/") ? engineRestPath : "/" + engineRestPath;
-		
-		// If engine identifier is provided and not 'default', add it to the path
 		// Only use legacy format if engineId doesn't contain pipe (avoid treating malformed pipe format as legacy)
 		if (engineId != null && !engineId.isEmpty() && !"default".equals(engineId) && !engineId.contains("|")) {
 			// Legacy format - just use the engine name directly
-			return baseUrl + restPath + "/engine/" + engineId;
+			return getEngineRestUrl() + "/engine/" + engineId;
 		}
-		
-		return baseUrl + restPath;
+
+		return getEngineRestUrl();
 	}
 
 	/**
@@ -141,9 +130,16 @@ public abstract class SevenProviderBase {
 	 * @return the base engine REST URL
 	 */
 	protected String getEngineRestUrl() {
-		String baseUrl = cibsevenUrl.endsWith("/") ? cibsevenUrl.substring(0, cibsevenUrl.length() - 1) : cibsevenUrl;
-		String restPath = engineRestPath.startsWith("/") ? engineRestPath : "/" + engineRestPath;
-		
+		return buildEngineRestUrl(properties.getEngineRest().getUrl(), properties.getEngineRest().getPath());
+	}
+
+	/**
+	 * Joins an engine REST server URL and its REST path, e.g. {@code http://host/} and
+	 * {@code engine-rest} to {@code http://host/engine-rest}.
+	 */
+	protected static String buildEngineRestUrl(String url, String path) {
+		String baseUrl = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+		String restPath = path.startsWith("/") ? path : "/" + path;
 		return baseUrl + restPath;
 	}
 
@@ -161,22 +157,14 @@ public abstract class SevenProviderBase {
 		return headers;
 	}
 
-	/**
-	 * Creates an HttpEntity with body and headers, converting HttpHeaders to a
-	 * LinkedMultiValueMap to avoid IncompatibleClassChangeError in Spring 7 where
-	 * HttpHeaders no longer implements MultiValueMap.
-	 */
+	/** Creates an HttpEntity with body and headers. */
 	protected <T> HttpEntity<T> httpEntity(T body, HttpHeaders httpHeaders) {
-		LinkedMultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-		httpHeaders.forEach(map::addAll);
-		return new HttpEntity<>(body, map);
+		return new HttpEntity<>(body, httpHeaders);
 	}
 
 	/** Headers-only variant — used for GET-style requests that send no body. */
 	protected HttpEntity<?> httpEntity(HttpHeaders httpHeaders) {
-		LinkedMultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-		httpHeaders.forEach(map::addAll);
-		return new HttpEntity<>(map);
+		return new HttpEntity<>(httpHeaders);
 	}
 
 	protected <T> ResponseEntity<T> doGet(String url, Class<T> neededClass, CIBUser user, Boolean encoded) {
@@ -403,6 +391,8 @@ public abstract class SevenProviderBase {
 	 * 
 	 * @return A newly configured RestTemplate instance
 	 */
+	// MappingJackson2HttpMessageConverter is Jackson 2; it goes with the Jackson 3 migration
+	@SuppressWarnings("removal")
 	protected RestTemplate createPatchRestTemplate() {
         // Create a new RestTemplate instance instead of modifying the shared one
         RestTemplate restTemplate = new RestTemplate();
@@ -412,7 +402,7 @@ public abstract class SevenProviderBase {
 
         StreamReadConstraints streamReadConstraints = StreamReadConstraints
                 .builder()
-                .maxStringLength(jacksonParserMaxSize)
+                .maxStringLength(properties.getCustom().getSpring().getJackson().getParser().getMaxSize())
                 .build();
         objectMapper.getFactory().setStreamReadConstraints(streamReadConstraints);
 

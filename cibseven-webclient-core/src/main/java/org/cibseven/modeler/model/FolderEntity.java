@@ -44,7 +44,10 @@ import lombok.Setter;
 @Table(
 	name = "MOD_FOLDERS",
 	uniqueConstraints = @UniqueConstraint(name = "MOD_UK_FOLDERS_PARENT_NAME", columnNames = { "parent_id", "name" }),
-	indexes = @Index(name = "MOD_IDX_FOLDERS_PARENT", columnList = "parent_id")
+	indexes = {
+		@Index(name = "MOD_IDX_FOLDERS_PARENT", columnList = "parent_id"),
+		@Index(name = "MOD_IDX_FOLDERS_PROJECT", columnList = "project_id")
+	}
 )
 public class FolderEntity {
 
@@ -57,6 +60,13 @@ public class FolderEntity {
 	/** Null in a folder at the top level. */
 	@Column(name = "parent_id", length = 36)
 	private String parentId;
+
+	/**
+	 * The project the folder lies in: the folder at the top level above it, which is its own. Kept
+	 * on every folder so a list can leave out a hidden project in its query.
+	 */
+	@Column(name = "project_id", length = 36)
+	private String projectId;
 
 	@NotBlank
 	@Column(name = "name", nullable = false, length = 255)

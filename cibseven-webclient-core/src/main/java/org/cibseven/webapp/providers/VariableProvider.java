@@ -84,9 +84,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 				String jsonContent = new String(data.getBytes());
 				HttpHeaders jsonHeaders = new HttpHeaders();
 				jsonHeaders.setContentType(MediaType.APPLICATION_JSON);
-				LinkedMultiValueMap<String, String> jsonHeaderMap = new LinkedMultiValueMap<>();
-				jsonHeaders.forEach(jsonHeaderMap::put);
-				HttpEntity<String> jsonEntity = new HttpEntity<>(jsonContent, jsonHeaderMap);
+				HttpEntity<String> jsonEntity = new HttpEntity<>(jsonContent, jsonHeaders);
 				
 				body.add("data", jsonEntity);
 				body.add("type", valueType);
@@ -589,12 +587,6 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		}
-	}
-
-	@Override
-	public Map<String, Variable> fetchProcessFormVariablesById(String id, CIBUser user) throws SystemException {
-		String url = getEngineRestUrl(user) + "/process-definition/" + id + "/form-variables";
-		return doGet(url, new ParameterizedTypeReference<Map<String, Variable>>() {}, user).getBody();
 	}
 
 	@Override

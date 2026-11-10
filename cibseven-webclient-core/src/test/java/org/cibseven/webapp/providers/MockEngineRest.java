@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.rest.CustomRestTemplate;
+import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import okhttp3.mockwebserver.MockResponse;
@@ -72,11 +72,10 @@ final class MockEngineRest implements AutoCloseable {
 		BaseUserProvider<?> userProvider = mock(BaseUserProvider.class);
 		when(userProvider.getEngineRestToken(any(CIBUser.class))).thenReturn(AUTH_TOKEN);
 
-		ReflectionTestUtils.setField(provider, "customRestTemplate", new CustomRestTemplate());
+		ReflectionTestUtils.setField(provider, "customRestTemplate", TestRestTemplateConfiguration.jackson2CustomRestTemplate());
 		ReflectionTestUtils.setField(provider, "baseUserProvider", userProvider);
-		ReflectionTestUtils.setField(provider, "cibsevenUrl", "http://localhost:" + server.getPort());
-		ReflectionTestUtils.setField(provider, "engineRestPath", ENGINE_REST_PATH);
-		ReflectionTestUtils.setField(provider, "jacksonParserMaxSize", 20_000_000);
+		provider.properties.getEngineRest().setUrl("http://localhost:" + server.getPort());
+		provider.properties.getEngineRest().setPath(ENGINE_REST_PATH);
 		return provider;
 	}
 

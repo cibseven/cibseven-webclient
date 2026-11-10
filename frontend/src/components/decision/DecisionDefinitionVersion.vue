@@ -37,22 +37,9 @@
           <div class="container-fluid p-2">
             <div class="row align-items-center pb-1">
               <div class="col-8">
-                <div class="border rounded d-flex flex-fill align-items-center">
-                  <b-button @click.stop="search(filter)"
-                    size="sm" class="mdi mdi-magnify mdi-24px text-secondary" variant="link"
-                    :title="$t('searches.refreshAndFilter')"></b-button>
-                  <div class="flex-grow-1">
-                    <label class="visually-hidden" for="filter-decision-instances">{{ $t('searches.filter') }}</label>
-                    <input
-                      id="filter-decision-instances"
-                      type="text"
-                      :placeholder="$t('searches.filter')"
-                      :aria-label="$t('searches.filter')"
-                      class="form-control-plaintext w-100"
-                      @input="search($event.target.value)"
-                    />
-                  </div>
-                </div>
+                <SearchInput input-id="filter-decision-instances" :label="$t('searches.filter')"
+                  search-button :search-button-label="$t('searches.refreshAndFilter')"
+                  @update:model-value="search" @search="search"/>
               </div>
               <div class="col-4">
                 <component :is="DecisionDefinitionVersionActionsPlugin" v-if="DecisionDefinitionVersionActionsPlugin" :decision="decision" :decision-key="decisionKey"></component>
@@ -96,6 +83,7 @@ import { getDeepLinkEntries } from '@/utils/deepLinks.js'
 import { defineTabBar } from '@/utils/tabBar.js'
 import PluginSlot from '@/components/common/PluginSlot.vue'
 import DeepLinkButtons from '@/components/common-components/DeepLinkButtons.vue'
+import SearchInput from '@/components/common-components/SearchInput.vue'
 
 const BUILTIN_TABS = [{ id: 'instances', text: 'decision.instances' }]
 const RESERVED_TAB_IDS = BUILTIN_TABS.map(tab => tab.id)
@@ -108,7 +96,7 @@ const tabsFor = defineTabBar({
 
 export default {
   name: 'DecisionDefinitionVersion',
-  components: { DmnViewer, DecisionInstancesTable, ViewerFrame, BWaitingBox, GenericTabs, ScrollableTabsContainer, PluginSlot, DeepLinkFrame, DeepLinkButtons },
+  components: { DmnViewer, DecisionInstancesTable, ViewerFrame, BWaitingBox, GenericTabs, ScrollableTabsContainer, PluginSlot, DeepLinkFrame, DeepLinkButtons, SearchInput },
   mixins: [permissionsMixin, resizerMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
   inject: ['currentLanguage'],
   props: {

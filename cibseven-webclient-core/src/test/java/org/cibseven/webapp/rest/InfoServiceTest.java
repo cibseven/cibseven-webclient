@@ -29,9 +29,11 @@ import static org.mockito.Mockito.when;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.providers.EngineProvider;
+import org.cibseven.webapp.providers.WebclientExtensions;
 import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,52 +52,71 @@ public class InfoServiceTest {
 
     private InfoService infoService;
 
+	private SevenWebclientProperties properties;
+
 	@BeforeEach
 	public void setUp() {
 		infoService = new InfoService();
 		ReflectionTestUtils.setField(infoService, "bpmProvider", bpmProvider);
 
-		// Set all @Value fields to defaults to avoid NullPointerExceptions
-		ReflectionTestUtils.setField(infoService, "theme", "cib");
-		ReflectionTestUtils.setField(infoService, "ssoActive", false);
-		ReflectionTestUtils.setField(infoService, "authorizationEndpoint", "");
-		ReflectionTestUtils.setField(infoService, "clientId", "");
-		ReflectionTestUtils.setField(infoService, "scopes", "");
-		ReflectionTestUtils.setField(infoService, "userProvider", "org.cibseven.webapp.auth.SevenUserProvider");
-		ReflectionTestUtils.setField(infoService, "userEditable", true);
-		ReflectionTestUtils.setField(infoService, "userPasswordChangeEnabled", null);
-		ReflectionTestUtils.setField(infoService, "productNamePageTitle", "CIB seven");
-		ReflectionTestUtils.setField(infoService, "servicesBasePath", "services/v1");
-		ReflectionTestUtils.setField(infoService, "flowLinkTerms", "");
-		ReflectionTestUtils.setField(infoService, "flowLinkPrivacy", "");
-		ReflectionTestUtils.setField(infoService, "flowLinkImprint", "");
-		ReflectionTestUtils.setField(infoService, "flowLinkAccessibility", "");
-		ReflectionTestUtils.setField(infoService, "flowLinkHelp", "");
-		ReflectionTestUtils.setField(infoService, "supportDialog", "");
-		ReflectionTestUtils.setField(infoService, "engineRestPath", "/engine-rest");
-		ReflectionTestUtils.setField(infoService, "engineRestUrl", "./");
-		ReflectionTestUtils.setField(infoService, "legacyAuthorizationEnabled", false);
-		ReflectionTestUtils.setField(infoService, "modelerEnabled", false);
-		ReflectionTestUtils.setField(infoService, "pluginsEnabled", false);
-		ReflectionTestUtils.setField(infoService, "camundaHistoryLevel", "full");
+		properties = new SevenWebclientProperties();
+		properties.getUser().setEditable(true);
+		properties.getUser().setUserPasswordChangeEnabled(null);
+		properties.getEngineRest().setUrl("./");
+		infoService.properties = properties;
 		ReflectionTestUtils.setField(infoService, "authorizationEnabled", true);
 	}
 
 	@Test
 	public void testGetConfig_reportsWhetherPluginsAreEnabled() {
-		EngineConfiguration config = new EngineConfiguration("default", "full", true, false);
+		EngineConfiguration config = new EngineConfiguration("default", "full", true, false, -1, true);
 		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
 
 		// the frontend skips asking for plugins when this is false
 		assertFalse(infoService.getConfig(null).get("pluginsEnabled").asBoolean());
 
-		ReflectionTestUtils.setField(infoService, "pluginsEnabled", true);
+		properties.getPlugins().setEnabled(true);
 		assertTrue(infoService.getConfig(null).get("pluginsEnabled").asBoolean());
+	}
+
+	private ObjectNode configWithEngineSwitch(Boolean engineSwitch, boolean modelerProperty) {
+		EngineConfiguration config = new EngineConfiguration("default", "full", true, false, -1, true);
+		config.setWebclientExtensionsEnabled(engineSwitch);
+		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
+		when(bpmProvider.getEngineConfiguration(null)).thenReturn(config);
+		ReflectionTestUtils.setField(infoService, "webclientExtensions", new WebclientExtensions(bpmProvider));
+		properties.getModeler().setEnabled(modelerProperty);
+		return infoService.getConfig(null);
+	}
+
+	/** What the engine has switched off, the webclient property cannot switch on. */
+	@Test
+	public void testGetConfig_engineSwitchOff_keepsTheModelerOff() {
+		ObjectNode config = configWithEngineSwitch(false, true);
+
+		assertFalse(config.get("modelerEnabled").asBoolean());
+		assertFalse(config.get("webclientExtensionsEnabled").asBoolean());
+	}
+
+	@Test
+	public void testGetConfig_engineSwitchOn_leavesTheModelerToItsProperty() {
+		assertTrue(configWithEngineSwitch(true, true).get("modelerEnabled").asBoolean());
+		assertFalse(configWithEngineSwitch(true, false).get("modelerEnabled").asBoolean());
+		assertTrue(configWithEngineSwitch(true, false).get("webclientExtensionsEnabled").asBoolean());
+	}
+
+	/** Engines before 3.0 do not report it, which the frontend gets as null rather than a guess. */
+	@Test
+	public void testGetConfig_engineSwitchNotReported_leavesTheModelerToItsProperty() {
+		ObjectNode config = configWithEngineSwitch(null, true);
+
+		assertTrue(config.get("modelerEnabled").asBoolean());
+		assertTrue(config.get("webclientExtensionsEnabled").isNull());
 	}
 
 	@Test
 	public void testGetConfig_withNoEngineName_usesDefaultEngineConfiguration() {
-		EngineConfiguration config = new EngineConfiguration("default", "full", true, false);
+		EngineConfiguration config = new EngineConfiguration("default", "full", true, false, -1, true);
 		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
 
 		infoService.getConfig(null);
@@ -106,7 +127,7 @@ public class InfoServiceTest {
 
 	@Test
 	public void testGetConfig_withEmptyEngineName_usesDefaultEngineConfiguration() {
-		EngineConfiguration config = new EngineConfiguration("default", "full", true, false);
+		EngineConfiguration config = new EngineConfiguration("default", "full", true, false, -1, true);
 		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
 
 		infoService.getConfig("");
@@ -176,15 +197,13 @@ public class InfoServiceTest {
 	private EngineProvider newEngineProvider(MockWebServer mockWebServer) {
 		EngineProvider engineProvider = new EngineProvider();
 		ReflectionTestUtils.setField(engineProvider, "customRestTemplate", new CustomRestTemplate());
-		ReflectionTestUtils.setField(engineProvider, "cibsevenUrl", "http://localhost:" + mockWebServer.getPort());
-		ReflectionTestUtils.setField(engineProvider, "engineRestPath", "/engine-rest");
-		ReflectionTestUtils.setField(engineProvider, "jacksonParserMaxSize", 20_000_000);
+		((SevenWebclientProperties) ReflectionTestUtils.getField(engineProvider, "properties")).getEngineRest().setUrl("http://localhost:" + mockWebServer.getPort());
 		return engineProvider;
 	}
 
 	@Test
 	public void testGetConfig_withEngineName_usesNamedEngineConfiguration() {
-		EngineConfiguration config = new EngineConfiguration("myEngine", "audit", true, false);
+		EngineConfiguration config = new EngineConfiguration("myEngine", "audit", true, false, -1, true);
 		when(bpmProvider.getEngineConfiguration("myEngine")).thenReturn(config);
 
 		infoService.getConfig("myEngine");
@@ -197,7 +216,7 @@ public class InfoServiceTest {
 	public void testGetConfig_withLiteralDefaultEngineName_usesNamedEngineConfiguration() {
 		// The engine literally named "default" is a specified engine, so it returns its own
 		// configuration rather than the effective default.
-		EngineConfiguration config = new EngineConfiguration("default", "full", true, false);
+		EngineConfiguration config = new EngineConfiguration("default", "full", true, false, -1, true);
 		when(bpmProvider.getEngineConfiguration("default")).thenReturn(config);
 
 		infoService.getConfig("default");
@@ -211,7 +230,7 @@ public class InfoServiceTest {
 		// An external "url|path|name" reference is a specified engine, so it returns its own
 		// configuration rather than the effective default.
 		String externalEngine = "http://other-host|/engine-rest|remote";
-		EngineConfiguration config = new EngineConfiguration("remote", "audit", false, false);
+		EngineConfiguration config = new EngineConfiguration("remote", "audit", false, false, -1, true);
 		when(bpmProvider.getEngineConfiguration(externalEngine)).thenReturn(config);
 
 		infoService.getConfig(externalEngine);
@@ -222,7 +241,7 @@ public class InfoServiceTest {
 
 	@Test
 	public void testGetConfig_nullEngineConfig_fallsBackToLegacyConfiguration() {
-		ReflectionTestUtils.setField(infoService, "camundaHistoryLevel", "audit");
+		properties.setHistoryLevel("audit");
 		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(null);
 
 		ObjectNode result = infoService.getConfig(null);
@@ -232,7 +251,7 @@ public class InfoServiceTest {
 
 	@Test
 	public void testGetConfig_historyLevelMappedToCamundaHistoryLevel() {
-		EngineConfiguration config = new EngineConfiguration("default", "audit", true, false);
+		EngineConfiguration config = new EngineConfiguration("default", "audit", true, false, -1, true);
 		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
 
 		ObjectNode result = infoService.getConfig(null);
@@ -241,10 +260,71 @@ public class InfoServiceTest {
 	}
 
 	@Test
-	public void testGetConfig_authorizationEnabledFromEngineConfig() {
-		EngineConfiguration config = new EngineConfiguration("default", "full", false, false);
+	public void testGetConfig_historyTimeToLiveFromEngineConfig() {
+		EngineConfiguration config = new EngineConfiguration("default", "full", true, false, 30, false);
 		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
-		ReflectionTestUtils.setField(infoService, "legacyAuthorizationEnabled", false);
+
+		ObjectNode result = infoService.getConfig(null);
+
+		assertEquals(30, result.get("historyTimeToLive").asInt());
+		assertTrue(result.get("historyTimeToLive").isInt());
+	}
+
+	@Test
+	public void testGetConfig_historyTimeToLive_unlimitedIsPassedThroughAsMinusOne() {
+		EngineConfiguration config = new EngineConfiguration("default", "full", true, false, -1, true);
+		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
+
+		ObjectNode result = infoService.getConfig(null);
+
+		assertEquals(-1, result.get("historyTimeToLive").asInt());
+	}
+
+	@Test
+	public void testGetConfig_enforceHistoryTimeToLiveFromEngineConfig() {
+		EngineConfiguration config = new EngineConfiguration("default", "full", true, false, 30, true);
+		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
+
+		ObjectNode result = infoService.getConfig(null);
+
+		assertTrue(result.get("enforceHistoryTimeToLive").asBoolean());
+	}
+
+	@Test
+	public void testGetConfig_historyTimeToLiveFields_nullWhenEngineDoesNotReportThem() {
+		// An engine config that didn't report them (an engine-rest before 3.0.0) must reach the
+		// frontend as explicit nulls ("unknown"), not as the engine defaults -1 / true: such an
+		// engine may have enforcement switched off, and a made-up `true` would make the UI
+		// disable choices the engine actually allows.
+		EngineConfiguration config = new EngineConfiguration();
+		config.setEngineName("default");
+		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
+
+		ObjectNode result = infoService.getConfig(null);
+
+		assertTrue(result.has("historyTimeToLive"));
+		assertTrue(result.get("historyTimeToLive").isNull());
+		assertTrue(result.has("enforceHistoryTimeToLive"));
+		assertTrue(result.get("enforceHistoryTimeToLive").isNull());
+	}
+
+	@Test
+	public void testGetConfig_enforceHistoryTimeToLive_knownFalseIsPassedThrough() {
+		// A known `false` must stay a boolean false and not be confused with "unknown" (null).
+		EngineConfiguration config = new EngineConfiguration("default", "full", true, false, -1, false);
+		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
+
+		ObjectNode result = infoService.getConfig(null);
+
+		assertTrue(result.get("enforceHistoryTimeToLive").isBoolean());
+		assertFalse(result.get("enforceHistoryTimeToLive").asBoolean());
+	}
+
+	@Test
+	public void testGetConfig_authorizationEnabledFromEngineConfig() {
+		EngineConfiguration config = new EngineConfiguration("default", "full", false, false, -1, true);
+		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
+		properties.getLegacy().getAuthorization().setEnabled(false);
 
 		ObjectNode result = infoService.getConfig(null);
 
@@ -253,9 +333,9 @@ public class InfoServiceTest {
 
 	@Test
 	public void testGetConfig_authorizationEnabled_trueWhenLegacyOverrides() {
-		EngineConfiguration config = new EngineConfiguration("default", "full", false, false);
+		EngineConfiguration config = new EngineConfiguration("default", "full", false, false, -1, true);
 		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
-		ReflectionTestUtils.setField(infoService, "legacyAuthorizationEnabled", true);
+		properties.getLegacy().getAuthorization().setEnabled(true);
 
 		ObjectNode result = infoService.getConfig(null);
 
@@ -264,7 +344,7 @@ public class InfoServiceTest {
 
 	@Test
 	public void testGetConfig_passwordPolicyEnabledFromEngineConfig() {
-		EngineConfiguration config = new EngineConfiguration("default", "full", true, true);
+		EngineConfiguration config = new EngineConfiguration("default", "full", true, true, -1, true);
 		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
 
 		ObjectNode result = infoService.getConfig(null);
@@ -274,7 +354,7 @@ public class InfoServiceTest {
 
 	@Test
 	public void testGetConfig_passwordPolicyDisabledFromEngineConfig() {
-		EngineConfiguration config = new EngineConfiguration("default", "full", true, false);
+		EngineConfiguration config = new EngineConfiguration("default", "full", true, false, -1, true);
 		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
 
 		ObjectNode result = infoService.getConfig(null);
@@ -284,7 +364,7 @@ public class InfoServiceTest {
 
 	@Test
 	public void testGetConfig_notFoundException_fallsBackToLegacyHistoryLevel() {
-		ReflectionTestUtils.setField(infoService, "camundaHistoryLevel", "audit");
+		properties.setHistoryLevel("audit");
 		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(null);
 
 		ObjectNode result = infoService.getConfig(null);
@@ -304,7 +384,7 @@ public class InfoServiceTest {
 
 	@Test
 	public void testGetConfig_notFoundExceptionForNamedEngine_fallsBackToLegacyConfiguration() {
-		ReflectionTestUtils.setField(infoService, "camundaHistoryLevel", "none");
+		properties.setHistoryLevel("none");
 		when(bpmProvider.getEngineConfiguration("myEngine")).thenReturn(null);
 
 		ObjectNode result = infoService.getConfig("myEngine");

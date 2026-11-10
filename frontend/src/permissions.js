@@ -62,6 +62,22 @@ const permissionsMixin = {
 			])
 		},
 		/**
+		 * Mirrors the engine check for suspending or activating a process instance
+		 * (`AuthorizationCommandChecker.checkUpdateProcessInstanceSuspensionState`): any one of the permissions is enough.
+		 * @param {string} processInstanceId
+		 * @param {string} processDefinitionKey
+		 * @returns {boolean} `true` if the user has `SUSPEND` or `UPDATE` on the process instance,
+		 * or `SUSPEND_INSTANCE` or `UPDATE_INSTANCE` on its process definition, `false` otherwise
+		 */
+		canSuspendProcessInstance(processInstanceId, processDefinitionKey) {
+			return this.$_permissionsMixin_checkAnyAllowed([
+				['processInstance', 'SUSPEND', processInstanceId],
+				['processDefinition', 'SUSPEND_INSTANCE', processDefinitionKey],
+				['processInstance', 'UPDATE', processInstanceId],
+				['processDefinition', 'UPDATE_INSTANCE', processDefinitionKey],
+			])
+		},
+		/**
 		 * Mirrors the engine check for assigning or claiming a task
 		 * (`AuthorizationCommandChecker.checkTaskAssign`): any one of the permissions is enough.
 		 * @param {Object} task a task with `id` and, if it belongs to a process, `processDefinitionId`

@@ -111,6 +111,7 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 
 		if(task.getName() != null) taskUpdate.put("name", task.getName());
 		if(task.getDescription() != null) taskUpdate.put("description", task.getDescription());
+		taskUpdate.put("priority", task.getPriority());
 		if(task.getAssignee() != null) taskUpdate.put("assignee", task.getAssignee());
 		if(task.getOwner() != null) taskUpdate.put("owner", task.getOwner());
 		if(task.getDelegationState() != null) taskUpdate.put("delegationState", task.getDelegationState());

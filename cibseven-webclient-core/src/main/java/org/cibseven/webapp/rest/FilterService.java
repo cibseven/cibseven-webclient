@@ -21,6 +21,7 @@ import java.util.Locale;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.providers.PermissionConstants;
 import org.cibseven.webapp.rest.model.Filter;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +40,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
 	@ApiResponse(responseCode = "401", description = "Unauthorized")
 })
-@RestController("WebclientFilterService") @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/filter")
+@RestController("WebclientFilterService") @RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH + "/filter")
 public class FilterService extends BaseService{
 	
 	@Operation(

@@ -18,6 +18,7 @@ package org.cibseven.webapp.plugin;
 
 import java.io.IOException;
 
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.Resource;
 import org.springframework.http.CacheControl;
@@ -54,8 +55,8 @@ import lombok.extern.slf4j.Slf4j;
  * prefix.
  */
 @ApiResponses({ @ApiResponse(responseCode = "500", description = "An unexpected system error occured") })
-@ConditionalOnProperty(prefix = "cibseven.webclient.plugins", name = "enabled")
-@RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/plugins") @Slf4j
+@ConditionalOnProperty(prefix = SevenWebclientProperties.PLUGINS_PREFIX, name = "enabled")
+@RestController @RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH + "/plugins") @Slf4j
 public class PluginService extends BaseService {
 
 	private final PluginRegistry pluginRegistry;

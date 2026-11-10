@@ -27,7 +27,7 @@ public class SSOUser extends CIBUser {
 	
 	@Getter @Setter
 	String refreshToken;
-	
+		
 	public SSOUser(String userId) {
 		super(userId);
 	}

@@ -18,8 +18,10 @@ package org.cibseven.webapp.rest;
 
 import java.util.Map;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.LogoutRedirectProvider;
 import org.cibseven.webapp.auth.User;
 import org.cibseven.webapp.auth.rest.StandardLogin;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.rest.model.Authorizations;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,7 +37,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.NotNull;
 
 @ApiResponses({ @ApiResponse(responseCode  = "500", description = "An unexpected system error occured") })
-@RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/auth")
+@RestController @RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH + "/auth")
 public class AuthenticationService extends BaseService {
 	
 	@Operation(summary  = "Authenticates a user and returns (among other things) a token to be passed with other services")
@@ -52,9 +54,16 @@ public class AuthenticationService extends BaseService {
 	    return baseUserProvider.login(standardLogin, rq);
 	}	
 	
+	@Operation(summary = "Ends the session of the user; a provider with a session at an external system also ends it there")
+	@ApiResponses({@ApiResponse(responseCode = "200", description = "Contains 'logoutRedirectUrl' if the browser must also be sent to an external system to finish the logout") })
 	@RequestMapping(value = "/logout", method = RequestMethod.POST)
-	public void logout(User user) {
+	public Map<String, String> logout(User user, @RequestBody(required = false) Map<String, String> data) {
+		String returnUrl = data == null ? null : data.get("returnUrl");
+		// Asked for before the logout, which may revoke what the URL is built from
+		String redirectUrl = baseUserProvider instanceof LogoutRedirectProvider provider
+			? provider.getLogoutRedirectUrl(user, returnUrl) : null;
 		baseUserProvider.logout(user);
+		return redirectUrl == null ? Map.of() : Map.of("logoutRedirectUrl", redirectUrl);
 	}
 	
 	@RequestMapping(method = RequestMethod.GET)

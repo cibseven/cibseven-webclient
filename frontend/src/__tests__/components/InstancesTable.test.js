@@ -38,4 +38,57 @@ describe('InstancesTable', () => {
       expect(vm.canDeleteRuntimeProcessInstance).not.toHaveBeenCalled()
     })
   })
+
+  describe.each([
+    ['hasSuspendInstanceButton', 'ACTIVE'],
+    ['hasActivateInstanceButton', 'SUSPENDED'],
+  ])('%s', (method, shownState) => {
+    const context = (allowed = true) => ({ canSuspendProcessInstance: vi.fn(() => allowed) })
+    const instance = (state) => ({ id: 'pi-1', processDefinitionKey: 'order-process', state })
+
+    it(`is shown for a ${shownState} instance the user may suspend`, () => {
+      const vm = context()
+      expect(InstancesTable.methods[method].call(vm, instance(shownState))).toBe(true)
+      expect(vm.canSuspendProcessInstance).toHaveBeenCalledWith('pi-1', 'order-process')
+    })
+
+    it('is hidden without the permission to suspend the instance', () => {
+      expect(InstancesTable.methods[method].call(context(false), instance(shownState))).toBe(false)
+    })
+
+    it.each(['ACTIVE', 'SUSPENDED', 'COMPLETED', 'EXTERNALLY_TERMINATED', 'INTERNALLY_TERMINATED']
+      .filter(state => state !== shownState))('is hidden for a %s instance', (state) => {
+      const vm = context()
+      expect(InstancesTable.methods[method].call(vm, instance(state))).toBe(false)
+      expect(vm.canSuspendProcessInstance).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('loadInstancesData', () => {
+    const context = () => ({
+      process: { id: 'pd-1' },
+      filter: { unfinished: true },
+      maxResults: 50,
+      $root: { config: {} },
+      $emit: vi.fn(),
+      resetInstances: vi.fn(),
+      loadInstances: vi.fn().mockResolvedValue([])
+    })
+
+    it('reloads the statistics with the filter on a fresh load', async () => {
+      const vm = context()
+      await InstancesTable.methods.loadInstancesData.call(vm)
+      expect(vm.resetInstances).toHaveBeenCalled()
+      expect(vm.$emit).toHaveBeenCalledWith('load-statistics', { unfinished: true })
+    })
+
+    // Another page of the same list does not change the counts
+    it('keeps the statistics when showing more', async () => {
+      const vm = context()
+      await InstancesTable.methods.loadInstancesData.call(vm, true)
+      expect(vm.resetInstances).not.toHaveBeenCalled()
+      expect(vm.$emit).not.toHaveBeenCalled()
+      expect(vm.loadInstances).toHaveBeenCalledWith(expect.objectContaining({ showMore: true }))
+    })
+  })
 })

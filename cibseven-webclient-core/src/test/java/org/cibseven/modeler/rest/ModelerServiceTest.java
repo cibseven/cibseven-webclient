@@ -19,6 +19,7 @@ package org.cibseven.modeler.rest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -30,6 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
+import org.cibseven.modeler.provider.ProjectGuard;
 import org.cibseven.modeler.model.FormEntity;
 import org.cibseven.modeler.model.FolderEntity;
 import org.cibseven.modeler.model.FormUsageEntity;
@@ -145,30 +147,30 @@ public class ModelerServiceTest {
 
 	@Test
 	void getDiagrams_forwardsThePagingAndFilters() {
-		when(dbProcessDiagramProvider.getDiagrams("invoice", "bpmn-c7", 0, 10)).thenReturn(List.of());
+		when(dbProcessDiagramProvider.getDiagrams("invoice", "bpmn-c7", ProjectGuard.HiddenProjects.NONE, 0, 10)).thenReturn(List.of());
 
 		service.getDiagrams(request, 0, 10, "bpmn-c7", "invoice");
 
-		verify(dbProcessDiagramProvider).getDiagrams("invoice", "bpmn-c7", 0, 10);
+		verify(dbProcessDiagramProvider).getDiagrams("invoice", "bpmn-c7", ProjectGuard.HiddenProjects.NONE, 0, 10);
 	}
 
 	@Test
 	void getUnifiedDiagrams_forwardsThePagingAndFilters() {
-		when(unifiedDiagramProvider.getDiagrams("invoice", "bpmn", null, 5, 20)).thenReturn(List.of());
+		when(unifiedDiagramProvider.getDiagrams("invoice", "bpmn", null, ProjectGuard.HiddenProjects.NONE, 5, 20)).thenReturn(List.of());
 
 		service.getUnifiedDiagrams(request, 5, 20, "invoice", "bpmn", null);
 
-		verify(unifiedDiagramProvider).getDiagrams("invoice", "bpmn", null, 5, 20);
+		verify(unifiedDiagramProvider).getDiagrams("invoice", "bpmn", null, ProjectGuard.HiddenProjects.NONE, 5, 20);
 	}
 
 	/** The folder tree asks one folder at a time, so the filter has to reach the query. */
 	@Test
 	void getUnifiedDiagrams_forwardsTheFolder() {
-		when(unifiedDiagramProvider.getDiagrams(null, null, "folder-1", 0, 20)).thenReturn(List.of());
+		when(unifiedDiagramProvider.getDiagrams(null, null, "folder-1", ProjectGuard.HiddenProjects.NONE, 0, 20)).thenReturn(List.of());
 
 		service.getUnifiedDiagrams(request, 0, 20, null, null, "folder-1");
 
-		verify(unifiedDiagramProvider).getDiagrams(null, null, "folder-1", 0, 20);
+		verify(unifiedDiagramProvider).getDiagrams(null, null, "folder-1", ProjectGuard.HiddenProjects.NONE, 0, 20);
 	}
 
 	@Test
@@ -228,7 +230,7 @@ public class ModelerServiceTest {
 
 	@Test
 	void findByName_servesTheDiagram() {
-		when(dbProcessDiagramProvider.findByName("Invoice")).thenReturn(diagram("d-1", "Invoice", "invoice"));
+		when(dbProcessDiagramProvider.findByName(eq("Invoice"), any())).thenReturn(diagram("d-1", "Invoice", "invoice"));
 
 		ResponseEntity<byte[]> response = service.findByName("Invoice", request);
 
@@ -238,37 +240,33 @@ public class ModelerServiceTest {
 
 	@Test
 	void findByName_answers404WhenThereIsNoSuchName() {
-		when(dbProcessDiagramProvider.findByName("Nope")).thenReturn(null);
+		when(dbProcessDiagramProvider.findByName(eq("Nope"), any())).thenReturn(null);
 
 		assertThat(service.findByName("Nope", request).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 	}
 
 	@Test
 	void findByKey_servesTheDiagram() {
-		when(dbProcessDiagramProvider.findByProcessKey("invoice")).thenReturn(diagram("d-1", "Invoice", "invoice"));
+		when(dbProcessDiagramProvider.findByProcessKey(eq("invoice"), any())).thenReturn(List.of(diagram("d-1", "Invoice", "invoice")));
 
-		assertThat(service.findByKey("invoice", request).getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(service.findByKey("invoice", null, request).getStatusCode()).isEqualTo(HttpStatus.OK);
 	}
 
 	@Test
 	void findByKey_answers404WhenThereIsNoSuchKey() {
-		when(dbProcessDiagramProvider.findByProcessKey("nope")).thenReturn(null);
-
-		assertThat(service.findByKey("nope", request).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+		assertThat(service.findByKey("nope", null, request).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 	}
 
 	@Test
 	void findByKeyEntity_returnsTheEntity() {
-		when(dbProcessDiagramProvider.findByProcessKey("invoice")).thenReturn(diagram("d-1", "Invoice", "invoice"));
+		when(dbProcessDiagramProvider.findByProcessKey(eq("invoice"), any())).thenReturn(List.of(diagram("d-1", "Invoice", "invoice")));
 
-		assertThat(service.findByKeyEntity("invoice", request).getBody().getId()).isEqualTo("d-1");
+		assertThat(service.findByKeyEntity("invoice", null, request).getBody().getId()).isEqualTo("d-1");
 	}
 
 	@Test
 	void findByKeyEntity_answers404WhenThereIsNoSuchKey() {
-		when(dbProcessDiagramProvider.findByProcessKey("nope")).thenReturn(null);
-
-		assertThat(service.findByKeyEntity("nope", request).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+		assertThat(service.findByKeyEntity("nope", null, request).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 	}
 
 	@Test
@@ -282,11 +280,11 @@ public class ModelerServiceTest {
 
 	@Test
 	void getForms_forwardsThePagingAndKeyword() {
-		when(formProvider.getForms("invoice", 0, 10)).thenReturn(List.of());
+		when(formProvider.getForms("invoice", ProjectGuard.HiddenProjects.NONE, 0, 10)).thenReturn(List.of());
 
 		service.getForms(request, 0, 10, "invoice");
 
-		verify(formProvider).getForms("invoice", 0, 10);
+		verify(formProvider).getForms("invoice", ProjectGuard.HiddenProjects.NONE, 0, 10);
 	}
 
 	@Test
@@ -388,16 +386,14 @@ public class ModelerServiceTest {
 
 	@Test
 	void findByFormId_returnsTheForm() {
-		when(formProvider.findByFormId("invoice-form")).thenReturn(form("f-1", "invoice-form"));
+		when(formProvider.findByFormId(eq("invoice-form"), any())).thenReturn(List.of(form("f-1", "invoice-form")));
 
-		assertThat(service.findByFormId("invoice-form", request).getBody().getId()).isEqualTo("f-1");
+		assertThat(service.findByFormId("invoice-form", null, request).getBody().getId()).isEqualTo("f-1");
 	}
 
 	@Test
 	void findByFormId_answers404WhenThereIsNoSuchForm() {
-		when(formProvider.findByFormId("nope")).thenReturn(null);
-
-		assertThat(service.findByFormId("nope", request).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+		assertThat(service.findByFormId("nope", null, request).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 	}
 
 	// ---------- deployment ----------

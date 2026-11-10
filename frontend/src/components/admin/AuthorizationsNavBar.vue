@@ -59,15 +59,13 @@ const RESOURCE_TYPE_GROUPS = [
   { name: 'deployment', group: 'processes' },
   { name: 'batch', group: 'processes' },
   { name: 'userOperationLogCategory', group: 'processes' },
-  { name: 'operationLogCategory', group: 'processes' },
 
   { name: 'task', group: 'tasks' },
   { name: 'historicTask', group: 'tasks' },
   { name: 'filter', group: 'tasks' },
 
-  { name: 'optimize', group: 'other' },
-  { name: 'report', group: 'other' },
-  { name: 'dashboard', group: 'other' },
+  // Placeholder for unknown resource types
+  { name: '_other', group: 'other' },
 
   { name: 'system', group: 'system' },
 ]

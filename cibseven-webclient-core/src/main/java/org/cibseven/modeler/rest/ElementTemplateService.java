@@ -31,6 +31,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.exception.NoObjectException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -81,7 +82,7 @@ import java.util.stream.Collectors;
 	@ApiResponse(responseCode = "401", description = "Unauthorized, invalid or missing authentication token",
 		content = @Content(schema = @Schema(implementation = String.class)))
 })
-@RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}/modeler/element-templates")
+@RestController @RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH + "/modeler/element-templates")
 public class ElementTemplateService extends ModelerBaseService {
 
     @Autowired

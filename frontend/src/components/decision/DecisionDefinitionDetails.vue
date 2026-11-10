@@ -66,7 +66,7 @@
       <button @click="editHistoryTimeToLive()" class="btn btn-sm mdi mdi-pencil float-end border-0"
         :title="$t('decision-instance.edit')"></button>
     </span>
-    <span class="col-12">{{ historyTimeToLive !== 0 ? historyTimeToLive : '∞' }}{{ ' ' + $t('decision.days') }}</span>
+    <span class="col-12">{{ historyTimeToLiveDisplay }}</span>
   </div>
   <hr class="my-2">
   <div class="row align-items-center">
@@ -74,24 +74,7 @@
     <span class="col-4 text-end">{{ version.allInstances }}</span>
   </div>
 
-  <b-modal ref="historyTimeToLive" :title="$t('decision.details.historyTimeToLive')">
-    <p>
-      <span>{{ $t('decision.details.definitionName') }}: </span>
-      <strong>{{ version.name }}</strong>
-      <br>
-      <span class="">{{ $t('decision.details.definitionVersion') }}: </span>
-      <strong>{{ version.version }}</strong>
-    </p>
-    <label class="form-check-label pb-2" for="historyTimeToLiveInput">{{ $t('decision.details.historyTimeToLive') }}</label>
-    <div class="input-group">
-      <input id="historyTimeToLiveInput" class="form-control" type="number" v-model="historyTimeToLiveChanged">
-      <span class="input-group-text">{{ $t('decision.days') }}</span>
-    </div>
-    <template v-slot:modal-footer>
-      <b-button @click="$refs.historyTimeToLive.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
-      <b-button @click="updateHistoryTimeToLive()" variant="primary">{{ $t('decision-instance.save') }}</b-button>
-    </template>
-  </b-modal>
+  <EditHistoryTimeToLiveModal ref="ttlModal" :description-items="ttlDescriptionItems" @ttl-updated="onTtlUpdated" />
   <SuccessAlert ref="messageCopy"> {{ $t('decision.copySuccess') }} </SuccessAlert>
 </template>
 
@@ -100,10 +83,12 @@
 import { DecisionService } from '@/services.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { SuccessAlert } from '@cib/common-frontend'
+import EditHistoryTimeToLiveModal from '@/components/modals/EditHistoryTimeToLiveModal.vue'
+import { formatHistoryTimeToLive } from '@/utils/historyTimeToLive.js'
 
 export default {
   name: 'DecisionDefinitionDetails',
-  components: { SuccessAlert },
+  components: { SuccessAlert, EditHistoryTimeToLiveModal },
   mixins: [ copyToClipboardMixin ],
   props: {
     version: Object
@@ -111,8 +96,18 @@ export default {
   emits: ['updated-history-ttl'],
   data() {
     return {
-      historyTimeToLive: '',
-      historyTimeToLiveChanged: ''
+      historyTimeToLive: null
+    }
+  },
+  computed: {
+    ttlDescriptionItems() {
+      return [
+        { title: this.$t('decision.details.definitionName'), value: this.version.name },
+        { title: this.$t('decision.details.definitionVersion'), value: this.version.version }
+      ]
+    },
+    historyTimeToLiveDisplay() {
+      return formatHistoryTimeToLive(this.$t, this.historyTimeToLive)
     }
   },
   mounted() {
@@ -120,19 +115,12 @@ export default {
   },
   methods: {
     editHistoryTimeToLive() {
-      this.historyTimeToLiveChanged = this.historyTimeToLive
-      this.$refs.historyTimeToLive.show()
+      this.$refs.ttlModal.show({ historyTimeToLive: this.historyTimeToLive })
     },
-    updateHistoryTimeToLive() {
-      if (this.historyTimeToLiveChanged === '') {
-        this.historyTimeToLiveChanged = 0
-      }
-      DecisionService.updateHistoryTTLById(this.version.id,
-      { historyTimeToLive: this.historyTimeToLiveChanged }).then(() => {
-        // eslint-disable-next-line vue/no-mutating-props
-        this.historyTimeToLive = this.version.historyTimeToLive = this.historyTimeToLiveChanged
-        this.$emit('updated-history-ttl')
-        this.$refs.historyTimeToLive.hide()
+    onTtlUpdated({ ttlValue }) {
+      DecisionService.updateHistoryTTLById(this.version.id, { historyTimeToLive: ttlValue }).then(() => {
+        this.historyTimeToLive = ttlValue
+        this.$emit('updated-history-ttl', ttlValue)
       }).catch(error => {
         this.$root.$refs.error.show(error.response?.data)
       })

@@ -24,25 +24,14 @@
         <div class="container pt-4">
           <div class="row align-items-center pb-1">
             <div class="col-8">
-              <div class="border rounded d-flex flex-fill align-items-center">
-                <b-button @click.stop="loadDecisions()"
-                  size="sm" class="mdi mdi-magnify mdi-24px text-secondary" variant="link"
-                  :title="$t('searches.refreshAndFilter')"></b-button>
-                <div class="flex-grow-1">
-                  <label class="visually-hidden" for="filter-decision-list">{{ $t('searches.filter') }}</label>
-                  <input
-                    id="filter-decision-list"
-                    type="text"
-                    v-model.trim="filter"
-                    :placeholder="$t('searches.filter')"
-                    :aria-label="$t('searches.filter')"
-                    class="form-control-plaintext w-100 border-0 px-2"
-                  />
-                </div>
-                <div class="block text-secondary ms-2 me-3 text-nowrap"
-                  :title="$t('start.cockpit.decisions.title') + ': ' + statistics"
-                >{{ statistics }}</div>
-              </div>
+              <SearchInput input-id="filter-decision-list" v-model.trim="filter" :label="$t('searches.filter')"
+                search-button :search-button-label="$t('searches.refreshAndFilter')" @search="loadDecisions()">
+                <template #append>
+                  <span class="text-secondary text-nowrap"
+                    :title="$t('start.cockpit.decisions.title') + ': ' + statistics"
+                  >{{ statistics }}</span>
+                </template>
+              </SearchInput>
             </div>
           </div>
         </div>
@@ -69,10 +58,11 @@ import { permissionsMixin } from '@/permissions.js'
 import { FlowTable, BWaitingBox } from '@cib/common-frontend'
 import { mapActions, mapGetters } from 'vuex'
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
+import SearchInput from '@/components/common-components/SearchInput.vue'
 
 export default {
   name: 'DecisionList',
-  components: { FlowTable, BWaitingBox, CellActionButton },
+  components: { FlowTable, BWaitingBox, CellActionButton, SearchInput },
   mixins: [permissionsMixin],
   data: function() {
     return {

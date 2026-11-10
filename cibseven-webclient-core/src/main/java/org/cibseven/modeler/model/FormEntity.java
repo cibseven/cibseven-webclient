@@ -27,6 +27,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +37,9 @@ import lombok.Setter;
 @Getter
 @RequiredArgsConstructor
 @Entity
-@Table(name = "MOD_FORMS")
+// The form id repeats across folders; within one it is unique
+@Table(name = "MOD_FORMS",
+	uniqueConstraints = @UniqueConstraint(name = "MOD_UK_FORMS_FORMID_FOLDER", columnNames = { "formid", "folder_id" }))
 public class FormEntity {
 
 	@Id
@@ -65,7 +68,7 @@ public class FormEntity {
 	@Column(name = "form_schema", nullable = false)
 	private byte[] formSchema;
 
-	@Column(name = "formid", unique = true, nullable = false, length = 100)
+	@Column(name = "formid", nullable = false, length = 100)
 	private String formId;
 
 	/** The folder it lives in; a move rewrites this and nothing else. */

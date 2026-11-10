@@ -559,6 +559,10 @@ const IncidentService = {
 }
 
 const AuthService = {
+  // Bounded: a stalled identity provider must not leave the user waiting for the logout
+  logout: function(returnUrl) {
+    return axios.post(getServicesBasePath() + "/auth/logout", { returnUrl }, { timeout: 6000 })
+  },
   fetchAuths: function() { return axios.get(getServicesBasePath() + "/auth/authorizations") },
   passwordRecover: function(data) { return axios.post(getServicesBasePath() + "/auth/password-recover", data) },
   passwordRecoverCheck: function(recoverToken) { return axios.get(getServicesBasePath() + "/auth/password-recover-check",
@@ -579,6 +583,13 @@ const InfoService = {
   },
   getVersion: function() {
     return axios.get('info')
+  }
+}
+
+// The modeler's element templates, read without the modeler package so diagrams can show their icons
+const ElementTemplateService = {
+  findAll: function() {
+    return axios.get(getServicesBasePath() + '/modeler/element-templates')
   }
 }
 
@@ -761,15 +772,6 @@ const BatchService = {
   },
   deleteHistoricBatch: function(id) {
     return axios.delete(getServicesBasePath() + '/history/batch/' + id)
-  },
-  setRemovalTime(payload) {
-    return axios.post(getServicesBasePath() + '/history/batch/set-removal-time', payload)
-  },
-  getCleanableBatchReport(params) {
-    return axios.get(getServicesBasePath() + '/history/batch/cleanable-batch-report', { params })
-  },
-  getCleanableBatchReportCount() {
-    return axios.get(getServicesBasePath() + '/history/batch/cleanable-batch-report/count')
   }
 }
 
@@ -893,7 +895,7 @@ const SetupService = {
 }
 export {
   TaskService, FilterService, ProcessService, VariableInstanceService, HistoricVariableInstanceService, AdminService, JobService, JobDefinitionService, SystemService,
-  HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService,
+  HistoryService, IncidentService, AuthService, InfoService, ElementTemplateService, FormsService, TemplateService, DecisionService,
   AnalyticsService, BatchService, TenantService, ExternalTaskService, DeploymentService, EngineService, SetupService, getServicesBasePath, setServicesBasePath, createDocumentEndpointUrl,
   joinArrayParams
 }

@@ -800,6 +800,11 @@ public interface BpmProvider {
 		return getUserProvider().findGroups(id, name, nameLike, type, member, memberOfTenant, sortBy, sortOrder, firstResult, maxResults, user);
 	}
 
+	/** See {@link IUserProvider#findGroupIdsOfUser}. */
+	default Collection<String> findGroupIdsOfUser(CIBUser user) {
+		return getUserProvider().findGroupIdsOfUser(user);
+	}
+
 	/**
 	 * Create a group.
 	 *
@@ -1050,10 +1055,6 @@ public interface BpmProvider {
 		getVariableProvider().submitVariables(processInstanceId, formResult, user, processDefinitionId);
 	}
 
-	default Map<String, Variable> fetchProcessFormVariablesById(String id, CIBUser user) throws SystemException {
-		return getVariableProvider().fetchProcessFormVariablesById(id, user);
-	}
-
 	default void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user) {
 		getVariableProvider().putLocalExecutionVariable(executionId, varName, data, user);
 	}
@@ -1263,18 +1264,6 @@ public interface BpmProvider {
 	default void deleteHistoricBatch(String id, CIBUser user) {
 		getBatchProvider().deleteHistoricBatch(id, user);
 	}
-
-	default Object setRemovalTime(Map<String, Object> payload, CIBUser user) {
-		return getBatchProvider().setRemovalTime(payload, user);
-	  }
-
-	default Object getCleanableBatchReport(Map<String, Object> queryParams, CIBUser user) {
-		return getBatchProvider().getCleanableBatchReport(queryParams, user);
-	  }
-
-	default Object getCleanableBatchReportCount(CIBUser user) {
-		return getBatchProvider().getCleanableBatchReportCount(user);
-	  }
 
 /*
 

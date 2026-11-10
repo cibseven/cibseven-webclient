@@ -7,7 +7,7 @@ The main CIB seven BPM web application: a multi-module Maven project with a Vue 
 
 ## Tech Stack
 - **Frontend:** Vue 3 with **Options API** (`export default {}`), Vite, vue-router 4 (hash history), Vuex 4 (namespaced modules), axios, vue-i18n
-- **Backend:** Java 17, Spring Boot 3.5.x (Jakarta EE), Spring MVC REST controllers, SpringDoc OpenAPI
+- **Backend:** Java 17, Spring Boot 4.x (Jakarta EE), Spring MVC REST controllers, SpringDoc OpenAPI
 - **UI:** Bootstrap 5, SCSS, Material Design Icons (`@mdi/font`), `@cib/bootstrap-components`, `@cib/common-frontend`
 - **Testing:** Vitest + @vue/test-utils (unit), Spring Boot Test + JUnit (backend), JaCoCo (Java coverage). E2E tests live in a separate repository.
 - **Linting:** ESLint 9 flat config + eslint-plugin-vue (essential) + eslint-plugin-vuejs-accessibility, no Prettier
@@ -37,7 +37,7 @@ The main CIB seven BPM web application: a multi-module Maven project with a Vue 
 - vue-router 4 with `createWebHashHistory`; routes under `/seven/`, authenticated routes under `/seven/auth/`
 - Route factory `createAppRouter(routes)` exported for library consumers
 - Route guards: `authGuard`, `setupGuard`, `permissionsGuard`
-- Components are eagerly imported (no lazy loading)
+- Components are eagerly imported (no lazy loading). The one exception is the `cibseven-modeler` package: it is loaded only when the modeler opens, through `loadModeler()` in `src/utils/modelerLoader.js`. Never import it statically; `modelerLoading.test.js` fails if you do
 
 ### Styling
 - Bootstrap 5 classes for layout; SCSS with themes in `src/themes/`; `mdi-*` icon classes

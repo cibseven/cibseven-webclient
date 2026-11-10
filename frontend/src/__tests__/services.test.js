@@ -28,7 +28,7 @@ vi.mock('@/globals.js', async (importOriginal) => {
 const {
   TaskService, FilterService, ProcessService, VariableInstanceService, HistoricVariableInstanceService,
   AdminService, JobService, JobDefinitionService, SystemService, HistoryService, IncidentService,
-  AuthService, InfoService, FormsService, TemplateService, DecisionService, AnalyticsService,
+  AuthService, InfoService, ElementTemplateService, FormsService, TemplateService, DecisionService, AnalyticsService,
   BatchService, TenantService, ExternalTaskService, DeploymentService, EngineService, SetupService,
   getServicesBasePath, setServicesBasePath, createDocumentEndpointUrl, joinArrayParams
 } = await import('@/services.js')
@@ -438,10 +438,7 @@ describe('BatchService', () => {
     { name: 'getHistoricBatches', verb: 'get', call: () => BatchService.getHistoricBatches({ maxResults: 10 }), args: [`${BASE}/history/batch`, { params: { maxResults: 10 } }] },
     { name: 'getHistoricBatchCount', verb: 'get', call: () => BatchService.getHistoricBatchCount({ type: 'x' }), args: [`${BASE}/history/batch/count`, { params: { type: 'x' } }] },
     { name: 'getHistoricBatchById', verb: 'get', call: () => BatchService.getHistoricBatchById('b1'), args: [`${BASE}/history/batch/b1`] },
-    { name: 'deleteHistoricBatch', verb: 'delete', call: () => BatchService.deleteHistoricBatch('b1'), args: [`${BASE}/history/batch/b1`] },
-    { name: 'setRemovalTime', verb: 'post', call: () => BatchService.setRemovalTime({ calculatedRemovalTime: true }), args: [`${BASE}/history/batch/set-removal-time`, { calculatedRemovalTime: true }] },
-    { name: 'getCleanableBatchReport', verb: 'get', call: () => BatchService.getCleanableBatchReport({ maxResults: 10 }), args: [`${BASE}/history/batch/cleanable-batch-report`, { params: { maxResults: 10 } }] },
-    { name: 'getCleanableBatchReportCount', verb: 'get', call: () => BatchService.getCleanableBatchReportCount(), args: [`${BASE}/history/batch/cleanable-batch-report/count`] }
+    { name: 'deleteHistoricBatch', verb: 'delete', call: () => BatchService.deleteHistoricBatch('b1'), args: [`${BASE}/history/batch/b1`] }
   ])
 })
 
@@ -469,11 +466,13 @@ describe('small services', () => {
     { name: 'DeploymentService.redeployDeployment', verb: 'post', call: () => DeploymentService.redeployDeployment('d1', { resourceIds: ['r1'] }), args: [`${BASE}/deployment/d1/redeploy`, { resourceIds: ['r1'] }] },
     { name: 'DeploymentService.fetchDataFromDeploymentResource reads as text', verb: 'get', call: () => DeploymentService.fetchDataFromDeploymentResource('d1', 'r1', 'a&b #1+c.form', 'tok'), args: [`${BASE}/process/deployments/d1/resources/r1/data`, { params: { filename: 'a&b #1+c.form', token: 'tok' }, responseType: 'text' }] },
     { name: 'TemplateService.getTemplate sends the token as an Authorization header', verb: 'get', call: () => TemplateService.getTemplate('el1', 't1', 'en', 'Bearer abc'), args: [`${BASE}/template/el1/t1?locale=en`, { headers: { Authorization: 'Bearer abc' } }] },
+    { name: 'AuthService.logout', verb: 'post', call: () => AuthService.logout('http://app/'), args: [`${BASE}/auth/logout`, { returnUrl: 'http://app/' }, { timeout: 6000 }] },
     { name: 'AuthService.fetchAuths', verb: 'get', call: () => AuthService.fetchAuths(), args: [`${BASE}/auth/authorizations`] },
     { name: 'AuthService.passwordRecover', verb: 'post', call: () => AuthService.passwordRecover({ email: 'a@b.c' }), args: [`${BASE}/auth/password-recover`, { email: 'a@b.c' }] },
     { name: 'AuthService.passwordRecoverCheck sends the recovery token as the header', verb: 'get', call: () => AuthService.passwordRecoverCheck('tok'), args: [`${BASE}/auth/password-recover-check`, { headers: { authorization: 'tok' } }] },
     { name: 'AuthService.passwordRecoverUpdatePassword', verb: 'put', call: () => AuthService.passwordRecoverUpdatePassword('demo', 'new', 'old', 'tok'), args: [`${BASE}/auth/password-recovery-update-password/demo`, { password: 'new', authenticatedUserPassword: 'old' }, { headers: { authorization: 'tok' } }] },
-    { name: 'InfoService.getVersion is not base-path prefixed', verb: 'get', call: () => InfoService.getVersion(), args: ['info'] }
+    { name: 'InfoService.getVersion is not base-path prefixed', verb: 'get', call: () => InfoService.getVersion(), args: ['info'] },
+    { name: 'ElementTemplateService.findAll', verb: 'get', call: () => ElementTemplateService.findAll(), args: [`${BASE}/modeler/element-templates`] }
   ])
 })
 

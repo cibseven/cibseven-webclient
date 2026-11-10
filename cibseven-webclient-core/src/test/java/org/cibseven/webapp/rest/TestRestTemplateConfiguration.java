@@ -16,12 +16,18 @@
  */
 package org.cibseven.webapp.rest;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
 /**
  * Configuration class for tests that extends RestTemplateConfiguration.
@@ -49,10 +55,23 @@ public class TestRestTemplateConfiguration extends RestTemplateConfiguration {
     )
     public CustomRestTemplate customRestTemplate() {
         log.info("Creating CustomRestTemplate bean for tests");
-        // Create a new CustomRestTemplate instance
         // It will be configured via @PostConstruct using @Autowired dependencies
-        CustomRestTemplate template = new CustomRestTemplate();
+        CustomRestTemplate template = jackson2CustomRestTemplate();
         log.info("CustomRestTemplate created");
+        return template;
+    }
+
+    /**
+     * Same converter setup as SevenWebclientContext#customRestTemplate: the model classes are
+     * Jackson 2, so the Jackson 3 converter Spring 7 registers by default is swapped for the
+     * Jackson 2 one (goes with the Jackson 3 migration).
+     */
+    @SuppressWarnings("removal")
+    public static CustomRestTemplate jackson2CustomRestTemplate() {
+        CustomRestTemplate template = new CustomRestTemplate();
+        List<HttpMessageConverter<?>> converters = new ArrayList<>(template.getMessageConverters());
+        converters.replaceAll(c -> c instanceof JacksonJsonHttpMessageConverter ? new MappingJackson2HttpMessageConverter() : c);
+        template.setMessageConverters(converters);
         return template;
     }
 }
