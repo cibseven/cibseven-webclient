@@ -102,10 +102,17 @@
 		    <version>${jjwt.version}</version>
 		</dependency>
 
+		<!-- jjwt has no Jackson 3 module, and jjwt-jackson would put Jackson 2 back on the classpath -->
 		<dependency>
 		    <groupId>io.jsonwebtoken</groupId>
-		    <artifactId>jjwt-jackson</artifactId> <!-- or jjwt-gson if Gson is preferred -->
+		    <artifactId>jjwt-gson</artifactId>
 		    <version>${jjwt.version}</version>
+		    <scope>runtime</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>tools.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
 		</dependency>
 
 		<!--
@@ -145,6 +152,11 @@
 				<exclusion>
 					<groupId>io.swagger.core.v3</groupId>
 					<artifactId>swagger-annotations-jakarta</artifactId>
+				</exclusion>
+				<!-- Brings Jackson 2; jjwt-gson above reads and writes the tokens' JSON instead -->
+				<exclusion>
+					<groupId>io.jsonwebtoken</groupId>
+					<artifactId>jjwt-jackson</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>

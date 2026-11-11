@@ -27,12 +27,14 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.config.SevenWebclientProperties;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.exception.BatchOperationException;
 import org.cibseven.webapp.exception.DmnTransformationException;
 import org.cibseven.webapp.exception.ExistingGroupRequestException;
@@ -60,15 +62,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.MultiValueMap;
 
-import com.fasterxml.jackson.core.StreamReadConstraints;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cibseven.webapp.rest.CustomRestTemplate;
 import lombok.extern.slf4j.Slf4j;
 
@@ -391,20 +391,13 @@ public abstract class SevenProviderBase {
 	 * 
 	 * @return A newly configured RestTemplate instance
 	 */
-	// MappingJackson2HttpMessageConverter is Jackson 2; it goes with the Jackson 3 migration
-	@SuppressWarnings("removal")
 	protected RestTemplate createPatchRestTemplate() {
         // Create a new RestTemplate instance instead of modifying the shared one
         RestTemplate restTemplate = new RestTemplate();
 
-        // Configure the ObjectMapper for this specific use case
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        StreamReadConstraints streamReadConstraints = StreamReadConstraints
-                .builder()
-                .maxStringLength(properties.getCustom().getSpring().getJackson().getParser().getMaxSize())
-                .build();
-        objectMapper.getFactory().setStreamReadConstraints(streamReadConstraints);
+        // A mapper with Jackson 2's defaults, as before, only limited to the configured string length
+        JsonMapper jsonMapper = WebclientJsonMapper.builderWithJackson2Defaults(
+                properties.getCustom().getSpring().getJackson().getParser().getMaxSize()).build();
 
         // Add all converters from the customRestTemplate to the new instance
         // Create a copy of the converters list to avoid concurrent modification issues
@@ -414,7 +407,7 @@ public abstract class SevenProviderBase {
         restTemplate.setMessageConverters(new ArrayList<>(customRestTemplate.getMessageConverters()));
 
         // Add the custom message converter to the new RestTemplate instance
-        restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter(objectMapper));
+        restTemplate.getMessageConverters().add(new JacksonJsonHttpMessageConverter(jsonMapper));
 
         return restTemplate;
 	}

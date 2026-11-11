@@ -299,6 +299,65 @@ public class SevenUserProviderTest {
 		assertThat(thrown.getData()).isEmpty();
 	}
 
+	// ---------- tokens minted by the 2.2 webclient ----------
+
+	/**
+	 * Minted by the 2.2 webclient with {@link #SECRET}: jjwt-jackson wrote the claims and Jackson 2 the
+	 * user JSON. Valid until 2126, prolongable, not to be verified.
+	 */
+	private static final String TOKEN_FROM_2_2 =
+		"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJkZW1vIiwiZXhwIjo0OTQ3NzU3MjY4LCJpYXQiOjE3OTQxNTcyNjgsInByb2xvbmdhYmxlIjp0cnVlLCJ2ZXJpZnkiOmZhbHNlLCJ1c2VyIjoie1widHlwZVwiOlwib3JnLmNpYnNldmVuLndlYmFwcC5hdXRoLkNJQlVzZXJcIixcInVzZXJJRFwiOlwiZGVtb1wiLFwiZGlzcGxheU5hbWVcIjpcIkTDq21vIDxVc2VyPiAmIFxcXCJDb1xcXCIgPVwiLFwiZW5naW5lXCI6XCJodHRwOi8vb3RoZXJ8L2VuZ2luZS1yZXN0fHJlbW90ZVwifSJ9.gcDRbTjH_31NO-J8Lngq2uPnuzYn8o7xhgz6h-cDb1gLQ9K6S8s7LFmPBaxjm0IzIa_4qaqFn4Y65-kwyO3DXg";
+
+	/** The same user and secret, expired on 08.11.2026 and prolongable. */
+	private static final String EXPIRED_TOKEN_FROM_2_2 =
+		"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJkZW1vIiwiZXhwIjoxNzk0MTU3MjA4LCJpYXQiOjE3OTQxNTcyNjgsInByb2xvbmdhYmxlIjp0cnVlLCJ2ZXJpZnkiOmZhbHNlLCJ1c2VyIjoie1widHlwZVwiOlwib3JnLmNpYnNldmVuLndlYmFwcC5hdXRoLkNJQlVzZXJcIixcInVzZXJJRFwiOlwiZGVtb1wiLFwiZGlzcGxheU5hbWVcIjpcIkTDq21vIDxVc2VyPiAmIFxcXCJDb1xcXCIgPVwiLFwiZW5naW5lXCI6XCJodHRwOi8vb3RoZXJ8L2VuZ2luZS1yZXN0fHJlbW90ZVwifSJ9.LDQgQihOFKbkuK0oJmMoFEJJAm_uJ0as8P1xJy7QyKSih19FoqJQwSgveAhiIjSgqXCJui3-djRsqn6qOEqR4w";
+
+	private static final String DISPLAY_NAME_FROM_2_2 = "D\u00ebmo <User> & \"Co\" =";
+
+	@Test
+	void parse_readsATokenMintedByThe22Webclient() {
+		CIBUser parsed = (CIBUser) provider.parse(TOKEN_FROM_2_2, provider.getSettings());
+
+		assertThat(parsed.getUserID()).isEqualTo("demo");
+		assertThat(parsed.getDisplayName()).isEqualTo(DISPLAY_NAME_FROM_2_2);
+		assertThat(parsed.getEngine()).isEqualTo("http://other|/engine-rest|remote");
+		assertThat(parsed.getAuthToken()).isEqualTo("Bearer " + TOKEN_FROM_2_2);
+	}
+
+	@Test
+	void parse_prolongsAnExpiredTokenMintedByThe22Webclient() {
+		provider.properties.getAuthentication().setTokenProlongMinutes(java.time.Duration.ofDays(36500).toMinutes());
+		provider.init();
+
+		TokenExpiredException thrown = (TokenExpiredException) org.assertj.core.api.Assertions
+			.catchThrowable(() -> provider.parse(EXPIRED_TOKEN_FROM_2_2, provider.getSettings()));
+
+		assertThat(thrown).isNotNull();
+		assertThat(thrown.getData()).hasSize(1);
+		CIBUser renewed = (CIBUser) provider.parse(bare(String.valueOf(thrown.getData()[0])), provider.getSettings());
+		assertThat(renewed.getUserID()).isEqualTo("demo");
+		assertThat(renewed.getDisplayName()).isEqualTo(DISPLAY_NAME_FROM_2_2);
+		assertThat(renewed.getEngine()).isEqualTo("http://other|/engine-rest|remote");
+	}
+
+	@Test
+	void createToken_writesTheSameJsonAsThe22Webclient() {
+		CIBUser user = new CIBUser("demo");
+		user.setDisplayName(DISPLAY_NAME_FROM_2_2);
+		user.setEngine("http://other|/engine-rest|remote");
+
+		String token = bare(provider.createToken(provider.getSettings(), true, false, user));
+
+		// header and claims byte for byte, apart from the times: same order, same escapes, same user JSON
+		assertThat(token.split("\\.")[0]).isEqualTo(TOKEN_FROM_2_2.split("\\.")[0]);
+		assertThat(claimsWithoutTimes(token)).isEqualTo(claimsWithoutTimes(TOKEN_FROM_2_2));
+	}
+
+	private static String claimsWithoutTimes(String token) {
+		String claims = new String(Base64.getUrlDecoder().decode(token.split("\\.")[1]), java.nio.charset.StandardCharsets.UTF_8);
+		return claims.replaceAll("\"(exp|iat)\":\\d+", "\"$1\":0");
+	}
+
 	@Test
 	void verify_readsTheUserOutOfTheClaims() {
 		engineAccepts("demo", "Demo", "User");
