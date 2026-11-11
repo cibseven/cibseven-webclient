@@ -539,7 +539,6 @@ export default {
     getReminderClasses: function(task) {
       const classes = []
       if (!this.isMobile() && task !== this.focused && task.id !== this.selectedDateT.id && !task.followUp) classes.push('action-button-hidden')
-      console.log("getReminderClasses() aufgerufen")
       return classes
     },
     hasAssignToMeButton: function(task) {

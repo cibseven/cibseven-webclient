@@ -84,7 +84,7 @@ function createTestStore() {
         getters: { getAssigneeByTaskId: () => () => undefined },
         actions: { setSelectedAssignee: () => {} }
       },
-      user: { state: { searchUsers: [], listCandidates: [] } }
+      user: { state: { searchUsers: [], listCandidates: [], userIdMap: {} } }
     },
     mutations: { setCandidateUsers: () => {}, setSearchUsers: () => {} }
   })

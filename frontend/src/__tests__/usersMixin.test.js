@@ -18,22 +18,24 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import usersMixin from '@/mixins/usersMixin.js'
 
 const { getCompleteName } = usersMixin.computed
-const { findUsers, resetUsers } = usersMixin.methods
+const { getDisplayName, findUsers, resetUsers } = usersMixin.methods
 
 function context(overrides = {}) {
-  return {
+  const vm = {
     task: { assignee: 'demo' },
     loadingUsers: true,
     $t: (key) => key,
     $refs: { ariaLiveText: { textContent: 'stale' } },
-    $root: { user: { id: 'me' }, config: {} },
+    $root: { user: { id: 'me', displayName: 'Me Myself' }, config: {} },
     $store: {
-      state: { user: { listCandidates: [], searchUsers: [] } },
+      state: { user: { listCandidates: [], searchUsers: [], userIdMap: {} } },
       commit: vi.fn(),
       dispatch: vi.fn(() => Promise.resolve())
     },
     ...overrides
   }
+  vm.getDisplayName = getDisplayName.bind(vm)
+  return vm
 }
 
 const candidate = (overrides = {}) => ({ id: 'demo', displayName: 'Demo User', ...overrides })
@@ -43,54 +45,56 @@ beforeEach(() => {
 })
 
 describe('usersMixin', () => {
+  describe('getDisplayName', () => {
+    // The logged-in user is not in the cache; their display name comes with the session.
+    it('should return the display name of the logged-in user for their own id', () => {
+      expect(context().getDisplayName('me')).toBe('Me Myself')
+    })
+
+    it('should join first and last name of a cached user', () => {
+      const vm = context()
+      vm.$store.state.user.userIdMap = { demo: { id: 'demo', firstName: 'Demo', lastName: 'User' } }
+
+      expect(vm.getDisplayName('demo')).toBe('Demo User')
+    })
+
+    // User ids are case-sensitive (CIB7-136): "Demo" and "demo" can be two different users.
+    it('should match ids case-sensitively', () => {
+      const vm = context()
+      vm.$store.state.user.userIdMap = { Demo: { id: 'Demo', firstName: 'Other', lastName: 'Person' } }
+
+      expect(vm.getDisplayName('demo')).toBe('demo')
+      expect(vm.getDisplayName('ME')).toBe('ME')
+    })
+
+    it.each([
+      ['not cached yet', {}],
+      ['unknown to the backend (cached as null)', { demo: null }],
+      ['cached with first name only', { demo: { id: 'demo', firstName: 'Demo' } }],
+      ['cached with last name only', { demo: { id: 'demo', lastName: 'User' } }],
+      ['cached without names', { demo: { id: 'demo' } }]
+    ])('should fall back to the id when the user is %s', (_, userIdMap) => {
+      const vm = context()
+      vm.$store.state.user.userIdMap = userIdMap
+
+      expect(vm.getDisplayName('demo')).toBe('demo')
+    })
+
+    it.each([[null], [undefined], ['']])('should return an empty string for an unassigned task (%j)', (assignee) => {
+      expect(context().getDisplayName(assignee)).toBe('')
+    })
+  })
+
   describe('getCompleteName', () => {
-    it('should return the current user id when the task is assigned to them', () => {
-      const vm = context({ task: { assignee: 'ME' }, $root: { user: { id: 'me' }, config: {} } })
-
-      expect(getCompleteName.call(vm)).toBe('me')
-    })
-
-    it('should return a candidate display name when one is known', () => {
+    it('should return the display name of the current task assignee', () => {
       const vm = context()
-      vm.$store.state.user.listCandidates = [candidate()]
+      vm.$store.state.user.userIdMap = { demo: { id: 'demo', firstName: 'Demo', lastName: 'User' } }
 
       expect(getCompleteName.call(vm)).toBe('Demo User')
     })
 
-    it('should match candidates case-insensitively', () => {
-      const vm = context({ task: { assignee: 'DEMO' } })
-      vm.$store.state.user.listCandidates = [candidate({ id: 'demo' })]
-
-      expect(getCompleteName.call(vm)).toBe('Demo User')
-    })
-
-    it('should fall back to the raw assignee when the candidate has no display name', () => {
-      const vm = context()
-      vm.$store.state.user.listCandidates = [candidate({ displayName: undefined })]
-
-      expect(getCompleteName.call(vm)).toBe('demo')
-    })
-
-    it('should fall back to the raw assignee when no candidate matches', () => {
-      const vm = context()
-      vm.$store.state.user.listCandidates = [candidate({ id: 'someone-else' })]
-
-      expect(getCompleteName.call(vm)).toBe('demo')
-    })
-
-    it('should fall back to the raw assignee when candidates are not loaded', () => {
-      const vm = context()
-      vm.$store.state.user.listCandidates = null
-
-      expect(getCompleteName.call(vm)).toBe('demo')
-    })
-
-    // Documents a real robustness gap: an unassigned task has no assignee to lowercase, so
-    // reading this computed property on one throws rather than degrading gracefully.
-    it.each([[null], [undefined]])('should throw for an unassigned task (assignee %j)', (assignee) => {
-      const vm = context({ task: { assignee } })
-
-      expect(() => getCompleteName.call(vm)).toThrow(TypeError)
+    it.each([[{ assignee: null }], [null]])('should return an empty string without an assignee (task %j)', (task) => {
+      expect(getCompleteName.call(context({ task }))).toBe('')
     })
   })
 

@@ -21,7 +21,8 @@ const UserStore = {
   state: {
     listCandidates: [],
     searchUsers: [],
-    displayNames: {}
+    userIdMap: {},
+    pendingUsersMap: {}
   },
   mutations: {
     setCandidateUsers: function(state, users) {
@@ -35,6 +36,18 @@ const UserStore = {
     },
     concatSearchUsers: function(state, users) {
       state.searchUsers = state.searchUsers.concat(users)
+    },
+    addDisplayNames: function(state, { userIds, userMap }) {
+      userIds.forEach(id => {
+        state.userIdMap[id] = userMap[id] ?? null
+        delete state.pendingUsersMap[id]
+      })
+    },
+    markPendingUsers: function(state, userIds) {
+      userIds.forEach(id => { state.pendingUsersMap[id] = true })
+    },
+    clearPendingUsers : function(state, userIds) {
+      userIds.forEach(id => { delete state.pendingUsersMap[id] })
     }
   },
   actions: {
@@ -81,11 +94,23 @@ const UserStore = {
       })
     },
     addUsersByIds: async function(ctx, userIds) {
-      const filteredIds = [...new Set(userIds)].filter(id => id && !Object.hasOwn(ctx.state.displayNames, id))
-      if (filteredIds.length === 0) return
-	  
-	  const userNamesMap = await ctx.dispatch('fetchUsersByIds', filteredIds);
-      filteredIds.forEach(id => { ctx.state.displayNames[id] = userNamesMap[id] ?? null })
+      const missingIds = [...new Set(userIds)].filter(
+        id => id 
+        && !Object.hasOwn(ctx.state.userIdMap, id) 
+        && !ctx.state.pendingUsersMap[id])
+      
+      if (missingIds.length === 0) return
+	    
+      ctx.commit('markPendingUsers', missingIds)
+      
+      try {
+        const userNamesMap = await ctx.dispatch('fetchUsersByIds', missingIds)
+        ctx.commit('addDisplayNames', { userIds: missingIds, userMap: userNamesMap })
+      }
+      catch (error) {
+        ctx.commit('clearPendingUsers', missingIds)
+        console.error('Users could not be loaded: ', error)
+      }
     },
   }
 }

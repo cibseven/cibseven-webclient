@@ -25,7 +25,7 @@ export default {
 			if (!assignee) return ''
       if (this.$root.user.id === assignee) return this.$root.user.displayName
 			else {
-				const user = this.$store.state.user.displayNames[assignee]
+				const user = this.$store.state.user.userIdMap[assignee]
 				if ((user) && (user.firstName && user.lastName)) return [user.firstName, user.lastName].filter(Boolean).join(' ')
 				return assignee
 			}
@@ -47,7 +47,3 @@ export default {
 		}
 	}
 }
-
-//  if (this.$root.user?.id?.toLowerCase() === assignee.toLowerCase()) return this.$root.user.displayName || assignee
-//  const user = this.$store.state.user.displayNames[assignee]
-//  return [user?.firstName, user?.lastName].filter(Boolean).join(' ') || assignee
