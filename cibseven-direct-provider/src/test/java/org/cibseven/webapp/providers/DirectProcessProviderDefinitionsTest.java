@@ -60,7 +60,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Covers the process-definition side of {@link DirectProcessProvider}.
@@ -91,8 +91,7 @@ public class DirectProcessProviderDefinitionsTest {
 		definitionQuery = mock(ProcessDefinitionQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
 		when(repositoryService.createProcessDefinitionQuery()).thenReturn(definitionQuery);
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		JacksonConfigurator.configureObjectMapper(objectMapper);
+		ObjectMapper objectMapper = JacksonConfigurator.configureObjectMapper();
 
 		directProviderUtil = Mockito.spy(new DirectProviderUtil());
 		doReturn(processEngine).when(directProviderUtil).getProcessEngine(any(CIBUser.class));

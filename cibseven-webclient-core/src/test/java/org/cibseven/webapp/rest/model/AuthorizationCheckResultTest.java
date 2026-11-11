@@ -18,7 +18,8 @@ package org.cibseven.webapp.rest.model;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.cibseven.webapp.config.WebclientJsonMapper;
+import tools.jackson.databind.ObjectMapper;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -31,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class AuthorizationCheckResultTest {
 
-	private final ObjectMapper objectMapper = new ObjectMapper();
+	private final ObjectMapper objectMapper = WebclientJsonMapper.plain();
 
 	@Test
 	void readsTheFieldNameEngine220Sends() throws Exception {

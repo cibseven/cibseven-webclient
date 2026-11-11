@@ -59,7 +59,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 public class DirectVariableProviderTest {
 
@@ -87,8 +87,7 @@ public class DirectVariableProviderTest {
 		when(configuration.getValueTypeResolver()).thenReturn(new ValueTypeResolverImpl());
 		when(processEngine.getProcessEngineConfiguration()).thenReturn(configuration);
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		JacksonConfigurator.configureObjectMapper(objectMapper);
+		ObjectMapper objectMapper = JacksonConfigurator.configureObjectMapper();
 
 		directProviderUtil = Mockito.spy(new DirectProviderUtil());
 		doReturn(processEngine).when(directProviderUtil).getProcessEngine(any(CIBUser.class));

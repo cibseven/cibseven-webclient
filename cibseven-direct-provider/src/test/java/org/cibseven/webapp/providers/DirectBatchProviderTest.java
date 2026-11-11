@@ -46,7 +46,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 public class DirectBatchProviderTest {
 
@@ -66,8 +66,7 @@ public class DirectBatchProviderTest {
 		when(processEngine.getManagementService()).thenReturn(managementService);
 		when(processEngine.getHistoryService()).thenReturn(historyService);
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		JacksonConfigurator.configureObjectMapper(objectMapper);
+		ObjectMapper objectMapper = JacksonConfigurator.configureObjectMapper();
 
 		directProviderUtil = Mockito.spy(new DirectProviderUtil());
 		doReturn(processEngine).when(directProviderUtil).getProcessEngine(any(CIBUser.class));
