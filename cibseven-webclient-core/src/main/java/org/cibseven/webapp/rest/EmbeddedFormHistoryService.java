@@ -22,8 +22,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.auth.SevenResourceType;
-import org.cibseven.webapp.providers.PermissionConstants;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.rest.model.TaskHistory;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -53,7 +52,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 	@ApiResponse(responseCode = "401", description = "Unauthorized")
 })
 @RestController
-@RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/history/task")
+@RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH + "/history/task")
 public class EmbeddedFormHistoryService extends BaseService {
 
 	@Operation(
@@ -66,7 +65,6 @@ public class EmbeddedFormHistoryService extends BaseService {
 			@Parameter(description = "Index of the first result to return") @RequestParam Optional<Integer> firstResult,
 			@Parameter(description = "Maximum number of results to return") @RequestParam Optional<Integer> maxResults,
 			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.HISTORIC_TASK, PermissionConstants.READ_ALL);
 		return bpmProvider.findHistoryTasks(filters == null ? Map.of() : filters, firstResult, maxResults, user);
 	}
 
@@ -77,7 +75,6 @@ public class EmbeddedFormHistoryService extends BaseService {
 	public Map<String, Integer> queryHistoricTaskCount(
 			@Parameter(description = "Filters to apply to the historic task query") @RequestBody(required = false) Map<String, Object> filters,
 			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.HISTORIC_TASK, PermissionConstants.READ_ALL);
 		return Map.of("count", bpmProvider.findHistoryTasksCount(filters == null ? Map.of() : filters, user));
 	}
 }

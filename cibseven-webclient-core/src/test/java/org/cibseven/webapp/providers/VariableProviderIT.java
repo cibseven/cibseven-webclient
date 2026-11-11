@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
@@ -37,8 +38,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -62,7 +63,7 @@ public class VariableProviderIT extends BaseHelper {
         mockWebServer.start();
 
         String mockBaseUrl = mockWebServer.url("/").toString();
-        ReflectionTestUtils.setField(variableProvider, "cibsevenUrl", mockBaseUrl);
+        variableProvider.properties.getEngineRest().setUrl(mockBaseUrl);
     }
 
     @AfterEach
@@ -146,7 +147,7 @@ public class VariableProviderIT extends BaseHelper {
         String processDefinitionId = "definition-1";
         CIBUser user = getCibUser();
 
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = WebclientJsonMapper.plain();
 
         List<Variable> formResult = mapper.readValue(
             new File("src/test/resources/mocks/variable_form_result_mock.json"),

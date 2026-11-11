@@ -25,6 +25,7 @@ import jakarta.annotation.PostConstruct;
 
 import org.apache.hc.client5.http.ConnectionKeepAliveStrategy;
 import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.DefaultClientConnectionReuseStrategy;
 import org.apache.hc.client5.http.impl.DefaultConnectionKeepAliveStrategy;
 import org.apache.hc.client5.http.impl.DefaultHttpRequestRetryStrategy;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
@@ -32,12 +33,14 @@ import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager;
 import org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder;
+import org.apache.hc.core5.http.ConnectionReuseStrategy;
 import org.apache.hc.core5.http.Header;
 import org.apache.hc.core5.http.HttpResponse;
 import org.apache.hc.core5.http.message.BasicHeader;
 import org.apache.hc.core5.http.protocol.HttpContext;
 import org.apache.hc.core5.util.TimeValue;
 import org.apache.hc.core5.util.Timeout;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,7 +67,6 @@ public class CustomRestTemplate extends RestTemplate {
 
     private static final Logger log = LoggerFactory.getLogger(CustomRestTemplate.class);
 
-    @Autowired(required = false)
     private RestTemplateConfiguration config;
 
     private Object meterRegistry;
@@ -115,6 +117,11 @@ public class CustomRestTemplate extends RestTemplate {
                 .filter(StringHttpMessageConverter.class::isInstance)
                 .map(StringHttpMessageConverter.class::cast)
                 .forEach(converter -> converter.setDefaultCharset(StandardCharsets.UTF_8));
+    }
+
+    @Autowired(required = false)
+    void setProperties(SevenWebclientProperties properties) {
+        this.config = properties.getRest();
     }
 
     /**
@@ -255,10 +262,7 @@ public class CustomRestTemplate extends RestTemplate {
         // Apply retry strategy (default: no retries)
         clientBuilder.setRetryStrategy(new DefaultHttpRequestRetryStrategy(0, TimeValue.ZERO_MILLISECONDS));
 
-        // Apply connection reuse strategy if enabled
-        if (config.isConnectionReuseEnabled()) {
-            clientBuilder.setConnectionReuseStrategy((request, response, context) -> true);
-        }
+        clientBuilder.setConnectionReuseStrategy(createConnectionReuseStrategy());
 
         // Set whether to follow redirects
         if (!config.isFollowRedirects()) {
@@ -284,6 +288,23 @@ public class CustomRestTemplate extends RestTemplate {
                 .build();
 
         return this.connectionManager;
+    }
+
+    /**
+     * Create the strategy that decides whether a connection goes back to the pool after a response.
+     * <p>
+     * With reuse enabled, HttpClient's default strategy keeps connections alive but honours
+     * {@code Connection: close}. The server sends that header when it closes the connection after the
+     * response, for example Tomcat after {@code maxKeepAliveRequests} (100) requests on one connection.
+     * Reusing such a connection makes the next request on it fail.
+     *
+     * @return the ConnectionReuseStrategy for the HttpClient
+     */
+    private ConnectionReuseStrategy createConnectionReuseStrategy() {
+        if (config.isConnectionReuseEnabled()) {
+            return DefaultClientConnectionReuseStrategy.INSTANCE;
+        }
+        return (request, response, context) -> false;
     }
 
     /**

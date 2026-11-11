@@ -22,6 +22,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
+import org.cibseven.webapp.config.SevenWebclientProperties;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -29,7 +31,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverters;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.test.context.support.TestPropertySourceUtils;
 import org.springframework.test.web.servlet.MockMvc;
@@ -49,15 +51,14 @@ public class PluginResourceServingTest {
 
 	@Configuration
 	@EnableWebMvc
-	@EnableConfigurationProperties(PluginProperties.class)
+	@EnableConfigurationProperties(SevenWebclientProperties.class)
 	static class WebConfig implements WebMvcConfigurer {
 
-		// Same JSON converter as SevenWebclientContext: the payloads are Jackson 2 nodes
-		// (goes with the Jackson 3 migration)
+		// Same JSON converter as SevenWebclientContext
 		@Override
-		@SuppressWarnings("removal")
 		public void configureMessageConverters(HttpMessageConverters.ServerBuilder builder) {
-			builder.registerDefaults().withJsonConverter(new MappingJackson2HttpMessageConverter());
+			builder.registerDefaults().withJsonConverter(
+					new JacksonJsonHttpMessageConverter(WebclientJsonMapper.create(new SevenWebclientProperties())));
 		}
 
 		// PluginService extends BaseService, which autowires these

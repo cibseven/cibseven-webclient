@@ -72,11 +72,10 @@ final class MockEngineRest implements AutoCloseable {
 		BaseUserProvider<?> userProvider = mock(BaseUserProvider.class);
 		when(userProvider.getEngineRestToken(any(CIBUser.class))).thenReturn(AUTH_TOKEN);
 
-		ReflectionTestUtils.setField(provider, "customRestTemplate", TestRestTemplateConfiguration.jackson2CustomRestTemplate());
+		ReflectionTestUtils.setField(provider, "customRestTemplate", TestRestTemplateConfiguration.webclientCustomRestTemplate());
 		ReflectionTestUtils.setField(provider, "baseUserProvider", userProvider);
-		ReflectionTestUtils.setField(provider, "cibsevenUrl", "http://localhost:" + server.getPort());
-		ReflectionTestUtils.setField(provider, "engineRestPath", ENGINE_REST_PATH);
-		ReflectionTestUtils.setField(provider, "jacksonParserMaxSize", 20_000_000);
+		provider.properties.getEngineRest().setUrl("http://localhost:" + server.getPort());
+		provider.properties.getEngineRest().setPath(ENGINE_REST_PATH);
 		return provider;
 	}
 

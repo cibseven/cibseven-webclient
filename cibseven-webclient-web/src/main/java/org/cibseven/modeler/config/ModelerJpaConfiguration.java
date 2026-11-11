@@ -16,7 +16,6 @@
  */
 package org.cibseven.modeler.config;
 
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -32,7 +31,6 @@ import org.springframework.context.annotation.Import;
  */
 @Configuration
 @Import(ModelerPersistenceConfiguration.class)
-@EnableConfigurationProperties(ElementTemplateProperties.class)
 @ComponentScan({
     "org.cibseven.modeler.rest",
     "org.cibseven.modeler.provider",

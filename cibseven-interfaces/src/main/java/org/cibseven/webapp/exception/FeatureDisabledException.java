@@ -14,23 +14,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.cibseven.webapp.plugin;
+package org.cibseven.webapp.exception;
 
-import java.util.ArrayList;
-import java.util.List;
+/**
+ * A feature that is switched off, such as the modeler once the engine has switched off the
+ * webclient tables it needs. Answered with 404: for the caller the feature is not there.
+ */
+public class FeatureDisabledException extends ApplicationException {
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
+	private static final long serialVersionUID = 1L;
 
-import lombok.Getter;
-import lombok.Setter;
-
-@ConfigurationProperties(prefix = "cibseven.webclient.plugins")
-@Getter
-@Setter
-public class PluginProperties {
-
-	private boolean enabled;
-
-	/** Ids of plugins to skip, so one that breaks the page can be switched off without removing its jar. */
-	private List<String> disabled = new ArrayList<>();
+	/** @param feature the name of the feature, such as "modeler" */
+	public FeatureDisabledException(String feature) {
+		super(feature);
+	}
 }

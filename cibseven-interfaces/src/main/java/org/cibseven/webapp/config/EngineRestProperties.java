@@ -17,17 +17,15 @@
 package org.cibseven.webapp.config;
 
 import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Configuration properties for engine REST endpoints.
+ * Engine REST settings, bound from {@code cibseven.webclient.engineRest} as part of {@link SevenWebclientProperties}.
  * Supports connecting to multiple engine REST servers.
  * 
- * Example configuration in application.yaml:
+ * Example configuration:
  *
  * cibseven:
  *   webclient:
@@ -54,34 +52,30 @@ import java.util.List;
  * - Otherwise, appends engine name in parentheses, e.g., "Local Server (production)"
  */
 @Data
-@Component
-@ConfigurationProperties(prefix = "cibseven.webclient.engine-rest")
 public class EngineRestProperties {
 	/**
-	 * The base URL for the default engine REST server (optional).
+	 * The base URL for the default engine REST server.
 	 * Example: "http://localhost:8080", "https://dev.cib.de/"
-	 * If not specified, falls back to @Value configuration.
 	 */
-	private String url;
+	private String url = "http://localhost:8080";
 	
 	/**
-	 * The REST API path for the default engine (optional).
+	 * The REST API path for the default engine, allows customization for different Jersey application paths.
 	 * Example: "/engine-rest"
-	 * If not specified, falls back to @Value configuration.
 	 */
-	private String path;
+	private String path = "/engine-rest";
 	
 	/**
 	 * Base display name for engines from the default REST endpoint (optional).
 	 * The actual engine name will be appended in parentheses if not "default".
 	 */
-	private String displayName;
+	private String displayName = "";
 	
 	/**
 	 * Base tooltip text for engines from the default REST endpoint (optional).
 	 * The actual engine name will be appended in parentheses if not "default".
 	 */
-	private String tooltip;
+	private String tooltip = "";
 	
 	/**
 	 * List of additional engine REST sources to fetch engines from.

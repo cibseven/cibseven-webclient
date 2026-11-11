@@ -20,10 +20,8 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.auth.SevenResourceType;
-import org.cibseven.webapp.exception.AccessDeniedException;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.providers.BpmProvider;
-import org.cibseven.webapp.providers.PermissionConstants;
 import org.cibseven.webapp.rest.model.JobDefinition;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +43,7 @@ import jakarta.servlet.http.HttpServletRequest;
 	@ApiResponse(responseCode= "500", description = "An unexpected system error occured"),
 	@ApiResponse(responseCode= "401", description = "Unauthorized")
 })
-@RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/job-definition")
+@RestController @RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH + "/job-definition")
 public class JobDefinitionService extends BaseService implements InitializingBean {
 
 	@Autowired BpmProvider bpmProvider;
@@ -69,14 +67,6 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	@PutMapping("/{jobDefinitionId}/suspend")
 	public ResponseEntity<Void> suspendJobDefinition(@PathVariable String jobDefinitionId, @RequestBody String params, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.UPDATE_ALL);
-		// OR logic:
-		// https://docs.cibseven.org/javadoc/cibseven/2.0/org/cibseven/bpm/engine/management/UpdateJobDefinitionSuspensionStateBuilder.html#suspend()
-		try {
-			checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.UPDATE_INSTANCE_ALL);
-		} catch (AccessDeniedException x) {
-			checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.UPDATE_ALL);
-		}
 		bpmProvider.suspendJobDefinition(jobDefinitionId, params, user);
 		// return 204 No Content, no body
 		return ResponseEntity.noContent().build();

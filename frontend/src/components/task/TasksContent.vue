@@ -17,7 +17,8 @@
 
 -->
 <template>
-  <SidebarsFlow ref="regionFilter" role="region" :aria-label="$t('nav-bar.filtersTitle')" @selected-filter="selectedFilter()" v-model:left-open="leftOpenFilter" :left-caption="leftCaptionFilter" :rightSize="[12, 4, 2, 2, 2]" :leftSize="[12, 4, 2, 2, 2]">
+  <SidebarsFlow ref="regionFilter" role="region" :aria-label="$t('nav-bar.filtersTitle')" @selected-filter="selectedFilter()" v-model:left-open="leftOpenFilter" :left-caption="leftCaptionFilter" :rightSize="[12, 4, 2, 2, 2]" :leftSize="[12, 4, 2, 2, 2]"
+    :class="{ 'sidebars-mobile': isMobile() }" :header-calc="sidebarsHeaderHeight">
     <GlobalEvents
       v-for="shortcut in taskShortcuts"
       :key="shortcut.id"
@@ -36,8 +37,8 @@
     </template>
     <SidebarsFlow ref="regionTasks" role="region" :aria-label="$t('seven.allTasks')" class="h-100 bg-light"
       :number="totalTasksInFilter"
-      :number-tooltip="totalTasksInFilterTooltip"
-      header-margin="55px" :left-open="leftOpenTask" @update:left-open="setTaskListOpen" v-model:right-open="rightOpenTask"
+      :number-tooltip="totalTasksInFilterTooltip" :header-calc="sidebarsHeaderHeight"
+      :left-open="leftOpenTask" @update:left-open="setTaskListOpen" v-model:right-open="rightOpenTask"
       :leftSize="getTasksNavbarSize" :left-caption="leftCaptionTask" :right-caption="TasksRightSidebar ? rightCaptionTask : null">
       <template v-slot:left>
         <TasksNavBar @filter-alert="showFilterAlert($event)" ref="navbar" :tasks="tasks" @selected-task="selectedTask($event)"
@@ -68,7 +69,7 @@
       <template v-slot:leftIcon><span></span></template>
       <!-- Next to the header toggle, not inside it: a button may not contain other buttons -->
       <template v-slot:leftActions>
-        <b-button v-if="isMobile()" variant="link" size="sm" class="order-first border-0 border-end rounded-0 me-2 py-0 ps-0 pe-2"
+        <b-button v-if="isMobile()" variant="link" class="order-first border-0 border-end rounded-0 p-0"
           :title="$t('nav-bar.filtersTitle')" :aria-label="$t('nav-bar.filtersTitle')" :aria-expanded="String(leftOpenFilter)"
           @click.stop="leftOpenFilter = true">
           <span class="mdi mdi-18px mdi-filter-outline" aria-hidden="true"></span>
@@ -154,6 +155,10 @@ export default {
       'selectedFilterTasksNumber',
       'selectedFilterTasksNumberLastUpdated'
     ]),
+    // Height of the sidebar headers, which SidebarsFlow subtracts from the content below them
+    sidebarsHeaderHeight: function() {
+      return this.isMobile() ? '46px' : '40px'
+    },
     TasksRightSidebar: function() {
       return this.$options.components && this.$options.components.TasksRightSidebar
         ? this.$options.components.TasksRightSidebar
@@ -595,3 +600,25 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+/* Mobile design of the filter, task list and right sidebar headers, as in the task header (TaskContent):
+   45x45px icon buttons and the title with 1rem on each side. SidebarsFlow (@cib/common-frontend) renders them. */
+.sidebars-mobile :deep(.sidebars-header) {
+  min-height: 46px !important; /* 45px buttons + the bottom border */
+  padding: 0;
+  border-width: 0 0 1px;
+}
+.sidebars-mobile :deep(.sidebars-header > .stretched-link),
+.sidebars-mobile :deep(.sidebars-header-actions > .btn) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  flex-shrink: 0;
+  width: 45px;
+}
+.sidebars-mobile :deep(.sidebars-header > h2) {
+  margin: 0 1rem !important;
+}
+</style>

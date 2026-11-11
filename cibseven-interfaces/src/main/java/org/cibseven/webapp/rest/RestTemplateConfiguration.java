@@ -16,25 +16,14 @@
  */
 package org.cibseven.webapp.rest;
 
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-
 import lombok.Data;
 
 /**
- * Configuration properties for the CustomRestTemplate.
+ * Settings for the CustomRestTemplate, bound from {@code cibseven.webclient.rest} as part of
+ * {@link org.cibseven.webapp.config.SevenWebclientProperties}.
  * This class holds all configurable properties for HTTP client connections.
  */
 @Data
-@Configuration
-@ConfigurationProperties(prefix = "cibseven.webclient.rest")
-@ConditionalOnProperty(
-        prefix = "cibseven.webclient.rest",
-        name = "enabled",
-        havingValue = "true",
-        matchIfMissing = true
-)
 public class RestTemplateConfiguration {
 
     /**
@@ -83,7 +72,7 @@ public class RestTemplateConfiguration {
     /**
      * Connection time to live in milliseconds.
      */
-    private int connectionTimeToLive = 30000;
+    private int connectionTimeToLive = 50000;
 
     /**
      * Whether to enable connection pooling.

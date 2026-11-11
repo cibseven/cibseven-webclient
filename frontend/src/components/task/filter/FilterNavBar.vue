@@ -23,67 +23,56 @@
       <FilterModal ref="filterModal" @select-filter="selectFilter($event)" @filter-alert="$emit('filter-alert', $event)" @set-filter="$emit('set-filter', $event)" @new-filter-tasks-count="updateSelectedFilterTasksCountIfNeeded(true)"></FilterModal>
 
       <div v-if="$root.config.filtersSearch" class="p-2" style="background-color: rgb(98, 142, 199, 0.3)">
-        <b-input-group>
-          <template v-slot:prepend>
-            <b-input-group-text class="py-0 border-light"><span class="mdi mdi-18px mdi-magnify"
-            style="line-height: initial"></span></b-input-group-text>
-          </template>
-          <label for="filter-navbar-search" class="visually-hidden">{{ $t('searches.searchByFilterName') }}</label>
-          <b-form-input id="filter-navbar-search" :title="$t('searches.searchByFilterName')" size="sm" ref="input" type="search" v-model.trim="filter"
-          class="form-control border-start-0 ps-0 form-control border-light shadow-none" :placeholder="$t('searches.searchByFilterName')"/>
+        <SearchInput input-id="filter-navbar-search" size="sm" type="search" v-model.trim="filter"
+          :label="$t('searches.searchByFilterName')">
           <template #append>
-            <b-button size="sm" variant="light"
-              @click="sortOrder === 'desc' ? sortOrder = 'asc' : sortOrder = 'desc'" class="mdi mdi-16px py-0 border-0"
-              :class="sortOrder === 'desc' ? 'mdi-arrow-down' : 'mdi-arrow-up'"
+            <button type="button" class="search-field-button"
+              @click="sortOrder === 'desc' ? sortOrder = 'asc' : sortOrder = 'desc'"
               :title="sortOrder === 'desc' ? $t('sorting.desc') : $t('sorting.asc')">
+              <span class="mdi mdi-16px" :class="sortOrder === 'desc' ? 'mdi-arrow-down' : 'mdi-arrow-up'" aria-hidden="true"></span>
               <span v-if="sortOrder === 'desc'" class="visually-hidden">{{ $t('sorting.desc') }}</span>
               <span v-else class="visually-hidden">{{ $t('sorting.asc') }}</span>
-            </b-button>
+            </button>
           </template>
-        </b-input-group>
+        </SearchInput>
       </div>
       <div v-if="filtersFiltered.length > 0" class="overflow-auto flex-fill">
         <b-list-group>
-          <b-list-group-item v-for="filter of filtersFiltered" :key="filter.id"
-            @mouseenter="focused = filter" @focusin="focused = filter"
-            @mouseleave="focused = null" @focusout="focused = null"
-            action class="border-0 rounded-0 p-2" :class="filter.id === $store.state.filter.selected.id ? 'active' : ''" :to="'/seven/auth/tasks/' + filter.id">
-            <div class="d-flex align-items-center">
-              <div class="col-7 p-0" style="word-wrap: break-word">
-                <span>
-                  {{ filter.name }}
-                  <b-badge v-if="(filter.tasksNumber || filter.id === $store.state.filter.selected.id) && filter.tasksNumberLastUpdated > 0" pill variant="light"
-                    :title="
-                    $t('nav-bar.tasks-count', { count: filter.tasksNumber || 0 }) + '\n' +
-                    $t('commons.actualisation.lastUpdate', { date: formatDate(filter.tasksNumberLastUpdated, 'HH:mm') })"
-                  >{{ filter.tasksNumber }}</b-badge>
-                </span>
-              </div>
-              <div :class="getClasses(filter)" class="ms-auto">
-                <button v-if="filterByPermissions($root.config.permissions.editFilter, $store.state.filter.selected)"
-                  class="btn btn-light btn-sm border-0 me-1" type="button" :title="$t('nav-bar.filters.edit')" @click.stop="selectFilter(filter); showFilterDialog('edit')" @keydown.enter.stop.prevent="selectFilter(filter); showFilterDialog('edit')" @keydown.space.stop.prevent="selectFilter(filter); showFilterDialog('edit')">
-                  <span class="visually-hidden">{{ $t('nav-bar.filters.editFilter', { filterName: filter.name }) }}</span>
-                  <span class="mdi mdi-pencil"></span>
-                </button>
-                <button v-if="filterByPermissions($root.config.permissions.deleteFilter, $store.state.filter.selected)"
-                  class="btn btn-light btn-sm border-0 me-1" type="button" :title="$t('nav-bar.filters.delete')"
-                  @click.stop="workingFilter = filter; $refs.confirmDeleteFilter.show()" @keydown.enter.stop.prevent="workingFilter = filter; $refs.confirmDeleteFilter.show()" @keydown.space.stop.prevent="workingFilter = filter; $refs.confirmDeleteFilter.show()">
-                  <span class="visually-hidden">{{ $t('nav-bar.filters.deleteFilter', { filterName: filter.name }) }}</span>
-                  <span class="mdi mdi-close"></span>
-                </button>
-              </div>
-              <button v-if="filter.favorite" class="btn btn-light btn-sm border-0" type="button"
-                @click.stop="deleteFavoriteFilter(filter)" @keydown.enter.stop.prevent="deleteFavoriteFilter(filter)" @keydown.space.stop.prevent="deleteFavoriteFilter(filter)" :title="$t('nav-bar.filters.unpin')">
-                <span class="visually-hidden">{{ $t('nav-bar.filters.unpinFilter', { filterName: filter.name }) }}</span>
-                <span class="mdi mdi-pin text-dark"></span>
+          <li v-for="filter of filtersFiltered" :key="filter.id"
+            class="list-group-item list-group-item-action list-group-item-light border-0 rounded-0 p-2 d-flex align-items-center" :class="{ active: isSelected(filter) }">
+            <router-link :to="'/seven/auth/tasks/' + filter.id" :aria-current="isSelected(filter) ? 'page' : null"
+              class="col-7 p-0 stretched-link text-reset text-decoration-none" style="word-wrap: break-word">
+              {{ filter.name }}
+              <b-badge v-if="(filter.tasksNumber || isSelected(filter)) && filter.tasksNumberLastUpdated > 0" pill variant="light"
+                class="position-relative z-2" :title="
+                $t('nav-bar.tasks-count', { count: filter.tasksNumber || 0 }) + '\n' +
+                $t('commons.actualisation.lastUpdate', { date: formatDate(filter.tasksNumberLastUpdated, 'HH:mm') })"
+              >{{ filter.tasksNumber }}</b-badge>
+            </router-link>
+            <div class="action-buttons-hidden ms-auto position-relative z-2">
+              <button v-if="filterByPermissions($root.config.permissions.editFilter, filter)"
+                class="btn btn-light btn-sm border-0 me-1" type="button" :title="$t('nav-bar.filters.edit')" @click="selectFilter(filter); showFilterDialog('edit')">
+                <span class="visually-hidden">{{ $t('nav-bar.filters.editFilter', { filterName: filter.name }) }}</span>
+                <span class="mdi mdi-pencil" aria-hidden="true"></span>
               </button>
-              <button v-else class="btn btn-light btn-sm border-0" type="button"
-                @click.stop="setFavoriteFilter(filter)" @keydown.enter.stop.prevent="setFavoriteFilter(filter)" @keydown.space.stop.prevent="setFavoriteFilter(filter)" :title="$t('nav-bar.filters.pin')">
-                <span class="visually-hidden">{{ $t('nav-bar.filters.pinFilter', { filterName: filter.name }) }}</span>
-                <span class="mdi mdi-pin text-muted"></span>
+              <button v-if="filterByPermissions($root.config.permissions.deleteFilter, filter)"
+                class="btn btn-light btn-sm border-0 me-1" type="button" :title="$t('nav-bar.filters.delete')"
+                @click="workingFilter = filter; $refs.confirmDeleteFilter.show()">
+                <span class="visually-hidden">{{ $t('nav-bar.filters.deleteFilter', { filterName: filter.name }) }}</span>
+                <span class="mdi mdi-close" aria-hidden="true"></span>
               </button>
             </div>
-          </b-list-group-item>
+            <button v-if="filter.favorite" class="btn btn-light btn-sm border-0 position-relative z-2" type="button"
+              @click="deleteFavoriteFilter(filter)" :title="$t('nav-bar.filters.unpin')">
+              <span class="visually-hidden">{{ $t('nav-bar.filters.unpinFilter', { filterName: filter.name }) }}</span>
+              <span class="mdi mdi-pin text-dark" aria-hidden="true"></span>
+            </button>
+            <button v-else class="btn btn-light btn-sm border-0 position-relative z-2" type="button"
+              @click="setFavoriteFilter(filter)" :title="$t('nav-bar.filters.pin')">
+              <span class="visually-hidden">{{ $t('nav-bar.filters.pinFilter', { filterName: filter.name }) }}</span>
+              <span class="mdi mdi-pin text-muted" aria-hidden="true"></span>
+            </button>
+          </li>
         </b-list-group>
       </div>
       <BWaitingBox ref="filterLoader" class="d-flex flex-fill justify-content-center pt-4" styling="width:30%">
@@ -116,12 +105,13 @@ import { formatDate } from '@/utils/dates.js'
 import { mapActions } from 'vuex'
 
 import { TaskPool } from "@/taskpool.js"
+import SearchInput from '@/components/common-components/SearchInput.vue'
 
 const MIN_TASKNUMBER_INTERVAL = 10000
 
 export default {
   name: 'FilterNavBar',
-  components: { FilterModal, ConfirmDialog, BWaitingBox },
+  components: { FilterModal, ConfirmDialog, BWaitingBox, SearchInput },
   mixins: [permissionsMixin],
   emits: ['filter-alert', 'n-filters-shown', 'selected-filter', 'set-filter'],
   data: function () {
@@ -130,7 +120,6 @@ export default {
       currentSorting: {},
       showFilters: true,
       selected: null,
-      focused: null,
       sortOrder: '',
       interval: null,
       taskpool: new TaskPool(5),
@@ -263,10 +252,8 @@ export default {
         this.updateFilterTasksCount({ filterId: f.id, filters: {} })
       }
     },
-    getClasses: function(filter) {
-      const classes = ['action-buttons-hidden']
-      if (filter === this.focused) classes.pop()
-      return classes
+    isSelected: function(filter) {
+      return filter.id === this.$store.state.filter.selected?.id
     },
     deleteFilter: function() {
       this.$store.dispatch('deleteFilter', { filterId: this.workingFilter.id }).then(() => {

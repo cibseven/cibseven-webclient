@@ -20,8 +20,7 @@ import java.util.Collection;
 import java.util.Locale;
 
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.auth.SevenResourceType;
-import org.cibseven.webapp.providers.PermissionConstants;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.rest.model.Filter;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -39,7 +38,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
 	@ApiResponse(responseCode = "401", description = "Unauthorized")
 })
-@RestController("WebclientFilterService") @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/filter")
+@RestController("WebclientFilterService") @RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH + "/filter")
 public class FilterService extends BaseService{
 	
 	@Operation(
@@ -49,7 +48,6 @@ public class FilterService extends BaseService{
 	@RequestMapping(method = RequestMethod.GET)
 	public Collection<Filter> findFilter(
 			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.FILTER, PermissionConstants.READ_ALL);
 		return bpmProvider.findFilters(user);
 	}
 	
@@ -61,7 +59,6 @@ public class FilterService extends BaseService{
 	public Filter createFilter(
 			@RequestBody Filter filter,
 			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.FILTER, PermissionConstants.CREATE_ALL);
 		return bpmProvider.createFilter(filter, user);
 	}
 	
@@ -73,7 +70,6 @@ public class FilterService extends BaseService{
 	public ResponseEntity<Void> updateFilter(
 			@RequestBody Filter filter,
 			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.FILTER, PermissionConstants.UPDATE_ALL);
 		bpmProvider.updateFilter(filter, user);
     // return 204 No Content, no body
     return ResponseEntity.noContent().build();
@@ -87,7 +83,6 @@ public class FilterService extends BaseService{
 	public ResponseEntity<Void> deleteFilter(
 			@Parameter(description = "Filter Id") @PathVariable String filterId,
 			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.FILTER, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteFilter(filterId, user);
     // return 204 No Content, no body
     return ResponseEntity.noContent().build();
