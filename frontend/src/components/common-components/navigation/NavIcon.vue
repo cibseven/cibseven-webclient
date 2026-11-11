@@ -56,10 +56,22 @@ export default {
   justify-content: center;
   flex-shrink: 0;
 }
-/* The image only gives the shape (mask), the colour is the current one as for the font icons */
+/* The image only gives the shape (mask), the colour is the current one as for the font icons. Forced colours
+   (Windows High Contrast) would paint the background in the page's colour and hide the icon: preserve-parent-color
+   keeps the background and takes the forced text colour of the link or button around it, as the font icons do.
+   Browsers without it fall back to none, which keeps the icon visible in its normal colour */
 .cib-nav-icon-image {
+  forced-color-adjust: none;
+  forced-color-adjust: preserve-parent-color;
   background-color: currentColor;
   -webkit-mask: var(--cib-nav-icon) center / contain no-repeat;
   mask: var(--cib-nav-icon) center / contain no-repeat;
+}
+/* preserve-parent-color only takes an inherited colour: one set on the icon itself (e.g. text-secondary, which is
+   !important) would stay as it is, so in forced colours the icon inherits like the font icons are forced to */
+@media (forced-colors: active) {
+  .cib-nav-icon-image {
+    color: inherit !important;
+  }
 }
 </style>
