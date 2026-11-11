@@ -19,7 +19,6 @@ package org.cibseven.webapp.providers;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -56,61 +55,24 @@ public class DirectBatchProvider implements IBatchProvider {
 
 	@Override
 	public Collection<Batch> getBatches(Map<String, Object> params, CIBUser user) {
-		MultivaluedMap<String, String> multiValueMap = new MultivaluedHashMap<>();
-		Integer firstResult = null;
-		Integer maxResults = null;
-		for (Entry<String, Object> entry : params.entrySet()) {
-			if (entry.getKey().equals("firstResult"))
-				firstResult = Integer.parseInt((String) params.get("firstResult"));
-			else if (entry.getKey().equals("maxResults"))
-				maxResults = Integer.parseInt((String) params.get("maxResults"));
-			else
-				multiValueMap.put(entry.getKey(), Arrays.asList((String) entry.getValue()));
-		}
-		BatchQueryDto queryDto = new BatchQueryDto(directProviderUtil.getObjectMapper(user), multiValueMap);
+		DirectProviderUtil.PagedParams paged = directProviderUtil.extractPagedParams(params);
+		BatchQueryDto queryDto = new BatchQueryDto(directProviderUtil.getObjectMapper(user), paged.getQueryParams());
 		BatchQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 
-		List<org.cibseven.bpm.engine.batch.Batch> matchingBatches = QueryUtil.list(query, firstResult, maxResults);
+		List<Batch> batches = directProviderUtil.listAndConvert(query, paged.getFirstResult(), paged.getMaxResults(),
+				BatchDto::fromBatch, Batch.class, user);
 
-		List<Batch> batchResults = new ArrayList<>();
-		for (org.cibseven.bpm.engine.batch.Batch matchingBatch : matchingBatches) {
-			batchResults.add(directProviderUtil.convertValue(BatchDto.fromBatch(matchingBatch), Batch.class, user));
-		}
-		batchResults.forEach(batch -> {
-
-			String batchId = batch.getId();
-			Map<String, Object> statParams = new HashMap<>();
-			statParams.put("batchId", batchId);
-
-			Collection<Batch> statList = getBatchStatistics(statParams, user);
-			if (!statList.isEmpty()) {
-				Batch stats = statList.iterator().next();
-				batch.setCompletedJobs(stats.getCompletedJobs());
-				batch.setRemainingJobs(stats.getRemainingJobs());
-				batch.setFailedJobs(stats.getFailedJobs());
-			}
-		});
-
-		return batchResults;
+    addBatchStatistics(batches, user);
+		return batches;
 	}
 
 	@Override
 	public Collection<Batch> getBatchStatistics(Map<String, Object> params, CIBUser user) {
-		MultivaluedMap<String, String> multiValueMap = new MultivaluedHashMap<>();
-		Integer firstResult = null;
-		Integer maxResults = null;
-		for (Entry<String, Object> entry : params.entrySet()) {
-			if (entry.getKey().equals("firstResult"))
-				firstResult = Integer.parseInt((String) entry.getValue());
-			else if (entry.getKey().equals("maxResults"))
-				maxResults = Integer.parseInt((String) entry.getValue());
-			else
-				multiValueMap.put(entry.getKey(), Arrays.asList((String) entry.getValue()));
-		}
-		BatchStatisticsQueryDto queryDto = new BatchStatisticsQueryDto(directProviderUtil.getObjectMapper(user), multiValueMap);
+		DirectProviderUtil.PagedParams paged = directProviderUtil.extractPagedParams(params);
+		BatchStatisticsQueryDto queryDto = new BatchStatisticsQueryDto(directProviderUtil.getObjectMapper(user), paged.getQueryParams());
 		BatchStatisticsQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 
-		List<BatchStatistics> batchStatisticsList = QueryUtil.list(query, firstResult, maxResults);
+		List<BatchStatistics> batchStatisticsList = QueryUtil.list(query, paged.getFirstResult(), paged.getMaxResults());
 
 		List<Batch> statisticsResults = new ArrayList<>();
 		for (BatchStatistics batchStatistics : batchStatisticsList) {
@@ -153,17 +115,10 @@ public class DirectBatchProvider implements IBatchProvider {
 
 	@Override
 	public Collection<HistoryBatch> getHistoricBatches(Map<String, Object> params, CIBUser user) {
-		HistoricBatchQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(params, HistoricBatchQueryDto.class);
+		HistoricBatchQueryDto queryDto = directProviderUtil.parseQueryDto(params, HistoricBatchQueryDto.class, user);
 		HistoricBatchQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
-		Integer firstResult = null;
-		Integer maxResults = null;
-		for (Entry<String, Object> entry : params.entrySet()) {
-			if (entry.getKey().equals("firstResult"))
-				firstResult = Integer.parseInt((String) params.get("firstResult"));
-			else if (entry.getKey().equals("maxResults"))
-				maxResults = Integer.parseInt((String) params.get("maxResults"));
-		}
-		List<HistoricBatch> matchingBatches = QueryUtil.list(query, firstResult, maxResults);
+		DirectProviderUtil.PagedParams paged = directProviderUtil.extractPagedParams(params);
+		List<HistoricBatch> matchingBatches = QueryUtil.list(query, paged.getFirstResult(), paged.getMaxResults());
 
 		List<HistoryBatch> batchResults = new ArrayList<>();
 		for (HistoricBatch matchingBatch : matchingBatches) {
@@ -174,7 +129,7 @@ public class DirectBatchProvider implements IBatchProvider {
 
 	@Override
 	public Long getHistoricBatchCount(Map<String, Object> queryParams, CIBUser user) {
-		HistoricBatchQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(queryParams, HistoricBatchQueryDto.class);
+		HistoricBatchQueryDto queryDto = directProviderUtil.parseQueryDto(queryParams, HistoricBatchQueryDto.class, user);
 		HistoricBatchQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 		return query.count();
 	}
