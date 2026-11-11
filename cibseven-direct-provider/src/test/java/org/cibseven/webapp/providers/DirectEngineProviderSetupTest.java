@@ -20,7 +20,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.cibseven.bpm.engine.ProcessEngine;
@@ -29,6 +35,8 @@ import org.cibseven.bpm.engine.authorization.Authorization;
 import org.cibseven.bpm.engine.authorization.Groups;
 import org.cibseven.bpm.engine.authorization.Resources;
 import org.cibseven.bpm.engine.impl.identity.Authentication;
+import org.cibseven.webapp.exception.InvalidUserIdException;
+import org.cibseven.webapp.exception.PasswordPolicyException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Credentials;
 import org.cibseven.webapp.rest.model.Engine;
@@ -53,11 +61,18 @@ public class DirectEngineProviderSetupTest {
 
 	@BeforeEach
 	void setUp() {
+		startEngine(false);
+	}
+
+	private void startEngine(boolean passwordPolicy) {
+		if (engine != null)
+			engine.close();
 		String name = "setup" + DB_SEQUENCE.incrementAndGet();
 		engine = ProcessEngineConfiguration.createStandaloneInMemProcessEngineConfiguration()
 			.setJdbcUrl("jdbc:h2:mem:" + name + ";DB_CLOSE_DELAY=1000")
 			.setProcessEngineName(name)
 			.setAuthorizationEnabled(true)
+			.setEnablePasswordPolicy(passwordPolicy)
 			.setJobExecutorActivate(false)
 			.buildProcessEngine();
 
@@ -118,6 +133,111 @@ public class DirectEngineProviderSetupTest {
 		Authentication restored = engine.getIdentityService().getCurrentAuthentication();
 		assertThat(restored).isNotNull();
 		assertThat(restored.getUserId()).isEqualTo("someone");
+	}
+
+	// --- only the effective default engine can be set up ---------------------------------------
+
+	@Test
+	void requiresSetup_namingTheDefaultEngine_asksIt() {
+		assertThat(provider.requiresSetup(engine.getName())).isTrue();
+	}
+
+	/** Another name is not looked up: it would fail with "No process engine found" otherwise. */
+	@Test
+	void requiresSetup_namingAnotherEngine_isFalse() {
+		assertThat(provider.requiresSetup("other")).isFalse();
+	}
+
+	@Test
+	void createSetupUser_namingAnotherEngine_isRefused() {
+		assertThatThrownBy(() -> provider.createSetupUser(newUser("admin"), "other"))
+			.isInstanceOf(SystemException.class);
+		assertThat(engine.getIdentityService().createUserQuery().count()).isZero();
+		assertThat(provider.requiresSetup(null)).isTrue();
+	}
+
+	// --- one transaction ---------------------------------------------------------------------------
+
+	/** The user exists already, so saving it fails: the admin group must not stay behind. */
+	@Test
+	void createSetupUser_failingHalfway_leavesNothingAndTheSetupOpen() {
+		engine.getIdentityService().saveUser(engine.getIdentityService().newUser("admin"));
+
+		assertThatThrownBy(() -> provider.createSetupUser(newUser("admin"), null));
+
+		assertThat(engine.getIdentityService().createGroupQuery().groupId(Groups.CAMUNDA_ADMIN).count()).isZero();
+		assertThat(engine.getAuthorizationService().createAuthorizationQuery().groupIdIn(Groups.CAMUNDA_ADMIN).count())
+			.isZero();
+		assertThat(provider.requiresSetup(null)).isTrue();
+
+		provider.createSetupUser(newUser("admin2"), null);
+		assertThat(engine.getIdentityService().createUserQuery().memberOfGroup(Groups.CAMUNDA_ADMIN).userId("admin2").count())
+			.isEqualTo(1);
+	}
+
+	// --- concurrent setups -------------------------------------------------------------------------
+
+	@Test
+	void createSetupUser_concurrently_makesOnlyOneAdmin() throws Exception {
+		int callers = 4;
+		ExecutorService executor = Executors.newFixedThreadPool(callers);
+		CountDownLatch start = new CountDownLatch(1);
+		try {
+			List<Future<Boolean>> results = new ArrayList<>();
+			for (int i = 0; i < callers; i++) {
+				String id = "admin" + i;
+				results.add(executor.submit(() -> {
+					start.await();
+					try {
+						provider.createSetupUser(newUser(id), null);
+						return true;
+					} catch (RuntimeException e) {
+						return false;
+					}
+				}));
+			}
+			start.countDown();
+			int succeeded = 0;
+			for (Future<Boolean> result : results)
+				succeeded += result.get(60, TimeUnit.SECONDS) ? 1 : 0;
+
+			assertThat(succeeded).isEqualTo(1);
+			assertThat(engine.getIdentityService().createUserQuery().memberOfGroup(Groups.CAMUNDA_ADMIN).count())
+				.isEqualTo(1);
+			assertThat(engine.getIdentityService().createUserQuery().count()).isEqualTo(1);
+		} finally {
+			executor.shutdownNow();
+		}
+	}
+
+	// --- the errors the setup page knows -----------------------------------------------------------
+
+	@Test
+	void createSetupUser_invalidId_throwsInvalidUserIdException() {
+		assertThatThrownBy(() -> provider.createSetupUser(newUser("bad id!"), null))
+			.isInstanceOf(InvalidUserIdException.class);
+		assertThat(provider.requiresSetup(null)).isTrue();
+	}
+
+	@Test
+	void createSetupUser_passwordAgainstThePolicy_throwsPasswordPolicyException() {
+		startEngine(true);
+		NewUser user = newUser("admin");
+		user.getCredentials().setPassword("a");
+
+		assertThatThrownBy(() -> provider.createSetupUser(user, null))
+			.isInstanceOf(PasswordPolicyException.class);
+		assertThat(provider.requiresSetup(null)).isTrue();
+	}
+
+	@Test
+	void createSetupUser_withoutPassword_isRefused() {
+		NewUser user = newUser("admin");
+		user.getCredentials().setPassword(null);
+
+		assertThatThrownBy(() -> provider.createSetupUser(user, null))
+			.isInstanceOf(SystemException.class);
+		assertThat(engine.getIdentityService().createUserQuery().count()).isZero();
 	}
 
 	private static NewUser newUser(String id) {
