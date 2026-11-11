@@ -21,7 +21,6 @@ import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.config.SevenWebclientProperties;
-import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.rest.model.JobDefinition;
 import org.springframework.beans.factory.InitializingBean;
@@ -68,11 +67,6 @@ public class JobDefinitionService extends BaseService implements InitializingBea
 	@PutMapping("/{jobDefinitionId}/suspend")
 	public ResponseEntity<Void> suspendJobDefinition(@PathVariable String jobDefinitionId, @RequestBody String params, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		// OR logic:
-		// https://docs.cibseven.org/javadoc/cibseven/2.0/org/cibseven/bpm/engine/management/UpdateJobDefinitionSuspensionStateBuilder.html#suspend()
-		try {
-		} catch (AccessDeniedException x) {
-		}
 		bpmProvider.suspendJobDefinition(jobDefinitionId, params, user);
 		// return 204 No Content, no body
 		return ResponseEntity.noContent().build();

@@ -45,8 +45,6 @@ public class DeploymentService extends BaseService {
             @RequestParam MultiValueMap<String, Object> data,
             @RequestParam(required = true) MultipartFile[] files,
             CIBUser user) {
-        // Check permissions
-
         return bpmProvider.createDeployment(data, files, user);
     }
 
@@ -73,8 +71,6 @@ public class DeploymentService extends BaseService {
             @PathVariable("id") String id,
             @RequestBody(required = false) Map<String, Object> data,
             CIBUser user) {
-        // Check permissions
-
         return bpmProvider.redeployDeployment(id, data, user);
     }
 }
