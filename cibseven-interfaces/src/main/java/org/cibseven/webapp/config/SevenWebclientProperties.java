@@ -486,23 +486,11 @@ public class SevenWebclientProperties {
 			public static class Jackson {
 				/** Parsing of requests. */
 				private Parser parser = new Parser();
-				/** Serialization of responses. */
-				private Serialization serialization = new Serialization();
 
 				@Data
 				public static class Parser {
 					/** Maximum length in characters of a single JSON string value. */
 					private int maxSize = 20_000_000;
-				}
-
-				@Data
-				public static class Serialization {
-					/**
-					 * Deprecated interim opt-out, removed with the Jackson 3 migration: serializes
-					 * java.util.Date as epoch millis and java.time types as numeric arrays again.
-					 * Prefer adapting the consumer or annotating the field with @JsonFormat.
-					 */
-					private boolean writeDatesAsTimestamps = false;
 				}
 			}
 		}

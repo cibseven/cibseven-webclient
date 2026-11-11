@@ -20,6 +20,7 @@ import java.util.Objects;
 
 import org.cibseven.webapp.auth.SevenUserProvider;
 import org.cibseven.webapp.config.SevenWebclientProperties;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.providers.IEngineProvider;
 import org.cibseven.webapp.providers.WebclientExtensions;
@@ -32,11 +33,11 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -155,10 +156,10 @@ public class InfoService extends BaseService {
 		configJson.put("startProcessDefaultFormEnabled", properties.getStartProcess().isDefaultFormEnabled());
 		
         try {
-            ObjectMapper mapper = new ObjectMapper();
+            ObjectMapper mapper = WebclientJsonMapper.plain();
         	JsonNode supportDialogJson = mapper.readTree(properties.getSupportDialog());
 			configJson.set("supportDialog", supportDialogJson);
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			log.warn("Property support dialog is not set or incorrect");
 		}
        

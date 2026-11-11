@@ -1,0 +1,1 @@
+{"name":"order","type":"Json","value":{"int":1,"long":12345678901,"big":123456789012345678901234567890,"double":1.5,"exp":1.0E-7,"list":[true,null,"x",{}],"text":"Größe – 姓名   \uD83D\uDE00 \uD83D\uDE00","control":"tab\tnewline\n\u0001"},"valueSerialized":null,"valueDeserialized":null,"valueInfo":{"filename":"order.json","mimeType":"application/json"}}

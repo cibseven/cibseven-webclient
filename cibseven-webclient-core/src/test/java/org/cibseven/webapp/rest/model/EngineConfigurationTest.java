@@ -26,11 +26,12 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.cibseven.webapp.config.WebclientJsonMapper;
+import tools.jackson.databind.ObjectMapper;
 
 public class EngineConfigurationTest {
 
-	private static final ObjectMapper MAPPER = new ObjectMapper();
+	private static final ObjectMapper MAPPER = WebclientJsonMapper.plain();
 
 	// Reads a /configuration response whose historyTimeToLive is the given raw JSON value, with
 	// properties after it, to check that those are still read whatever the TTL value looks like.

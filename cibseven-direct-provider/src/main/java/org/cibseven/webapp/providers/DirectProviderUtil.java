@@ -50,9 +50,9 @@ import org.cibseven.bpm.engine.rest.dto.AbstractQueryDto;
 
 import org.cibseven.bpm.engine.query.Query;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import jakarta.ws.rs.core.MultivaluedHashMap;
 import jakarta.ws.rs.core.MultivaluedMap;
@@ -83,9 +83,7 @@ public class DirectProviderUtil {
 					throw new SystemException("No process engine found with name " + engineId);
 			}
 			processEngines.put(engineId, processEngine);
-			ObjectMapper objectMapper = new ObjectMapper();
-			JacksonConfigurator.configureObjectMapper(objectMapper);
-			objectMappers.put(engineId, objectMapper);
+			objectMappers.put(engineId, JacksonConfigurator.configureObjectMapper());
 		}
 		return processEngine;
 	}
@@ -142,7 +140,7 @@ public class DirectProviderUtil {
 		if (value != null && !(value instanceof String) && ("json".equalsIgnoreCase(type) || "Object".equalsIgnoreCase(type))) {
 			try {
 				value = getObjectMapper(user).writeValueAsString(value);
-			} catch (JsonProcessingException e) {
+			} catch (JacksonException e) {
 				throw new SystemException("Cannot serialize value of variable " + variable.getName(), e);
 			}
 		}

@@ -42,7 +42,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 
 @ExtendWith(MockitoExtension.class)
 public class InfoServiceTest {
@@ -159,7 +159,7 @@ public class InfoServiceTest {
 			assertEquals("/engine-rest/engine", mockWebServer.takeRequest().getPath());
 			// The engine named "default" lives at the base /engine path, not at /engine/default.
 			assertEquals("/engine-rest/configuration", mockWebServer.takeRequest().getPath());
-			assertEquals("full", result.get("camundaHistoryLevel").asText());
+			assertEquals("full", result.get("camundaHistoryLevel").asString());
 		} finally {
 			mockWebServer.shutdown();
 		}
@@ -188,7 +188,7 @@ public class InfoServiceTest {
 			assertEquals("/engine-rest/engine", mockWebServer.takeRequest().getPath());
 			// The first engine ("alpha") is a named engine, so it is served from /engine/alpha.
 			assertEquals("/engine-rest/engine/alpha/configuration", mockWebServer.takeRequest().getPath());
-			assertEquals("audit", result.get("camundaHistoryLevel").asText());
+			assertEquals("audit", result.get("camundaHistoryLevel").asString());
 		} finally {
 			mockWebServer.shutdown();
 		}
@@ -246,7 +246,7 @@ public class InfoServiceTest {
 
 		ObjectNode result = infoService.getConfig(null);
 
-		assertEquals("audit", result.get("camundaHistoryLevel").asText());
+		assertEquals("audit", result.get("camundaHistoryLevel").asString());
 	}
 
 	@Test
@@ -256,7 +256,7 @@ public class InfoServiceTest {
 
 		ObjectNode result = infoService.getConfig(null);
 
-		assertEquals("audit", result.get("camundaHistoryLevel").asText());
+		assertEquals("audit", result.get("camundaHistoryLevel").asString());
 	}
 
 	@Test
@@ -369,7 +369,7 @@ public class InfoServiceTest {
 
 		ObjectNode result = infoService.getConfig(null);
 
-		assertEquals("audit", result.get("camundaHistoryLevel").asText());
+		assertEquals("audit", result.get("camundaHistoryLevel").asString());
 	}
 
 	@Test
@@ -389,7 +389,7 @@ public class InfoServiceTest {
 
 		ObjectNode result = infoService.getConfig("myEngine");
 
-		assertEquals("none", result.get("camundaHistoryLevel").asText());
+		assertEquals("none", result.get("camundaHistoryLevel").asString());
 	}
 
 	@Test

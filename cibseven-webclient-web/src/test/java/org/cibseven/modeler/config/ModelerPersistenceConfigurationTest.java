@@ -38,8 +38,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import jakarta.persistence.EntityManagerFactory;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -91,7 +89,6 @@ class ModelerPersistenceConfigurationTest {
 			.withConfiguration(org.springframework.boot.autoconfigure.AutoConfigurations
 				.of(TransactionAutoConfiguration.class))
 			.withUserConfiguration(HostDrivingItsOwnDataSourceTransactions.class)
-			.withBean(ObjectMapper.class)
 			.withBean(WebclientExtensions.class, () -> WebclientExtensions.UNKNOWN)
 			.withBean(ElementTemplateLoader.class)
 			.run(context -> {

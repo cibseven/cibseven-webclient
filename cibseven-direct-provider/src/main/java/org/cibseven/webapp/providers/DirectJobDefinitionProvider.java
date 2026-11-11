@@ -37,7 +37,7 @@ import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.JobDefinition;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.core.JacksonException;
 
 public class DirectJobDefinitionProvider implements IJobDefinitionProvider {
 
@@ -52,7 +52,7 @@ public class DirectJobDefinitionProvider implements IJobDefinitionProvider {
 		JobDefinitionQueryDto queryDto;
 		try {
 			queryDto = directProviderUtil.getObjectMapper(user).readValue(params, JobDefinitionQueryDto.class);
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			throw new SystemException(e.getMessage());
 		}
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
@@ -76,7 +76,7 @@ public class DirectJobDefinitionProvider implements IJobDefinitionProvider {
 					"The suspension state of Job Definition with id %s could not be updated due to: %s", jobDefinitionId,
 					e.getMessage());
 			throw new SystemException(message, e);
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			throw new SystemException(e.getMessage());
 		}
 	}
@@ -100,7 +100,7 @@ public class DirectJobDefinitionProvider implements IJobDefinitionProvider {
 
 		} catch (AuthorizationException e) {
 			throw e;
-		} catch (JsonProcessingException|ProcessEngineException e) {
+		} catch (JacksonException|ProcessEngineException e) {
 			throw new SystemException(e.getMessage());
 		}
 	}

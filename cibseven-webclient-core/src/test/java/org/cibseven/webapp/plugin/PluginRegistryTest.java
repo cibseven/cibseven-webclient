@@ -39,7 +39,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 
 public class PluginRegistryTest {
 
@@ -72,9 +72,9 @@ public class PluginRegistryTest {
 
 		ObjectNode manifest = manifestOf(registry, "test-plugin");
 
-		assertEquals("index.js", manifest.get("entry").asText());
-		assertEquals("1", manifest.get("apiVersion").asText());
-		assertEquals("translations_en.json", manifest.get("translations").get("en").asText());
+		assertEquals("index.js", manifest.get("entry").asString());
+		assertEquals("1", manifest.get("apiVersion").asString());
+		assertEquals("translations_en.json", manifest.get("translations").get("en").asString());
 	}
 
 	/**
@@ -85,9 +85,9 @@ public class PluginRegistryTest {
 	public void reportsEveryDocumentedFieldOfTheManifest() {
 		ObjectNode manifest = manifestOf(new PluginRegistry(new SevenWebclientProperties()), "test-plugin");
 
-		assertEquals("process-instance-tab", manifest.get("slots").get(0).asText());
-		assertEquals("styles.css", manifest.get("styles").get(0).asText());
-		assertEquals("translations_en.json", manifest.get("translations").get("en").asText());
+		assertEquals("process-instance-tab", manifest.get("slots").get(0).asString());
+		assertEquals("styles.css", manifest.get("styles").get(0).asString());
+		assertEquals("translations_en.json", manifest.get("translations").get("en").asString());
 	}
 
 	/** Several plugins may share one artifact, each in its own folder. */
@@ -98,12 +98,12 @@ public class PluginRegistryTest {
 		List<ObjectNode> manifests = registry.getManifests();
 
 		assertEquals(2, manifests.size());
-		assertEquals("main.js", manifestOf(registry, "second-plugin").get("entry").asText());
+		assertEquals("main.js", manifestOf(registry, "second-plugin").get("entry").asString());
 	}
 
 	private ObjectNode manifestOf(PluginRegistry registry, String id) {
 		return registry.getManifests().stream()
-			.filter(manifest -> id.equals(manifest.get("id").asText()))
+			.filter(manifest -> id.equals(manifest.get("id").asString()))
 			.findFirst()
 			.orElseThrow(() -> new AssertionError("no plugin \"" + id + "\" was found"));
 	}
@@ -149,8 +149,8 @@ public class PluginRegistryTest {
 		ObjectNode manifest = new PluginRegistry(resolver).getManifests().get(0);
 
 		assertTrue(manifest.get("apiVersion").isArray());
-		assertEquals("1", manifest.get("apiVersion").get(0).asText());
-		assertEquals("2", manifest.get("apiVersion").get(1).asText());
+		assertEquals("1", manifest.get("apiVersion").get(0).asString());
+		assertEquals("2", manifest.get("apiVersion").get(1).asString());
 	}
 
 	@Test
@@ -160,7 +160,7 @@ public class PluginRegistryTest {
 			manifest("/app/META-INF/cibseven-plugins/demo/plugin.json", "{\"entry\":\"index.js\"}")
 		});
 
-		assertEquals("", new PluginRegistry(resolver).getManifests().get(0).get("apiVersion").asText());
+		assertEquals("", new PluginRegistry(resolver).getManifests().get(0).get("apiVersion").asString());
 	}
 
 	@Test
@@ -174,7 +174,7 @@ public class PluginRegistryTest {
 		List<ObjectNode> manifests = new PluginRegistry(resolver).getManifests();
 
 		// The folder is where the files are served from, so it decides the id
-		assertEquals("demo", manifests.get(0).get("id").asText());
+		assertEquals("demo", manifests.get(0).get("id").asString());
 	}
 
 	@Test
@@ -221,7 +221,7 @@ public class PluginRegistryTest {
 
 		// Files are served from one classpath root only, so the second would get the first one's
 		assertEquals(1, manifests.size());
-		assertEquals("first.js", manifests.get(0).get("entry").asText());
+		assertEquals("first.js", manifests.get(0).get("entry").asString());
 	}
 
 	@Test
@@ -249,8 +249,8 @@ public class PluginRegistryTest {
 		List<ObjectNode> manifests = new PluginRegistry(resolver).getManifests();
 
 		assertEquals(2, manifests.size());
-		assertEquals("first", manifests.get(0).get("id").asText());
-		assertEquals("second", manifests.get(1).get("id").asText());
+		assertEquals("first", manifests.get(0).get("id").asString());
+		assertEquals("second", manifests.get(1).get("id").asString());
 	}
 
 	/** An operator who installed a plugin jar has to learn at boot whether it was picked up. */
@@ -283,7 +283,7 @@ public class PluginRegistryTest {
 	}
 
 	private static List<String> ids(PluginRegistry registry) {
-		return registry.getManifests().stream().map(manifest -> manifest.get("id").asText()).toList();
+		return registry.getManifests().stream().map(manifest -> manifest.get("id").asString()).toList();
 	}
 
 	/** Without a redeploy, a plugin that breaks the page has to be switched off on its own. */

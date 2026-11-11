@@ -52,7 +52,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * The form- and process-instance-variable side of {@link DirectVariableProvider}; the binary
@@ -84,8 +84,7 @@ public class DirectVariableProviderFormsTest {
 		definitionQuery = mock(ProcessDefinitionQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
 		when(repositoryService.createProcessDefinitionQuery()).thenReturn(definitionQuery);
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		JacksonConfigurator.configureObjectMapper(objectMapper);
+		ObjectMapper objectMapper = JacksonConfigurator.configureObjectMapper();
 
 		directProviderUtil = Mockito.spy(new DirectProviderUtil());
 		doReturn(processEngine).when(directProviderUtil).getProcessEngine(any(CIBUser.class));

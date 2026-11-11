@@ -21,10 +21,10 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.Data;
+
+import org.cibseven.webapp.config.WebclientJsonMapper;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -91,8 +91,8 @@ public class Variable {
 		return value == null;
 	}
 
-	public String asJson() throws JsonProcessingException {
-		return new ObjectMapper().writeValueAsString(this);
+	public String asJson() {
+		return WebclientJsonMapper.plain().writeValueAsString(this);
 	}
 	
 	/*

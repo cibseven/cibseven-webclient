@@ -44,7 +44,7 @@ import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.EventSubscription;
 import org.cibseven.webapp.rest.model.Message;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 public class DirectUtilsProvider implements IUtilsProvider {
 
