@@ -187,8 +187,7 @@
 		"activateInstance": "Prozessausführung aktivieren",
 		"copySuccess": "Ausgewählter Wert kopiert",
 		"refreshVersions": "Historische Versionen aktualisieren",
-		"loadVersions": "Alle Instanzstatistiken laden",
-		"loadData": "Daten laden",
+		"loadAllStatistics": "Alle Instanzstatistiken laden",
 		"externalProcessStarted": "Prozess erfolgreich gestarted",
 		"exportInstances": "Instanzen exportieren",
 		"deleteProcessDefinition": {

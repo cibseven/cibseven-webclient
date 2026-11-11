@@ -21,7 +21,7 @@
     <div class="overflow-auto h-100">
       <b-button style="top: 2px; right: 60px" class="load-data border-0 position-absolute"
         variant="btn-outline-primary" size="sm"
-        :title="$t('process.loadVersions')" :aria-label="$t('process.loadData')"
+        :title="$t('process.loadAllStatistics')" :aria-label="$t('process.loadAllStatistics')"
         :disabled="!!refreshing" :aria-busy="refreshing === 'all' ? 'true' : null"
         @click="onRefreshProcessDefinitions(false)">
         <!-- while every version's data is loading, the spinner is drawn over the hidden icon, so the button keeps its size -->
@@ -215,7 +215,11 @@ export default {
     },
     async loadSelectedDeployment(deploymentId) {
       if (!deploymentId || this.deployments[deploymentId] || !this.canReadDeployment(deploymentId)) return
-      this.deployments[deploymentId] = await ProcessService.findDeployment(deploymentId)
+      try {
+        this.deployments[deploymentId] = await ProcessService.findDeployment(deploymentId)
+      } catch {
+        // the deployment time stays a dash; asked again the next time the version is selected
+      }
     },
     // one version's details open at a time
     toggleDetails(versionId) {

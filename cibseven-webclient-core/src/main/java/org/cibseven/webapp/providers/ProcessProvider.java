@@ -182,7 +182,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		Collection<Process> processes = Arrays.asList(((ResponseEntity<Process[]>) doGet(url, Process[].class, user, false)).getBody());		
 
 		if (!lazyLoad.isPresent() || (lazyLoad.isPresent() && !lazyLoad.get())) {
-			Map<String, Long> incidentsById = countIncidentsByDefinitionId(user);
+			Map<String, Long> incidentsById = countIncidentsByDefinitionId(key, tenantId, user);
 			for(Process process : processes) {
 				process.setIncidents(incidentsById.getOrDefault(process.getId(), 0L));
 				process.setDeploymentTime(findDeploymentTime(process.getDeploymentId(), user));
@@ -211,16 +211,17 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		return processes;
 	}
 
-	/** Open incidents per version, from the engine-wide statistics (the engine cannot filter them by key). */
-	private Map<String, Long> countIncidentsByDefinitionId(CIBUser user) {
-		Map<String, Object> queryParams = new HashMap<>();
-		queryParams.put("incidents", true);
+	/**
+	 * Open incidents per version, from one incident query filtered by key. Asked directly, as the incident
+	 * provider fetches the root cause of each incident. There is no withoutTenantId on incidents: the ones
+	 * of other tenants are dropped when matched by definition id.
+	 */
+	private Map<String, Long> countIncidentsByDefinitionId(String key, String tenantId, CIBUser user) {
+		String url = getEngineRestUrl(user) + "/incident?processDefinitionKeyIn=" + key + (tenantId != null ? "&tenantIdIn=" + tenantId : "");
+		JsonNode incidents = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, false)).getBody();
 		Map<String, Long> incidentsById = new HashMap<>();
-		for (ProcessStatistics stats : getProcessStatistics(queryParams, user)) {
-			if (stats.getId() != null && stats.getIncidents() != null)
-				incidentsById.put(stats.getId(), stats.getIncidents().stream()
-						.mapToLong(incident -> incident.getIncidentCount() != null ? incident.getIncidentCount() : 0).sum());
-		}
+		if (incidents != null)
+			incidents.forEach(incident -> incidentsById.merge(incident.path("processDefinitionId").asString(), 1L, Long::sum));
 		return incidentsById;
 	}
 

@@ -81,6 +81,7 @@ import org.cibseven.bpm.engine.rest.exception.RestException;
 import org.cibseven.bpm.engine.rest.impl.history.HistoricActivityStatisticsQueryDto;
 import org.cibseven.bpm.engine.rest.util.ApplicationContextPathUtil;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
+import org.cibseven.bpm.engine.runtime.IncidentQuery;
 import org.cibseven.bpm.engine.runtime.ProcessInstanceQuery;
 import org.cibseven.bpm.engine.runtime.ProcessInstanceWithVariables;
 import org.cibseven.bpm.engine.runtime.ProcessInstantiationBuilder;
@@ -303,7 +304,7 @@ public class DirectProcessProvider implements IProcessProvider {
 		}
 
 		if (!lazyLoad.isPresent() || (lazyLoad.isPresent() && !lazyLoad.get())) {
-			Map<String, Long> incidentsById = countIncidentsByDefinitionId(user);
+			Map<String, Long> incidentsById = countIncidentsByDefinitionId(key, tenantId, user);
 			for (Process process : processes) {
 				process.setIncidents(incidentsById.getOrDefault(process.getId(), 0L));
 				process.setDeploymentTime(findDeploymentTime(process.getDeploymentId(), user));
@@ -334,17 +335,17 @@ public class DirectProcessProvider implements IProcessProvider {
 		return processes;
 	}
 
-	/** Open incidents per version, from the engine-wide statistics (the engine cannot filter them by key). */
-	private Map<String, Long> countIncidentsByDefinitionId(CIBUser user) {
-		Map<String, Object> queryParams = new HashMap<>();
-		queryParams.put("incidents", true);
-		Map<String, Long> incidentsById = new HashMap<>();
-		for (ProcessStatistics stats : getProcessStatistics(queryParams, user)) {
-			if (stats.getId() != null && stats.getIncidents() != null)
-				incidentsById.put(stats.getId(), stats.getIncidents().stream()
-						.mapToLong(incident -> incident.getIncidentCount() != null ? incident.getIncidentCount() : 0).sum());
-		}
-		return incidentsById;
+	/**
+	 * Open incidents per version, from one incident query filtered by key. There is no withoutTenantId on
+	 * incidents: the ones of other tenants are dropped when matched by definition id.
+	 */
+	private Map<String, Long> countIncidentsByDefinitionId(String key, String tenantId, CIBUser user) {
+		IncidentQuery query = directProviderUtil.getProcessEngine(user).getRuntimeService().createIncidentQuery()
+				.processDefinitionKeyIn(key);
+		if (tenantId != null)
+			query.tenantIdIn(tenantId);
+		return query.list().stream()
+				.collect(Collectors.groupingBy(incident -> incident.getProcessDefinitionId(), Collectors.counting()));
 	}
 
 	/** The engine has no deployment time on the process definition; left out when the deployment cannot be read. */

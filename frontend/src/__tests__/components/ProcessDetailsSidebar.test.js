@@ -331,6 +331,22 @@ describe('ProcessDetailsSidebar', () => {
       expect(deploymentTimes(wrapper)).toEqual(['deployment.deploymentTime: -'])
     })
 
+    it('leaves the deployment time a dash when the deployment cannot be read, and asks again on the next selection', async () => {
+      ProcessService.findDeployment.mockRejectedValueOnce(new Error('down'))
+      const wrapper = mountSidebar({ processDefinitions: [version(), lazyVersion()] })
+      await flushPromises()
+
+      expect(wrapper.find('.deployment-time').text()).toBe('deployment.deploymentTime: -')
+      expect(wrapper.vm.deployments['dep-37']).toBeUndefined()
+
+      await wrapper.setProps({ versionIndex: '36' })
+      await wrapper.setProps({ versionIndex: '37' })
+      await flushPromises()
+
+      expect(ProcessService.findDeployment).toHaveBeenLastCalledWith('dep-37')
+      expect(wrapper.find('.deployment-time').text()).not.toBe('deployment.deploymentTime: -')
+    })
+
     it('does not load anything while no version is selected', async () => {
       mountSidebar({ versionIndex: '' })
       await flushPromises()
@@ -456,8 +472,8 @@ describe('ProcessDetailsSidebar', () => {
       const button = wrapper.find('.load-data')
       expect(button.text()).toBe('')
       expect(button.find('.mdi-poll').exists()).toBe(true)
-      expect(button.attributes('title')).toBe('process.loadVersions')
-      expect(button.attributes('aria-label')).toBe('process.loadData')
+      expect(button.attributes('title')).toBe('process.loadAllStatistics')
+      expect(button.attributes('aria-label')).toBe('process.loadAllStatistics')
       expect(button.classes()).toContain('border-0')
     })
 
@@ -498,7 +514,7 @@ describe('ProcessDetailsSidebar', () => {
       const wrapper = mountSidebar({ config: { lazyLoadHistory: true } })
       await flushPromises()
 
-      await wrapper.find('button[title="process.loadVersions"]').trigger('click')
+      await wrapper.find('button[title="process.loadAllStatistics"]').trigger('click')
 
       expect(wrapper.emitted('onRefreshProcessDefinitions')).toEqual([[false]])
     })
