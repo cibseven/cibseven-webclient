@@ -84,7 +84,7 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 
 	@Override
 	public Object evaluateDecisionDefinitionByKeyAndTenant(Map<String, Object> data, String key, String tenant, CIBUser user) {
-		String url = getEngineRestUrl(user) + "/decision-definition/key/" + key + "/tenant" + tenant + "/evaluate";
+		String url = getEngineRestUrl(user) + "/decision-definition/key/" + key + "/tenant-id/" + tenant + "/evaluate";
 		return ((ResponseEntity<Object>) doPost(url, data, null, user)).getBody();
 	}
 
