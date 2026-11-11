@@ -21,9 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.config.SevenWebclientProperties;
-import org.cibseven.webapp.providers.PermissionConstants;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -73,7 +71,6 @@ public class HistoricVariableInstanceService extends BaseService implements Init
 			@Parameter(description = "Whether to deserialize the variable value. If true, the value will be deserialized according to its type.")
 			@RequestParam(required = false) Boolean deserializeValue,
 			CIBUser user) {
-		checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		boolean deserialize = (deserializeValue == null) || (deserializeValue != null && deserializeValue == true);
 		return bpmProvider.getHistoricVariableInstance(id, deserialize, user);
 	}

@@ -52,6 +52,15 @@ public class SevenWebclientPropertiesTest {
 	}
 
 	@Test
+	public void removedBackendAuthorizationPropertyIsIgnored() {
+		StandardEnvironment environment = new StandardEnvironment();
+		environment.getPropertySources().addFirst(new MapPropertySource("old",
+			Map.of("cibseven.webclient.deprecated.authorization.enabled", "true")));
+
+		assertEquals(new SevenWebclientProperties(), bind(environment));
+	}
+
+	@Test
 	public void ssoPropertiesRequiredByTheProvidersHaveNoDefault() {
 		SevenWebclientProperties.Sso sso = new SevenWebclientProperties().getSso();
 		assertNull(sso.getClientId());
@@ -66,8 +75,6 @@ public class SevenWebclientPropertiesTest {
 			Arguments.of("cibseven.webclient.engine-rest.url", "http://engine", engineRestUrl),
 			Arguments.of("cibseven.webclient.support-dialog", "{}",
 				(Function<SevenWebclientProperties, Object>) SevenWebclientProperties::getSupportDialog),
-			Arguments.of("cibseven.webclient.deprecated.authorization.enabled", true,
-				(Function<SevenWebclientProperties, Object>) p -> p.getDeprecated().getAuthorization().isEnabled()),
 			Arguments.of("cibseven.webclient.legacy.authorization.enabled", true,
 				(Function<SevenWebclientProperties, Object>) p -> p.getLegacy().getAuthorization().isEnabled()),
 			Arguments.of("cibseven.webclient.plugins.enabled", true,
