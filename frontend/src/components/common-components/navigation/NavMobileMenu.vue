@@ -18,7 +18,6 @@
 -->
 <template>
   <nav class="cib-nav-mobile" :aria-label="$t('navigation.menu')">
-    <slot name="prepend"></slot>
     <ul v-if="clusters.length" class="cib-nav-mobile-list list-unstyled m-0">
       <li v-for="cluster in clusters" :key="cluster.id" class="cib-nav-mobile-cluster">
         <button v-if="hasMenu(cluster)" type="button" class="cib-nav-mobile-row"
@@ -38,7 +37,6 @@
         </button>
 
         <div v-if="expanded === cluster.id && hasMenu(cluster)">
-          <div v-if="$slots['cluster-prepend']" class="cib-nav-mobile-prepend"><slot name="cluster-prepend" :cluster="cluster"></slot></div>
           <ul v-for="(section, sIdx) in cluster.sections" :key="sIdx" class="cib-nav-mobile-section list-unstyled m-0 py-1">
             <li v-for="item in section" :key="item.key">
               <!-- Marked by item.active only, as in NavCluster: Vue Router's active class ignores the query -->
@@ -91,16 +89,12 @@ export default {
       return [...this.main, ...this.utility]
     }
   },
-  // Prepended cluster items come from the parent and don't close the menu themselves (e.g. one that
-  // opens a modal); bound here rather than in the template, as their wrapper is not interactive.
-  // The menu covers the page, so the page behind it must not scroll (notably on iOS).
+  // The menu covers the page, so the page behind it must not scroll (notably on iOS)
   mounted() {
-    this.$el.addEventListener('click', this.onClick)
     this.previousBodyOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
   },
   beforeUnmount() {
-    this.$el.removeEventListener('click', this.onClick)
     document.body.style.overflow = this.previousBodyOverflow
   },
   methods: {
@@ -109,9 +103,6 @@ export default {
     },
     toggle(id) {
       this.expanded = this.expanded === id ? null : id
-    },
-    onClick(event) {
-      if (event.target.closest?.('.cib-nav-mobile-prepend')) this.$emit('navigate')
     }
   }
 }

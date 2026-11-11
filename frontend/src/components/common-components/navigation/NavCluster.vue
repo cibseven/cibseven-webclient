@@ -56,13 +56,12 @@
 
     <span v-if="tipVisible" :id="tooltipId" role="tooltip" class="cib-nav-tooltip">{{ cluster.label }}</span>
 
-    <div v-if="open" ref="menu" class="cib-nav-menu" :class="[align === 'end' ? 'cib-nav-menu-end' : 'cib-nav-menu-start', { 'cib-nav-menu-icons': hasItemIcons }]"
+    <div v-if="open" ref="menu" class="cib-nav-menu" :class="align === 'end' ? 'cib-nav-menu-end' : 'cib-nav-menu-start'"
       role="menu" tabindex="-1" :aria-label="cluster.label" @keydown.down.prevent="moveFocus(1)" @keydown.up.prevent="moveFocus(-1)"
-      @keydown.esc="closeAndFocus" @click="onMenuClick">
+      @keydown.esc="closeAndFocus">
       <router-link v-if="cluster.titleTo" :to="cluster.titleTo" active-class="" exact-active-class="" class="cib-nav-menu-title cib-nav-menu-title-link"
         role="menuitem" @click="close">{{ cluster.label }}</router-link>
       <div v-else class="cib-nav-menu-title" role="presentation">{{ cluster.label }}</div>
-      <div v-if="$slots['menu-prepend']" ref="prepend" role="none"><slot name="menu-prepend" :cluster="cluster"></slot></div>
       <div v-for="(section, sIdx) in cluster.sections" :key="sIdx" class="cib-nav-menu-section" role="group">
         <template v-for="item in section" :key="item.key">
           <router-link v-if="item.to" :to="item.to" active-class="" exact-active-class="" class="cib-nav-menu-item" :class="{ active: item.active }"
@@ -221,14 +220,8 @@ export default {
       this.close()
       this.$emit('select', item)
     },
-    // Prepended items come from the parent and don't close the menu themselves (e.g. one that opens a modal)
-    onMenuClick(event) {
-      if (this.$refs.prepend?.contains(event.target)) this.close()
-    },
     menuItems() {
-      // Includes legacy slot content (plain dropdown items without a menu role)
-      const selector = '[role="menuitem"], [role="menuitemradio"], .cib-nav-legacy-items a, .cib-nav-legacy-items button'
-      return Array.from(this.$refs.menu?.querySelectorAll(selector) || [])
+      return Array.from(this.$refs.menu?.querySelectorAll('[role="menuitem"], [role="menuitemradio"]') || [])
     },
     async openAndFocusFirst() {
       // Keyboard focus moves into the menu, so it must not close when the pointer leaves
@@ -418,12 +411,6 @@ export default {
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
-}
-/* Entries of the legacy menu-prepend slot (e.g. CIB flow's userItems) have no icon column: in a menu with one they
-   are indented by its width (padding + 18px icon + gap), so their labels line up with the others (e.g. Logout) */
-.cib-nav-menu-icons :deep(.cib-nav-legacy-items a),
-.cib-nav-menu-icons :deep(.cib-nav-legacy-items button) {
-  padding-left: calc(16px + 18px + 10px);
 }
 .cib-nav-menu-item:focus-visible {
   background: var(--bs-gray-200);

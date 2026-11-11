@@ -423,61 +423,22 @@ describe('CIBHeaderFlow.vue', () => {
       expect(wrapper.find('.cib-nav-mobile').exists()).toBe(true)
     })
 
-    // Parents written for the old header (CIB flow) still fill these slots
-    describe('legacy slots', () => {
-      const legacy = {
-        userItems: '<li class="legacy-user-item">Settings</li>',
-        customNavItems: '<li class="legacy-nav-item">Flow tools</li>'
-      }
-
-      it('shows the userItems slot at the top of the user menu', async () => {
-        wrapper = createWrapper({}, legacy)
-        wrapper.vm.setOpenCluster('user', true)
-        await wrapper.vm.$nextTick()
-
-        const menu = wrapper.find('.cib-nav-menu')
-        expect(menu.find('.legacy-user-item').text()).toBe('Settings')
-        expect(menu.text()).toContain('Logout')
+    // The old header's slots are gone: menu entries come only through navClusters, utilityClusters and userItems
+    it('no longer renders the userItems and customNavItems slots of the old header', async () => {
+      wrapper = createWrapper({}, {
+        userItems: '<li class="old-user-item">Settings</li>',
+        customNavItems: '<li class="old-nav-item">Flow tools</li>'
       })
+      wrapper.vm.setOpenCluster('user', true)
+      await wrapper.vm.$nextTick()
+      expect(wrapper.find('.cib-nav-menu').text()).toContain('Logout')
+      expect(wrapper.find('.old-user-item').exists()).toBe(false)
 
-      it('shows customNavItems and userItems in the mobile menu', async () => {
-        wrapper = createWrapper({}, legacy)
-        await wrapper.find('.cib-nav-burger').trigger('click')
-
-        expect(wrapper.find('.cib-nav-mobile .legacy-nav-item').exists()).toBe(true)
-        const userRow = wrapper.findAll('.cib-nav-mobile-row').find(row => row.text().includes('Test User'))
-        await userRow.trigger('click')
-        expect(wrapper.find('.cib-nav-mobile .legacy-user-item').exists()).toBe(true)
-      })
-
-      it('closes the user menu when a legacy item is clicked', async () => {
-        wrapper = createWrapper({}, legacy)
-        wrapper.vm.setOpenCluster('user', true)
-        await wrapper.vm.$nextTick()
-
-        await wrapper.find('.cib-nav-menu .legacy-user-item').trigger('click')
-
-        expect(wrapper.vm.openCluster).toBeNull()
-        expect(wrapper.find('.cib-nav-menu').exists()).toBe(false)
-      })
-
-      it('closes the mobile menu when a legacy user item is tapped', async () => {
-        wrapper = createWrapper({}, legacy)
-        await wrapper.find('.cib-nav-burger').trigger('click')
-        const userRow = wrapper.findAll('.cib-nav-mobile-row').find(row => row.text().includes('Test User'))
-        await userRow.trigger('click')
-
-        await wrapper.find('.cib-nav-mobile .legacy-user-item').trigger('click')
-
-        expect(wrapper.find('.cib-nav-mobile').exists()).toBe(false)
-      })
-
-      it('adds nothing when the slots are not used', async () => {
-        wrapper = createWrapper()
-        wrapper.vm.setOpenCluster('user', true)
-        await wrapper.vm.$nextTick()
-        expect(wrapper.find('.cib-nav-legacy-items').exists()).toBe(false)
-      })
+      await wrapper.find('.cib-nav-burger').trigger('click')
+      const userRow = wrapper.findAll('.cib-nav-mobile-row').find(row => row.text().includes('Test User'))
+      await userRow.trigger('click')
+      expect(wrapper.find('.old-user-item').exists()).toBe(false)
+      expect(wrapper.find('.old-nav-item').exists()).toBe(false)
     })
 
     it('renders the page actions only when given', () => {
