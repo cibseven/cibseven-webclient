@@ -77,6 +77,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 import org.cibseven.modeler.util.ByteArrayMultipartFile;
+import org.cibseven.modeler.util.ModelKeys;
 import org.cibseven.persistence.CibsevenJpa;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -802,7 +803,7 @@ public class ModelerService extends ModelerBaseService {
 
 	@Operation(
 		summary = "Copy a diagram into a folder",
-		description = "<strong>Return: the copy. It keeps the key unless one is given; only a folder that has the key "
+		description = "<strong>Return: the copy. It keeps the key unless one is given, which the model then carries too; only a folder that has the key "
 			+ "already refuses it")
 	@RequestMapping(value = "/process/{id}/copy", method = RequestMethod.POST)
 	public ProcessDiagramEntity copyProcess(@PathVariable String id,
@@ -821,7 +822,9 @@ public class ModelerService extends ModelerBaseService {
 		copy.setDescription(source.getDescription());
 		copy.setActive(true);
 		copy.setType(source.getType());
-		copy.setDiagram(source.getDiagram());
+		// A new key goes into the model too: the modeler saves the key it reads from there
+		copy.setDiagram(processkey.equals(source.getProcesskey()) ? source.getDiagram()
+			: ModelKeys.rekeyDiagram(source.getDiagram(), processkey));
 		copy.setFolderId(folderFor(user, target.get("folderId")));
 		copy.setUpdatedBy(user.getUserID());
 		return dbProcessDiagramProvider.createDiagram(copy);
@@ -846,7 +849,7 @@ public class ModelerService extends ModelerBaseService {
 
 	@Operation(
 		summary = "Copy a form into a folder",
-		description = "<strong>Return: the copy. It keeps the form id unless one is given; only a folder that has the "
+		description = "<strong>Return: the copy. It keeps the form id unless one is given, which the schema then carries too; only a folder that has the "
 			+ "form id already refuses it")
 	@RequestMapping(value = "/form/{id}/copy", method = RequestMethod.POST)
 	public FormEntity copyForm(@PathVariable String id,
@@ -863,7 +866,8 @@ public class ModelerService extends ModelerBaseService {
 		copy.setFormId(formId);
 		copy.setDescription(source.getDescription());
 		copy.setActive(true);
-		copy.setFormSchema(source.getFormSchema());
+		copy.setFormSchema(formId.equals(source.getFormId()) ? source.getFormSchema()
+			: ModelKeys.rekeyForm(source.getFormSchema(), formId));
 		copy.setFolderId(folderFor(user, target.get("folderId")));
 		copy.setUpdatedBy(user.getUserID());
 		return formProvider.createForm(copy);

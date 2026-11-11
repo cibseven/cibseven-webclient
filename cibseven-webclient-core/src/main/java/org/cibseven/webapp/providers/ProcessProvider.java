@@ -35,6 +35,7 @@ import java.util.function.Function;
 
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.exception.ExpressionEvaluationException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnsupportedTypeException;
@@ -61,9 +62,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -562,11 +564,11 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		}
 		url += "&firstResult=" + firstResult + "&maxResults=" + maxResults;
 		data.put("processDefinitionId", id);
-		ObjectMapper objectMapper = new ObjectMapper();
+		ObjectMapper objectMapper = WebclientJsonMapper.plain();
 		String body = "";
 		try {
 			body = objectMapper.writeValueAsString(data);
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			throw new SystemException(e);
 		}
 		//findIncident
@@ -590,7 +592,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		        String bodyIdIn = "";
 		        try {
 		        	bodyIdIn = objectMapper.writeValueAsString(dataIdIn);
-		        } catch (JsonProcessingException e) {
+		        } catch (JacksonException e) {
 		            throw new SystemException(e);
 		        }
 

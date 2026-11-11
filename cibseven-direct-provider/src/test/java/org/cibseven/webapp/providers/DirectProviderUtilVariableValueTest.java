@@ -33,7 +33,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * {@link DirectProviderUtil#toVariableValueDto} has to make the same adjustments to a submitted form
@@ -47,8 +47,7 @@ public class DirectProviderUtilVariableValueTest {
 	@BeforeEach
 	void setUp() {
 		user = new CIBUser("testUser");
-		ObjectMapper objectMapper = new ObjectMapper();
-		JacksonConfigurator.configureObjectMapper(objectMapper);
+		ObjectMapper objectMapper = JacksonConfigurator.configureObjectMapper();
 		directProviderUtil = Mockito.spy(new DirectProviderUtil());
 		doReturn(objectMapper).when(directProviderUtil).getObjectMapper(any(CIBUser.class));
 	}
