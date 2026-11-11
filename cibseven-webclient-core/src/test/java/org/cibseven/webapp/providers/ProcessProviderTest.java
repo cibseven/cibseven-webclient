@@ -119,6 +119,59 @@ public class ProcessProviderTest {
 	}
 
 	@Test
+	void findProcessVersionsByDefinitionKey_withoutLazyLoadAddsIncidentsAndDeploymentTime() throws Exception {
+		engine.enqueueJson("[{\"id\":\"id-2\",\"key\":\"invoice\",\"version\":2,\"deploymentId\":\"dep-2\"}]");
+		// the incidents of the key, counted per version; those of a version not listed are left aside
+		engine.enqueueJson("[{\"id\":\"i1\",\"processDefinitionId\":\"id-2\"},{\"id\":\"i2\",\"processDefinitionId\":\"id-2\"},"
+			+ "{\"id\":\"i3\",\"processDefinitionId\":\"id-2\"},{\"id\":\"i4\",\"processDefinitionId\":\"other:1\"}]");
+		engine.enqueueJson("{\"id\":\"dep-2\",\"deploymentTime\":\"2025-05-16T12:44:00.000+0200\"}");
+		engine.enqueueJson("{\"count\":9}");
+		engine.enqueueJson("{\"count\":2}");
+		engine.enqueueJson("{\"count\":7}");
+
+		Process version = processProvider.findProcessVersionsByDefinitionKey("invoice", null, Optional.of(false), user).iterator().next();
+
+		assertThat(version.getIncidents()).isEqualTo(3L);
+		assertThat(version.getDeploymentTime()).isEqualTo("2025-05-16T12:44:00.000+0200");
+		assertThat(version.getAllInstances()).isEqualTo(9L);
+		assertThat(version.getRunningInstances()).isEqualTo(2L);
+		assertThat(version.getCompletedInstances()).isEqualTo(7L);
+		engine.take();
+		assertThat(engine.takePath()).isEqualTo("/incident?processDefinitionKeyIn=invoice");
+		assertThat(engine.takePath()).isEqualTo("/deployment/dep-2");
+	}
+
+	@Test
+	void findProcessVersionsByDefinitionKey_withoutLazyLoadAsksTheIncidentsOfTheGivenTenantOnly() throws Exception {
+		engine.enqueueJson("[{\"id\":\"id-2\",\"key\":\"invoice\",\"version\":2,\"tenantId\":\"acme\"}]");
+		engine.enqueueJson("[]");
+		engine.enqueueJson("{\"count\":0}");
+		engine.enqueueJson("{\"count\":0}");
+		engine.enqueueJson("{\"count\":0}");
+
+		processProvider.findProcessVersionsByDefinitionKey("invoice", "acme", Optional.of(false), user);
+
+		engine.take();
+		assertThat(engine.takePath()).isEqualTo("/incident?processDefinitionKeyIn=invoice&tenantIdIn=acme");
+	}
+
+	@Test
+	void findProcessVersionsByDefinitionKey_withoutLazyLoadLeavesOutWhatTheEngineDoesNotGive() throws Exception {
+		engine.enqueueJson("[{\"id\":\"id-2\",\"key\":\"invoice\",\"version\":2,\"deploymentId\":\"dep-2\"}]");
+		engine.enqueueJson("[]");
+		engine.enqueueStatus(404, "{\"message\":\"Deployment not found\"}");
+		engine.enqueueJson("{\"count\":0}");
+		engine.enqueueJson("{\"count\":0}");
+		engine.enqueueJson("{\"count\":0}");
+
+		Process version = processProvider.findProcessVersionsByDefinitionKey("invoice", null, Optional.of(false), user).iterator().next();
+
+		assertThat(version.getIncidents()).isZero();
+		assertThat(version.getDeploymentTime()).isNull();
+		assertThat(engine.requestCount()).isEqualTo(6);
+	}
+
+	@Test
 	void findProcessById_asksForTheDefinitionById() throws Exception {
 		engine.enqueueJson("{\"id\":\"id-1\",\"key\":\"invoice\"}");
 

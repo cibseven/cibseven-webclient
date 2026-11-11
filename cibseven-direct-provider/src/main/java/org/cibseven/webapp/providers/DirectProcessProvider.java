@@ -63,6 +63,7 @@ import org.cibseven.bpm.engine.rest.dto.history.HistoricProcessInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricProcessInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.dto.repository.ActivityStatisticsResultDto;
 import org.cibseven.bpm.engine.rest.dto.repository.CalledProcessDefinitionDto;
+import org.cibseven.bpm.engine.rest.dto.repository.DeploymentDto;
 import org.cibseven.bpm.engine.rest.dto.repository.ProcessDefinitionDiagramDto;
 import org.cibseven.bpm.engine.rest.dto.repository.ProcessDefinitionDto;
 import org.cibseven.bpm.engine.rest.dto.repository.ProcessDefinitionQueryDto;
@@ -80,6 +81,7 @@ import org.cibseven.bpm.engine.rest.exception.RestException;
 import org.cibseven.bpm.engine.rest.impl.history.HistoricActivityStatisticsQueryDto;
 import org.cibseven.bpm.engine.rest.util.ApplicationContextPathUtil;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
+import org.cibseven.bpm.engine.runtime.IncidentQuery;
 import org.cibseven.bpm.engine.runtime.ProcessInstanceQuery;
 import org.cibseven.bpm.engine.runtime.ProcessInstanceWithVariables;
 import org.cibseven.bpm.engine.runtime.ProcessInstantiationBuilder;
@@ -90,6 +92,7 @@ import org.cibseven.webapp.exception.ExpressionEvaluationException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnsupportedTypeException;
+import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.HistoryStatistics;
 import org.cibseven.webapp.rest.model.Incident;
@@ -109,7 +112,9 @@ import tools.jackson.databind.ObjectMapper;
 
 import jakarta.ws.rs.core.MultivaluedHashMap;
 import jakarta.ws.rs.core.MultivaluedMap;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class DirectProcessProvider implements IProcessProvider {
 
 	private static final String FETCH_INCIDENTS = "fetchIncidents";
@@ -299,7 +304,11 @@ public class DirectProcessProvider implements IProcessProvider {
 		}
 
 		if (!lazyLoad.isPresent() || (lazyLoad.isPresent() && !lazyLoad.get())) {
+			Map<String, Long> incidentsById = countIncidentsByDefinitionId(key, tenantId, user);
 			for (Process process : processes) {
+				process.setIncidents(incidentsById.getOrDefault(process.getId(), 0L));
+				process.setDeploymentTime(findDeploymentTime(process.getDeploymentId(), user));
+
 				HistoricProcessInstanceQueryDto historicProcessInstanceQueryDto = new HistoricProcessInstanceQueryDto();
 				historicProcessInstanceQueryDto.setProcessDefinitionId(process.getId());
 				historicProcessInstanceQueryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
@@ -324,6 +333,35 @@ public class DirectProcessProvider implements IProcessProvider {
 			}
 		}
 		return processes;
+	}
+
+	/**
+	 * Open incidents per version, from one incident query filtered by key. There is no withoutTenantId on
+	 * incidents: the ones of other tenants are dropped when matched by definition id.
+	 */
+	private Map<String, Long> countIncidentsByDefinitionId(String key, String tenantId, CIBUser user) {
+		IncidentQuery query = directProviderUtil.getProcessEngine(user).getRuntimeService().createIncidentQuery()
+				.processDefinitionKeyIn(key);
+		if (tenantId != null)
+			query.tenantIdIn(tenantId);
+		return query.list().stream()
+				.collect(Collectors.groupingBy(incident -> incident.getProcessDefinitionId(), Collectors.counting()));
+	}
+
+	/** The engine has no deployment time on the process definition; left out when the deployment cannot be read. */
+	private String findDeploymentTime(String deploymentId, CIBUser user) {
+		if (deploymentId == null)
+			return null;
+		try {
+			org.cibseven.bpm.engine.repository.Deployment deployment = directProviderUtil.getProcessEngine(user)
+					.getRepositoryService().createDeploymentQuery().deploymentId(deploymentId).singleResult();
+			return deployment != null
+					? directProviderUtil.convertValue(DeploymentDto.fromDeployment(deployment), Deployment.class, user).getDeploymentTime()
+					: null;
+		} catch (ProcessEngineException e) {
+			log.debug("Deployment time of {} not available: {}", deploymentId, e.getMessage());
+			return null;
+		}
 	}
 
 	@Override
