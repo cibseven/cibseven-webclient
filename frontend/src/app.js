@@ -87,8 +87,9 @@ Promise.all([
             user: null,
             config: config,
             consent: localStorage.getItem('consent'),
-            // The header shows this icon with the product name (productNamePageTitle) as text; a theme's logo.svg is no longer used
-            logoIconPath: 'themes/' + theme + '/logo-icon.svg',
+            // The theme's logo, the file themes have always replaced: the header shows it as an icon, with the product
+            // name (productNamePageTitle) as text on the start, account and sign-in pages
+            logoPath: 'themes/' + theme + '/logo.svg',
             loginImgPath: 'themes/' + theme + '/login-image.svg',
             resetPasswordImgPath: imagePath,
             theme: theme,

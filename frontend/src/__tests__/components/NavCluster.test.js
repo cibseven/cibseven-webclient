@@ -134,6 +134,19 @@ describe('NavCluster.vue', () => {
     it('has no icon column in a menu without entry icons', () => {
       wrapper = mountCluster(cockpit, { open: true })
       expect(wrapper.find('.cib-nav-menu-icon').exists()).toBe(false)
+      expect(wrapper.find('.cib-nav-menu').classes()).not.toContain('cib-nav-menu-icons')
+    })
+
+    // The class indents the entries of the legacy menu-prepend slot (e.g. CIB flow's userItems) by the icon column,
+    // so they line up with Logout
+    it('marks a menu with the icon column, for the legacy slot entries to line up with it', () => {
+      wrapper = mount(NavCluster, {
+        props: { cluster: { ...language, sections: [[{ key: 'logout', label: 'Logout', icon: 'mdi-logout' }]] }, open: true },
+        slots: { 'menu-prepend': '<ul class="cib-nav-legacy-items"><li><a href="#" class="legacy">Settings</a></li></ul>' },
+        global: { mocks: { $t: key => key } }
+      })
+      expect(wrapper.find('.cib-nav-menu').classes()).toContain('cib-nav-menu-icons')
+      expect(wrapper.find('.cib-nav-menu-icons .cib-nav-legacy-items a.legacy').exists()).toBe(true)
     })
 
     // Small files are inlined as data URIs, so the URL is quoted in the mask

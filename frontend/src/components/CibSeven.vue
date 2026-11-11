@@ -22,18 +22,15 @@
       :nav-clusters="navClusters" :utility-clusters="utilityClusters" :user-items="userMenuItems"
       @logout="logout" @select="onHeaderSelect">
       <div class="me-auto d-flex flex-row overflow-hidden" style="min-height: 38px;">
-        <!-- Always the theme's icon, so a customer's own icon is never replaced by CIB seven's. On the home page, the
-             user's own account page and the pages before sign-in it comes with the product name as text, in place of the
-             full logo; elsewhere it stands alone beside the page title. The icon file draws the mark about 1/0.62
-             times larger than the full logo did (matched by eye at 23.75px; whole pixels look visibly too small or too
-             big); no left margin, the navbar's own 1rem padding is the space to the edge. A name too long for the
-             header ends in an ellipsis (the link's tooltip has it in full); the icon never shrinks. Styles are set on the
-             elements: EE renders this template from its own component, where this component's scoped styles do not apply. -->
-        <b-navbar-brand ref="brandHome" class="py-0 d-flex align-items-center" :class="{ 'flex-shrink-0': !showProductName }"
-          :style="showProductName ? 'min-width: 0' : null" :aria-label="brandLabel" :title="brandLabel" to="/seven/auth/start">
-          <img class="flex-shrink-0" style="height: 23.75px; margin: 7px 0 7.25px 0" alt="" :src="$root.logoIconPath"/>
-          <span v-if="showProductName" class="ms-2 text-truncate" aria-hidden="true"
-            style="font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif; font-size: 22px; font-weight: 400; line-height: normal; color: var(--bs-dark); min-width: 0">{{ productName }}</span>
+        <!-- Always the theme's logo.svg, the one file a theme replaces, so a customer's logo is never replaced by CIB seven's
+             (it is the mark alone, shown as an icon). On the home page, the
+             user's own account page and the pages before sign-in it comes with the product name as text; elsewhere it
+             stands alone beside the page title. A name too long for the header ends in an ellipsis (the link's tooltip
+             has it in full); the icon never shrinks. Styled by the cib-brand classes below. -->
+        <b-navbar-brand ref="brandHome" class="cib-brand py-0 d-flex align-items-center" :class="{ 'cib-brand-with-name': showProductName }"
+          :aria-label="brandLabel" :title="brandLabel" to="/seven/auth/start">
+          <img class="cib-brand-icon" alt="" :src="$root.logoPath"/>
+          <span v-if="showProductName" class="cib-brand-name ms-2 text-truncate" aria-hidden="true">{{ productName }}</span>
         </b-navbar-brand>
         <div v-if="pageTitle" style="max-height: 38px; min-width: 0;" class="d-flex align-items-center overflow-hidden flex-shrink-1">
           <span class="border-start border-secondary py-3 me-3"></span>
@@ -391,3 +388,31 @@ export default {
   }
 }
 </script>
+
+<!-- Not scoped: EE renders this template from its own component (CibSevenEE extends CibSeven), where scoped styles
+     do not apply. The cib-brand prefix keeps the global classes to the brand. -->
+<style>
+/* The brand keeps its size beside the page title; with the product name it may shrink, and the name gives way */
+.cib-brand {
+  flex-shrink: 0;
+}
+.cib-brand.cib-brand-with-name {
+  flex-shrink: 1;
+  min-width: 0;
+}
+/* The icon file pads the mark, so 23.75px draws it at the intended size (matched by eye; whole pixels look visibly
+   too small or too big). No left margin: the navbar's own 1rem padding is the space to the edge. */
+.cib-brand-icon {
+  flex-shrink: 0;
+  height: 23.75px;
+  margin: 7px 0 7.25px 0;
+}
+.cib-brand-name {
+  min-width: 0;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
+  font-size: 22px;
+  font-weight: 400;
+  line-height: normal;
+  color: var(--bs-dark);
+}
+</style>

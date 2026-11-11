@@ -28,6 +28,7 @@
  */
 export default {
   name: 'NavIcon',
+  emits: [],
   props: {
     icon: { type: String, default: null },
     image: { type: String, default: null },

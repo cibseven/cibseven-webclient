@@ -56,7 +56,7 @@
 
     <span v-if="tipVisible" :id="tooltipId" role="tooltip" class="cib-nav-tooltip">{{ cluster.label }}</span>
 
-    <div v-if="open" ref="menu" class="cib-nav-menu" :class="align === 'end' ? 'cib-nav-menu-end' : 'cib-nav-menu-start'"
+    <div v-if="open" ref="menu" class="cib-nav-menu" :class="[align === 'end' ? 'cib-nav-menu-end' : 'cib-nav-menu-start', { 'cib-nav-menu-icons': hasItemIcons }]"
       role="menu" tabindex="-1" :aria-label="cluster.label" @keydown.down.prevent="moveFocus(1)" @keydown.up.prevent="moveFocus(-1)"
       @keydown.esc="closeAndFocus" @click="onMenuClick">
       <router-link v-if="cluster.titleTo" :to="cluster.titleTo" active-class="" exact-active-class="" class="cib-nav-menu-title cib-nav-menu-title-link"
@@ -418,6 +418,12 @@ export default {
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
+}
+/* Entries of the legacy menu-prepend slot (e.g. CIB flow's userItems) have no icon column: in a menu with one they
+   are indented by its width (padding + 18px icon + gap), so their labels line up with the others (e.g. Logout) */
+.cib-nav-menu-icons :deep(.cib-nav-legacy-items a),
+.cib-nav-menu-icons :deep(.cib-nav-legacy-items button) {
+  padding-left: calc(16px + 18px + 10px);
 }
 .cib-nav-menu-item:focus-visible {
   background: var(--bs-gray-200);

@@ -58,13 +58,13 @@ describe('CibSeven.vue', () => {
     })
   })
 
-  // The theme's icon is always used. Where the full logo used to be, it comes with the product name as text;
+  // The theme's icon is always used. On the start, account and sign-in pages it comes with the product name as text;
   // elsewhere it stands alone beside the page title
   describe('brand', () => {
     const mountBrand = (routeName, { matched = [], productNamePageTitle } = {}) => shallowMount(CibSeven, {
       global: {
         mocks: {
-          user: { id: 'demo' }, header: 'true', logoIconPath: 'themes/acme/logo-icon.svg',
+          user: { id: 'demo' }, header: 'true', logoPath: 'themes/acme/logo.svg',
           $t: key => key, $route: { path: '/seven/auth/x', name: routeName, meta: { title: 'page.title' }, matched },
           config: { permissions: {}, layout: {}, supportedLanguages: [], productNamePageTitle },
           $store: { state: { process: { list: [] } }, getters: {}, dispatch: vi.fn(() => Promise.resolve()) }
@@ -83,7 +83,7 @@ describe('CibSeven.vue', () => {
 
       const brand = wrapper.find('.brand')
       expect(brand.findAll('img')).toHaveLength(1)
-      expect(brand.find('img').attributes('src')).toBe('themes/acme/logo-icon.svg')
+      expect(brand.find('img').attributes('src')).toBe('themes/acme/logo.svg')
       expect(brand.text()).toBe('ACME Flow')
     })
 
@@ -95,31 +95,33 @@ describe('CibSeven.vue', () => {
     it.each(['tasklist', 'adminUser'])('shows just the icon, without the name, on the %s page', (routeName) => {
       const brand = mountBrand(routeName, { productNamePageTitle: 'ACME Flow' }).find('.brand')
 
-      expect(brand.find('img').attributes('src')).toBe('themes/acme/logo-icon.svg')
+      expect(brand.find('img').attributes('src')).toBe('themes/acme/logo.svg')
       expect(brand.find('span').exists()).toBe(false)
       expect(brand.text()).toBe('')
     })
 
-    it('styles the name as the design asks: Segoe UI, 22px, regular, dark', () => {
-      const style = mountBrand('start').find('.brand span').attributes('style')
+    // The global cib-brand classes carry the design (Segoe UI, 22px, regular, dark name; 23.75px icon), as EE renders
+    // this template from its own component, where scoped styles would not apply
+    it('styles the brand through its global classes, not inline', () => {
+      const brand = mountBrand('start').find('.brand')
 
-      expect(style).toContain('font-family: "Segoe UI"')
-      expect(style).toContain('font-size: 22px')
-      expect(style).toContain('font-weight: 400')
-      expect(style).toContain('color: var(--bs-dark)')
+      expect(brand.classes()).toContain('cib-brand')
+      expect(brand.find('img').classes()).toEqual(['cib-brand-icon'])
+      expect(brand.find('span').classes()).toContain('cib-brand-name')
+      expect(brand.find('img').attributes('style')).toBeUndefined()
+      expect(brand.find('span').attributes('style')).toBeUndefined()
     })
 
-    it('ends a name too long for the header in an ellipsis, while the icon keeps its size', () => {
+    // .cib-brand-with-name lets the brand shrink; text-truncate ends the name in an ellipsis
+    it('ends a name too long for the header in an ellipsis', () => {
       const brand = mountBrand('start', { productNamePageTitle: 'Acme Process Automation Platform' }).find('.brand')
 
-      expect(brand.classes()).not.toContain('flex-shrink-0')
-      expect(brand.attributes('style')).toContain('min-width: 0')
+      expect(brand.classes()).toContain('cib-brand-with-name')
       expect(brand.find('span').classes()).toContain('text-truncate')
-      expect(brand.find('img').classes()).toContain('flex-shrink-0')
     })
 
     it('keeps the icon-only brand from shrinking beside the page title', () => {
-      expect(mountBrand('tasklist').find('.brand').classes()).toContain('flex-shrink-0')
+      expect(mountBrand('tasklist').find('.brand').classes()).not.toContain('cib-brand-with-name')
     })
 
     it('falls back to the CIB seven product name without a configured one', () => {
