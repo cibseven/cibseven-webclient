@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { flushPromises } from '@vue/test-utils'
 import { mountWithDefaults } from '../support/mountWithDefaults.js'
 
@@ -449,81 +449,25 @@ describe('ProcessDetailsSidebar', () => {
   })
 
   describe('load data button', () => {
-    // a SidebarsFlow-like panel: the header button with the caption, then the content holding the sidebar
-    function mountInPanel(captionEnd) {
-      const panel = document.createElement('div')
-      // test-utils mounts into a new element inside attachTo, which stands for the content div
-      panel.innerHTML = '<button><h2>History versions</h2></button><div class="content"></div>'
-      document.body.appendChild(panel)
-      vi.spyOn(document, 'createRange').mockReturnValue({ selectNodeContents: vi.fn(), getBoundingClientRect: () => ({ right: captionEnd }) })
-      const wrapper = mountWithDefaults(ProcessDetailsSidebar, {
-        props: { processDefinitions: [version()], processKey: 'invoice', versionIndex: '37' },
-        i18nPlugin: false,
-        attachTo: panel.querySelector('.content'),
-        global: {
-          stubs: { ProcessDefinitionDetails: true, DeleteProcessDefinitionModal: true, SuccessAlert: true },
-          mocks: { $route: { query: {} }, user: { permissions: { deployment: [], processDefinition: [] } }, config: { camundaHistoryLevel: 'full', permissions: { deleteProcessDefinition: {} } } }
-        }
-      })
-      const button = wrapper.find('.load-data').element
-      Object.defineProperty(button, 'offsetWidth', { value: 95 })
-      return wrapper
-    }
-    const sidebarWidth = (wrapper, right) => vi.spyOn(wrapper.vm.$el, 'getBoundingClientRect').mockReturnValue({ left: 0, right })
-
-    afterEach(() => {
-      vi.restoreAllMocks()
-      document.body.innerHTML = ''
-    })
-
-    it('shows its label with the statistics tooltip while it fits beside the caption', async () => {
-      const wrapper = mountInPanel(130)
-      sidebarWidth(wrapper, 360)
-
-      wrapper.vm.fitLoadData()
-      await flushPromises()
-
-      const button = wrapper.find('.load-data')
-      expect(button.text()).toBe('process.loadData')
-      expect(button.attributes('title')).toBe('process.loadVersions')
-      expect(button.attributes('aria-label')).toBeUndefined()
-      expect(button.classes()).not.toContain('border-0')
-    })
-
-    it('shrinks to a flat icon, named for screen readers, when the label would reach the caption', async () => {
-      const wrapper = mountInPanel(130)
-      sidebarWidth(wrapper, 275)
-
-      wrapper.vm.fitLoadData()
+    it('is a flat icon with the statistics tooltip, named for screen readers', async () => {
+      const wrapper = mountSidebar()
       await flushPromises()
 
       const button = wrapper.find('.load-data')
       expect(button.text()).toBe('')
+      expect(button.find('.mdi-poll').exists()).toBe(true)
+      expect(button.attributes('title')).toBe('process.loadVersions')
       expect(button.attributes('aria-label')).toBe('process.loadData')
       expect(button.classes()).toContain('border-0')
-      expect(button.attributes('style')).toContain('right: 60px')
     })
 
-    it('gets its label back once the sidebar is wide enough again', async () => {
-      const wrapper = mountInPanel(130)
-      const width = sidebarWidth(wrapper, 275)
-      wrapper.vm.fitLoadData()
-      await flushPromises()
-
-      width.mockReturnValue({ left: 0, right: 360 })
-      wrapper.vm.fitLoadData()
-      await flushPromises()
-
-      expect(wrapper.find('.load-data').text()).toBe('process.loadData')
-    })
-
-    it('shows a spinner in place of its icon, and holds both reload buttons, while every version loads', async () => {
+    it('shows a spinner over its hidden icon, and holds both reload buttons, while every version loads', async () => {
       const wrapper = mountSidebar({ refreshing: 'all' })
       await flushPromises()
 
       const button = wrapper.find('.load-data')
-      expect(button.find('.spinner-border').exists()).toBe(true)
-      expect(button.find('.mdi-poll').exists()).toBe(false)
+      // the icon stays, hidden, so the button keeps its size and the spinner sits where the icon was
+      expect(button.find('.mdi-poll.load-data-busy .spinner-border').exists()).toBe(true)
       expect(button.attributes('aria-busy')).toBe('true')
       expect(button.attributes('disabled')).toBeDefined()
       expect(wrapper.find('button[title="process.refreshVersions"]').attributes('disabled')).toBeDefined()
@@ -535,6 +479,7 @@ describe('ProcessDetailsSidebar', () => {
 
       const button = wrapper.find('.load-data')
       expect(button.find('.spinner-border').exists()).toBe(false)
+      expect(button.find('.mdi-poll').classes()).not.toContain('load-data-busy')
       expect(button.attributes('aria-busy')).toBeUndefined()
       expect(button.attributes('disabled')).toBeDefined()
       expect(wrapper.find('button[title="process.refreshVersions"]').attributes('disabled')).toBeDefined()
@@ -545,25 +490,6 @@ describe('ProcessDetailsSidebar', () => {
       await flushPromises()
 
       expect(wrapper.find('.load-data').attributes('disabled')).toBeUndefined()
-      expect(wrapper.find('.load-data .mdi-poll').exists()).toBe(true)
-    })
-
-    it('fits itself whenever the sidebar is resized, and stops when it goes away', async () => {
-      const observers = []
-      vi.stubGlobal('ResizeObserver', class {
-        constructor(callback) { this.callback = callback; this.observe = vi.fn(); this.disconnect = vi.fn(); observers.push(this) }
-      })
-      const wrapper = mountSidebar()
-      await flushPromises()
-      const fit = vi.spyOn(wrapper.vm, 'fitLoadData')
-
-      observers[0].callback()
-      wrapper.unmount()
-
-      expect(observers[0].observe).toHaveBeenCalledWith(wrapper.vm.$el)
-      expect(fit).toHaveBeenCalled()
-      expect(observers[0].disconnect).toHaveBeenCalled()
-      vi.unstubAllGlobals()
     })
   })
 

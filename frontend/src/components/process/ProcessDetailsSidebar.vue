@@ -19,16 +19,15 @@
 <template>
   <div class="h-100 d-flex flex-column bg-light">
     <div class="overflow-auto h-100">
-      <b-button ref="loadData" :style="loadDataStyle"
-        class="load-data position-absolute d-inline-flex align-items-center"
-        :class="{ 'border-0': compactLoadData }" :variant="compactLoadData ? 'btn-outline-primary' : 'outline-secondary'" size="sm"
-        :title="$t('process.loadVersions')" :aria-label="compactLoadData ? $t('process.loadData') : null"
+      <b-button style="top: 2px; right: 60px" class="load-data border-0 position-absolute"
+        variant="btn-outline-primary" size="sm"
+        :title="$t('process.loadVersions')" :aria-label="$t('process.loadData')"
         :disabled="!!refreshing" :aria-busy="refreshing === 'all' ? 'true' : null"
         @click="onRefreshProcessDefinitions(false)">
-        <!-- the spinner takes the place of the icon while every version's data is loading -->
-        <span v-if="refreshing === 'all'" class="load-data-spinner spinner-border" aria-hidden="true"></span>
-        <span v-else class="mdi mdi-18px mdi-poll" :class="{ 'lh-1': !compactLoadData }" aria-hidden="true"></span>
-        <span v-if="!compactLoadData" class="ms-1">{{ $t('process.loadData') }}</span>
+        <!-- while every version's data is loading, the spinner is drawn over the hidden icon, so the button keeps its size -->
+        <span class="mdi mdi-18px mdi-poll position-relative" :class="{ 'load-data-busy': refreshing === 'all' }" aria-hidden="true">
+          <span v-if="refreshing === 'all'" class="load-data-spinner spinner-border"></span>
+        </span>
       </b-button>
       <b-button style="top: 2px; right: 30px" class="border-0 position-absolute"
         variant="btn-outline-primary" size="sm" :title="$t('process.refreshVersions')"
@@ -135,9 +134,6 @@ import ProcessDefinitionDetails from '@/components/process/ProcessDefinitionDeta
 import { ProcessService } from '@/services.js'
 import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 
-// distance of the labelled load button from the right edge, clear of the refresh button
-const LOAD_DATA_RIGHT = 65
-
 export default {
   name: 'ProcessDetailsSidebar',
   components: { SuccessAlert, DeleteProcessDefinitionModal, ProcessDefinitionDetails },
@@ -161,27 +157,12 @@ export default {
       expandedVersionId: null,
       // what was loaded for the versions selected before, so their cards keep it
       deployments: {},
-      incidentsByVersionId: {},
-      // only the icon, without border, when the label does not fit beside the sidebar caption
-      compactLoadData: false,
-      loadDataWidth: 0
+      incidentsByVersionId: {}
     }
-  },
-  mounted() {
-    if (typeof ResizeObserver === 'undefined') return
-    this.resizeObserver = new ResizeObserver(() => this.fitLoadData())
-    this.resizeObserver.observe(this.$el)
-  },
-  beforeUnmount() {
-    this.resizeObserver?.disconnect()
   },
   computed: {
     hasHistory() {
       return this.$root.config.camundaHistoryLevel !== 'none'
-    },
-    // compact it sits like the refresh button; labelled it is centred in the header
-    loadDataStyle() {
-      return this.compactLoadData ? 'top: 2px; right: 60px' : `top: 6px; right: ${LOAD_DATA_RIGHT}px`
     },
     ProcessDefinitionVersionActionsPlugin: function() {
       return this.$options.components && this.$options.components.ProcessDefinitionVersionActionsPlugin
@@ -219,25 +200,6 @@ export default {
     // lazy loaded counts come as '-' until the version is selected
     countOrDash(value) {
       return typeof value === 'number' ? value : '-'
-    },
-    fitLoadData() {
-      const button = this.$refs.loadData?.$el ?? this.$refs.loadData
-      if (!button) return
-      // the width with the label, kept to know when it fits again
-      if (!this.compactLoadData) this.loadDataWidth = button.offsetWidth
-      // the caption is drawn by SidebarsFlow, in the header button of the panel holding this content
-      let caption = null
-      for (let panel = this.$el.parentElement, level = 0; panel && !caption && level < 3; panel = panel.parentElement, level++) {
-        caption = panel.querySelector(':scope > button h2')
-      }
-      let captionEnd = this.$el.getBoundingClientRect().left
-      if (caption) {
-        const text = document.createRange()
-        text.selectNodeContents(caption)
-        captionEnd = text.getBoundingClientRect().right
-      }
-      const labelStart = this.$el.getBoundingClientRect().right - LOAD_DATA_RIGHT - this.loadDataWidth
-      this.compactLoadData = labelStart < captionEnd + 8
     },
     // the selected version shows its live count, the others the one they had when selected or the loaded data
     incidentsOf(version) {
@@ -284,10 +246,17 @@ export default {
 .min-width-0 {
   min-width: 0;
 }
-/* the size of the icon it replaces, so the button keeps its size */
+.load-data-busy::before {
+  visibility: hidden;
+}
+/* centred on the icon it covers; with margins, as a translate would clash with the spinner's rotation */
 .load-data-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
   width: 18px;
   height: 18px;
+  margin: -9px 0 0 -9px;
   border-width: 2px;
 }
 /* danger 20% darker, so its text reaches the contrast needed on white */
