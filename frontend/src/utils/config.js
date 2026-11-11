@@ -209,3 +209,13 @@ export function applyConfigDefaults(config) {
   return deepMerge(DEFAULT_CONFIG, config || {})
 }
 
+/**
+ * Whether the backend reports the modeler on. The one check for the modeler route's guard, the navigation and
+ * the viewers, so they cannot disagree: a backend that does not report it (e.g. 2.2) has no modeler.
+ * @param {Object} config - The loaded configuration
+ * @returns {boolean}
+ */
+export function isModelerEnabled(config) {
+  return config?.modelerEnabled === true
+}
+
