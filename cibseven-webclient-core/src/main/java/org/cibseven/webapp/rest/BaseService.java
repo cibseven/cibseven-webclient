@@ -22,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.providers.BpmProvider;
 
 public class BaseService {
@@ -33,9 +32,6 @@ public class BaseService {
 	@SuppressWarnings("rawtypes")
 	@Autowired
 	protected BaseUserProvider baseUserProvider;
-	
-	@Autowired(required = false)
-	protected SevenWebclientProperties properties = new SevenWebclientProperties();
 
 	protected CIBUser checkAuthorization(HttpServletRequest rq, boolean basicAuthAllowed) {
 		return baseUserProvider.checkAuthorization(rq, basicAuthAllowed);

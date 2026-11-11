@@ -67,6 +67,9 @@ public class TaskService extends BaseService implements InitializingBean {
 	@Autowired
 	private CustomRestTemplate restTemplate;
 
+	@Autowired(required = false)
+	protected SevenWebclientProperties properties = new SevenWebclientProperties();
+
 	public void afterPropertiesSet() {
 	}	
 	
