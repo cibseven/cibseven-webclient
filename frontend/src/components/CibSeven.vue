@@ -19,8 +19,8 @@
 <template>
   <div class="h-100 d-flex flex-column">
     <CIBHeaderFlow v-if="$root.header === 'true'" ref="headerFlow" class="flex-shrink-0" :languages="$root.config.supportedLanguages.sort()" :user="$root.user"
-      :nav-clusters="navClusters" :utility-clusters="utilityClusters" :user-items="userMenuItems"
-      @logout="logout" @select="onHeaderSelect">
+      :nav-clusters="navClusters" :utility-clusters="utilityClusters" :user-items="userMenuItems" :user-to="userMenuTo"
+      @logout="logout" @select="onHeaderSelect" @open="onHeaderOpen">
       <div class="me-auto d-flex flex-row overflow-hidden" style="min-height: 38px;">
         <!-- Product name on the home page, the user's own account page and the pages before sign-in; elsewhere the icon and the page title -->
         <b-navbar-brand ref="brandHome" class="py-0 flex-shrink-0" :aria-label="brandLabel" :title="brandLabel" to="/seven/auth/start">
@@ -98,7 +98,8 @@ import FeedbackModal from '@/components/modals/FeedbackModal.vue'
 import PluginSlot from '@/components/common/PluginSlot.vue'
 import { updateAppTitle } from '@/utils/init'
 import { buildNavGroups, extendNavGroups, projectGroupsForNavbar, permissionFlagsFromVm, itemsToSections, singleDestination } from '@/navigation/navGroups.js'
-import { profileTabRouteName } from '@/components/admin/utils.js'
+import { profileTabRouteName, findProfileUser } from '@/components/admin/utils.js'
+import { profileTabs } from '@/components/admin/profileTabs.js'
 
 // The names of the route and of the routes it is nested in, so a tab of a page (a child route) counts as the page.
 // That includes the layout routes every page sits in ('seven', 'auth', 'admin'), so no menu item may name one of
@@ -115,7 +116,10 @@ export default {
   emits: [],
   data: function() {
     return {
-       rememberNotShow: false
+       rememberNotShow: false,
+       // The details of the user accountUserId, which decide the account menu's tabs: loaded when the menu first opens
+       accountUserId: null,
+       accountUser: null
     }
   },
   watch: {
@@ -194,24 +198,34 @@ export default {
       }
       return clusters
     },
+    // The signed-in user while the account menu is offered to them
+    accountMenuUserId: function() {
+      if (!this.$root.user || !this.$root.config.layout.showUserSettings || !this.permissionsUserProfile) return null
+      return this.$root.user.id
+    },
+    // The account page, which opens the first tab it shows, so the avatar needs no details to link to it
+    userMenuTo: function() {
+      return this.accountMenuUserId ? { name: 'account', params: { userId: this.accountMenuUserId } } : null
+    },
     userMenuItems: function() {
-      if (!this.$root.user || !this.$root.config.layout.showUserSettings || !this.permissionsUserProfile) return []
-      const config = this.$root.config
-      // One entry per tab of the account page (ProfileUser), each tab a child route of the page
-      const tabs = [
-        { tab: 'profile', label: 'start.account.profile.title', tooltip: 'start.account.profile.tooltip' },
-        { tab: 'password', label: 'password.recover.changePassword', show: !!(config.userEditable && config.userPasswordChangeEnabled) },
-        { tab: 'groups', label: 'admin.users.groups' },
-        { tab: 'tenants', label: 'admin.tenants.title' },
-        { tab: 'preferences', label: 'admin.preferences.title' }
-      ]
-      return tabs.filter(entry => entry.show !== false).map(({ tab, label, tooltip }) => ({
-        key: tab,
-        label: this.$t(label),
-        tooltip: this.$t(tooltip ?? label),
-        to: { name: profileTabRouteName('account', tab), params: { userId: this.$root.user.id } },
-        active: this.$route.name === profileTabRouteName('account', tab)
-      }))
+      if (!this.accountMenuUserId) return []
+      // The tabs the account page shows (see profileTabs.js)
+      // Until the signed-in user's details are loaded, a user without details: just the preferences
+      const user = (this.accountUserId === this.accountMenuUserId && this.accountUser) || { id: this.accountMenuUserId, noInfo: true }
+      const context = {
+        user, editMode: false, ownAccount: true, config: this.$root.config,
+        applicationPermissions: this.applicationPermissions
+      }
+      return profileTabs('user').filter(tab => tab.show(context)).map(tab => {
+        const label = tab.menuLabel ?? tab.label
+        return {
+          key: tab.id,
+          label: this.$t(label),
+          tooltip: this.$t(tab.menuTooltip ?? label),
+          to: { name: profileTabRouteName('account', tab.id), params: { userId: this.accountMenuUserId } },
+          active: this.$route.name === profileTabRouteName('account', tab.id)
+        }
+      })
     },
     helpMenuItems: function() {
       const items = []
@@ -294,6 +308,25 @@ export default {
     }
   },
   methods: {
+    // A header menu opened: its cluster's id, or null for the mobile menu, which holds them all
+    onHeaderOpen: function(clusterId) {
+      if (clusterId === 'user' || clusterId === null) this.loadAccountUser()
+    },
+    // Once per signed-in user
+    loadAccountUser: async function() {
+      const userId = this.accountMenuUserId
+      if (!userId || this.accountUserId === userId) return
+      this.accountUserId = userId
+      this.accountUser = null
+      try {
+        const user = await findProfileUser(userId, this.canSearchUsers())
+        // Not if signed in as somebody else meanwhile
+        if (this.accountUserId === userId) this.accountUser = user
+      } catch {
+        // The error handler has reported it; the menu tries again when it next opens
+        if (this.accountUserId === userId) this.accountUserId = null
+      }
+    },
     // Browsers ring a focus set on load as if it came from the keyboard. The ring stays
     // hidden until the first key press, so keyboard users still see where they are. The header
     // hides it (CIBHeaderFlow): EE renders this template from its own component, where this

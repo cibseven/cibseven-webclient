@@ -17,6 +17,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { appRoutes, createAppRouter } from '@/router.js'
 import { profileTabRouteName } from '@/components/admin/utils.js'
+import { registerProfileTab, resetProfileTabs } from '@/components/admin/profileTabs.js'
 import ProfileUser from '@/components/admin/ProfileUser.vue'
 import ProfileGroup from '@/components/admin/ProfileGroup.vue'
 import { findComponents } from './utils.js'
@@ -102,13 +103,28 @@ describe('router', () => {
     let router
 
     // The guards read the module's router, which every createAppRouter call replaces
-    beforeEach(() => {
+    function createRouterWithRoot() {
       router = createAppRouter(appRoutes)
       router.setRoot({
         user: { id: 'demo' },
         config: { permissions: {}, layout: { showUserSettings: true } },
         applicationPermissions: () => true
       })
+    }
+    beforeEach(createRouterWithRoot)
+
+    // An extension registers its tab after the routes were defined, and the router still gives it its routes
+    it('opens a tab registered by an extension, also by an old ?tab= link', async () => {
+      try {
+        registerProfileTab('user', { id: 'extra', label: 'extra', component: { template: '<div></div>' }, show: () => true })
+        createRouterWithRoot()
+        await router.push('/seven/auth/account/demo?tab=extra')
+        expect(router.currentRoute.value).toMatchObject({ name: 'accountExtra', path: '/seven/auth/account/demo/extra' })
+        expect(router.hasRoute('adminUserExtra')).toBe(true)
+        expect(router.hasRoute('adminGroupExtra')).toBe(false)
+      } finally {
+        resetProfileTabs()
+      }
     })
 
     it.each([

@@ -14,6 +14,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+import { AdminService } from '@/services.js'
+
 export function notEmpty(value) {
   if (value === null) return null
   if (value.length < 1) return false
@@ -52,6 +54,12 @@ export function getStringObjByKeys(keys, obj) {
     } else result += obj[key] + ';'
   })
   return result.slice(0, -1)
+}
+
+// The engine's details of a user, or a user without details (noInfo), e.g. from SSO or when canRead is false
+export async function findProfileUser(userId, canRead = true) {
+  const users = canRead ? await AdminService.findUsers({ id: userId }) : []
+  return users[0] ?? { id: userId, firstName: null, lastName: null, email: null, noInfo: true }
 }
 
 // The route of one tab of a profile page (the account, an admin user or group page): a child route of the

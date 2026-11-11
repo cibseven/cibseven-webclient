@@ -14,15 +14,17 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
 import CibSeven from '@/components/CibSeven.vue'
+import { AdminService } from '@/services.js'
 
 // Mock services
 vi.mock('@/services.js', () => ({
   EngineService: {
     getEngines: vi.fn(() => Promise.resolve([{ name: 'default' }]))
-  }
+  },
+  AdminService: { findUsers: vi.fn() }
 }))
 
 describe('CibSeven.vue', () => {
@@ -382,6 +384,8 @@ describe('CibSeven.vue', () => {
         $route: route(),
         $root: { user: { id: 'ada' }, config: { layout: { showFeedbackButton: true, showInfoAndHelp: true, showUserSettings: true } } },
         permissionsUserProfile: true,
+        accountUserId: 'ada',
+        accountUser: { id: 'ada', firstName: 'Ada' },
         helpMenuItems: [
           { type: 'link', href: 'https://help', title: 'help.title', tooltip: 'help.tooltip' },
           { type: 'button', ref: 'about', title: 'about.title', tooltip: 'about.tooltip' }
@@ -391,6 +395,7 @@ describe('CibSeven.vue', () => {
       vm.isMenuItemActive = item => CibSeven.methods.isMenuItemActive.call(vm, item)
       vm.isToolActive = tool => CibSeven.methods.isToolActive.call(vm, tool)
       vm.getToolDefaultTo = tool => CibSeven.methods.getToolDefaultTo.call(vm, tool)
+      Object.defineProperty(vm, 'accountMenuUserId', { get: () => CibSeven.computed.accountMenuUserId.call(vm), configurable: true })
       return vm
     }
     const tasksTool = {
@@ -478,11 +483,143 @@ describe('CibSeven.vue', () => {
       expect(CibSeven.computed.userMenuItems.call(vm).map(i => i.key)).not.toContain('password')
     })
 
+    // Like the account page, which hides the other tabs of a user without details (e.g. from SSO, or who may
+    // not read their own details); the menu must not offer them either
+    it('offers only the preferences of a user the engine has no details of', () => {
+      const vm = shell({ accountUser: { id: 'ada', noInfo: true } })
+      vm.$root.config.userEditable = true
+      vm.$root.config.userPasswordChangeEnabled = true
+      expect(CibSeven.computed.userMenuItems.call(vm).map(i => i.key)).toEqual(['preferences'])
+    })
+
+    // Not yet loaded, or loaded for the user signed in before
+    it('offers only the preferences until the details of the signed-in user are loaded', () => {
+      expect(CibSeven.computed.userMenuItems.call(shell({ accountUserId: null, accountUser: null })).map(i => i.key)).toEqual(['preferences'])
+      expect(CibSeven.computed.userMenuItems.call(shell({ accountUserId: 'ada', accountUser: null })).map(i => i.key)).toEqual(['preferences'])
+      expect(CibSeven.computed.userMenuItems.call(shell({ accountUserId: 'bob', accountUser: { id: 'bob' } })).map(i => i.key)).toEqual(['preferences'])
+    })
+
+    // The page opens the first tab it shows, so the avatar's link needs no details
+    it('leads the avatar to the account page of the signed-in user', () => {
+      expect(CibSeven.computed.userMenuTo.call(shell())).toEqual({ name: 'account', params: { userId: 'ada' } })
+      expect(CibSeven.computed.userMenuTo.call(shell({ permissionsUserProfile: false }))).toBeNull()
+    })
+
+    // The menu and the page read one list of tabs, where an extension registers its own
+    it('offers a tab an extension registered, under its condition', async () => {
+      const { registerProfileTab, resetProfileTabs } = await import('@/components/admin/profileTabs.js')
+      try {
+        registerProfileTab('user', { id: 'extra', label: 'extra.title', show: ({ user }) => !user.noInfo }, { before: 'preferences' })
+        expect(CibSeven.computed.userMenuItems.call(shell()).map(i => i.key)).toEqual(['profile', 'groups', 'tenants', 'extra', 'preferences'])
+        expect(CibSeven.computed.userMenuItems.call(shell()).find(i => i.key === 'extra')).toMatchObject({
+          label: 't:extra.title', tooltip: 't:extra.title', to: { name: 'accountExtra', params: { userId: 'ada' } }
+        })
+        expect(CibSeven.computed.userMenuItems.call(shell({ accountUser: { id: 'ada', noInfo: true } })).map(i => i.key)).toEqual(['preferences'])
+      } finally {
+        resetProfileTabs()
+      }
+    })
+
+    // e.g. a tab offered only to authorization admins
+    it('lets a tab check a permission, as on the page', async () => {
+      const { registerProfileTab, resetProfileTabs } = await import('@/components/admin/profileTabs.js')
+      try {
+        registerProfileTab('user', { id: 'extra', label: 'extra.title',
+          show: ({ config, applicationPermissions }) => applicationPermissions(config.permissions.extra, 'extra') })
+        const vm = shell({ applicationPermissions: vi.fn((permissions, access) => permissions === 'granted' && access === 'extra') })
+        vm.$root.config.permissions = { extra: 'granted' }
+        expect(CibSeven.computed.userMenuItems.call(vm).map(i => i.key)).toContain('extra')
+        vm.$root.config.permissions = { extra: 'denied' }
+        expect(CibSeven.computed.userMenuItems.call(vm).map(i => i.key)).not.toContain('extra')
+      } finally {
+        resetProfileTabs()
+      }
+    })
+
+    it('knows the signed-in user only while the account menu is offered', () => {
+      const vm = shell()
+      expect(vm.accountMenuUserId).toBe('ada')
+      vm.$root.config.layout.showUserSettings = false
+      expect(vm.accountMenuUserId).toBeNull()
+      vm.$root.config.layout.showUserSettings = true
+      vm.$root.user = null
+      expect(vm.accountMenuUserId).toBeNull()
+    })
+
     it('opens the dialog a header item asks for', () => {
       const show = vi.fn()
       CibSeven.methods.onHeaderSelect.call({ $refs: { about: { show } } }, { modal: 'about' })
       expect(show).toHaveBeenCalled()
       expect(() => CibSeven.methods.onHeaderSelect.call({ $refs: {} }, { key: 'other' })).not.toThrow()
+    })
+  })
+
+  // The account menu offers the tabs of the account page, which depend on the engine's details of the user
+  describe('account user', () => {
+    const ADA = { id: 'ada', firstName: 'Ada', lastName: 'Lovelace', email: 'ada@example.org' }
+    const shell = ({ canSearch = true, menuUserId = 'ada' } = {}) => ({
+      accountUserId: null,
+      accountUser: null,
+      accountMenuUserId: menuUserId,
+      canSearchUsers: vi.fn(() => canSearch)
+    })
+    const load = vm => CibSeven.methods.loadAccountUser.call(vm)
+
+    beforeEach(() => {
+      AdminService.findUsers.mockReset()
+    })
+
+    // Not on every page load: only for the menu that offers the tabs
+    it('loads the details when the user menu or the mobile menu opens', () => {
+      const vm = { loadAccountUser: vi.fn() }
+      CibSeven.methods.onHeaderOpen.call(vm, 'help')
+      expect(vm.loadAccountUser).not.toHaveBeenCalled()
+      CibSeven.methods.onHeaderOpen.call(vm, 'user')
+      CibSeven.methods.onHeaderOpen.call(vm, null)
+      expect(vm.loadAccountUser).toHaveBeenCalledTimes(2)
+    })
+
+    it('takes the details the engine has of the signed-in user, once', async () => {
+      AdminService.findUsers.mockResolvedValue([ADA])
+      const vm = shell()
+      await load(vm)
+      await load(vm)
+      expect(AdminService.findUsers).toHaveBeenCalledTimes(1)
+      expect(AdminService.findUsers).toHaveBeenCalledWith({ id: 'ada' })
+      expect(vm).toMatchObject({ accountUserId: 'ada', accountUser: ADA })
+    })
+
+    it('does not search where the backend would refuse, and treats the user as without details', async () => {
+      const vm = shell({ canSearch: false })
+      await load(vm)
+      expect(AdminService.findUsers).not.toHaveBeenCalled()
+      expect(vm.accountUser).toMatchObject({ id: 'ada', noInfo: true })
+    })
+
+    it('loads nothing while the account menu is not offered', async () => {
+      await load(shell({ menuUserId: null }))
+      expect(AdminService.findUsers).not.toHaveBeenCalled()
+    })
+
+    it('drops details that arrive after somebody else signed in', async () => {
+      let resolveAda
+      AdminService.findUsers.mockReturnValueOnce(new Promise(resolve => { resolveAda = resolve }))
+      const vm = shell()
+      const ada = load(vm)
+      vm.accountUserId = 'bob'
+      resolveAda([ADA])
+      await ada
+      expect(vm.accountUser).toBeNull()
+    })
+
+    // The error handler reports the failure; the next opening of the menu tries again
+    it('keeps the user without details when the search fails, and tries again next time', async () => {
+      AdminService.findUsers.mockRejectedValueOnce(new Error('Network Error')).mockResolvedValueOnce([ADA])
+      const vm = shell()
+      await expect(load(vm)).resolves.toBeUndefined()
+      expect(vm).toMatchObject({ accountUserId: null, accountUser: null })
+      await load(vm)
+      expect(vm.accountUser).toEqual(ADA)
     })
   })
 

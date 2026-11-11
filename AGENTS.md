@@ -37,6 +37,10 @@ The main CIB seven BPM web application: a multi-module Maven project with a Vue 
 - vue-router 4 with `createWebHashHistory`; routes under `/seven/`, authenticated routes under `/seven/auth/`
 - Route factory `createAppRouter(routes)` exported for library consumers
 - Route guards: `authGuard`, `setupGuard`, `permissionsGuard`
+- **Profile page tabs:** the tabs of the user pages (`account`, `adminUser`) and the group page (`adminGroup`) are one list in `src/components/admin/profileTabs.js`, read by the router, the pages and the account menu (`CibSeven.userMenuItems`); never list them anywhere else. To add one (CE or an extension such as EE):
+  - Call `registerProfileTab('user' | 'group', { id, label, component, show, beforeEnter?, props? }, { before? })` before `createAppRouter`. It gets the route `<page>/<id>` (named `profileTabRouteName(page, id)`), the page's menu entry and, for a user tab, an account menu entry (`menuLabel`/`menuTooltip` where it differs). The same `id` replaces a tab.
+  - `show(context)` runs on the page and in the account menu, so read only `user`, `editMode`, `ownAccount` (`group` on the group page), `config` and `applicationPermissions`, e.g. `({ config, applicationPermissions }) => applicationPermissions(config.permissions.authorizationsManagement, 'authorization')`. `user.noInfo` marks a user without details (SSO, or no `READ` on users).
+  - A page route re-added from `appRoutes` lacks the registered tabs: call `addProfileTabRoutes(router)` afterwards. Tests that register a tab call `resetProfileTabs()`.
 - Components are eagerly imported (no lazy loading). The one exception is the `cibseven-modeler` package: it is loaded only when the modeler opens, through `loadModeler()` in `src/utils/modelerLoader.js`. Never import it statically; `modelerLoading.test.js` fails if you do
 
 ### Styling
