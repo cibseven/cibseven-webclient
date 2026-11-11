@@ -106,5 +106,32 @@ describe('config utility', () => {
       // 15 is the engine's REPORT, which the defaults used to label as optimize
       expect(config.admin.resourcesTypes['15']).toBeUndefined()
     })
+
+    it('should not offer the deprecated report and dashboard resource types', () => {
+      const config = applyConfigDefaults({ admin: { resourcesTypes: {} } })
+      const keys = Object.values(config.admin.resourcesTypes).map(resourceType => resourceType.key)
+      expect(keys).not.toContain('report')
+      expect(keys).not.toContain('dashboard')
+      // 16 is the engine's DASHBOARD, which the defaults used to label as operationLogCategory
+      expect(keys).not.toContain('operationLogCategory')
+      expect(config.admin.resourcesTypes['16']).toBeUndefined()
+    })
+
+    it('should key every default resource type by its own id', () => {
+      const { resourcesTypes } = applyConfigDefaults().admin
+      Object.entries(resourcesTypes).forEach(([key, resourceType]) => {
+        expect(resourceType.id).toBe(key)
+      })
+    })
+
+    // ids and permissions as in the engine's Resources, TaskPermissions and ProcessInstancePermissions
+    it.each([
+      ['7', 'task', ['CREATE', 'READ', 'UPDATE', 'DELETE', 'TASK_ASSIGN', 'TASK_WORK', 'UPDATE_VARIABLE', 'READ_VARIABLE']],
+      ['8', 'processInstance', ['CREATE', 'READ', 'UPDATE', 'DELETE', 'RETRY_JOB', 'SUSPEND', 'UPDATE_VARIABLE']]
+    ])('should define resource type %j as %s with the engine permissions', (id, key, permissions) => {
+      const resourceType = applyConfigDefaults().admin.resourcesTypes[id]
+      expect(resourceType.key).toBe(key)
+      expect(resourceType.permissions).toEqual(permissions)
+    })
   })
 })

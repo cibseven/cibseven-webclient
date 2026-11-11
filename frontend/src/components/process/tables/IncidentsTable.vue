@@ -29,13 +29,7 @@
 
       <div class="d-flex w-100">
         <div class="col-6 p-3">
-          <b-input-group size="sm">
-            <template #prepend>
-              <b-button :title="$t('searches.search')" aria-hidden="true" size="sm" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
-            </template>
-            <label for="incidents-search" class="visually-hidden">{{ $t('searches.search') }}</label>
-            <b-form-input id="incidents-search" :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="(evt) => onInput(evt.target.value.trim())"></b-form-input>
-          </b-input-group>
+          <SearchInput input-id="incidents-search" size="sm" @update:model-value="value => onInput(value.trim())"/>
         </div>
         <div v-if="selectedActivityId" class="col-6 p-3">
           <RemovableBadge
@@ -225,10 +219,11 @@ import RemovableBadge from '@/components/common-components/RemovableBadge.vue'
 import { formatDateForTooltips } from '@/utils/dates.js'
 import { mapGetters, mapActions } from 'vuex'
 import { debounce } from '@/utils/debounce.js'
+import SearchInput from '@/components/common-components/SearchInput.vue'
 
 export default {
   name: 'IncidentsTable',
-  components: { FlowTable, SuccessAlert, RetryModal, AnnotationModal, StackTraceModal, PagedScrollableContent, CopyableActionButton, CellActionButton, RemovableBadge },
+  components: { FlowTable, SuccessAlert, RetryModal, AnnotationModal, StackTraceModal, PagedScrollableContent, CopyableActionButton, CellActionButton, RemovableBadge, SearchInput },
   mixins: [copyToClipboardMixin],
   props: {
     instance: Object,

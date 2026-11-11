@@ -1,1 +1,2 @@
+org.cibseven.webapp.config.SevenWebclientPropertiesAutoConfiguration
 org.cibseven.webapp.plugin.PluginAutoConfiguration

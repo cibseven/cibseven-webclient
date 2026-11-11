@@ -1,0 +1,79 @@
+# cibseven.webclient section of the application.yaml that used to ship with cibseven-webclient-web.
+# SevenWebclientPropertiesTest checks that the code defaults are identical to it.
+# Deliberately no longer defaulted, because they were example values: ldap.url (ldap://ldap.cibseven.org)
+# and ldap.folder (DC=cibseven,DC=org). The LDAP user provider now requires both.
+cibseven:
+  webclient:
+    enabled: true
+    modeler:
+      enabled: false
+      templates:
+        paths: []
+    startProcess:
+      defaultFormEnabled: false
+    plugins:
+      enabled: false
+    engineRest:
+      url: http://localhost:8080
+      path: /engine-rest
+      displayName:
+      tooltip:
+    authentication:
+      jwtSecret:
+      tokenValidMinutes: 60
+      tokenProlongMinutes: 1440
+    ldap:
+      userClass: person
+      userNameAttribute: samAccountName
+      userDisplayNameAttribute: name
+      modifiedDateFormat: yyyyMMddHHmmss.SX
+      followReferrals: follow
+    bpm:
+      provider: org.cibseven.webapp.providers.SevenProvider
+    user:
+      provider: org.cibseven.webapp.auth.SevenUserProvider
+      editable:
+      userPasswordChangeEnabled: true
+    users:
+      search:
+        wildcard:
+    fetchInstances: true
+    fetchIncidents: true
+    token:
+      secret:
+      deny:
+        external:
+          ip: true
+    theme: cib
+    rest:
+      enabled: true
+      keepAlive: true
+      socketTimeout: 3600
+      connectTimeout: 30
+      connectionRequestTimeout: 180
+      connectionResponseTimeout:
+      maxConnPerRoute: 20
+      maxConnTotal: 40
+      connectionTimeToLive: 50000
+      connectionPoolingEnabled: true
+      connectionReuseEnabled: true
+      metricsEnabled: false
+      requestLoggingEnabled: false
+      followRedirects: true
+    services:
+      basePath: services/v1
+    api:
+      common:
+        title: "CIB seven webclient API"
+        description: "This API exposes the functionality of CIB seven webclient as a REST service under the Apache License 2.0."
+        termsOfService: "https://www.apache.org/licenses/LICENSE-2.0"
+        license: "Apache 2.0"
+        licenseUrl: "https://www.apache.org/licenses/LICENSE-2.0"
+        contact:
+          name: "CIB seven"
+          url: "https://cibseven.org"
+          email: "info@cibseven.org"
+        url:
+    deprecated:
+      authorization:
+        enabled: false

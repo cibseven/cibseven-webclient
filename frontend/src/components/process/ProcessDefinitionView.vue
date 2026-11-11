@@ -370,7 +370,9 @@ export default {
     async loadProcessVersion(process) {
       this.process = process
       await this.findProcessAndAssignData(process)
-      if (!this.process.statistics) await this.loadStatistics()
+      // ProcessInstancesView reloads runtime statistics with its instances on every tab
+      const showsInstancesView = !this.selectedInstance && !this.instanceId
+      if (!this.process.statistics && !showsInstancesView) await this.loadStatistics()
 
       // Load parent process if parentProcessDefinitionId exists in route query
       if (this.$route.query.parentProcessDefinitionId) {
@@ -382,9 +384,7 @@ export default {
       }
     },
     async loadStatistics() {
-      await ProcessService.findProcessStatistics(this.process.id).then(statistics => {
-        this.$store.dispatch('setStatistics', { process: this.process, statistics: statistics })
-      })
+      await this.$store.dispatch('loadStatistics', this.process)
     },
     async onInstanceDeleted() {
       await this.setSelectedInstance({ selectedInstance: null })

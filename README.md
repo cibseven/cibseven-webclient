@@ -36,6 +36,62 @@ mvn clean install
 
 The webclient can be configured using Spring Boot properties. Key configuration options include:
 
+#### Where settings and defaults are defined
+
+All settings below `cibseven.webclient` and their defaults are defined in one class,
+[`SevenWebclientProperties`](cibseven-interfaces/src/main/java/org/cibseven/webapp/config/SevenWebclientProperties.java).
+The build turns its Javadoc into `META-INF/spring-configuration-metadata.json` in the `cibseven-interfaces` jar,
+which IDEs use for completion and documentation of these properties in `application.yaml`.
+The webclient no longer ships an `application.yaml`. Put your own settings in `cibseven-webclient.yaml`
+or `cibseven-webclient.properties` on the classpath, or use any other Spring Boot property source
+(environment variables, system properties, an external `application.yaml`).
+
+The webclient reads `cibseven-webclient.properties` and `cibseven-webclient.yaml` from the classpath
+in every setup: standalone, in the Run distribution and embedded into another Spring Boot application.
+They rank just above the defaults: every configuration file of the application, environment variables
+and system properties override them, and the YAML file overrides the properties file. They are not read
+when `cibseven.webclient.enabled` is `false`.
+The Run distribution also imports both files in its `default.yml` and `production.yml`, so there they
+keep overriding Run's own configuration.
+
+The webclient's tables (modeler, folders, history) live in its own JPA persistence unit. Its naming strategy
+(`PhysicalNamingStrategyStandardImpl`, matching the engine's DDL) and schema generation (`none`, the engine
+creates the tables) are fixed, so `spring.jpa.hibernate.ddl-auto` and `spring.jpa.hibernate.naming.*` of your
+application do not apply to it. Other settings, such as `spring.jpa.properties.*`, still do. Hibernate
+settings for that unit alone go under `cibseven.webclient.persistence.properties`, for example
+`cibseven.webclient.persistence.properties.hibernate.default_schema`; they also override the two fixed ones.
+
+#### Defaults of the standalone application
+
+When the webclient runs as its own application (`java -jar` or a WAR on Tomcat/WildFly), it additionally
+sets the following framework defaults, see
+[`StandaloneDefaults`](cibseven-webclient-core/src/main/java/org/cibseven/webapp/config/StandaloneDefaults.java).
+They have the lowest precedence, so any configured value overrides them.
+
+| Property | Default | Spring Boot's own default |
+|---|---|---|
+| `spring.servlet.register-default-servlet` | `true` | `false` |
+| `spring.servlet.multipart.max-file-size` | `10MB` | `1MB` |
+| `spring.servlet.multipart.max-request-size` | `1GB` | `10MB` |
+| `spring.jpa.open-in-view` | `false` | `true` (with a startup warning) |
+| `springdoc.swagger-ui.path` | `/swagger-ui` | `/swagger-ui.html` |
+| `springdoc.swagger-ui.operationsSorter`, `tagsSorter` | `alpha` | unsorted |
+| `springdoc.swagger-ui.doc-expansion` | `none` | `list` |
+
+When the webclient is embedded into another Spring Boot application, none of these defaults are set.
+
+#### JSON
+
+The webclient's REST services and its engine REST client read and write JSON with Jackson 3 and a mapper of their
+own, configured with Jackson 2's defaults so the JSON stays what it was before 3.0 (ISO-8601 dates, unknown
+properties ignored, properties in declaration order). It is not a bean: an application that embeds the webclient
+keeps Spring Boot's own `JsonMapper`, and its `spring.jackson.*` settings apply to that one, not to the webclient's
+services. The only setting of the webclient's mapper is
+`cibseven.webclient.custom.spring.jackson.parser.max-size`, the maximum length of a JSON string value.
+`cibseven.webclient.custom.spring.jackson.serialization.write-dates-as-timestamps`, the interim opt-out that came with
+the ISO-8601 dates, is gone; dates are always written as ISO-8601 strings, and a leftover setting is ignored with a
+warning at startup.
+
 #### Engine REST API Configuration
 
 ```yaml

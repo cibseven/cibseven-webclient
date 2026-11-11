@@ -53,3 +53,9 @@ export function getStringObjByKeys(keys, obj) {
   })
   return result.slice(0, -1)
 }
+
+// The route of one tab of a profile page (the account, an admin user or group page): a child route of the
+// page's route, named after the page and the tab, e.g. 'account' + 'preferences' => 'accountPreferences'
+export function profileTabRouteName(page, tab) {
+  return page + tab.charAt(0).toUpperCase() + tab.slice(1)
+}

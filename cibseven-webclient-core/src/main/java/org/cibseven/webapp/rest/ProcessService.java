@@ -29,6 +29,7 @@ import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.auth.exception.AuthenticationException;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.exception.ApplicationException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
@@ -63,8 +64,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -78,7 +77,7 @@ import jakarta.ws.rs.core.MediaType;
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occured"),
 	@ApiResponse(responseCode = "401", description = "Unauthorized")
 })
-@RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/process")
+@RestController @RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH + "/process")
 public class ProcessService extends BaseService implements InitializingBean {
 	
 	public void afterPropertiesSet() {

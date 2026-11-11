@@ -35,6 +35,7 @@ import java.util.function.Function;
 
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.exception.ExpressionEvaluationException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnsupportedTypeException;
@@ -55,16 +56,16 @@ import org.cibseven.webapp.rest.model.TaskSorting;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.providers.utils.URLUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -75,21 +76,14 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	 @Autowired private IIncidentProvider incidentProvider;
 	 @Autowired private IEngineProvider engineProvider;
 
-	@Value("${cibseven.webclient.fetchInstances:true}") boolean fetchInstances;
-	@Value("${cibseven.webclient.fetchIncidents:true}") boolean fetchIncidents;
 	/** engine-rest URLs known not to offer the filtered historic activity statistics query, keyed per engine. */
 	private final Set<String> historicActivityStatisticsQueryUnsupported = ConcurrentHashMap.newKeySet();
-	/**
-	 * Legacy fallback used only with engine-rest versions prior to 2.2.0, where the
-	 * engine configuration endpoint (which exposes the history level dynamically) is not available.
-	 */
-	@Value("${cibseven.webclient.historyLevel:" + EngineConfiguration.DEFAULT_HISTORY_LEVEL + "}") String legacyHistoryLevel;
 
 	private String getHistoryLevel(CIBUser user) {
 		EngineConfiguration engineConfig = IEngineProvider.isEngineUnspecified(user.getEngine())
 				? engineProvider.getEffectiveDefaultEngineConfiguration()
 				: engineProvider.getEngineConfiguration(user.getEngine());
-		return engineConfig != null ? engineConfig.getHistoryLevel() : legacyHistoryLevel;
+		return engineConfig != null ? engineConfig.getHistoryLevel() : properties.getHistoryLevel();
 	}
 
 	@Override
@@ -236,7 +230,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 			return null;
 		try {
 			JsonNode deployment = ((ResponseEntity<JsonNode>) doGet(getEngineRestUrl(user) + "/deployment/" + deploymentId, JsonNode.class, user, false)).getBody();
-			return deployment != null && deployment.hasNonNull("deploymentTime") ? deployment.get("deploymentTime").asText() : null;
+			return deployment != null && deployment.hasNonNull("deploymentTime") ? deployment.get("deploymentTime").asString() : null;
 		} catch (RuntimeException e) {
 			log.debug("Deployment time of {} not available: {}", deploymentId, e.getMessage());
 			return null;
@@ -600,11 +594,11 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		}
 		url += "&firstResult=" + firstResult + "&maxResults=" + maxResults;
 		data.put("processDefinitionId", id);
-		ObjectMapper objectMapper = new ObjectMapper();
+		ObjectMapper objectMapper = WebclientJsonMapper.plain();
 		String body = "";
 		try {
 			body = objectMapper.writeValueAsString(data);
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			throw new SystemException(e);
 		}
 		//findIncident
@@ -628,7 +622,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		        String bodyIdIn = "";
 		        try {
 		        	bodyIdIn = objectMapper.writeValueAsString(dataIdIn);
-		        } catch (JsonProcessingException e) {
+		        } catch (JacksonException e) {
 		            throw new SystemException(e);
 		        }
 

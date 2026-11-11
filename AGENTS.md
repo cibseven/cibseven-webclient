@@ -37,7 +37,7 @@ The main CIB seven BPM web application: a multi-module Maven project with a Vue 
 - vue-router 4 with `createWebHashHistory`; routes under `/seven/`, authenticated routes under `/seven/auth/`
 - Route factory `createAppRouter(routes)` exported for library consumers
 - Route guards: `authGuard`, `setupGuard`, `permissionsGuard`
-- Components are eagerly imported (no lazy loading)
+- Components are eagerly imported (no lazy loading). The one exception is the `cibseven-modeler` package: it is loaded only when the modeler opens, through `loadModeler()` in `src/utils/modelerLoader.js`. Never import it statically; `modelerLoading.test.js` fails if you do
 
 ### Styling
 - Bootstrap 5 classes for layout; SCSS with themes in `src/themes/`; `mdi-*` icon classes

@@ -1,0 +1,12 @@
+Task {"assignee":null,"caseDefinitionId":null,"caseExecutionId":null,"caseInstanceId":null,"delegationState":null,"description":null,"executionId":null,"formKey":null,"id":"task-1","name":null,"owner":null,"parentTaskId":null,"priority":50,"suspended":null,"tenantId":null,"camundaFormRef":null,"variables":{"a":1},"variableTypes":null,"created":null,"due":null,"followUp":null,"taskDefinitionKey":null,"processDefinitionId":null,"processInstanceId":null}
+Authorization {"id":"auth-1","type":1,"permissions":["READ","UPDATE"],"userId":"demo","groupId":null,"resourceType":6,"resourceId":"*"}
+TaskFiltering {"sorting":[{"sortBy":"created","sortOrder":"desc"}],"processVariables":[{"name":"amount","operator":"gt","value":100}],"orQueries":null,"active":true,"likePatternIgnoreCase":null,"variableValuesIgnoreCase":null,"variableNames":["amount"],"dueAfter":"2026-11-07T00:00:00.000+0000","followUpAfter":null}
+TaskSorting {"sortBy":"name","sortOrder":"asc"}
+ProcessVariablesCriteria {"name":"x","operator":"eq","value":null}
+User {"id":"demo","firstName":"Demo","lastName":"Demo","email":"demo@example.com"}
+Credentials {"password":"secret"}
+Tenant {"id":"tenant-1","name":"Tenant 1"}
+UserGroup {"id":"sales","name":"Sales","type":"WORKFLOW"}
+IdentityLink {"userId":"demo","groupId":null,"type":"candidate"}
+Engine {"name":"default","url":null,"path":null,"id":null,"displayName":null,"tooltip":null}
+Filter {"id":"filter-1","resourceType":"Task","name":"My tasks","owner":null,"query":{"assigneeExpression":"${currentUser()}","assigned":false,"unassigned":false,"followUpBeforeOrNotExistentExpression":"${now()}","candidateGroupsExpression":"${currentUserGroups()}","active":true,"suspended":false,"taskVariables":[],"processVariables":[{"name":"amount","operator":"gt","value":100}],"variableNamesIgnoreCase":false,"variableValuesIgnoreCase":false,"orQueries":[{"candidateUser":"demo","includeAssignedTasks":true}],"sorting":[{"sortBy":"created","sortOrder":"desc"}]},"properties":{"color":"#555555","showUndefinedVariable":false,"description":"Mine","refresh":true,"priority":0,"variables":[{"name":"amount","label":"Amount"}]}}

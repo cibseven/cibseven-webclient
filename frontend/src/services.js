@@ -586,6 +586,13 @@ const InfoService = {
   }
 }
 
+// The modeler's element templates, read without the modeler package so diagrams can show their icons
+const ElementTemplateService = {
+  findAll: function() {
+    return axios.get(getServicesBasePath() + '/modeler/element-templates')
+  }
+}
+
 const FormsService = {
   submitVariables: function(task, formResult, close) {
     return axios.post(getServicesBasePath() + '/task/' + task.id + '/submit-variables', formResult, {
@@ -765,15 +772,6 @@ const BatchService = {
   },
   deleteHistoricBatch: function(id) {
     return axios.delete(getServicesBasePath() + '/history/batch/' + id)
-  },
-  setRemovalTime(payload) {
-    return axios.post(getServicesBasePath() + '/history/batch/set-removal-time', payload)
-  },
-  getCleanableBatchReport(params) {
-    return axios.get(getServicesBasePath() + '/history/batch/cleanable-batch-report', { params })
-  },
-  getCleanableBatchReportCount() {
-    return axios.get(getServicesBasePath() + '/history/batch/cleanable-batch-report/count')
   }
 }
 
@@ -897,7 +895,7 @@ const SetupService = {
 }
 export {
   TaskService, FilterService, ProcessService, VariableInstanceService, HistoricVariableInstanceService, AdminService, JobService, JobDefinitionService, SystemService,
-  HistoryService, IncidentService, AuthService, InfoService, FormsService, TemplateService, DecisionService,
+  HistoryService, IncidentService, AuthService, InfoService, ElementTemplateService, FormsService, TemplateService, DecisionService,
   AnalyticsService, BatchService, TenantService, ExternalTaskService, DeploymentService, EngineService, SetupService, getServicesBasePath, setServicesBasePath, createDocumentEndpointUrl,
   joinArrayParams
 }

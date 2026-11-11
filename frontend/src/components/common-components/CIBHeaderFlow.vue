@@ -17,7 +17,7 @@
 
 -->
 <template>
-  <header class="cib-navbar" style="height: 55px"> <!-- Empty container with height of navbar -->
+  <header class="cib-navbar"> <!-- Empty container with height of navbar -->
     <b-navbar fixed="top" type="light" class="border-bottom bg-white px-3 flex-nowrap">
       <slot></slot>
 
@@ -299,6 +299,11 @@ export default {
 </script>
 
 <style scoped>
+/* The fixed navbar's height, reserved by this container and used by the mobile menu below it */
+.cib-navbar {
+  --cib-navbar-height: 55px;
+  height: var(--cib-navbar-height);
+}
 /* One keyboard focus ring for every link and button in the header and its menus: the theme's dark
    outline rather than each browser's own colour, never an underline. Inset, so the menus' clipping
    does not cut it off. */
@@ -308,6 +313,11 @@ export default {
   outline-offset: -2px;
   box-shadow: none !important;
   text-decoration: none;
+}
+/* Except on the brand link that CibSeven focuses on load, until the first key press (see focusBrandLink) */
+.cib-navbar :deep(a.initial-focus:focus) {
+  outline: none !important;
+  box-shadow: none !important;
 }
 .cib-nav-clusters {
   gap: 2px;
@@ -350,6 +360,10 @@ export default {
   padding: 0;
 }
 @media (max-width: 767.98px) {
+  /* 44px buttons + 2 × 8px navbar padding + 1px border */
+  .cib-navbar {
+    --cib-navbar-height: 61px;
+  }
   :slotted(.cib-nav-action) {
     width: 44px;
     height: 44px;

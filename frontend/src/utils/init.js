@@ -139,6 +139,8 @@ export async function loadTheme(themeName) {
       const module = await moduleLoader()
       const style = document.createElement('style')
       style.textContent = module.default
+      // Marked, so styles loaded later can be placed before it and the theme keeps the last word
+      style.dataset.theme = themeName
       document.head.appendChild(style)
     } else {
       console.warn(`Theme "${themeName}" not found, available themes:`, Object.keys(themeModules))

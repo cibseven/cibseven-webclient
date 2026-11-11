@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.rest.model.Metric;
 import org.springframework.beans.factory.InitializingBean;
@@ -29,7 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -38,7 +39,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 	@ApiResponse(responseCode= "500", description = "An unexpected system error occured"),
 	@ApiResponse(responseCode= "401", description = "Unauthorized")
 })
-@RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/system")
+@RestController @RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH + "/system")
 public class SystemService extends BaseService implements InitializingBean {
 
  @Autowired BpmProvider bpmProvider;

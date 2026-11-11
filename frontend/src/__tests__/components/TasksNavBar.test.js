@@ -116,7 +116,7 @@ describe('TasksNavBar - computed', () => {
   it('refreshButtonPosition should leave room for the header chevrons only on desktop', () => {
     expect(TasksNavBar.computed.refreshButtonPosition.call(context())).toEqual({ top: '3px', right: '30px' })
     expect(TasksNavBar.computed.refreshButtonPosition.call(context({ isMobile: () => true })))
-      .toEqual({ top: '3px', right: '0.75rem' })
+      .toEqual({ top: '0', right: '0', width: '45px', height: '45px' })
   })
 
   describe('tasksFiltered', () => {

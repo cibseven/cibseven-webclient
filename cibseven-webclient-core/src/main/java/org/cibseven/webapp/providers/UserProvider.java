@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.exception.UnknownResourceTypeException;
 import org.cibseven.webapp.rest.model.AuthorizationCheckResult;
 import org.cibseven.webapp.auth.rest.StandardLogin;
@@ -45,7 +46,6 @@ import org.cibseven.webapp.rest.model.SevenUser;
 import org.cibseven.webapp.rest.model.SevenVerifyUser;
 import org.cibseven.webapp.rest.model.User;
 import org.cibseven.webapp.rest.model.UserGroup;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -53,10 +53,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -64,9 +64,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class UserProvider extends SevenProviderBase implements IUserProvider {
 	
-	@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") String userProvider;
-	@Value("${cibseven.webclient.users.search.wildcard:}") String wildcard;
-	private final ObjectMapper objectMapper = new ObjectMapper();
+	private final ObjectMapper objectMapper = WebclientJsonMapper.plain();
 	/** engine-rest URLs known not to offer {@code GET /authorization/self}, keyed per engine. */
 	private final Set<String> selfAuthorizationEndpointUnsupported = ConcurrentHashMap.newKeySet();
 
@@ -229,7 +227,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		if (login.getPassword() != null) loginNode.put("password", login.getPassword());
 		try {
 			bodyString = objectMapper.writeValueAsString(loginNode);
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			throw new SystemException(e);
 		}
 
@@ -326,7 +324,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		
 			doPost(url, body , null, flowUser);
 
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			SystemException se = new SystemException(e);
 			log.info("Exception in createUser(...):", se);
 			throw se;
@@ -342,7 +340,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		{
 			doPut(url, user.json(), flowUser);
 		} 
-		catch (JsonProcessingException e) 
+		catch (JacksonException e) 
 		{
 			SystemException se = new SystemException(e);
 			log.info("Exception in updateUserProfile(...):", se);
@@ -423,7 +421,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		try {
 			doPost(url, group.json() , null, user);
 		} 
-		catch (JsonProcessingException e) {
+		catch (JacksonException e) {
 			SystemException se = new SystemException(e);
 			log.info("Exception in createGroup(...):", se);
 			throw se;
@@ -436,7 +434,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		try {
 			doPut(url, group.json(), user);
 		} 
-		catch (JsonProcessingException e) {
+		catch (JacksonException e) {
 			SystemException se = new SystemException(e);
 			log.info("Exception in updateGroup(...):", se);
 			throw se;
@@ -480,7 +478,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 			ResponseEntity<Authorization> response = doPost(url, authorization.json(), Authorization.class, user);
 			return new ResponseEntity<>(response.getBody(), response.getStatusCode());
 		} 
-		catch (JsonProcessingException e) {
+		catch (JacksonException e) {
 			SystemException se = new SystemException(e);
 			log.info("Exception in createAuthorization(...):", se);
 			throw se;
@@ -501,9 +499,10 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 
 	private String getWildcard () {
 		String wcard = "";
+		String wildcard = properties.getUsers().getSearch().getWildcard();
 		if (!wildcard.equals("")) wcard = wildcard;
 		else {
-			if (userProvider.equals("org.cibseven.webapp.auth.LdapUserProvider") || userProvider.equals("org.cibseven.webapp.auth.AdfsUserProvider")) {
+			if (properties.getUser().getProvider().equals("org.cibseven.webapp.auth.LdapUserProvider") || properties.getUser().getProvider().equals("org.cibseven.webapp.auth.AdfsUserProvider")) {
 				wcard = "*";				
 			} else wcard = "%";
 		}

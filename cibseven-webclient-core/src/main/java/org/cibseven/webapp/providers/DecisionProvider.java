@@ -28,7 +28,7 @@ import org.cibseven.webapp.rest.model.HistoricDecisionInstance;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 @Component
 public class DecisionProvider extends SevenProviderBase implements IDecisionProvider{
