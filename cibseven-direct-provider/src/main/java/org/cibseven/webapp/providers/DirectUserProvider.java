@@ -33,6 +33,9 @@ import org.cibseven.bpm.engine.identity.GroupQuery;
 import org.cibseven.bpm.engine.identity.UserQuery;
 import org.cibseven.bpm.engine.impl.identity.Authentication;
 import org.cibseven.bpm.engine.impl.util.PermissionConverter;
+import org.cibseven.bpm.engine.query.Query;
+import org.cibseven.bpm.engine.rest.dto.AbstractQueryDto;
+import org.cibseven.bpm.engine.rest.exception.InvalidRequestException;
 import org.cibseven.bpm.engine.rest.dto.authorization.AuthorizationDto;
 import org.cibseven.bpm.engine.rest.dto.authorization.AuthorizationQueryDto;
 import org.cibseven.bpm.engine.rest.dto.identity.GroupQueryDto;
@@ -41,6 +44,7 @@ import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.auth.rest.StandardLogin;
+import org.cibseven.webapp.exception.InvalidAttributeValueException;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
@@ -309,11 +313,8 @@ public class DirectUserProvider implements IUserProvider {
 			queryDto.setMember(member.get());
 		if (memberOfTenant.isPresent())
 			queryDto.setMemberOfTenant(memberOfTenant.get());
-		if (sortBy.isPresent())
-			queryDto.setSortBy(sortBy.get());
-		if (sortOrder.isPresent())
-			queryDto.setSortOrder(sortOrder.get().equals("asc") ? "asc" : "desc");
-		GroupQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
+		setSorting(queryDto, sortBy, sortOrder);
+		GroupQuery query = toQuery(queryDto, user);
 
 		Integer first = firstResult.isPresent() ? Integer.parseInt(firstResult.get()) : null;
 		Integer max = maxResults.isPresent() ? Integer.parseInt(maxResults.get()) : null;
@@ -503,29 +504,12 @@ public class DirectUserProvider implements IUserProvider {
 		UserQueryDto queryDto = new UserQueryDto();
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
 		queryDto.setLikePatternIgnoreCase(likePatternIgnoreCase.orElse(null));
-		UserQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
+		setSorting(queryDto, sortBy, sortOrder);
+		UserQuery query = toQuery(queryDto, user);
 		if (memberOfGroup.isPresent())
 			query.memberOfGroup(memberOfGroup.get());
 		if (memberOfTenant.isPresent())
 			query.memberOfTenant(memberOfTenant.get());
-		if (sortBy.isPresent()) {
-			String sortByValue = sortBy.get();
-			switch (sortByValue) {
-			case "userId":
-				query.orderByUserId();
-				break;
-			case "firstName":
-				query.orderByUserFirstName();
-				break;
-			case "lastName":
-				query.orderByUserLastName();
-				break;
-			case "email":
-				query.orderByUserEmail();
-				break;
-			default:
-			}
-		}
 		if (email.isPresent())
 			query.userEmail(email.get());
 		if (emailLike.isPresent())
@@ -536,6 +520,8 @@ public class DirectUserProvider implements IUserProvider {
 			query.userFirstNameLike(firstNameLike.get().replace("*", wcard));
 		if (id.isPresent())
 			query.userId(id.get());
+		if (idIn.isPresent())
+			query.userIdIn(idIn.get().split(","));
 		if (lastName.isPresent())
 			query.userLastName(lastName.get());
 		if (lastNameLike.isPresent())
@@ -546,6 +532,34 @@ public class DirectUserProvider implements IUserProvider {
 
 		Collection<User> userCollection = createUsers(resultList);
 		return userCollection;
+	}
+
+	/**
+	 * Validates the sorting like engine-rest: the DTO accepts only its own sort keys and "asc" or "desc".
+	 * The exception is the one the default provider makes of the engine-rest error.
+	 */
+	private static void setSorting(AbstractQueryDto<?> queryDto, Optional<String> sortBy, Optional<String> sortOrder) {
+		try {
+			sortBy.ifPresent(queryDto::setSortBy);
+		} catch (InvalidRequestException e) {
+			throw new InvalidAttributeValueException(sortBy, e);
+		}
+		try {
+			sortOrder.ifPresent(queryDto::setSortOrder);
+		} catch (InvalidRequestException e) {
+			throw new InvalidAttributeValueException(sortOrder, e);
+		}
+	}
+
+	/**
+	 * Builds the query, which engine-rest refuses when only one of sortBy and sortOrder is given.
+	 */
+	private <T extends Query<?, ?>> T toQuery(AbstractQueryDto<T> queryDto, CIBUser user) {
+		try {
+			return queryDto.toQuery(directProviderUtil.getProcessEngine(user));
+		} catch (InvalidRequestException e) {
+			throw new SystemException(e.getMessage(), e);
+		}
 	}
 
 	private Collection<User> createUsers(List<org.cibseven.bpm.engine.identity.User> resultList) {

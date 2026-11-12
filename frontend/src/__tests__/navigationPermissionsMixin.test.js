@@ -77,7 +77,8 @@ describe('navigationPermissionsMixin', () => {
     const contextWith = (applicationPermissions, config = {}) => ({
       $root: {
         user: { id: '1' },
-        config: { permissions: { [configKey]: { user: ['*'] } }, ...config }
+        // modelerEnabled only matters to permissionsModeler (see below); here the modeler is on
+        config: { modelerEnabled: true, permissions: { [configKey]: { user: ['*'] } }, ...config }
       },
       applicationPermissions
     })
@@ -103,7 +104,8 @@ describe('navigationPermissionsMixin', () => {
     })
   })
 
-  // The modeler has an extra kill switch on top of the permission check.
+  // The modeler has an extra switch on top of the permission check, read like the modeler route's guard
+  // reads it: only a backend that reports the modeler on has one, so Builder never leads to a redirect
   describe('permissionsModeler', () => {
     const contextWith = (modelerEnabled) => ({
       $root: {
@@ -113,12 +115,13 @@ describe('navigationPermissionsMixin', () => {
       applicationPermissions: () => true
     })
 
-    it('is denied when the modeler is switched off', () => {
-      expect(navigationPermissionsMixin.computed.permissionsModeler.call(contextWith(false))).toBe(false)
+    it('is granted when the backend reports the modeler on', () => {
+      expect(navigationPermissionsMixin.computed.permissionsModeler.call(contextWith(true))).toBe(true)
     })
 
-    it.each([[true], [undefined]])('is granted when modelerEnabled is %j', (modelerEnabled) => {
-      expect(navigationPermissionsMixin.computed.permissionsModeler.call(contextWith(modelerEnabled))).toBe(true)
+    // undefined: a backend from before the flag existed (e.g. 2.2), which has no modeler
+    it.each([[false], [undefined]])('is denied when modelerEnabled is %j', (modelerEnabled) => {
+      expect(navigationPermissionsMixin.computed.permissionsModeler.call(contextWith(modelerEnabled))).toBe(false)
     })
   })
 

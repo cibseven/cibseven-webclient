@@ -25,6 +25,7 @@ import static org.mockito.Mockito.RETURNS_SELF;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
@@ -40,6 +41,7 @@ import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.ProcessEngineConfiguration;
 import org.cibseven.bpm.engine.ProcessEngineException;
 import org.cibseven.bpm.engine.TaskService;
+import org.cibseven.bpm.engine.exception.NullValueException;
 import org.cibseven.bpm.engine.history.HistoricVariableInstance;
 import org.cibseven.bpm.engine.history.HistoricVariableInstanceQuery;
 import org.cibseven.bpm.engine.impl.RuntimeServiceImpl;
@@ -54,6 +56,7 @@ import org.cibseven.webapp.rest.model.Variable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -154,6 +157,92 @@ public class DirectVariableProviderTest {
 			.hasMessageContaining("is not a binary value");
 	}
 
+	// ---------- process instance binary variable download ----------
+
+	@Test
+	void fetchProcessInstanceVariableData_servesAFileAsOctetStreamWhateverItsMimeType() {
+		byte[] payload = "hello".getBytes(StandardCharsets.UTF_8);
+		when(runtimeService.getVariableTyped(eq("instance-1"), eq("invoice"), anyBoolean()))
+			.thenReturn(Variables.fileValue("invoice.txt").file(payload).mimeType("text/plain").create());
+
+		ResponseEntity<byte[]> response = variableProvider.fetchProcessInstanceVariableData("instance-1", "invoice", user);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).isEqualTo(payload);
+		// same as the default provider, so a browser downloads the file instead of rendering it
+		assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_OCTET_STREAM);
+		assertThat(response.getHeaders().getCacheControl()).isEqualTo("no-cache");
+	}
+
+	@Test
+	void fetchProcessInstanceVariableData_servesAByteArrayAsOctetStream() {
+		byte[] payload = "pdf-bytes".getBytes(StandardCharsets.UTF_8);
+		when(runtimeService.getVariableTyped(eq("instance-1"), eq("attachment"), anyBoolean()))
+			.thenReturn(Variables.byteArrayValue(payload));
+
+		ResponseEntity<byte[]> response = variableProvider.fetchProcessInstanceVariableData("instance-1", "attachment", user);
+
+		assertThat(response.getBody()).isEqualTo(payload);
+		assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_OCTET_STREAM);
+	}
+
+	@Test
+	void fetchProcessInstanceVariableData_throwsNoObjectFoundWhenTheInstanceDoesNotHoldTheVariable() {
+		when(runtimeService.getVariableTyped(eq("instance-1"), eq("doesNotExist"), anyBoolean())).thenReturn(null);
+
+		// NoObjectFoundException is answered with 404, anything else with 500
+		assertThatThrownBy(() -> variableProvider.fetchProcessInstanceVariableData("instance-1", "doesNotExist", user))
+			.isInstanceOf(NoObjectFoundException.class);
+	}
+
+	@Test
+	void fetchVariableByProcessInstanceId_throwsNoObjectFoundWhenTheInstanceDoesNotHoldTheVariable() {
+		when(runtimeService.getVariableTyped(eq("instance-1"), eq("doesNotExist"), anyBoolean())).thenReturn(null);
+
+		assertThatThrownBy(() -> variableProvider.fetchVariableByProcessInstanceId("instance-1", "doesNotExist", user))
+			.isInstanceOf(NoObjectFoundException.class);
+	}
+
+	@Test
+	void fetchProcessInstanceVariableData_throwsNoObjectFoundWhenTheInstanceDoesNotExist() {
+		// what the engine throws for an unknown execution (GetExecutionVariableTypedCmd)
+		when(runtimeService.getVariableTyped(eq("unknown"), eq("invoice"), anyBoolean()))
+			.thenThrow(new NullValueException("execution unknown doesn't exist: execution is null"));
+
+		// the default provider answers 404 here as well (SevenProviderBase#wrapException)
+		assertThatThrownBy(() -> variableProvider.fetchProcessInstanceVariableData("unknown", "invoice", user))
+			.isInstanceOf(NoObjectFoundException.class);
+	}
+
+	@Test
+	void fetchVariableByProcessInstanceId_throwsNoObjectFoundWhenTheInstanceDoesNotExist() {
+		when(runtimeService.getVariableTyped(eq("unknown"), eq("invoice"), anyBoolean()))
+			.thenThrow(new NullValueException("execution unknown doesn't exist: execution is null"));
+
+		assertThatThrownBy(() -> variableProvider.fetchVariableByProcessInstanceId("unknown", "invoice", user))
+			.isInstanceOf(NoObjectFoundException.class);
+	}
+
+	@Test
+	void fetchProcessInstanceVariableData_letsAuthorizationFailuresThrough() {
+		when(runtimeService.getVariableTyped(eq("instance-1"), eq("invoice"), anyBoolean()))
+			.thenThrow(new AuthorizationException("denied"));
+
+		// must stay an AuthorizationException so the REST layer answers 403, not 404 or 500
+		assertThatThrownBy(() -> variableProvider.fetchProcessInstanceVariableData("instance-1", "invoice", user))
+			.isInstanceOf(AuthorizationException.class);
+	}
+
+	@Test
+	void fetchProcessInstanceVariableData_wrapsOtherEngineFailuresInSystemException() {
+		when(runtimeService.getVariableTyped(eq("instance-1"), eq("invoice"), anyBoolean()))
+			.thenThrow(new ProcessEngineException("boom"));
+
+		assertThatThrownBy(() -> variableProvider.fetchProcessInstanceVariableData("instance-1", "invoice", user))
+			.isInstanceOf(SystemException.class)
+			.isNotInstanceOf(NoObjectFoundException.class);
+	}
+
 	// ---------- historic binary variable download ----------
 
 	@Test
@@ -243,6 +332,8 @@ public class DirectVariableProviderTest {
 	}
 
 	// ---------- runtime variable modification ----------
+	// engine-rest serves these as /execution/{id}/localVariables, so they must stay on the execution^M
+	// and never propagate to a parent scope such as the process instance (CIB7-2377)^M
 
 	@Test
 	void modifyVariableByExecutionId_appliesDeletionsToTheExecution() {
@@ -251,14 +342,28 @@ public class DirectVariableProviderTest {
 
 		variableProvider.modifyVariableByExecutionId("exec-1", data, user);
 
-		verify(runtimeService).updateVariables(eq("exec-1"), any(), eq(List.of("amount", "customer")));
+		verify(runtimeService).updateVariablesLocal(eq("exec-1"), any(), eq(List.of("amount", "customer")));
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	void modifyVariableByExecutionId_setsModificationsLocallyOnTheExecution() {
+		Map<String, Object> data = new HashMap<>();
+		data.put("modifications", Map.of("localText", Map.of("value", "first", "type", "String")));
+
+		variableProvider.modifyVariableByExecutionId("exec-1", data, user);
+
+		ArgumentCaptor<Map<String, Object>> modifications = ArgumentCaptor.forClass(Map.class);
+		verify(runtimeService).updateVariablesLocal(eq("exec-1"), modifications.capture(), any());
+		assertThat(modifications.getValue()).containsEntry("localText", "first");
+		verify(runtimeService, never()).updateVariables(any(), any(), any());
 	}
 
 	@Test
 	void modifyVariableByExecutionId_wrapsEngineFailureInSystemException() {
 		Map<String, Object> data = new HashMap<>();
 		data.put("deletions", List.of("amount"));
-		doThrow(new ProcessEngineException("gone")).when(runtimeService).updateVariables(any(), any(), any());
+		doThrow(new ProcessEngineException("gone")).when(runtimeService).updateVariablesLocal(any(), any(), any());
 
 		assertThatThrownBy(() -> variableProvider.modifyVariableByExecutionId("exec-1", data, user))
 			.isInstanceOf(SystemException.class)
@@ -272,7 +377,20 @@ public class DirectVariableProviderTest {
 
 		variableProvider.modifyVariableDataByExecutionId("exec-1", "invoice", upload, "File", user);
 
-		verify(runtimeService).setVariable(eq("exec-1"), eq("invoice"), any(TypedValue.class));
+		verify(runtimeService).setVariableLocal(eq("exec-1"), eq("invoice"), any(TypedValue.class));
+		verify(runtimeService, never()).setVariable(any(), any(), any(TypedValue.class));
+	}
+
+	@Test
+	void putLocalExecutionVariable_setsTheVariableLocallyOnTheExecution() {
+		Map<String, Object> data = new HashMap<>();
+		data.put("value", "first");
+		data.put("type", "String");
+
+		variableProvider.putLocalExecutionVariable("exec-1", "localText", data, user);
+
+		verify(runtimeService).setVariableLocal(eq("exec-1"), eq("localText"), any(TypedValue.class));
+		verify(runtimeService, never()).setVariable(any(), any(), any(TypedValue.class));
 	}
 
 	@Test

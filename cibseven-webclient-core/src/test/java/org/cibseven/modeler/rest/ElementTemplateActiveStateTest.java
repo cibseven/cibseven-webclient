@@ -32,7 +32,7 @@ import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.ModelerAccessChecker;
 import org.cibseven.webapp.auth.SevenResourceType;
-import org.cibseven.webapp.exception.NoObjectException;
+import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -97,7 +97,7 @@ class ElementTemplateActiveStateTest {
 	}
 
 	@Test
-	void makesATemplateAvailableAgain() throws NoObjectException {
+	void makesATemplateAvailableAgain() throws NoObjectFoundException {
 		stored(false);
 
 		ElementTemplate updated = service.update(request, "stored-id", request(true));
@@ -106,7 +106,7 @@ class ElementTemplateActiveStateTest {
 	}
 
 	@Test
-	void hidesATemplate() throws NoObjectException {
+	void hidesATemplate() throws NoObjectFoundException {
 		stored(true);
 
 		ElementTemplate updated = service.update(request, "stored-id", request(false));
@@ -116,7 +116,7 @@ class ElementTemplateActiveStateTest {
 
 	/** An older client that does not send the flag must not flip the stored state. */
 	@Test
-	void keepsTheStoredStateWhenTheRequestOmitsIt() throws NoObjectException {
+	void keepsTheStoredStateWhenTheRequestOmitsIt() throws NoObjectFoundException {
 		stored(false);
 
 		ElementTemplate updated = service.update(request, "stored-id", request(null));
