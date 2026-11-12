@@ -182,7 +182,11 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		Collection<Process> processes = Arrays.asList(((ResponseEntity<Process[]>) doGet(url, Process[].class, user, false)).getBody());		
 
 		if (!lazyLoad.isPresent() || (lazyLoad.isPresent() && !lazyLoad.get())) {
+			Map<String, Long> incidentsById = countIncidentsByDefinitionId(key, tenantId, user);
 			for(Process process : processes) {
+				process.setIncidents(incidentsById.getOrDefault(process.getId(), 0L));
+				process.setDeploymentTime(findDeploymentTime(process.getDeploymentId(), user));
+
 				String urlInstances = getEngineRestUrl(user) + "/history/process-instance/count?processDefinitionId=" + process.getId();
 
 				JsonNode body = ((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody();
@@ -205,6 +209,33 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 			}
 		}
 		return processes;
+	}
+
+	/**
+	 * Open incidents per version, from one incident query filtered by key. Asked directly, as the incident
+	 * provider fetches the root cause of each incident. There is no withoutTenantId on incidents: the ones
+	 * of other tenants are dropped when matched by definition id.
+	 */
+	private Map<String, Long> countIncidentsByDefinitionId(String key, String tenantId, CIBUser user) {
+		String url = getEngineRestUrl(user) + "/incident?processDefinitionKeyIn=" + key + (tenantId != null ? "&tenantIdIn=" + tenantId : "");
+		JsonNode incidents = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, false)).getBody();
+		Map<String, Long> incidentsById = new HashMap<>();
+		if (incidents != null)
+			incidents.forEach(incident -> incidentsById.merge(incident.path("processDefinitionId").asString(), 1L, Long::sum));
+		return incidentsById;
+	}
+
+	/** The engine has no deployment time on the process definition; left out when the deployment cannot be read. */
+	private String findDeploymentTime(String deploymentId, CIBUser user) {
+		if (deploymentId == null)
+			return null;
+		try {
+			JsonNode deployment = ((ResponseEntity<JsonNode>) doGet(getEngineRestUrl(user) + "/deployment/" + deploymentId, JsonNode.class, user, false)).getBody();
+			return deployment != null && deployment.hasNonNull("deploymentTime") ? deployment.get("deploymentTime").asString() : null;
+		} catch (RuntimeException e) {
+			log.debug("Deployment time of {} not available: {}", deploymentId, e.getMessage());
+			return null;
+		}
 	}
 
 	@Override

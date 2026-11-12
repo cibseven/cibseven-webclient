@@ -135,14 +135,15 @@ public class VariableProviderTest {
 	}
 
 	@Test
-	void fetchProcessFormVariables_withNamesAddressesTheDefinitionById() throws Exception {
+	void fetchProcessFormVariables_withNamesAlsoAsksByProcessDefinitionKey() throws Exception {
 		engine.enqueueJson("{}");
 
-		variableProvider.fetchProcessFormVariables(List.of("amount"), "definition-1", false, user);
+		variableProvider.fetchProcessFormVariables(List.of("amount", "customer"), "invoice", false, user);
 
-		// note the missing "/key/" segment: this overload addresses the definition by id, unlike
-		// the single-argument overload above, even though both name the parameter "key"
-		assertThat(engine.takePath()).startsWith("/process-definition/definition-1/form-variables");
+		// CIB7-2356: the services route passes a definition key, so this overload must use the
+		// engine's key endpoint like the overload above, not the id endpoint
+		assertThat(engine.takePath())
+			.isEqualTo("/process-definition/key/invoice/form-variables?deserializeValues=false&variableNames=amount,customer");
 	}
 
 	// ---------- process instance variables ----------
