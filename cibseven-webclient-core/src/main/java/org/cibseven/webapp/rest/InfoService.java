@@ -60,6 +60,9 @@ public class InfoService extends BaseService {
 	 */
 	@Value("${camunda.bpm.authorization.enabled:true}") private boolean authorizationEnabled;
 	
+	@Autowired(required = false)
+	protected SevenWebclientProperties properties = new SevenWebclientProperties();
+
 	@Autowired
 	InfoVersion infoVersion;
 

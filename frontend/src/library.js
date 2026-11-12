@@ -33,7 +33,7 @@ export { appRoutes,
   permissionsGuard } from './router.js'
 export { updateAppTitle, checkExternalReturn, isMobile, hasHeader, getTheme, loadTheme, applyTheme, handleAxiosError, fetchAndStoreProcesses, fetchDecisionsIfEmpty, setupTaskNotifications } from './utils/init'
 export { parseXMLDocumentation } from './utils/parser.js'
-export { applyConfigDefaults } from './utils/config.js'
+export { applyConfigDefaults, isModelerEnabled } from './utils/config.js'
 export { profileTabRouteName } from '@/components/admin/utils.js'
 export { ENGINE_STORAGE_KEY, ENGINE_TOKENS_STORAGE_KEY } from './constants.js'
 export { 
@@ -100,6 +100,7 @@ export { default as EditHistoryTimeToLiveModal } from '@/components/modals/EditH
 export { default as TaskList } from '@/components/common-components/TaskList.vue'
 export { default as CIBHeaderFlow } from '@/components/common-components/CIBHeaderFlow.vue'
 export { default as NavCluster } from '@/components/common-components/navigation/NavCluster.vue'
+export { default as NavIcon } from '@/components/common-components/navigation/NavIcon.vue'
 export { default as NavMobileMenu } from '@/components/common-components/navigation/NavMobileMenu.vue'
 export { default as ResetDialog } from '@/components/login/ResetDialog.vue'
 export { default as OtpDialog } from '@/components/login/OtpDialog.vue'
