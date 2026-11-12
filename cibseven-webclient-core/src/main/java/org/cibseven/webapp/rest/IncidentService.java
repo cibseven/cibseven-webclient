@@ -21,10 +21,8 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.providers.BpmProvider;
-import org.cibseven.webapp.providers.PermissionConstants;
 import org.cibseven.webapp.rest.model.Incident;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,7 +60,6 @@ public class IncidentService extends BaseService implements InitializingBean {
 	@RequestMapping(value = "/count", method = RequestMethod.GET)
 	public Long countIncident(@RequestParam Map<String, Object> params, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return bpmProvider.countIncident(params, user);
 	}
 
@@ -71,7 +68,6 @@ public class IncidentService extends BaseService implements InitializingBean {
 	@RequestMapping(value = "/history/count", method = RequestMethod.GET)
 	public Long countHistoricIncident(@RequestParam Map<String, Object> params, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		checkPermission(user, SevenResourceType.HISTORIC_PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return bpmProvider.countHistoricIncident(params, user);
 	}
 
@@ -80,7 +76,6 @@ public class IncidentService extends BaseService implements InitializingBean {
 	@RequestMapping(method = RequestMethod.GET)
 	public Collection<Incident> findIncident(@RequestParam Map<String, Object> params, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return bpmProvider.findIncident(params, user);
 	}
 
@@ -120,7 +115,6 @@ public class IncidentService extends BaseService implements InitializingBean {
 	@RequestMapping(value = "/history", method = RequestMethod.GET)
 	public Collection<Incident> findHistoricIncidents(@RequestParam Map<String, Object> params, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		return bpmProvider.findHistoricIncidents(params, user);
 	}
 
@@ -155,7 +149,6 @@ public class IncidentService extends BaseService implements InitializingBean {
 			@RequestBody Map<String, Object> data,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.UPDATE_ALL);
 		bpmProvider.retryExternalTask(externalTaskId, data, user);
     // return 204 No Content, no body
     return ResponseEntity.noContent().build();

@@ -16,19 +16,13 @@
  */
 package org.cibseven.webapp.rest;
 
-import java.util.List;
-
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.cibseven.webapp.auth.SevenResourceType;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.auth.SevenAuthorizationUtils;
-import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.providers.BpmProvider;
-import org.cibseven.webapp.rest.model.Authorizations;
 
 public class BaseService {
 
@@ -38,25 +32,8 @@ public class BaseService {
 	@SuppressWarnings("rawtypes")
 	@Autowired
 	protected BaseUserProvider baseUserProvider;
-	
-	@Autowired(required = false)
-	protected SevenWebclientProperties properties = new SevenWebclientProperties();
 
 	protected CIBUser checkAuthorization(HttpServletRequest rq, boolean basicAuthAllowed) {
 		return baseUserProvider.checkAuthorization(rq, basicAuthAllowed);
-	}
-
-	/**
-	 * @deprecated Permission checks in webclient backend will be completely removed
-	 * @param user
-	 * @param type
-	 * @param permissions
-	 */
-	@Deprecated(since = "2.2.0")
-	public void checkPermission(CIBUser user, SevenResourceType type, List<String> permissions) {
-		if (!properties.getDeprecated().getAuthorization().isEnabled()) return;	
-		Authorizations authorizations = bpmProvider.getUserAuthorization(user);
-		// SevenAuthorizationUtils.checkPermission now throws detailed AccessDeniedException when permission check fails
-		SevenAuthorizationUtils.checkPermission(authorizations, type, permissions);
 	}
 }

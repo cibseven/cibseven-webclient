@@ -30,6 +30,9 @@ import adminUsersImage from '@/assets/images/admin/users_admin.svg'
 import groupsAdminImage from '@/assets/images/admin/groups_admin.svg'
 import tenantsAdminImage from '@/assets/images/admin/tenants_admin.svg'
 import authorizationsAdminImage from '@/assets/images/admin/authorizations_admin.svg'
+import cockpitIcon from '@/assets/images/nav/cockpit.svg'
+import builderIcon from '@/assets/images/nav/builder.svg'
+import adminIcon from '@/assets/images/nav/admin.svg'
 
 export const SURFACES = {
   NAVBAR: 'navbar',
@@ -72,7 +75,7 @@ export function buildNavGroups(ctx) {
       show: !!ctx.startableProcesses,
       to: '/seven/auth/start-process',
       active: ['seven/auth/start-process'],
-      icon: 'mdi-play-circle-outline',
+      icon: 'mdi-rocket',
       tileImage: processImage,
       tooltip: 'start.startProcess.tooltip',
       title: 'start.startProcess.title'
@@ -80,6 +83,8 @@ export function buildNavGroups(ctx) {
   }, {
     id: 'cockpit',
     icon: 'mdi-speedometer',
+    // The header draws this one; `icon` is the fallback for surfaces without image icons
+    iconImage: cockpitIcon,
     title: 'start.cockpit.title',
     defaultTo: '/seven/auth/processes',
     startTo: { name: 'cockpit' },
@@ -135,6 +140,7 @@ export function buildNavGroups(ctx) {
   }, {
     id: 'builder',
     icon: 'mdi-tools',
+    iconImage: builderIcon,
     title: 'start.builder.title',
     defaultTo: { name: 'builderHome' },
     // With a single tool the section skips its overview page
@@ -152,6 +158,7 @@ export function buildNavGroups(ctx) {
   }, {
     id: 'admin',
     icon: 'mdi-shield-account-outline',
+    iconImage: adminIcon,
     title: 'start.admin.title',
     defaultTo: '/seven/auth/admin',
     startTo: { name: 'usersManagement' },

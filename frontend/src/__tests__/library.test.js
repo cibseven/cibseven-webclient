@@ -18,6 +18,7 @@ import { describe, it, expect } from 'vitest'
 import * as library from '@/library.js'
 import * as pluginsConfig from '@/plugins/pluginsConfig.js'
 import * as pluginLoader from '@/plugins/pluginLoader.js'
+import * as configUtils from '@/utils/config.js'
 import PluginSlot from '@/components/common/PluginSlot.vue'
 import { findComponents } from './utils.js'
 import fs from 'node:fs'
@@ -118,6 +119,11 @@ describe('library.js', () => {
       expect(pluginsConfig.getPlugin('library-slot').value).toMatchObject([{ component, pluginId: 'ee' }])
       library.resetPlugins()
     })
+  })
+
+  // EE decides with the same check as the modeler route and the navigation
+  it('exports the modeler-enabled check', () => {
+    expect(library.isModelerEnabled).toBe(configUtils.isModelerEnabled)
   })
 
   describe('*Mixin.js', () => {

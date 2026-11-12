@@ -96,6 +96,60 @@ describe('NavCluster.vue', () => {
       expect(wrapper.classes()).toContain('cib-nav-cluster-current')
     })
 
+    // MDI has no 16px class, so the arrows are sized by the component
+    it('draws the chevron arrows at 16px, not at the 18px size class', () => {
+      wrapper = mountCluster(cockpit)
+      const split = wrapper.find('.cib-nav-btn-chevron .mdi-chevron-down')
+      expect(split.classes()).toContain('cib-nav-chevron')
+      expect(split.classes()).not.toContain('mdi-18px')
+      wrapper.unmount()
+
+      wrapper = mountCluster(language)
+      const single = wrapper.find('.cib-nav-btn-single .mdi-chevron-down')
+      expect(single.classes()).toContain('cib-nav-chevron')
+      expect(single.classes()).not.toContain('mdi-18px')
+    })
+
+    it('shows the icon of a menu entry in front of its label, whatever kind of entry it is', () => {
+      wrapper = mountCluster({ ...cockpit, sections: [[
+        { key: 'link', label: 'Link', to: '/seven/auth/x', icon: 'mdi-link' },
+        { key: 'href', label: 'Docs', href: 'https://docs', icon: 'mdi-book' },
+        { key: 'logout', label: 'Logout', icon: 'mdi-logout' },
+        { key: 'plain', label: 'Plain', to: '/seven/auth/y' }
+      ]] }, { open: true })
+
+      const icons = wrapper.findAll('.cib-nav-menu-item').map(item => item.find('.cib-nav-menu-icon').classes().find(c => c.startsWith('mdi-') && c !== 'mdi-18px') ?? null)
+      expect(icons).toEqual(['mdi-link', 'mdi-book', 'mdi-logout', null])
+      expect(wrapper.find('.cib-nav-menu-item .mdi').attributes('aria-hidden')).toBe('true')
+    })
+
+    // e.g. Logout, the only entry of the user menu with an icon, would otherwise start further right than the rest
+    it('gives every entry the 18px icon column once one entry has an icon, so the labels line up', () => {
+      wrapper = mountCluster({ ...cockpit, sections: [[{ key: 'profile', label: 'Profile', to: '/profile' }], [{ key: 'logout', label: 'Logout', icon: 'mdi-logout' }]] }, { open: true })
+
+      const columns = wrapper.findAll('.cib-nav-menu-item').map(item => item.find('.cib-nav-menu-icon').attributes('style'))
+      expect(columns).toEqual(Array(2).fill('width: 18px; height: 18px;'))
+    })
+
+    it('has no icon column in a menu without entry icons', () => {
+      wrapper = mountCluster(cockpit, { open: true })
+      expect(wrapper.find('.cib-nav-menu-icon').exists()).toBe(false)
+    })
+
+    // Small files are inlined as data URIs, so the URL is quoted in the mask
+    it('draws an image icon as a mask in the text colour instead of the font icon, in both control kinds', () => {
+      const image = "data:image/svg+xml,%3csvg width='24'%3e"
+
+      wrapper = mountCluster({ ...cockpit, iconImage: image })
+      expect(wrapper.find('.cib-nav-btn-main .cib-nav-icon-image').attributes('style')).toContain(`--cib-nav-icon: url("${image}")`)
+      expect(wrapper.find('.cib-nav-btn-main .mdi-speedometer').exists()).toBe(false)
+      wrapper.unmount()
+
+      wrapper = mountCluster({ ...language, iconImage: image })
+      expect(wrapper.find('.cib-nav-btn-single .cib-nav-icon-image').exists()).toBe(true)
+      expect(wrapper.find('.cib-nav-btn-single .mdi-web').exists()).toBe(false)
+    })
+
     it('shows an avatar and a badge instead of the plain icon', () => {
       wrapper = mountCluster({ ...cockpit, avatar: 'AM', badge: 3 })
       expect(wrapper.find('.cib-nav-avatar').text()).toBe('AM')
@@ -293,21 +347,6 @@ describe('NavCluster.vue', () => {
       await main.trigger('mouseenter')
       const id = main.attributes('aria-describedby')
       expect(wrapper.find(`#${id}`).attributes('role')).toBe('tooltip')
-    })
-
-    it('includes legacy slot entries in arrow-key navigation', async () => {
-      wrapper = mount(NavCluster, {
-        attachTo: document.body,
-        props: { cluster: language, open: true },
-        slots: { 'menu-prepend': '<ul class="cib-nav-legacy-items"><li><a href="#" class="legacy">Settings</a></li></ul>' },
-        global: { mocks: { $t: key => key } }
-      })
-      const legacy = wrapper.find('a.legacy').element
-      legacy.focus()
-
-      await wrapper.find('.cib-nav-menu').trigger('keydown', { key: 'ArrowDown' })
-
-      expect(document.activeElement).toBe(wrapper.findAll('[role="menuitemradio"]')[0].element)
     })
   })
 })

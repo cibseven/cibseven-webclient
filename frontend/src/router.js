@@ -72,6 +72,7 @@ import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 import ModelerView from '@/components/modeler/ModelerView.vue'
 import { redirectToProcessInstance, redirectToProcessDefinition, redirectToTask } from '@/utils/redirects.js'
+import { isModelerEnabled } from '@/utils/config.js'
 
 // The tabs of the user and the group page, by the path of their child route
 const USER_TABS = {
@@ -458,7 +459,7 @@ async function setupGuard() {
 }
 
 function modelerGuard(to, from) {
-  if (!router.root?.config?.modelerEnabled) return { name: 'start-configurable' }
+  if (!isModelerEnabled(router.root?.config)) return { name: 'start-configurable' }
   return permissionsGuard('modeler')(to, from)
 }
 
