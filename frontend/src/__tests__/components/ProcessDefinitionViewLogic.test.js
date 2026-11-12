@@ -260,6 +260,41 @@ describe('ProcessDefinitionView - loadInstanceById', () => {
     expect(vm.setSelectedInstance).toHaveBeenCalledWith({ selectedInstance: { id: 'pi1', state: 'ACTIVE' } })
   })
 
+  // CIB7-1895: beforeUpdate asks again while the first lookup still has selectedInstance at null
+  it('should share one lookup between concurrent requests for the same instance', async () => {
+    const vm = context({ setSelectedInstance: vi.fn() })
+    HistoryService.findProcessInstance.mockResolvedValue({ id: 'pi1' })
+
+    const first = vm.loadInstanceById('pi1')
+    const second = vm.loadInstanceById('pi1')
+    await Promise.all([first, second])
+
+    expect(second).toBe(first)
+    expect(HistoryService.findProcessInstance).toHaveBeenCalledTimes(1)
+    expect(vm.setSelectedInstance).toHaveBeenCalledTimes(1)
+  })
+
+  it('should look up a different instance even while another one is loading', async () => {
+    const vm = context({ setSelectedInstance: vi.fn() })
+    HistoryService.findProcessInstance.mockImplementation(id => Promise.resolve({ id }))
+
+    await Promise.all([vm.loadInstanceById('pi1'), vm.loadInstanceById('pi2')])
+
+    expect(HistoryService.findProcessInstance).toHaveBeenCalledWith('pi1')
+    expect(HistoryService.findProcessInstance).toHaveBeenCalledWith('pi2')
+    expect(vm.setSelectedInstance).toHaveBeenLastCalledWith({ selectedInstance: { id: 'pi2' } })
+  })
+
+  it('should look the instance up again once the previous lookup has settled', async () => {
+    const vm = context({ setSelectedInstance: vi.fn() })
+    HistoryService.findProcessInstance.mockResolvedValue({ id: 'pi1' })
+
+    await vm.loadInstanceById('pi1')
+    await vm.loadInstanceById('pi1')
+
+    expect(HistoryService.findProcessInstance).toHaveBeenCalledTimes(2)
+  })
+
   it('should select nothing when the instance is nowhere to be found', async () => {
     const vm = context({ instances: [], setSelectedInstance: vi.fn() })
     HistoryService.findProcessInstance.mockResolvedValue(null)
@@ -277,8 +312,18 @@ describe('ProcessDefinitionView - switchToDefinitionVersion', () => {
 
     await m.switchToDefinitionVersion.call(vm)
 
-    expect(vm.loadProcessVersion).toHaveBeenCalledWith(requested)
+    expect(vm.loadProcessVersion).toHaveBeenCalledWith(requested, null)
     expect(vm.errorVersionNotFound).toBeNull()
+  })
+
+  it('should hand the definition preloaded for the instance on to the version it loads', async () => {
+    const requested = version()
+    const preloaded = version({ statistics: [] })
+    const vm = context({ processDefinitions: [requested], loadProcessVersion: vi.fn() })
+
+    await m.switchToDefinitionVersion.call(vm, preloaded)
+
+    expect(vm.loadProcessVersion).toHaveBeenCalledWith(requested, preloaded)
   })
 
   // A stale link to a deleted version should still show something useful, flagged.
@@ -289,7 +334,7 @@ describe('ProcessDefinitionView - switchToDefinitionVersion', () => {
     await m.switchToDefinitionVersion.call(vm)
 
     expect(vm.errorVersionNotFound).toBe('42')
-    expect(vm.loadProcessVersion).toHaveBeenCalledWith(latest)
+    expect(vm.loadProcessVersion).toHaveBeenCalledWith(latest, null)
   })
 
   it('should only flag the error when the key has no versions at all', async () => {
@@ -312,6 +357,22 @@ describe('ProcessDefinitionView - switchToDefinitionVersion', () => {
     await m.switchToDefinitionVersion.call(vm)
 
     expect(vm.loadInstanceById).toHaveBeenCalledWith('pi1')
+  })
+
+  // CIB7-1895: reloading clears the selection, which remounted ProcessInstanceView and
+  // fetched the diagram, variables, statistics, ... a second time
+  it('should not reload the addressed instance when it is already selected', async () => {
+    const vm = context({
+      instanceId: 'pi1',
+      selectedInstance: { id: 'pi1' },
+      processDefinitions: [version()],
+      loadProcessVersion: vi.fn(),
+      loadInstanceById: vi.fn()
+    })
+
+    await m.switchToDefinitionVersion.call(vm)
+
+    expect(vm.loadInstanceById).not.toHaveBeenCalled()
   })
 })
 
@@ -344,6 +405,7 @@ describe('ProcessDefinitionView - loadProcessDefinitionFromRoute', () => {
     expect(ProcessService.findProcessById).toHaveBeenCalledWith('pd:2:abc', true)
     expect(vm.loadStatistics).toHaveBeenCalled()
     expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledWith('invoice', 't1', false)
+    expect(vm.switchToDefinitionVersion).toHaveBeenCalledWith({ id: 'pd:2:abc', tenantId: 't1' })
   })
 
   // Runtime instances carry `definitionId` rather than `processDefinitionId`.
@@ -410,6 +472,40 @@ describe('ProcessDefinitionView - loadProcessVersion', () => {
     expect(vm.process).toBe(v)
     expect(vm.findProcessAndAssignData).toHaveBeenCalledWith(v)
     expect(vm.loadStatistics).not.toHaveBeenCalled()
+  })
+
+  // CIB7-1895: arriving by instance link, the definition was already fetched with its statistics
+  it('should reuse a definition preloaded for the instance instead of fetching it again', async () => {
+    const vm = context({ instanceId: 'pi-1', findProcessAndAssignData: vi.fn(), loadStatistics: vi.fn() })
+    const v = version()
+    const preloaded = version({ name: 'Invoice', statistics: [{ id: 'task' }] })
+
+    await m.loadProcessVersion.call(vm, v, preloaded)
+
+    expect(vm.process).toBe(v)
+    expect(v).toEqual(preloaded)
+    expect(vm.findProcessAndAssignData).not.toHaveBeenCalled()
+    expect(vm.loadStatistics).not.toHaveBeenCalled()
+  })
+
+  it('should fetch the version when the preloaded definition is a different one', async () => {
+    const vm = context({ findProcessAndAssignData: vi.fn(), loadStatistics: vi.fn() })
+    const v = version({ statistics: [] })
+
+    await m.loadProcessVersion.call(vm, v, version({ id: 'pd:1:abc', version: '1' }))
+
+    expect(vm.findProcessAndAssignData).toHaveBeenCalledWith(v)
+    expect(v.version).toBe('2')
+  })
+
+  // Refresh and delete pass the open definition itself: that must still be re-fetched
+  it('should fetch the version when it is the preloaded definition itself', async () => {
+    const vm = context({ findProcessAndAssignData: vi.fn(), loadStatistics: vi.fn() })
+    const v = version({ statistics: [] })
+
+    await m.loadProcessVersion.call(vm, v, v)
+
+    expect(vm.findProcessAndAssignData).toHaveBeenCalledWith(v)
   })
 
   it('should load statistics when the version has none yet and an instance is shown', async () => {

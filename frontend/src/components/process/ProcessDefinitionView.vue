@@ -176,6 +176,9 @@ export default {
       return this.process?.version || this.versionIndex
     },
   },
+  created() {
+    this.pendingInstanceLoad = null // non-reactive: { instanceId, promise } of the lookup in flight
+  },
   async beforeUpdate() {
     if (this.process != null && this.process.version !== this.versionIndex) {
       // different process-definition was selected
@@ -209,7 +212,18 @@ export default {
         HistoryService.findProcessInstance(instanceId) :
         ProcessService.findProcessInstance(instanceId)
     },
-    async loadInstanceById(instanceId) {
+    // Route loading, the watchers and beforeUpdate can ask for the same instance at the same time
+    // (beforeUpdate does while selectedInstance is still null): they share one lookup per instance id.
+    loadInstanceById(instanceId) {
+      if (this.pendingInstanceLoad?.instanceId !== instanceId) {
+        const promise = this.fetchAndSelectInstance(instanceId).finally(() => {
+          if (this.pendingInstanceLoad?.promise === promise) this.pendingInstanceLoad = null
+        })
+        this.pendingInstanceLoad = { instanceId, promise }
+      }
+      return this.pendingInstanceLoad.promise
+    },
+    async fetchAndSelectInstance(instanceId) {
       this.selectedInstance = null
       this.activityInstanceHistory = null
       this.task = null
@@ -256,26 +270,29 @@ export default {
           this.resetStatsLazyLoad(this.$root.config.lazyLoadHistory)
         }
 
-        await this.switchToDefinitionVersion()
+        // the definition (and its statistics) loaded for the instance above is not fetched again
+        await this.switchToDefinitionVersion(this.process)
       })
     },
-    async switchToDefinitionVersion() {
+    async switchToDefinitionVersion(preloadedProcess = null) {
       const requestedDefinition = this.processDefinitions.find(processDefinition => processDefinition.version === this.versionIndex)
       if (requestedDefinition) {
-        await this.loadProcessVersion(requestedDefinition)
+        await this.loadProcessVersion(requestedDefinition, preloadedProcess)
         this.errorVersionNotFound = null
       }
       else if (this.processDefinitions.length > 0) {
         // version from URL not found, load latest version
         this.errorVersionNotFound = this.versionIndex
-        await this.loadProcessVersion(this.processDefinitions[0])
+        await this.loadProcessVersion(this.processDefinitions[0], preloadedProcess)
       }
       else {
         // no process definitions with such key
         this.errorVersionNotFound = this.versionIndex
       }
 
-      if (this.instanceId) {
+      // Reloading an instance that is already selected would clear the selection first,
+      // remount ProcessInstanceView and so fetch the diagram, variables, etc. a second time
+      if (this.instanceId && this.selectedInstance?.id !== this.instanceId) {
         await this.loadInstanceById(this.instanceId)
       }
     },
@@ -357,9 +374,14 @@ export default {
           })
         }
     },
-    async loadProcessVersion(process) {
+    async loadProcessVersion(process, preloadedProcess = null) {
       this.process = process
-      await this.findProcessAndAssignData(process)
+      if (preloadedProcess && preloadedProcess !== process && preloadedProcess.id === process.id) {
+        // already fetched with extra info (and statistics) while resolving the instance from the URL
+        Object.assign(this.process, preloadedProcess)
+      } else {
+        await this.findProcessAndAssignData(process)
+      }
       // ProcessInstancesView reloads runtime statistics with its instances on every tab
       const showsInstancesView = !this.selectedInstance && !this.instanceId
       if (!this.process.statistics && !showsInstancesView) await this.loadStatistics()
