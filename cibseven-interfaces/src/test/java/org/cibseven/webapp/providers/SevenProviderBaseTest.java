@@ -22,21 +22,17 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.InvalidValueHistoryTimeToLive;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.CustomRestTemplate;
-import org.cibseven.webapp.rest.RestTemplateConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpServerErrorException;
-
-import okhttp3.mockwebserver.RecordedRequest;
 
 /**
  * Test class for SevenProviderBase to verify configurable engine REST path functionality
@@ -101,33 +97,8 @@ public class SevenProviderBaseTest {
         assertSame(factory, provider.createPatchRestTemplate().getRequestFactory());
     }
 
-    /**
-     * Engine GETs used to run on a plain HttpURLConnection: no pooling, no configured timeouts, and an
-     * infinite read timeout. The User-Agent is a default header of the configured HTTP client, so it
-     * only arrives when the request went through that client.
-     */
-    @Test
-    public void doGet_runsOnTheConfiguredHttpClientAndItsInterceptorsOnce() throws Exception {
-        CustomRestTemplate template = CustomRestTemplate.create(new RestTemplateConfiguration());
-        template.setInterceptors(List.of((request, body, execution) -> {
-            request.getHeaders().add("X-Intercepted", "yes");
-            return execution.execute(request, body);
-        }));
-        try (MockEngineRest engine = new MockEngineRest()) {
-            TestProvider provider = engine.wire(new TestProvider());
-            ReflectionTestUtils.setField(provider, "customRestTemplate", template);
-            CIBUser user = MockEngineRest.user();
-            engine.enqueueJson("{}");
-
-            provider.doGet(provider.getEngineRestUrl(user) + "/version", String.class, user, false);
-
-            RecordedRequest request = engine.take();
-            assertEquals("CibSeven-CustomRestTemplate", request.getHeader("User-Agent"));
-            assertEquals(List.of("yes"), request.getHeaders().values("X-Intercepted"));
-        } finally {
-            template.destroy();
-        }
-    }
+    // the request going out through the configured client is tested against a mock engine in
+    // cibseven-webclient-core: SevenProviderBaseHttpClientTest
 
     // ---------- engine REST URL ----------
 
