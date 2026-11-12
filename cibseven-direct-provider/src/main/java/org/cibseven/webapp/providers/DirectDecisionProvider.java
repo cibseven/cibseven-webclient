@@ -220,7 +220,7 @@ public class DirectDecisionProvider implements IDecisionProvider {
 	@Override
 	public Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad, CIBUser user) {
 		List<DecisionDefinition> decisionDefinitions = directProviderUtil.getProcessEngine(user).getRepositoryService().createDecisionDefinitionQuery()
-				.decisionDefinitionKey(key).withoutTenantId().unlimitedList();
+				.decisionDefinitionKey(key).withoutTenantId().orderByDecisionDefinitionVersion().desc().unlimitedList();
 
 		if (decisionDefinitions == null || decisionDefinitions.isEmpty()) {
 			String errorMessage = String.format("No matching decision definition with key: %s and no tenant-id", key);
@@ -229,20 +229,28 @@ public class DirectDecisionProvider implements IDecisionProvider {
 		List<Decision> decisions = new ArrayList<>();
 		for (DecisionDefinition decisionDefinition : decisionDefinitions) {
 			DecisionDefinitionDto decisionDefinitionDto = DecisionDefinitionDto.fromDecisionDefinition(decisionDefinition);
-			decisions.add(directProviderUtil.convertValue(decisionDefinitionDto, Decision.class, user));
+			Decision decision = directProviderUtil.convertValue(decisionDefinitionDto, Decision.class, user);
+			if (!lazyLoad.isPresent() || !lazyLoad.get()) {
+				decision.setAllInstances(directProviderUtil.getProcessEngine(user).getHistoryService()
+						.createHistoricDecisionInstanceQuery().decisionDefinitionId(decisionDefinition.getId()).count());
+			}
+			decisions.add(decision);
 		}
 		return decisions;
 	}
 
 	@Override
-	public Collection<HistoricDecisionInstance> getHistoricDecisionInstances(Map<String, Object> queryParams,
+	public Collection<HistoricDecisionInstance> getHistoricDecisionInstances(Map<String, Object> params,
 			CIBUser user) {
+		Integer firstResult = directProviderUtil.getFirstResult(params);
+		Integer maxResults = directProviderUtil.getMaxResults(params);
+		Map<String, Object> queryParams = directProviderUtil.withoutPagingParams(params);
 		HistoricDecisionInstanceQueryDto queryHistoricDecisionInstanceDto = directProviderUtil.getObjectMapper(user).convertValue(queryParams,
 				HistoricDecisionInstanceQueryDto.class);
 		HistoricDecisionInstanceQuery query = queryHistoricDecisionInstanceDto.toQuery(directProviderUtil.getProcessEngine(user));
 
 		List<org.cibseven.bpm.engine.history.HistoricDecisionInstance> matchingHistoricDecisionInstances = QueryUtil
-				.list(query, null, null);
+				.list(query, firstResult, maxResults);
 
 		List<HistoricDecisionInstance> historicDecisionInstanceDtoResults = new ArrayList<>();
 		for (org.cibseven.bpm.engine.history.HistoricDecisionInstance historicDecisionInstance : matchingHistoricDecisionInstances) {
