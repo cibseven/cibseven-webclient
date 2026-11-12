@@ -30,6 +30,7 @@ import org.apache.commons.io.IOUtils;
 import org.cibseven.bpm.engine.AuthorizationException;
 import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.ProcessEngineException;
+import org.cibseven.bpm.engine.exception.NullValueException;
 import org.cibseven.bpm.engine.history.HistoricVariableInstance;
 import org.cibseven.bpm.engine.history.HistoricVariableInstanceQuery;
 import org.cibseven.bpm.engine.impl.RuntimeServiceImpl;
@@ -420,17 +421,7 @@ public class DirectVariableProvider implements IVariableProvider {
 				throw new SystemException(e.getMessage(), e);
 			}
 		}
-		TypedValue value = null;
-		try {
-			value = directProviderUtil.getProcessEngine(user).getRuntimeService().getVariableTyped(processInstanceId, variableName, false);
-		} catch (AuthorizationException e) {
-			throw e;
-		} catch (ProcessEngineException e) {
-			String errorMessage = String.format("Cannot get %s variable %s: %s", "processInstance", variableName,
-					e.getMessage());
-			throw new SystemException(errorMessage, e);
-		}
-
+		TypedValue value = getTypedValueForProcessInstanceVariable(processInstanceId, variableName, false, user);
 		if (value == null) {
 			String errorMessage = String.format("%s variable with name %s does not exist", "processInstance", variableName);
 			throw new NoObjectFoundException(new SystemException(errorMessage));
@@ -659,8 +650,12 @@ public class DirectVariableProvider implements IVariableProvider {
 			return directProviderUtil.getProcessEngine(user).getRuntimeService().getVariableTyped(processInstanceId, variableName, deserializeValue);
 		} catch (AuthorizationException e) {
 			throw e;
+		} catch (NullValueException e) {
+			// unknown process instance: the default provider maps this to 404 (SevenProviderBase#wrapException)
+			String errorMessage = String.format("Cannot get %s variable %s: %s", "processInstance", variableName, e.getMessage());
+			throw new NoObjectFoundException(new SystemException(errorMessage, e));
 		} catch (ProcessEngineException e) {
-			String errorMessage = String.format("Cannot get %s variable %s: %s", "task", variableName, e.getMessage());
+			String errorMessage = String.format("Cannot get %s variable %s: %s", "processInstance", variableName, e.getMessage());
 			throw new SystemException(errorMessage, e);
 		}
 	}

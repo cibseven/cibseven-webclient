@@ -40,6 +40,7 @@ import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.ProcessEngineConfiguration;
 import org.cibseven.bpm.engine.ProcessEngineException;
 import org.cibseven.bpm.engine.TaskService;
+import org.cibseven.bpm.engine.exception.NullValueException;
 import org.cibseven.bpm.engine.history.HistoricVariableInstance;
 import org.cibseven.bpm.engine.history.HistoricVariableInstanceQuery;
 import org.cibseven.bpm.engine.impl.RuntimeServiceImpl;
@@ -198,6 +199,46 @@ public class DirectVariableProviderTest {
 
 		assertThatThrownBy(() -> variableProvider.fetchVariableByProcessInstanceId("instance-1", "doesNotExist", user))
 			.isInstanceOf(NoObjectFoundException.class);
+	}
+
+	@Test
+	void fetchProcessInstanceVariableData_throwsNoObjectFoundWhenTheInstanceDoesNotExist() {
+		// what the engine throws for an unknown execution (GetExecutionVariableTypedCmd)
+		when(runtimeService.getVariableTyped(eq("unknown"), eq("invoice"), anyBoolean()))
+			.thenThrow(new NullValueException("execution unknown doesn't exist: execution is null"));
+
+		// the default provider answers 404 here as well (SevenProviderBase#wrapException)
+		assertThatThrownBy(() -> variableProvider.fetchProcessInstanceVariableData("unknown", "invoice", user))
+			.isInstanceOf(NoObjectFoundException.class);
+	}
+
+	@Test
+	void fetchVariableByProcessInstanceId_throwsNoObjectFoundWhenTheInstanceDoesNotExist() {
+		when(runtimeService.getVariableTyped(eq("unknown"), eq("invoice"), anyBoolean()))
+			.thenThrow(new NullValueException("execution unknown doesn't exist: execution is null"));
+
+		assertThatThrownBy(() -> variableProvider.fetchVariableByProcessInstanceId("unknown", "invoice", user))
+			.isInstanceOf(NoObjectFoundException.class);
+	}
+
+	@Test
+	void fetchProcessInstanceVariableData_letsAuthorizationFailuresThrough() {
+		when(runtimeService.getVariableTyped(eq("instance-1"), eq("invoice"), anyBoolean()))
+			.thenThrow(new AuthorizationException("denied"));
+
+		// must stay an AuthorizationException so the REST layer answers 403, not 404 or 500
+		assertThatThrownBy(() -> variableProvider.fetchProcessInstanceVariableData("instance-1", "invoice", user))
+			.isInstanceOf(AuthorizationException.class);
+	}
+
+	@Test
+	void fetchProcessInstanceVariableData_wrapsOtherEngineFailuresInSystemException() {
+		when(runtimeService.getVariableTyped(eq("instance-1"), eq("invoice"), anyBoolean()))
+			.thenThrow(new ProcessEngineException("boom"));
+
+		assertThatThrownBy(() -> variableProvider.fetchProcessInstanceVariableData("instance-1", "invoice", user))
+			.isInstanceOf(SystemException.class)
+			.isNotInstanceOf(NoObjectFoundException.class);
 	}
 
 	// ---------- historic binary variable download ----------
