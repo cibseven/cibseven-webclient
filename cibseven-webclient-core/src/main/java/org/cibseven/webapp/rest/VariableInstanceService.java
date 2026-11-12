@@ -17,9 +17,7 @@
 package org.cibseven.webapp.rest;
 
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.config.SevenWebclientProperties;
-import org.cibseven.webapp.providers.PermissionConstants;
 import org.cibseven.webapp.rest.model.VariableInstance;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -67,7 +65,6 @@ public class VariableInstanceService extends BaseService implements Initializing
 			@Parameter(description = "Whether to deserialize the variable value. If true, the value will be deserialized according to its type.")
 			@RequestParam(required = false) Boolean deserializeValue,
 			CIBUser user) {
-		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.READ_ALL);
 		boolean deserialize = (deserializeValue == null) || (deserializeValue != null && deserializeValue == true);
 		return bpmProvider.getVariableInstance(id, deserialize, user);
 	}
