@@ -16,43 +16,56 @@
  */
 package org.cibseven.modeler.config;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import org.cibseven.webapp.SevenWebclientApplication;
 import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.springframework.boot.EnvironmentPostProcessor;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.context.properties.bind.Bindable;
+import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.core.Ordered;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 
 /**
- * Excludes {@code DataSourceAutoConfiguration} when the modeler is disabled
- * and no {@code spring.datasource.url} is configured, so Spring Boot does not
- * auto-create an embedded H2 database.
+ * Excludes {@code DataSourceAutoConfiguration} and {@code JndiDataSourceAutoConfiguration} when the
+ * standalone webclient runs with the modeler disabled, so it needs no database: no embedded H2
+ * database is created and the JNDI data source the WildFly WAR names does not have to exist. The
+ * exclusions are added to any {@code spring.autoconfigure.exclude} the application configures.
+ *
+ * <p>An application that embeds the webclient keeps its data sources: it is left untouched.</p>
+ *
+ * <p>Registered in META-INF/spring.factories.</p>
  */
 public class ModelerEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
 
+    static final String DATA_SOURCE_AUTO_CONFIGURATION =
+        "org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration";
+    static final String JNDI_DATA_SOURCE_AUTO_CONFIGURATION =
+        "org.springframework.boot.jdbc.autoconfigure.JndiDataSourceAutoConfiguration";
+
     private static final String MODELER_ENABLED_PROPERTY = SevenWebclientProperties.MODELER_PREFIX + ".enabled";
-    private static final String DATASOURCE_URL_PROPERTY = "spring.datasource.url";
     private static final String EXCLUDE_PROPERTY = "spring.autoconfigure.exclude";
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
-        boolean modelerEnabled = environment.getProperty(MODELER_ENABLED_PROPERTY, Boolean.class, false);
-        if (modelerEnabled) {
+        if (!SevenWebclientApplication.class.equals(application.getMainApplicationClass())) {
+            return;
+        }
+        if (environment.getProperty(MODELER_ENABLED_PROPERTY, Boolean.class, false)) {
             return;
         }
 
-        String datasourceUrl = environment.getProperty(DATASOURCE_URL_PROPERTY);
-        if (datasourceUrl != null && !datasourceUrl.isBlank()) {
-            return;
-        }
-
-        Map<String, Object> properties = new HashMap<>();
-        properties.put(EXCLUDE_PROPERTY,
-            "org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration");
-        environment.getPropertySources().addLast(
-            new MapPropertySource("modelerDisabledExclusions", properties)
+        List<String> excluded = new ArrayList<>(Binder.get(environment)
+            .bind(EXCLUDE_PROPERTY, Bindable.listOf(String.class))
+            .orElse(List.of()));
+        List.of(DATA_SOURCE_AUTO_CONFIGURATION, JNDI_DATA_SOURCE_AUTO_CONFIGURATION).stream()
+            .filter(exclusion -> !excluded.contains(exclusion))
+            .forEach(excluded::add);
+        environment.getPropertySources().addFirst(
+            new MapPropertySource("modelerDisabledExclusions", Map.of(EXCLUDE_PROPERTY, String.join(",", excluded)))
         );
     }
 
