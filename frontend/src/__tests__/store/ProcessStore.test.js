@@ -24,7 +24,8 @@ vi.mock('@/services.js', () => ({
     findProcesses: vi.fn(),
     findProcessesWithInfo: vi.fn(),
     findProcessByDefinitionKey: vi.fn(),
-    findProcessById: vi.fn()
+    findProcessById: vi.fn(),
+    findProcessStatistics: vi.fn()
   },
   HistoryService: {
     findHistoryActivityStatistics: vi.fn(),
@@ -199,6 +200,44 @@ createStoreTestSuite('ProcessStore', ProcessStore, {
 
         expect(context.commit).toHaveBeenCalledWith('setFavorite', { process: favored, value: true })
         expect(context.commit).toHaveBeenCalledWith('setFavorite', { process: other, value: false })
+      })
+    },
+
+    loadStatistics: (action, getContext) => {
+      it('should store the runtime statistics on the process', async () => {
+        const context = getContext()
+        const target = process()
+        ProcessService.findProcessStatistics.mockResolvedValue([{ id: 'task_1' }])
+
+        await action(context, target)
+
+        expect(ProcessService.findProcessStatistics).toHaveBeenCalledWith('pd-1')
+        expect(context.commit).toHaveBeenCalledWith('setStatistics', { process: target, statistics: [{ id: 'task_1' }] })
+      })
+
+      it('should drop a response overtaken by a newer request for the same process', async () => {
+        const context = getContext()
+        let resolveOld
+        ProcessService.findProcessStatistics
+          .mockReturnValueOnce(new Promise(r => { resolveOld = r }))
+          .mockResolvedValueOnce([{ id: 'new' }])
+
+        const old = action(context, process())
+        await action(context, process())
+        resolveOld([{ id: 'old' }])
+        await old
+
+        expect(context.commit).toHaveBeenCalledTimes(1)
+        expect(context.commit).toHaveBeenCalledWith('setStatistics', { process: process(), statistics: [{ id: 'new' }] })
+      })
+
+      it('should keep the previous counts when the request fails', async () => {
+        const context = getContext()
+        ProcessService.findProcessStatistics.mockRejectedValue(new Error('boom'))
+
+        await action(context, process())
+
+        expect(context.commit).not.toHaveBeenCalled()
       })
     },
 

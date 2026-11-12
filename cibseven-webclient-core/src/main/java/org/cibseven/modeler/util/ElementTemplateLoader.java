@@ -22,21 +22,26 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cibseven.webapp.config.SevenWebclientProperties;
+import org.cibseven.webapp.config.WebclientJsonMapper;
+import org.cibseven.webapp.providers.WebclientExtensions;
 import org.cibseven.persistence.CibsevenJpa;
 import org.cibseven.modeler.model.ElementTemplate;
 import org.cibseven.modeler.model.ElementTemplateOrigin;
 import org.cibseven.modeler.repository.ElementTemplateRepository;
-import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -48,57 +53,90 @@ import lombok.extern.slf4j.Slf4j;
     matchIfMissing = false
 )
 @Slf4j
-public class ElementTemplateLoader implements InitializingBean {
+public class ElementTemplateLoader implements DisposableBean {
 
-	private final ObjectMapper mapper;
+	private final JsonMapper mapper;
 	private final ElementTemplateRepository elementTemplateRepository;
 	private final SevenWebclientProperties.Modeler.Templates templates;
 	private final TransactionTemplate transactionTemplate;
 	private final ResourcePatternResolver resourcePatternResolver;
+	private final WebclientExtensions webclientExtensions;
+	private volatile Thread loading;
 
 	/**
 	 * @param transactionManager the modeler's own transaction manager. An unqualified
 	 *        {@code TransactionTemplate} would be built on the primary transaction manager, which in
 	 *        an embedding application belongs to the host and cannot run the modeler's JPA work.
 	 */
-	public ElementTemplateLoader(ElementTemplateRepository elementTemplateRepository, ObjectMapper mapper,
+	public ElementTemplateLoader(ElementTemplateRepository elementTemplateRepository,
 			SevenWebclientProperties properties,
 			@Qualifier(CibsevenJpa.TRANSACTION_MANAGER) PlatformTransactionManager transactionManager,
-			ResourcePatternResolver resourcePatternResolver) {
+			ResourcePatternResolver resourcePatternResolver, WebclientExtensions webclientExtensions) {
 		this.elementTemplateRepository = elementTemplateRepository;
-		this.mapper = mapper;
+		// The webclient's own mapper, which reads them like the uploads to its REST service
+		this.mapper = WebclientJsonMapper.create(properties);
 		this.templates = properties.getModeler().getTemplates();
 		this.transactionTemplate = new TransactionTemplate(transactionManager);
 		this.resourcePatternResolver = resourcePatternResolver;
+		this.webclientExtensions = webclientExtensions;
 	}
 
-	@Override
-	public void afterPropertiesSet() throws Exception {
+	/** What the wait for the table came to. */
+	enum TableState { READY, SWITCHED_OFF, MISSING, STOPPED }
+
+	/**
+	 * Once the application is up, and in a thread of its own. The engine creates the table on its own
+	 * schedule, and an engine-rest in the same server cannot even say whether it will before the
+	 * webclient has started, so the start neither waits for the table nor depends on it.
+	 */
+	@EventListener(ApplicationReadyEvent.class)
+	public void loadInBackground() {
 		if (templates.getPaths() == null || templates.getPaths().isEmpty()) {
 			return;
 		}
+		Thread thread = new Thread(this::load, "cibseven-element-templates");
+		thread.setDaemon(true);
+		loading = thread;
+		thread.start();
+	}
 
-		// The MOD_ELEMENT_TEMPLATES table is created by the process engine (MyBatis), which
-		// runs outside the Spring context and cannot be ordered against this deployment. Wait
-		// for it to exist before loading; if it never appears, log and skip rather than failing
-		// the whole webclient deployment.
-		if (!awaitElementTemplatesTable()) {
-			log.error("Table MOD_ELEMENT_TEMPLATES is not available after {} attempt(s); "
-					+ "skipping element template loading for this startup. The webclient will start "
-					+ "without (re)loading element templates.", templates.getSchemaReadyMaxAttempts());
-			return;
+	@Override
+	public void destroy() {
+		Thread thread = loading;
+		if (thread != null) {
+			thread.interrupt();
 		}
+	}
 
-		populateElementTemplatesDatabase();
+	/**
+	 * Waits for the table, then loads the templates into it. If it never appears, this logs and skips
+	 * rather than failing; an engine that reports the webclient tables as not there is not waited for.
+	 */
+	void load() {
+		try {
+			switch (awaitElementTemplatesTable()) {
+				case READY -> populateElementTemplatesDatabase();
+				case SWITCHED_OFF -> log.info("The engine has no webclient tables; no element templates are loaded");
+				case MISSING -> log.error("Table MOD_ELEMENT_TEMPLATES is not available after {} attempt(s); "
+						+ "skipping element template loading for this startup. The webclient runs "
+						+ "without (re)loading element templates.", templates.getSchemaReadyMaxAttempts());
+				case STOPPED -> log.debug("The webclient stops; element templates are not loaded");
+			}
+		} catch (RuntimeException e) {
+			log.error("Loading the element templates failed", e);
+		}
 	}
 
 	/**
 	 * Polls for the existence of the {@code MOD_ELEMENT_TEMPLATES} table. Each probe runs in its
 	 * own transaction so a failed probe (table missing) is rolled back cleanly and never poisons a
-	 * subsequent attempt or the later load. Returns {@code true} once the table is queryable, or
-	 * {@code false} if it is still unavailable after the configured number of attempts.
+	 * subsequent attempt or the later load. Between probes the engine is asked again, as it may only
+	 * answer once it has started.
 	 */
-	private boolean awaitElementTemplatesTable() {
+	private TableState awaitElementTemplatesTable() {
+		if (webclientExtensions.switchedOffNow()) {
+			return TableState.SWITCHED_OFF;
+		}
 		int maxAttempts = Math.max(1, templates.getSchemaReadyMaxAttempts());
 		long delayMs = Math.max(0, templates.getSchemaReadyRetryDelayMs());
 
@@ -108,10 +146,13 @@ public class ElementTemplateLoader implements InitializingBean {
 				if (attempt > 1) {
 					log.info("Table MOD_ELEMENT_TEMPLATES became available after {} attempt(s).", attempt);
 				}
-				return true;
+				return TableState.READY;
 			} catch (Exception e) {
 				log.info("Table MOD_ELEMENT_TEMPLATES not ready yet (attempt {}/{}): {}",
 						attempt, maxAttempts, e.getMessage());
+				if (webclientExtensions.switchedOffNow()) {
+					return TableState.SWITCHED_OFF;
+				}
 				if (attempt == maxAttempts) {
 					break;
 				}
@@ -119,12 +160,11 @@ public class ElementTemplateLoader implements InitializingBean {
 					Thread.sleep(delayMs);
 				} catch (InterruptedException ie) {
 					Thread.currentThread().interrupt();
-					log.warn("Interrupted while waiting for MOD_ELEMENT_TEMPLATES table; aborting load.");
-					return false;
+					return TableState.STOPPED;
 				}
 			}
 		}
-		return false;
+		return TableState.MISSING;
 	}
 
 	private void populateElementTemplatesDatabase() {
@@ -173,8 +213,8 @@ public class ElementTemplateLoader implements InitializingBean {
 				log.error("Expected JSON object or array in '{}', but found: {}", description, root.getNodeType());
 				return;
 			}
-		} catch (IOException ioe) {
-			log.error("Failed to read element templates JSON at '{}'", description, ioe);
+		} catch (IOException | JacksonException e) {
+			log.error("Failed to read element templates JSON at '{}'", description, e);
 			return;
 		}
 

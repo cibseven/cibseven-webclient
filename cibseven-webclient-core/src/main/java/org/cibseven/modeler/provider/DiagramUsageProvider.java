@@ -28,6 +28,7 @@ import org.cibseven.modeler.model.DiagramUsageEntity;
 import org.cibseven.modeler.repository.DiagramUsageRepository;
 import org.cibseven.modeler.repository.UserSessionRepository;
 import org.cibseven.webapp.config.SevenWebclientProperties;
+import org.cibseven.webapp.providers.WebclientExtensions;
 
 @Component
 public class DiagramUsageProvider implements IDiagramUsageProvider {
@@ -38,11 +39,14 @@ public class DiagramUsageProvider implements IDiagramUsageProvider {
 
 	private final UserSessionRepository userSessionRepository;
 
+	private final WebclientExtensions webclientExtensions;
+
 	public DiagramUsageProvider(SevenWebclientProperties properties, DiagramUsageRepository processDiagramDao,
-			UserSessionRepository userSessionRepository) {
+			UserSessionRepository userSessionRepository, WebclientExtensions webclientExtensions) {
 		this.properties = properties;
 		this.processDiagramDao = processDiagramDao;
 		this.userSessionRepository = userSessionRepository;
+		this.webclientExtensions = webclientExtensions;
 	}
 
 	@Override
@@ -51,7 +55,11 @@ public class DiagramUsageProvider implements IDiagramUsageProvider {
 	}
 	
 	@Scheduled(cron = SevenWebclientProperties.MODELER_DELETE_USAGES_CRON)
-	void removeOldVersions() {		
+	void removeOldVersions() {
+		// There is nothing to clean up in tables the engine has switched off
+		if (webclientExtensions.switchedOff()) {
+			return;
+		}
 		userSessionRepository.removeOldSessions(properties.getModeler().getDeleteUsages().getUsageLimit());
 	}
 	

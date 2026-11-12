@@ -85,6 +85,7 @@ import org.cibseven.bpm.engine.runtime.ProcessInstanceWithVariables;
 import org.cibseven.bpm.engine.runtime.ProcessInstantiationBuilder;
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.exception.ExpressionEvaluationException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
@@ -102,9 +103,9 @@ import org.cibseven.webapp.rest.model.Variable;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import jakarta.ws.rs.core.MultivaluedHashMap;
 import jakarta.ws.rs.core.MultivaluedMap;
@@ -547,7 +548,9 @@ public class DirectProcessProvider implements IProcessProvider {
 	@Override
 	public Collection<ProcessStatistics> findProcessStatistics(String processId, CIBUser user)
 			throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
-		ActivityStatisticsQuery query = directProviderUtil.getProcessEngine(user).getManagementService().createActivityStatisticsQuery(processId);
+		ActivityStatisticsQuery query = directProviderUtil.getProcessEngine(user).getManagementService().createActivityStatisticsQuery(processId)
+				.includeFailedJobs()
+				.includeIncidents();
 		List<ActivityStatistics> queryResults = query.unlimitedList();
 
 		Collection<ProcessStatistics> processStatistics = new ArrayList<>();
@@ -745,7 +748,7 @@ public class DirectProcessProvider implements IProcessProvider {
 	}
 
 	public static Process convertToProcess(CalledProcessDefinitionDto dto) {
-		ObjectMapper objectMapper = new ObjectMapper();
+		ObjectMapper objectMapper = WebclientJsonMapper.plain();
 		Map<String, Object> filterDtoMap = objectMapper.convertValue(dto, new TypeReference<Map<String, Object>>() {
 		});
 		return objectMapper.convertValue(filterDtoMap, Process.class);
@@ -925,7 +928,7 @@ public class DirectProcessProvider implements IProcessProvider {
 		StartProcessInstanceDto parameters;
 		try {
 			parameters = objectMapper.readValue(formResult, StartProcessInstanceDto.class);
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			throw new SystemException(e.getMessage(), e);
 		}
 		FormService formService = directProviderUtil.getProcessEngine(user).getFormService();

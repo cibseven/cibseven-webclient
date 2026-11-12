@@ -179,10 +179,9 @@ export default {
       if (!this.process) return
       if (!showMore) {
         this.resetInstances()
+        this.$emit('load-statistics', this.filter)
       }
       this.loading = true
-      // Load historic activity statistics for the loaded instances
-        this.$emit('load-statistics', this.filter)
       try {
         const instances = await this.loadInstances({
           processId: this.process.id,

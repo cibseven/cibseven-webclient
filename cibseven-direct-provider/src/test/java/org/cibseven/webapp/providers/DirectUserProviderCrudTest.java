@@ -50,7 +50,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Covers the user, group and membership CRUD of {@link DirectUserProvider}. The authorization
@@ -76,8 +76,7 @@ public class DirectUserProviderCrudTest {
 		userQuery = mock(UserQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
 		when(identityService.createUserQuery()).thenReturn(userQuery);
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		JacksonConfigurator.configureObjectMapper(objectMapper);
+		ObjectMapper objectMapper = JacksonConfigurator.configureObjectMapper();
 
 		directProviderUtil = Mockito.spy(new DirectProviderUtil());
 		doReturn(processEngine).when(directProviderUtil).getProcessEngine(any(CIBUser.class));

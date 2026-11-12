@@ -61,7 +61,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * The history, statistics and lifecycle side of {@link DirectProcessProvider}. Definitions live in
@@ -102,8 +102,7 @@ public class DirectProcessProviderHistoryTest {
 		instanceQuery = mock(ProcessInstanceQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
 		when(runtimeService.createProcessInstanceQuery()).thenReturn(instanceQuery);
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		JacksonConfigurator.configureObjectMapper(objectMapper);
+		ObjectMapper objectMapper = JacksonConfigurator.configureObjectMapper();
 
 		directProviderUtil = Mockito.spy(new DirectProviderUtil());
 		doReturn(processEngine).when(directProviderUtil).getProcessEngine(any(CIBUser.class));
@@ -230,7 +229,7 @@ public class DirectProcessProviderHistoryTest {
 
 	@Test
 	void findProcessStatistics_mapsTheActivityStatistics() {
-		ActivityStatisticsQuery query = mock(ActivityStatisticsQuery.class);
+		ActivityStatisticsQuery query = mock(ActivityStatisticsQuery.class, RETURNS_SELF);
 		when(managementService.createActivityStatisticsQuery("id-1")).thenReturn(query);
 		ActivityStatistics statistics = mock(ActivityStatistics.class);
 		when(statistics.getId()).thenReturn("serviceTask");
@@ -244,9 +243,22 @@ public class DirectProcessProviderHistoryTest {
 			.containsExactly("serviceTask", 3L);
 	}
 
+	// The REST provider asks for ?failedJobs=true&incidents=true, so the direct provider must too
+	@Test
+	void findProcessStatistics_includesFailedJobsAndIncidents() {
+		ActivityStatisticsQuery query = mock(ActivityStatisticsQuery.class, RETURNS_SELF);
+		when(managementService.createActivityStatisticsQuery("id-1")).thenReturn(query);
+		when(query.unlimitedList()).thenReturn(List.of());
+
+		processProvider.findProcessStatistics("id-1", user);
+
+		verify(query).includeFailedJobs();
+		verify(query).includeIncidents();
+	}
+
 	@Test
 	void findProcessStatistics_returnsEmptyWhenTheProcessHasNoActivityStatistics() {
-		ActivityStatisticsQuery query = mock(ActivityStatisticsQuery.class);
+		ActivityStatisticsQuery query = mock(ActivityStatisticsQuery.class, RETURNS_SELF);
 		when(managementService.createActivityStatisticsQuery("id-1")).thenReturn(query);
 		when(query.unlimitedList()).thenReturn(List.of());
 

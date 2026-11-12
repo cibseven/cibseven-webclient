@@ -41,13 +41,7 @@
       </i18n-t>
       <div class="row align-items-center px-4">
         <div class="col-4">
-          <b-input-group size="sm">
-            <template #prepend>
-              <b-button class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
-            </template>
-            <label for="authorizations-search" class="visually-hidden">{{ $t('searches.search') }}</label>
-            <b-form-input id="authorizations-search" :placeholder="$t('searches.search')" v-model.trim="filter"></b-form-input>
-          </b-input-group>
+          <SearchInput input-id="authorizations-search" size="sm" v-model.trim="filter"/>
         </div>
         <div class="col-8 text-end">
           <b-button class="me-1" size="sm" variant="secondary" @click="add()">
@@ -202,6 +196,7 @@ import { getStringObjByKeys } from '@/components/admin/utils.js'
 import { FlowTable, TaskPopper, ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import WarningBox from '@/components/common-components/WarningBox.vue'
+import SearchInput from '@/components/common-components/SearchInput.vue'
 
 // admin.types is deployment configuration and has carried its ids as strings, while the engine
 // models the type as an int. Numbering them here keeps the type a number everywhere below.
@@ -216,7 +211,7 @@ const ALL_USERS = '*'
 
 export default {
   name: 'AdminAuthorizationsTable',
-  components: { FlowTable, TaskPopper, BWaitingBox, ConfirmDialog, CellActionButton, WarningBox },
+  components: { FlowTable, TaskPopper, BWaitingBox, ConfirmDialog, CellActionButton, WarningBox, SearchInput },
   data: function () {
     return {
       selected: [],

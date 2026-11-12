@@ -34,9 +34,17 @@ import org.cibseven.modeler.model.ProcessDiagramReduce;
 @Repository
 public interface ProcessDiagramRepository extends JpaRepository<ProcessDiagramEntity, String> {
 
-	ProcessDiagramEntity findByName(String name);
+	/** A name was never unique, and the same file may now sit in several folders: the latest change first. */
+	List<ProcessDiagramEntity> findByNameOrderByUpdatedDesc(String name);
 
-	ProcessDiagramEntity findByProcesskey(String processkey);
+	/** The key is unique only within a folder, so this may find several: the latest change first. */
+	List<ProcessDiagramEntity> findByProcesskeyOrderByUpdatedDesc(String processkey);
+
+	ProcessDiagramEntity findByProcesskeyAndFolderId(String processkey, String folderId);
+
+	boolean existsByProcesskey(String processkey);
+
+	boolean existsByProcesskeyAndIdNot(String processkey, String id);
 
 	List<ProcessDiagramReduce> findAllBy(Pageable pageable);
 
