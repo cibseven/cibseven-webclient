@@ -102,6 +102,7 @@ function context(overrides = {}) {
     tasksNavbarSize: 0,
     leftOpenTask: true,
     search: '',
+    searchAssigneeIds: {},
     ...overrides
   }
   // Bind the component's own methods so intra-method calls resolve, unless stubbed.
@@ -436,6 +437,20 @@ describe('TasksContent - fetchTasks', () => {
     expect(body().orQueries).toEqual([
       { nameLike: '%invoice%', assigneeLike: '%invoice%', processDefinitionId: 'invoice', processInstanceBusinessKeyLike: '%invoice%' },
       { nameLike: '%urgent%', assigneeLike: '%urgent%', processDefinitionId: 'urgent', processInstanceBusinessKeyLike: '%urgent%' }
+    ])
+  })
+
+  // The engine only knows assignee ids, so a word matching a user's name is sent as the ids
+  // of those users, alongside the existing search on the id itself.
+  it('should add the ids of users whose name matches a word to that word\'s OR query', async () => {
+    const vm = context({ search: 'nach invoice', searchAssigneeIds: { nach: ['peter', 'pnach'], invoice: [] } })
+
+    fetchTasks.call(vm, 0, 20)
+    await flush()
+
+    expect(body().orQueries).toEqual([
+      { nameLike: '%nach%', assigneeLike: '%nach%', processDefinitionId: 'nach', processInstanceBusinessKeyLike: '%nach%', assigneeIn: ['peter', 'pnach'] },
+      { nameLike: '%invoice%', assigneeLike: '%invoice%', processDefinitionId: 'invoice', processInstanceBusinessKeyLike: '%invoice%' }
     ])
   })
 
@@ -1011,6 +1026,72 @@ describe('TasksContent - task.assignee watcher', () => {
     TasksContent.watch['task.assignee'].call(vm, 'peter')
 
     expect(vm.$store.dispatch).toHaveBeenCalledWith('addUsersByIds', ['peter'])
+  })
+})
+
+describe('TasksContent - search watcher', () => {
+  const onSearch = (vm) => TasksContent.watch.search.call(vm)
+  const settle = async () => {
+    vi.advanceTimersByTime(800)
+    await flush()
+  }
+
+  beforeEach(() => { vi.useFakeTimers() })
+  afterEach(() => { vi.useRealTimers() })
+
+  // Names are resolved once per search, before the list loads, so polls reuse the result.
+  it('should resolve the words to user ids before reloading the list', async () => {
+    const vm = context({ search: 'peter nach', listTasksWithFilter: vi.fn() })
+    vm.$store.dispatch = vi.fn(() => Promise.resolve({ peter: ['peter'], nach: ['peter'] }))
+
+    onSearch(vm)
+    await settle()
+
+    expect(vm.$store.dispatch).toHaveBeenCalledWith('findUserIdsByName', ['peter', 'nach'])
+    expect(vm.searchAssigneeIds).toEqual({ peter: ['peter'], nach: ['peter'] })
+    expect(vm.listTasksWithFilter).toHaveBeenCalledOnce()
+  })
+
+  it('should not search for users when the search box is cleared', async () => {
+    const vm = context({ search: '', searchAssigneeIds: { old: ['x'] }, listTasksWithFilter: vi.fn() })
+
+    onSearch(vm)
+    await settle()
+
+    expect(vm.$store.dispatch).not.toHaveBeenCalled()
+    expect(vm.searchAssigneeIds).toEqual({})
+    expect(vm.listTasksWithFilter).toHaveBeenCalledOnce()
+  })
+
+  // A slow answer for an older search must not overwrite the result of a newer one.
+  it('should drop the result when the search changed in the meantime', async () => {
+    const vm = context({ search: 'pet', listTasksWithFilter: vi.fn() })
+    vm.$store.dispatch = vi.fn(() => {
+      vm.search = 'peter'
+      return Promise.resolve({ pet: ['peter'] })
+    })
+
+    onSearch(vm)
+    await settle()
+
+    expect(vm.searchAssigneeIds).toEqual({})
+    expect(vm.listTasksWithFilter).not.toHaveBeenCalled()
+  })
+
+  // Without the user lookup the search still works on task name, business key and id.
+  it('should still reload the list when the user lookup fails', async () => {
+    const vm = context({ search: 'peter', listTasksWithFilter: vi.fn() })
+    vm.$store.dispatch = vi.fn(() => Promise.reject(new Error('boom')))
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const consoleLog = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+    onSearch(vm)
+    await settle()
+
+    expect(vm.searchAssigneeIds).toEqual({})
+    expect(vm.listTasksWithFilter).toHaveBeenCalledOnce()
+    consoleError.mockRestore()
+    consoleLog.mockRestore()
   })
 })
 

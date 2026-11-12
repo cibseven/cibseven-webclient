@@ -21,10 +21,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.Task;
+import org.cibseven.webapp.rest.model.TaskFilterQuery;
 import org.cibseven.webapp.rest.model.TaskFiltering;
 import org.cibseven.webapp.rest.model.TaskHistory;
 import org.junit.jupiter.api.AfterEach;
@@ -361,5 +363,21 @@ public class TaskProviderTest {
 
 		assertThat(tasks).hasSize(1);
 		assertThat(engine.takePath()).isEqualTo("/filter/filter-1/list?firstResult=0&maxResults=50");
+	}
+	
+	@Test
+	void findTasksByFilter_forwardsTheAssigneesOfAnOrQuery() throws Exception {
+		engine.enqueueJson("[]");
+		TaskFilterQuery orQuery = new TaskFilterQuery();
+		orQuery.setAssigneeLike("%nach%");
+		orQuery.setAssigneeIn(List.of("peter", "pnach"));
+		TaskFiltering filtering = new TaskFiltering();
+		filtering.setOrQueries(List.of(orQuery));
+
+		taskProvider.findTasksByFilter(filtering, "filter-1", user, 0, 50);
+
+		String body = engine.take().getBody().readUtf8();
+		assertThat(body).contains("\"assigneeIn\":[\"peter\",\"pnach\"]");
+		assertThat(body).contains("\"assigneeLike\":\"%nach%\"");
 	}
 }

@@ -31,6 +31,7 @@ import lombok.ToString;
 public class TaskFilterQuery {
 	String nameLike;
 	String assigneeLike;
+	List<String> assigneeIn;
 	String processDefinitionId;
 	String processInstanceBusinessKeyLike;
 	List<ProcessVariablesCriteria> processVariables;

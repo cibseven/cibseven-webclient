@@ -112,6 +112,19 @@ const UserStore = {
         console.error('Users could not be loaded: ', error)
       }
     },
+    findUserIdsByName: async function(ctx, words)
+    {
+      const result = {}
+      await Promise.all(words.map(async word => {
+        const pattern = `*${word}*`
+        const [byFirstName, byLastName] = await Promise.all([
+          AdminService.findUsers({ firstNameLike: pattern, likePatternIgnoreCase: true }),
+          AdminService.findUsers({ lastNameLike: pattern, likePatternIgnoreCase: true })
+        ])
+        result[word] = [...new Set([...byFirstName, ...byLastName].map(u => u.id))]
+      }))
+      return result
+    }
   }
 }
 

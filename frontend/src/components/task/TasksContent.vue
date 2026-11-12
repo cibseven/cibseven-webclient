@@ -146,7 +146,8 @@ export default {
       tasksNavbarSizes: [[12, 6, 4, 4, 3], [12, 6, 4, 5, 4], [12, 6, 4, 6, 5]],
       tasksNavbarSize: 0,
       taskResultsIndex: 0,
-      search: ''
+      search: '',
+      searchAssigneeIds: {}
     }
   },
   computed: {
@@ -217,7 +218,22 @@ export default {
    'task.assignee': function(val) {
         this.$store.dispatch('addUsersByIds', [val])
     },
-    search: debounce(800, function() { this.listTasksWithFilter() })
+    search: debounce(800, async function() { 
+      const search = this.search
+      let assigneeIds = {}
+      if (search) {
+        try {
+          assigneeIds = await this.$store.dispatch('findUserIdsByName', splitToWords(search))
+        }
+        catch (error) {
+          console.log('Assignees could not be searched by name: ', error)
+        }
+      }
+      if (search !== this.search) return
+      
+      this.searchAssigneeIds = assigneeIds
+      this.listTasksWithFilter()
+    })
   },
   created: function() {
     const taskSorting = localStorage.getItem('taskSorting') ? JSON.parse(localStorage.getItem('taskSorting')) : {}
@@ -280,13 +296,19 @@ export default {
       if (taskSorting[0].sortBy !== 'created') taskSorting.push({ sortBy: 'created', sortOrder: 'desc' })
       const filters = { sorting: taskSorting, likePatternIgnoreCase: true }
       if (this.search) {
-        filters.orQueries = splitToWords(this.search).map((searchQuery) => ({
+        filters.orQueries = splitToWords(this.search).map((searchQuery) => {
+          const query = {
             nameLike: '%' + searchQuery + '%',
             assigneeLike: '%' + searchQuery + '%',
             processDefinitionId: searchQuery,
-            processInstanceBusinessKeyLike: '%' + searchQuery + '%'
-          }))
+            processInstanceBusinessKeyLike: '%' + searchQuery + '%'  
+          }
+          const assigneeIds = this.searchAssigneeIds[searchQuery]
+          if (assigneeIds?.length) query.assigneeIn = assigneeIds
+          return query
+        })
       }
+      
       if (this.$root.config.taskFilter.advancedSearch.filterEnabled) {
         this.$store.dispatch('loadAdvancedSearchData')
       }

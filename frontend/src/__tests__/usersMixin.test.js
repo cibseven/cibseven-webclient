@@ -51,6 +51,12 @@ describe('usersMixin', () => {
       expect(context().getDisplayName('me')).toBe('Me Myself')
     })
 
+    it('should fall back to the id when the logged-in user has no display name', () => {
+      const vm = context({ $root: { user: { id: 'me' }, config: {} } })
+
+      expect(vm.getDisplayName('me')).toBe('me')
+    })
+
     it('should join first and last name of a cached user', () => {
       const vm = context()
       vm.$store.state.user.userIdMap = { demo: { id: 'demo', firstName: 'Demo', lastName: 'User' } }
@@ -67,12 +73,22 @@ describe('usersMixin', () => {
       expect(vm.getDisplayName('ME')).toBe('ME')
     })
 
+    // A user with only one name shows that name rather than the bare id.
+    it.each([
+      ['first name', { firstName: 'Demo' }, 'Demo'],
+      ['last name', { lastName: 'User' }, 'User']
+    ])('should show the %s alone when the other one is missing', (_, names, expected) => {
+      const vm = context()
+      vm.$store.state.user.userIdMap = { demo: { id: 'demo', ...names } }
+
+      expect(vm.getDisplayName('demo')).toBe(expected)
+    })
+
     it.each([
       ['not cached yet', {}],
       ['unknown to the backend (cached as null)', { demo: null }],
-      ['cached with first name only', { demo: { id: 'demo', firstName: 'Demo' } }],
-      ['cached with last name only', { demo: { id: 'demo', lastName: 'User' } }],
-      ['cached without names', { demo: { id: 'demo' } }]
+      ['cached without names', { demo: { id: 'demo' } }],
+      ['cached with empty names', { demo: { id: 'demo', firstName: '', lastName: '' } }]
     ])('should fall back to the id when the user is %s', (_, userIdMap) => {
       const vm = context()
       vm.$store.state.user.userIdMap = userIdMap
