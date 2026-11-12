@@ -27,9 +27,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.cibseven.bpm.engine.IdentityService;
 import org.cibseven.bpm.engine.ProcessEngine;
@@ -50,7 +52,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Covers the user, group and membership CRUD of {@link DirectUserProvider}. The authorization
@@ -76,8 +78,7 @@ public class DirectUserProviderCrudTest {
 		userQuery = mock(UserQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
 		when(identityService.createUserQuery()).thenReturn(userQuery);
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		JacksonConfigurator.configureObjectMapper(objectMapper);
+		ObjectMapper objectMapper = JacksonConfigurator.configureObjectMapper();
 
 		directProviderUtil = Mockito.spy(new DirectProviderUtil());
 		doReturn(processEngine).when(directProviderUtil).getProcessEngine(any(CIBUser.class));
@@ -199,6 +200,33 @@ public class DirectUserProviderCrudTest {
 		SevenUser profile = userProvider.getUserProfile("demo", user);
 
 		assertThat(profile.getId()).isEqualTo("DEMO");
+	}
+
+	private Collection<User> findUsersByIdIn(Optional<String> idIn) {
+		return userProvider.findUsers(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), idIn,
+		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), user);
+	}
+
+	@Test
+	void findUsers_restrictsTheQueryToTheRequestedIds() {
+		org.cibseven.bpm.engine.identity.User userA = mockEngineUser("e2eusera1");
+		org.cibseven.bpm.engine.identity.User userB = mockEngineUser("e2euserb2");
+		when(userQuery.list()).thenReturn(List.of(userA, userB));
+
+		Collection<User> users = findUsersByIdIn(Optional.of("e2eusera1,e2euserb2"));
+
+		verify(userQuery).userIdIn("e2eusera1", "e2euserb2");
+		assertThat(users).extracting(User::getId).containsExactly("e2eusera1", "e2euserb2");
+	}
+
+	@Test
+	void findUsers_doesNotRestrictTheIdsWithoutIdIn() {
+		when(userQuery.list()).thenReturn(List.of());
+
+		findUsersByIdIn(Optional.empty());
+
+		verify(userQuery, never()).userIdIn(any(String[].class));
 	}
 
 	// ---------- credentials ----------

@@ -48,4 +48,5 @@ public class Process {
 	long allInstances;
 	long completedInstances;
 	long incidents;
+	String deploymentTime;
 }

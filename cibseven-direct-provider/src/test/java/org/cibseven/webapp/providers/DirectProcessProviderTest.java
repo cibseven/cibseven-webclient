@@ -60,7 +60,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.ResponseEntity;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 public class DirectProcessProviderTest {
 
@@ -91,8 +91,7 @@ public class DirectProcessProviderTest {
 		historyQuery = mock(HistoricProcessInstanceQueryImpl.class, withSettings().defaultAnswer(RETURNS_SELF));
 		when(historyService.createHistoricProcessInstanceQuery()).thenReturn(historyQuery);
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		JacksonConfigurator.configureObjectMapper(objectMapper);
+		ObjectMapper objectMapper = JacksonConfigurator.configureObjectMapper();
 
 		directProviderUtil = Mockito.spy(new DirectProviderUtil());
 		doReturn(processEngine).when(directProviderUtil).getProcessEngine(any(CIBUser.class));

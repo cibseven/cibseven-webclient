@@ -25,6 +25,7 @@ import static org.mockito.Mockito.RETURNS_SELF;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
@@ -54,13 +55,14 @@ import org.cibseven.webapp.rest.model.Variable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 public class DirectVariableProviderTest {
 
@@ -88,8 +90,7 @@ public class DirectVariableProviderTest {
 		when(configuration.getValueTypeResolver()).thenReturn(new ValueTypeResolverImpl());
 		when(processEngine.getProcessEngineConfiguration()).thenReturn(configuration);
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		JacksonConfigurator.configureObjectMapper(objectMapper);
+		ObjectMapper objectMapper = JacksonConfigurator.configureObjectMapper();
 
 		directProviderUtil = Mockito.spy(new DirectProviderUtil());
 		doReturn(processEngine).when(directProviderUtil).getProcessEngine(any(CIBUser.class));
@@ -244,6 +245,8 @@ public class DirectVariableProviderTest {
 	}
 
 	// ---------- runtime variable modification ----------
+	// engine-rest serves these as /execution/{id}/localVariables, so they must stay on the execution^M
+	// and never propagate to a parent scope such as the process instance (CIB7-2377)^M
 
 	@Test
 	void modifyVariableByExecutionId_appliesDeletionsToTheExecution() {
@@ -252,14 +255,28 @@ public class DirectVariableProviderTest {
 
 		variableProvider.modifyVariableByExecutionId("exec-1", data, user);
 
-		verify(runtimeService).updateVariables(eq("exec-1"), any(), eq(List.of("amount", "customer")));
+		verify(runtimeService).updateVariablesLocal(eq("exec-1"), any(), eq(List.of("amount", "customer")));
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	void modifyVariableByExecutionId_setsModificationsLocallyOnTheExecution() {
+		Map<String, Object> data = new HashMap<>();
+		data.put("modifications", Map.of("localText", Map.of("value", "first", "type", "String")));
+
+		variableProvider.modifyVariableByExecutionId("exec-1", data, user);
+
+		ArgumentCaptor<Map<String, Object>> modifications = ArgumentCaptor.forClass(Map.class);
+		verify(runtimeService).updateVariablesLocal(eq("exec-1"), modifications.capture(), any());
+		assertThat(modifications.getValue()).containsEntry("localText", "first");
+		verify(runtimeService, never()).updateVariables(any(), any(), any());
 	}
 
 	@Test
 	void modifyVariableByExecutionId_wrapsEngineFailureInSystemException() {
 		Map<String, Object> data = new HashMap<>();
 		data.put("deletions", List.of("amount"));
-		doThrow(new ProcessEngineException("gone")).when(runtimeService).updateVariables(any(), any(), any());
+		doThrow(new ProcessEngineException("gone")).when(runtimeService).updateVariablesLocal(any(), any(), any());
 
 		assertThatThrownBy(() -> variableProvider.modifyVariableByExecutionId("exec-1", data, user))
 			.isInstanceOf(SystemException.class)
@@ -273,7 +290,20 @@ public class DirectVariableProviderTest {
 
 		variableProvider.modifyVariableDataByExecutionId("exec-1", "invoice", upload, "File", user);
 
-		verify(runtimeService).setVariable(eq("exec-1"), eq("invoice"), any(TypedValue.class));
+		verify(runtimeService).setVariableLocal(eq("exec-1"), eq("invoice"), any(TypedValue.class));
+		verify(runtimeService, never()).setVariable(any(), any(), any(TypedValue.class));
+	}
+
+	@Test
+	void putLocalExecutionVariable_setsTheVariableLocallyOnTheExecution() {
+		Map<String, Object> data = new HashMap<>();
+		data.put("value", "first");
+		data.put("type", "String");
+
+		variableProvider.putLocalExecutionVariable("exec-1", "localText", data, user);
+
+		verify(runtimeService).setVariableLocal(eq("exec-1"), eq("localText"), any(TypedValue.class));
+		verify(runtimeService, never()).setVariable(any(), any(), any(TypedValue.class));
 	}
 
 	@Test

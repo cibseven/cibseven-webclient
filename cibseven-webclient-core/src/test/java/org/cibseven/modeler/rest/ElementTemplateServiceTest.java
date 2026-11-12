@@ -37,7 +37,7 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.ModelerAccessChecker;
 import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.auth.exception.AuthenticationException;
-import org.cibseven.webapp.exception.NoObjectException;
+import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -159,7 +159,7 @@ public class ElementTemplateServiceTest {
 		when(templateProvider.findById("missing")).thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> service.getElementTemplateById(request, "missing"))
-			.isInstanceOf(NoObjectException.class);
+			.isInstanceOf(NoObjectFoundException.class);
 	}
 
 	// ---------- create ----------
@@ -227,13 +227,30 @@ public class ElementTemplateServiceTest {
 
 	@Test
 	void delete_delegatesToTheProvider() {
+		when(templateProvider.findById("t-1"))
+			.thenReturn(Optional.of(template("t-1", "Mail", "mail", true, "demo", null)));
+
 		service.delete(request, "t-1");
 
 		verify(templateProvider).deleteTemplateById("t-1");
 	}
 
 	@Test
+	void delete_throwsNotFoundWhenTheTemplateIsUnknown() {
+		when(templateProvider.findById("missing")).thenReturn(Optional.empty());
+
+		// the repository ignores unknown ids, so the service must answer 404 itself (CIB7-2373)
+		assertThatThrownBy(() -> service.delete(request, "missing"))
+			.isInstanceOf(NoObjectFoundException.class);
+		verify(templateProvider, never()).deleteTemplateById("missing");
+	}
+
+	@Test
 	void bulkDelete_reportsWhichIdsSucceededAndWhichFailed() {
+		for (String id : List.of("t-1", "t-2", "t-3")) {
+			when(templateProvider.findById(id))
+				.thenReturn(Optional.of(template(id, "Mail", "mail", true, "demo", null)));
+		}
 		doThrow(new IllegalStateException("still in use"))
 			.when(templateProvider).deleteTemplateById("t-2");
 
@@ -247,6 +264,20 @@ public class ElementTemplateServiceTest {
 			.containsEntry("failed", List.of("t-2"))
 			.containsEntry("totalRequested", 3)
 			.containsEntry("totalDeleted", 2);
+	}
+
+	@Test
+	void bulkDelete_reportsAnUnknownIdAsFailed() {
+		when(templateProvider.findById("t-1"))
+			.thenReturn(Optional.of(template("t-1", "Mail", "mail", true, "demo", null)));
+		when(templateProvider.findById("missing")).thenReturn(Optional.empty());
+
+		Map<String, Object> body = service.bulkDelete(request, List.of("t-1", "missing")).getBody();
+
+		assertThat(body).containsEntry("deleted", List.of("t-1"))
+			.containsEntry("failed", List.of("missing"))
+			.containsEntry("totalDeleted", 1);
+		verify(templateProvider, never()).deleteTemplateById("missing");
 	}
 
 	// ---------- duplicate ----------
@@ -272,7 +303,7 @@ public class ElementTemplateServiceTest {
 		when(templateProvider.findById("missing")).thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> service.duplicateTemplate(request, "missing"))
-			.isInstanceOf(NoObjectException.class);
+			.isInstanceOf(NoObjectFoundException.class);
 		verify(templateProvider, never()).addTemplate(org.mockito.ArgumentMatchers.any());
 	}
 

@@ -47,7 +47,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 public class DirectBatchProviderTest {
 
@@ -67,8 +67,7 @@ public class DirectBatchProviderTest {
 		when(processEngine.getManagementService()).thenReturn(managementService);
 		when(processEngine.getHistoryService()).thenReturn(historyService);
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		JacksonConfigurator.configureObjectMapper(objectMapper);
+		ObjectMapper objectMapper = JacksonConfigurator.configureObjectMapper();
 
 		directProviderUtil = Mockito.spy(new DirectProviderUtil());
 		doReturn(processEngine).when(directProviderUtil).getProcessEngine(any(CIBUser.class));
@@ -235,6 +234,78 @@ public class DirectBatchProviderTest {
 		when(query.count()).thenReturn(5L);
 
 		assertThat(batchProvider.getHistoricBatchCount(new HashMap<>(), user)).isEqualTo(5L);
+	}
+
+	@Test
+	void getHistoricBatches_appliesACommaSeparatedTenantIdIn() {
+		HistoricBatchQuery query = mock(HistoricBatchQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
+		when(historyService.createHistoricBatchQuery()).thenReturn(query);
+		when(query.list()).thenReturn(java.util.Collections.emptyList());
+
+		Map<String, Object> params = new HashMap<>();
+		params.put("tenantIdIn", "tenant-a,tenant-b");
+		params.put("firstResult", "0");
+		params.put("maxResults", "50");
+
+		assertThat(batchProvider.getHistoricBatches(params, user)).isEmpty();
+		verify(query).tenantIdIn("tenant-a", "tenant-b");
+	}
+
+	@Test
+	void getHistoricBatches_appliesASingleTenantIdIn() {
+		HistoricBatchQuery query = mock(HistoricBatchQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
+		when(historyService.createHistoricBatchQuery()).thenReturn(query);
+		when(query.list()).thenReturn(java.util.Collections.emptyList());
+
+		Map<String, Object> params = new HashMap<>();
+		params.put("tenantIdIn", "tenant-a");
+
+		assertThat(batchProvider.getHistoricBatches(params, user)).isEmpty();
+		verify(query).tenantIdIn("tenant-a");
+	}
+
+	@Test
+	void getHistoricBatches_acceptsAnEmptyTenantIdIn() {
+		HistoricBatchQuery query = mock(HistoricBatchQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
+		when(historyService.createHistoricBatchQuery()).thenReturn(query);
+		when(query.list()).thenReturn(java.util.Collections.emptyList());
+
+		Map<String, Object> params = new HashMap<>();
+		params.put("tenantIdIn", "");
+
+		assertThat(batchProvider.getHistoricBatches(params, user)).isEmpty();
+	}
+
+	@Test
+	void getHistoricBatchCount_appliesACommaSeparatedTenantIdIn() {
+		HistoricBatchQuery query = mock(HistoricBatchQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
+		when(historyService.createHistoricBatchQuery()).thenReturn(query);
+		when(query.count()).thenReturn(0L);
+
+		Map<String, Object> params = new HashMap<>();
+		params.put("tenantIdIn", "tenant-a,tenant-b");
+
+		assertThat(batchProvider.getHistoricBatchCount(params, user)).isZero();
+		verify(query).tenantIdIn("tenant-a", "tenant-b");
+	}
+
+	@Test
+	void getHistoricBatchCount_appliesTheOtherCriteria() {
+		HistoricBatchQuery query = mock(HistoricBatchQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
+		when(historyService.createHistoricBatchQuery()).thenReturn(query);
+		when(query.count()).thenReturn(1L);
+
+		Map<String, Object> params = new HashMap<>();
+		params.put("batchId", "batch-1");
+		params.put("type", "instance-migration");
+		params.put("completed", "true");
+		params.put("withoutTenantId", "true");
+
+		assertThat(batchProvider.getHistoricBatchCount(params, user)).isEqualTo(1L);
+		verify(query).batchId("batch-1");
+		verify(query).type("instance-migration");
+		verify(query).completed(true);
+		verify(query).withoutTenantId();
 	}
 
 	@Test

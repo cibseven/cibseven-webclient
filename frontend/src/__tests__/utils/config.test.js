@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 import { describe, it, expect } from 'vitest'
-import { applyConfigDefaults } from '@/utils/config.js'
+import { applyConfigDefaults, isModelerEnabled } from '@/utils/config.js'
 
 describe('config utility', () => {
   describe('applyConfigDefaults', () => {
@@ -132,6 +132,22 @@ describe('config utility', () => {
       const resourceType = applyConfigDefaults().admin.resourcesTypes[id]
       expect(resourceType.key).toBe(key)
       expect(resourceType.permissions).toEqual(permissions)
+    })
+  })
+
+  // The one check the modeler route, the navigation and the viewers share
+  describe('isModelerEnabled', () => {
+    it('is on only when the backend reports it on', () => {
+      expect(isModelerEnabled({ modelerEnabled: true })).toBe(true)
+    })
+
+    // undefined: a backend from before the flag existed (e.g. 2.2); 'true' and 1 are not the boolean the backend sends
+    it.each([[false], [undefined], ['true'], [1]])('is off for modelerEnabled %j', (modelerEnabled) => {
+      expect(isModelerEnabled({ modelerEnabled })).toBe(false)
+    })
+
+    it('is off without a loaded configuration', () => {
+      expect(isModelerEnabled(undefined)).toBe(false)
     })
   })
 })

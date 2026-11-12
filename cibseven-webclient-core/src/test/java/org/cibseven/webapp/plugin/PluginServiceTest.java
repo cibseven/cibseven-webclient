@@ -27,8 +27,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 @ExtendWith(MockitoExtension.class)
 public class PluginServiceTest {
@@ -63,8 +63,8 @@ public class PluginServiceTest {
 		ObjectNode response = new PluginService(pluginRegistry).getPlugins();
 
 		assertEquals(2, response.get("plugins").size());
-		assertEquals("first", response.get("plugins").get(0).get("id").asText());
-		assertEquals("index.js", response.get("plugins").get(0).get("entry").asText());
-		assertEquals("second", response.get("plugins").get(1).get("id").asText());
+		assertEquals("first", response.get("plugins").get(0).get("id").asString());
+		assertEquals("index.js", response.get("plugins").get(0).get("entry").asString());
+		assertEquals("second", response.get("plugins").get(1).get("id").asString());
 	}
 }

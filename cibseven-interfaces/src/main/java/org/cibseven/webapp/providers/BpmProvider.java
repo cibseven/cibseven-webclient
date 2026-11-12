@@ -82,7 +82,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -1017,9 +1017,9 @@ public interface BpmProvider {
 		return getVariableProvider().fetchProcessFormVariables(key, deserializeValues, user);
 	}
 
-	default Map<String, Variable> fetchProcessFormVariables(List<String> variableListName, String processDefinitionId, boolean deserializeValues, CIBUser user)
+	default Map<String, Variable> fetchProcessFormVariables(List<String> variableListName, String key, boolean deserializeValues, CIBUser user)
 			throws NoObjectFoundException, SystemException {
-				return getVariableProvider().fetchProcessFormVariables(variableListName, processDefinitionId, deserializeValues, user);
+				return getVariableProvider().fetchProcessFormVariables(variableListName, key, deserializeValues, user);
 	}
 
 	default NamedByteArrayDataSource fetchVariableFileData(String taskId, String variableName, CIBUser user) throws NoObjectFoundException, UnexpectedTypeException, SystemException {

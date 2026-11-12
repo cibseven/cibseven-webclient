@@ -45,9 +45,9 @@ import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.cibseven.bpm.engine.rest.util.EngineUtil;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import lombok.Setter;
 
@@ -62,6 +62,7 @@ public class DirectProviderUtil {
 	protected IEngineProvider engineProvider;
 
 	protected ProcessEngine getProcessEngine(String engineId) {
+		engineId = resolveEngineId(engineId);
 		ProcessEngine processEngine = null;
 		if (processEngines.containsKey(engineId))
 			processEngine = processEngines.get(engineId);
@@ -76,9 +77,7 @@ public class DirectProviderUtil {
 					throw new SystemException("No process engine found with name " + engineId);
 			}
 			processEngines.put(engineId, processEngine);
-			ObjectMapper objectMapper = new ObjectMapper();
-			JacksonConfigurator.configureObjectMapper(objectMapper);
-			objectMappers.put(engineId, objectMapper);
+			objectMappers.put(engineId, JacksonConfigurator.configureObjectMapper());
 		}
 		return processEngine;
 	}
@@ -94,15 +93,25 @@ public class DirectProviderUtil {
 	}
 
 	protected ObjectMapper getObjectMapper(String engineId) {
+		engineId = resolveEngineId(engineId);
 		getProcessEngine(engineId);
 		return objectMappers.get(engineId);
 	}
 
 	protected String getEngineId(CIBUser user) {
-		String engineId = user != null ? user.getEngine() : null;
-		// If engine name is provided and not "default", add it to the path
-		if (engineId == null || engineId.isEmpty())
-			engineId = engineProvider.getEffectiveDefaultEngineId();
+		return resolveEngineId(user != null ? user.getEngine() : null);
+	}
+
+	/**
+	 * An unspecified engine (a call without a user and without an X-Process-Engine header, such as
+	 * the setup status asked before the login) resolves to the effective default engine. It must not
+	 * be looked up by the name null: EngineUtil only maps null to the default engine through the
+	 * ProcessEngineProvider SPI, which the webclient on Tomcat and WildFly does not have, and the
+	 * BpmPlatform fallback finds no engine named null (CIB7-2554).
+	 */
+	protected String resolveEngineId(String engineId) {
+		if (IEngineProvider.isEngineUnspecified(engineId) && engineProvider != null)
+			return engineProvider.getEffectiveDefaultEngineId();
 		return engineId;
 	}
 
@@ -135,7 +144,7 @@ public class DirectProviderUtil {
 		if (value != null && !(value instanceof String) && ("json".equalsIgnoreCase(type) || "Object".equalsIgnoreCase(type))) {
 			try {
 				value = getObjectMapper(user).writeValueAsString(value);
-			} catch (JsonProcessingException e) {
+			} catch (JacksonException e) {
 				throw new SystemException("Cannot serialize value of variable " + variable.getName(), e);
 			}
 		}
