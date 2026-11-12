@@ -41,6 +41,7 @@ import org.cibseven.bpm.engine.impl.identity.Authentication;
 import org.cibseven.bpm.engine.impl.persistence.entity.UserEntity;
 import org.cibseven.bpm.engine.rest.mapper.JacksonConfigurator;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.exception.InvalidAttributeValueException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Credentials;
@@ -237,30 +238,43 @@ public class DirectUserProviderCrudTest {
 	}
 
 	@Test
-	void findUsers_sortsAscendingWithoutSortOrder() {
-		// the engine rejects an orderByXX() without a direction (CIB7-2363)
-		findUsersSorted(Optional.of("firstName"), Optional.empty());
+	void findUsers_sortsByEveryKeyEngineRestAccepts() {
+		findUsersSorted(Optional.of("firstName"), Optional.of("asc"));
+		findUsersSorted(Optional.of("email"), Optional.of("asc"));
 
 		verify(userQuery).orderByUserFirstName();
-		verify(userQuery).asc();
-	}
-
-	@Test
-	void findUsers_sortsAscendingForAnUnknownSortOrder() {
-		// like the engine REST API, only "desc" sorts descending
-		findUsersSorted(Optional.of("email"), Optional.of("DESC"));
-
 		verify(userQuery).orderByUserEmail();
-		verify(userQuery).asc();
-		verify(userQuery, never()).desc();
+	}
+
+	// like engine-rest, the direct provider refuses an incomplete or invalid sorting
+
+	@Test
+	void findUsers_rejectsSortByWithoutSortOrder() {
+		assertThatThrownBy(() -> findUsersSorted(Optional.of("userId"), Optional.empty()))
+			.isInstanceOf(SystemException.class)
+			.hasMessageContaining("sortBy and sortOrder required");
 	}
 
 	@Test
-	void findUsers_setsNoDirectionForAnUnknownSortBy() {
-		findUsersSorted(Optional.of("unknown"), Optional.of("asc"));
+	void findUsers_rejectsSortOrderWithoutSortBy() {
+		assertThatThrownBy(() -> findUsersSorted(Optional.empty(), Optional.of("asc")))
+			.isInstanceOf(SystemException.class)
+			.hasMessageContaining("sortBy and sortOrder required");
+	}
 
-		verify(userQuery, never()).asc();
-		verify(userQuery, never()).desc();
+	@Test
+	void findUsers_rejectsAnUnknownSortOrder() {
+		// the directions are case sensitive
+		assertThatThrownBy(() -> findUsersSorted(Optional.of("email"), Optional.of("DESC")))
+			.isInstanceOf(InvalidAttributeValueException.class)
+			.hasMessageContaining("\"DESC\"");
+	}
+
+	@Test
+	void findUsers_rejectsAnUnknownSortBy() {
+		assertThatThrownBy(() -> findUsersSorted(Optional.of("unknown"), Optional.of("asc")))
+			.isInstanceOf(InvalidAttributeValueException.class)
+			.hasMessageContaining("\"unknown\"");
 	}
 
 	@Test
@@ -273,20 +287,17 @@ public class DirectUserProviderCrudTest {
 	}
 
 	@Test
-	void findGroups_sortsAscendingWithoutSortOrder() {
-		GroupQuery groupQuery = findGroupsSorted(Optional.of("name"), Optional.empty());
-
-		verify(groupQuery).orderByGroupName();
-		verify(groupQuery).asc();
+	void findGroups_rejectsSortByWithoutSortOrder() {
+		assertThatThrownBy(() -> findGroupsSorted(Optional.of("name"), Optional.empty()))
+			.isInstanceOf(SystemException.class)
+			.hasMessageContaining("sortBy and sortOrder required");
 	}
 
 	@Test
-	void findGroups_sortsAscendingForAnUnknownSortOrder() {
-		GroupQuery groupQuery = findGroupsSorted(Optional.of("id"), Optional.of("descending"));
-
-		verify(groupQuery).orderByGroupId();
-		verify(groupQuery).asc();
-		verify(groupQuery, never()).desc();
+	void findGroups_rejectsAnUnknownSortOrder() {
+		assertThatThrownBy(() -> findGroupsSorted(Optional.of("id"), Optional.of("descending")))
+			.isInstanceOf(InvalidAttributeValueException.class)
+			.hasMessageContaining("\"descending\"");
 	}
 
 	// ---------- credentials ----------
