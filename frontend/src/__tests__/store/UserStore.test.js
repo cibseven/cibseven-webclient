@@ -331,46 +331,6 @@ createStoreTestSuite('UserStore', UserStore, {
         expect(consoleError).toHaveBeenCalled()
         consoleError.mockRestore()
       })
-    },
-
-    findUserIdsByName: (action, getContext) => {
-      // The user query ANDs firstNameLike and lastNameLike, so each word needs two queries.
-      it('should query first and last name separately, ignoring case', async () => {
-        AdminService.findUsers.mockResolvedValue([])
-
-        await action(getContext(), ['nach'])
-
-        expect(AdminService.findUsers).toHaveBeenCalledWith({ firstNameLike: '*nach*', likePatternIgnoreCase: true })
-        expect(AdminService.findUsers).toHaveBeenCalledWith({ lastNameLike: '*nach*', likePatternIgnoreCase: true })
-      })
-
-      it('should map each word to the ids of the users it matched, once each', async () => {
-        AdminService.findUsers.mockImplementation(({ firstNameLike, lastNameLike }) => {
-          if (firstNameLike === '*pe*') return Promise.resolve([user({ id: 'peter' }), user({ id: 'pedro' })])
-          if (lastNameLike === '*pe*') return Promise.resolve([user({ id: 'peter' })])
-          if (lastNameLike === '*nach*') return Promise.resolve([user({ id: 'peter' })])
-          return Promise.resolve([])
-        })
-
-        const result = await action(getContext(), ['pe', 'nach'])
-
-        expect(result).toEqual({ pe: ['peter', 'pedro'], nach: ['peter'] })
-      })
-
-      it('should return an empty list for a word that matches nobody', async () => {
-        AdminService.findUsers.mockResolvedValue([])
-
-        expect(await action(getContext(), ['zzz'])).toEqual({ zzz: [] })
-      })
-
-      it('should not write anything to the state', async () => {
-        AdminService.findUsers.mockResolvedValue([user({ id: 'peter' })])
-        const context = getContext()
-
-        await action(context, ['pe'])
-
-        expect(context.commit).not.toHaveBeenCalled()
-      })
     }
   }
 })

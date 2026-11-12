@@ -23,10 +23,10 @@ export default {
 	methods: {
 		getDisplayName: function(assignee) {
 			if (!assignee) return ''
-      if (this.$root.user.id === assignee) return this.$root.user.displayName || assignee
+      if (this.$root.user.id === assignee) return this.$root.user.displayName
 			else {
 				const user = this.$store.state.user.userIdMap[assignee]
-				if (user) return [user.firstName, user.lastName].filter(Boolean).join(' ') || assignee
+				if ((user) && (user.firstName && user.lastName)) return [user.firstName, user.lastName].filter(Boolean).join(' ')
 				return assignee
 			}
 		},
