@@ -63,7 +63,6 @@ public class ProcessServiceDeserializeFlagTest {
 		ProcessService service = new ProcessService();
 		ReflectionTestUtils.setField(service, "bpmProvider", bpmProvider);
 		ReflectionTestUtils.setField(service, "baseUserProvider", baseUserProvider);
-		service.properties.getDeprecated().getAuthorization().setEnabled(false);
 
 		mvc = MockMvcBuilders.standaloneSetup(service)
 				.addPlaceholderValue("cibseven.webclient.services.basePath", BASE)
