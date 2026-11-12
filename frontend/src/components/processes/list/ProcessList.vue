@@ -24,25 +24,14 @@
       <div class="row align-items-center pb-2 ps-1">
 
         <div class="col-8">
-          <div class="border rounded d-flex flex-fill align-items-center">
-            <b-button @click.stop="refreshSearch"
-              size="sm" class="mdi mdi-magnify mdi-24px text-secondary" variant="link"
-              :title="$t('searches.refreshAndFilter')"></b-button>
-            <div class="flex-grow-1">
-              <label class="visually-hidden" for="filter-process-list">{{ $t('searches.filter') }}</label>
-              <input
-                id="filter-process-list"
-                type="text"
-                v-model.trim="filter"
-                :placeholder="$t('searches.filter')"
-                :aria-label="$t('searches.filter')"
-                class="form-control-plaintext w-100 border-0 px-2"
-              />
-            </div>
-            <div class="block text-secondary ms-2 me-3 text-nowrap"
-              :title="$t('start.cockpit.processes.title') + ': ' + statistics"
-            >{{ statistics }}</div>
-          </div>
+          <SearchInput input-id="filter-process-list" v-model.trim="filter" :label="$t('searches.filter')"
+            search-button :search-button-label="$t('searches.refreshAndFilter')" @search="refreshSearch">
+            <template #append>
+              <span class="text-secondary text-nowrap"
+                :title="$t('start.cockpit.processes.title') + ': ' + statistics"
+              >{{ statistics }}</span>
+            </template>
+          </SearchInput>
         </div>
 
         <div class="col-4">
@@ -118,10 +107,11 @@ import { permissionsMixin } from '@/permissions.js'
 import { CopyableActionButton, SuccessAlert, FlowTable } from '@cib/common-frontend'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
+import SearchInput from '@/components/common-components/SearchInput.vue'
 
 export default {
   name: 'ProcessList',
-  components: { FlowTable, CopyableActionButton, SuccessAlert, CellActionButton },
+  components: { FlowTable, CopyableActionButton, SuccessAlert, CellActionButton, SearchInput },
   inject: ['loadProcesses'],
   mixins: [permissionsMixin, copyToClipboardMixin],
   data: function() {

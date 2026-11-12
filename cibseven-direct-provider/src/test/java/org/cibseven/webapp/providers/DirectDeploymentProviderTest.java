@@ -44,7 +44,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 public class DirectDeploymentProviderTest {
 
@@ -65,8 +65,7 @@ public class DirectDeploymentProviderTest {
 		deploymentQuery = mock(DeploymentQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
 		when(repositoryService.createDeploymentQuery()).thenReturn(deploymentQuery);
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		JacksonConfigurator.configureObjectMapper(objectMapper);
+		ObjectMapper objectMapper = JacksonConfigurator.configureObjectMapper();
 
 		directProviderUtil = Mockito.spy(new DirectProviderUtil());
 		doReturn(processEngine).when(directProviderUtil).getProcessEngine(any(CIBUser.class));

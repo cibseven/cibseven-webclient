@@ -36,10 +36,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.cibseven.bpm.engine.AuthorizationException;
 import org.cibseven.bpm.engine.BadUserRequestException;
 import org.cibseven.bpm.engine.HistoryService;
 import org.cibseven.bpm.engine.ManagementService;
 import org.cibseven.bpm.engine.ProcessEngine;
+import org.cibseven.bpm.engine.ProcessEngineException;
 import org.cibseven.bpm.engine.RepositoryService;
 import org.cibseven.bpm.engine.RuntimeService;
 import org.cibseven.bpm.engine.exception.NotFoundException;
@@ -59,7 +61,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * The history, statistics and lifecycle side of {@link DirectProcessProvider}. Definitions live in
@@ -100,8 +102,7 @@ public class DirectProcessProviderHistoryTest {
 		instanceQuery = mock(ProcessInstanceQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
 		when(runtimeService.createProcessInstanceQuery()).thenReturn(instanceQuery);
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		JacksonConfigurator.configureObjectMapper(objectMapper);
+		ObjectMapper objectMapper = JacksonConfigurator.configureObjectMapper();
 
 		directProviderUtil = Mockito.spy(new DirectProviderUtil());
 		doReturn(processEngine).when(directProviderUtil).getProcessEngine(any(CIBUser.class));
@@ -228,7 +229,7 @@ public class DirectProcessProviderHistoryTest {
 
 	@Test
 	void findProcessStatistics_mapsTheActivityStatistics() {
-		ActivityStatisticsQuery query = mock(ActivityStatisticsQuery.class);
+		ActivityStatisticsQuery query = mock(ActivityStatisticsQuery.class, RETURNS_SELF);
 		when(managementService.createActivityStatisticsQuery("id-1")).thenReturn(query);
 		ActivityStatistics statistics = mock(ActivityStatistics.class);
 		when(statistics.getId()).thenReturn("serviceTask");
@@ -242,9 +243,22 @@ public class DirectProcessProviderHistoryTest {
 			.containsExactly("serviceTask", 3L);
 	}
 
+	// The REST provider asks for ?failedJobs=true&incidents=true, so the direct provider must too
+	@Test
+	void findProcessStatistics_includesFailedJobsAndIncidents() {
+		ActivityStatisticsQuery query = mock(ActivityStatisticsQuery.class, RETURNS_SELF);
+		when(managementService.createActivityStatisticsQuery("id-1")).thenReturn(query);
+		when(query.unlimitedList()).thenReturn(List.of());
+
+		processProvider.findProcessStatistics("id-1", user);
+
+		verify(query).includeFailedJobs();
+		verify(query).includeIncidents();
+	}
+
 	@Test
 	void findProcessStatistics_returnsEmptyWhenTheProcessHasNoActivityStatistics() {
-		ActivityStatisticsQuery query = mock(ActivityStatisticsQuery.class);
+		ActivityStatisticsQuery query = mock(ActivityStatisticsQuery.class, RETURNS_SELF);
 		when(managementService.createActivityStatisticsQuery("id-1")).thenReturn(query);
 		when(query.unlimitedList()).thenReturn(List.of());
 
@@ -292,12 +306,32 @@ public class DirectProcessProviderHistoryTest {
 	}
 
 	@Test
-	void deleteProcessInstanceFromHistory_wrapsABadRequest() {
-		doThrow(new BadUserRequestException("still running"))
+	void deleteProcessInstanceFromHistory_translatesAnUnknownInstanceToNotFound() {
+		doThrow(new BadUserRequestException("No historic process instance found with id: missing"))
+			.when(historyService).deleteHistoricProcessInstance("missing");
+
+		// NoObjectFoundException is mapped to 404, like the engine REST API does
+		assertThatThrownBy(() -> processProvider.deleteProcessInstanceFromHistory("missing", user))
+			.isInstanceOf(NoObjectFoundException.class);
+	}
+
+	@Test
+	void deleteProcessInstanceFromHistory_translatesAnyEngineErrorToNotFound() {
+		doThrow(new ProcessEngineException("still running"))
 			.when(historyService).deleteHistoricProcessInstance("pi-1");
 
 		assertThatThrownBy(() -> processProvider.deleteProcessInstanceFromHistory("pi-1", user))
-			.isInstanceOf(SystemException.class);
+			.isInstanceOf(NoObjectFoundException.class);
+	}
+
+	@Test
+	void deleteProcessInstanceFromHistory_keepsAnAuthorizationFailure() {
+		AuthorizationException denied = new AuthorizationException("not allowed");
+		doThrow(denied).when(historyService).deleteHistoricProcessInstance("pi-1");
+
+		// AuthorizationException is a ProcessEngineException, but must not turn into a 404
+		assertThatThrownBy(() -> processProvider.deleteProcessInstanceFromHistory("pi-1", user))
+			.isSameAs(denied);
 	}
 
 	@Test

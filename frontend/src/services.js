@@ -772,15 +772,6 @@ const BatchService = {
   },
   deleteHistoricBatch: function(id) {
     return axios.delete(getServicesBasePath() + '/history/batch/' + id)
-  },
-  setRemovalTime(payload) {
-    return axios.post(getServicesBasePath() + '/history/batch/set-removal-time', payload)
-  },
-  getCleanableBatchReport(params) {
-    return axios.get(getServicesBasePath() + '/history/batch/cleanable-batch-report', { params })
-  },
-  getCleanableBatchReportCount() {
-    return axios.get(getServicesBasePath() + '/history/batch/cleanable-batch-report/count')
   }
 }
 

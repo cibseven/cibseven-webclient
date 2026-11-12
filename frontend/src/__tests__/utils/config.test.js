@@ -116,5 +116,22 @@ describe('config utility', () => {
       expect(keys).not.toContain('operationLogCategory')
       expect(config.admin.resourcesTypes['16']).toBeUndefined()
     })
+
+    it('should key every default resource type by its own id', () => {
+      const { resourcesTypes } = applyConfigDefaults().admin
+      Object.entries(resourcesTypes).forEach(([key, resourceType]) => {
+        expect(resourceType.id).toBe(key)
+      })
+    })
+
+    // ids and permissions as in the engine's Resources, TaskPermissions and ProcessInstancePermissions
+    it.each([
+      ['7', 'task', ['CREATE', 'READ', 'UPDATE', 'DELETE', 'TASK_ASSIGN', 'TASK_WORK', 'UPDATE_VARIABLE', 'READ_VARIABLE']],
+      ['8', 'processInstance', ['CREATE', 'READ', 'UPDATE', 'DELETE', 'RETRY_JOB', 'SUSPEND', 'UPDATE_VARIABLE']]
+    ])('should define resource type %j as %s with the engine permissions', (id, key, permissions) => {
+      const resourceType = applyConfigDefaults().admin.resourcesTypes[id]
+      expect(resourceType.key).toBe(key)
+      expect(resourceType.permissions).toEqual(permissions)
+    })
   })
 })

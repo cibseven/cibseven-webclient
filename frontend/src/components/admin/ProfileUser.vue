@@ -102,7 +102,7 @@ export default {
   },
   watch: {
     '$route.params.userId': function() {
-      if (!this.editMode && this.$route.params.userId !== this.$router.app.user.id) {
+      if (!this.editMode && this.$route.params.userId !== this.$root.user.id) {
         this.$router.push({ name: 'start' })
       } else {
         this.loadUser(this.$route.params.userId)
@@ -135,10 +135,11 @@ export default {
   },
   methods: {
     loadUser: async function(userId) {
-      return AdminService.findUsers({ id: userId }).then(response => {
-        this.user = response[0] || { id: userId, firstName: null, lastName: null, email: null, noInfo: true }
-        this.openShownTab()
-      })
+      const response = await AdminService.findUsers({ id: userId })
+      // The route has moved on to another user (e.g. browser back), whose response may have come first
+      if (userId !== this.$route.params.userId) return
+      this.user = response[0] || { id: userId, firstName: null, lastName: null, email: null, noInfo: true }
+      this.openShownTab()
     },
     tabRoute: function(tab) {
       return { name: profileTabRouteName(this.page, tab.id), params: this.$route.params }
