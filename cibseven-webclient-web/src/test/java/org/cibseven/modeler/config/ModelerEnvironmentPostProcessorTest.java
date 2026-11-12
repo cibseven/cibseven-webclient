@@ -69,6 +69,36 @@ class ModelerEnvironmentPostProcessorTest {
 	}
 
 	@Test
+	void keepsAConfiguredDataSourceUrlButStillSkipsTheJndiLookup() {
+		MockEnvironment environment = new MockEnvironment()
+			.withProperty("spring.datasource.url", "jdbc:h2:mem:plugin")
+			.withProperty("spring.datasource.jndi-name", "java:jboss/datasources/ProcessEngine");
+
+		assertThat(excludedAfterPostProcessing(environment, standalone()))
+			.containsExactly(JNDI_DATA_SOURCE_AUTO_CONFIGURATION);
+	}
+
+	static class OverlayApplication extends SevenWebclientApplication {
+	}
+
+	@Test
+	void treatsASubclassOfTheWebclientApplicationAsStandalone() {
+		SpringApplication overlay = new SpringApplication();
+		overlay.setMainApplicationClass(OverlayApplication.class);
+
+		assertThat(excludedAfterPostProcessing(new MockEnvironment(), overlay))
+			.containsExactly(DATA_SOURCE_AUTO_CONFIGURATION, JNDI_DATA_SOURCE_AUTO_CONFIGURATION);
+	}
+
+	@Test
+	void excludesNothingWithoutAMainApplicationClass() {
+		SpringApplication unknown = new SpringApplication();
+		unknown.setMainApplicationClass(null);
+
+		assertThat(excludedAfterPostProcessing(new MockEnvironment(), unknown)).isEmpty();
+	}
+
+	@Test
 	void excludesNothingWhenTheModelerIsEnabled() {
 		MockEnvironment environment = new MockEnvironment()
 			.withProperty("cibseven.webclient.modeler.enabled", "true");
