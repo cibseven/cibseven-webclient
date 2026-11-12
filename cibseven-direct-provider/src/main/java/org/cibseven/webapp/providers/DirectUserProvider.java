@@ -536,6 +536,8 @@ public class DirectUserProvider implements IUserProvider {
 			query.userFirstNameLike(firstNameLike.get().replace("*", wcard));
 		if (id.isPresent())
 			query.userId(id.get());
+		if (idIn.isPresent())
+			query.userIdIn(idIn.get().split(","));
 		if (lastName.isPresent())
 			query.userLastName(lastName.get());
 		if (lastNameLike.isPresent())
