@@ -223,10 +223,7 @@ public class DirectDecisionProvider implements IDecisionProvider {
 		List<DecisionDefinition> decisionDefinitions = directProviderUtil.getProcessEngine(user).getRepositoryService().createDecisionDefinitionQuery()
 				.decisionDefinitionKey(key).orderByDecisionDefinitionVersion().desc().unlimitedList();
 
-		if (decisionDefinitions == null || decisionDefinitions.isEmpty()) {
-			String errorMessage = String.format("No matching decision definition with key: %s", key);
-			throw new SystemException(errorMessage);
-		}
+		// a key without a match yields an empty list, like the REST provider
 		List<Decision> decisions = new ArrayList<>();
 		for (DecisionDefinition decisionDefinition : decisionDefinitions) {
 			DecisionDefinitionDto decisionDefinitionDto = DecisionDefinitionDto.fromDecisionDefinition(decisionDefinition);

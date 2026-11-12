@@ -274,12 +274,10 @@ public class DirectDecisionProviderTest {
 	}
 
 	@Test
-	void getDecisionVersionsByKey_throwsWhenNothingMatches() {
+	void getDecisionVersionsByKey_returnsAnEmptyListWhenNothingMatches() {
 		when(definitionQuery.unlimitedList()).thenReturn(List.of());
 
-		assertThatThrownBy(() -> decisionProvider.getDecisionVersionsByKey("missing", Optional.of(true), user))
-			.isInstanceOf(SystemException.class)
-			.hasMessageEndingWith("No matching decision definition with key: missing");
+		assertThat(decisionProvider.getDecisionVersionsByKey("missing", Optional.of(true), user)).isEmpty();
 	}
 
 	@Test
