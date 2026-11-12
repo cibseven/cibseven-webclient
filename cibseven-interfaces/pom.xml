@@ -11,8 +11,8 @@
 
 	<properties>
 		<!-- jacoco:check floors; measured 44.9% line / 27.6% branch. See the root pom for the rules. -->
-		<jacoco.line.coverage.floor>0.42</jacoco.line.coverage.floor>
-		<jacoco.branch.coverage.floor>0.25</jacoco.branch.coverage.floor>
+		<jacoco.line.coverage.floor>0.56</jacoco.line.coverage.floor>
+		<jacoco.branch.coverage.floor>0.45</jacoco.branch.coverage.floor>
 	</properties>
 
 	<dependencies>

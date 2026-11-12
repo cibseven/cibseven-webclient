@@ -65,6 +65,23 @@ describe('navGroups factory', () => {
     expect(withoutStart.find(g => g.id === 'tasks').items.find(i => i.to === '/seven/auth/start-process').show).toBe(false)
   })
 
+  // The same rocket as the Start process button in the header
+  it('marks start-process with the rocket icon', () => {
+    const item = buildNavGroups(fullCtx).find(g => g.id === 'tasks').items.find(i => i.to === '/seven/auth/start-process')
+    expect(item.icon).toBe('mdi-rocket')
+  })
+
+  // The header draws these as image icons; `icon` stays as the fallback
+  it('gives cockpit, builder and admin an image icon', () => {
+    const groups = buildNavGroups(fullCtx)
+    for (const id of ['cockpit', 'builder', 'admin']) {
+      const group = groups.find(g => g.id === id)
+      expect(group.iconImage, id).toMatch(/\.svg|^data:image\/svg/)
+      expect(group.icon, id).toMatch(/^mdi-/)
+    }
+    expect(groups.find(g => g.id === 'tasks').iconImage).toBeUndefined()
+  })
+
   it('filterVisibleNavGroups keeps all groups visible with full permissions', () => {
     const visible = filterVisibleNavGroups(buildNavGroups(fullCtx))
     expect(visible.map(g => g.id)).toEqual(['tasks', 'cockpit', 'builder', 'admin'])
