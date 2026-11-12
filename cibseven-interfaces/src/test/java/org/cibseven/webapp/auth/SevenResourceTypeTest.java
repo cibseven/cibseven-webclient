@@ -89,7 +89,7 @@ public class SevenResourceTypeTest {
 			.map(SevenResourceType::getType)
 			.collect(Collectors.toSet());
 
-		// A duplicate would make checkPermission() silently consult the wrong authorization list
+		// A duplicate would make the provider send the engine the wrong resource name for an id
 		assertEquals(SevenResourceType.values().length, ids.size(), "duplicate resource type id");
 		assertTrue(ids.contains(21));
 		assertFalse(ids.contains(18));

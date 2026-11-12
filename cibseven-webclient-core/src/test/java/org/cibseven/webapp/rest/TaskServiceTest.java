@@ -76,7 +76,6 @@ public class TaskServiceTest {
 		taskService = new TaskService();
 		ReflectionTestUtils.setField(taskService, "bpmProvider", bpmProvider);
 		ReflectionTestUtils.setField(taskService, "baseUserProvider", baseUserProvider);
-		taskService.properties.getDeprecated().getAuthorization().setEnabled(false);
 		user = new CIBUser("demo");
 	}
 

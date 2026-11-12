@@ -72,7 +72,6 @@ public class ProcessServiceDeploymentsTest {
 		processService = new ProcessService();
 		ReflectionTestUtils.setField(processService, "bpmProvider", bpmProvider);
 		ReflectionTestUtils.setField(processService, "baseUserProvider", baseUserProvider);
-		processService.properties.getDeprecated().getAuthorization().setEnabled(false);
 		user = new CIBUser("demo");
 		request = mock(HttpServletRequest.class);
 		when(baseUserProvider.checkAuthorization(any(), org.mockito.ArgumentMatchers.anyBoolean()))

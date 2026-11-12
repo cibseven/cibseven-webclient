@@ -153,8 +153,7 @@ public class DirectBatchProvider implements IBatchProvider {
 
 	@Override
 	public Collection<HistoryBatch> getHistoricBatches(Map<String, Object> params, CIBUser user) {
-		HistoricBatchQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(params, HistoricBatchQueryDto.class);
-		HistoricBatchQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
+		HistoricBatchQuery query = createHistoricBatchQuery(params, user);
 		Integer firstResult = null;
 		Integer maxResults = null;
 		for (Entry<String, Object> entry : params.entrySet()) {
@@ -174,9 +173,23 @@ public class DirectBatchProvider implements IBatchProvider {
 
 	@Override
 	public Long getHistoricBatchCount(Map<String, Object> queryParams, CIBUser user) {
-		HistoricBatchQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(queryParams, HistoricBatchQueryDto.class);
-		HistoricBatchQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
-		return query.count();
+		return createHistoricBatchQuery(queryParams, user).count();
+	}
+
+	/**
+	 * Builds the historic batch query the way engine-rest does: through the query parameter
+	 * constructor of {@link HistoricBatchQueryDto}, so that its converters apply. A plain Jackson
+	 * conversion of the parameter map cannot turn a string like "tenant-a,tenant-b" into the
+	 * list typed tenantIdIn field and fails with an IllegalArgumentException.
+	 */
+	private HistoricBatchQuery createHistoricBatchQuery(Map<String, Object> params, CIBUser user) {
+		MultivaluedMap<String, String> multiValueMap = new MultivaluedHashMap<>();
+		for (Entry<String, Object> entry : params.entrySet()) {
+			if (entry.getValue() != null)
+				multiValueMap.put(entry.getKey(), Arrays.asList(String.valueOf(entry.getValue())));
+		}
+		HistoricBatchQueryDto queryDto = new HistoricBatchQueryDto(directProviderUtil.getObjectMapper(user), multiValueMap);
+		return queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 	}
 
 	@Override

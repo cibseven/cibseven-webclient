@@ -25,11 +25,9 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.providers.IProcessProvider;
-import org.cibseven.webapp.providers.PermissionConstants;
 import org.cibseven.webapp.rest.model.Analytics;
 import org.cibseven.webapp.rest.model.AnalyticsInfo;
 import org.cibseven.webapp.rest.model.Decision;
@@ -65,7 +63,6 @@ public class AnalyticsService extends BaseService implements InitializingBean {
 	@GetMapping("")
 	public Analytics getAnalytics(Locale loc, CIBUser user) {
 
-		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_ALL);
 		
 		Map<String, Object> queryParams = new HashMap<>();
 		queryParams.put("failedJobs", true);

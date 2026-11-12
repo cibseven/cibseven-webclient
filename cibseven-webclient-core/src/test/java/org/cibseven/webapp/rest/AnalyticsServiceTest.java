@@ -68,7 +68,6 @@ public class AnalyticsServiceTest {
 		analyticsService = new AnalyticsService();
 		ReflectionTestUtils.setField(analyticsService, "bpmProvider", bpmProvider);
 		ReflectionTestUtils.setField(analyticsService, "processProvider", processProvider);
-		analyticsService.properties.getDeprecated().getAuthorization().setEnabled(false);
 		user = new CIBUser("demo");
 
 		// sensible empty defaults; each test overrides what it cares about
