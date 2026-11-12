@@ -74,7 +74,6 @@ import org.cibseven.bpm.engine.rest.dto.runtime.ProcessInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.ProcessInstanceSuspensionStateDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.ProcessInstanceWithVariablesDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.StartProcessInstanceDto;
-import org.cibseven.bpm.engine.rest.dto.runtime.VariableInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.modification.ProcessInstanceModificationInstructionDto;
 import org.cibseven.bpm.engine.rest.dto.task.FormDto;
 import org.cibseven.bpm.engine.rest.exception.RestException;
@@ -85,6 +84,7 @@ import org.cibseven.bpm.engine.runtime.IncidentQuery;
 import org.cibseven.bpm.engine.runtime.ProcessInstanceQuery;
 import org.cibseven.bpm.engine.runtime.ProcessInstanceWithVariables;
 import org.cibseven.bpm.engine.runtime.ProcessInstantiationBuilder;
+import org.cibseven.bpm.engine.variable.value.TypedValue;
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.config.WebclientJsonMapper;
@@ -735,19 +735,8 @@ public class DirectProcessProvider implements IProcessProvider {
 	@Override
 	public Variable fetchProcessInstanceVariable(String processInstanceId, String variableName, boolean deserializeValue,
 			CIBUser user) throws SystemException {
-		VariableInstanceQueryDto queryDto = new VariableInstanceQueryDto();
-		queryDto.setProcessInstanceIdIn(new String[] { processInstanceId });
-		queryDto.setVariableName(variableName);
-		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
-
-		List<Variable> variablesDeserialized = directProviderUtil.queryVariableInstances(queryDto, null, null, true, user);
-		List<Variable> variablesSerialized = directProviderUtil.queryVariableInstances(queryDto, null, null, false, user);
-		Variable variableDeserialized = variablesDeserialized.size() == 1 ? variablesDeserialized.get(0) : null;
-		Variable variableSerialized = variablesSerialized.size() == 1 ? variablesSerialized.get(0) : null;
-		if (variableDeserialized == null || variableSerialized == null)
-			// same exception the REST provider gets from the engine's 404, so callers like
-			// fetchStatusDataset / fetchChatComments can treat a missing variable as "no value"
-			throw new NoObjectFoundException(new SystemException("Variable " + variableName + " not found in process instance " + processInstanceId));
+		Variable variableDeserialized = getProcessInstanceVariable(processInstanceId, variableName, true, user);
+		Variable variableSerialized = getProcessInstanceVariable(processInstanceId, variableName, false, user);
 		if (deserializeValue) {
 			variableDeserialized.setValueSerialized(variableSerialized.getValue());
 			variableDeserialized.setValueDeserialized(variableDeserialized.getValue());
@@ -758,6 +747,27 @@ public class DirectProcessProvider implements IProcessProvider {
 			return variableSerialized;
 		}
 
+	}
+
+	/**
+	 * Reads the variable as engine-rest's GET /process-instance/{id}/variables/{name} does. The typed
+	 * getter sees only the instance's own scope, so a variable of the same name local to a child
+	 * execution neither collides with it nor stands in for it, and a denied read fails instead of
+	 * coming back as an empty, authorization-filtered result. Only a really absent variable becomes
+	 * NoObjectFoundException, which callers like fetchStatusDataset / fetchChatComments treat as "no value".
+	 */
+	private Variable getProcessInstanceVariable(String processInstanceId, String variableName, boolean deserializeValue,
+			CIBUser user) {
+		TypedValue value;
+		try {
+			value = directProviderUtil.getProcessEngine(user).getRuntimeService().getVariableTyped(processInstanceId, variableName, deserializeValue);
+		} catch (ProcessEngineException e) {
+			// AuthorizationException included: the default provider answers a denied read with a SystemException too
+			throw new SystemException(String.format("Cannot get processInstance variable %s: %s", variableName, e.getMessage()), e);
+		}
+		if (value == null)
+			throw new NoObjectFoundException(new SystemException("Variable " + variableName + " not found in process instance " + processInstanceId));
+		return directProviderUtil.convertValue(VariableValueDto.fromTypedValue(value), Variable.class, user);
 	}
 
 	@Override

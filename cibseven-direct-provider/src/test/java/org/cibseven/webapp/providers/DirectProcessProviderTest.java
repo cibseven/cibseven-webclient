@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.cibseven.bpm.engine.AuthorizationException;
 import org.cibseven.bpm.engine.FormService;
 import org.cibseven.bpm.engine.HistoryService;
 import org.cibseven.bpm.engine.ProcessEngine;
@@ -51,6 +52,7 @@ import org.cibseven.bpm.engine.history.HistoricProcessInstance;
 import org.cibseven.bpm.engine.impl.HistoricProcessInstanceQueryImpl;
 import org.cibseven.bpm.engine.rest.mapper.JacksonConfigurator;
 import org.cibseven.bpm.engine.runtime.ProcessInstanceQuery;
+import org.cibseven.bpm.engine.variable.Variables;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
@@ -320,31 +322,44 @@ public class DirectProcessProviderTest {
 			.isInstanceOf(SystemException.class);
 	}
 
+	// scope and authorization of fetchProcessInstanceVariable run against a real engine in
+	// DirectProcessProviderVariableTest; these pin the mapping around the engine call
+
 	// the variables behind the status-dataset and chat-comments endpoints
 	@ParameterizedTest
 	@ValueSource(strings = { "_statusDataset", "chatComments" })
 	void fetchProcessInstanceVariable_throwsNoObjectFoundWhenTheInstanceDoesNotHoldTheVariable(String variableName) {
-		doReturn(List.of()).when(directProviderUtil).queryVariableInstances(any(), any(), any(), anyBoolean(), any(CIBUser.class));
+		when(runtimeService.getVariableTyped(eq(INSTANCE_ID_1), eq(variableName), anyBoolean())).thenReturn(null);
 
 		assertThatThrownBy(() -> processProvider.fetchProcessInstanceVariable(INSTANCE_ID_1, variableName, true, user))
 			.isInstanceOf(NoObjectFoundException.class);
 	}
 
 	@Test
+	void fetchProcessInstanceVariable_turnsADeniedReadIntoASystemException() {
+		when(runtimeService.getVariableTyped(eq(INSTANCE_ID_1), eq("_statusDataset"), anyBoolean()))
+			.thenThrow(new AuthorizationException("denied"));
+
+		assertThatThrownBy(() -> processProvider.fetchProcessInstanceVariable(INSTANCE_ID_1, "_statusDataset", true, user))
+			.isInstanceOf(SystemException.class)
+			.isNotInstanceOf(NoObjectFoundException.class)
+			.hasCauseInstanceOf(AuthorizationException.class);
+	}
+
+	@Test
 	void fetchProcessInstanceVariable_returnsTheVariableWithBothValueForms() {
-		Variable deserialized = new Variable();
-		deserialized.setName("_statusDataset");
-		deserialized.setValue(Map.of("step", "1"));
-		Variable serialized = new Variable();
-		serialized.setName("_statusDataset");
-		serialized.setValue("{\"step\":\"1\"}");
-		doReturn(List.of(deserialized)).when(directProviderUtil).queryVariableInstances(any(), any(), any(), eq(true), any(CIBUser.class));
-		doReturn(List.of(serialized)).when(directProviderUtil).queryVariableInstances(any(), any(), any(), eq(false), any(CIBUser.class));
+		Map<String, String> dataset = Map.of("step", "1");
+		when(runtimeService.getVariableTyped(INSTANCE_ID_1, "_statusDataset", true))
+			.thenReturn(Variables.objectValue(dataset).serializationDataFormat("application/json").create());
+		when(runtimeService.getVariableTyped(INSTANCE_ID_1, "_statusDataset", false))
+			.thenReturn(Variables.serializedObjectValue("{\"step\":\"1\"}").serializationDataFormat("application/json")
+				.objectTypeName("java.util.Map").create());
 
 		Variable variable = processProvider.fetchProcessInstanceVariable(INSTANCE_ID_1, "_statusDataset", true, user);
 
-		assertThat(variable).isSameAs(deserialized);
+		assertThat(variable.getType()).isEqualTo("Object");
+		assertThat(variable.getValue()).isEqualTo(dataset);
 		assertThat(variable.getValueSerialized()).isEqualTo("{\"step\":\"1\"}");
-		assertThat(variable.getValueDeserialized()).isEqualTo(Map.of("step", "1"));
+		assertThat(variable.getValueDeserialized()).isEqualTo(dataset);
 	}
 }
