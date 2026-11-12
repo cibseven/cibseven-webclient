@@ -20,7 +20,9 @@ import { AdminService } from "@/services.js"
 const UserStore = {
   state: {
     listCandidates: [],
-    searchUsers: []
+    searchUsers: [],
+    userIdMap: {},
+    pendingUsersMap: {}
   },
   mutations: {
     setCandidateUsers: function(state, users) {
@@ -34,6 +36,18 @@ const UserStore = {
     },
     concatSearchUsers: function(state, users) {
       state.searchUsers = state.searchUsers.concat(users)
+    },
+    addDisplayNames: function(state, { userIds, userMap }) {
+      userIds.forEach(id => {
+        state.userIdMap[id] = userMap[id] ?? null
+        delete state.pendingUsersMap[id]
+      })
+    },
+    markPendingUsers: function(state, userIds) {
+      userIds.forEach(id => { state.pendingUsersMap[id] = true })
+    },
+    clearPendingUsers : function(state, userIds) {
+      userIds.forEach(id => { delete state.pendingUsersMap[id] })
     }
   },
   actions: {
@@ -78,6 +92,25 @@ const UserStore = {
         users.forEach(u => { userMap[u.id] = u })
         return userMap
       })
+    },
+    addUsersByIds: async function(ctx, userIds) {
+      const missingIds = [...new Set(userIds)].filter(
+        id => id 
+        && !Object.hasOwn(ctx.state.userIdMap, id) 
+        && !ctx.state.pendingUsersMap[id])
+      
+      if (missingIds.length === 0) return
+	    
+      ctx.commit('markPendingUsers', missingIds)
+      
+      try {
+        const userNamesMap = await ctx.dispatch('fetchUsersByIds', missingIds)
+        ctx.commit('addDisplayNames', { userIds: missingIds, userMap: userNamesMap })
+      }
+      catch (error) {
+        ctx.commit('clearPendingUsers', missingIds)
+        console.error('Users could not be loaded: ', error)
+      }
     },
   }
 }
