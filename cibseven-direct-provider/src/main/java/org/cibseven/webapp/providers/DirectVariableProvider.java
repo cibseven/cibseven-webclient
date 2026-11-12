@@ -309,24 +309,22 @@ public class DirectVariableProvider implements IVariableProvider {
 	@Override
 	public Map<String, Variable> fetchProcessFormVariables(String key, boolean deserializeValues, CIBUser user)
 			throws NoObjectFoundException, SystemException {
-		List<String> formVariables = null;
+		return fetchProcessFormVariables(null, key, deserializeValues, user);
+	}
 
+	/**
+	 * Resolves a process definition key the way the engine's
+	 * {@code /process-definition/key/{key}} endpoints do: the latest version without a tenant id.
+	 */
+	private ProcessDefinition findLatestUntenantedDefinition(String key, CIBUser user) throws SystemException {
 		ProcessDefinition processDefinition = directProviderUtil.getProcessEngine(user).getRepositoryService().createProcessDefinitionQuery()
 				.processDefinitionKey(key).withoutTenantId().latestVersion().singleResult();
 
 		if (processDefinition == null) {
 			String errorMessage = String.format("No matching process definition with key: %s and no tenant-id", key);
 			throw new SystemException(errorMessage);
-
 		}
-
-		VariableMap startFormVariables = directProviderUtil.getProcessEngine(user).getFormService().getStartFormVariables(processDefinition.getId(), formVariables, deserializeValues);
-		Map<String, VariableValueDto> variableDtos = VariableValueDto.fromMap(startFormVariables);
-		Map<String, Variable> variablesMap = new HashMap<>();
-		for (Entry<String, VariableValueDto> e : variableDtos.entrySet()) {
-			variablesMap.put(e.getKey(), directProviderUtil.convertValue(e.getValue(), Variable.class, user));
-		}
-		return variablesMap;
+		return processDefinition;
 	}
 
 	@Override
@@ -815,10 +813,10 @@ public class DirectVariableProvider implements IVariableProvider {
 	}
 
 	@Override
-	public Map<String, Variable> fetchProcessFormVariables(List<String> variableListName, String processDefinitionId,
+	public Map<String, Variable> fetchProcessFormVariables(List<String> variableListName, String key,
 			boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException {
 		VariableMap startFormVariables = directProviderUtil.getProcessEngine(user).getFormService()
-				.getStartFormVariables(processDefinitionId, variableListName, deserializeValues);
+				.getStartFormVariables(findLatestUntenantedDefinition(key, user).getId(), variableListName, deserializeValues);
 		Map<String, VariableValueDto> variableDtos = VariableValueDto.fromMap(startFormVariables);
 		Map<String, Variable> variablesMap = new HashMap<>();
 		for (Entry<String, VariableValueDto> e : variableDtos.entrySet()) {
