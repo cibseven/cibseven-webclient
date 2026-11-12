@@ -107,10 +107,22 @@ describe('TaskContent - mobile task header', () => {
     expect(wrapper.find('h3').text()).toBe('Prepare bank transfer')
   })
 
-  it('should ask to go back to the task list from the clipboard button', async () => {
-    const wrapper = mountTaskContent()
+  // Mobile design: h5 title with 1rem on each side, between 45x45px icon buttons
+  it('should lay out the header as in the mobile design', () => {
+    const wrapper = mountTaskContent({ props: { hasOptions: true } })
 
-    await wrapper.find('button[aria-label="task.backToTaskList"]').trigger('click')
+    expect(wrapper.find('h3').classes()).toEqual(expect.arrayContaining(['h5', 'mx-3']))
+    for (const label of ['task.backToTaskList', 'task.options']) {
+      expect(wrapper.find(`button[aria-label="${label}"]`).attributes('style')).toContain('width: 45px')
+    }
+  })
+
+  it('should ask to go back to the task list from the back button', async () => {
+    const wrapper = mountTaskContent()
+    const backButton = wrapper.find('button[aria-label="task.backToTaskList"]')
+
+    expect(backButton.find('.mdi-chevron-left').exists()).toBe(true)
+    await backButton.trigger('click')
 
     expect(wrapper.emitted('show-task-list')).toHaveLength(1)
   })

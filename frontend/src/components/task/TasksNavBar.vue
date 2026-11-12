@@ -319,9 +319,10 @@ export default {
   },
   computed: {
     // On desktop the header chevrons sit either side of the button; mobile has none,
-    // so align it with the header's own padding
+    // so it takes the header's right end as a 45x45px icon button, like the other mobile headers
     refreshButtonPosition: function() {
-      return { top: '3px', right: this.isMobile() ? '0.75rem' : '30px' }
+      if (this.isMobile()) return { top: '0', right: '0', width: '45px', height: '45px' }
+      return { top: '3px', right: '30px' }
     },
     tasksFiltered: function() {
       let tasks = []

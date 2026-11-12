@@ -63,4 +63,32 @@ describe('InstancesTable', () => {
       expect(vm.canSuspendProcessInstance).not.toHaveBeenCalled()
     })
   })
+
+  describe('loadInstancesData', () => {
+    const context = () => ({
+      process: { id: 'pd-1' },
+      filter: { unfinished: true },
+      maxResults: 50,
+      $root: { config: {} },
+      $emit: vi.fn(),
+      resetInstances: vi.fn(),
+      loadInstances: vi.fn().mockResolvedValue([])
+    })
+
+    it('reloads the statistics with the filter on a fresh load', async () => {
+      const vm = context()
+      await InstancesTable.methods.loadInstancesData.call(vm)
+      expect(vm.resetInstances).toHaveBeenCalled()
+      expect(vm.$emit).toHaveBeenCalledWith('load-statistics', { unfinished: true })
+    })
+
+    // Another page of the same list does not change the counts
+    it('keeps the statistics when showing more', async () => {
+      const vm = context()
+      await InstancesTable.methods.loadInstancesData.call(vm, true)
+      expect(vm.resetInstances).not.toHaveBeenCalled()
+      expect(vm.$emit).not.toHaveBeenCalled()
+      expect(vm.loadInstances).toHaveBeenCalledWith(expect.objectContaining({ showMore: true }))
+    })
+  })
 })

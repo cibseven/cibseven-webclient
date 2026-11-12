@@ -240,6 +240,21 @@ public class TaskProviderTest {
 		assertThat(body).doesNotContain("description").doesNotContain("owner");
 	}
 
+	@Test
+	void update_keepsThePriorityWhenSettingADueDate() throws Exception {
+		engine.enqueueEmpty(204);
+		Task task = new Task();
+		task.setId("task-1");
+		task.setPriority(73);
+		task.setDue("2026-11-06T23:59:00.000+0100");
+
+		taskProvider.update(task, user);
+
+		// the engine replaces the whole task, so a priority left out of the body is stored as 0
+		String body = engine.take().getBody().readUtf8();
+		assertThat(body).contains("\"priority\":73").contains("\"due\":\"2026-11-06T23:59:00.000+0100\"");
+	}
+
 	// ---------- submitting ----------
 
 	@Test

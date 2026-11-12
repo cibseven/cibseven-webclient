@@ -20,11 +20,9 @@
   <b-modal ref="modal" class="modal-centered" :title="$t('task.assign')" hide-footer @shown="$refs.search.focus()">
     <div class="visually-hidden" ref="ariaLiveText" aria-live="polite"></div>
     <label for="assign-user-search" class="form-label">{{ $t('task.searchUserLabel') }}</label>
-    <div class="input-group">
-      <span class="input-group-text bg-white"><span class="mdi mdi-18px mdi-magnify" aria-hidden="true"></span></span>
-      <input id="assign-user-search" ref="search" v-model.trim="query" type="search" class="form-control"
-        :placeholder="$t('task.searchUserPlaceholder')" autocomplete="off" aria-describedby="assign-user-search-hint">
-    </div>
+    <SearchInput input-id="assign-user-search" ref="search" v-model.trim="query" type="search" hide-label
+      :label="$t('task.searchUserLabel')" :placeholder="$t('task.searchUserPlaceholder')" autocomplete="off"
+      described-by="assign-user-search-hint"/>
     <div id="assign-user-search-hint" class="form-text">{{ $t('task.searchUserHint') }}</div>
 
     <div class="mt-3">
@@ -52,11 +50,13 @@
 <script>
 import { debounce } from '@/utils/debounce.js'
 import usersMixin from '@/mixins/usersMixin.js'
+import SearchInput from '@/components/common-components/SearchInput.vue'
 
 const MIN_SEARCH_LENGTH = 3
 
 export default {
   name: 'AssignUserModal',
+  components: { SearchInput },
   mixins: [usersMixin],
   emits: ['select'],
   data: function() {

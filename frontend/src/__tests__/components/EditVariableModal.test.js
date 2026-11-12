@@ -134,9 +134,9 @@ describe('EditVariableModal.vue', () => {
   describe('history level', () => {
     const { historyLevel, isHistoricFetch } = EditVariableModal.computed
 
-    it('defaults to full history when the root config is not available', () => {
-      expect(historyLevel.call({ $root: {} })).toBe('full')
-      expect(historyLevel.call({ $root: { config: {} } })).toBe('full')
+    it('defaults to audit history (the engine default) when the root config is not available', () => {
+      expect(historyLevel.call({ $root: {} })).toBe('audit')
+      expect(historyLevel.call({ $root: { config: {} } })).toBe('audit')
     })
 
     it('uses the configured history level', () => {

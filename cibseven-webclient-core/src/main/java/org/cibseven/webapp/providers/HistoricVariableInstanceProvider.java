@@ -30,7 +30,7 @@ import org.cibseven.webapp.providers.utils.URLUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Provider implementation for historic variable instance operations using Camunda History REST API

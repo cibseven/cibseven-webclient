@@ -172,15 +172,46 @@ describe('ProfileUser loadUser', () => {
 
   it('stands in a user without details when the engine has none', async () => {
     AdminService.findUsers.mockResolvedValue([])
-    const vm = context({ openShownTab: vi.fn() })
+    const vm = context({ openShownTab: vi.fn(), $route: { name: 'accountProfile', params: { userId: 'sso-user' } } })
     await vm.loadUser('sso-user')
     expect(vm.user).toEqual({ id: 'sso-user', firstName: null, lastName: null, email: null, noInfo: true })
+  })
+
+  // Browser back from bob to ada, with the response for bob coming last
+  it('ignores the response for a user the route no longer names', async () => {
+    let resolveBob
+    AdminService.findUsers
+      .mockReturnValueOnce(new Promise(resolve => { resolveBob = resolve }))
+      .mockResolvedValueOnce([ADA])
+    const vm = context({ openShownTab: vi.fn(), $route: { name: 'accountProfile', params: { userId: 'bob' } } })
+    const bob = vm.loadUser('bob')
+    vm.$route.params.userId = 'ada'
+    await vm.loadUser('ada')
+    resolveBob([{ ...ADA, id: 'bob', firstName: 'Bob' }])
+    await bob
+    expect(vm.user).toEqual(ADA)
+    expect(vm.openShownTab).toHaveBeenCalledTimes(1)
   })
 
   it('loads the user again when the route names another one', () => {
     const vm = { editMode: true, $route: { params: { userId: 'bob' } }, loadUser: vi.fn() }
     ProfileUser.watch['$route.params.userId'].call(vm)
     expect(vm.loadUser).toHaveBeenCalledWith('bob')
+  })
+
+  // The route's own-account check does not run for a new id on the same route; the watcher does it (CIB7-2509)
+  it('sends the account page of another user to the start page', () => {
+    const vm = context({ $route: { name: 'accountProfile', params: { userId: 'bob' } }, loadUser: vi.fn() })
+    ProfileUser.watch['$route.params.userId'].call(vm)
+    expect(vm.$router.push).toHaveBeenCalledWith({ name: 'start' })
+    expect(vm.loadUser).not.toHaveBeenCalled()
+  })
+
+  it('loads the account page again for the signed-in user', () => {
+    const vm = context({ loadUser: vi.fn() })
+    ProfileUser.watch['$route.params.userId'].call(vm)
+    expect(vm.loadUser).toHaveBeenCalledWith('ada')
+    expect(vm.$router.push).not.toHaveBeenCalled()
   })
 })
 
@@ -191,7 +222,7 @@ describe('ProfileUser rendered', () => {
   async function mountAt(path) {
     const router = createRouter({
       history: createMemoryHistory(),
-      routes: [{
+      routes: [{ path: '/', name: 'start', component: { template: '<div class="start"></div>' } }, {
         path: '/account/:userId', name: 'account', component: ProfileUser, children: [
           { path: 'profile', name: 'accountProfile', component: ProfileTab },
           { path: 'preferences', name: 'accountPreferences', component: PreferencesTab }
@@ -239,5 +270,18 @@ describe('ProfileUser rendered', () => {
     expect(router.currentRoute.value.name).toBe('accountPreferences')
     expect(wrapper.findAll('li').map(li => li.text())).toEqual(['admin.preferences.title'])
     expect(wrapper.find('.tab').text()).toBe('preferences')
+  })
+
+  // Vue Router 4 has no router.app, which the page once read the signed-in user from (CIB7-2509)
+  it('leaves for the start page when the URL names another user', async () => {
+    AdminService.findUsers.mockResolvedValue([ADA])
+    const { wrapper, router } = await mountAt('/account/ada/profile')
+
+    await router.push('/account/bob/profile')
+    await flushPromises()
+
+    expect(router.currentRoute.value.name).toBe('start')
+    expect(wrapper.find('.start').exists()).toBe(true)
+    expect(AdminService.findUsers).not.toHaveBeenCalledWith({ id: 'bob' })
   })
 })

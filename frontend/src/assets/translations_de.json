@@ -688,6 +688,7 @@
 			"deleteGroup": "Gruppe löschen",
 			"updateGroupMessage": "Gruppe {0} wurde aktualisiert",
 			"deleteGroupMessage": "Die Gruppe {0} wurde gelöscht",
+			"notFound": "Diese Gruppe existiert nicht. Möglicherweise wurde sie gelöscht.",
 			"user": {
 				"title": "Benutzer der Gruppe"
 			}

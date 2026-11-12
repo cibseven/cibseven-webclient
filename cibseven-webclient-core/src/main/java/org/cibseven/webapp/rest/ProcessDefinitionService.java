@@ -21,8 +21,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.auth.SevenResourceType;
-import org.cibseven.webapp.providers.PermissionConstants;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.StartForm;
 import org.cibseven.webapp.rest.model.Variable;
@@ -44,7 +43,7 @@ import jakarta.ws.rs.core.MediaType;
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occurred"),
 	@ApiResponse(responseCode = "401", description = "Unauthorized")
 })
-@RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/process-definition")
+@RestController @RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH + "/process-definition")
 public class ProcessDefinitionService extends BaseService implements InitializingBean {
 	
 
@@ -60,7 +59,6 @@ public class ProcessDefinitionService extends BaseService implements Initializin
 	public StartForm fetchStartForm(
 			@Parameter(description = "Process to be started") @PathVariable String processDefinitionId,
 			Locale loc, HttpServletRequest request, CIBUser user) {
-		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_ALL);
 		return bpmProvider.fetchStartForm(processDefinitionId, user);
 	}
 
@@ -73,7 +71,6 @@ public class ProcessDefinitionService extends BaseService implements Initializin
 			@Parameter(description = "Process definition Id") @PathVariable String processDefinitionId,
 			@RequestParam Map<String, Object> params,
 			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_ALL);
 		return bpmProvider.getRenderedStartForm(processDefinitionId, params, user);
 	}
 
@@ -88,7 +85,6 @@ public class ProcessDefinitionService extends BaseService implements Initializin
 			@RequestParam(required = false, defaultValue = "true") boolean deserializeValues,
 			@RequestParam(required = false) String variableNames,
 			CIBUser user) {
-		checkPermission(user, SevenResourceType.PROCESS_DEFINITION, PermissionConstants.READ_ALL);
 		List<String> variableListName = null;
 		if (variableNames != null && !variableNames.isEmpty()) {
 			variableListName = List.of(variableNames.split(","));
@@ -106,7 +102,6 @@ public class ProcessDefinitionService extends BaseService implements Initializin
 			@PathVariable String processDefinitionId,
 			@RequestBody String formResult,
 			HttpServletRequest rq, CIBUser user) {
-		checkPermission(user, SevenResourceType.PROCESS_INSTANCE, PermissionConstants.CREATE_ALL);
 		ProcessStart processStart = bpmProvider.submitForm(processDefinitionId, formResult, user);
 		return ResponseEntity.ok(processStart);
 	}

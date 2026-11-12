@@ -47,7 +47,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 public class DirectBatchProviderTest {
 
@@ -67,8 +67,7 @@ public class DirectBatchProviderTest {
 		when(processEngine.getManagementService()).thenReturn(managementService);
 		when(processEngine.getHistoryService()).thenReturn(historyService);
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		JacksonConfigurator.configureObjectMapper(objectMapper);
+		ObjectMapper objectMapper = JacksonConfigurator.configureObjectMapper();
 
 		directProviderUtil = Mockito.spy(new DirectProviderUtil());
 		doReturn(processEngine).when(directProviderUtil).getProcessEngine(any(CIBUser.class));
@@ -152,6 +151,32 @@ public class DirectBatchProviderTest {
 
 		verify(managementService).suspendBatchById("batch-1");
 		verify(managementService, never()).activateBatchById(Mockito.anyString());
+	}
+
+	/**
+	 * CIB7-2551: the batch details panel sends the JSON body {@code {"suspended": true}}, which
+	 * Spring deserializes to a {@link Boolean}, not a String.
+	 */
+	@Test
+	void setBatchSuspensionState_suspendsWhenTheFlagIsARealBoolean() {
+		Map<String, Object> params = new HashMap<>();
+		params.put("suspended", Boolean.TRUE);
+
+		batchProvider.setBatchSuspensionState("batch-1", params, user);
+
+		verify(managementService).suspendBatchById("batch-1");
+		verify(managementService, never()).activateBatchById(Mockito.anyString());
+	}
+
+	@Test
+	void setBatchSuspensionState_activatesWhenTheFlagIsARealBooleanFalse() {
+		Map<String, Object> params = new HashMap<>();
+		params.put("suspended", Boolean.FALSE);
+
+		batchProvider.setBatchSuspensionState("batch-1", params, user);
+
+		verify(managementService).activateBatchById("batch-1");
+		verify(managementService, never()).suspendBatchById(Mockito.anyString());
 	}
 
 	@Test
