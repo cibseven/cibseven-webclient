@@ -24,6 +24,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -31,14 +32,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.List;
 import java.util.Map;
 
-import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.MethodParameter;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.bind.support.WebDataBinderFactory;
+import org.springframework.web.context.request.NativeWebRequest;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.method.support.ModelAndViewContainer;
 
 /**
  * Routing of the start form variables (CIB7-2356). The bpm-sdk behind the embedded and generated
@@ -54,18 +59,27 @@ public class ProcessDefinitionServiceFormVariablesTest {
 	private MockMvc mvc;
 
 	@BeforeEach
-	@SuppressWarnings("unchecked")
 	void setUp() {
 		bpmProvider = mock(BpmProvider.class);
 		user = new CIBUser("demo");
-		BaseUserProvider<?> baseUserProvider = mock(BaseUserProvider.class);
-		when(baseUserProvider.checkAuthorization(any(), anyBoolean())).thenReturn(user);
+		HandlerMethodArgumentResolver userResolver = new HandlerMethodArgumentResolver() {
+			@Override
+			public boolean supportsParameter(MethodParameter parameter) {
+				return CIBUser.class.isAssignableFrom(parameter.getParameterType());
+			}
+
+			@Override
+			public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mav,
+					NativeWebRequest request, WebDataBinderFactory binderFactory) {
+				return user;
+			}
+		};
 
 		ProcessDefinitionService service = new ProcessDefinitionService();
 		ReflectionTestUtils.setField(service, "bpmProvider", bpmProvider);
-		ReflectionTestUtils.setField(service, "baseUserProvider", baseUserProvider);
 
 		mvc = MockMvcBuilders.standaloneSetup(service)
+				.setCustomArgumentResolvers(userResolver)
 				.addPlaceholderValue("cibseven.webclient.services.basePath", "/services/v1")
 				.build();
 		when(bpmProvider.fetchProcessFormVariables(anyString(), anyBoolean(), any())).thenReturn(Map.of());
@@ -73,23 +87,48 @@ public class ProcessDefinitionServiceFormVariablesTest {
 		when(bpmProvider.fetchProcessFormVariablesByKey(anyList(), anyString(), anyBoolean(), any())).thenReturn(Map.of());
 	}
 
+	// ---------- /{x}/form-variables: unchanged, the start forms depend on it ----------
+
 	@Test
 	void withoutNamesThePathSegmentIsAKey() throws Exception {
 		mvc.perform(get(BASE + "/invoice/form-variables")).andExpect(status().isOk());
 
-		verify(bpmProvider).fetchProcessFormVariables(eq("invoice"), eq(true), any());
+		verify(bpmProvider).fetchProcessFormVariables(eq("invoice"), eq(true), eq(user));
+		verifyNoMoreInteractions(bpmProvider);
 	}
 
 	@Test
 	void withNamesThePathSegmentIsAnIdAsTheStartFormsSendIt() throws Exception {
+		// the exact query the bpm-sdk CamundaForm.fetchVariables sends for a start form
 		mvc.perform(get(BASE + "/invoice:1:abc/form-variables")
 				.param("deserializeValues", "false")
 				.param("variableNames", "input1,input2"))
 			.andExpect(status().isOk());
 
-		verify(bpmProvider).fetchProcessFormVariables(eq(List.of("input1", "input2")), eq("invoice:1:abc"), eq(false), any());
+		verify(bpmProvider).fetchProcessFormVariables(eq(List.of("input1", "input2")), eq("invoice:1:abc"), eq(false), eq(user));
 		verify(bpmProvider, never()).fetchProcessFormVariablesByKey(anyList(), anyString(), anyBoolean(), any());
+		verifyNoMoreInteractions(bpmProvider);
 	}
+
+	@Test
+	void withASingleNameThePathSegmentIsStillAnId() throws Exception {
+		mvc.perform(get(BASE + "/invoice:1:abc/form-variables").param("variableNames", "input1"))
+			.andExpect(status().isOk());
+
+		verify(bpmProvider).fetchProcessFormVariables(eq(List.of("input1")), eq("invoice:1:abc"), eq(true), eq(user));
+		verifyNoMoreInteractions(bpmProvider);
+	}
+
+	@Test
+	void anEmptyNameListCountsAsNoNames() throws Exception {
+		mvc.perform(get(BASE + "/invoice/form-variables").param("variableNames", ""))
+			.andExpect(status().isOk());
+
+		verify(bpmProvider).fetchProcessFormVariables(eq("invoice"), eq(true), eq(user));
+		verifyNoMoreInteractions(bpmProvider);
+	}
+
+	// ---------- /key/{key}/form-variables: always a key (CIB7-2356) ----------
 
 	@Test
 	void theKeyRouteWithNamesResolvesAKey() throws Exception {
@@ -97,14 +136,48 @@ public class ProcessDefinitionServiceFormVariablesTest {
 				.param("variableNames", "input1"))
 			.andExpect(status().isOk());
 
-		verify(bpmProvider).fetchProcessFormVariablesByKey(eq(List.of("input1")), eq("invoice"), eq(true), any());
+		verify(bpmProvider).fetchProcessFormVariablesByKey(eq(List.of("input1")), eq("invoice"), eq(true), eq(user));
 		verify(bpmProvider, never()).fetchProcessFormVariables(anyList(), anyString(), anyBoolean(), any());
+		verifyNoMoreInteractions(bpmProvider);
+	}
+
+	@Test
+	void theKeyRouteForwardsSeveralNamesAndTheDeserializeFlag() throws Exception {
+		// the query the bpm-sdk sends when it has a key instead of an id
+		mvc.perform(get(BASE + "/key/invoice/form-variables")
+				.param("deserializeValues", "false")
+				.param("variableNames", "input1,input2"))
+			.andExpect(status().isOk());
+
+		verify(bpmProvider).fetchProcessFormVariablesByKey(eq(List.of("input1", "input2")), eq("invoice"), eq(false), eq(user));
+		verifyNoMoreInteractions(bpmProvider);
 	}
 
 	@Test
 	void theKeyRouteWithoutNamesResolvesAKey() throws Exception {
 		mvc.perform(get(BASE + "/key/invoice/form-variables")).andExpect(status().isOk());
 
-		verify(bpmProvider).fetchProcessFormVariables(eq("invoice"), eq(true), any());
+		verify(bpmProvider).fetchProcessFormVariables(eq("invoice"), eq(true), eq(user));
+		verifyNoMoreInteractions(bpmProvider);
+	}
+
+	@Test
+	void theKeyRouteWithAnEmptyNameListResolvesAKeyWithoutNames() throws Exception {
+		mvc.perform(get(BASE + "/key/invoice/form-variables")
+				.param("deserializeValues", "false")
+				.param("variableNames", ""))
+			.andExpect(status().isOk());
+
+		verify(bpmProvider).fetchProcessFormVariables(eq("invoice"), eq(false), eq(user));
+		verifyNoMoreInteractions(bpmProvider);
+	}
+
+	@Test
+	void aKeyNamedKeyIsNotMistakenForTheKeyRoute() throws Exception {
+		// "/key/form-variables" has one segment before form-variables, so it is the key "key"
+		mvc.perform(get(BASE + "/key/form-variables")).andExpect(status().isOk());
+
+		verify(bpmProvider).fetchProcessFormVariables(eq("key"), eq(true), eq(user));
+		verifyNoMoreInteractions(bpmProvider);
 	}
 }

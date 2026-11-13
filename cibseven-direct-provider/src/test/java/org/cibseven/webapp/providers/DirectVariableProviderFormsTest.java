@@ -199,6 +199,47 @@ public class DirectVariableProviderFormsTest {
 		assertThatThrownBy(() -> variableProvider.fetchProcessFormVariablesByKey(List.of("amount"), "missing", true, user))
 			.isInstanceOf(SystemException.class)
 			.hasMessageContaining("No matching process definition with key: missing");
+		// the form service is never asked with the key in place of an id
+		verify(formService, Mockito.never()).getStartFormVariables(any(), any(), anyBoolean());
+	}
+
+	@Test
+	void fetchProcessFormVariablesByKey_forwardsTheDeserializeFlag() {
+		ProcessDefinition definition = mock(ProcessDefinition.class);
+		when(definition.getId()).thenReturn("definition-1");
+		when(definitionQuery.singleResult()).thenReturn(definition);
+		List<String> names = List.of("amount", "customer");
+		when(formService.getStartFormVariables("definition-1", names, true)).thenReturn(variables());
+
+		Map<String, Variable> result = variableProvider.fetchProcessFormVariablesByKey(names, "invoice", true, user);
+
+		assertThat(result).containsOnlyKeys("amount", "customer");
+		verify(formService).getStartFormVariables("definition-1", names, true);
+	}
+
+	@Test
+	void fetchProcessFormVariablesByKey_neverPassesTheKeyAsTheDefinitionId() {
+		ProcessDefinition definition = mock(ProcessDefinition.class);
+		when(definition.getId()).thenReturn("invoice:3:abc");
+		when(definitionQuery.singleResult()).thenReturn(definition);
+		List<String> names = List.of("amount");
+		when(formService.getStartFormVariables("invoice:3:abc", names, false)).thenReturn(variables());
+
+		variableProvider.fetchProcessFormVariablesByKey(names, "invoice", false, user);
+
+		verify(formService).getStartFormVariables("invoice:3:abc", names, false);
+		verify(formService, Mockito.never()).getStartFormVariables(eq("invoice"), any(), anyBoolean());
+	}
+
+	@Test
+	void fetchProcessFormVariables_withNamesForwardsTheDeserializeFlag() {
+		List<String> names = List.of("amount");
+		when(formService.getStartFormVariables("definition-1", names, true)).thenReturn(variables());
+
+		variableProvider.fetchProcessFormVariables(names, "definition-1", true, user);
+
+		verify(formService).getStartFormVariables("definition-1", names, true);
+		verify(repositoryService, Mockito.never()).createProcessDefinitionQuery();
 	}
 
 	// ---------- activity variables ----------
