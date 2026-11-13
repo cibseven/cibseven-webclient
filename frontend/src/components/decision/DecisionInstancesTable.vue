@@ -101,7 +101,8 @@ export default {
         params: {
           versionIndex: this.getSelectedDecisionVersion.version,
           instanceId: instance.id
-        }
+        },
+        query: instance.tenantId ? { tenantId: instance.tenantId } : {}
       })
     },
     getProcessDefinitionRoute(instance) {

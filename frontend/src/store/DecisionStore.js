@@ -16,6 +16,19 @@
  */
 import { DecisionService } from '@/services.js'
 
+/**
+ * The versions endpoint lists the versions of a key for every tenant. Keep the versions of the tenant the
+ * decision was opened for, so that a key deployed for several tenants (or for a tenant and without one)
+ * shows the opened definition's own versions and history (CIB7-2392). Without a tenant, keep the versions
+ * without a tenant; a link without a tenant to a decision deployed only for tenants keeps all versions.
+ */
+function versionsOfTenant(versions, tenantId) {
+  if (!Array.isArray(versions)) return versions
+  if (tenantId) return versions.filter(v => v.tenantId === tenantId)
+  const withoutTenant = versions.filter(v => !v.tenantId)
+  return withoutTenant.length > 0 ? withoutTenant : versions
+}
+
 const DecisionStore = {
   state: {
     list: [],
@@ -153,8 +166,8 @@ const DecisionStore = {
     async getDecisionByKeyAndTenant(_, { key, tenant }) {
       return DecisionService.getDecisionByKeyAndTenant(key, tenant)
     },
-    async getDecisionVersionsByKey({ commit }, { key, lazyLoad }) {
-      const result = await DecisionService.getDecisionVersionsByKey(key, lazyLoad)
+    async getDecisionVersionsByKey({ commit }, { key, lazyLoad, tenantId }) {
+      const result = versionsOfTenant(await DecisionService.getDecisionVersionsByKey(key, lazyLoad), tenantId)
       if (lazyLoad) {
         result.forEach(v => {
           v.allInstances = '-'

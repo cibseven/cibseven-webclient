@@ -459,6 +459,45 @@ createStoreTestSuite('DecisionStore', DecisionStore, {
 
         expect(result.every(v => v.allInstances === '-')).toBe(true)
       })
+
+      // The versions endpoint lists every tenant's versions of a key (CIB7-2392).
+      const tenantVersions = () => [
+        version({ id: 'dd-t1', version: 1, tenantId: 'T1' }),
+        version({ id: 'dd-none', version: 1, tenantId: null }),
+        version({ id: 'dd-t2', version: 1, tenantId: 'T2' })
+      ]
+
+      it('should keep only the versions of the requested tenant', async () => {
+        const context = getContext()
+        DecisionService.getDecisionVersionsByKey.mockResolvedValue(tenantVersions())
+
+        const result = await action(context, { key: 'invoice', lazyLoad: false, tenantId: 'T1' })
+
+        expect(result.map(v => v.id)).toEqual(['dd-t1'])
+        expect(context.commit).toHaveBeenCalledWith('setDecisionVersions', { key: 'invoice', versions: result })
+      })
+
+      it('should keep only the versions without a tenant when no tenant is requested', async () => {
+        const context = getContext()
+        DecisionService.getDecisionVersionsByKey.mockResolvedValue(tenantVersions())
+
+        const result = await action(context, { key: 'invoice', lazyLoad: false })
+
+        expect(result.map(v => v.id)).toEqual(['dd-none'])
+      })
+
+      // A link without a tenant to a decision deployed only for tenants still opens it (CIB7-2425).
+      it('should keep all versions when no tenant is requested and every version has one', async () => {
+        const context = getContext()
+        DecisionService.getDecisionVersionsByKey.mockResolvedValue([
+          version({ id: 'dd-t1', version: 2, tenantId: 'T1' }),
+          version({ id: 'dd-t1-old', version: 1, tenantId: 'T1' })
+        ])
+
+        const result = await action(context, { key: 'invoice', lazyLoad: false })
+
+        expect(result.map(v => v.id)).toEqual(['dd-t1', 'dd-t1-old'])
+      })
     },
 
     refreshDecisionVersions: (action, getContext) => {

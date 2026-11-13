@@ -103,7 +103,10 @@ export default {
       this.getDecisionList({ latestVersion: true })
     },
     goToDecision: function(decision) {
-      this.$router.push('/seven/auth/decision/' + decision.key + '/' + decision.latestVersion)
+      this.$router.push({
+        path: '/seven/auth/decision/' + decision.key + '/' + decision.latestVersion,
+        query: decision.tenantId ? { tenantId: decision.tenantId } : {}
+      })
     }
   }
 }
