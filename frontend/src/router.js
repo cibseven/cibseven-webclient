@@ -365,6 +365,18 @@ const appRoutes = [
     props: true,
     component: StartDeployedForm
   },
+  // An address no other route matches: the start page says so, with the navigation, instead of a blank page.
+  // vue-router ranks this below every other route, so routes that library consumers add still match first.
+  {
+    path: '/:pathMatch(.*)*', name: 'not-found',
+    beforeEnter: (to) => ({
+      name: 'start',
+      query: {
+        errorType: 'notFoundPage',
+        path: to.fullPath,
+      }
+    })
+  },
 ];
 
 let router = null
