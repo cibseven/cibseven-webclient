@@ -27,7 +27,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.jpa.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.util.Assert;
@@ -87,6 +86,6 @@ public class CibsevenPersistenceConfiguration {
 	@Bean(name = CibsevenJpa.TRANSACTION_MANAGER, defaultCandidate = false)
 	PlatformTransactionManager cibsevenTransactionManager(
 			@Qualifier(CibsevenJpa.ENTITY_MANAGER_FACTORY) EntityManagerFactory entityManagerFactory) {
-		return new JpaTransactionManager(entityManagerFactory);
+		return new CibsevenTransactionManager(entityManagerFactory);
 	}
 }
