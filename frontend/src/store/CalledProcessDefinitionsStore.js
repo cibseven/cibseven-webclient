@@ -22,7 +22,9 @@ export default {
   state: {
     calledProcessDefinitions: [],
     allCalledProcessDefinitions: [],
-    staticCalledProcessDefinitions: [] 
+    staticCalledProcessDefinitions: [],
+    // Id of the process definition the static definitions above belong to
+    staticCalledProcessDefinitionsId: null
   },
   mutations: {
     setCalledProcessDefinitions(state, calledProcessDefinitions) {
@@ -34,10 +36,20 @@ export default {
     setStaticCalledProcessDefinitions: function (state, params) {
       state.staticCalledProcessDefinitions = params
     },
+    setStaticCalledProcessDefinitionsId: function (state, processDefinitionId) {
+      state.staticCalledProcessDefinitionsId = processDefinitionId
+    },
   },
-  actions: {    
-    async loadStaticCalledProcessDefinitions({ commit }, { processDefinitionId }) {
+  actions: {
+    async loadStaticCalledProcessDefinitions({ commit, state }, { processDefinitionId }) {
+      // Never keep the data of another definition while the new one loads
+      if (state.staticCalledProcessDefinitionsId !== processDefinitionId) {
+        commit('setStaticCalledProcessDefinitionsId', processDefinitionId)
+        commit('setStaticCalledProcessDefinitions', [])
+      }
       const staticCalledProcessDefinitions = await ProcessService.findCalledProcessDefinitions(processDefinitionId)
+      // Another definition was requested meanwhile, so this answer is out of date
+      if (state.staticCalledProcessDefinitionsId !== processDefinitionId) return
       commit('setStaticCalledProcessDefinitions', staticCalledProcessDefinitions)
     },
 
@@ -45,7 +57,7 @@ export default {
       commit('setCalledProcessDefinitions', [])
       commit('setAllCalledProcessDefinitions', [])
 
-      const staticDefinitions = getters.getStaticCalledProcessDefinitions || []
+      const staticDefinitions = getters.getStaticCalledProcessDefinitionsFor(processId) || []
       const historicStats = rootGetters.getHistoricActivityStatistics(processId) || []
       const getActivityName = rootGetters.getProcessActivities || {}
 
@@ -276,6 +288,11 @@ export default {
       if (hasReferenced) return 'process-instance.calledProcessDefinitions.referenced'
       return 'process-instance.calledProcessDefinitions.unknown'
     },
-    getStaticCalledProcessDefinitions: state => state.staticCalledProcessDefinitions
+    getStaticCalledProcessDefinitions: state => state.staticCalledProcessDefinitions,
+    // The static definitions only when they were loaded for the given process definition
+    getStaticCalledProcessDefinitionsFor: state => processDefinitionId =>
+      processDefinitionId && state.staticCalledProcessDefinitionsId === processDefinitionId
+        ? state.staticCalledProcessDefinitions
+        : []
   }
 }

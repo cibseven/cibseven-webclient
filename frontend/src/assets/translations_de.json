@@ -475,7 +475,9 @@
 			"activitiesHistory": "Ausgeführte Aktivitätsinstanzen",
 			"canceledInstances": "Abgebrochene Aktivitätsinstanzen",
 			"openSubprocess": "Aufgerufene Prozessdefinition anzeigen",
-			"disabledSubprocess": "Die Prozessdefinition wird zur Laufzeit ermittelt"
+			"disabledSubprocess": "Die Prozessdefinition wird zur Laufzeit ermittelt",
+			"notFoundSubprocess": "Für das aufgerufene Element ist keine Prozessdefinition deployt",
+			"currentSubprocess": "Die aufgerufene Prozessdefinition wird bereits angezeigt"
 		}
 	},
 	"task": {

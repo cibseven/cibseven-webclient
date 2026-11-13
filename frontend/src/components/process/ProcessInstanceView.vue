@@ -167,6 +167,7 @@ export default {
   },
   watch: {
     'process.id': function() {
+      this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
       ProcessService.fetchDiagram(this.process.id).then(response => {
         this.$refs.diagram?.showDiagram(response.bpmn20Xml, this.selectedActivityId)?.then(() => this.restoreViewboxIfSaved())
       })
@@ -219,6 +220,8 @@ export default {
     },
   },
   mounted: function() {
+    // The instance can be opened directly, so the call activity links cannot rely on the definition view having loaded this
+    this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
     ProcessService.fetchDiagram(this.process.id).then(response => {
       this.$refs.diagram?.showDiagram(response.bpmn20Xml, this.selectedActivityId)?.then(() => this.restoreViewboxIfSaved())
     })
@@ -234,6 +237,7 @@ export default {
   },
   methods: {
     ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'selectActivity', 'loadHistoricActivityStatistics', 'clearHistoricActivityStatistics']),
+    ...mapActions('calledProcessDefinitions', ['loadStaticCalledProcessDefinitions']),
     selectTask: function(event) {
       this.$emit('task-selected', event);
     },

@@ -109,17 +109,23 @@ export default {
   },
   computed: {
     ...mapGetters(['highlightedElement', 'getHistoricActivityStatistics']),
-    ...mapGetters('calledProcessDefinitions', ['getStaticCalledProcessDefinitions']),
+    ...mapGetters('calledProcessDefinitions', ['getStaticCalledProcessDefinitionsFor']),
     ...mapGetters('job', ['jobDefinitions']),
     ...mapGetters('elementTemplates', { allElementTemplateContents: 'allElementTemplateContents' }),
     historicActivityStatistics() {
       return this.getHistoricActivityStatistics(this.processDefinitionId)
+    },
+    staticCalledProcessDefinitions() {
+      return this.getStaticCalledProcessDefinitionsFor(this.processDefinitionId)
     }
   },
   watch: {
     historicActivityStatistics: {
       handler() { this.drawDiagramState() },
       deep: true
+    },
+    staticCalledProcessDefinitions: function() {
+      if (this.viewer) this.drawDiagramState()
     },
     statistics: {
       handler() { if (this.viewer) this.drawDiagramState() },
@@ -554,7 +560,7 @@ export default {
     },
     drawSubprocessLinks: function(elementRegistry) {
       if (this.badgeOptions?.showCalledProcesses === false) return
-      const staticCalledProcesses = this.getStaticCalledProcessDefinitions || []
+      const staticCalledProcesses = this.staticCalledProcessDefinitions || []
       const activityStats = this.historicActivityStatistics || []
 
       // Map to know which activity calls which process
@@ -584,19 +590,19 @@ export default {
         const runningInstances = activityStat?.instances || 0
 
         const calledElement = ca.businessObject?.calledElement || ''
-        const isDynamic = /^\$\{.+\}$/.test(calledElement)
+        // The engine evaluates any ${...} or #{...} in calledElement at runtime
+        const isDynamic = /[$#]\{.+\}/.test(calledElement)
         const isStatic = !isDynamic && !!calledProcess
 
         const inInstanceView = !!this.selectedInstance
         const wasExecuted = inInstanceView && executedActivities.has(ca.id)
         const shouldEnableDynamic = isDynamic && (runningInstances > 0 || wasExecuted)
-        const isCurrentDefinitionAlreadyVisible = !!this.selectedInstance && calledProcess?.id === this.selectedInstance.processDefinitionId
+        const isCurrentDefinitionAlreadyVisible = !!this.selectedInstance && !!calledProcess &&
+          calledProcess.id === this.selectedInstance.processDefinitionId
 
         const disabled = (!isStatic && !shouldEnableDynamic) || isCurrentDefinitionAlreadyVisible
 
-        const title = disabled
-          ? this.$t('bpmn-viewer.legend.disabledSubprocess')
-          : this.$t('bpmn-viewer.legend.openSubprocess')
+        const title = this.$t(this.getSubprocessLinkTitleKey(disabled, isDynamic, isCurrentDefinitionAlreadyVisible))
 
         const wrapper = document.createElement('div')
         wrapper.title = title
@@ -617,6 +623,12 @@ export default {
         wrapper.appendChild(button)
         this.setHtmlOnDiagram(ca.id, wrapper, { bottom: -7, right: 15 })
       })
+    },
+    getSubprocessLinkTitleKey: function(disabled, isDynamic, isCurrentDefinitionAlreadyVisible) {
+      if (!disabled) return 'bpmn-viewer.legend.openSubprocess'
+      if (isCurrentDefinitionAlreadyVisible) return 'bpmn-viewer.legend.currentSubprocess'
+      // "Resolved at runtime" only holds for an expression; a fixed name that resolves to nothing has no deployed definition
+      return isDynamic ? 'bpmn-viewer.legend.disabledSubprocess' : 'bpmn-viewer.legend.notFoundSubprocess'
     },
     getBadgeOverlayHtml: function(number, classes, type, activityId) {
       const title = this.$t('bpmn-viewer.legend.' + type)
@@ -665,9 +677,11 @@ export default {
             maxResults: 1
           }
           const calledInstance = await this.loadActivitiesInstanceHistory(params)
-          const processDefinition = await HistoryService.findProcessesInstancesHistory({ processInstanceId: calledInstance[0].calledProcessInstanceId })
-          if (calledInstance?.length && calledInstance[0].calledProcessInstanceId) {
-            return this.navigateToSubprocess(processDefinition[0].processDefinitionKey, processDefinition[0].processDefinitionVersion, calledInstance[0].calledProcessInstanceId)
+          const calledProcessInstanceId = calledInstance?.[0]?.calledProcessInstanceId
+          // A call activity the instance has not reached yet has no called instance: fall back to the definition
+          if (calledProcessInstanceId) {
+            const processDefinition = await HistoryService.findProcessesInstancesHistory({ processInstanceId: calledProcessInstanceId })
+            return this.navigateToSubprocess(processDefinition[0].processDefinitionKey, processDefinition[0].processDefinitionVersion, calledProcessInstanceId)
           }
         }
         // If no instance view or no instance found, try to get the called process directly

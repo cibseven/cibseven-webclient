@@ -16,6 +16,7 @@
  */
 import { describe, it, expect, afterEach, vi, beforeAll, beforeEach } from 'vitest'
 import BpmnViewer from '@/components/process/BpmnViewer.vue'
+import { HistoryService } from '@/services.js'
 
 // Mock bpmn-js NavigatedViewer - it requires a DOM canvas and is not relevant here
 vi.mock('bpmn-js/lib/NavigatedViewer', () => {
@@ -108,7 +109,7 @@ function viewerContext(overrides = {}) {
     badgeOptions: {},
     overlayList: [],
     historicActivityStatistics: [],
-    getStaticCalledProcessDefinitions: [],
+    staticCalledProcessDefinitions: [],
     setHtmlOnDiagram: vi.fn(),
     ...overrides
   }
@@ -1269,9 +1270,10 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
     badgeOptions: {},
     selectedInstance: null,
     historicActivityStatistics: [],
-    getStaticCalledProcessDefinitions: [],
+    staticCalledProcessDefinitions: [],
     setHtmlOnDiagram: vi.fn(),
     openSubprocess: vi.fn(),
+    getSubprocessLinkTitleKey: BpmnViewer.methods.getSubprocessLinkTitleKey,
     ...overrides
   })
 
@@ -1279,7 +1281,7 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
 
   it('should place an enabled link button on a statically called activity', () => {
     const vm = vmWith({
-      getStaticCalledProcessDefinitions: [{ id: 'sub-1', key: 'sub', calledFromActivityIds: ['call_1'] }]
+      staticCalledProcessDefinitions: [{ id: 'sub-1', key: 'sub', calledFromActivityIds: ['call_1'] }]
     })
     const registry = { getAll: () => [callActivity('call_1', 'sub')], get: (id) => callActivity(id, 'sub') }
 
@@ -1291,7 +1293,7 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
 
   it('should invoke openSubprocess when the button is clicked', () => {
     const vm = vmWith({
-      getStaticCalledProcessDefinitions: [{ id: 'sub-1', key: 'sub', calledFromActivityIds: ['call_1'] }]
+      staticCalledProcessDefinitions: [{ id: 'sub-1', key: 'sub', calledFromActivityIds: ['call_1'] }]
     })
     const registry = { getAll: () => [callActivity('call_1', 'sub')], get: (id) => callActivity(id, 'sub') }
 
@@ -1358,13 +1360,9 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
     expect(buttonFrom(vm).disabled).toBe(false)
   })
 
-  // Quirk worth pinning: the "already showing this definition" check compares
-  // `calledProcess?.id` with `selectedInstance.processDefinitionId`. For a dynamic call
-  // there is no calledProcess, so if the selected instance also carries no
-  // processDefinitionId the comparison is `undefined === undefined` and the link is
-  // disabled even though the activity did run. Real instances always carry the id, so
-  // this only bites on a partially populated instance object.
-  it('should disable a dynamic link when neither the call nor the instance has a definition id', () => {
+  // A dynamic call has no calledProcess; an instance without processDefinitionId must not
+  // count as "already showing it" just because both ids are undefined.
+  it('should enable an executed dynamic link when neither the call nor the instance has a definition id', () => {
     const vm = vmWith({
       selectedInstance: { id: 'pi1' },
       historicActivityStatistics: [{ id: 'call_1', canceled: 1 }]
@@ -1376,20 +1374,59 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
 
     BpmnViewer.methods.drawSubprocessLinks.call(vm, registry)
 
-    expect(buttonFrom(vm).disabled).toBe(true)
+    expect(buttonFrom(vm).disabled).toBe(false)
+  })
+
+  // An expression anywhere in calledElement is evaluated at runtime, not only a whole ${...}
+  it.each(['sub_${suffix}', '#{subKey}'])('should treat %s as dynamic', (calledElement) => {
+    const vm = vmWith()
+    const registry = {
+      getAll: () => [callActivity('call_1', calledElement)],
+      get: (id) => callActivity(id, calledElement)
+    }
+
+    BpmnViewer.methods.drawSubprocessLinks.call(vm, registry)
+
+    expect(vm.setHtmlOnDiagram.mock.calls[0][1].title).toBe('bpmn-viewer.legend.disabledSubprocess')
   })
 
   // Following the link would just reload the diagram already on screen.
   it('should disable the link when it points at the definition already shown', () => {
     const vm = vmWith({
       selectedInstance: { id: 'pi1', processDefinitionId: 'sub-1' },
-      getStaticCalledProcessDefinitions: [{ id: 'sub-1', key: 'sub', calledFromActivityIds: ['call_1'] }]
+      staticCalledProcessDefinitions: [{ id: 'sub-1', key: 'sub', calledFromActivityIds: ['call_1'] }]
     })
     const registry = { getAll: () => [callActivity('call_1', 'sub')], get: (id) => callActivity(id, 'sub') }
 
     BpmnViewer.methods.drawSubprocessLinks.call(vm, registry)
 
     expect(buttonFrom(vm).disabled).toBe(true)
+    expect(vm.setHtmlOnDiagram.mock.calls[0][1].title).toBe('bpmn-viewer.legend.currentSubprocess')
+  })
+
+  // CIB7-2717: a fixed calledElement is never "resolved at runtime"; without a matching
+  // deployed definition the tooltip must say so instead.
+  it('should not claim runtime resolution for a fixed calledElement without a definition', () => {
+    const vm = vmWith({ selectedInstance: { id: 'pi1', processDefinitionId: 'pd-parent' } })
+    const registry = { getAll: () => [callActivity('call_1', 'sub')], get: (id) => callActivity(id, 'sub') }
+
+    BpmnViewer.methods.drawSubprocessLinks.call(vm, registry)
+
+    expect(buttonFrom(vm).disabled).toBe(true)
+    expect(vm.setHtmlOnDiagram.mock.calls[0][1].title).toBe('bpmn-viewer.legend.notFoundSubprocess')
+  })
+
+  it('should enable a fixed calledElement in the instance view once its definition is known', () => {
+    const vm = vmWith({
+      selectedInstance: { id: 'pi1', processDefinitionId: 'pd-parent' },
+      staticCalledProcessDefinitions: [{ id: 'sub-1', key: 'sub', calledFromActivityIds: ['call_1'] }]
+    })
+    const registry = { getAll: () => [callActivity('call_1', 'sub')], get: (id) => callActivity(id, 'sub') }
+
+    BpmnViewer.methods.drawSubprocessLinks.call(vm, registry)
+
+    expect(buttonFrom(vm).disabled).toBe(false)
+    expect(vm.setHtmlOnDiagram.mock.calls[0][1].title).toBe('bpmn-viewer.legend.openSubprocess')
   })
 
   it('should mark a disabled wrapper with a not-allowed cursor', () => {
@@ -1439,5 +1476,90 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
     BpmnViewer.methods.drawSubprocessLinks.call(vm, registry)
 
     expect(buttonFrom(vm).disabled).toBe(true)
+  })
+})
+
+// CIB7-2717: the store is global, so the viewer must only use data loaded for its own definition
+describe('BpmnViewer - static called process definitions', () => {
+  it('should read the static definitions of the displayed process definition', () => {
+    const forDefinition = vi.fn(() => [{ id: 'sub-1' }])
+    const vm = { processDefinitionId: 'pd-1', getStaticCalledProcessDefinitionsFor: forDefinition }
+
+    expect(BpmnViewer.computed.staticCalledProcessDefinitions.call(vm)).toEqual([{ id: 'sub-1' }])
+    expect(forDefinition).toHaveBeenCalledWith('pd-1')
+  })
+
+  // The data can arrive after the diagram was drawn, e.g. when an instance is opened directly
+  it('should redraw the diagram when the static definitions change', () => {
+    const vm = { viewer: {}, drawDiagramState: vi.fn() }
+
+    BpmnViewer.watch.staticCalledProcessDefinitions.call(vm)
+
+    expect(vm.drawDiagramState).toHaveBeenCalled()
+  })
+
+  it('should not redraw before the viewer exists', () => {
+    const vm = { viewer: null, drawDiagramState: vi.fn() }
+
+    BpmnViewer.watch.staticCalledProcessDefinitions.call(vm)
+
+    expect(vm.drawDiagramState).not.toHaveBeenCalled()
+  })
+})
+
+describe('BpmnViewer - openSubprocess', () => {
+  const vmWith = (overrides = {}) => ({
+    selectedInstance: { id: 'pi1' },
+    $route: { path: '/process', query: {} },
+    $router: { push: vi.fn() },
+    loadActivitiesInstanceHistory: vi.fn(() => Promise.resolve([])),
+    navigateToSubprocess: vi.fn(),
+    ...overrides
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('should open the called instance when the call activity already ran', async () => {
+    vi.spyOn(HistoryService, 'findProcessesInstancesHistory')
+      .mockResolvedValue([{ processDefinitionKey: 'sub', processDefinitionVersion: 3 }])
+    const vm = vmWith({
+      loadActivitiesInstanceHistory: vi.fn(() => Promise.resolve([{ calledProcessInstanceId: 'sub-pi' }]))
+    })
+
+    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', { key: 'sub', version: 1 }, false)
+
+    expect(HistoryService.findProcessesInstancesHistory).toHaveBeenCalledWith({ processInstanceId: 'sub-pi' })
+    expect(vm.navigateToSubprocess).toHaveBeenCalledWith('sub', 3, 'sub-pi')
+  })
+
+  // The instance has not reached the call activity yet, so there is no called instance to open
+  it('should open the called definition when the call activity has not run yet', async () => {
+    const findHistory = vi.spyOn(HistoryService, 'findProcessesInstancesHistory')
+    const vm = vmWith()
+
+    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', { key: 'sub', version: 1 }, false)
+
+    expect(findHistory).not.toHaveBeenCalled()
+    expect(vm.navigateToSubprocess).toHaveBeenCalledWith('sub', 1, null)
+  })
+
+  it('should switch to the called process definitions tab for a dynamic call outside an instance', async () => {
+    const vm = vmWith({ selectedInstance: null, $route: { path: '/process/p', query: { a: '1' } } })
+
+    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', undefined, true)
+
+    expect(vm.$router.push).toHaveBeenCalledWith({ path: '/process/p', query: { a: '1', tab: 'calledProcessDefinitions' } })
+  })
+
+  it('should do nothing without a called definition to open', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const vm = vmWith()
+
+    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', undefined, true)
+
+    expect(vm.navigateToSubprocess).not.toHaveBeenCalled()
+    expect(warn).toHaveBeenCalled()
   })
 })

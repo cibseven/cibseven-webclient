@@ -475,7 +475,9 @@
 			"activitiesHistory": "Instancias de actividad ejecutadas",
 			"canceledInstances": "Instancias de actividad canceladas",
 			"openSubprocess": "Mostrar la definición del proceso llamado",
-			"disabledSubprocess": "La definición del proceso se resolverá en tiempo de ejecución"
+			"disabledSubprocess": "La definición del proceso se resolverá en tiempo de ejecución",
+			"notFoundSubprocess": "No hay ninguna definición de proceso desplegada para el elemento llamado",
+			"currentSubprocess": "La definición del proceso llamado ya se está mostrando"
 		}
 	},
 	"task": {
