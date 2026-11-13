@@ -181,17 +181,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			Locale loc, CIBUser user) {
 		
 		try {
-			ResponseEntity<byte[]> response = bpmProvider.getDeployedForm(taskId, user);
-			byte[] body = response.getBody();
-			
-			if (body == null || body.length == 0) {
-				return ResponseEntity.noContent().build();
-			}
-			
-			return ResponseEntity.ok()
-					.headers(response.getHeaders())
-					.body(body);
-			
+			return EngineResponses.relayOrNoContent(bpmProvider.getDeployedForm(taskId, user));
 		} catch (Exception e) {
 			throw new SystemException("Error getting deployed form: " + e.getMessage(), e);
 		}
@@ -217,7 +207,7 @@ public class TaskService extends BaseService implements InitializingBean {
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			@RequestParam Map<String, Object> params,
 			Locale loc, CIBUser user) {
-		return bpmProvider.getRenderedForm(taskId, params, user);
+		return EngineResponses.relay(bpmProvider.getRenderedForm(taskId, params, user));
 	}
 
 	@Operation(

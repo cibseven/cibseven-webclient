@@ -201,7 +201,7 @@ public class ProcessProviderTest {
 		ResponseEntity<String> response = processProvider.getRenderedForm("id-1", new HashMap<>(), user);
 
 		assertThat(response.getBody()).isEqualTo(form);
-		// the engine's Content-Length is passed on; the re-encoded body must fit it, or the form is cut off
+		// the provider keeps the engine's Content-Length (the controller drops it, CIB7-2766); it must still fit the decoded body
 		assertThat(response.getHeaders().getContentLength()).isEqualTo(response.getBody().getBytes(StandardCharsets.UTF_8).length);
 		assertThat(engine.takePath()).startsWith("/process-definition/id-1/rendered-form");
 	}
