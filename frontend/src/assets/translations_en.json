@@ -475,7 +475,9 @@
 			"activitiesHistory": "Executed activity instances",
 			"canceledInstances": "Canceled activity instances",		
 			"openSubprocess": "Show called process definition",
-			"disabledSubprocess": "Called process definition will be resolved at runtime"
+			"disabledSubprocess": "Called process definition will be resolved at runtime",
+			"notFoundSubprocess": "No deployed process definition matches the called element",
+			"currentSubprocess": "The called process definition is the one already shown"
 		}
 	},
 	"task": {
