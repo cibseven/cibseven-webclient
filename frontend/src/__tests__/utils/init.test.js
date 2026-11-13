@@ -624,3 +624,146 @@ describe('handleAxiosError without a response', () => {
     expect(root.$refs.error.show).toHaveBeenCalledWith({ type: 'SystemException' })
   })
 })
+
+// The modeler's deploy dialog and import tell the user what failed, so the handler leaves them alone
+describe('handleAxiosError for a request that reports its own errors', () => {
+  const routerWith = () => ({ currentRoute: { value: { name: 'modeler' }, path: '/seven/auth/modeler' }, push: vi.fn() })
+  const rootWith = () => ({ user: { authToken: 'tok-session' }, $refs: { error: { show: vi.fn() } } })
+  const own = (response, authorization = 'tok-session', url = 'services/v1/modeler/deployment/create') =>
+    ({ response, config: { reportsOwnErrors: true, url, headers: { authorization } } })
+
+  beforeEach(() => {
+    sessionStorage.clear()
+    sessionStorage.setItem('token', 'tok-session')
+    vi.spyOn(console, 'info').mockImplementation(() => {})
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+  })
+
+  it('should open no dialog for a 500 it would show otherwise, and reject with the error', async () => {
+    const root = rootWith()
+    const error = own({ status: 500, data: { type: 'SystemException', params: ['boom'] } })
+
+    await expect(handleAxiosError(routerWith(), root, error)).rejects.toBe(error)
+
+    expect(root.$refs.error.show).not.toHaveBeenCalled()
+  })
+
+  it('should open no dialog when there is no answer at all', async () => {
+    const root = rootWith()
+    const error = Object.assign(new Error('Network Error'), { config: { reportsOwnErrors: true } })
+
+    await expect(handleAxiosError(routerWith(), root, error)).rejects.toBe(error)
+
+    expect(root.$refs.error.show).not.toHaveBeenCalled()
+  })
+
+  // "As another user" with a wrong password: the credentials of that request are wrong, the session is fine
+  it('should keep the user logged in on a 401 for the credentials the request carried', async () => {
+    const root = rootWith()
+    const router = routerWith()
+    const error = own({ status: 401, data: { type: 'AuthenticationException', params: ['demo'] } }, 'Basic ZGVtbzp3cm9uZw==')
+
+    await expect(handleAxiosError(router, root, error)).rejects.toBe(error)
+
+    expect(sessionStorage.getItem('token')).toBe('tok-session')
+    expect(root.user).not.toBeNull()
+    expect(router.push).not.toHaveBeenCalled()
+  })
+
+  it('should still renew the session token that request carried, and repeat it', async () => {
+    const root = rootWith()
+    const error = own({ status: 401, data: { type: 'TokenExpiredException', params: ['tok-prolonged'] } })
+
+    const promise = handleAxiosError(routerWith(), root, error)
+
+    expect(sessionStorage.getItem('token')).toBe('tok-prolonged')
+    expect(axios.request).toHaveBeenCalledWith(error.config)
+    await promise
+  })
+
+  // The session itself has run out: the request carried the session token, so it is about the session
+  it('should still log out when the session token it carried can no longer be renewed', async () => {
+    const root = rootWith()
+    const router = routerWith()
+    const error = own({ status: 401, data: { type: 'TokenExpiredException', params: [] } })
+
+    await expect(handleAxiosError(router, root, error)).rejects.toBe(error)
+
+    expect(sessionStorage.getItem('token')).toBeNull()
+    expect(root.user).toBeNull()
+    expect(router.push).toHaveBeenCalledWith('/seven/login?nextUrl=/seven/auth/modeler')
+  })
+
+  // Another request renewed the token while this one was on its way with the old one
+  it('should renew and repeat a request sent with the token the latest renewal replaced', async () => {
+    const root = rootWith()
+    await handleAxiosError(routerWith(), root, {
+      response: { status: 401, data: { type: 'TokenExpiredException', params: ['tok-renewed'] } },
+      config: { headers: { authorization: 'tok-session' } },
+    })
+    axios.request.mockClear()
+    const error = own({ status: 401, data: { type: 'TokenExpiredException', params: ['tok-renewed-again'] } }, 'tok-session')
+
+    await handleAxiosError(routerWith(), root, error)
+
+    expect(sessionStorage.getItem('token')).toBe('tok-renewed-again')
+    expect(axios.request).toHaveBeenCalledWith(error.config)
+  })
+
+  // A deploy to another instance as the current user sends the session token there
+  it('should neither renew nor log out for an answer from another instance', async () => {
+    const root = rootWith()
+    const router = routerWith()
+    const elsewhere = 'https://other.example.com/services/v1/modeler/deployment/create'
+
+    const renewal = own({ status: 401, data: { type: 'TokenExpiredException', params: ['tok-of-other-instance'] } }, 'tok-session', elsewhere)
+    await expect(handleAxiosError(router, root, renewal)).rejects.toBe(renewal)
+    const refusal = own({ status: 401, data: { type: 'AuthenticationException', params: [] } }, 'tok-session', elsewhere)
+    await expect(handleAxiosError(router, root, refusal)).rejects.toBe(refusal)
+
+    expect(sessionStorage.getItem('token')).toBe('tok-session')
+    expect(root.user.authToken).toBe('tok-session')
+    expect(axios.request).not.toHaveBeenCalled()
+    expect(router.push).not.toHaveBeenCalled()
+  })
+
+  // A second webclient on the same host, under another path, is another instance too
+  it('should neither renew nor log out for another instance on the same host', async () => {
+    const { setServicesBasePath } = await import('@/services.js')
+    const before = getServicesBasePath()
+    setServicesBasePath('webapp/services/v1')
+    try {
+      const root = rootWith()
+      const router = routerWith()
+      const sameHost = `${window.location.origin}/other-app/services/v1/modeler/deployment/create`
+      const renewal = own({ status: 401, data: { type: 'TokenExpiredException', params: ['tok-of-other-app'] } }, 'tok-session', sameHost)
+
+      await expect(handleAxiosError(router, root, renewal)).rejects.toBe(renewal)
+
+      expect(sessionStorage.getItem('token')).toBe('tok-session')
+      expect(axios.request).not.toHaveBeenCalled()
+      expect(router.push).not.toHaveBeenCalled()
+
+      // This webclient's own services, relative or absolute, still count for the session
+      for (const url of ['webapp/services/v1/modeler/deployment/create', `${window.location.origin}/webapp/services/v1/modeler/deployment/create`]) {
+        axios.request.mockClear()
+        await handleAxiosError(router, root, own({ status: 401, data: { type: 'TokenExpiredException', params: ['tok-session'] } }, 'tok-session', url))
+        expect(axios.request).toHaveBeenCalledOnce()
+      }
+    } finally {
+      setServicesBasePath(before)
+    }
+  })
+
+  it('should never let another token replace the session token', async () => {
+    const root = rootWith()
+    const error = own({ status: 401, data: { type: 'TokenExpiredException', params: ['tok-of-other-user'] } }, 'Bearer tok-other-user')
+
+    await expect(handleAxiosError(routerWith(), root, error)).rejects.toBe(error)
+
+    expect(sessionStorage.getItem('token')).toBe('tok-session')
+    expect(root.user.authToken).toBe('tok-session')
+    expect(axios.request).not.toHaveBeenCalled()
+  })
+})
