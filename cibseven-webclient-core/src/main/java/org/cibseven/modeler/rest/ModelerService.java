@@ -55,7 +55,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import org.cibseven.webapp.exception.AccessDeniedException;
-import org.cibseven.webapp.exception.InvalidAttributeValueException;
+import org.cibseven.webapp.exception.InvalidPathValueException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.modeler.model.DiagramUsageEntity;
@@ -237,17 +237,18 @@ public class ModelerService extends ModelerBaseService {
 		CIBUser user = checkModelerAccess(rq);
 		// The engine finds a definition deployed for a tenant only when asked with key and tenant together
 		String tenant = StringUtils.hasText(tenantId) ? tenantId.strip() : null;
-		requirePathSegment(key);
-		if (tenant != null) requirePathSegment(tenant);
+		requirePathSegment("Process key", key);
+		if (tenant != null) requirePathSegment("Tenant ID", tenant);
 		return bpmProvider.startProcess(key, tenant, data, user);
 	}
 
-	// Characters that would change the engine URL key and tenant are placed in, as path segments
-	private static final Pattern UNSAFE_IN_PATH = Pattern.compile("[/\\\\?#%\\s]");
+	// Characters that would change the engine URL key and tenant are placed in, as path segments;
+	// ';' starts a matrix parameter there
+	private static final Pattern UNSAFE_IN_PATH = Pattern.compile("[/\\\\?#%;\\s]");
 
-	private static void requirePathSegment(String value) {
+	private static void requirePathSegment(String what, String value) {
 		if (value.isEmpty() || ".".equals(value) || "..".equals(value) || UNSAFE_IN_PATH.matcher(value).find()) {
-			throw new InvalidAttributeValueException(Optional.of(value), null);
+			throw new InvalidPathValueException(what, value);
 		}
 	}
 	

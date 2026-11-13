@@ -51,7 +51,8 @@ import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.ModelerAccessChecker;
 import org.cibseven.webapp.exception.AccessDeniedException;
-import org.cibseven.webapp.exception.InvalidAttributeValueException;
+import org.cibseven.webapp.exception.ApplicationException;
+import org.cibseven.webapp.exception.InvalidPathValueException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -447,17 +448,20 @@ public class ModelerServiceTest {
 
 	// Key and tenant become path segments of the engine URL: nothing may change that URL
 	@ParameterizedTest
-	@ValueSource(strings = { "a/../../message", "acme?x=1", "acme#frag", "ac%2Fme", "ac me", "..", "." })
+	@ValueSource(strings = { "a/../../message", "acme?x=1", "acme#frag", "ac%2Fme", "acme;x", "ac me", "..", "." })
 	void startProcess_refusesATenantThatWouldChangeTheEngineUrl(String tenant) {
+		// An ApplicationException, which ExceptionConverter answers with 400, carrying a readable sentence
 		assertThatThrownBy(() -> service.startProcess("invoice", tenant, Map.of(), request))
-			.isInstanceOf(InvalidAttributeValueException.class);
+			.isInstanceOf(InvalidPathValueException.class)
+			.isInstanceOf(ApplicationException.class)
+			.satisfies(e -> assertThat(((ApplicationException) e).getData()).containsExactly("Tenant ID \"" + tenant + "\" cannot be part of the engine URL"));
 		verifyNoInteractions(bpmProvider);
 	}
 
 	@Test
 	void startProcess_refusesAKeyThatWouldChangeTheEngineUrl() {
 		assertThatThrownBy(() -> service.startProcess("invoice?tenant-id=x", null, Map.of(), request))
-			.isInstanceOf(InvalidAttributeValueException.class);
+			.isInstanceOf(InvalidPathValueException.class);
 		verifyNoInteractions(bpmProvider);
 	}
 
