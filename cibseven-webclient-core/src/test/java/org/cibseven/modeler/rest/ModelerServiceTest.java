@@ -19,15 +19,19 @@ package org.cibseven.modeler.rest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.cibseven.modeler.provider.ProjectGuard;
@@ -47,10 +51,14 @@ import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.ModelerAccessChecker;
 import org.cibseven.webapp.exception.AccessDeniedException;
+import org.cibseven.webapp.exception.ApplicationException;
+import org.cibseven.webapp.exception.InvalidPathValueException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -229,7 +237,7 @@ public class ModelerServiceTest {
 
 	@Test
 	void findByName_servesTheDiagram() {
-		when(dbProcessDiagramProvider.findByName("Invoice")).thenReturn(diagram("d-1", "Invoice", "invoice"));
+		when(dbProcessDiagramProvider.findByName(eq("Invoice"), any())).thenReturn(diagram("d-1", "Invoice", "invoice"));
 
 		ResponseEntity<byte[]> response = service.findByName("Invoice", request);
 
@@ -239,37 +247,33 @@ public class ModelerServiceTest {
 
 	@Test
 	void findByName_answers404WhenThereIsNoSuchName() {
-		when(dbProcessDiagramProvider.findByName("Nope")).thenReturn(null);
+		when(dbProcessDiagramProvider.findByName(eq("Nope"), any())).thenReturn(null);
 
 		assertThat(service.findByName("Nope", request).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 	}
 
 	@Test
 	void findByKey_servesTheDiagram() {
-		when(dbProcessDiagramProvider.findByProcessKey("invoice")).thenReturn(diagram("d-1", "Invoice", "invoice"));
+		when(dbProcessDiagramProvider.findByProcessKey(eq("invoice"), any())).thenReturn(List.of(diagram("d-1", "Invoice", "invoice")));
 
-		assertThat(service.findByKey("invoice", request).getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(service.findByKey("invoice", null, request).getStatusCode()).isEqualTo(HttpStatus.OK);
 	}
 
 	@Test
 	void findByKey_answers404WhenThereIsNoSuchKey() {
-		when(dbProcessDiagramProvider.findByProcessKey("nope")).thenReturn(null);
-
-		assertThat(service.findByKey("nope", request).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+		assertThat(service.findByKey("nope", null, request).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 	}
 
 	@Test
 	void findByKeyEntity_returnsTheEntity() {
-		when(dbProcessDiagramProvider.findByProcessKey("invoice")).thenReturn(diagram("d-1", "Invoice", "invoice"));
+		when(dbProcessDiagramProvider.findByProcessKey(eq("invoice"), any())).thenReturn(List.of(diagram("d-1", "Invoice", "invoice")));
 
-		assertThat(service.findByKeyEntity("invoice", request).getBody().getId()).isEqualTo("d-1");
+		assertThat(service.findByKeyEntity("invoice", null, request).getBody().getId()).isEqualTo("d-1");
 	}
 
 	@Test
 	void findByKeyEntity_answers404WhenThereIsNoSuchKey() {
-		when(dbProcessDiagramProvider.findByProcessKey("nope")).thenReturn(null);
-
-		assertThat(service.findByKeyEntity("nope", request).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+		assertThat(service.findByKeyEntity("nope", null, request).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 	}
 
 	@Test
@@ -389,16 +393,14 @@ public class ModelerServiceTest {
 
 	@Test
 	void findByFormId_returnsTheForm() {
-		when(formProvider.findByFormId("invoice-form")).thenReturn(form("f-1", "invoice-form"));
+		when(formProvider.findByFormId(eq("invoice-form"), any())).thenReturn(List.of(form("f-1", "invoice-form")));
 
-		assertThat(service.findByFormId("invoice-form", request).getBody().getId()).isEqualTo("f-1");
+		assertThat(service.findByFormId("invoice-form", null, request).getBody().getId()).isEqualTo("f-1");
 	}
 
 	@Test
 	void findByFormId_answers404WhenThereIsNoSuchForm() {
-		when(formProvider.findByFormId("nope")).thenReturn(null);
-
-		assertThat(service.findByFormId("nope", request).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+		assertThat(service.findByFormId("nope", null, request).getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 	}
 
 	// ---------- deployment ----------
@@ -413,5 +415,62 @@ public class ModelerServiceTest {
 		service.deployBpmn(data, file, request);
 
 		verify(bpmProvider).deployBpmn(data, file, user);
+	}
+
+	@Test
+	void startProcess_startsTheDefinitionOfTheTenantItWasDeployedFor() {
+		Map<String, Object> data = Map.of("variables", Map.of());
+
+		service.startProcess("invoice", "acme", data, request);
+
+		verify(bpmProvider).startProcess("invoice", "acme", data, user);
+	}
+
+	// A key alone finds only a definition of no tenant: without a tenant, or with a blank one, that is asked for
+	@Test
+	void startProcess_startsTheDefinitionOfNoTenantWithoutOne() {
+		Map<String, Object> data = Map.of();
+
+		service.startProcess("invoice", null, data, request);
+		service.startProcess("invoice", "  ", data, request);
+
+		verify(bpmProvider, times(2)).startProcess("invoice", null, data, user);
+	}
+
+	@Test
+	void startProcess_trimsTheTenant() {
+		Map<String, Object> data = Map.of();
+
+		service.startProcess("invoice", "  acme  ", data, request);
+
+		verify(bpmProvider).startProcess("invoice", "acme", data, user);
+	}
+
+	// Key and tenant become path segments of the engine URL: nothing may change that URL
+	@ParameterizedTest
+	@ValueSource(strings = { "a/../../message", "acme?x=1", "acme#frag", "ac%2Fme", "acme;x", "ac me", "..", "." })
+	void startProcess_refusesATenantThatWouldChangeTheEngineUrl(String tenant) {
+		// An ApplicationException, which ExceptionConverter answers with 400, carrying a readable sentence
+		assertThatThrownBy(() -> service.startProcess("invoice", tenant, Map.of(), request))
+			.isInstanceOf(InvalidPathValueException.class)
+			.isInstanceOf(ApplicationException.class)
+			.satisfies(e -> assertThat(((ApplicationException) e).getData()).containsExactly("Tenant ID \"" + tenant + "\" cannot be part of the engine URL"));
+		verifyNoInteractions(bpmProvider);
+	}
+
+	@Test
+	void startProcess_refusesAKeyThatWouldChangeTheEngineUrl() {
+		assertThatThrownBy(() -> service.startProcess("invoice?tenant-id=x", null, Map.of(), request))
+			.isInstanceOf(InvalidPathValueException.class);
+		verifyNoInteractions(bpmProvider);
+	}
+
+	@Test
+	void startProcess_isRefusedWithoutModelerAccess() {
+		doThrow(new AccessDeniedException("no modeler")).when(modelerAccessChecker).checkModelerAccess(user);
+
+		assertThatThrownBy(() -> service.startProcess("invoice", "acme", Map.of(), request))
+			.isInstanceOf(AccessDeniedException.class);
+		verifyNoInteractions(bpmProvider);
 	}
 }

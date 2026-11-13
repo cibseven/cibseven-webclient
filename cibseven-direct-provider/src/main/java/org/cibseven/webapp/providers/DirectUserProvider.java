@@ -16,7 +16,6 @@
  */
 package org.cibseven.webapp.providers;
 
-import static org.cibseven.webapp.auth.SevenAuthorizationUtils.resourceType;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,6 +33,9 @@ import org.cibseven.bpm.engine.identity.GroupQuery;
 import org.cibseven.bpm.engine.identity.UserQuery;
 import org.cibseven.bpm.engine.impl.identity.Authentication;
 import org.cibseven.bpm.engine.impl.util.PermissionConverter;
+import org.cibseven.bpm.engine.query.Query;
+import org.cibseven.bpm.engine.rest.dto.AbstractQueryDto;
+import org.cibseven.bpm.engine.rest.exception.InvalidRequestException;
 import org.cibseven.bpm.engine.rest.dto.authorization.AuthorizationDto;
 import org.cibseven.bpm.engine.rest.dto.authorization.AuthorizationQueryDto;
 import org.cibseven.bpm.engine.rest.dto.identity.GroupQueryDto;
@@ -42,6 +44,7 @@ import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.auth.rest.StandardLogin;
+import org.cibseven.webapp.exception.InvalidAttributeValueException;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
@@ -97,35 +100,35 @@ public class DirectUserProvider implements IUserProvider {
 				.runWithoutAuthorization(() -> fetchOwnAuthorizations(user, authenticatedGroupIds), user);
 
 		Authorizations auths = new Authorizations();
-		auths.setApplication(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.APPLICATION)));
-		auths.setFilter(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.FILTER)));
-		auths.setProcessDefinition(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.PROCESS_DEFINITION)));
-		auths.setProcessInstance(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.PROCESS_INSTANCE)));
-		auths.setTask(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.TASK)));
-		auths.setAuthorization(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.AUTHORIZATION)));
-		auths.setUser(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.USER)));
-		auths.setGroup(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.GROUP)));
-		auths.setDecisionDefinition(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.DECISION_DEFINITION)));
+		auths.setApplication(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.APPLICATION.getType()));
+		auths.setFilter(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.FILTER.getType()));
+		auths.setProcessDefinition(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.PROCESS_DEFINITION.getType()));
+		auths.setProcessInstance(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.PROCESS_INSTANCE.getType()));
+		auths.setTask(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.TASK.getType()));
+		auths.setAuthorization(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.AUTHORIZATION.getType()));
+		auths.setUser(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.USER.getType()));
+		auths.setGroup(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.GROUP.getType()));
+		auths.setDecisionDefinition(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.DECISION_DEFINITION.getType()));
 		auths.setDecisionRequirementsDefinition(
-				SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.DECISION_REQUIREMENTS_DEFINITION)));
-		auths.setDeployment(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.DEPLOYMENT)));
-		// auths.setCaseDefinition(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.CASE_DEFINITION)));
-		// auths.setCaseInstance(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.CASE_INSTANCE)));
-		// auths.setJobDefinition(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.JOB_DEFINITION)));
-		auths.setBatch(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.BATCH)));
-		auths.setGroupMembership(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.GROUP_MEMBERSHIP)));
-		auths.setHistoricTask(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.HISTORIC_TASK)));
+				SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.DECISION_REQUIREMENTS_DEFINITION.getType()));
+		auths.setDeployment(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.DEPLOYMENT.getType()));
+		// auths.setCaseDefinition(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.CASE_DEFINITION.getType()));
+		// auths.setCaseInstance(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.CASE_INSTANCE.getType()));
+		// auths.setJobDefinition(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.JOB_DEFINITION.getType()));
+		auths.setBatch(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.BATCH.getType()));
+		auths.setGroupMembership(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.GROUP_MEMBERSHIP.getType()));
+		auths.setHistoricTask(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.HISTORIC_TASK.getType()));
 		auths.setHistoricProcessInstance(
-				SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.HISTORIC_PROCESS_INSTANCE)));
-		auths.setTenant(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.TENANT)));
-		auths.setTenantMembership(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.TENANT_MEMBERSHIP)));
-		auths.setReport(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.REPORT)));
-		auths.setDashboard(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.DASHBOARD)));
+				SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.HISTORIC_PROCESS_INSTANCE.getType()));
+		auths.setTenant(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.TENANT.getType()));
+		auths.setTenantMembership(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.TENANT_MEMBERSHIP.getType()));
+		auths.setReport(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.REPORT.getType()));
+		auths.setDashboard(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.DASHBOARD.getType()));
 		auths.setUserOperationLogCategory(
-				SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.USER_OPERATION_LOG_CATEGORY)));
-		auths.setSystem(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.SYSTEM)));
-		// auths.setMessage(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.MESSAGE)));
-		// auths.setEventSubscription(SevenProviderBase.filterResources(userAuthorizations, resourceType(SevenResourceType.EVENT_SUBSCRIPTION)));
+				SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.USER_OPERATION_LOG_CATEGORY.getType()));
+		auths.setSystem(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.SYSTEM.getType()));
+		// auths.setMessage(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.MESSAGE.getType()));
+		// auths.setEventSubscription(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.EVENT_SUBSCRIPTION.getType()));
 
 		return auths;
 	}
@@ -310,11 +313,8 @@ public class DirectUserProvider implements IUserProvider {
 			queryDto.setMember(member.get());
 		if (memberOfTenant.isPresent())
 			queryDto.setMemberOfTenant(memberOfTenant.get());
-		if (sortBy.isPresent())
-			queryDto.setSortBy(sortBy.get());
-		if (sortOrder.isPresent())
-			queryDto.setSortOrder(sortOrder.get().equals("asc") ? "asc" : "desc");
-		GroupQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
+		setSorting(queryDto, sortBy, sortOrder);
+		GroupQuery query = toQuery(queryDto, user);
 
 		Integer first = firstResult.isPresent() ? Integer.parseInt(firstResult.get()) : null;
 		Integer max = maxResults.isPresent() ? Integer.parseInt(maxResults.get()) : null;
@@ -504,29 +504,12 @@ public class DirectUserProvider implements IUserProvider {
 		UserQueryDto queryDto = new UserQueryDto();
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
 		queryDto.setLikePatternIgnoreCase(likePatternIgnoreCase.orElse(null));
-		UserQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
+		setSorting(queryDto, sortBy, sortOrder);
+		UserQuery query = toQuery(queryDto, user);
 		if (memberOfGroup.isPresent())
 			query.memberOfGroup(memberOfGroup.get());
 		if (memberOfTenant.isPresent())
 			query.memberOfTenant(memberOfTenant.get());
-		if (sortBy.isPresent()) {
-			String sortByValue = sortBy.get();
-			switch (sortByValue) {
-			case "userId":
-				query.orderByUserId();
-				break;
-			case "firstName":
-				query.orderByUserFirstName();
-				break;
-			case "lastName":
-				query.orderByUserLastName();
-				break;
-			case "email":
-				query.orderByUserEmail();
-				break;
-			default:
-			}
-		}
 		if (email.isPresent())
 			query.userEmail(email.get());
 		if (emailLike.isPresent())
@@ -537,6 +520,8 @@ public class DirectUserProvider implements IUserProvider {
 			query.userFirstNameLike(firstNameLike.get().replace("*", wcard));
 		if (id.isPresent())
 			query.userId(id.get());
+		if (idIn.isPresent())
+			query.userIdIn(idIn.get().split(","));
 		if (lastName.isPresent())
 			query.userLastName(lastName.get());
 		if (lastNameLike.isPresent())
@@ -547,6 +532,34 @@ public class DirectUserProvider implements IUserProvider {
 
 		Collection<User> userCollection = createUsers(resultList);
 		return userCollection;
+	}
+
+	/**
+	 * Validates the sorting like engine-rest: the DTO accepts only its own sort keys and "asc" or "desc".
+	 * The exception is the one the default provider makes of the engine-rest error.
+	 */
+	private static void setSorting(AbstractQueryDto<?> queryDto, Optional<String> sortBy, Optional<String> sortOrder) {
+		try {
+			sortBy.ifPresent(queryDto::setSortBy);
+		} catch (InvalidRequestException e) {
+			throw new InvalidAttributeValueException(sortBy, e);
+		}
+		try {
+			sortOrder.ifPresent(queryDto::setSortOrder);
+		} catch (InvalidRequestException e) {
+			throw new InvalidAttributeValueException(sortOrder, e);
+		}
+	}
+
+	/**
+	 * Builds the query, which engine-rest refuses when only one of sortBy and sortOrder is given.
+	 */
+	private <T extends Query<?, ?>> T toQuery(AbstractQueryDto<T> queryDto, CIBUser user) {
+		try {
+			return queryDto.toQuery(directProviderUtil.getProcessEngine(user));
+		} catch (InvalidRequestException e) {
+			throw new SystemException(e.getMessage(), e);
+		}
 	}
 
 	private Collection<User> createUsers(List<org.cibseven.bpm.engine.identity.User> resultList) {

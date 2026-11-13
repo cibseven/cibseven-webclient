@@ -578,6 +578,19 @@ describe('TasksContent - fetchTasks', () => {
     expect(vm.preserveExistingVariables).toHaveBeenCalledWith([{ id: 't1' }])
   })
 
+  // The store skips cached, pending and empty ids, so the raw assignees are passed as they are.
+  it('should load the display names of all assignees in the result', async () => {
+    const vm = context({ updateProcessesInstances: vi.fn() })
+    TaskService.findTasksByFilter.mockResolvedValue([
+      { id: 't1', assignee: 'demo' }, { id: 't2', assignee: null }, { id: 't3', assignee: 'john' }
+    ])
+
+    fetchTasks.call(vm, 0, 20)
+    await flush()
+
+    expect(vm.$store.dispatch).toHaveBeenCalledWith('addUsersByIds', ['demo', null, 'john'])
+  })
+
   it('should stop the spinner when the query fails', async () => {
     const vm = context()
     TaskService.findTasksByFilter.mockRejectedValue(new Error('500'))
@@ -986,6 +999,18 @@ describe('TasksContent - task watcher', () => {
     onTask(vm, null)
 
     expect(vm.leftOpenTask).toBe(false)
+  })
+})
+
+describe('TasksContent - task.assignee watcher', () => {
+  // A task opened by URL or reassigned to someone else may not be in the list, so its
+  // assignee is not cached yet; the detail view needs the name as well.
+  it('should load the display name of the new assignee', () => {
+    const vm = context()
+
+    TasksContent.watch['task.assignee'].call(vm, 'peter')
+
+    expect(vm.$store.dispatch).toHaveBeenCalledWith('addUsersByIds', ['peter'])
   })
 })
 
@@ -1514,5 +1539,18 @@ describe('TasksContent - task list header', () => {
     expect(actions).toHaveLength(1)
     expect(actions[0].attributes('aria-label')).toBe('nav-bar.filtersTitle')
     expect(actions[0].classes()).toContain('order-first')
+  })
+
+  // Mobile design: 45x45px header buttons, so the headers grow and SidebarsFlow must subtract their full height
+  it('sizes the sidebar headers for the mobile design only on mobile', () => {
+    const mobile = mountTasksContent(true)
+    const desktop = mountTasksContent()
+
+    for (const ref of ['regionFilter', 'regionTasks']) {
+      expect(mobile.findComponent({ ref }).attributes('header-calc')).toBe('46px')
+      expect(desktop.findComponent({ ref }).attributes('header-calc')).toBe('40px')
+    }
+    expect(mobile.findComponent({ ref: 'regionFilter' }).classes()).toContain('sidebars-mobile')
+    expect(desktop.findComponent({ ref: 'regionFilter' }).classes()).not.toContain('sidebars-mobile')
   })
 })

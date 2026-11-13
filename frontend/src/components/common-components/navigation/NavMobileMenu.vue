@@ -18,40 +18,41 @@
 -->
 <template>
   <nav class="cib-nav-mobile" :aria-label="$t('navigation.menu')">
-    <slot name="prepend"></slot>
     <ul v-if="clusters.length" class="cib-nav-mobile-list list-unstyled m-0">
       <li v-for="cluster in clusters" :key="cluster.id" class="cib-nav-mobile-cluster">
         <button v-if="hasMenu(cluster)" type="button" class="cib-nav-mobile-row"
           :aria-expanded="expanded === cluster.id ? 'true' : 'false'" @click="toggle(cluster.id)">
-          <span v-if="cluster.avatar" class="mdi mdi-24px mdi-account text-secondary" aria-hidden="true"></span>
-          <span v-else :class="['mdi', 'mdi-24px', 'text-secondary', cluster.icon]" aria-hidden="true"></span>
+          <span v-if="cluster.avatar" class="mdi mdi-24px mdi-account-outline text-secondary" aria-hidden="true"></span>
+          <NavIcon v-else class="text-secondary" :icon="cluster.icon" :image="cluster.iconImage"></NavIcon>
           <span class="cib-nav-mobile-label flex-grow-1 fw-semibold">{{ cluster.label }}</span>
           <span :class="['mdi', 'mdi-24px', 'cib-nav-mobile-chevron', expanded === cluster.id ? 'mdi-chevron-down' : 'mdi-chevron-right']" aria-hidden="true"></span>
         </button>
         <router-link v-else-if="cluster.to" :to="cluster.to" active-class="" exact-active-class="" class="cib-nav-mobile-row" @click="$emit('navigate')">
-          <span :class="['mdi', 'mdi-24px', 'text-secondary', cluster.icon]" aria-hidden="true"></span>
+          <NavIcon class="text-secondary" :icon="cluster.icon" :image="cluster.iconImage"></NavIcon>
           <span class="cib-nav-mobile-label flex-grow-1 fw-semibold">{{ cluster.label }}</span>
         </router-link>
         <button v-else type="button" class="cib-nav-mobile-row" @click="$emit('select', cluster)">
-          <span :class="['mdi', 'mdi-24px', 'text-secondary', cluster.icon]" aria-hidden="true"></span>
+          <NavIcon class="text-secondary" :icon="cluster.icon" :image="cluster.iconImage"></NavIcon>
           <span class="cib-nav-mobile-label flex-grow-1 fw-semibold">{{ cluster.label }}</span>
         </button>
 
         <div v-if="expanded === cluster.id && hasMenu(cluster)">
-          <div v-if="$slots['cluster-prepend']" class="cib-nav-mobile-prepend"><slot name="cluster-prepend" :cluster="cluster"></slot></div>
           <ul v-for="(section, sIdx) in cluster.sections" :key="sIdx" class="cib-nav-mobile-section list-unstyled m-0 py-1">
             <li v-for="item in section" :key="item.key">
               <!-- Marked by item.active only, as in NavCluster: Vue Router's active class ignores the query -->
               <router-link v-if="item.to" :to="item.to" active-class="" exact-active-class="" class="cib-nav-mobile-item" :class="{ active: item.active }"
                 :aria-current="item.active ? 'page' : null" @click="$emit('navigate')">
+                <NavIcon v-if="item.icon" class="cib-nav-mobile-item-icon" :icon="item.icon" :size="18"></NavIcon>
                 <span v-if="item.tag" class="cib-nav-mobile-tag">{{ item.tag }}</span>{{ item.label }}
               </router-link>
               <a v-else-if="item.href" :href="item.href" class="cib-nav-mobile-item"
                 :target="item.external ? '_blank' : null" :rel="item.external ? 'noopener noreferrer' : null" @click="$emit('navigate')">
+                <NavIcon v-if="item.icon" class="cib-nav-mobile-item-icon" :icon="item.icon" :size="18"></NavIcon>
                 {{ item.label }}<span v-if="item.external" class="mdi mdi-14px mdi-open-in-new ms-1" aria-hidden="true"></span>
               </a>
               <button v-else type="button" class="cib-nav-mobile-item" :class="{ active: item.active }"
                 :aria-current="item.checkable && item.active ? 'true' : null" @click="$emit('select', item)">
+                <NavIcon v-if="item.icon" class="cib-nav-mobile-item-icon" :icon="item.icon" :size="18"></NavIcon>
                 <span v-if="item.tag" class="cib-nav-mobile-tag">{{ item.tag }}</span>{{ item.label }}
               </button>
             </li>
@@ -63,6 +64,8 @@
 </template>
 
 <script>
+import NavIcon from './NavIcon.vue'
+
 /**
  * Full-screen mobile navigation: every cluster is an accordion row (tapping a row expands it,
  * it does not navigate), main clusters first, then the standard menus (help, language, user).
@@ -70,6 +73,7 @@
  */
 export default {
   name: 'NavMobileMenu',
+  components: { NavIcon },
   props: {
     main: { type: Array, default: () => [] },
     utility: { type: Array, default: () => [] }
@@ -85,16 +89,12 @@ export default {
       return [...this.main, ...this.utility]
     }
   },
-  // Prepended cluster items come from the parent and don't close the menu themselves (e.g. one that
-  // opens a modal); bound here rather than in the template, as their wrapper is not interactive.
-  // The menu covers the page, so the page behind it must not scroll (notably on iOS).
+  // The menu covers the page, so the page behind it must not scroll (notably on iOS)
   mounted() {
-    this.$el.addEventListener('click', this.onClick)
     this.previousBodyOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
   },
   beforeUnmount() {
-    this.$el.removeEventListener('click', this.onClick)
     document.body.style.overflow = this.previousBodyOverflow
   },
   methods: {
@@ -103,9 +103,6 @@ export default {
     },
     toggle(id) {
       this.expanded = this.expanded === id ? null : id
-    },
-    onClick(event) {
-      if (event.target.closest?.('.cib-nav-mobile-prepend')) this.$emit('navigate')
     }
   }
 }
@@ -114,7 +111,7 @@ export default {
 <style scoped>
 .cib-nav-mobile {
   position: fixed;
-  inset: 55px 0 0 0;
+  inset: var(--cib-navbar-height, 55px) 0 0 0;
   overflow: auto;
   background: var(--bs-body-bg);
   z-index: 1029;
@@ -164,10 +161,21 @@ export default {
   text-align: left;
   text-decoration: none;
 }
-/* Same feedback as the desktop menus (NavCluster) */
-.cib-nav-mobile-row:hover,
-.cib-nav-mobile-item:hover {
-  background: var(--bs-gray-200);
+/* An entry's icon (e.g. Logout) sits in the column of the row icons above, so its label stays in line with the others */
+.cib-nav-mobile-item-icon {
+  position: absolute;
+  left: calc(16px + (24px - 18px) / 2);
+}
+/* Same feedback as the desktop menus (NavCluster), only where a pointer can hover: on touch screens
+   :hover sticks after a tap and left the tapped row gray */
+@media (hover: hover) {
+  .cib-nav-mobile-row:hover,
+  .cib-nav-mobile-item:hover {
+    background: var(--bs-gray-200);
+  }
+  .cib-nav-mobile-item:hover .cib-nav-mobile-tag {
+    background: var(--bs-gray-400);
+  }
 }
 .cib-nav-mobile-item.active {
   background: var(--bs-gray-300);
@@ -189,9 +197,6 @@ export default {
   background: var(--bs-gray-200);
   font-size: 0.7rem;
   font-weight: 700;
-}
-.cib-nav-mobile-item:hover .cib-nav-mobile-tag {
-  background: var(--bs-gray-400);
 }
 .cib-nav-mobile-item.active .cib-nav-mobile-tag {
   background: var(--bs-gray-500);

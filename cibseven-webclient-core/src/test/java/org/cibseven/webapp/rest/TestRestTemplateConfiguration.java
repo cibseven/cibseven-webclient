@@ -19,6 +19,8 @@ package org.cibseven.webapp.rest;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cibseven.webapp.config.SevenWebclientProperties;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -27,7 +29,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
 /**
  * Configuration class for tests that extends RestTemplateConfiguration.
@@ -56,21 +57,21 @@ public class TestRestTemplateConfiguration extends RestTemplateConfiguration {
     public CustomRestTemplate customRestTemplate() {
         log.info("Creating CustomRestTemplate bean for tests");
         // It will be configured via @PostConstruct using @Autowired dependencies
-        CustomRestTemplate template = jackson2CustomRestTemplate();
+        CustomRestTemplate template = webclientCustomRestTemplate();
         log.info("CustomRestTemplate created");
         return template;
     }
 
     /**
-     * Same converter setup as SevenWebclientContext#customRestTemplate: the model classes are
-     * Jackson 2, so the Jackson 3 converter Spring 7 registers by default is swapped for the
-     * Jackson 2 one (goes with the Jackson 3 migration).
+     * Same converter setup as SevenWebclientContext#customRestTemplate: the JSON converter Spring 7
+     * registers by default is swapped for one on the webclient's own mapper.
      */
-    @SuppressWarnings("removal")
-    public static CustomRestTemplate jackson2CustomRestTemplate() {
+    public static CustomRestTemplate webclientCustomRestTemplate() {
         CustomRestTemplate template = new CustomRestTemplate();
+        JacksonJsonHttpMessageConverter json = new JacksonJsonHttpMessageConverter(
+                WebclientJsonMapper.create(new SevenWebclientProperties()));
         List<HttpMessageConverter<?>> converters = new ArrayList<>(template.getMessageConverters());
-        converters.replaceAll(c -> c instanceof JacksonJsonHttpMessageConverter ? new MappingJackson2HttpMessageConverter() : c);
+        converters.replaceAll(c -> c instanceof JacksonJsonHttpMessageConverter ? json : c);
         template.setMessageConverters(converters);
         return template;
     }

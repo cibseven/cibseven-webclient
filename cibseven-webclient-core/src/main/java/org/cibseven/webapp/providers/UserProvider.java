@@ -16,7 +16,6 @@
  */
 package org.cibseven.webapp.providers;
 
-import static org.cibseven.webapp.auth.SevenAuthorizationUtils.resourceType;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -32,6 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.SevenResourceType;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.exception.UnknownResourceTypeException;
 import org.cibseven.webapp.rest.model.AuthorizationCheckResult;
 import org.cibseven.webapp.auth.rest.StandardLogin;
@@ -52,10 +52,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -63,7 +63,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class UserProvider extends SevenProviderBase implements IUserProvider {
 	
-	private final ObjectMapper objectMapper = new ObjectMapper();
+	private final ObjectMapper objectMapper = WebclientJsonMapper.plain();
 	/** engine-rest URLs known not to offer {@code GET /authorization/self}, keyed per engine. */
 	private final Set<String> selfAuthorizationEndpointUnsupported = ConcurrentHashMap.newKeySet();
 
@@ -100,32 +100,32 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 
 		Collection<Authorization> userAuthorizations = fetchOwnAuthorizations(user);
 
-		auths.setApplication(filterResources(userAuthorizations, resourceType(SevenResourceType.APPLICATION)));
-		auths.setFilter(filterResources(userAuthorizations, resourceType(SevenResourceType.FILTER)));
-		auths.setProcessDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.PROCESS_DEFINITION)));
-		auths.setProcessInstance(filterResources(userAuthorizations, resourceType(SevenResourceType.PROCESS_INSTANCE)));
-		auths.setTask(filterResources(userAuthorizations, resourceType(SevenResourceType.TASK)));
-		auths.setAuthorization(filterResources(userAuthorizations, resourceType(SevenResourceType.AUTHORIZATION)));
-		auths.setUser(filterResources(userAuthorizations, resourceType(SevenResourceType.USER)));
-		auths.setGroup(filterResources(userAuthorizations, resourceType(SevenResourceType.GROUP)));
-		auths.setDecisionDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.DECISION_DEFINITION)));
-		auths.setDecisionRequirementsDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.DECISION_REQUIREMENTS_DEFINITION)));
-		auths.setDeployment(filterResources(userAuthorizations, resourceType(SevenResourceType.DEPLOYMENT)));
-		//auths.setCaseDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.CASE_DEFINITION)));
-		//auths.setCaseInstance(filterResources(userAuthorizations, resourceType(SevenResourceType.CASE_INSTANCE)));
-		//auths.setJobDefinition(filterResources(userAuthorizations, resourceType(SevenResourceType.JOB_DEFINITION)));
-		auths.setBatch(filterResources(userAuthorizations, resourceType(SevenResourceType.BATCH)));
-		auths.setGroupMembership(filterResources(userAuthorizations, resourceType(SevenResourceType.GROUP_MEMBERSHIP)));
-		auths.setHistoricTask(filterResources(userAuthorizations, resourceType(SevenResourceType.HISTORIC_TASK)));
-		auths.setHistoricProcessInstance(filterResources(userAuthorizations, resourceType(SevenResourceType.HISTORIC_PROCESS_INSTANCE)));
-		auths.setTenant(filterResources(userAuthorizations, resourceType(SevenResourceType.TENANT)));
-		auths.setTenantMembership(filterResources(userAuthorizations, resourceType(SevenResourceType.TENANT_MEMBERSHIP)));
-		auths.setReport(filterResources(userAuthorizations, resourceType(SevenResourceType.REPORT)));
-		auths.setDashboard(filterResources(userAuthorizations, resourceType(SevenResourceType.DASHBOARD)));
-		auths.setUserOperationLogCategory(filterResources(userAuthorizations, resourceType(SevenResourceType.USER_OPERATION_LOG_CATEGORY)));
-		auths.setSystem(filterResources(userAuthorizations, resourceType(SevenResourceType.SYSTEM)));
-		//auths.setMessage(filterResources(userAuthorizations, resourceType(SevenResourceType.MESSAGE)));
-		//auths.setEventSubscription(filterResources(userAuthorizations, resourceType(SevenResourceType.EVENT_SUBSCRIPTION)));
+		auths.setApplication(filterResources(userAuthorizations, SevenResourceType.APPLICATION.getType()));
+		auths.setFilter(filterResources(userAuthorizations, SevenResourceType.FILTER.getType()));
+		auths.setProcessDefinition(filterResources(userAuthorizations, SevenResourceType.PROCESS_DEFINITION.getType()));
+		auths.setProcessInstance(filterResources(userAuthorizations, SevenResourceType.PROCESS_INSTANCE.getType()));
+		auths.setTask(filterResources(userAuthorizations, SevenResourceType.TASK.getType()));
+		auths.setAuthorization(filterResources(userAuthorizations, SevenResourceType.AUTHORIZATION.getType()));
+		auths.setUser(filterResources(userAuthorizations, SevenResourceType.USER.getType()));
+		auths.setGroup(filterResources(userAuthorizations, SevenResourceType.GROUP.getType()));
+		auths.setDecisionDefinition(filterResources(userAuthorizations, SevenResourceType.DECISION_DEFINITION.getType()));
+		auths.setDecisionRequirementsDefinition(filterResources(userAuthorizations, SevenResourceType.DECISION_REQUIREMENTS_DEFINITION.getType()));
+		auths.setDeployment(filterResources(userAuthorizations, SevenResourceType.DEPLOYMENT.getType()));
+		//auths.setCaseDefinition(filterResources(userAuthorizations, SevenResourceType.CASE_DEFINITION.getType()));
+		//auths.setCaseInstance(filterResources(userAuthorizations, SevenResourceType.CASE_INSTANCE.getType()));
+		//auths.setJobDefinition(filterResources(userAuthorizations, SevenResourceType.JOB_DEFINITION.getType()));
+		auths.setBatch(filterResources(userAuthorizations, SevenResourceType.BATCH.getType()));
+		auths.setGroupMembership(filterResources(userAuthorizations, SevenResourceType.GROUP_MEMBERSHIP.getType()));
+		auths.setHistoricTask(filterResources(userAuthorizations, SevenResourceType.HISTORIC_TASK.getType()));
+		auths.setHistoricProcessInstance(filterResources(userAuthorizations, SevenResourceType.HISTORIC_PROCESS_INSTANCE.getType()));
+		auths.setTenant(filterResources(userAuthorizations, SevenResourceType.TENANT.getType()));
+		auths.setTenantMembership(filterResources(userAuthorizations, SevenResourceType.TENANT_MEMBERSHIP.getType()));
+		auths.setReport(filterResources(userAuthorizations, SevenResourceType.REPORT.getType()));
+		auths.setDashboard(filterResources(userAuthorizations, SevenResourceType.DASHBOARD.getType()));
+		auths.setUserOperationLogCategory(filterResources(userAuthorizations, SevenResourceType.USER_OPERATION_LOG_CATEGORY.getType()));
+		auths.setSystem(filterResources(userAuthorizations, SevenResourceType.SYSTEM.getType()));
+		//auths.setMessage(filterResources(userAuthorizations, SevenResourceType.MESSAGE.getType()));
+		//auths.setEventSubscription(filterResources(userAuthorizations, SevenResourceType.EVENT_SUBSCRIPTION.getType()));
 
 		return auths;
 	}
@@ -226,7 +226,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		if (login.getPassword() != null) loginNode.put("password", login.getPassword());
 		try {
 			bodyString = objectMapper.writeValueAsString(loginNode);
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			throw new SystemException(e);
 		}
 
@@ -323,7 +323,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		
 			doPost(url, body , null, flowUser);
 
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			SystemException se = new SystemException(e);
 			log.info("Exception in createUser(...):", se);
 			throw se;
@@ -339,7 +339,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		{
 			doPut(url, user.json(), flowUser);
 		} 
-		catch (JsonProcessingException e) 
+		catch (JacksonException e) 
 		{
 			SystemException se = new SystemException(e);
 			log.info("Exception in updateUserProfile(...):", se);
@@ -420,7 +420,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		try {
 			doPost(url, group.json() , null, user);
 		} 
-		catch (JsonProcessingException e) {
+		catch (JacksonException e) {
 			SystemException se = new SystemException(e);
 			log.info("Exception in createGroup(...):", se);
 			throw se;
@@ -433,7 +433,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 		try {
 			doPut(url, group.json(), user);
 		} 
-		catch (JsonProcessingException e) {
+		catch (JacksonException e) {
 			SystemException se = new SystemException(e);
 			log.info("Exception in updateGroup(...):", se);
 			throw se;
@@ -477,7 +477,7 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 			ResponseEntity<Authorization> response = doPost(url, authorization.json(), Authorization.class, user);
 			return new ResponseEntity<>(response.getBody(), response.getStatusCode());
 		} 
-		catch (JsonProcessingException e) {
+		catch (JacksonException e) {
 			SystemException se = new SystemException(e);
 			log.info("Exception in createAuthorization(...):", se);
 			throw se;

@@ -33,6 +33,7 @@ import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.providers.EngineProvider;
+import org.cibseven.webapp.providers.WebclientExtensions;
 import org.cibseven.webapp.rest.model.EngineConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,7 +42,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 
 @ExtendWith(MockitoExtension.class)
 public class InfoServiceTest {
@@ -76,6 +77,41 @@ public class InfoServiceTest {
 
 		properties.getPlugins().setEnabled(true);
 		assertTrue(infoService.getConfig(null).get("pluginsEnabled").asBoolean());
+	}
+
+	private ObjectNode configWithEngineSwitch(Boolean engineSwitch, boolean modelerProperty) {
+		EngineConfiguration config = new EngineConfiguration("default", "full", true, false, -1, true);
+		config.setWebclientExtensionsEnabled(engineSwitch);
+		when(bpmProvider.getEffectiveDefaultEngineConfiguration()).thenReturn(config);
+		when(bpmProvider.getEngineConfiguration(null)).thenReturn(config);
+		ReflectionTestUtils.setField(infoService, "webclientExtensions", new WebclientExtensions(bpmProvider));
+		properties.getModeler().setEnabled(modelerProperty);
+		return infoService.getConfig(null);
+	}
+
+	/** What the engine has switched off, the webclient property cannot switch on. */
+	@Test
+	public void testGetConfig_engineSwitchOff_keepsTheModelerOff() {
+		ObjectNode config = configWithEngineSwitch(false, true);
+
+		assertFalse(config.get("modelerEnabled").asBoolean());
+		assertFalse(config.get("webclientExtensionsEnabled").asBoolean());
+	}
+
+	@Test
+	public void testGetConfig_engineSwitchOn_leavesTheModelerToItsProperty() {
+		assertTrue(configWithEngineSwitch(true, true).get("modelerEnabled").asBoolean());
+		assertFalse(configWithEngineSwitch(true, false).get("modelerEnabled").asBoolean());
+		assertTrue(configWithEngineSwitch(true, false).get("webclientExtensionsEnabled").asBoolean());
+	}
+
+	/** Engines before 3.0 do not report it, which the frontend gets as null rather than a guess. */
+	@Test
+	public void testGetConfig_engineSwitchNotReported_leavesTheModelerToItsProperty() {
+		ObjectNode config = configWithEngineSwitch(null, true);
+
+		assertTrue(config.get("modelerEnabled").asBoolean());
+		assertTrue(config.get("webclientExtensionsEnabled").isNull());
 	}
 
 	@Test
@@ -123,7 +159,7 @@ public class InfoServiceTest {
 			assertEquals("/engine-rest/engine", mockWebServer.takeRequest().getPath());
 			// The engine named "default" lives at the base /engine path, not at /engine/default.
 			assertEquals("/engine-rest/configuration", mockWebServer.takeRequest().getPath());
-			assertEquals("full", result.get("camundaHistoryLevel").asText());
+			assertEquals("full", result.get("camundaHistoryLevel").asString());
 		} finally {
 			mockWebServer.shutdown();
 		}
@@ -152,7 +188,7 @@ public class InfoServiceTest {
 			assertEquals("/engine-rest/engine", mockWebServer.takeRequest().getPath());
 			// The first engine ("alpha") is a named engine, so it is served from /engine/alpha.
 			assertEquals("/engine-rest/engine/alpha/configuration", mockWebServer.takeRequest().getPath());
-			assertEquals("audit", result.get("camundaHistoryLevel").asText());
+			assertEquals("audit", result.get("camundaHistoryLevel").asString());
 		} finally {
 			mockWebServer.shutdown();
 		}
@@ -210,7 +246,7 @@ public class InfoServiceTest {
 
 		ObjectNode result = infoService.getConfig(null);
 
-		assertEquals("audit", result.get("camundaHistoryLevel").asText());
+		assertEquals("audit", result.get("camundaHistoryLevel").asString());
 	}
 
 	@Test
@@ -220,7 +256,7 @@ public class InfoServiceTest {
 
 		ObjectNode result = infoService.getConfig(null);
 
-		assertEquals("audit", result.get("camundaHistoryLevel").asText());
+		assertEquals("audit", result.get("camundaHistoryLevel").asString());
 	}
 
 	@Test
@@ -333,7 +369,7 @@ public class InfoServiceTest {
 
 		ObjectNode result = infoService.getConfig(null);
 
-		assertEquals("audit", result.get("camundaHistoryLevel").asText());
+		assertEquals("audit", result.get("camundaHistoryLevel").asString());
 	}
 
 	@Test
@@ -353,7 +389,7 @@ public class InfoServiceTest {
 
 		ObjectNode result = infoService.getConfig("myEngine");
 
-		assertEquals("none", result.get("camundaHistoryLevel").asText());
+		assertEquals("none", result.get("camundaHistoryLevel").asString());
 	}
 
 	@Test

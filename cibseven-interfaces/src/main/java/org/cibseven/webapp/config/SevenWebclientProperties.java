@@ -136,9 +136,6 @@ public class SevenWebclientProperties {
 	/** JPA persistence unit holding the webclient's own tables. */
 	private Persistence persistence = new Persistence();
 
-	/** Behavior that is deprecated and will be removed. */
-	private DeprecatedFeatures deprecated = new DeprecatedFeatures();
-
 	/** Compatibility with engines before 2.2.0. */
 	private LegacyFeatures legacy = new LegacyFeatures();
 
@@ -443,21 +440,6 @@ public class SevenWebclientProperties {
 	}
 
 	@Data
-	public static class DeprecatedFeatures {
-		/** Permission checks in the webclient backend. */
-		private BackendAuthorization authorization = new BackendAuthorization();
-
-		@Data
-		public static class BackendAuthorization {
-			/**
-			 * Check permissions for some use cases in the webclient backend as well, the behavior
-			 * until 2.2.0. Since then the engine checks them. Will be removed.
-			 */
-			private boolean enabled = false;
-		}
-	}
-
-	@Data
 	public static class LegacyFeatures {
 		/** Authorization reported to the frontend. */
 		private FrontendAuthorization authorization = new FrontendAuthorization();
@@ -486,23 +468,11 @@ public class SevenWebclientProperties {
 			public static class Jackson {
 				/** Parsing of requests. */
 				private Parser parser = new Parser();
-				/** Serialization of responses. */
-				private Serialization serialization = new Serialization();
 
 				@Data
 				public static class Parser {
 					/** Maximum length in characters of a single JSON string value. */
 					private int maxSize = 20_000_000;
-				}
-
-				@Data
-				public static class Serialization {
-					/**
-					 * Deprecated interim opt-out, removed with the Jackson 3 migration: serializes
-					 * java.util.Date as epoch millis and java.time types as numeric arrays again.
-					 * Prefer adapting the consumer or annotating the field with @JsonFormat.
-					 */
-					private boolean writeDatesAsTimestamps = false;
 				}
 			}
 		}

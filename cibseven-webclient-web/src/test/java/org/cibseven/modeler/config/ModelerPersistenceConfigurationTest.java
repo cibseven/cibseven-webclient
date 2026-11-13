@@ -21,6 +21,7 @@ import javax.sql.DataSource;
 import org.cibseven.modeler.model.ProcessDiagramEntity;
 import org.cibseven.modeler.repository.ProcessDiagramRepository;
 import org.cibseven.modeler.util.ElementTemplateLoader;
+import org.cibseven.webapp.providers.WebclientExtensions;
 import org.cibseven.persistence.CibsevenJpa;
 import org.cibseven.webapp.config.SevenWebclientPropertiesAutoConfiguration;
 import org.junit.jupiter.api.Test;
@@ -36,8 +37,6 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.persistence.EntityManagerFactory;
 
@@ -90,7 +89,7 @@ class ModelerPersistenceConfigurationTest {
 			.withConfiguration(org.springframework.boot.autoconfigure.AutoConfigurations
 				.of(TransactionAutoConfiguration.class))
 			.withUserConfiguration(HostDrivingItsOwnDataSourceTransactions.class)
-			.withBean(ObjectMapper.class)
+			.withBean(WebclientExtensions.class, () -> WebclientExtensions.UNKNOWN)
 			.withBean(ElementTemplateLoader.class)
 			.run(context -> {
 				assertThat(context).hasNotFailed();

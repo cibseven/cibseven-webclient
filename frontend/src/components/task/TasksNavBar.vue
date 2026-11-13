@@ -144,7 +144,7 @@
                 <div class="h6 fw-normal m-0" :title="formatDateForTooltips(task.created)">{{ getDateFormatted(task.created) }}</div><br>
                 <div class="d-flex ms-auto">
                   <div class="h6 text-end p-0 fw-normal m-0" v-if="task.assignee != null">
-                    <HighlightedText :text="getCompleteName(task)" :keyword="search" class="mdi mdi-18px mdi-account text-secondary p-1"></HighlightedText>
+                    <HighlightedText :text="getDisplayName(task.assignee)" :keyword="search" class="mdi mdi-18px mdi-account text-secondary p-1"></HighlightedText>
                   </div>
                   <div class="h6 text-end p-0 fw-normal n-0" v-if="hasAssignToMeButton(task)">
                     <b-button variant="link" class="p-0 lh-1 text-dark" @click.stop="checkAssignee(task)" @keydown.enter.stop="checkAssignee(task)" @keyup.enter.stop.prevent @keydown.space.prevent.stop="checkAssignee(task)">
@@ -243,11 +243,12 @@ import { ConfirmDialog, BWaitingBox, HighlightedText } from '@cib/common-fronten
 import { mapActions } from 'vuex'
 import variableUtils from '@/components/process/mixins/variableUtils.js'
 import { permissionsMixin } from '@/permissions.js'
+import usersMixin from '@/mixins/usersMixin.js'
 
 export default {
   name: 'TasksNavBar',
   components: { StartProcess, AdvancedSearchModal, SmartSearch, ConfirmDialog, BWaitingBox, HighlightedText },
-  mixins: [permissionsMixin],
+  mixins: [permissionsMixin, usersMixin ],
   props: { tasks: Array, taskResultsIndex: Number, search: String },
   inject: ['currentLanguage','isMobile'],
   emits: ['search-filter', 'process-started', 'selected-task', 'update-assignee', 'show-more', 'refresh-tasks', 'refresh-tasks-number', 'show-task'],
@@ -318,9 +319,10 @@ export default {
   },
   computed: {
     // On desktop the header chevrons sit either side of the button; mobile has none,
-    // so align it with the header's own padding
+    // so it takes the header's right end as a 45x45px icon button, like the other mobile headers
     refreshButtonPosition: function() {
-      return { top: '3px', right: this.isMobile() ? '0.75rem' : '30px' }
+      if (this.isMobile()) return { top: '0', right: '0', width: '45px', height: '45px' }
+      return { top: '3px', right: '30px' }
     },
     tasksFiltered: function() {
       let tasks = []
@@ -576,18 +578,6 @@ export default {
         return (item.id.split(':')[0] === processDefinitionId.split(':')[0])
       })
       return process && process.name ? process.name : ''
-    },
-    getCompleteName: function(task) {
-      if (this.$root.user.id.toLowerCase() === task.assignee.toLowerCase()) return this.$root.user.id // .displayName
-      else {
-        if (this.$store.state.user.listCandidates) {
-          const user = this.$store.state.user.listCandidates.find(user => {
-            return user.id.toLowerCase() === task.assignee.toLowerCase()
-          })
-          if ((user) && (user.displayName)) return user.displayName
-        }
-        return task.assignee
-      }
     },
     dateFitsFilter: function(date, filter) {
       return filter && date

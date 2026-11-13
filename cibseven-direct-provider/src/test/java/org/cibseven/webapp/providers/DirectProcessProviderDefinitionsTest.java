@@ -31,6 +31,7 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,10 @@ import java.util.Optional;
 import org.cibseven.bpm.engine.AuthorizationException;
 import org.cibseven.bpm.engine.HistoryService;
 import org.cibseven.bpm.engine.ProcessEngine;
+import org.cibseven.bpm.engine.runtime.Incident;
+import org.cibseven.bpm.engine.runtime.IncidentQuery;
+import org.cibseven.bpm.engine.repository.Deployment;
+import org.cibseven.bpm.engine.repository.DeploymentQuery;
 import org.cibseven.bpm.engine.ProcessEngineException;
 import org.cibseven.bpm.engine.RepositoryService;
 import org.cibseven.bpm.engine.RuntimeService;
@@ -58,7 +63,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Covers the process-definition side of {@link DirectProcessProvider}.
@@ -71,6 +76,8 @@ public class DirectProcessProviderDefinitionsTest {
 	private RuntimeService runtimeService;
 	private HistoryService historyService;
 	private ProcessDefinitionQuery definitionQuery;
+	private IncidentQuery incidentQuery;
+	private DeploymentQuery deploymentQuery;
 	private DirectProcessProvider processProvider;
 	private CIBUser user;
 
@@ -89,8 +96,13 @@ public class DirectProcessProviderDefinitionsTest {
 		definitionQuery = mock(ProcessDefinitionQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
 		when(repositoryService.createProcessDefinitionQuery()).thenReturn(definitionQuery);
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		JacksonConfigurator.configureObjectMapper(objectMapper);
+		incidentQuery = mock(IncidentQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
+		when(incidentQuery.list()).thenReturn(List.of());
+		when(runtimeService.createIncidentQuery()).thenReturn(incidentQuery);
+		deploymentQuery = mock(DeploymentQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
+		when(repositoryService.createDeploymentQuery()).thenReturn(deploymentQuery);
+
+		ObjectMapper objectMapper = JacksonConfigurator.configureObjectMapper();
 
 		directProviderUtil = Mockito.spy(new DirectProviderUtil());
 		doReturn(processEngine).when(directProviderUtil).getProcessEngine(any(CIBUser.class));
@@ -216,6 +228,82 @@ public class DirectProcessProviderDefinitionsTest {
 		assertThat(version.getAllInstances()).isEqualTo(9L);
 		assertThat(version.getRunningInstances()).isEqualTo(2L);
 		assertThat(version.getCompletedInstances()).isEqualTo(7L);
+	}
+
+	private Incident incidentOn(String definitionId) {
+		Incident incident = mock(Incident.class);
+		when(incident.getProcessDefinitionId()).thenReturn(definitionId);
+		return incident;
+	}
+
+	@Test
+	void findProcessVersionsByDefinitionKey_withoutLazyLoadAddsIncidentsAndDeploymentTime() {
+		ProcessDefinition v2 = mockDefinition("id-2", "invoice", "Invoice Receipt", 2);
+		when(v2.getDeploymentId()).thenReturn("dep-2");
+		when(definitionQuery.list()).thenReturn(List.of(v2));
+		// the incidents of the key, counted per version; those of a version not listed are left aside
+		List<Incident> incidents = List.of(incidentOn("id-2"), incidentOn("id-2"), incidentOn("id-2"), incidentOn("other:1"));
+		when(incidentQuery.list()).thenReturn(incidents);
+		Deployment deployment = mock(Deployment.class);
+		when(deployment.getId()).thenReturn("dep-2");
+		when(deployment.getDeploymentTime()).thenReturn(new Date(0));
+		when(deploymentQuery.singleResult()).thenReturn(deployment);
+		HistoricProcessInstanceQuery historyQuery =
+			mock(HistoricProcessInstanceQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
+		when(historyService.createHistoricProcessInstanceQuery()).thenReturn(historyQuery);
+		when(historyQuery.unlimitedList()).thenReturn(List.of());
+
+		Process version = processProvider.findProcessVersionsByDefinitionKey("invoice", null, Optional.empty(), user).iterator().next();
+
+		assertThat(version.getIncidents()).isEqualTo(3L);
+		assertThat(version.getDeploymentTime()).startsWith("1970-01-01T");
+		verify(incidentQuery).processDefinitionKeyIn("invoice");
+		verify(incidentQuery, never()).tenantIdIn(any(String[].class));
+		verify(deploymentQuery).deploymentId("dep-2");
+	}
+
+	@Test
+	void findProcessVersionsByDefinitionKey_withoutLazyLoadAsksTheIncidentsOfTheGivenTenantOnly() {
+		ProcessDefinition v2 = mockDefinition("id-2", "invoice", "Invoice Receipt", 2);
+		when(definitionQuery.list()).thenReturn(List.of(v2));
+		HistoricProcessInstanceQuery historyQuery =
+			mock(HistoricProcessInstanceQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
+		when(historyService.createHistoricProcessInstanceQuery()).thenReturn(historyQuery);
+		when(historyQuery.unlimitedList()).thenReturn(List.of());
+
+		processProvider.findProcessVersionsByDefinitionKey("invoice", "acme", Optional.empty(), user);
+
+		verify(incidentQuery).processDefinitionKeyIn("invoice");
+		verify(incidentQuery).tenantIdIn("acme");
+	}
+
+	@Test
+	void findProcessVersionsByDefinitionKey_withoutLazyLoadLeavesOutWhatTheEngineDoesNotGive() {
+		ProcessDefinition v2 = mockDefinition("id-2", "invoice", "Invoice Receipt", 2);
+		when(v2.getDeploymentId()).thenReturn("dep-2");
+		when(definitionQuery.list()).thenReturn(List.of(v2));
+		when(deploymentQuery.singleResult()).thenThrow(new ProcessEngineException("no read permission"));
+		HistoricProcessInstanceQuery historyQuery =
+			mock(HistoricProcessInstanceQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
+		when(historyService.createHistoricProcessInstanceQuery()).thenReturn(historyQuery);
+		when(historyQuery.unlimitedList()).thenReturn(List.of());
+
+		Process version = processProvider.findProcessVersionsByDefinitionKey("invoice", null, Optional.empty(), user).iterator().next();
+
+		assertThat(version.getIncidents()).isZero();
+		assertThat(version.getDeploymentTime()).isNull();
+	}
+
+	@Test
+	void findProcessVersionsByDefinitionKey_lazyLoadAsksNoIncidentsNorDeployments() {
+		ProcessDefinition v2 = mockDefinition("id-2", "invoice", "Invoice Receipt", 2);
+		when(v2.getDeploymentId()).thenReturn("dep-2");
+		when(definitionQuery.list()).thenReturn(List.of(v2));
+
+		processProvider.findProcessVersionsByDefinitionKey("invoice", null, Optional.of(true), user);
+
+		verify(incidentQuery, never()).list();
+		verify(deploymentQuery, never()).singleResult();
 	}
 
 	/**

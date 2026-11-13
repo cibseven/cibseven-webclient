@@ -187,7 +187,7 @@
 		"activateInstance": "Активировать экземпляр процесса",
 		"copySuccess": "Выбранное значение скопировано",
 		"refreshVersions": "Обновить версии истории",
-		"loadVersions": "Загрузить все версии истории",
+		"loadAllStatistics": "Загрузить всю статистику экземпляров",
 		"externalProcessStarted": "Процесс успешно запущен",
 		"exportInstances": "Экспорт экземпляров",
 		"deleteProcessDefinition": {
@@ -1144,6 +1144,7 @@
 		"ExistingGroupRequestException": "Группа уже существует",
 		"VariableModificationException": "Переменная не может быть успешно изменена. Пожалуйста, обновите страницу и попробуйте снова.",
 		"processNotFound": "Процесс с ключом \"{0}\" не найден",
+		"tenantNotFound": "Тенант с ID \"{0}\" не существует",
 		"notFoundInstanceId": "Экземпляр процесса с идентификатором \"{instanceId}\" не найден.\nСсылка из: {refPath}",
 		"notFoundPage": "Страница \"{path}\" не найдена.",
 		"filterSaveError": "Произошла ошибка при попытке сохранить фильтр, проверьте введенные данные.",

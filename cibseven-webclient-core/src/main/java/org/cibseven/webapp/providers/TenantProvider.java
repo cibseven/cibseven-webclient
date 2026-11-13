@@ -22,15 +22,18 @@ import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.InvalidUserIdException;
+import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.utils.URLUtils;
 import org.cibseven.webapp.rest.model.Tenant;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
+import org.springframework.web.client.HttpStatusCodeException;
 
 import lombok.extern.slf4j.Slf4j;
+
+import tools.jackson.core.JacksonException;
 
 @Slf4j
 @Component
@@ -45,7 +48,15 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 	@Override
 	public Tenant fetchTenant(String tenantId, CIBUser user) throws SystemException {
 		String url = getEngineRestUrl(user) + "/tenant/" + tenantId;
-		return ((ResponseEntity<Tenant>) doGet(url, Tenant.class, user, false)).getBody();
+		try {
+			return ((ResponseEntity<Tenant>) doGet(url, Tenant.class, user, false)).getBody();
+		} catch (SystemException e) {
+			// engine-rest answers 404 "Tenant with id ... does not exist"; answer 404 as the direct provider does
+			if (e.getCause() instanceof HttpStatusCodeException cause && cause.getStatusCode() == HttpStatus.NOT_FOUND) {
+				throw new NoObjectFoundException(cause);
+			}
+			throw e;
+		}
 	}
 
 	@Override
@@ -53,7 +64,7 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 		String url = getEngineRestUrl(user) + "/tenant/create";
 		try {
 			doPost(url, newTenant.json(), null, user);
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			SystemException se = new SystemException(e);
 			log.error("Exception in createTenant(...):", se);
 			throw se;
@@ -71,7 +82,7 @@ public class TenantProvider extends SevenProviderBase implements ITenantProvider
 		String url = getEngineRestUrl(user) + "/tenant/" + tenant.getId();
 		try {		
 			doPut(url, tenant.json() , user);
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			SystemException se = new SystemException(e);
 			log.error("Exception in updateTenant(...):", se);
 			throw se;

@@ -35,6 +35,7 @@ import java.util.function.Function;
 
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.exception.ExpressionEvaluationException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnsupportedTypeException;
@@ -61,9 +62,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -180,7 +182,11 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		Collection<Process> processes = Arrays.asList(((ResponseEntity<Process[]>) doGet(url, Process[].class, user, false)).getBody());		
 
 		if (!lazyLoad.isPresent() || (lazyLoad.isPresent() && !lazyLoad.get())) {
+			Map<String, Long> incidentsById = countIncidentsByDefinitionId(key, tenantId, user);
 			for(Process process : processes) {
+				process.setIncidents(incidentsById.getOrDefault(process.getId(), 0L));
+				process.setDeploymentTime(findDeploymentTime(process.getDeploymentId(), user));
+
 				String urlInstances = getEngineRestUrl(user) + "/history/process-instance/count?processDefinitionId=" + process.getId();
 
 				JsonNode body = ((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody();
@@ -203,6 +209,33 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 			}
 		}
 		return processes;
+	}
+
+	/**
+	 * Open incidents per version, from one incident query filtered by key. Asked directly, as the incident
+	 * provider fetches the root cause of each incident. There is no withoutTenantId on incidents: the ones
+	 * of other tenants are dropped when matched by definition id.
+	 */
+	private Map<String, Long> countIncidentsByDefinitionId(String key, String tenantId, CIBUser user) {
+		String url = getEngineRestUrl(user) + "/incident?processDefinitionKeyIn=" + key + (tenantId != null ? "&tenantIdIn=" + tenantId : "");
+		JsonNode incidents = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, false)).getBody();
+		Map<String, Long> incidentsById = new HashMap<>();
+		if (incidents != null)
+			incidents.forEach(incident -> incidentsById.merge(incident.path("processDefinitionId").asString(), 1L, Long::sum));
+		return incidentsById;
+	}
+
+	/** The engine has no deployment time on the process definition; left out when the deployment cannot be read. */
+	private String findDeploymentTime(String deploymentId, CIBUser user) {
+		if (deploymentId == null)
+			return null;
+		try {
+			JsonNode deployment = ((ResponseEntity<JsonNode>) doGet(getEngineRestUrl(user) + "/deployment/" + deploymentId, JsonNode.class, user, false)).getBody();
+			return deployment != null && deployment.hasNonNull("deploymentTime") ? deployment.get("deploymentTime").asString() : null;
+		} catch (RuntimeException e) {
+			log.debug("Deployment time of {} not available: {}", deploymentId, e.getMessage());
+			return null;
+		}
 	}
 
 	@Override
@@ -562,11 +595,11 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		}
 		url += "&firstResult=" + firstResult + "&maxResults=" + maxResults;
 		data.put("processDefinitionId", id);
-		ObjectMapper objectMapper = new ObjectMapper();
+		ObjectMapper objectMapper = WebclientJsonMapper.plain();
 		String body = "";
 		try {
 			body = objectMapper.writeValueAsString(data);
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			throw new SystemException(e);
 		}
 		//findIncident
@@ -590,7 +623,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		        String bodyIdIn = "";
 		        try {
 		        	bodyIdIn = objectMapper.writeValueAsString(dataIdIn);
-		        } catch (JsonProcessingException e) {
+		        } catch (JacksonException e) {
 		            throw new SystemException(e);
 		        }
 

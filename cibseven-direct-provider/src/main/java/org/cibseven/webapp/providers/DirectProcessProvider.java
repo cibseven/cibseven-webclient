@@ -63,6 +63,7 @@ import org.cibseven.bpm.engine.rest.dto.history.HistoricProcessInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricProcessInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.dto.repository.ActivityStatisticsResultDto;
 import org.cibseven.bpm.engine.rest.dto.repository.CalledProcessDefinitionDto;
+import org.cibseven.bpm.engine.rest.dto.repository.DeploymentDto;
 import org.cibseven.bpm.engine.rest.dto.repository.ProcessDefinitionDiagramDto;
 import org.cibseven.bpm.engine.rest.dto.repository.ProcessDefinitionDto;
 import org.cibseven.bpm.engine.rest.dto.repository.ProcessDefinitionQueryDto;
@@ -73,22 +74,25 @@ import org.cibseven.bpm.engine.rest.dto.runtime.ProcessInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.ProcessInstanceSuspensionStateDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.ProcessInstanceWithVariablesDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.StartProcessInstanceDto;
-import org.cibseven.bpm.engine.rest.dto.runtime.VariableInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.modification.ProcessInstanceModificationInstructionDto;
 import org.cibseven.bpm.engine.rest.dto.task.FormDto;
 import org.cibseven.bpm.engine.rest.exception.RestException;
 import org.cibseven.bpm.engine.rest.impl.history.HistoricActivityStatisticsQueryDto;
 import org.cibseven.bpm.engine.rest.util.ApplicationContextPathUtil;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
+import org.cibseven.bpm.engine.runtime.IncidentQuery;
 import org.cibseven.bpm.engine.runtime.ProcessInstanceQuery;
 import org.cibseven.bpm.engine.runtime.ProcessInstanceWithVariables;
 import org.cibseven.bpm.engine.runtime.ProcessInstantiationBuilder;
+import org.cibseven.bpm.engine.variable.value.TypedValue;
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.exception.ExpressionEvaluationException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnsupportedTypeException;
+import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.HistoryStatistics;
 import org.cibseven.webapp.rest.model.Incident;
@@ -102,13 +106,15 @@ import org.cibseven.webapp.rest.model.Variable;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import jakarta.ws.rs.core.MultivaluedHashMap;
 import jakarta.ws.rs.core.MultivaluedMap;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class DirectProcessProvider implements IProcessProvider {
 
 	private static final String FETCH_INCIDENTS = "fetchIncidents";
@@ -298,7 +304,11 @@ public class DirectProcessProvider implements IProcessProvider {
 		}
 
 		if (!lazyLoad.isPresent() || (lazyLoad.isPresent() && !lazyLoad.get())) {
+			Map<String, Long> incidentsById = countIncidentsByDefinitionId(key, tenantId, user);
 			for (Process process : processes) {
+				process.setIncidents(incidentsById.getOrDefault(process.getId(), 0L));
+				process.setDeploymentTime(findDeploymentTime(process.getDeploymentId(), user));
+
 				HistoricProcessInstanceQueryDto historicProcessInstanceQueryDto = new HistoricProcessInstanceQueryDto();
 				historicProcessInstanceQueryDto.setProcessDefinitionId(process.getId());
 				historicProcessInstanceQueryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
@@ -323,6 +333,35 @@ public class DirectProcessProvider implements IProcessProvider {
 			}
 		}
 		return processes;
+	}
+
+	/**
+	 * Open incidents per version, from one incident query filtered by key. There is no withoutTenantId on
+	 * incidents: the ones of other tenants are dropped when matched by definition id.
+	 */
+	private Map<String, Long> countIncidentsByDefinitionId(String key, String tenantId, CIBUser user) {
+		IncidentQuery query = directProviderUtil.getProcessEngine(user).getRuntimeService().createIncidentQuery()
+				.processDefinitionKeyIn(key);
+		if (tenantId != null)
+			query.tenantIdIn(tenantId);
+		return query.list().stream()
+				.collect(Collectors.groupingBy(incident -> incident.getProcessDefinitionId(), Collectors.counting()));
+	}
+
+	/** The engine has no deployment time on the process definition; left out when the deployment cannot be read. */
+	private String findDeploymentTime(String deploymentId, CIBUser user) {
+		if (deploymentId == null)
+			return null;
+		try {
+			org.cibseven.bpm.engine.repository.Deployment deployment = directProviderUtil.getProcessEngine(user)
+					.getRepositoryService().createDeploymentQuery().deploymentId(deploymentId).singleResult();
+			return deployment != null
+					? directProviderUtil.convertValue(DeploymentDto.fromDeployment(deployment), Deployment.class, user).getDeploymentTime()
+					: null;
+		} catch (ProcessEngineException e) {
+			log.debug("Deployment time of {} not available: {}", deploymentId, e.getMessage());
+			return null;
+		}
 	}
 
 	@Override
@@ -696,17 +735,8 @@ public class DirectProcessProvider implements IProcessProvider {
 	@Override
 	public Variable fetchProcessInstanceVariable(String processInstanceId, String variableName, boolean deserializeValue,
 			CIBUser user) throws SystemException {
-		VariableInstanceQueryDto queryDto = new VariableInstanceQueryDto();
-		queryDto.setProcessInstanceIdIn(new String[] { processInstanceId });
-		queryDto.setVariableName(variableName);
-		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
-
-		List<Variable> variablesDeserialized = directProviderUtil.queryVariableInstances(queryDto, null, null, true, user);
-		List<Variable> variablesSerialized = directProviderUtil.queryVariableInstances(queryDto, null, null, false, user);
-		Variable variableDeserialized = variablesDeserialized.size() == 1 ? variablesDeserialized.get(0) : null;
-		Variable variableSerialized = variablesSerialized.size() == 1 ? variablesSerialized.get(0) : null;
-		if (variableDeserialized == null || variableSerialized == null)
-			throw new SystemException("Variable " + variableName + " not found in process instance " + processInstanceId);
+		Variable variableDeserialized = getProcessInstanceVariable(processInstanceId, variableName, true, user);
+		Variable variableSerialized = getProcessInstanceVariable(processInstanceId, variableName, false, user);
 		if (deserializeValue) {
 			variableDeserialized.setValueSerialized(variableSerialized.getValue());
 			variableDeserialized.setValueDeserialized(variableDeserialized.getValue());
@@ -717,6 +747,27 @@ public class DirectProcessProvider implements IProcessProvider {
 			return variableSerialized;
 		}
 
+	}
+
+	/**
+	 * Reads the variable as engine-rest's GET /process-instance/{id}/variables/{name} does. The typed
+	 * getter sees only the instance's own scope, so a variable of the same name local to a child
+	 * execution neither collides with it nor stands in for it, and a denied read fails instead of
+	 * coming back as an empty, authorization-filtered result. Only a really absent variable becomes
+	 * NoObjectFoundException, which callers like fetchStatusDataset / fetchChatComments treat as "no value".
+	 */
+	private Variable getProcessInstanceVariable(String processInstanceId, String variableName, boolean deserializeValue,
+			CIBUser user) {
+		TypedValue value;
+		try {
+			value = directProviderUtil.getProcessEngine(user).getRuntimeService().getVariableTyped(processInstanceId, variableName, deserializeValue);
+		} catch (ProcessEngineException e) {
+			// AuthorizationException included: the default provider answers a denied read with a SystemException too
+			throw new SystemException(String.format("Cannot get processInstance variable %s: %s", variableName, e.getMessage()), e);
+		}
+		if (value == null)
+			throw new NoObjectFoundException(new SystemException("Variable " + variableName + " not found in process instance " + processInstanceId));
+		return directProviderUtil.convertValue(VariableValueDto.fromTypedValue(value), Variable.class, user);
 	}
 
 	@Override
@@ -747,7 +798,7 @@ public class DirectProcessProvider implements IProcessProvider {
 	}
 
 	public static Process convertToProcess(CalledProcessDefinitionDto dto) {
-		ObjectMapper objectMapper = new ObjectMapper();
+		ObjectMapper objectMapper = WebclientJsonMapper.plain();
 		Map<String, Object> filterDtoMap = objectMapper.convertValue(dto, new TypeReference<Map<String, Object>>() {
 		});
 		return objectMapper.convertValue(filterDtoMap, Process.class);
@@ -927,7 +978,7 @@ public class DirectProcessProvider implements IProcessProvider {
 		StartProcessInstanceDto parameters;
 		try {
 			parameters = objectMapper.readValue(formResult, StartProcessInstanceDto.class);
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			throw new SystemException(e.getMessage(), e);
 		}
 		FormService formService = directProviderUtil.getProcessEngine(user).getFormService();

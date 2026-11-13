@@ -187,7 +187,7 @@
 		"activateInstance": "Активувати екземпляр процесу",
 		"copySuccess": "Значення скопійовано",
 		"refreshVersions": "Оновити історію версій",
-		"loadVersions": "Завантажити всі версії історії",
+		"loadAllStatistics": "Завантажити всю статистику екземплярів",
 		"externalProcessStarted": "Процес успішно запущено",
 		"exportInstances": "Експортувати екземпляри",
 		"deleteProcessDefinition": {
@@ -1144,6 +1144,7 @@
 		"ExistingGroupRequestException": "Група вже існує",
 		"VariableModificationException": "Змінна не може бути успішно змінена. Будь ласка, оновіть сторінку та спробуйте знову.",
 		"processNotFound": "Процес з ключем \"{0}\" не знайдено",
+		"tenantNotFound": "Тенант з ID \"{0}\" не існує",
 		"notFoundInstanceId": "Екземпляр процесу з ідентифікатором \"{instanceId}\" не знайдено.\nПосилання з: {refPath}",
 		"notFoundPage": "Сторінку \"{path}\" не знайдено.",
 		"filterSaveError": "Сталася помилка під час спроби зберегти фільтр, перевірте введені дані.",

@@ -26,11 +26,12 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.cibseven.webapp.config.WebclientJsonMapper;
+import tools.jackson.databind.ObjectMapper;
 
 public class EngineConfigurationTest {
 
-	private static final ObjectMapper MAPPER = new ObjectMapper();
+	private static final ObjectMapper MAPPER = WebclientJsonMapper.plain();
 
 	// Reads a /configuration response whose historyTimeToLive is the given raw JSON value, with
 	// properties after it, to check that those are still read whatever the TTL value looks like.
@@ -39,6 +40,30 @@ public class EngineConfigurationTest {
 			"{\"engineName\":\"default\",\"historyTimeToLive\":" + rawJsonValue
 				+ ",\"historyLevel\":\"audit\",\"authorizationEnabled\":false,\"enforceHistoryTimeToLive\":true}",
 			EngineConfiguration.class);
+	}
+
+	@Test
+	public void webclientExtensionsAreOnWhenTheEngineReportsTheirVersion() throws Exception {
+		EngineConfiguration config = MAPPER.readValue(
+			"{\"engineName\":\"default\",\"webclientExtensionsVersion\":\"3.0.0\"}", EngineConfiguration.class);
+		assertEquals(Boolean.TRUE, config.getWebclientExtensionsEnabled());
+	}
+
+	/** engine-rest sends the field with null when the tables are not there. */
+	@Test
+	public void webclientExtensionsAreOffWhenTheEngineReportsNoVersion() throws Exception {
+		EngineConfiguration config = MAPPER.readValue(
+			"{\"engineName\":\"default\",\"webclientExtensionsVersion\":null}", EngineConfiguration.class);
+		assertEquals(Boolean.FALSE, config.getWebclientExtensionsEnabled());
+	}
+
+	/** Engines before 3.0.0 do not know the field, so whether they have the tables stays unknown. */
+	@Test
+	public void webclientExtensionsStayUnknownWhenTheEngineDoesNotReportThem() throws Exception {
+		EngineConfiguration config = MAPPER.readValue(
+			"{\"engineName\":\"default\",\"historyLevel\":\"full\"}", EngineConfiguration.class);
+		assertNull(config.getWebclientExtensionsEnabled());
+		assertNull(new EngineConfiguration("default", "full", true, false, -1, true).getWebclientExtensionsEnabled());
 	}
 
 	@Test
