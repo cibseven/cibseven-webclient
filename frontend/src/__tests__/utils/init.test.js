@@ -624,3 +624,71 @@ describe('handleAxiosError without a response', () => {
     expect(root.$refs.error.show).toHaveBeenCalledWith({ type: 'SystemException' })
   })
 })
+
+// The modeler's deploy dialog and import tell the user what failed, so the handler leaves them alone
+describe('handleAxiosError for a request that reports its own errors', () => {
+  const routerWith = () => ({ currentRoute: { value: { name: 'modeler' }, path: '/seven/auth/modeler' }, push: vi.fn() })
+  const rootWith = () => ({ user: { authToken: 'tok-session' }, $refs: { error: { show: vi.fn() } } })
+  const own = (response, authorization = 'tok-session') => ({ response, config: { reportsOwnErrors: true, headers: { authorization } } })
+
+  beforeEach(() => {
+    sessionStorage.clear()
+    sessionStorage.setItem('token', 'tok-session')
+    vi.spyOn(console, 'info').mockImplementation(() => {})
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+  })
+
+  it('should open no dialog for a 500 it would show otherwise, and reject with the error', async () => {
+    const root = rootWith()
+    const error = own({ status: 500, data: { type: 'SystemException', params: ['boom'] } })
+
+    await expect(handleAxiosError(routerWith(), root, error)).rejects.toBe(error)
+
+    expect(root.$refs.error.show).not.toHaveBeenCalled()
+  })
+
+  it('should open no dialog when there is no answer at all', async () => {
+    const root = rootWith()
+    const error = Object.assign(new Error('Network Error'), { config: { reportsOwnErrors: true } })
+
+    await expect(handleAxiosError(routerWith(), root, error)).rejects.toBe(error)
+
+    expect(root.$refs.error.show).not.toHaveBeenCalled()
+  })
+
+  // "As another user" with a wrong password: the credentials of that request are wrong, the session is fine
+  it('should keep the user logged in on a 401 for the credentials the request carried', async () => {
+    const root = rootWith()
+    const router = routerWith()
+    const error = own({ status: 401, data: { type: 'AuthenticationException', params: ['demo'] } }, 'Basic ZGVtbzp3cm9uZw==')
+
+    await expect(handleAxiosError(router, root, error)).rejects.toBe(error)
+
+    expect(sessionStorage.getItem('token')).toBe('tok-session')
+    expect(root.user).not.toBeNull()
+    expect(router.push).not.toHaveBeenCalled()
+  })
+
+  it('should still renew the session token that request carried, and repeat it', async () => {
+    const root = rootWith()
+    const error = own({ status: 401, data: { type: 'TokenExpiredException', params: ['tok-prolonged'] } })
+
+    const promise = handleAxiosError(routerWith(), root, error)
+
+    expect(sessionStorage.getItem('token')).toBe('tok-prolonged')
+    expect(axios.request).toHaveBeenCalledWith(error.config)
+    await promise
+  })
+
+  it('should never let another token replace the session token', async () => {
+    const root = rootWith()
+    const error = own({ status: 401, data: { type: 'TokenExpiredException', params: ['tok-of-other-user'] } }, 'Bearer tok-other-user')
+
+    await expect(handleAxiosError(routerWith(), root, error)).rejects.toBe(error)
+
+    expect(sessionStorage.getItem('token')).toBe('tok-session')
+    expect(root.user.authToken).toBe('tok-session')
+    expect(axios.request).not.toHaveBeenCalled()
+  })
+})
