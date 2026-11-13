@@ -41,6 +41,7 @@ import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.ProcessEngineConfiguration;
 import org.cibseven.bpm.engine.ProcessEngineException;
 import org.cibseven.bpm.engine.TaskService;
+import org.cibseven.bpm.engine.exception.NullValueException;
 import org.cibseven.bpm.engine.history.HistoricVariableInstance;
 import org.cibseven.bpm.engine.history.HistoricVariableInstanceQuery;
 import org.cibseven.bpm.engine.impl.RuntimeServiceImpl;
@@ -154,6 +155,92 @@ public class DirectVariableProviderTest {
 		assertThatThrownBy(() -> variableProvider.fetchVariableDataByExecutionId("exec-1", "amount", user))
 			.isInstanceOf(SystemException.class)
 			.hasMessageContaining("is not a binary value");
+	}
+
+	// ---------- process instance binary variable download ----------
+
+	@Test
+	void fetchProcessInstanceVariableData_servesAFileAsOctetStreamWhateverItsMimeType() {
+		byte[] payload = "hello".getBytes(StandardCharsets.UTF_8);
+		when(runtimeService.getVariableTyped(eq("instance-1"), eq("invoice"), anyBoolean()))
+			.thenReturn(Variables.fileValue("invoice.txt").file(payload).mimeType("text/plain").create());
+
+		ResponseEntity<byte[]> response = variableProvider.fetchProcessInstanceVariableData("instance-1", "invoice", user);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getBody()).isEqualTo(payload);
+		// same as the default provider, so a browser downloads the file instead of rendering it
+		assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_OCTET_STREAM);
+		assertThat(response.getHeaders().getCacheControl()).isEqualTo("no-cache");
+	}
+
+	@Test
+	void fetchProcessInstanceVariableData_servesAByteArrayAsOctetStream() {
+		byte[] payload = "pdf-bytes".getBytes(StandardCharsets.UTF_8);
+		when(runtimeService.getVariableTyped(eq("instance-1"), eq("attachment"), anyBoolean()))
+			.thenReturn(Variables.byteArrayValue(payload));
+
+		ResponseEntity<byte[]> response = variableProvider.fetchProcessInstanceVariableData("instance-1", "attachment", user);
+
+		assertThat(response.getBody()).isEqualTo(payload);
+		assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.APPLICATION_OCTET_STREAM);
+	}
+
+	@Test
+	void fetchProcessInstanceVariableData_throwsNoObjectFoundWhenTheInstanceDoesNotHoldTheVariable() {
+		when(runtimeService.getVariableTyped(eq("instance-1"), eq("doesNotExist"), anyBoolean())).thenReturn(null);
+
+		// NoObjectFoundException is answered with 404, anything else with 500
+		assertThatThrownBy(() -> variableProvider.fetchProcessInstanceVariableData("instance-1", "doesNotExist", user))
+			.isInstanceOf(NoObjectFoundException.class);
+	}
+
+	@Test
+	void fetchVariableByProcessInstanceId_throwsNoObjectFoundWhenTheInstanceDoesNotHoldTheVariable() {
+		when(runtimeService.getVariableTyped(eq("instance-1"), eq("doesNotExist"), anyBoolean())).thenReturn(null);
+
+		assertThatThrownBy(() -> variableProvider.fetchVariableByProcessInstanceId("instance-1", "doesNotExist", user))
+			.isInstanceOf(NoObjectFoundException.class);
+	}
+
+	@Test
+	void fetchProcessInstanceVariableData_throwsNoObjectFoundWhenTheInstanceDoesNotExist() {
+		// what the engine throws for an unknown execution (GetExecutionVariableTypedCmd)
+		when(runtimeService.getVariableTyped(eq("unknown"), eq("invoice"), anyBoolean()))
+			.thenThrow(new NullValueException("execution unknown doesn't exist: execution is null"));
+
+		// the default provider answers 404 here as well (SevenProviderBase#wrapException)
+		assertThatThrownBy(() -> variableProvider.fetchProcessInstanceVariableData("unknown", "invoice", user))
+			.isInstanceOf(NoObjectFoundException.class);
+	}
+
+	@Test
+	void fetchVariableByProcessInstanceId_throwsNoObjectFoundWhenTheInstanceDoesNotExist() {
+		when(runtimeService.getVariableTyped(eq("unknown"), eq("invoice"), anyBoolean()))
+			.thenThrow(new NullValueException("execution unknown doesn't exist: execution is null"));
+
+		assertThatThrownBy(() -> variableProvider.fetchVariableByProcessInstanceId("unknown", "invoice", user))
+			.isInstanceOf(NoObjectFoundException.class);
+	}
+
+	@Test
+	void fetchProcessInstanceVariableData_letsAuthorizationFailuresThrough() {
+		when(runtimeService.getVariableTyped(eq("instance-1"), eq("invoice"), anyBoolean()))
+			.thenThrow(new AuthorizationException("denied"));
+
+		// must stay an AuthorizationException so the REST layer answers 403, not 404 or 500
+		assertThatThrownBy(() -> variableProvider.fetchProcessInstanceVariableData("instance-1", "invoice", user))
+			.isInstanceOf(AuthorizationException.class);
+	}
+
+	@Test
+	void fetchProcessInstanceVariableData_wrapsOtherEngineFailuresInSystemException() {
+		when(runtimeService.getVariableTyped(eq("instance-1"), eq("invoice"), anyBoolean()))
+			.thenThrow(new ProcessEngineException("boom"));
+
+		assertThatThrownBy(() -> variableProvider.fetchProcessInstanceVariableData("instance-1", "invoice", user))
+			.isInstanceOf(SystemException.class)
+			.isNotInstanceOf(NoObjectFoundException.class);
 	}
 
 	// ---------- historic binary variable download ----------

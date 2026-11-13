@@ -17,19 +17,19 @@
 export default {
 	computed: {
 		getCompleteName: function() {
-			if (this.$root.user.id.toLowerCase() === this.task.assignee.toLowerCase()) return this.$root.user.id // displayName
-			else {
-				if (this.$store.state.user.listCandidates) {
-					const user = this.$store.state.user.listCandidates.find(user => {
-						return user.id.toLowerCase() === this.task.assignee.toLowerCase()
-					})
-					if ((user) && (user.displayName)) return user.displayName
-				}
-				return this.task.assignee
-			}
+			return this.getDisplayName(this.task?.assignee)
 		}
 	},
 	methods: {
+		getDisplayName: function(assignee) {
+			if (!assignee) return ''
+      if (this.$root.user.id === assignee) return this.$root.user.displayName || assignee
+			else {
+				const user = this.$store.state.user.userIdMap[assignee]
+				if (user) return [user.firstName, user.lastName].filter(Boolean).join(' ') || assignee
+				return assignee
+			}
+		},
 		findUsers: function(filter, likePatternIgnoreCase) {
 			const maxResults = this.$root.config.maxUsersResults || 10
 			this.$refs.ariaLiveText.textContent = ''

@@ -36,11 +36,13 @@ import java.util.Optional;
 import org.cibseven.bpm.engine.IdentityService;
 import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.identity.Group;
+import org.cibseven.bpm.engine.identity.GroupQuery;
 import org.cibseven.bpm.engine.identity.UserQuery;
 import org.cibseven.bpm.engine.impl.identity.Authentication;
 import org.cibseven.bpm.engine.impl.persistence.entity.UserEntity;
 import org.cibseven.bpm.engine.rest.mapper.JacksonConfigurator;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.exception.InvalidAttributeValueException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Credentials;
@@ -227,6 +229,103 @@ public class DirectUserProviderCrudTest {
 		findUsersByIdIn(Optional.empty());
 
 		verify(userQuery, never()).userIdIn(any(String[].class));
+	}
+
+	// ---------- sorting ----------
+
+	private void findUsersSorted(Optional<String> sortBy, Optional<String> sortOrder) {
+		userProvider.findUsers(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), sortBy, sortOrder, Optional.empty(), user);
+	}
+
+	private GroupQuery findGroupsSorted(Optional<String> sortBy, Optional<String> sortOrder) {
+		GroupQuery groupQuery = mock(GroupQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
+		when(identityService.createGroupQuery()).thenReturn(groupQuery);
+		userProvider.findGroups(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), sortBy, sortOrder, Optional.empty(), Optional.empty(), user);
+		return groupQuery;
+	}
+
+	@Test
+	void findUsers_sortsAscending() {
+		findUsersSorted(Optional.of("userId"), Optional.of("asc"));
+
+		verify(userQuery).orderByUserId();
+		verify(userQuery).asc();
+		verify(userQuery, never()).desc();
+	}
+
+	@Test
+	void findUsers_sortsDescending() {
+		findUsersSorted(Optional.of("lastName"), Optional.of("desc"));
+
+		verify(userQuery).orderByUserLastName();
+		verify(userQuery).desc();
+		verify(userQuery, never()).asc();
+	}
+
+	@Test
+	void findUsers_sortsByEveryKeyEngineRestAccepts() {
+		findUsersSorted(Optional.of("firstName"), Optional.of("asc"));
+		findUsersSorted(Optional.of("email"), Optional.of("asc"));
+
+		verify(userQuery).orderByUserFirstName();
+		verify(userQuery).orderByUserEmail();
+	}
+
+	// like engine-rest, the direct provider refuses an incomplete or invalid sorting
+
+	@Test
+	void findUsers_rejectsSortByWithoutSortOrder() {
+		assertThatThrownBy(() -> findUsersSorted(Optional.of("userId"), Optional.empty()))
+			.isInstanceOf(SystemException.class)
+			.hasMessageContaining("sortBy and sortOrder required");
+	}
+
+	@Test
+	void findUsers_rejectsSortOrderWithoutSortBy() {
+		assertThatThrownBy(() -> findUsersSorted(Optional.empty(), Optional.of("asc")))
+			.isInstanceOf(SystemException.class)
+			.hasMessageContaining("sortBy and sortOrder required");
+	}
+
+	@Test
+	void findUsers_rejectsAnUnknownSortOrder() {
+		// the directions are case sensitive
+		assertThatThrownBy(() -> findUsersSorted(Optional.of("email"), Optional.of("DESC")))
+			.isInstanceOf(InvalidAttributeValueException.class)
+			.hasMessageContaining("\"DESC\"");
+	}
+
+	@Test
+	void findUsers_rejectsAnUnknownSortBy() {
+		assertThatThrownBy(() -> findUsersSorted(Optional.of("unknown"), Optional.of("asc")))
+			.isInstanceOf(InvalidAttributeValueException.class)
+			.hasMessageContaining("\"unknown\"");
+	}
+
+	@Test
+	void findGroups_sortsDescending() {
+		GroupQuery groupQuery = findGroupsSorted(Optional.of("id"), Optional.of("desc"));
+
+		verify(groupQuery).orderByGroupId();
+		verify(groupQuery).desc();
+		verify(groupQuery, never()).asc();
+	}
+
+	@Test
+	void findGroups_rejectsSortByWithoutSortOrder() {
+		assertThatThrownBy(() -> findGroupsSorted(Optional.of("name"), Optional.empty()))
+			.isInstanceOf(SystemException.class)
+			.hasMessageContaining("sortBy and sortOrder required");
+	}
+
+	@Test
+	void findGroups_rejectsAnUnknownSortOrder() {
+		assertThatThrownBy(() -> findGroupsSorted(Optional.of("id"), Optional.of("descending")))
+			.isInstanceOf(InvalidAttributeValueException.class)
+			.hasMessageContaining("\"descending\"");
 	}
 
 	// ---------- credentials ----------

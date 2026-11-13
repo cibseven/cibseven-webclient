@@ -30,6 +30,7 @@ import org.apache.commons.io.IOUtils;
 import org.cibseven.bpm.engine.AuthorizationException;
 import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.ProcessEngineException;
+import org.cibseven.bpm.engine.exception.NullValueException;
 import org.cibseven.bpm.engine.history.HistoricVariableInstance;
 import org.cibseven.bpm.engine.history.HistoricVariableInstanceQuery;
 import org.cibseven.bpm.engine.impl.RuntimeServiceImpl;
@@ -62,6 +63,7 @@ import org.cibseven.webapp.exception.UnsupportedTypeException;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -411,7 +413,7 @@ public class DirectVariableProvider implements IVariableProvider {
 					@SuppressWarnings("unchecked")
 					DataSource ds = mapper.convertValue(variable.getValue(), (Class<? extends DataSource>) clazz);
 
-					return ResponseEntity.ok(IOUtils.toByteArray(ds.getInputStream()));
+					return generateFileResponse(IOUtils.toByteArray(ds.getInputStream()));
 				}
 			} catch (ClassNotFoundException e) {
 				log.info("Class " + objectType + " could not be loaded!");
@@ -419,38 +421,24 @@ public class DirectVariableProvider implements IVariableProvider {
 				throw new SystemException(e.getMessage(), e);
 			}
 		}
-		TypedValue value = null;
-		try {
-			value = directProviderUtil.getProcessEngine(user).getRuntimeService().getVariableTyped(processInstanceId, variableName, false);
-		} catch (AuthorizationException e) {
-			throw e;
-		} catch (ProcessEngineException e) {
-			String errorMessage = String.format("Cannot get %s variable %s: %s", "processInstance", variableName,
-					e.getMessage());
-			throw new SystemException(errorMessage, e);
-		}
-
+		TypedValue value = getTypedValueForProcessInstanceVariable(processInstanceId, variableName, false, user);
 		if (value == null) {
 			String errorMessage = String.format("%s variable with name %s does not exist", "processInstance", variableName);
-			throw new SystemException(errorMessage);
+			throw new NoObjectFoundException(new SystemException(errorMessage));
 		}
+		// served as a download like the default provider does (VariableProvider#generateFileResponse),
+		// whatever the stored mime type, so a browser does not render or sniff the content
 		if (value instanceof BytesValue || ValueType.BYTES.equals(value.getType())) {
 			byte[] valueBytes = (byte[]) value.getValue();
 			if (valueBytes == null) {
 				valueBytes = new byte[0];
 			}
-			
-			ResponseEntity<byte[]> responseEntity = ResponseEntity.ok(valueBytes);
-			return responseEntity;
+			return generateFileResponse(valueBytes);
 		} else if (ValueType.FILE.equals(value.getType())) {
 			FileValue typedFileValue = (FileValue) value;
 			try {
 				byte[] bytes = typedFileValue.getValue() == null ? null : IOUtils.toByteArray(typedFileValue.getValue());
-				HttpHeaders headers = new HttpHeaders();
-				headers.setContentType(typedFileValue.getMimeType() != null ? MediaType.valueOf(typedFileValue.getMimeType())
-						: MediaType.APPLICATION_OCTET_STREAM);
-				ResponseEntity<byte[]> responseEntity = ResponseEntity.ok().headers(headers).body(bytes);
-				return responseEntity;
+				return generateFileResponse(bytes);
 			} catch (IOException e) {
 				throw new SystemException(e.getMessage(), e);
 			}
@@ -648,6 +636,11 @@ public class DirectVariableProvider implements IVariableProvider {
 	public Variable fetchVariableByProcessInstanceIdImpl(String processInstanceId, String variableName,
 			boolean deserializeValue, CIBUser user) throws SystemException {
 		TypedValue value = getTypedValueForProcessInstanceVariable(processInstanceId, variableName, deserializeValue, user);
+		if (value == null) {
+			// the engine REST answers 404 here, see AbstractVariablesResource#getTypedValue
+			String errorMessage = String.format("%s variable with name %s does not exist", "processInstance", variableName);
+			throw new NoObjectFoundException(new SystemException(errorMessage));
+		}
 		return directProviderUtil.convertValue(VariableValueDto.fromTypedValue(value), Variable.class, user);
 	}
 
@@ -657,8 +650,12 @@ public class DirectVariableProvider implements IVariableProvider {
 			return directProviderUtil.getProcessEngine(user).getRuntimeService().getVariableTyped(processInstanceId, variableName, deserializeValue);
 		} catch (AuthorizationException e) {
 			throw e;
+		} catch (NullValueException e) {
+			// unknown process instance: the default provider maps this to 404 (SevenProviderBase#wrapException)
+			String errorMessage = String.format("Cannot get %s variable %s: %s", "processInstance", variableName, e.getMessage());
+			throw new NoObjectFoundException(new SystemException(errorMessage, e));
 		} catch (ProcessEngineException e) {
-			String errorMessage = String.format("Cannot get %s variable %s: %s", "task", variableName, e.getMessage());
+			String errorMessage = String.format("Cannot get %s variable %s: %s", "processInstance", variableName, e.getMessage());
 			throw new SystemException(errorMessage, e);
 		}
 	}
@@ -700,6 +697,13 @@ public class DirectVariableProvider implements IVariableProvider {
 		if (!validator.validate(className) && !invalidTypes.contains(className)) {
 			invalidTypes.add(className);
 		}
+	}
+
+	private ResponseEntity<byte[]> generateFileResponse(byte[] content) {
+		HttpHeaders headers = new HttpHeaders();
+		headers.setCacheControl(CacheControl.noCache().getHeaderValue());
+		headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+		return ResponseEntity.ok().headers(headers).body(content);
 	}
 
 	private ResponseEntity<byte[]> getResponseForTypedVariable(TypedValue typedVariableValue, String id) {
