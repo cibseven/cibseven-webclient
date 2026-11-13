@@ -1146,6 +1146,7 @@
 		"processNotFound": "Prozess mit Schlüssel \"{0}\" nicht gefunden",
 		"tenantNotFound": "Mandant mit der ID \"{0}\" existiert nicht",
 		"notFoundInstanceId": "Die Prozessinstanz mit der ID \"{instanceId}\" konnte nicht gefunden werden.\nReferenziert von: {refPath}",
+		"notFoundPage": "Die Seite \"{path}\" konnte nicht gefunden werden.",
 		"filterSaveError": "Beim Speichern des Filters ist ein Fehler aufgetreten, bitte überprüfen Sie die eingegebenen Daten.",
 		"passwordDoNotMatch": "Passwörter stimmen nicht überein",
 		"PasswordPolicyException": "Passwort stimmt nicht mit Richtlinie überein",
