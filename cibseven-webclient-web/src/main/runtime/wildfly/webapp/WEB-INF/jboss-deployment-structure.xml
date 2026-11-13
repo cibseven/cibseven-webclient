@@ -3,8 +3,10 @@
   <deployment>
     <dependencies>
       <module name="org.jboss.logging"/>
-      <module name="org.cibseven.bpm.cibseven-engine"/>
-      <module name="org.cibseven.bpm.dmn.cibseven-engine-dmn"/>
+      <!-- engine modules: only the direct provider needs them; optional so the WAR
+           also deploys on a server without a shared CIB seven engine. -->
+      <module name="org.cibseven.bpm.cibseven-engine" optional="true"/>
+      <module name="org.cibseven.bpm.dmn.cibseven-engine-dmn" optional="true"/>
       <!-- ai-agent connector module: optional so the WAR still deploys when the
            module is absent (AI disabled). Gives the modeler visibility to the
            connector's bundled /element-templates/*.json (CIB7-1445). -->
