@@ -77,17 +77,30 @@ export function updateAppTitle(productName, sectionName = undefined, taskName = 
 }
 
 /**
- * A request sent with `reportsOwnErrors: true` in its axios config comes back untouched: its caller
- * (the modeler's deploy dialog and import) tells the user what failed, so the error dialog would be
- * a second report, and a 401 there is about the credentials that request carried (another user, another
- * instance), not about the user's session. The session token it carried is still renewed.
+ * A request sent with `reportsOwnErrors: true` in its axios config tells the user itself what failed
+ * (the modeler's deploy dialog and import), so it gets no error dialog. Its 401 counts for the session
+ * only when it went to this webclient with the session token; a 401 for credentials entered in the
+ * dialog, or from another instance, is its caller's to report and neither renews nor logs out.
  */
 const reportsOwnErrors = error => error.config?.reportsOwnErrors === true
 
-// Whether the request carried the user's own session token, the only token renewing it may replace
+// The token the latest renewal replaced: a request sent just before it still carried the session
+let replacedSessionToken = null
+
+const sessionToken = () => sessionStorage.getItem('token') || localStorage.getItem('token')
+
+const ABSOLUTE_URL = /^[a-z][a-z\d+.-]*:\/\//i
+
+// A request to this webclient's own services, not to another instance (an absolute URL elsewhere)
+const toOwnServices = url => {
+  if (!ABSOLUTE_URL.test(url ?? '')) return true
+  const base = getServicesBasePath()
+  return url.startsWith(`${window.location.origin}/`) || (ABSOLUTE_URL.test(base) && url.startsWith(base))
+}
+
 const carriesSessionToken = error => {
   const sent = error.config?.headers?.authorization
-  return !!sent && sent === (sessionStorage.getItem('token') || localStorage.getItem('token'))
+  return !!sent && (sent === sessionToken() || sent === replacedSessionToken) && toOwnServices(error.config?.url)
 }
 
 export function handleAxiosError(router, root, error) {
@@ -96,14 +109,15 @@ export function handleAxiosError(router, root, error) {
   const routeName = router.currentRoute.value?.name
   const isDeployedForm = routeName === 'deployed-form' || routeName === 'start-deployed-form'
   const ownErrors = reportsOwnErrors(error)
+  const showsDialog = !isDeployedForm && !ownErrors
 
   if (error.response) {
     const res = error.response
     if (res.status === 401) { // Unauthorized
-      const renewable = res.data && res.data.type === 'TokenExpiredException' && res.data.params && res.data.params.length > 0
-      if (ownErrors && !(renewable && carriesSessionToken(error))) return Promise.reject(error)
-      if (renewable) {
+      if (ownErrors && !carriesSessionToken(error)) return Promise.reject(error)
+      if (res.data?.type === 'TokenExpiredException' && res.data.params?.length > 0) {
         console && console.info('Prolonged token')
+        replacedSessionToken = sessionToken()
         if (sessionStorage.getItem('token')) sessionStorage.setItem('token', res.data.params[0])
         else if (localStorage.getItem('token')) localStorage.setItem('token', res.data.params[0])
         axios.defaults.headers.common.authorization = res.data.params[0]
@@ -129,7 +143,7 @@ export function handleAxiosError(router, root, error) {
         'UnsupportedTypeException', 'ExpressionEvaluationException', 'ExistingUserRequestException',
         'ExistingGroupRequestException', 'AccessDeniedException', 'SystemException', 'InvalidUserIdException',
         'VariableModificationException', 'WrongDeploymenIdException', 'NoRessourcesFoundException', 'DmnTransformationException', 'InvalidGroupIdException']
-      if (!isDeployedForm && !ownErrors && res.data.type && exceptions.includes(res.data.type))
+      if (showsDialog && res.data.type && exceptions.includes(res.data.type))
         root.$refs.error.show(res.data)
       //root.$refs.report.show(res.data)
       return Promise.reject(error)
@@ -140,7 +154,7 @@ export function handleAxiosError(router, root, error) {
   } else { // for example "Network Error" - doesn't work with spaces in translations.json
     console && console.error('Strange AJAX error', error)
     const message = error.message.replace(' ', '_')
-    if (!isDeployedForm && !ownErrors && message !== 'Request_aborted') root.$refs.error.show({ type: message })
+    if (showsDialog && message !== 'Request_aborted') root.$refs.error.show({ type: message })
     return Promise.reject(error)
   }
 }

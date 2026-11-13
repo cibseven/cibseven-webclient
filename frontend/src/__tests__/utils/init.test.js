@@ -629,7 +629,8 @@ describe('handleAxiosError without a response', () => {
 describe('handleAxiosError for a request that reports its own errors', () => {
   const routerWith = () => ({ currentRoute: { value: { name: 'modeler' }, path: '/seven/auth/modeler' }, push: vi.fn() })
   const rootWith = () => ({ user: { authToken: 'tok-session' }, $refs: { error: { show: vi.fn() } } })
-  const own = (response, authorization = 'tok-session') => ({ response, config: { reportsOwnErrors: true, headers: { authorization } } })
+  const own = (response, authorization = 'tok-session', url = 'services/v1/modeler/deployment/create') =>
+    ({ response, config: { reportsOwnErrors: true, url, headers: { authorization } } })
 
   beforeEach(() => {
     sessionStorage.clear()
@@ -679,6 +680,52 @@ describe('handleAxiosError for a request that reports its own errors', () => {
     expect(sessionStorage.getItem('token')).toBe('tok-prolonged')
     expect(axios.request).toHaveBeenCalledWith(error.config)
     await promise
+  })
+
+  // The session itself has run out: the request carried the session token, so it is about the session
+  it('should still log out when the session token it carried can no longer be renewed', async () => {
+    const root = rootWith()
+    const router = routerWith()
+    const error = own({ status: 401, data: { type: 'TokenExpiredException', params: [] } })
+
+    await expect(handleAxiosError(router, root, error)).rejects.toBe(error)
+
+    expect(sessionStorage.getItem('token')).toBeNull()
+    expect(root.user).toBeNull()
+    expect(router.push).toHaveBeenCalledWith('/seven/login?nextUrl=/seven/auth/modeler')
+  })
+
+  // Another request renewed the token while this one was on its way with the old one
+  it('should renew and repeat a request sent with the token the latest renewal replaced', async () => {
+    const root = rootWith()
+    await handleAxiosError(routerWith(), root, {
+      response: { status: 401, data: { type: 'TokenExpiredException', params: ['tok-renewed'] } },
+      config: { headers: { authorization: 'tok-session' } },
+    })
+    axios.request.mockClear()
+    const error = own({ status: 401, data: { type: 'TokenExpiredException', params: ['tok-renewed-again'] } }, 'tok-session')
+
+    await handleAxiosError(routerWith(), root, error)
+
+    expect(sessionStorage.getItem('token')).toBe('tok-renewed-again')
+    expect(axios.request).toHaveBeenCalledWith(error.config)
+  })
+
+  // A deploy to another instance as the current user sends the session token there
+  it('should neither renew nor log out for an answer from another instance', async () => {
+    const root = rootWith()
+    const router = routerWith()
+    const elsewhere = 'https://other.example.com/services/v1/modeler/deployment/create'
+
+    const renewal = own({ status: 401, data: { type: 'TokenExpiredException', params: ['tok-of-other-instance'] } }, 'tok-session', elsewhere)
+    await expect(handleAxiosError(router, root, renewal)).rejects.toBe(renewal)
+    const refusal = own({ status: 401, data: { type: 'AuthenticationException', params: [] } }, 'tok-session', elsewhere)
+    await expect(handleAxiosError(router, root, refusal)).rejects.toBe(refusal)
+
+    expect(sessionStorage.getItem('token')).toBe('tok-session')
+    expect(root.user.authToken).toBe('tok-session')
+    expect(axios.request).not.toHaveBeenCalled()
+    expect(router.push).not.toHaveBeenCalled()
   })
 
   it('should never let another token replace the session token', async () => {
