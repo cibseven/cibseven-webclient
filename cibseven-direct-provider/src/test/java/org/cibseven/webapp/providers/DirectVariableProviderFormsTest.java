@@ -163,6 +163,44 @@ public class DirectVariableProviderFormsTest {
 			.hasMessageContaining("No matching process definition with key: missing");
 	}
 
+	@Test
+	void fetchProcessFormVariables_withNamesAddressesTheDefinitionById() {
+		List<String> names = List.of("amount");
+		when(formService.getStartFormVariables("definition-1", names, false)).thenReturn(variables());
+
+		Map<String, Variable> result = variableProvider.fetchProcessFormVariables(names, "definition-1", false, user);
+
+		// the bpm-sdk start forms send the definition id (#1402): no key lookup
+		assertThat(result).containsOnlyKeys("amount", "customer");
+		verify(repositoryService, Mockito.never()).createProcessDefinitionQuery();
+	}
+
+	@Test
+	void fetchProcessFormVariablesByKey_resolvesTheKeyAndForwardsTheNames() {
+		ProcessDefinition definition = mock(ProcessDefinition.class);
+		when(definition.getId()).thenReturn("definition-1");
+		when(definitionQuery.singleResult()).thenReturn(definition);
+		List<String> names = List.of("amount");
+		when(formService.getStartFormVariables("definition-1", names, false)).thenReturn(variables());
+
+		Map<String, Variable> result = variableProvider.fetchProcessFormVariablesByKey(names, "invoice", false, user);
+
+		// CIB7-2356
+		assertThat(result).containsOnlyKeys("amount", "customer");
+		verify(definitionQuery).processDefinitionKey("invoice");
+		verify(definitionQuery).withoutTenantId();
+		verify(definitionQuery).latestVersion();
+	}
+
+	@Test
+	void fetchProcessFormVariablesByKey_throwsWhenTheDefinitionIsUnknown() {
+		when(definitionQuery.singleResult()).thenReturn(null);
+
+		assertThatThrownBy(() -> variableProvider.fetchProcessFormVariablesByKey(List.of("amount"), "missing", true, user))
+			.isInstanceOf(SystemException.class)
+			.hasMessageContaining("No matching process definition with key: missing");
+	}
+
 	// ---------- activity variables ----------
 
 	@Test

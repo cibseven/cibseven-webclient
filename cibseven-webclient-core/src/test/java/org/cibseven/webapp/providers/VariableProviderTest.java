@@ -140,9 +140,20 @@ public class VariableProviderTest {
 
 		variableProvider.fetchProcessFormVariables(List.of("amount"), "definition-1", false, user);
 
-		// note the missing "/key/" segment: this overload addresses the definition by id, unlike
-		// the single-argument overload above, even though both name the parameter "key"
+		// note the missing "/key/" segment: this overload addresses the definition by id, which is
+		// what the bpm-sdk start forms rely on (#1402)
 		assertThat(engine.takePath()).startsWith("/process-definition/definition-1/form-variables");
+	}
+
+	@Test
+	void fetchProcessFormVariablesByKey_withNamesAsksByProcessDefinitionKey() throws Exception {
+		engine.enqueueJson("{}");
+
+		variableProvider.fetchProcessFormVariablesByKey(List.of("amount", "customer"), "invoice", false, user);
+
+		// CIB7-2356
+		assertThat(engine.takePath())
+			.isEqualTo("/process-definition/key/invoice/form-variables?deserializeValues=false&variableNames=amount,customer");
 	}
 
 	// ---------- process instance variables ----------
