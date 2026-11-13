@@ -97,6 +97,16 @@ final class MockEngineRest implements AutoCloseable {
 	}
 
 	/** UTF-8 text sent as {@code text/plain} without a charset, the way engine-rest sends stack traces. */
+	/** Like engine-rest streaming a large resource: chunked, on a keep-alive connection. */
+	void enqueueChunked(byte[] body, String contentType) {
+		server.enqueue(new MockResponse()
+			.setChunkedBody(new Buffer().write(body), 4096)
+			.addHeader("Content-Type", contentType)
+			.addHeader("Cache-Control", "no-cache")
+			.addHeader("Connection", "keep-alive")
+			.addHeader("Keep-Alive", "timeout=60"));
+	}
+
 	void enqueuePlainText(String body) {
 		enqueueBytes(body.getBytes(StandardCharsets.UTF_8), "text/plain");
 	}
