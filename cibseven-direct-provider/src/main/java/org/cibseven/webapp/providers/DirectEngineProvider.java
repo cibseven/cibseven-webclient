@@ -139,10 +139,9 @@ public class DirectEngineProvider implements IEngineProvider {
 	 * only through the ProcessEngineProvider SPI, which the webclient on Tomcat and WildFly does not
 	 * have (CIB7-2554). What it checks and creates is the same as in SetupRestServiceImpl.
 	 *
-	 * Both calls are made without a login, so they are guarded more tightly than engine-rest's:
-	 * - Only the effective default engine can be set up. The X-Process-Engine header comes from the
-	 *   caller; otherwise anyone could claim the admin role on a further engine of an installation
-	 *   that is already set up, and every name sent would be looked up.
+	 * Both calls are made without a login, so they are guarded more tightly than engine-rest's.
+	 * Which engine may be set up is decided in SetupService, the same for every provider: it only
+	 * passes the effective default engine on (an unspecified engine resolves to it here as well).
 	 * - The user, the admin group, its authorizations and the membership are created in one
 	 *   transaction: a failure leaves nothing behind, so the setup stays open and can be repeated.
 	 * - Concurrent setups are serialized in this JVM. Across cluster nodes the admin group's primary
@@ -153,10 +152,7 @@ public class DirectEngineProvider implements IEngineProvider {
 
 	@Override
 	public Boolean requiresSetup(String engineId) {
-		if (!isSetupEngine(engineId)) {
-			return false;
-		}
-		ProcessEngine processEngine = directProviderUtil.getProcessEngine(getEffectiveDefaultEngineId());
+		ProcessEngine processEngine = directProviderUtil.getProcessEngine(engineId);
 		if (processEngine.getIdentityService().isReadOnly()) {
 			return false;
 		}
@@ -169,9 +165,7 @@ public class DirectEngineProvider implements IEngineProvider {
 			|| user.getCredentials() == null || user.getCredentials().getPassword() == null
 			|| user.getCredentials().getPassword().isEmpty())
 			throw new SystemException("User data not provided.");
-		if (!isSetupEngine(engineId))
-			throw new SystemException("Initial setup is only possible on the default engine.");
-		ProcessEngine processEngine = directProviderUtil.getProcessEngine(getEffectiveDefaultEngineId());
+		ProcessEngine processEngine = directProviderUtil.getProcessEngine(engineId);
 		IdentityService identityService = processEngine.getIdentityService();
 		if (identityService.isReadOnly())
 			throw new SystemException("Identity service implementation is read-only.");
@@ -195,11 +189,6 @@ public class DirectEngineProvider implements IEngineProvider {
 				throw translateSetupException(e);
 			}
 		}
-	}
-
-	/** No engine named, or the effective default engine named. */
-	private boolean isSetupEngine(String engineId) {
-		return IEngineProvider.isEngineUnspecified(engineId) || engineId.equals(getEffectiveDefaultEngineId());
 	}
 
 	private static boolean hasNoAdminGroup(ProcessEngine processEngine) {

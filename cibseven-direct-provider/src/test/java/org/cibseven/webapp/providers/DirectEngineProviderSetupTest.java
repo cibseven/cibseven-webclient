@@ -135,25 +135,19 @@ public class DirectEngineProviderSetupTest {
 		assertThat(restored.getUserId()).isEqualTo("someone");
 	}
 
-	// --- only the effective default engine can be set up ---------------------------------------
+	// --- the engine SetupService passes on: the effective default, by its name --------------------
 
 	@Test
 	void requiresSetup_namingTheDefaultEngine_asksIt() {
 		assertThat(provider.requiresSetup(engine.getName())).isTrue();
 	}
 
-	/** Another name is not looked up: it would fail with "No process engine found" otherwise. */
 	@Test
-	void requiresSetup_namingAnotherEngine_isFalse() {
-		assertThat(provider.requiresSetup("other")).isFalse();
-	}
+	void createSetupUser_namingTheDefaultEngine_createsTheAdminThere() {
+		provider.createSetupUser(newUser("admin"), engine.getName());
 
-	@Test
-	void createSetupUser_namingAnotherEngine_isRefused() {
-		assertThatThrownBy(() -> provider.createSetupUser(newUser("admin"), "other"))
-			.isInstanceOf(SystemException.class);
-		assertThat(engine.getIdentityService().createUserQuery().count()).isZero();
-		assertThat(provider.requiresSetup(null)).isTrue();
+		assertThat(engine.getIdentityService().createUserQuery().memberOfGroup(Groups.CAMUNDA_ADMIN).userId("admin").count())
+			.isEqualTo(1);
 	}
 
 	// --- one transaction ---------------------------------------------------------------------------

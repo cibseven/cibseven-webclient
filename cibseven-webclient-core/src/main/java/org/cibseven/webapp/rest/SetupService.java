@@ -18,6 +18,7 @@ package org.cibseven.webapp.rest;
 
 import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.providers.BpmProvider;
+import org.cibseven.webapp.providers.IEngineProvider;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.cibseven.webapp.rest.model.PasswordPolicyRequest;
 import org.cibseven.webapp.rest.model.PasswordPolicyResponse;
@@ -82,7 +83,11 @@ public class SetupService extends BaseService implements InitializingBean {
 		if (!SEVEN_USER_PROVIDER.equals(properties.getUser().getProvider())) {
 			return false;
 		}
-		return bpmProvider.requiresSetup(engineId);
+		String setupEngine = getEffectiveDefaultEngineId();
+		if (!isSetupEngine(engineId, setupEngine)) {
+			return false;
+		}
+		return bpmProvider.requiresSetup(setupEngine);
 	}
 
 	/**
@@ -111,14 +116,38 @@ public class SetupService extends BaseService implements InitializingBean {
 		if (!SEVEN_USER_PROVIDER.equals(properties.getUser().getProvider())) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
-		if (!bpmProvider.requiresSetup(engineId)) {
+		String setupEngine = getEffectiveDefaultEngineId();
+		if (!isSetupEngine(engineId, setupEngine)) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
+		if (!bpmProvider.requiresSetup(setupEngine)) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
 
 		// Create the admin user - backend handles group and authorization setup
-		bpmProvider.createSetupUser(newUser, engineId);
-		
+		bpmProvider.createSetupUser(newUser, setupEngine);
+
 		return ResponseEntity.status(HttpStatus.CREATED).build();
+	}
+
+	/*
+	 * Setup policy, the same for every provider (CIB7-2554): the setup endpoints are called without
+	 * a login, so the first-run setup is only offered for the effective default engine (the engine
+	 * named "default", otherwise the first one). Is an installation set up is a question about the
+	 * installation, not about one of its engines: otherwise anyone could claim the admin role on a
+	 * further engine of an installation that is already set up, by naming it in X-Process-Engine.
+	 * - No X-Process-Engine header, or the effective default engine named in it: that engine.
+	 * - Any other engine named: the status is false and the creation is refused with 403. The name
+	 *   is not passed on to the provider.
+	 * A further engine gets its first admin through the admin pages of an administrator.
+	 */
+
+	private String getEffectiveDefaultEngineId() {
+		return bpmProvider.getEngineProvider().getEffectiveDefaultEngineId();
+	}
+
+	private static boolean isSetupEngine(String requestedEngine, String setupEngine) {
+		return IEngineProvider.isEngineUnspecified(requestedEngine) || requestedEngine.equals(setupEngine);
 	}
 
 	@PostMapping("/validate-password")
