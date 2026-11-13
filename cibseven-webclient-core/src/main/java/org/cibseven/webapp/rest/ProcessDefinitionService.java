@@ -74,10 +74,17 @@ public class ProcessDefinitionService extends BaseService implements Initializin
 		return bpmProvider.getRenderedStartForm(processDefinitionId, params, user);
 	}
 
+	/*
+	 * Kept as it is for compatibility: without variableNames the path segment is a definition key,
+	 * with variableNames it is a definition id. The bpm-sdk (embedded and generated start forms)
+	 * sends "{id}/form-variables?variableNames=..." and relies on the id reading (see #1402).
+	 * Callers that have a key and want to filter by name use "/key/{key}/form-variables".
+	 */
 	@Operation(
 			summary = "Get form variables for process definition",
-			description = "<strong>Return: Map of form variable names to Variable objects for the given process definition key. "
-					+ "Variables can optionally be deserialized and filtered by name.</strong>")
+			description = "<strong>Return: Map of form variable names to Variable objects. Without variableNames the path segment "
+					+ "is the process definition key, with variableNames it is the process definition id. "
+					+ "Use /key/{key}/form-variables to filter by name for a key.</strong>")
 	@ApiResponse(responseCode = "404", description = "Process definition or form variables not found")
 	@RequestMapping(value = "/{key}/form-variables", method = RequestMethod.GET)
 	public Map<String, Variable> fetchProcessDefinitionFormVariablesByNames(
@@ -85,15 +92,38 @@ public class ProcessDefinitionService extends BaseService implements Initializin
 			@RequestParam(required = false, defaultValue = "true") boolean deserializeValues,
 			@RequestParam(required = false) String variableNames,
 			CIBUser user) {
-		List<String> variableListName = null;
-		if (variableNames != null && !variableNames.isEmpty()) {
-			variableListName = List.of(variableNames.split(","));
-		}
+		List<String> variableListName = parseVariableNames(variableNames);
 		if (variableListName != null) {
 			return bpmProvider.fetchProcessFormVariables(variableListName, key, deserializeValues, user);
 		} else {
 			return bpmProvider.fetchProcessFormVariables(key, deserializeValues, user);
 		}
+	}
+
+	@Operation(
+			summary = "Get form variables for process definition by key",
+			description = "<strong>Return: Map of form variable names to Variable objects for the latest version of the process "
+					+ "definition with the given key and no tenant id. Variables can optionally be deserialized and filtered by name.</strong>")
+	@ApiResponse(responseCode = "404", description = "Process definition or form variables not found")
+	@RequestMapping(value = "/key/{key}/form-variables", method = RequestMethod.GET)
+	public Map<String, Variable> fetchProcessDefinitionFormVariablesByKey(
+			@PathVariable String key,
+			@RequestParam(required = false, defaultValue = "true") boolean deserializeValues,
+			@RequestParam(required = false) String variableNames,
+			CIBUser user) {
+		List<String> variableListName = parseVariableNames(variableNames);
+		if (variableListName != null) {
+			return bpmProvider.fetchProcessFormVariablesByKey(variableListName, key, deserializeValues, user);
+		} else {
+			return bpmProvider.fetchProcessFormVariables(key, deserializeValues, user);
+		}
+	}
+
+	private static List<String> parseVariableNames(String variableNames) {
+		if (variableNames == null || variableNames.isEmpty()) {
+			return null;
+		}
+		return List.of(variableNames.split(","));
 	}
 
 	@Consumes(MediaType.APPLICATION_JSON)
