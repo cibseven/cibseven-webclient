@@ -226,10 +226,13 @@ public class ModelerService extends ModelerBaseService {
 	@RequestMapping(value = "/deployment/start/{key}", method = RequestMethod.POST)
 	public ProcessStart startProcess(
 			@PathVariable String key,
-			@RequestBody Map<String, Object> data,			
+			@Parameter(description = "Tenant the process was deployed for; without one, the definition of no tenant is started")
+			@RequestParam(required = false) String tenantId,
+			@RequestBody Map<String, Object> data,
 			HttpServletRequest rq) {
 		CIBUser user = checkModelerAccess(rq);
-		return bpmProvider.startProcess(key, null, data, user);
+		// A key alone only finds a definition of no tenant, so one deployed for a tenant is started by both
+		return bpmProvider.startProcess(key, tenantId == null || tenantId.isBlank() ? null : tenantId, data, user);
 	}
 	
 	@RequestMapping(value = "/deployment/create/reduce", method = RequestMethod.POST)

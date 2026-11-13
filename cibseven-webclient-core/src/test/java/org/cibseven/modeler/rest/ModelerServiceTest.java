@@ -23,12 +23,15 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.cibseven.modeler.provider.ProjectGuard;
@@ -408,5 +411,34 @@ public class ModelerServiceTest {
 		service.deployBpmn(data, file, request);
 
 		verify(bpmProvider).deployBpmn(data, file, user);
+	}
+
+	@Test
+	void startProcess_startsTheDefinitionOfTheTenantItWasDeployedFor() {
+		Map<String, Object> data = Map.of("variables", Map.of());
+
+		service.startProcess("invoice", "acme", data, request);
+
+		verify(bpmProvider).startProcess("invoice", "acme", data, user);
+	}
+
+	// A key alone finds only a definition of no tenant: without a tenant, or with a blank one, that is asked for
+	@Test
+	void startProcess_startsTheDefinitionOfNoTenantWithoutOne() {
+		Map<String, Object> data = Map.of();
+
+		service.startProcess("invoice", null, data, request);
+		service.startProcess("invoice", "  ", data, request);
+
+		verify(bpmProvider, times(2)).startProcess("invoice", null, data, user);
+	}
+
+	@Test
+	void startProcess_isRefusedWithoutModelerAccess() {
+		doThrow(new AccessDeniedException("no modeler")).when(modelerAccessChecker).checkModelerAccess(user);
+
+		assertThatThrownBy(() -> service.startProcess("invoice", "acme", Map.of(), request))
+			.isInstanceOf(AccessDeniedException.class);
+		verifyNoInteractions(bpmProvider);
 	}
 }
