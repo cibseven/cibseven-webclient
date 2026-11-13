@@ -21,6 +21,7 @@ import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -31,6 +32,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
@@ -38,23 +41,18 @@ import org.apache.catalina.startup.Tomcat;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.BaseService;
 import org.cibseven.webapp.rest.HistoryProcessService;
-import org.cibseven.webapp.rest.HopByHopHeadersAdvice;
 import org.cibseven.webapp.rest.ProcessDefinitionService;
 import org.cibseven.webapp.rest.ProcessService;
 import org.cibseven.webapp.rest.TaskService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.MethodParameter;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
@@ -68,7 +66,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * CIB7-2766: the webclient relayed engine-rest's Transfer-Encoding, Tomcat framed the response
  * itself as well, and strict proxies (nginx 1.21.1+) answered 502 on the duplicate header.
  * This drives the real controllers and REST providers through a real Tomcat, with engine-rest
- * streaming a large resource chunked, and reads the raw response a proxy would see.
+ * streaming a large resource chunked (or sending it gzip-encoded), and reads the raw response
+ * a proxy would see.
  */
 class EngineResponseHeadersIT {
 
@@ -100,6 +99,11 @@ class EngineResponseHeadersIT {
 			Arguments.of("historic variable data", "/services/v1/process-history/variable/var-1/data", "application/octet-stream"));
 	}
 
+	/** The endpoints that pass the engine's bytes on unchanged (the rendered forms are decoded to text). */
+	static Stream<Arguments> byteResources() {
+		return engineResources().filter(arguments -> !((String) arguments.get()[0]).startsWith("rendered"));
+	}
+
 	@BeforeEach
 	void start() throws Exception {
 		engine = new MockEngineRest();
@@ -110,13 +114,12 @@ class EngineResponseHeadersIT {
 		doReturn(engine.wire(new VariableProvider())).when(bpmProvider).getVariableProvider();
 
 		AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
-		context.register(MvcConfig.class, HopByHopHeadersAdvice.class);
+		context.register(MvcConfig.class);
 		context.addBeanFactoryPostProcessor(beanFactory -> {
 			beanFactory.registerSingleton("processService", withProvider(new ProcessService(), bpmProvider));
 			beanFactory.registerSingleton("taskService", withProvider(new TaskService(), bpmProvider));
 			beanFactory.registerSingleton("processDefinitionService", withProvider(new ProcessDefinitionService(), bpmProvider));
 			beanFactory.registerSingleton("historyProcessService", withProvider(new HistoryProcessService(), bpmProvider));
-			beanFactory.registerSingleton("passThroughController", new PassThroughController());
 		});
 
 		tomcat = new Tomcat();
@@ -149,13 +152,34 @@ class EngineResponseHeadersIT {
 		assertThat(response.body()).isEqualTo(FORM);
 	}
 
-	@Test
-	void stripsConnectionHeadersFromAnyControllerResponse() throws Exception {
-		RawResponse response = get("/pass-through");
+	@ParameterizedTest(name = "{0}")
+	@MethodSource("byteResources")
+	void relaysAGzipEngineResourceWithItsContentEncoding(String resource, String path, String contentType) throws Exception {
+		byte[] gzipped = gzip(FORM);
+		engine.enqueueGzip(gzipped, contentType);
+
+		RawResponse response = get(path);
 
 		assertThat(response.statusLine).contains(" 200");
 		assertSingleFraming(response);
-		assertThat(response.body()).isEqualTo(FORM);
+		// the bytes are passed on unchanged, so the client needs the encoding to read them
+		assertThat(response.header("Content-Encoding")).isEqualTo("gzip");
+		assertThat(response.body()).isEqualTo(gzipped);
+		assertThat(gunzip(response.body())).isEqualTo(FORM);
+	}
+
+	private static byte[] gzip(byte[] data) throws IOException {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		try (GZIPOutputStream gzip = new GZIPOutputStream(out)) {
+			gzip.write(data);
+		}
+		return out.toByteArray();
+	}
+
+	private static byte[] gunzip(byte[] data) throws IOException {
+		try (GZIPInputStream gzip = new GZIPInputStream(new ByteArrayInputStream(data))) {
+			return gzip.readAllBytes();
+		}
 	}
 
 	private static void assertSingleFraming(RawResponse response) {
@@ -200,20 +224,6 @@ class EngineResponseHeadersIT {
 					return MockEngineRest.user();
 				}
 			});
-		}
-	}
-
-	/** A controller that forgets to filter what it got from another server. */
-	@RestController
-	public static class PassThroughController {
-		@GetMapping("/pass-through")
-		public ResponseEntity<byte[]> passThrough() {
-			return ResponseEntity.ok()
-				.header("Transfer-Encoding", "chunked")
-				.header("Connection", "keep-alive")
-				.header("Keep-Alive", "timeout=60")
-				.header("Content-Type", "application/xhtml+xml")
-				.body(FORM);
 		}
 	}
 

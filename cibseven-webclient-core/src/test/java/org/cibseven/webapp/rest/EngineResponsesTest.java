@@ -80,7 +80,7 @@ class EngineResponsesTest {
 
 	@Test
 	void forwardableHeaders_keepsOnlyTheContentHeaders() {
-		assertOnlyContentHeaders(EngineResponses.forwardableHeaders(engineHeaders()));
+		assertOnlyContentHeaders(EngineResponses.forwardableHeaders(engineHeaders(), BODY));
 	}
 
 	@Test
@@ -88,7 +88,25 @@ class EngineResponsesTest {
 		HttpHeaders source = new HttpHeaders();
 		source.add(HttpHeaders.TRANSFER_ENCODING, "chunked");
 
-		assertThat(EngineResponses.forwardableHeaders(source).isEmpty()).isTrue();
+		assertThat(EngineResponses.forwardableHeaders(source, BODY).isEmpty()).isTrue();
+	}
+
+	@Test
+	void forwardableHeaders_keepsTheContentEncodingOfAnUnchangedByteBody() {
+		HttpHeaders source = engineHeaders();
+		source.add(HttpHeaders.CONTENT_ENCODING, "gzip");
+
+		assertThat(EngineResponses.forwardableHeaders(source, BODY).getFirst(HttpHeaders.CONTENT_ENCODING))
+				.isEqualTo("gzip");
+	}
+
+	@Test
+	void forwardableHeaders_dropsTheContentEncodingOfADecodedStringBody() {
+		// the converter already turned the bytes into text, which Spring writes uncompressed
+		HttpHeaders source = engineHeaders();
+		source.add(HttpHeaders.CONTENT_ENCODING, "gzip");
+
+		assertOnlyContentHeaders(EngineResponses.forwardableHeaders(source, "<form/>"));
 	}
 
 	@Test

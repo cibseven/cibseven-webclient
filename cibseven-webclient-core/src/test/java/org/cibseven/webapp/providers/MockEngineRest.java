@@ -107,6 +107,14 @@ final class MockEngineRest implements AutoCloseable {
 			.addHeader("Keep-Alive", "timeout=60"));
 	}
 
+	/** An already gzip-compressed resource with a fixed length, as an engine or proxy that compresses would send it. */
+	void enqueueGzip(byte[] gzipped, String contentType) {
+		server.enqueue(new MockResponse()
+			.setBody(new Buffer().write(gzipped))
+			.addHeader("Content-Type", contentType)
+			.addHeader("Content-Encoding", "gzip"));
+	}
+
 	void enqueuePlainText(String body) {
 		enqueueBytes(body.getBytes(StandardCharsets.UTF_8), "text/plain");
 	}

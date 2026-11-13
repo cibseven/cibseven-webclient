@@ -22,14 +22,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 
 /**
- * Relays a response the provider got from the engine without the headers that
- * describe the engine connection (Transfer-Encoding, Connection, Content-Length, ...).
- * The servlet container frames our response itself, so forwarding them sends
- * e.g. Transfer-Encoding twice, which strict proxies reject with 502.
+ * Rebuilds a response the provider got from the engine with only its content headers.
+ * The engine's connection headers (Transfer-Encoding, Connection, Content-Length, ...)
+ * describe the engine connection; the servlet container frames our response itself,
+ * and forwarding them sends e.g. Transfer-Encoding twice, which strict proxies reject with 502.
  */
 public final class EngineResponses {
 
-	static final List<String> FORWARDED_HEADERS = List.of(
+	static final List<String> CONTENT_HEADERS = List.of(
 			HttpHeaders.CONTENT_TYPE,
 			HttpHeaders.CONTENT_DISPOSITION,
 			HttpHeaders.CACHE_CONTROL);
@@ -37,20 +37,22 @@ public final class EngineResponses {
 	private EngineResponses() {
 	}
 
-	public static HttpHeaders forwardableHeaders(HttpHeaders source) {
+	/**
+	 * Content-Encoding is kept only for a byte[] body, which reaches the client unchanged.
+	 * A String body has already been decoded to text and is written again uncompressed.
+	 */
+	public static HttpHeaders forwardableHeaders(HttpHeaders source, Object body) {
 		HttpHeaders headers = new HttpHeaders();
-		for (String name : FORWARDED_HEADERS) {
-			List<String> values = source.get(name);
-			if (values != null) {
-				headers.addAll(name, values);
-			}
+		CONTENT_HEADERS.forEach(name -> copy(source, headers, name));
+		if (body instanceof byte[]) {
+			copy(source, headers, HttpHeaders.CONTENT_ENCODING);
 		}
 		return headers;
 	}
 
 	public static <T> ResponseEntity<T> relay(ResponseEntity<T> response) {
 		return ResponseEntity.status(response.getStatusCode())
-				.headers(forwardableHeaders(response.getHeaders()))
+				.headers(forwardableHeaders(response.getHeaders(), response.getBody()))
 				.body(response.getBody());
 	}
 
@@ -60,8 +62,13 @@ public final class EngineResponses {
 		if (body == null || body.length == 0) {
 			return ResponseEntity.noContent().build();
 		}
-		return ResponseEntity.ok()
-				.headers(forwardableHeaders(response.getHeaders()))
-				.body(body);
+		return relay(response);
+	}
+
+	private static void copy(HttpHeaders source, HttpHeaders target, String name) {
+		List<String> values = source.get(name);
+		if (values != null) {
+			target.addAll(name, values);
+		}
 	}
 }
