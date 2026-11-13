@@ -51,10 +51,13 @@ import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.ModelerAccessChecker;
 import org.cibseven.webapp.exception.AccessDeniedException;
+import org.cibseven.webapp.exception.InvalidAttributeValueException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -431,6 +434,31 @@ public class ModelerServiceTest {
 		service.startProcess("invoice", "  ", data, request);
 
 		verify(bpmProvider, times(2)).startProcess("invoice", null, data, user);
+	}
+
+	@Test
+	void startProcess_trimsTheTenant() {
+		Map<String, Object> data = Map.of();
+
+		service.startProcess("invoice", "  acme  ", data, request);
+
+		verify(bpmProvider).startProcess("invoice", "acme", data, user);
+	}
+
+	// Key and tenant become path segments of the engine URL: nothing may change that URL
+	@ParameterizedTest
+	@ValueSource(strings = { "a/../../message", "acme?x=1", "acme#frag", "ac%2Fme", "ac me", "..", "." })
+	void startProcess_refusesATenantThatWouldChangeTheEngineUrl(String tenant) {
+		assertThatThrownBy(() -> service.startProcess("invoice", tenant, Map.of(), request))
+			.isInstanceOf(InvalidAttributeValueException.class);
+		verifyNoInteractions(bpmProvider);
+	}
+
+	@Test
+	void startProcess_refusesAKeyThatWouldChangeTheEngineUrl() {
+		assertThatThrownBy(() -> service.startProcess("invoice?tenant-id=x", null, Map.of(), request))
+			.isInstanceOf(InvalidAttributeValueException.class);
+		verifyNoInteractions(bpmProvider);
 	}
 
 	@Test

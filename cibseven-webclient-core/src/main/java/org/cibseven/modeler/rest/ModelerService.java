@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -43,6 +44,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,6 +55,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import org.cibseven.webapp.exception.AccessDeniedException;
+import org.cibseven.webapp.exception.InvalidAttributeValueException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.modeler.model.DiagramUsageEntity;
@@ -223,6 +226,7 @@ public class ModelerService extends ModelerBaseService {
 	}
 	
 
+	@Operation(summary = "Starts the latest definition with the process key, of the tenant it was deployed for")
 	@RequestMapping(value = "/deployment/start/{key}", method = RequestMethod.POST)
 	public ProcessStart startProcess(
 			@PathVariable String key,
@@ -231,8 +235,20 @@ public class ModelerService extends ModelerBaseService {
 			@RequestBody Map<String, Object> data,
 			HttpServletRequest rq) {
 		CIBUser user = checkModelerAccess(rq);
-		// A key alone only finds a definition of no tenant, so one deployed for a tenant is started by both
-		return bpmProvider.startProcess(key, tenantId == null || tenantId.isBlank() ? null : tenantId, data, user);
+		// The engine finds a definition deployed for a tenant only when asked with key and tenant together
+		String tenant = StringUtils.hasText(tenantId) ? tenantId.strip() : null;
+		requirePathSegment(key);
+		if (tenant != null) requirePathSegment(tenant);
+		return bpmProvider.startProcess(key, tenant, data, user);
+	}
+
+	// Characters that would change the engine URL key and tenant are placed in, as path segments
+	private static final Pattern UNSAFE_IN_PATH = Pattern.compile("[/\\\\?#%\\s]");
+
+	private static void requirePathSegment(String value) {
+		if (value.isEmpty() || ".".equals(value) || "..".equals(value) || UNSAFE_IN_PATH.matcher(value).find()) {
+			throw new InvalidAttributeValueException(Optional.of(value), null);
+		}
 	}
 	
 	@RequestMapping(value = "/deployment/create/reduce", method = RequestMethod.POST)
