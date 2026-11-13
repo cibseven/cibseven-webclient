@@ -492,6 +492,33 @@ describe('inline route hooks', () => {
         query: { errorType: 'notFoundPage', path: '/seven/auth/nosuchpage?x=1' }
       })
     })
+
+    it('should show the unknown address as typed, not percent-encoded', () => {
+      const [hook] = hooks('not-found')
+      // The browser hands the address over encoded
+      const to = router.resolve('/seven/auth/my%20page/%C3%BC')
+
+      expect(hook(to).query.path).toBe('/seven/auth/my page/ü')
+    })
+
+    it('should show an address with a malformed % sequence as it is', () => {
+      const [hook] = hooks('not-found')
+
+      expect(hook({ fullPath: '/seven/auth/100%' }).query.path).toBe('/seven/auth/100%')
+    })
+
+    // These matched a parent route without any child, which showed the header and nothing below it
+    it.each([
+      ['/seven', 'seven-index'],
+      ['/seven/', 'seven-index'],
+      ['/seven/auth', 'auth-index'],
+      ['/seven/auth/', 'auth-index']
+    ])('should send %s to the start page', (path, name) => {
+      const to = router.resolve(path)
+
+      expect(to.name).toBe(name)
+      expect(to.matched.at(-1).redirect).toEqual({ name: 'start-configurable' })
+    })
   })
 
   describe('start-configurable', () => {

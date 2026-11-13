@@ -99,6 +99,8 @@ const appRoutes = [
   },
   {
     path: '/seven', name: 'seven', component: CibSeven, children: [
+      // /seven alone has no page of its own and would show only the header
+      { path: '', name: 'seven-index', redirect: { name: 'start-configurable' } },
       {
         path: 'login', name: 'login', beforeEnter: async function (to) {
           // Back from an external system's logout: wait for the user instead of logging in again
@@ -144,6 +146,8 @@ const appRoutes = [
             })
           },
         }, children: [
+          // /seven/auth alone has no page of its own and would show only the header
+          { path: '', name: 'auth-index', redirect: { name: 'start-configurable' } },
           {
             path: 'no-permission', name: 'no-permission',
             beforeEnter: (to) => ({
@@ -374,13 +378,22 @@ const appRoutes = [
       name: 'start',
       query: {
         errorType: 'notFoundPage',
-        path: to.fullPath,
+        path: readablePath(to.fullPath),
       }
     })
   },
 ];
 
 let router = null
+
+// The address as typed, e.g. "my page" rather than "my%20page". The error dialog shows it as text, never as HTML
+function readablePath(fullPath) {
+  try {
+    return decodeURI(fullPath)
+  } catch {
+    return fullPath // A malformed % sequence, e.g. "100%"
+  }
+}
 
 // The child routes of a page's tabs, e.g. 'account/:userId/preferences' named 'accountPreferences'
 function profileTabRoutes(page, tabs) {
