@@ -17,6 +17,7 @@
 package org.cibseven.webapp.providers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -25,9 +26,11 @@ import java.nio.charset.StandardCharsets;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.InvalidValueHistoryTimeToLive;
 import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.webapp.rest.CustomRestTemplate;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpServerErrorException;
 
@@ -82,6 +85,22 @@ public class SevenProviderBaseTest {
         return HttpServerErrorException.create(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error",
             HttpHeaders.EMPTY, body.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
     }
+
+    // ---------- per-call RestTemplate (CIB7-2206) ----------
+
+    @Test
+    public void createPatchRestTemplate_sharesTheRequestFactoryOfTheCustomRestTemplate() {
+        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
+        TestProvider provider = new TestProvider();
+        ReflectionTestUtils.setField(provider, "customRestTemplate", new CustomRestTemplate(factory));
+
+        assertSame(factory, provider.createPatchRestTemplate().getRequestFactory());
+    }
+
+    // the request going out through the configured client is tested against a mock engine in
+    // cibseven-webclient-core: SevenProviderBaseHttpClientTest
+
+    // ---------- engine REST URL ----------
 
     @Test
     public void testGetEngineRestUrl_DefaultPath() {
