@@ -728,6 +728,34 @@ describe('handleAxiosError for a request that reports its own errors', () => {
     expect(router.push).not.toHaveBeenCalled()
   })
 
+  // A second webclient on the same host, under another path, is another instance too
+  it('should neither renew nor log out for another instance on the same host', async () => {
+    const { setServicesBasePath } = await import('@/services.js')
+    const before = getServicesBasePath()
+    setServicesBasePath('webapp/services/v1')
+    try {
+      const root = rootWith()
+      const router = routerWith()
+      const sameHost = `${window.location.origin}/other-app/services/v1/modeler/deployment/create`
+      const renewal = own({ status: 401, data: { type: 'TokenExpiredException', params: ['tok-of-other-app'] } }, 'tok-session', sameHost)
+
+      await expect(handleAxiosError(router, root, renewal)).rejects.toBe(renewal)
+
+      expect(sessionStorage.getItem('token')).toBe('tok-session')
+      expect(axios.request).not.toHaveBeenCalled()
+      expect(router.push).not.toHaveBeenCalled()
+
+      // This webclient's own services, relative or absolute, still count for the session
+      for (const url of ['webapp/services/v1/modeler/deployment/create', `${window.location.origin}/webapp/services/v1/modeler/deployment/create`]) {
+        axios.request.mockClear()
+        await handleAxiosError(router, root, own({ status: 401, data: { type: 'TokenExpiredException', params: ['tok-session'] } }, 'tok-session', url))
+        expect(axios.request).toHaveBeenCalledOnce()
+      }
+    } finally {
+      setServicesBasePath(before)
+    }
+  })
+
   it('should never let another token replace the session token', async () => {
     const root = rootWith()
     const error = own({ status: 401, data: { type: 'TokenExpiredException', params: ['tok-of-other-user'] } }, 'Bearer tok-other-user')

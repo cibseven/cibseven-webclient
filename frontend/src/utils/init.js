@@ -89,13 +89,23 @@ let replacedSessionToken = null
 
 const sessionToken = () => sessionStorage.getItem('token') || localStorage.getItem('token')
 
-const ABSOLUTE_URL = /^[a-z][a-z\d+.-]*:\/\//i
+// A URL as the browser resolves it against the page, or null
+const resolved = url => {
+  try {
+    return new URL(url ?? '', document.baseURI).href
+  } catch {
+    return null
+  }
+}
 
-// A request to this webclient's own services, not to another instance (an absolute URL elsewhere)
+/**
+ * A request to this webclient's own services: under its services base URL. Another instance is not,
+ * also not on the same host under another path, so its answer can neither renew nor end the session.
+ */
 const toOwnServices = url => {
-  if (!ABSOLUTE_URL.test(url ?? '')) return true
-  const base = getServicesBasePath()
-  return url.startsWith(`${window.location.origin}/`) || (ABSOLUTE_URL.test(base) && url.startsWith(base))
+  const target = resolved(url)
+  const base = resolved(getServicesBasePath())?.replace(/\/+$/, '')
+  return !!target && !!base && (target === base || target.startsWith(`${base}/`))
 }
 
 const carriesSessionToken = error => {
