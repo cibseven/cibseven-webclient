@@ -36,9 +36,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
+import org.springframework.orm.jpa.EntityManagerFactoryUtils;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import jakarta.persistence.EntityManagerFactory;
 
@@ -134,6 +136,26 @@ class CibsevenPersistenceConfigurationTest {
 				context.getBeanFactory(), TransactionManager.class, CibsevenJpa.TRANSACTION_MANAGER);
 			assertThat(((JpaTransactionManager) resolved).getEntityManagerFactory())
 				.isSameAs(context.getBean(CibsevenJpa.ENTITY_MANAGER_FACTORY, EntityManagerFactory.class));
+		});
+	}
+
+	/**
+	 * On the run distribution the engine shares the data source under Boot's {@code transactionManager},
+	 * and the direct provider calls it inside webclient transactions (CIB7-2712).
+	 */
+	@Test
+	void bootsTransactionManagerRunsInsideAWebclientTransaction() {
+		standalone.run(context -> {
+			PlatformTransactionManager webclient = context.getBean(CibsevenJpa.TRANSACTION_MANAGER, PlatformTransactionManager.class);
+			PlatformTransactionManager boot = context.getBean("transactionManager", PlatformTransactionManager.class);
+			EntityManagerFactory bootUnit = context.getBean("entityManagerFactory", EntityManagerFactory.class);
+			assertThat(boot).isInstanceOf(JpaTransactionManager.class);
+
+			Object result = new TransactionTemplate(webclient).execute(status -> new TransactionTemplate(boot)
+				.execute(inner -> EntityManagerFactoryUtils.getTransactionalEntityManager(bootUnit)
+					.createNativeQuery("select 1").getSingleResult()));
+
+			assertThat(result).isEqualTo(1);
 		});
 	}
 
