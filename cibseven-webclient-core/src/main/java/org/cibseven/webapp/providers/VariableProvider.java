@@ -290,8 +290,11 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 
 	@Override
 	public Map<String, Variable> fetchProcessFormVariables(List<String> variableListName, String key, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException {
-		String url = getEngineRestUrl(user) + "/process-definition/key/" + key + "/form-variables?deserializeValues=" + deserializeValues
-				+ "&variableNames=" + String.join(",", variableListName);
+		String url = getEngineRestUrl(user) + "/process-definition/" + key + "/form-variables?deserializeValues=" + deserializeValues + "&variableNames=";
+		for(String variable: variableListName) {
+			url += variable + ",";
+		}
+
 		return doGet(url, new ParameterizedTypeReference<Map<String, Variable>>() {}, user).getBody();
 	}
 

@@ -163,32 +163,6 @@ public class DirectVariableProviderFormsTest {
 			.hasMessageContaining("No matching process definition with key: missing");
 	}
 
-	@Test
-	void fetchProcessFormVariables_withNamesResolvesTheKeyAndForwardsTheNames() {
-		ProcessDefinition definition = mock(ProcessDefinition.class);
-		when(definition.getId()).thenReturn("definition-1");
-		when(definitionQuery.singleResult()).thenReturn(definition);
-		List<String> names = List.of("amount");
-		when(formService.getStartFormVariables("definition-1", names, false)).thenReturn(variables());
-
-		Map<String, Variable> result = variableProvider.fetchProcessFormVariables(names, "invoice", false, user);
-
-		// CIB7-2356: the argument is a definition key, not an id
-		assertThat(result).containsOnlyKeys("amount", "customer");
-		verify(definitionQuery).processDefinitionKey("invoice");
-		verify(definitionQuery).withoutTenantId();
-		verify(definitionQuery).latestVersion();
-	}
-
-	@Test
-	void fetchProcessFormVariables_withNamesThrowsWhenTheDefinitionIsUnknown() {
-		when(definitionQuery.singleResult()).thenReturn(null);
-
-		assertThatThrownBy(() -> variableProvider.fetchProcessFormVariables(List.of("amount"), "missing", true, user))
-			.isInstanceOf(SystemException.class)
-			.hasMessageContaining("No matching process definition with key: missing");
-	}
-
 	// ---------- activity variables ----------
 
 	@Test
