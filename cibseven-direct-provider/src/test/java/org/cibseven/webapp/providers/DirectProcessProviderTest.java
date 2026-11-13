@@ -25,7 +25,9 @@ import static org.cibseven.webapp.providers.ProcessInstanceRuntimeHistoryTestDat
 import static org.cibseven.webapp.providers.ProcessInstanceRuntimeHistoryTestData.PROCESS_DEFINITION_ID;
 import static org.cibseven.webapp.providers.ProcessInstanceRuntimeHistoryTestData.PROCESS_DEFINITION_KEY;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_SELF;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -41,6 +43,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.cibseven.bpm.engine.AuthorizationException;
 import org.cibseven.bpm.engine.FormService;
 import org.cibseven.bpm.engine.HistoryService;
 import org.cibseven.bpm.engine.ProcessEngine;
@@ -49,14 +52,18 @@ import org.cibseven.bpm.engine.history.HistoricProcessInstance;
 import org.cibseven.bpm.engine.impl.HistoricProcessInstanceQueryImpl;
 import org.cibseven.bpm.engine.rest.mapper.JacksonConfigurator;
 import org.cibseven.bpm.engine.runtime.ProcessInstanceQuery;
+import org.cibseven.bpm.engine.variable.Variables;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.Incident;
 import org.cibseven.webapp.rest.model.ProcessInstance;
+import org.cibseven.webapp.rest.model.Variable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.springframework.http.ResponseEntity;
 
@@ -313,5 +320,46 @@ public class DirectProcessProviderTest {
 
 		assertThatThrownBy(() -> processProvider.getRenderedForm("def-1", Map.of(), user))
 			.isInstanceOf(SystemException.class);
+	}
+
+	// scope and authorization of fetchProcessInstanceVariable run against a real engine in
+	// DirectProcessProviderVariableTest; these pin the mapping around the engine call
+
+	// the variables behind the status-dataset and chat-comments endpoints
+	@ParameterizedTest
+	@ValueSource(strings = { "_statusDataset", "chatComments" })
+	void fetchProcessInstanceVariable_throwsNoObjectFoundWhenTheInstanceDoesNotHoldTheVariable(String variableName) {
+		when(runtimeService.getVariableTyped(eq(INSTANCE_ID_1), eq(variableName), anyBoolean())).thenReturn(null);
+
+		assertThatThrownBy(() -> processProvider.fetchProcessInstanceVariable(INSTANCE_ID_1, variableName, true, user))
+			.isInstanceOf(NoObjectFoundException.class);
+	}
+
+	@Test
+	void fetchProcessInstanceVariable_turnsADeniedReadIntoASystemException() {
+		when(runtimeService.getVariableTyped(eq(INSTANCE_ID_1), eq("_statusDataset"), anyBoolean()))
+			.thenThrow(new AuthorizationException("denied"));
+
+		assertThatThrownBy(() -> processProvider.fetchProcessInstanceVariable(INSTANCE_ID_1, "_statusDataset", true, user))
+			.isInstanceOf(SystemException.class)
+			.isNotInstanceOf(NoObjectFoundException.class)
+			.hasCauseInstanceOf(AuthorizationException.class);
+	}
+
+	@Test
+	void fetchProcessInstanceVariable_returnsTheVariableWithBothValueForms() {
+		Map<String, String> dataset = Map.of("step", "1");
+		when(runtimeService.getVariableTyped(INSTANCE_ID_1, "_statusDataset", true))
+			.thenReturn(Variables.objectValue(dataset).serializationDataFormat("application/json").create());
+		when(runtimeService.getVariableTyped(INSTANCE_ID_1, "_statusDataset", false))
+			.thenReturn(Variables.serializedObjectValue("{\"step\":\"1\"}").serializationDataFormat("application/json")
+				.objectTypeName("java.util.Map").create());
+
+		Variable variable = processProvider.fetchProcessInstanceVariable(INSTANCE_ID_1, "_statusDataset", true, user);
+
+		assertThat(variable.getType()).isEqualTo("Object");
+		assertThat(variable.getValue()).isEqualTo(dataset);
+		assertThat(variable.getValueSerialized()).isEqualTo("{\"step\":\"1\"}");
+		assertThat(variable.getValueDeserialized()).isEqualTo(dataset);
 	}
 }
