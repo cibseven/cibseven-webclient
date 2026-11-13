@@ -283,7 +283,11 @@ const appRoutes = [
             name: 'decision',
             beforeEnter: permissionsGuard('cockpit'),
             component: DecisionView,
-            props: true,
+            props: route => ({
+              decisionKey: route.params.decisionKey,
+              versionIndex: route.params.versionIndex,
+              tenantId: route.query.tenantId
+            }),
             children: [
               {
                 path: ':versionIndex', name: 'decision-version', component: DecisionDefinitionVersion, props: true

@@ -20,7 +20,10 @@
   <div v-if="instance" class="h-100">
     <router-link
       class="btn btn-light rounded-0 border-bottom text-start w-100 align-middle d-flex align-items-center"
-      :to="'/seven/auth/decision/' + instance.decisionDefinitionKey + '/' + versionIndex">
+      :to="{
+        path: '/seven/auth/decision/' + instance.decisionDefinitionKey + '/' + versionIndex,
+        query: instance.tenantId ? { tenantId: instance.tenantId } : {}
+      }">
       <span class="mdi mdi-18px mdi-arrow-left me-2 float-start"></span>
       <h5 class="m-0">
         {{ $t('decision.decisionInstanceId') }}: {{ instanceId }}

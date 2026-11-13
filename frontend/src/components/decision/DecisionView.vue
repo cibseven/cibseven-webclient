@@ -53,7 +53,8 @@ export default {
   mixins: [sidebarOpenPersistenceMixin],
   props: {
     decisionKey: String,
-    versionIndex: { type: String, default: '' }
+    versionIndex: { type: String, default: '' },
+    tenantId: { type: String, default: null }
   },
   data() {
     return {
@@ -65,6 +66,9 @@ export default {
     }
   },
   watch: {
+    tenantId() {
+      this.loadDecisionVersionsByKey(this.decisionKey, this.versionIndex, this.$root.config.lazyLoadHistory)
+    },
     '$route.params.versionIndex': {
       handler(versionIndex) {
         if (versionIndex && this.$store.state.decision.list.length > 0) {
@@ -105,13 +109,16 @@ export default {
     },
     loadDecisionVersionsByKey(decisionKey, versionIndex, lazyLoad) {
       this.versionLoaded = false
-      this.getDecisionVersionsByKey({ key: decisionKey, lazyLoad: lazyLoad })
+      this.getDecisionVersionsByKey({ key: decisionKey, lazyLoad: lazyLoad, tenantId: this.tenantId })
       .then(versions => {
         let version = versions[0]
         this.setSelectedDecisionVersion({ key: decisionKey, version: versionIndex })
         if (!versionIndex) {
           versionIndex = version.version
-          this.$router.push(`/seven/auth/decision/${decisionKey}/${versionIndex}`)
+          this.$router.push({
+            path: `/seven/auth/decision/${decisionKey}/${versionIndex}`,
+            query: version.tenantId ? { tenantId: version.tenantId } : {}
+          })
         } else {
           version = this.getDecisionVersion({ key: decisionKey, version: versionIndex })
         }
