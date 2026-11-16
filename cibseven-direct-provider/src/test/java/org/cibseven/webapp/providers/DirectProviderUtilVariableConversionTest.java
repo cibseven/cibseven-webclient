@@ -25,6 +25,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Map;
 
+import org.cibseven.bpm.engine.AuthorizationException;
 import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.ProcessEngineException;
 import org.cibseven.bpm.engine.rest.dto.VariableValueDto;
@@ -70,5 +71,29 @@ class DirectProviderUtilVariableConversionTest {
 			.isInstanceOf(SystemException.class)
 			.hasMessageContaining("Cannot modify variables for task task-1")
 			.hasMessageContaining("engine not ready");
+	}
+
+	@Test
+	void toPatchVariables_reportsABodyItCannotReadAsSystemException() {
+		assertThatThrownBy(() -> util.toPatchVariables(Map.of("modifications", "not a map"), "task task-1", user))
+			.isInstanceOf(SystemException.class)
+			.hasMessageContaining("Cannot modify variables for task task-1");
+	}
+
+	@Test
+	void writeVariables_passesAMissingPermissionOnLikeTheOtherVariableWrites() {
+		AuthorizationException denied = new AuthorizationException("demo may not update the task");
+
+		assertThatThrownBy(() -> util.writeVariables("modify variables of task task-1", () -> { throw denied; }))
+			.isSameAs(denied);
+	}
+
+	@Test
+	void writeVariables_reportsAnyOtherEngineFailureAsSystemException() {
+		assertThatThrownBy(() -> util.writeVariables("modify variables of task task-1", () -> {
+			throw new ProcessEngineException("task is gone");
+		}))
+			.isInstanceOf(SystemException.class)
+			.hasMessageContaining("Cannot modify variables of task task-1: task is gone");
 	}
 }

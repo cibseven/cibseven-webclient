@@ -122,6 +122,22 @@ class DirectEmbeddedFormVariablesTest {
 	}
 
 	@Test
+	void modifyLocalVariables_reportsABodyItCannotReadAsSystemException() {
+		assertThatThrownBy(() -> taskProvider.modifyLocalVariables(taskId, Map.of("modifications", "not a map"), user))
+			.isInstanceOf(SystemException.class)
+			.hasMessageContaining("Cannot modify variables for task " + taskId);
+	}
+
+	@Test
+	void modifyVariableByExecutionId_reportsABodyItCannotReadAsSystemException() {
+		// the same conversion as the task path; before, the body's error went out unwrapped
+		assertThatThrownBy(() -> variableProvider.modifyVariableByExecutionId(instanceId, Map.of("modifications", "not a map"), user))
+			.isInstanceOf(SystemException.class)
+			.hasMessageContaining("Cannot modify variables for modifyVariableByExecutionId");
+		assertThat(engine.getRuntimeService().getVariables(instanceId)).isEmpty();
+	}
+
+	@Test
 	void putLocalVariable_setsOneTaskLocalVariable() {
 		// task.localVariable sends id and varId next to the value
 		taskProvider.putLocalVariable(taskId, "decision", Map.of(

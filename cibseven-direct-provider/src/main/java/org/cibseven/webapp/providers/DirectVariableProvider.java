@@ -91,7 +91,7 @@ public class DirectVariableProvider implements IVariableProvider {
 	@Override
 	public void modifyVariableByExecutionId(String executionId, Map<String, Object> data, CIBUser user)
 			throws SystemException {
-		PatchVariablesDto patch = directProviderUtil.getObjectMapper(user).convertValue(data, PatchVariablesDto.class);
+		PatchVariablesDto patch = directProviderUtil.toPatchVariables(data, "modifyVariableByExecutionId", user);
 		VariableMap variableModifications = directProviderUtil.toVariableMap(patch.getModifications(), "modifyVariableByExecutionId", user);
 
 		List<String> variableDeletions = patch.getDeletions();

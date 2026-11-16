@@ -217,12 +217,7 @@ public class DirectTaskProvider implements ITaskProvider {
 
 	@Override
 	public void modifyLocalVariables(String taskId, Map<String, Object> patch, CIBUser user) {
-		PatchVariablesDto dto;
-		try {
-			dto = directProviderUtil.getObjectMapper(user).convertValue(patch, PatchVariablesDto.class);
-		} catch (IllegalArgumentException | JacksonException e) {
-			throw new SystemException(String.format("Cannot modify variables for task %s: %s", taskId, e.getMessage()), e);
-		}
+		PatchVariablesDto dto = directProviderUtil.toPatchVariables(patch, "task " + taskId, user);
 		VariableMap modifications = directProviderUtil.toVariableMap(dto.getModifications(), "task " + taskId, user);
 		// as engine-rest does: updateVariablesLocal is only on the implementation
 		directProviderUtil.writeVariables("modify variables of task " + taskId, () ->
