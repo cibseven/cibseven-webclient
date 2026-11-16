@@ -47,9 +47,11 @@ import org.cibseven.bpm.engine.form.CamundaFormRef;
 import org.cibseven.bpm.engine.form.FormData;
 import org.cibseven.bpm.engine.history.HistoricTaskInstance;
 import org.cibseven.bpm.engine.history.HistoricTaskInstanceQuery;
+import org.cibseven.bpm.engine.impl.TaskServiceImpl;
 import org.cibseven.bpm.engine.impl.util.IoUtil;
 import org.cibseven.bpm.engine.query.Query;
 import org.cibseven.bpm.engine.rest.dto.AbstractQueryDto;
+import org.cibseven.bpm.engine.rest.dto.PatchVariablesDto;
 import org.cibseven.bpm.engine.rest.dto.VariableValueDto;
 import org.cibseven.bpm.engine.rest.dto.converter.DelegationStateConverter;
 import org.cibseven.bpm.engine.rest.dto.converter.StringListConverter;
@@ -74,6 +76,7 @@ import org.cibseven.bpm.engine.task.DelegationState;
 import org.cibseven.bpm.engine.task.TaskCountByCandidateGroupResult;
 import org.cibseven.bpm.engine.task.TaskQuery;
 import org.cibseven.bpm.engine.variable.VariableMap;
+import org.cibseven.bpm.engine.variable.value.TypedValue;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SubmitDeniedException;
@@ -210,6 +213,29 @@ public class DirectTaskProvider implements ITaskProvider {
 		// Same shape and default as engine-rest's /localVariables: typed values, objects deserialized
 		VariableMap variables = directProviderUtil.getProcessEngine(user).getTaskService().getVariablesLocalTyped(taskId, true);
 		return new HashMap<>(VariableValueDto.fromMap(variables));
+	}
+
+	@Override
+	public void modifyLocalVariables(String taskId, Map<String, Object> patch, CIBUser user) {
+		PatchVariablesDto dto = directProviderUtil.toPatchVariables(patch, "task " + taskId, user);
+		VariableMap modifications = directProviderUtil.toVariableMap(dto.getModifications(), "task " + taskId, user);
+		// as engine-rest does: updateVariablesLocal is only on the implementation
+		directProviderUtil.writeVariables("modify variables of task " + taskId, () ->
+			((TaskServiceImpl) directProviderUtil.getProcessEngine(user).getTaskService())
+				.updateVariablesLocal(taskId, modifications, dto.getDeletions()));
+	}
+
+	@Override
+	public void putLocalVariable(String taskId, String variableName, Map<String, Object> variable, CIBUser user) {
+		TypedValue value = directProviderUtil.toTypedValue(variable, variableName, user);
+		directProviderUtil.writeVariables("put variable " + variableName + " of task " + taskId, () ->
+			directProviderUtil.getProcessEngine(user).getTaskService().setVariableLocal(taskId, variableName, value));
+	}
+
+	@Override
+	public void deleteLocalVariable(String taskId, String variableName, CIBUser user) {
+		directProviderUtil.writeVariables("delete variable " + variableName + " of task " + taskId, () ->
+			directProviderUtil.getProcessEngine(user).getTaskService().removeVariableLocal(taskId, variableName));
 	}
 
 	@Override

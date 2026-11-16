@@ -604,6 +604,12 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		doPut(url, data, user);
 	}
 
+	@Override
+	public void putProcessInstanceVariable(String processInstanceId, String variableName, Map<String, Object> variable, CIBUser user) {
+		String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId + "/variables/" + variableName;
+		doPut(url, variable, user);
+	}
+
 	protected ResponseEntity<byte[]> generateFileResponse(byte[] content) throws IOException {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setCacheControl(CacheControl.noCache().getHeaderValue());

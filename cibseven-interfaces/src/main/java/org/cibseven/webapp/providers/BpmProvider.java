@@ -195,6 +195,18 @@ public interface BpmProvider {
 		return getTaskProvider().findLocalVariables(taskId, user);
 	}
 
+	default void modifyLocalVariables(String taskId, Map<String, Object> patch, CIBUser user) throws SystemException {
+		getTaskProvider().modifyLocalVariables(taskId, patch, user);
+	}
+
+	default void putLocalVariable(String taskId, String variableName, Map<String, Object> variable, CIBUser user) throws SystemException {
+		getTaskProvider().putLocalVariable(taskId, variableName, variable, user);
+	}
+
+	default void deleteLocalVariable(String taskId, String variableName, CIBUser user) throws SystemException {
+		getTaskProvider().deleteLocalVariable(taskId, variableName, user);
+	}
+
 	/** The comments written on the task. */
 	default Collection<Map<String, Object>> findComments(String taskId, CIBUser user) throws SystemException {
 		return getTaskProvider().findComments(taskId, user);
@@ -1062,6 +1074,10 @@ public interface BpmProvider {
 
 	default void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user) {
 		getVariableProvider().putLocalExecutionVariable(executionId, varName, data, user);
+	}
+
+	default void putProcessInstanceVariable(String processInstanceId, String variableName, Map<String, Object> variable, CIBUser user) {
+		getVariableProvider().putProcessInstanceVariable(processInstanceId, variableName, variable, user);
 	}
 
 /*
