@@ -61,7 +61,7 @@ public class RestTemplateConfiguration {
     /**
      * Max HTTP connections per route, that is the max number of parallel requests to one engine.
      * Every request to the engine shares this pool, GET requests included since 3.0.0 (CIB7-2206),
-     * so the default allows as many parallel requests as a webclient sees under load (CIB7-2802).
+     * so the default leaves room for 100 parallel requests per engine (load test in CIB7-2802).
      */
     private int maxConnPerRoute = 100;
 
