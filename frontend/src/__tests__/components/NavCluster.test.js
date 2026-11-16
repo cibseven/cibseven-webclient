@@ -150,6 +150,8 @@ describe('NavCluster.vue', () => {
       const logout = entries[1]
       expect(logout.findAll('.cib-nav-menu-icon')).toHaveLength(1)
       expect(logout.element.lastElementChild).toBe(logout.find('.mdi-logout').element)
+      // Keeps its size beside a long label (flex-shrink: 0 in the scoped styles)
+      expect(logout.find('.mdi-logout').classes()).toContain('cib-nav-menu-icon-end')
       expect(logout.text()).toBe('Logout')
     })
 

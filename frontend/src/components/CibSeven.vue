@@ -147,7 +147,10 @@ export default {
     // The text beside the logo. The translation key navigation.brandName defaults to the product name; a theme
     // whose logo already shows the name sets it to an empty string, so the name does not appear twice.
     // A productNamePageTitle of the configuration wins, as everywhere else the product name appears.
+    // A language without the key (one a customer added for an earlier version) shows the product name: there is
+    // no fallback language, so $t would return the key itself.
     brandName: function() {
+      if (!this.$te('navigation.brandName')) return this.productName
       const brandName = this.$t('navigation.brandName')
       return brandName ? (this.$root.config.productNamePageTitle || brandName) : ''
     },

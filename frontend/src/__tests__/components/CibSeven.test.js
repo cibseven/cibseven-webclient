@@ -67,7 +67,8 @@ describe('CibSeven.vue', () => {
       global: {
         mocks: {
           user: { id: 'demo' }, header: 'true', logoPath: 'themes/acme/logo.svg',
-          $t: key => messages[key] ?? key, $route: { path: '/seven/auth/x', name: routeName, meta: { title: 'page.title' }, matched },
+          $t: key => messages[key] ?? key, $te: key => key in messages,
+          $route: { path: '/seven/auth/x', name: routeName, meta: { title: 'page.title' }, matched },
           config: { permissions: {}, layout: {}, supportedLanguages: [], productNamePageTitle },
           $store: { state: { process: { list: [] } }, getters: {}, dispatch: vi.fn(() => Promise.resolve()) }
         },
@@ -151,6 +152,13 @@ describe('CibSeven.vue', () => {
       expect(brand.find('img').attributes('src')).toBe('themes/acme/logo.svg')
       expect(brand.find('span').exists()).toBe(false)
       expect(brand.classes()).not.toContain('cib-brand-with-name')
+    })
+
+    // vue-i18n has no fallback language here and returns a missing key as it is: "navigation.brandName" must
+    // not end up beside the logo in a language a customer added for an earlier version
+    it('shows the product name in a language without navigation.brandName', () => {
+      expect(mountBrand('start', { messages: { 'login.productName': 'ACME' } }).find('.brand').text()).toBe('ACME')
+      expect(mountBrand('login', { productNamePageTitle: 'ACME Flow' }).find('.brand').text()).toBe('ACME Flow')
     })
 
     it('still names the product in the label of the link when the text is switched off', () => {
