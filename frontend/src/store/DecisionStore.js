@@ -16,19 +16,6 @@
  */
 import { DecisionService } from '@/services.js'
 
-/**
- * The versions endpoint lists the versions of a key for every tenant. Keep the versions of the tenant the
- * decision was opened for, so that a key deployed for several tenants (or for a tenant and without one)
- * shows the opened definition's own versions and history (CIB7-2392). Without a tenant, keep the versions
- * without a tenant; a link without a tenant to a decision deployed only for tenants keeps all versions.
- */
-function versionsOfTenant(versions, tenantId) {
-  if (!Array.isArray(versions)) return versions
-  if (tenantId) return versions.filter(v => v.tenantId === tenantId)
-  const withoutTenant = versions.filter(v => !v.tenantId)
-  return withoutTenant.length > 0 ? withoutTenant : versions
-}
-
 const DecisionStore = {
   state: {
     list: [],
@@ -166,8 +153,10 @@ const DecisionStore = {
     async getDecisionByKeyAndTenant(_, { key, tenant }) {
       return DecisionService.getDecisionByKeyAndTenant(key, tenant)
     },
+    // The versions of the opened tenant, or those without a tenant: a key can be deployed for several
+    // tenants, and for a tenant and without one (CIB7-2392)
     async getDecisionVersionsByKey({ commit }, { key, lazyLoad, tenantId }) {
-      const result = versionsOfTenant(await DecisionService.getDecisionVersionsByKey(key, lazyLoad), tenantId)
+      const result = await DecisionService.getDecisionVersionsByKey(key, lazyLoad, { tenantId, withoutTenantId: !tenantId })
       if (lazyLoad) {
         result.forEach(v => {
           v.allInstances = '-'
@@ -176,18 +165,17 @@ const DecisionStore = {
       commit('setDecisionVersions', { key, versions: result })
       return result
     },
-    async refreshDecisionVersions({ commit, getters }, key, lazyLoad) {
-      // Get fresh versions from service
-      const freshVersions = await DecisionService.getDecisionVersionsByKey(key, lazyLoad)
-      // Get current versions from store
+    // One payload: a Vuex action receives no second argument. A caller passing only the key keeps the
+    // tenant of the versions shown.
+    async refreshDecisionVersions({ commit, getters }, payload) {
+      const { key, lazyLoad, tenantId } = typeof payload === 'string'
+        ? { key: payload, tenantId: getters.getDecisionVersions(payload)[0]?.tenantId }
+        : payload
+      const freshVersions = await DecisionService.getDecisionVersionsByKey(key, lazyLoad, { tenantId, withoutTenantId: !tenantId })
       const currentVersions = getters.getDecisionVersions(key)
-      // The list holds only the opened tenant's versions, see versionsOfTenant
-      const tenants = new Set(currentVersions.map(v => v.tenantId ?? null))
-      // Find new versions (versions that don't exist in current list)
       const newVersions = freshVersions.filter(freshVersion =>
-        tenants.has(freshVersion.tenantId ?? null) &&
-        !currentVersions.some(currentVersion => currentVersion.id === freshVersion.id)
-      )
+        !currentVersions.some(currentVersion => currentVersion.id === freshVersion.id))
+      if (lazyLoad) newVersions.forEach(v => { v.allInstances = '-' })
       if (newVersions.length > 0) {
         // Merge current versions with new versions, sorted by version number descending
         const mergedVersions = [...currentVersions, ...newVersions]

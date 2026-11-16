@@ -62,24 +62,19 @@ export default {
       rightOpen: false,
       filter: '',
       loading: false,
-      versionLoaded: false
+      versionLoaded: false,
+      // Counts the loads, so that an answer to an older one cannot overwrite a newer one
+      loadRequest: 0
     }
   },
   watch: {
-    tenantId() {
-      this.loadDecisionVersionsByKey(this.decisionKey, this.versionIndex, this.$root.config.lazyLoadHistory)
-    },
-    '$route.params.versionIndex': {
-      handler(versionIndex) {
-        if (versionIndex && this.$store.state.decision.list.length > 0) {
-          const version = this.getDecisionVersion({ key: this.decisionKey, version: this.versionIndex })
-          // Missing when the tenant changes as well; the tenantId watcher reloads the list
-          if (!version) return
-          DecisionService.getDecisionDefinitionById(version.id, true).then(result => {
-            if (result) this.updateVersion({ key: this.decisionKey, newVersion: result })
-          })
-          this.setSelectedDecisionVersion({ key: this.decisionKey, version: this.versionIndex })
-        }
+    // One watcher for both: a navigation can change the tenant and the version at once
+    routeSelection(selection, previous) {
+      if (selection.tenantId !== previous.tenantId) {
+        this.loadDecisionVersionsByKey(this.decisionKey, this.versionIndex, this.$root.config.lazyLoadHistory)
+      } else if (selection.versionIndex !== previous.versionIndex && selection.versionIndex) {
+        const version = this.getDecisionVersion({ key: this.decisionKey, version: selection.versionIndex })
+        if (version) this.selectVersion(this.decisionKey, version)
       }
     }
   },
@@ -97,6 +92,9 @@ export default {
     decisionName() {
       if (!this.decision) return this.$t('decision.decision')
       return this.decision.name ? this.decision.name : this.decision.key
+    },
+    routeSelection() {
+      return { tenantId: this.tenantId ?? null, versionIndex: this.versionIndex }
     }
   },
   mounted() {
@@ -109,26 +107,60 @@ export default {
       this.leftOpen = isOpen
       this.saveLeftOpen(SIDEBAR_SCOPE, isOpen)
     },
-    loadDecisionVersionsByKey(decisionKey, versionIndex, lazyLoad) {
+    async loadDecisionVersionsByKey(decisionKey, versionIndex, lazyLoad) {
+      const request = ++this.loadRequest
       this.versionLoaded = false
-      this.getDecisionVersionsByKey({ key: decisionKey, lazyLoad: lazyLoad, tenantId: this.tenantId })
-      .then(versions => {
-        // A tenant without versions of this key, e.g. from an outdated link
-        if (!versions?.length) return
-        let version = versionIndex ? this.getDecisionVersion({ key: decisionKey, version: versionIndex }) : null
-        if (!version) {
-          version = versions[0]
-          versionIndex = String(version.version)
-          this.$router.push({
-            path: `/seven/auth/decision/${decisionKey}/${versionIndex}`,
-            query: version.tenantId ? { tenantId: version.tenantId } : {}
-          })
-        }
-        this.setSelectedDecisionVersion({ key: decisionKey, version: versionIndex })
-        DecisionService.getDecisionDefinitionById(version.id, true).then(result => {
-          if (result) this.updateVersion({ key: decisionKey, newVersion: result })
+      const tenantId = await this.tenantToOpen()
+      if (request !== this.loadRequest) return
+      if (tenantId !== (this.tenantId ?? null)) {
+        // The watcher loads again for the corrected tenant
+        this.replaceTenant(tenantId)
+        return
+      }
+
+      const versions = await this.getDecisionVersionsByKey({ key: decisionKey, lazyLoad, tenantId })
+      if (request !== this.loadRequest) return
+      if (!versions?.length) {
+        // An outdated link: the tenant has no version of this key any more
+        if (tenantId) return this.replaceTenant(null)
+        // A key deployed only for tenants: open the tenant of its newest version
+        const everyTenantsVersions = await DecisionService.getDecisionVersionsByKey(decisionKey, true)
+        if (request === this.loadRequest && everyTenantsVersions?.length) this.replaceTenant(everyTenantsVersions[0].tenantId)
+        return
+      }
+      let version = versionIndex ? this.getDecisionVersion({ key: decisionKey, version: versionIndex }) : null
+      if (!version) {
+        // Not in this tenant: its latest version, keeping the rest of the query (e.g. ?tab=)
+        version = versions[0]
+        this.$router.replace({
+          name: 'decision-version',
+          params: { decisionKey, versionIndex: String(version.version) },
+          query: this.$route.query
         })
-        this.versionLoaded = true
+      }
+      this.selectVersion(decisionKey, version)
+      this.versionLoaded = true
+    },
+    // The tenant whose versions to show: an instance's own, so that a link without (or with a wrong)
+    // tenant still opens the instance; otherwise the link's
+    async tenantToOpen() {
+      const instanceId = this.$route.params.instanceId
+      if (instanceId) {
+        const instances = await DecisionService.getHistoricDecisionInstances({ decisionInstanceId: instanceId, maxResults: 1 })
+        if (instances?.length) return instances[0].tenantId ?? null
+      }
+      return this.tenantId ?? null
+    },
+    replaceTenant(tenantId) {
+      const query = { ...this.$route.query }
+      if (tenantId) query.tenantId = tenantId
+      else delete query.tenantId
+      this.$router.replace({ query })
+    },
+    selectVersion(decisionKey, version) {
+      this.setSelectedDecisionVersion({ key: decisionKey, version: String(version.version) })
+      DecisionService.getDecisionDefinitionById(version.id, true).then(result => {
+        if (result) this.updateVersion({ key: decisionKey, newVersion: result })
       })
     }
   }

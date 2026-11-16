@@ -481,6 +481,8 @@ describe('DecisionService', () => {
     { name: 'getDecisionList', verb: 'get', call: () => DecisionService.getDecisionList({ latestVersion: true }), args: [`${BASE}/decision`, { params: { latestVersion: true } }] },
     { name: 'getDecisionVersionsByKey defaults lazyLoad to false', verb: 'get', call: () => DecisionService.getDecisionVersionsByKey('invoice'), args: [`${BASE}/decision/key/invoice/versions?lazyLoad=false`] },
     { name: 'getDecisionVersionsByKey passes lazyLoad through', verb: 'get', call: () => DecisionService.getDecisionVersionsByKey('invoice', true), args: [`${BASE}/decision/key/invoice/versions?lazyLoad=true`] },
+    { name: 'getDecisionVersionsByKey asks for one tenant, encoded', verb: 'get', call: () => DecisionService.getDecisionVersionsByKey('invoice', false, { tenantId: 'a&b', withoutTenantId: true }), args: [`${BASE}/decision/key/invoice/versions?lazyLoad=false&tenantId=a%26b`] },
+    { name: 'getDecisionVersionsByKey asks for the versions without a tenant', verb: 'get', call: () => DecisionService.getDecisionVersionsByKey('invoice', false, { withoutTenantId: true }), args: [`${BASE}/decision/key/invoice/versions?lazyLoad=false&withoutTenantId=true`] },
     { name: 'getDecisionDefinitionById defaults extraInfo to false', verb: 'get', call: () => DecisionService.getDecisionDefinitionById('dd1'), args: [`${BASE}/decision/id/dd1?extraInfo=false`] },
     { name: 'getDecisionDefinitionById passes extraInfo through', verb: 'get', call: () => DecisionService.getDecisionDefinitionById('dd1', true), args: [`${BASE}/decision/id/dd1?extraInfo=true`] },
     { name: 'getDecisionByKey', verb: 'get', call: () => DecisionService.getDecisionByKey('invoice'), args: [`${BASE}/decision/key/invoice`] },

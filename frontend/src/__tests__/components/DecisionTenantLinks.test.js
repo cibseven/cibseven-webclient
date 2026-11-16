@@ -17,6 +17,8 @@
 import { describe, it, expect, vi } from 'vitest'
 import DecisionList from '@/components/decisions/list/DecisionList.vue'
 import DecisionVersionListSidebar from '@/components/decision/DecisionVersionListSidebar.vue'
+import DecisionInstancesTable from '@/components/decision/DecisionInstancesTable.vue'
+import DecisionInstance from '@/components/decision/DecisionInstance.vue'
 import { appRoutes, createAppRouter } from '@/router.js'
 
 // A decision key can be deployed for several tenants and without a tenant. Each row and each version
@@ -40,6 +42,30 @@ describe('Decision links keep the tenant (CIB7-2392)', () => {
     expect(ctx.$router.push).toHaveBeenCalledWith({
       name: 'decision-version', params: { decisionKey: 'dec', versionIndex: 2 }, query: { tenantId: 'T1' }
     })
+  })
+
+  it.each([
+    ['with its tenant', 'T1', { tenantId: 'T1' }],
+    ['without the query when it has no tenant', null, {}]
+  ])('opens an instance from the instances table %s', (_, tenantId, query) => {
+    const ctx = { $router: { push: vi.fn() }, setSelectedInstance: vi.fn(), getSelectedDecisionVersion: { version: 3 } }
+    const instance = { id: 'inst-1', tenantId }
+
+    DecisionInstancesTable.methods.goToInstance.call(ctx, instance)
+
+    expect(ctx.setSelectedInstance).toHaveBeenCalledWith(instance)
+    expect(ctx.$router.push).toHaveBeenCalledWith({
+      name: 'decision-instance', params: { versionIndex: 3, instanceId: 'inst-1' }, query
+    })
+  })
+
+  it.each([
+    ['with its tenant', 'T1', { tenantId: 'T1' }],
+    ['without the query when it has no tenant', null, {}]
+  ])("leads from an instance back to its version %s", (_, tenantId, query) => {
+    const ctx = { instance: { decisionDefinitionKey: 'dec', tenantId }, versionIndex: '3' }
+
+    expect(DecisionInstance.computed.backLink.call(ctx)).toEqual({ path: '/seven/auth/decision/dec/3', query })
   })
 
   it('passes the tenant of the query to the decision view', () => {

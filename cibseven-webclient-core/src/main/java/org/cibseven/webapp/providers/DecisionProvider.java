@@ -145,8 +145,10 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	}
 	
 	@Override
-	public Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad, CIBUser user) {
+	public Collection<Decision> getDecisionVersionsByKey(String key, String tenantId, boolean withoutTenantId, Optional<Boolean> lazyLoad, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/decision-definition?key=" + key + "&sortBy=version&sortOrder=desc";
+		if (tenantId != null) url += "&tenantIdIn=" + tenantId;
+		else if (withoutTenantId) url += "&withoutTenantId=true";
 		Collection<Decision> decisions = Arrays.asList(((ResponseEntity<Decision[]>) doGet(url, Decision[].class, user, false)).getBody());		
 		
 		if (!lazyLoad.isPresent() || (lazyLoad.isPresent() && !lazyLoad.get())) {

@@ -20,10 +20,7 @@
   <div v-if="instance" class="h-100">
     <router-link
       class="btn btn-light rounded-0 border-bottom text-start w-100 align-middle d-flex align-items-center"
-      :to="{
-        path: '/seven/auth/decision/' + instance.decisionDefinitionKey + '/' + versionIndex,
-        query: instance.tenantId ? { tenantId: instance.tenantId } : {}
-      }">
+      :to="backLink">
       <span class="mdi mdi-18px mdi-arrow-left me-2 float-start"></span>
       <h5 class="m-0">
         {{ $t('decision.decisionInstanceId') }}: {{ instanceId }}
@@ -126,6 +123,13 @@ export default {
   computed: {
     ...mapGetters('diagram', ['isDiagramReady']),
     ...mapGetters(['getSelectedDecisionVersion']),
+    // Back to the version this instance belongs to, of its own tenant (CIB7-2392)
+    backLink() {
+      return {
+        path: `/seven/auth/decision/${this.instance.decisionDefinitionKey}/${this.versionIndex}`,
+        query: this.instance.tenantId ? { tenantId: this.instance.tenantId } : {}
+      }
+    },
     decisionDefinition() {
       return this.getSelectedDecisionVersion()
     },
