@@ -51,6 +51,7 @@ import { mapActions, mapGetters } from 'vuex'
 import { HistoryService } from '@/services.js'
 import { abbreviateNumber } from 'js-abbreviation-number'
 import ElementTemplateIconRendererModule from '@/components/process/ElementTemplateIconRenderer.js'
+import { isModelerEnabled } from '@/utils/config.js'
 
 const interactionTypes = [
   // Tasks
@@ -172,7 +173,7 @@ export default {
     ...mapActions('diagram', ['setDiagramReady']),
     ...mapActions('elementTemplates', ['fetchAllElementTemplates']),
     ensureElementTemplatesLoaded: function() {
-      if (!this.$root?.config?.modelerEnabled) return
+      if (!isModelerEnabled(this.$root?.config)) return
       if (this.allElementTemplateContents && this.allElementTemplateContents.length > 0) return
       this.fetchAllElementTemplates().catch(err => {
         console.warn('BpmnViewer: failed to load element templates for icon rendering', err)

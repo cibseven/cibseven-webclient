@@ -30,11 +30,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.providers.BpmProvider;
-import org.cibseven.webapp.rest.model.Authorization;
-import org.cibseven.webapp.rest.model.Authorizations;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,9 +46,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
- * {@link ProcessService} is a thin REST facade: it runs the deprecated permission check and then
- * delegates to the {@link BpmProvider}. These tests pin that contract - which resource type and
- * permission each endpoint demands, and what it hands on - without standing up a web context.
+ * {@link ProcessService} is a thin REST facade that delegates to the {@link BpmProvider}, which
+ * leaves the permission checks to the engine. These tests pin what each endpoint hands on, without
+ * standing up a web context.
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -67,8 +64,6 @@ public class ProcessServiceTest {
 	void setUp() {
 		processService = new ProcessService();
 		ReflectionTestUtils.setField(processService, "bpmProvider", bpmProvider);
-		// the deprecated in-webclient permission check is off by default
-		processService.properties.getDeprecated().getAuthorization().setEnabled(false);
 		user = new CIBUser("demo");
 	}
 
@@ -207,48 +202,24 @@ public class ProcessServiceTest {
 		verify(bpmProvider).suspendProcessDefinition("id-1", Boolean.TRUE, Boolean.FALSE, null, user);
 	}
 
-	// ---------- the deprecated permission check ----------
+	// ---------- permissions are the engine's job ----------
 
 	@Test
-	void permissionCheck_isSkippedWhileLegacyAuthorizationIsDisabled() {
+	void leavesThePermissionCheckToTheEngine() {
 		when(bpmProvider.findProcesses(user)).thenReturn(List.of());
 
 		processService.findProcesses(Locale.ENGLISH, user);
 
-		// the engine is authoritative; the webclient must not ask for authorizations at all
 		verify(bpmProvider, never()).getUserAuthorization(any());
 	}
 
 	@Test
-	void permissionCheck_consultsTheEngineWhenLegacyAuthorizationIsEnabled() {
-		processService.properties.getDeprecated().getAuthorization().setEnabled(true);
-		when(bpmProvider.getUserAuthorization(user)).thenReturn(authorizationsGranting("ALL"));
-		when(bpmProvider.findProcesses(user)).thenReturn(List.of());
-
-		processService.findProcesses(Locale.ENGLISH, user);
-
-		verify(bpmProvider).getUserAuthorization(user);
-	}
-
-	@Test
-	void permissionCheck_refusesWhenTheUserLacksThePermission() {
-		processService.properties.getDeprecated().getAuthorization().setEnabled(true);
-		when(bpmProvider.getUserAuthorization(user)).thenReturn(authorizationsGranting("NOTHING_USEFUL"));
+	void passesTheEnginesRefusalThrough() {
+		when(bpmProvider.findProcesses(user)).thenThrow(new AccessDeniedException("engine says no"));
 
 		assertThatThrownBy(() -> processService.findProcesses(Locale.ENGLISH, user))
-			.isInstanceOf(AccessDeniedException.class);
-		verify(bpmProvider, never()).findProcesses(any());
-	}
-
-	/** A grant on PROCESS_DEFINITION carrying exactly the given permission. */
-	private Authorizations authorizationsGranting(String permission) {
-		Authorization grant = new Authorization();
-		grant.setType(1); // AUTH_TYPE_GRANT
-		grant.setPermissions(new String[] { permission });
-		grant.setResourceType(SevenResourceType.PROCESS_DEFINITION.getType());
-		grant.setResourceId("*");
-		Authorizations authorizations = new Authorizations();
-		authorizations.setProcessDefinition(List.of(grant));
-		return authorizations;
+			.isInstanceOf(AccessDeniedException.class)
+			.hasMessage("engine says no");
+		verify(bpmProvider, never()).getUserAuthorization(any());
 	}
 }

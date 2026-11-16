@@ -152,7 +152,7 @@
     },
     created: function() {
       if (this.$route.params.tenantId) this.loadTenant(this.$route.params.tenantId)
-      if (this.$route.query.tab === 'users') this.loadUsers(this.$route.params.groupId)
+      if (this.$route.query.tab === 'users') this.loadUsers(this.$route.params.tenantId)
       else if (this.$route.query.tab === 'groups') this.loadGroups(this.$route.params.tenantId)
     },
     methods: {
@@ -160,6 +160,12 @@
       loadTenant: function(tenantId) {
         this.getTenantById(tenantId).then(res => {
           this.tenant = res
+        }).catch(error => {
+          // e.g. a stale link or a tenant another administrator has just deleted
+          if (error.response?.status === 404) {
+            this.$root.$refs.error.show({ type: 'tenantNotFound', params: [tenantId] })
+            this.$router.push({ name: 'adminTenants' })
+          }
         })
       },
       loadUsers: function(tenantId) {
