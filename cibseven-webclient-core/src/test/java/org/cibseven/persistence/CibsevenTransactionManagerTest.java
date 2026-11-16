@@ -60,8 +60,8 @@ class CibsevenTransactionManagerTest {
 	void setUp() {
 		dataSource = new EmbeddedDatabaseBuilder().setType(EmbeddedDatabaseType.H2).generateUniqueName(true).build();
 		webclientUnit = unit(dataSource, ModelerPersistence.ENTITY_PACKAGE);
-		// Stands in for Boot's unit, which maps no webclient entities
-		engineUnit = unit(dataSource, ModelerPersistence.REPOSITORY_PACKAGE);
+		// Stands in for Boot's unit, which maps no webclient entities: a package that holds none
+		engineUnit = unit(dataSource, "org.cibseven.persistence.noentities");
 		engineTransactions = new JpaTransactionManager(engineUnit.getObject());
 	}
 
@@ -118,6 +118,47 @@ class CibsevenTransactionManagerTest {
 		List<String> names = webclient.execute(status -> webclientEntityManager()
 			.createQuery("select f.name from FolderEntity f", String.class).getResultList());
 		assertThat(names).containsExactly("kept");
+	}
+
+	/**
+	 * The engine commits on its own, as it does with the REST provider: its work stays when the
+	 * webclient transaction around it rolls back. A bound connection would roll it back too.
+	 */
+	@Test
+	void theEnginesWorkStaysCommittedWhenTheWebclientRollsBack() {
+		TransactionTemplate engine = new TransactionTemplate(engineTransactions);
+		TransactionTemplate webclient = new TransactionTemplate(new CibsevenTransactionManager(webclientUnit.getObject()));
+		engine.executeWithoutResult(status -> engineUpdate("create table engine_work (id int)"));
+
+		webclient.executeWithoutResult(status -> {
+			persistFolder("dropped");
+			engine.executeWithoutResult(inner -> engineUpdate("insert into engine_work values (1)"));
+			status.setRollbackOnly();
+		});
+
+		Object engineRows = engine.execute(status -> EntityManagerFactoryUtils.getTransactionalEntityManager(engineUnit.getObject())
+			.createNativeQuery("select count(*) from engine_work").getSingleResult());
+		Long folders = webclient.execute(status -> webclientEntityManager()
+			.createQuery("select count(f) from FolderEntity f", Long.class).getSingleResult());
+		assertThat(((Number) engineRows).longValue()).isEqualTo(1);
+		assertThat(folders).isZero();
+	}
+
+	/** A data source handed over later, by configuration for instance, does not bring the binding back. */
+	@Test
+	void aDataSourceSetLaterIsIgnored() {
+		CibsevenTransactionManager manager = new CibsevenTransactionManager(webclientUnit.getObject());
+		manager.setDataSource(dataSource);
+
+		Object engineResult = new TransactionTemplate(manager).execute(status -> new TransactionTemplate(engineTransactions)
+			.execute(inner -> selectOne(engineUnit.getObject())));
+
+		assertThat(manager.getDataSource()).isNull();
+		assertThat(engineResult).isEqualTo(1);
+	}
+
+	private void engineUpdate(String sql) {
+		EntityManagerFactoryUtils.getTransactionalEntityManager(engineUnit.getObject()).createNativeQuery(sql).executeUpdate();
 	}
 
 	private void persistFolder(String name) {

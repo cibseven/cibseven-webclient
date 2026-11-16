@@ -16,6 +16,8 @@
  */
 package org.cibseven.persistence;
 
+import javax.sql.DataSource;
+
 import org.springframework.orm.jpa.JpaTransactionManager;
 
 import jakarta.persistence.EntityManagerFactory;
@@ -37,10 +39,12 @@ public class CibsevenTransactionManager extends JpaTransactionManager {
 		super(entityManagerFactory);
 	}
 
+	/**
+	 * None, whatever the factory or a setter provides: {@link JpaTransactionManager} binds, looks up
+	 * and releases the connection only through this method, so without a data source it binds none.
+	 */
 	@Override
-	public void afterPropertiesSet() {
-		super.afterPropertiesSet();
-		// The data source is taken from the factory above; only with one is the connection bound
-		setDataSource(null);
+	public DataSource getDataSource() {
+		return null;
 	}
 }
