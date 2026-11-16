@@ -181,8 +181,11 @@ const DecisionStore = {
       const freshVersions = await DecisionService.getDecisionVersionsByKey(key, lazyLoad)
       // Get current versions from store
       const currentVersions = getters.getDecisionVersions(key)
+      // The list holds only the opened tenant's versions, see versionsOfTenant
+      const tenants = new Set(currentVersions.map(v => v.tenantId ?? null))
       // Find new versions (versions that don't exist in current list)
-      const newVersions = freshVersions.filter(freshVersion => 
+      const newVersions = freshVersions.filter(freshVersion =>
+        tenants.has(freshVersion.tenantId ?? null) &&
         !currentVersions.some(currentVersion => currentVersion.id === freshVersion.id)
       )
       if (newVersions.length > 0) {

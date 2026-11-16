@@ -517,6 +517,40 @@ createStoreTestSuite('DecisionStore', DecisionStore, {
         })
       })
 
+      it('should merge only new versions of the tenant already in the list (CIB7-2392)', async () => {
+        const context = getContext()
+        context.getters.getDecisionVersions = () => [version({ id: 'dd-t1', version: 1, tenantId: 'T1' })]
+        DecisionService.getDecisionVersionsByKey.mockResolvedValue([
+          version({ id: 'dd-t1', version: 1, tenantId: 'T1' }),
+          version({ id: 'dd-t1-new', version: 2, tenantId: 'T1' }),
+          version({ id: 'dd-t2', version: 3, tenantId: 'T2' }),
+          version({ id: 'dd-none', version: 4 })
+        ])
+
+        await action(context, 'invoice')
+
+        expect(context.commit).toHaveBeenCalledWith('setDecisionVersions', {
+          key: 'invoice',
+          versions: [
+            version({ id: 'dd-t1-new', version: 2, tenantId: 'T1' }),
+            version({ id: 'dd-t1', version: 1, tenantId: 'T1' })
+          ]
+        })
+      })
+
+      it('should keep tenant versions out of a list without tenant (CIB7-2392)', async () => {
+        const context = getContext()
+        context.getters.getDecisionVersions = () => [version({ id: 'dd-1', version: 1, tenantId: null })]
+        DecisionService.getDecisionVersionsByKey.mockResolvedValue([
+          version({ id: 'dd-1', version: 1, tenantId: null }),
+          version({ id: 'dd-t1', version: 2, tenantId: 'T1' })
+        ])
+
+        await action(context, 'invoice')
+
+        expect(context.commit).not.toHaveBeenCalled()
+      })
+
       it('should not commit when nothing new appeared', async () => {
         const context = getContext()
         context.getters.getDecisionVersions = () => [version({ id: 'dd-1' })]

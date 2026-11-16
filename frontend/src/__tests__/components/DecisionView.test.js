@@ -16,6 +16,7 @@
  */
 import { describe, it, expect, vi } from 'vitest'
 import DecisionView from '@/components/decision/DecisionView.vue'
+import { DecisionService } from '@/services.js'
 
 vi.mock('@/services.js', () => ({
   DecisionService: { getDecisionDefinitionById: vi.fn(() => Promise.resolve(null)) }
@@ -62,5 +63,55 @@ describe('DecisionView - tenant (CIB7-2392)', () => {
     DecisionView.methods.loadDecisionVersionsByKey.call(c, 'dec', '', false)
     await vi.waitFor(() => expect(c.$router.push).toHaveBeenCalled())
     expect(c.$router.push).toHaveBeenCalledWith({ path: '/seven/auth/decision/dec/2', query: {} })
+  })
+
+  it('stops quietly when the tenant has no versions of the key', async () => {
+    const getVersions = vi.fn().mockResolvedValue([])
+    const c = ctx({ tenantId: 'gone', getDecisionVersionsByKey: getVersions })
+    DecisionView.methods.loadDecisionVersionsByKey.call(c, 'dec', '1', false)
+    await vi.waitFor(() => expect(getVersions).toHaveBeenCalled())
+    await Promise.resolve()
+    expect(c.$router.push).not.toHaveBeenCalled()
+    expect(c.setSelectedDecisionVersion).not.toHaveBeenCalled()
+    expect(c.versionLoaded).toBe(false)
+  })
+
+  it('opens the latest version of the tenant when it has no such version number', async () => {
+    const latest = { id: 'dd-t1', key: 'dec', version: 2, tenantId: 'T1' }
+    const c = ctx({
+      tenantId: 'T1',
+      getDecisionVersionsByKey: vi.fn().mockResolvedValue([latest]),
+      getDecisionVersion: vi.fn(() => null)
+    })
+    DecisionView.methods.loadDecisionVersionsByKey.call(c, 'dec', '7', false)
+    await vi.waitFor(() => expect(c.versionLoaded).toBe(true))
+    expect(c.$router.push).toHaveBeenCalledWith({ path: '/seven/auth/decision/dec/2', query: { tenantId: 'T1' } })
+    expect(c.setSelectedDecisionVersion).toHaveBeenCalledWith({ key: 'dec', version: '2' })
+    expect(DecisionService.getDecisionDefinitionById).toHaveBeenCalledWith('dd-t1', true)
+  })
+
+  it('selects the requested version of the tenant', async () => {
+    const v1 = { id: 'dd-t1-v1', key: 'dec', version: 1, tenantId: 'T1' }
+    const c = ctx({
+      tenantId: 'T1',
+      getDecisionVersionsByKey: vi.fn().mockResolvedValue([{ ...v1, id: 'dd-t1-v2', version: 2 }, v1]),
+      getDecisionVersion: vi.fn(() => v1)
+    })
+    DecisionView.methods.loadDecisionVersionsByKey.call(c, 'dec', '1', false)
+    await vi.waitFor(() => expect(c.versionLoaded).toBe(true))
+    expect(c.$router.push).not.toHaveBeenCalled()
+    expect(c.setSelectedDecisionVersion).toHaveBeenCalledWith({ key: 'dec', version: '1' })
+    expect(DecisionService.getDecisionDefinitionById).toHaveBeenCalledWith('dd-t1-v1', true)
+  })
+
+  it('leaves the selection alone when the route version is not in the list yet', () => {
+    const c = ctx({
+      decisionKey: 'dec',
+      versionIndex: '5',
+      $store: { state: { decision: { list: [{ key: 'dec' }] } } },
+      getDecisionVersion: vi.fn(() => null)
+    })
+    DecisionView.watch['$route.params.versionIndex'].handler.call(c, '5')
+    expect(c.setSelectedDecisionVersion).not.toHaveBeenCalled()
   })
 })

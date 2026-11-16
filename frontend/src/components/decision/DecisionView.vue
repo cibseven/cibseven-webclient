@@ -73,6 +73,8 @@ export default {
       handler(versionIndex) {
         if (versionIndex && this.$store.state.decision.list.length > 0) {
           const version = this.getDecisionVersion({ key: this.decisionKey, version: this.versionIndex })
+          // Missing when the tenant changes as well; the tenantId watcher reloads the list
+          if (!version) return
           DecisionService.getDecisionDefinitionById(version.id, true).then(result => {
             if (result) this.updateVersion({ key: this.decisionKey, newVersion: result })
           })
@@ -111,17 +113,18 @@ export default {
       this.versionLoaded = false
       this.getDecisionVersionsByKey({ key: decisionKey, lazyLoad: lazyLoad, tenantId: this.tenantId })
       .then(versions => {
-        let version = versions[0]
-        this.setSelectedDecisionVersion({ key: decisionKey, version: versionIndex })
-        if (!versionIndex) {
-          versionIndex = version.version
+        // A tenant without versions of this key, e.g. from an outdated link
+        if (!versions?.length) return
+        let version = versionIndex ? this.getDecisionVersion({ key: decisionKey, version: versionIndex }) : null
+        if (!version) {
+          version = versions[0]
+          versionIndex = String(version.version)
           this.$router.push({
             path: `/seven/auth/decision/${decisionKey}/${versionIndex}`,
             query: version.tenantId ? { tenantId: version.tenantId } : {}
           })
-        } else {
-          version = this.getDecisionVersion({ key: decisionKey, version: versionIndex })
         }
+        this.setSelectedDecisionVersion({ key: decisionKey, version: versionIndex })
         DecisionService.getDecisionDefinitionById(version.id, true).then(result => {
           if (result) this.updateVersion({ key: decisionKey, newVersion: result })
         })
