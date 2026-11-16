@@ -1206,6 +1206,7 @@
 	},
 	"navigation": {
 		"home": "Домашняя страница",
+		"logoText": "@:login.productName",
 		"menu": "Меню навигации",
 		"infoAndHelp": "Информация и помощь"
 	},
