@@ -24,13 +24,13 @@
       <div class="me-auto d-flex flex-row overflow-hidden" style="min-height: 38px;">
         <!-- Always the theme's logo.svg, the one file a theme replaces, so a customer's logo is never replaced by CIB seven's
              (it is the mark alone, shown as an icon). On the home page, the
-             user's own account page and the pages before sign-in it comes with the product name as text (brandName);
+             user's own account page and the pages before sign-in it comes with a text (logoText);
              elsewhere it stands alone beside the page title. A name too long for the header ends in an ellipsis (the
              link's tooltip has it in full); the icon never shrinks. Styled by the cib-brand classes below. -->
-        <b-navbar-brand ref="brandHome" class="cib-brand py-0 d-flex align-items-center" :class="{ 'cib-brand-with-name': showProductName }"
+        <b-navbar-brand ref="brandHome" class="cib-brand py-0 d-flex align-items-center" :class="{ 'cib-brand-with-name': showLogoText }"
           :aria-label="brandLabel" :title="brandLabel" to="/seven/auth/start">
           <img class="cib-brand-icon" alt="" :src="$root.logoPath"/>
-          <span v-if="showProductName" class="cib-brand-name text-truncate" aria-hidden="true">{{ brandName }}</span>
+          <span v-if="showLogoText" class="cib-brand-name text-truncate" aria-hidden="true">{{ logoText }}</span>
         </b-navbar-brand>
         <div v-if="pageTitle" style="max-height: 38px; min-width: 0;" class="d-flex align-items-center overflow-hidden flex-shrink-1">
           <span class="border-start border-secondary py-3 me-3"></span>
@@ -144,20 +144,16 @@ export default {
     isStartPage: function() {
       return this.$route.name === 'start'
     },
-    // The text beside the logo. The translation key navigation.brandName defaults to the product name; a theme
-    // whose logo already shows the name sets it to an empty string, so the name does not appear twice.
-    // A productNamePageTitle of the configuration wins, as everywhere else the product name appears.
-    // A language without the key (one a customer added for an earlier version) shows the product name: there is
-    // no fallback language, so $t would return the key itself.
-    brandName: function() {
-      if (!this.$te('navigation.brandName')) return this.productName
-      const brandName = this.$t('navigation.brandName')
-      return brandName ? (this.$root.config.productNamePageTitle || brandName) : ''
+    // The text beside the logo, the translation key navigation.logoText. A theme whose logo already shows the name
+    // sets it to an empty string. A language without the key shows no text: there is no fallback language, so $t
+    // would return the key itself.
+    logoText: function() {
+      return this.$te('navigation.logoText') ? this.$t('navigation.logoText') : ''
     },
     // The account page and the pages before sign-in have no page title next to the icon, so they
-    // show the product name beside it like the start page, unless a theme has switched the name off
-    showProductName: function() {
-      if (!this.brandName) return false
+    // show the logo text beside it like the start page
+    showLogoText: function() {
+      if (!this.logoText) return false
       return this.isStartPage || routeNames(this.$route).some(name => ['account', 'login', 'loggedOut', 'setup'].includes(name))
     },
     // The catalog as header clusters: the icon leads to the section, the menu title to its overview page

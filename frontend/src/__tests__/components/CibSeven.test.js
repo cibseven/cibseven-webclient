@@ -60,10 +60,10 @@ describe('CibSeven.vue', () => {
     })
   })
 
-  // The theme's icon is always used. On the start, account and sign-in pages it comes with the product name as text;
-  // elsewhere it stands alone beside the page title
+  // The theme's icon is always used. On the start, account and sign-in pages it comes with the logo text
+  // (navigation.logoText); elsewhere it stands alone beside the page title
   describe('brand', () => {
-    const mountBrand = (routeName, { matched = [], productNamePageTitle, messages = {} } = {}) => shallowMount(CibSeven, {
+    const mountBrand = (routeName, { matched = [], productNamePageTitle, messages = { 'navigation.logoText': 'ACME Flow' } } = {}) => shallowMount(CibSeven, {
       global: {
         mocks: {
           user: { id: 'demo' }, header: 'true', logoPath: 'themes/acme/logo.svg',
@@ -81,8 +81,8 @@ describe('CibSeven.vue', () => {
       }
     })
 
-    it.each(['start', 'account', 'login', 'loggedOut', 'setup'])('shows the icon with the product name as text on the %s page', (routeName) => {
-      const wrapper = mountBrand(routeName, { productNamePageTitle: 'ACME Flow' })
+    it.each(['start', 'account', 'login', 'loggedOut', 'setup'])('shows the icon with the logo text on the %s page', (routeName) => {
+      const wrapper = mountBrand(routeName)
 
       const brand = wrapper.find('.brand')
       expect(brand.findAll('img')).toHaveLength(1)
@@ -90,13 +90,13 @@ describe('CibSeven.vue', () => {
       expect(brand.text()).toBe('ACME Flow')
     })
 
-    it('shows the icon with the name on every tab of the account page', () => {
+    it('shows the icon with the logo text on every tab of the account page', () => {
       const matched = [{ name: 'seven' }, { name: 'auth' }, { name: 'account' }, { name: 'accountPreferences' }]
-      expect(mountBrand('accountPreferences', { matched, productNamePageTitle: 'ACME Flow' }).find('.brand').text()).toBe('ACME Flow')
+      expect(mountBrand('accountPreferences', { matched }).find('.brand').text()).toBe('ACME Flow')
     })
 
-    it.each(['tasklist', 'adminUser'])('shows just the icon, without the name, on the %s page', (routeName) => {
-      const brand = mountBrand(routeName, { productNamePageTitle: 'ACME Flow' }).find('.brand')
+    it.each(['tasklist', 'adminUser'])('shows just the icon, without the logo text, on the %s page', (routeName) => {
+      const brand = mountBrand(routeName).find('.brand')
 
       expect(brand.find('img').attributes('src')).toBe('themes/acme/logo.svg')
       expect(brand.find('span').exists()).toBe(false)
@@ -116,8 +116,8 @@ describe('CibSeven.vue', () => {
     })
 
     // .cib-brand-with-name lets the brand shrink; text-truncate ends the name in an ellipsis
-    it('ends a name too long for the header in an ellipsis', () => {
-      const brand = mountBrand('start', { productNamePageTitle: 'Acme Process Automation Platform' }).find('.brand')
+    it('ends a logo text too long for the header in an ellipsis', () => {
+      const brand = mountBrand('start', { messages: { 'navigation.logoText': 'Acme Process Automation Platform' } }).find('.brand')
 
       expect(brand.classes()).toContain('cib-brand-with-name')
       expect(brand.find('span').classes()).toContain('text-truncate')
@@ -141,39 +141,42 @@ describe('CibSeven.vue', () => {
       expect(mountBrand('tasklist').find('.brand').classes()).not.toContain('cib-brand-with-name')
     })
 
-    it('takes the name from navigation.brandName without a configured one', () => {
-      expect(mountBrand('start', { messages: { 'navigation.brandName': 'ACME' } }).find('.brand').text()).toBe('ACME')
+    it('takes the text from navigation.logoText, not from productNamePageTitle', () => {
+      const brand = mountBrand('start', { productNamePageTitle: 'Configured Name', messages: { 'navigation.logoText': 'ACME' } }).find('.brand')
+      expect(brand.text()).toBe('ACME')
     })
 
     // A theme whose logo already shows the name switches the text off, so the name does not appear twice
-    it.each(['start', 'account', 'login'])('shows just the icon on the %s page when navigation.brandName is empty', (routeName) => {
-      const brand = mountBrand(routeName, { productNamePageTitle: 'ACME Flow', messages: { 'navigation.brandName': '' } }).find('.brand')
+    it.each(['start', 'account', 'login'])('shows just the icon on the %s page when navigation.logoText is empty', (routeName) => {
+      const brand = mountBrand(routeName, { productNamePageTitle: 'ACME Flow', messages: { 'navigation.logoText': '' } }).find('.brand')
 
       expect(brand.find('img').attributes('src')).toBe('themes/acme/logo.svg')
       expect(brand.find('span').exists()).toBe(false)
       expect(brand.classes()).not.toContain('cib-brand-with-name')
     })
 
-    // vue-i18n has no fallback language here and returns a missing key as it is: "navigation.brandName" must
-    // not end up beside the logo in a language a customer added for an earlier version
-    it('shows the product name in a language without navigation.brandName', () => {
-      expect(mountBrand('start', { messages: { 'login.productName': 'ACME' } }).find('.brand').text()).toBe('ACME')
-      expect(mountBrand('login', { productNamePageTitle: 'ACME Flow' }).find('.brand').text()).toBe('ACME Flow')
+    // vue-i18n has no fallback language here and returns a missing key as it is: "navigation.logoText" must
+    // not end up beside the logo in a language without the key, which shows the icon alone
+    it.each(['start', 'login'])('shows just the icon on the %s page in a language without navigation.logoText', (routeName) => {
+      const brand = mountBrand(routeName, { productNamePageTitle: 'ACME Flow', messages: { 'login.productName': 'ACME' } }).find('.brand')
+
+      expect(brand.find('span').exists()).toBe(false)
+      expect(brand.text()).toBe('')
     })
 
     it('still names the product in the label of the link when the text is switched off', () => {
-      const wrapper = mountBrand('start', { productNamePageTitle: 'ACME Flow', messages: { 'navigation.brandName': '' } })
+      const wrapper = mountBrand('start', { productNamePageTitle: 'ACME Flow', messages: { 'navigation.logoText': '' } })
 
       expect(wrapper.vm.brandLabel).toBe('ACME Flow - navigation.home')
     })
 
     // With the real translations: the key follows login.productName (a theme's own product name included),
     // and an empty string from a theme's translations really is empty, not the key
-    describe('navigation.brandName in the translations', () => {
+    describe('navigation.logoText in the translations', () => {
       const translate = (themeMessages = {}) => {
         const i18n = createI18n({ legacy: false, locale: 'en', missingWarn: false, fallbackWarn: false, messages: { en: enMessages } })
         i18n.global.mergeLocaleMessage('en', themeMessages)
-        return i18n.global.t('navigation.brandName')
+        return i18n.global.t('navigation.logoText')
       }
 
       it('is the product name by default', () => {
@@ -185,7 +188,7 @@ describe('CibSeven.vue', () => {
       })
 
       it('is empty when a theme sets it to an empty string', () => {
-        expect(translate({ navigation: { brandName: '' } })).toBe('')
+        expect(translate({ navigation: { logoText: '' } })).toBe('')
       })
     })
 

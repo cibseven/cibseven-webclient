@@ -1207,7 +1207,7 @@
 	},
 	"navigation": {
 		"home": "Home",
-		"brandName": "@:login.productName",
+		"logoText": "@:login.productName",
 		"menu": "Navigation menu",
 		"infoAndHelp": "Info & help"
 	},
