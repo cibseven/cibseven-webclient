@@ -283,6 +283,6 @@ export default {
 /* Not scoped: dmn-js renders the decision table itself. Every cell, because dmn-js colours every
    second row and the sticky rule index cell on their own. */
 .dmn-decision-table-container tbody tr.fired-rule > td {
-  background-color: var(--bs-success-bg-subtle, #d1e7dd);
+  background-color: var(--bs-success-bg-subtle);
 }
 </style>
