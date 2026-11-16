@@ -72,20 +72,15 @@ public class DirectDecisionProvider implements IDecisionProvider {
 
 	@Override
 	public Collection<Decision> getDecisionDefinitionList(Map<String, Object> queryParams, CIBUser user) {
-		DecisionDefinitionQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(queryParams, DecisionDefinitionQueryDto.class);
+		DecisionDefinitionQueryDto queryDto = directProviderUtil.parseQueryDto(queryParams, DecisionDefinitionQueryDto.class, user);
 		List<Decision> definitions = new ArrayList<>();
 		DecisionDefinitionQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
-		List<DecisionDefinition> matchingDefinitions = QueryUtil.list(query, null, null);
-		for (DecisionDefinition definition : matchingDefinitions) {
-			DecisionDefinitionDto def = DecisionDefinitionDto.fromDecisionDefinition(definition);
-			definitions.add(directProviderUtil.convertValue(def, Decision.class, user));
-		}
-		return definitions;
+		return directProviderUtil.listAndConvert(query, null, null, DecisionDefinitionDto::fromDecisionDefinition, Decision.class, user);
 	}
 
 	@Override
 	public Long getDecisionDefinitionListCount(Map<String, Object> queryParams, CIBUser user) {
-		DecisionDefinitionQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(queryParams, DecisionDefinitionQueryDto.class);
+		DecisionDefinitionQueryDto queryDto = directProviderUtil.parseQueryDto(queryParams, DecisionDefinitionQueryDto.class, user);
 		DecisionDefinitionQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 		return query.count();
 	}

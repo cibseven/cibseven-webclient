@@ -16,16 +16,13 @@
  */
 package org.cibseven.webapp.providers;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 import org.cibseven.bpm.engine.ProcessEngineException;
 import org.cibseven.bpm.engine.identity.TenantQuery;
 import org.cibseven.bpm.engine.rest.dto.identity.TenantDto;
 import org.cibseven.bpm.engine.rest.dto.identity.TenantQueryDto;
-import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
@@ -41,16 +38,10 @@ public class DirectTenantProvider implements ITenantProvider {
 
 	@Override
 	public Collection<Tenant> fetchTenants(Map<String, Object> queryParams, CIBUser user) {
-		TenantQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(queryParams, TenantQueryDto.class);
+		TenantQueryDto queryDto = directProviderUtil.parseQueryDto(queryParams, TenantQueryDto.class, user);
 
 		TenantQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
-		List<org.cibseven.bpm.engine.identity.Tenant> tenants = QueryUtil.list(query, null, null);
-		List<Tenant> tenantList = new ArrayList<>();
-		List<TenantDto> tennantDtoList = TenantDto.fromTenantList(tenants);
-		for (TenantDto tennantDto : tennantDtoList) {
-			tenantList.add(directProviderUtil.convertValue(tennantDto, Tenant.class, user));
-		}
-		return tenantList;
+		return directProviderUtil.listAndConvert(query, null, null, TenantDto::fromTenant, Tenant.class, user);
 	}
 
 	@Override

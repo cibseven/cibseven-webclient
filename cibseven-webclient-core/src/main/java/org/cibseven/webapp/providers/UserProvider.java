@@ -16,7 +16,6 @@
  */
 package org.cibseven.webapp.providers;
 
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -96,38 +95,8 @@ public class UserProvider extends SevenProviderBase implements IUserProvider {
 
 	@Override
 	public Authorizations getUserAuthorization(CIBUser user) {
-		Authorizations auths = new Authorizations();
-
 		Collection<Authorization> userAuthorizations = fetchOwnAuthorizations(user);
-
-		auths.setApplication(filterResources(userAuthorizations, SevenResourceType.APPLICATION.getType()));
-		auths.setFilter(filterResources(userAuthorizations, SevenResourceType.FILTER.getType()));
-		auths.setProcessDefinition(filterResources(userAuthorizations, SevenResourceType.PROCESS_DEFINITION.getType()));
-		auths.setProcessInstance(filterResources(userAuthorizations, SevenResourceType.PROCESS_INSTANCE.getType()));
-		auths.setTask(filterResources(userAuthorizations, SevenResourceType.TASK.getType()));
-		auths.setAuthorization(filterResources(userAuthorizations, SevenResourceType.AUTHORIZATION.getType()));
-		auths.setUser(filterResources(userAuthorizations, SevenResourceType.USER.getType()));
-		auths.setGroup(filterResources(userAuthorizations, SevenResourceType.GROUP.getType()));
-		auths.setDecisionDefinition(filterResources(userAuthorizations, SevenResourceType.DECISION_DEFINITION.getType()));
-		auths.setDecisionRequirementsDefinition(filterResources(userAuthorizations, SevenResourceType.DECISION_REQUIREMENTS_DEFINITION.getType()));
-		auths.setDeployment(filterResources(userAuthorizations, SevenResourceType.DEPLOYMENT.getType()));
-		//auths.setCaseDefinition(filterResources(userAuthorizations, SevenResourceType.CASE_DEFINITION.getType()));
-		//auths.setCaseInstance(filterResources(userAuthorizations, SevenResourceType.CASE_INSTANCE.getType()));
-		//auths.setJobDefinition(filterResources(userAuthorizations, SevenResourceType.JOB_DEFINITION.getType()));
-		auths.setBatch(filterResources(userAuthorizations, SevenResourceType.BATCH.getType()));
-		auths.setGroupMembership(filterResources(userAuthorizations, SevenResourceType.GROUP_MEMBERSHIP.getType()));
-		auths.setHistoricTask(filterResources(userAuthorizations, SevenResourceType.HISTORIC_TASK.getType()));
-		auths.setHistoricProcessInstance(filterResources(userAuthorizations, SevenResourceType.HISTORIC_PROCESS_INSTANCE.getType()));
-		auths.setTenant(filterResources(userAuthorizations, SevenResourceType.TENANT.getType()));
-		auths.setTenantMembership(filterResources(userAuthorizations, SevenResourceType.TENANT_MEMBERSHIP.getType()));
-		auths.setReport(filterResources(userAuthorizations, SevenResourceType.REPORT.getType()));
-		auths.setDashboard(filterResources(userAuthorizations, SevenResourceType.DASHBOARD.getType()));
-		auths.setUserOperationLogCategory(filterResources(userAuthorizations, SevenResourceType.USER_OPERATION_LOG_CATEGORY.getType()));
-		auths.setSystem(filterResources(userAuthorizations, SevenResourceType.SYSTEM.getType()));
-		//auths.setMessage(filterResources(userAuthorizations, SevenResourceType.MESSAGE.getType()));
-		//auths.setEventSubscription(filterResources(userAuthorizations, SevenResourceType.EVENT_SUBSCRIPTION.getType()));
-
-		return auths;
+		return buildAuthorizations(userAuthorizations);
 	}
 
 	/**

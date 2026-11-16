@@ -16,7 +16,6 @@
  */
 package org.cibseven.webapp.providers;
 
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -42,7 +41,6 @@ import org.cibseven.bpm.engine.rest.dto.identity.GroupQueryDto;
 import org.cibseven.bpm.engine.rest.dto.identity.UserQueryDto;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.InvalidAttributeValueException;
 import org.cibseven.webapp.exception.InvalidUserIdException;
@@ -99,38 +97,7 @@ public class DirectUserProvider implements IUserProvider {
 		Collection<Authorization> userAuthorizations = directProviderUtil
 				.runWithoutAuthorization(() -> fetchOwnAuthorizations(user, authenticatedGroupIds), user);
 
-		Authorizations auths = new Authorizations();
-		auths.setApplication(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.APPLICATION.getType()));
-		auths.setFilter(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.FILTER.getType()));
-		auths.setProcessDefinition(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.PROCESS_DEFINITION.getType()));
-		auths.setProcessInstance(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.PROCESS_INSTANCE.getType()));
-		auths.setTask(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.TASK.getType()));
-		auths.setAuthorization(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.AUTHORIZATION.getType()));
-		auths.setUser(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.USER.getType()));
-		auths.setGroup(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.GROUP.getType()));
-		auths.setDecisionDefinition(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.DECISION_DEFINITION.getType()));
-		auths.setDecisionRequirementsDefinition(
-				SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.DECISION_REQUIREMENTS_DEFINITION.getType()));
-		auths.setDeployment(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.DEPLOYMENT.getType()));
-		// auths.setCaseDefinition(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.CASE_DEFINITION.getType()));
-		// auths.setCaseInstance(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.CASE_INSTANCE.getType()));
-		// auths.setJobDefinition(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.JOB_DEFINITION.getType()));
-		auths.setBatch(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.BATCH.getType()));
-		auths.setGroupMembership(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.GROUP_MEMBERSHIP.getType()));
-		auths.setHistoricTask(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.HISTORIC_TASK.getType()));
-		auths.setHistoricProcessInstance(
-				SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.HISTORIC_PROCESS_INSTANCE.getType()));
-		auths.setTenant(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.TENANT.getType()));
-		auths.setTenantMembership(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.TENANT_MEMBERSHIP.getType()));
-		auths.setReport(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.REPORT.getType()));
-		auths.setDashboard(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.DASHBOARD.getType()));
-		auths.setUserOperationLogCategory(
-				SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.USER_OPERATION_LOG_CATEGORY.getType()));
-		auths.setSystem(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.SYSTEM.getType()));
-		// auths.setMessage(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.MESSAGE.getType()));
-		// auths.setEventSubscription(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.EVENT_SUBSCRIPTION.getType()));
-
-		return auths;
+		return buildAuthorizations(userAuthorizations);
 	}
 
 	/**
@@ -615,7 +582,7 @@ public class DirectUserProvider implements IUserProvider {
 
 	@Override
 	public long countUsers(Map<String, Object> filters, CIBUser user) throws SystemException {
-		UserQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(filters, UserQueryDto.class);
+		UserQueryDto queryDto = directProviderUtil.parseQueryDto(filters, UserQueryDto.class, user);
 		UserQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 		return query.count();
 	}

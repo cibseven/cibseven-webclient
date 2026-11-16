@@ -20,7 +20,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Supplier;
+import java.util.function.Function;
 
 import org.cibseven.bpm.BpmPlatform;
 import org.cibseven.bpm.engine.AuthorizationException;
@@ -37,7 +39,6 @@ import org.cibseven.bpm.engine.rest.dto.runtime.VariableInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.exception.RestException;
 import org.cibseven.bpm.engine.rest.mapper.JacksonConfigurator;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
-import org.cibseven.bpm.engine.runtime.VariableInstance;
 import org.cibseven.bpm.engine.runtime.VariableInstanceQuery;
 import org.cibseven.bpm.engine.variable.VariableMap;
 import org.cibseven.bpm.engine.variable.value.TypedValue;
@@ -46,11 +47,16 @@ import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.cibseven.bpm.engine.rest.util.EngineUtil;
+import org.cibseven.bpm.engine.rest.dto.AbstractQueryDto;
+
+import org.cibseven.bpm.engine.query.Query;
 
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 import lombok.Setter;
 
 public class DirectProviderUtil {
@@ -283,16 +289,10 @@ public class DirectProviderUtil {
 			query.disableCustomObjectDeserialization();
 		}
 
-		List<VariableInstance> matchingInstances = QueryUtil.list(query, firstResult,
-				maxResults);
-
-		List<Variable> instanceResults = new ArrayList<>();
-		for (VariableInstance instance : matchingInstances) {
-			VariableInstanceDto resultInstanceDto = VariableInstanceDto.fromVariableInstance(instance);
-			VariableHistory resultInstance = convertValue(resultInstanceDto, VariableHistory.class, user);
-			instanceResults.add(resultInstance);
-		}
-		return instanceResults;
+		// VariableHistory, not Variable: the ids (id, processInstanceId, executionId, taskId, ...) are only
+		// mapped by the subclass and would otherwise be dropped from the response
+		return new ArrayList<>(listAndConvert(query, firstResult, maxResults,
+				VariableInstanceDto::fromVariableInstance, VariableHistory.class, user));
 	}
 
 	public TypedValue getTypedValueForTaskVariable(String taskId, String variableName, boolean deserializeValue, CIBUser user) {
@@ -311,6 +311,21 @@ public class DirectProviderUtil {
 			throw new SystemException(errorMessage);
 		}
 		return value;
+	}
+
+	protected <E, D, R> List<R> listAndConvert(Query<?, E> query, Integer firstResult, Integer maxResults,
+			Function<E, D> toIntermediateDto, Class<R> targetClass, CIBUser user) {
+
+		List<E> rawList = QueryUtil.list(query, firstResult, maxResults);
+		List<R> result = new ArrayList<>(rawList.size());
+		for (E item : rawList) {
+			result.add(convertValue(toIntermediateDto.apply(item), targetClass, user));
+		}
+		return result;
+	}
+
+	protected <Q extends AbstractQueryDto<?>> Q parseQueryDto(Object params, Class<Q> queryDtoClass, CIBUser user) {
+		return getObjectMapper(user).convertValue(params, queryDtoClass);
 	}
 
 	protected Integer getFirstResult(Map<String, Object> params) {
@@ -344,5 +359,57 @@ public class DirectProviderUtil {
 			return ((Number) value).intValue();
 		String text = value.toString().trim();
 		return text.isEmpty() ? null : Integer.valueOf(text);
+	}
+
+	/**
+	 * Holds the pagination parameters ({@code firstResult}/{@code maxResults}) extracted
+	 * from a request parameter map, together with the remaining parameters as a
+	 * {@link MultivaluedMap} suitable for building a query DTO.
+	 */
+	public static class PagedParams {
+		private final Integer firstResult;
+		private final Integer maxResults;
+		private final MultivaluedMap<String, String> queryParams;
+
+		PagedParams(Integer firstResult, Integer maxResults, MultivaluedMap<String, String> queryParams) {
+			this.firstResult = firstResult;
+			this.maxResults = maxResults;
+			this.queryParams = queryParams;
+		}
+
+		public Integer getFirstResult() {
+			return firstResult;
+		}
+
+		public Integer getMaxResults() {
+			return maxResults;
+		}
+
+		public MultivaluedMap<String, String> getQueryParams() {
+			return queryParams;
+		}
+	}
+
+	/**
+	 * Extracts {@code firstResult}/{@code maxResults} from the given params and collects
+	 * the remaining entries into a {@link MultivaluedMap}.
+	 */
+	protected PagedParams extractPagedParams(Map<String, Object> params) {
+		return new PagedParams(getFirstResult(params), getMaxResults(params),
+				toMultivaluedMap(withoutPagingParams(params)));
+	}
+
+	/**
+	 * Builds a {@link MultivaluedMap} containing all non-null entries of the given params.
+	 * Null values are left out, as engine-rest never receives them; otherwise they would
+	 * reach the query DTO as the filter value "null".
+	 */
+	protected MultivaluedMap<String, String> toMultivaluedMap(Map<String, Object> params) {
+		MultivaluedMap<String, String> multiValueMap = new MultivaluedHashMap<>();
+		for (Entry<String, Object> entry : params.entrySet()) {
+			if (entry.getValue() != null)
+				multiValueMap.putSingle(entry.getKey(), String.valueOf(entry.getValue()));
+		}
+		return multiValueMap;
 	}
 }
