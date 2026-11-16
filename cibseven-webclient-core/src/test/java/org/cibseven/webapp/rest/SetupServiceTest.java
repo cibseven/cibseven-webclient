@@ -20,14 +20,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
@@ -49,8 +47,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
- * The setup policy of SetupService, the same for every provider (CIB7-2554): the first-run setup
- * is only offered for the effective default engine, whatever the X-Process-Engine header names.
+ * The engine SetupService sets up, the same for every provider (CIB7-2554): the engine named in
+ * X-Process-Engine, otherwise the effective default engine.
  */
 public class SetupServiceTest {
 
@@ -69,7 +67,7 @@ public class SetupServiceTest {
 		return new NewUser(new User("admin", "First", "Last", "admin@example.org"), new Credentials("Passw0rd!"));
 	}
 
-	/** The policy itself, with any provider. */
+	/** Which engine is passed on, with any provider. */
 	@Nested
 	class Policy {
 
@@ -101,9 +99,11 @@ public class SetupServiceTest {
 		}
 
 		@Test
-		void status_namingAnotherEngine_isFalseWithoutAskingIt() {
-			assertFalse(service.requiresSetup("other"));
-			verify(bpmProvider, never()).requiresSetup(anyString());
+		void status_namingAnotherEngine_asksThatEngine() {
+			when(bpmProvider.requiresSetup("other")).thenReturn(true);
+
+			assertTrue(service.requiresSetup("other"));
+			verify(bpmProvider, never()).requiresSetup("main");
 		}
 
 		@Test
@@ -116,10 +116,12 @@ public class SetupServiceTest {
 		}
 
 		@Test
-		void create_namingAnotherEngine_isForbiddenWithoutTouchingIt() {
-			assertEquals(HttpStatus.FORBIDDEN, service.createInitialUser(newUser(), "other").getStatusCode());
-			verify(bpmProvider, never()).requiresSetup(anyString());
-			verify(bpmProvider, never()).createSetupUser(any(), any());
+		void create_namingAnotherEngine_createsTheAdminOnThatEngine() {
+			when(bpmProvider.requiresSetup("other")).thenReturn(true);
+			NewUser user = newUser();
+
+			assertEquals(HttpStatus.CREATED, service.createInitialUser(user, "other").getStatusCode());
+			verify(bpmProvider).createSetupUser(user, "other");
 		}
 
 		@Test
@@ -190,24 +192,35 @@ public class SetupServiceTest {
 		}
 
 		@Test
-		void status_namingAnotherEngine_isFalseWithoutAskingIt() throws InterruptedException {
-			engines("[{\"name\":\"default\"},{\"name\":\"other\"}]");
+		void status_namingAnotherEngine_asksThatEngine() throws InterruptedException {
+			setupStatus(true);
 
-			assertFalse(service.requiresSetup("other"));
+			assertTrue(service.requiresSetup("other"));
 
-			assertEquals("/engine-rest/engine", engineRest.takeRequest().getPath());
-			RecordedRequest further = engineRest.takeRequest(200, TimeUnit.MILLISECONDS);
-			assertEquals(null, further, "engine-rest was asked about the other engine");
+			assertEquals("/engine-rest/engine/other/setup/status", engineRest.takeRequest().getPath());
+		}
+
+		/** The engine named "default" in any case, like IEngineProvider.isNamedDefaultEngine. */
+		@Test
+		void status_namingDefaultInAnotherCase_asksTheEngineNamedDefault() throws InterruptedException {
+			setupStatus(false);
+
+			assertFalse(service.requiresSetup("Default"));
+
+			assertEquals("/engine-rest/setup/status", engineRest.takeRequest().getPath());
 		}
 
 		@Test
-		void create_namingAnotherEngine_isForbiddenWithoutPosting() throws InterruptedException {
-			engines("[{\"name\":\"default\"},{\"name\":\"other\"}]");
+		void create_namingAnotherEngine_postsToThatEngine() throws InterruptedException {
+			setupStatus(true);
+			engineRest.enqueue(new MockResponse().setResponseCode(204));
 
-			assertEquals(HttpStatus.FORBIDDEN, service.createInitialUser(newUser(), "other").getStatusCode());
+			assertEquals(HttpStatus.CREATED, service.createInitialUser(newUser(), "other").getStatusCode());
 
-			assertEquals("/engine-rest/engine", engineRest.takeRequest().getPath());
-			assertEquals(null, engineRest.takeRequest(200, TimeUnit.MILLISECONDS), "engine-rest got a further request");
+			assertEquals("/engine-rest/engine/other/setup/status", engineRest.takeRequest().getPath());
+			RecordedRequest create = engineRest.takeRequest();
+			assertEquals("POST", create.getMethod());
+			assertEquals("/engine-rest/engine/other/setup/user/create", create.getPath());
 		}
 	}
 }

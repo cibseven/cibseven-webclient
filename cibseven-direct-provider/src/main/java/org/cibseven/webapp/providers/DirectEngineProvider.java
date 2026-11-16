@@ -73,13 +73,21 @@ public class DirectEngineProvider implements IEngineProvider {
 			if (engineNames == null || engineNames.isEmpty())
 				throw new SystemException("No process engine found.");
 		}
+		return toEngines(engineNames);
+	}
+
+	/**
+	 * Sorted by name, ignoring case, like the HTTP provider sorts them. The names come as a Set, so
+	 * without sorting, the effective default engine (the first one when none is named "default")
+	 * could differ from the HTTP provider's and change after a restart.
+	 */
+	static List<Engine> toEngines(Collection<String> engineNames) {
 		List<Engine> results = new ArrayList<>();
-		for (String engineName : engineNames) {
+		engineNames.stream().sorted(String::compareToIgnoreCase).forEach(engineName -> {
 			Engine engine = new Engine(engineName);
 			engine.setId(engineName);
 			results.add(engine);
-		}
-
+		});
 		return results;
 	}
 
@@ -140,8 +148,8 @@ public class DirectEngineProvider implements IEngineProvider {
 	 * have (CIB7-2554). What it checks and creates is the same as in SetupRestServiceImpl.
 	 *
 	 * Both calls are made without a login, so they are guarded more tightly than engine-rest's.
-	 * Which engine may be set up is decided in SetupService, the same for every provider: it only
-	 * passes the effective default engine on (an unspecified engine resolves to it here as well).
+	 * The engine is the one SetupService passes on: the engine named in X-Process-Engine, otherwise
+	 * the effective default engine (an unspecified engine resolves to it here as well).
 	 * - The user, the admin group, its authorizations and the membership are created in one
 	 *   transaction: a failure leaves nothing behind, so the setup stays open and can be repeated.
 	 * - Concurrent setups are serialized in this JVM. Across cluster nodes the admin group's primary

@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -57,6 +58,7 @@ public class DirectEngineProviderSetupTest {
 	private static final AtomicInteger DB_SEQUENCE = new AtomicInteger();
 
 	private ProcessEngine engine;
+	private DirectProviderUtil providerUtil;
 	private DirectEngineProvider provider;
 
 	@BeforeEach
@@ -76,7 +78,7 @@ public class DirectEngineProviderSetupTest {
 			.setJobExecutorActivate(false)
 			.buildProcessEngine();
 
-		DirectProviderUtil providerUtil = new DirectProviderUtil();
+		providerUtil = new DirectProviderUtil();
 		providerUtil.processEngines.put(engine.getName(), engine);
 		Engine definition = new Engine(engine.getName());
 		definition.setId(engine.getName());
@@ -135,7 +137,7 @@ public class DirectEngineProviderSetupTest {
 		assertThat(restored.getUserId()).isEqualTo("someone");
 	}
 
-	// --- the engine SetupService passes on: the effective default, by its name --------------------
+	// --- the engine SetupService passes on: the one named, otherwise the effective default ---------
 
 	@Test
 	void requiresSetup_namingTheDefaultEngine_asksIt() {
@@ -148,6 +150,42 @@ public class DirectEngineProviderSetupTest {
 
 		assertThat(engine.getIdentityService().createUserQuery().memberOfGroup(Groups.CAMUNDA_ADMIN).userId("admin").count())
 			.isEqualTo(1);
+	}
+
+	/** Each engine without an admin can be set up, also when the default engine is set up already. */
+	@Test
+	void setup_namingAFurtherEngine_setsUpThatEngine() {
+		provider.createSetupUser(newUser("admin"), null);
+		ProcessEngine further = ProcessEngineConfiguration.createStandaloneInMemProcessEngineConfiguration()
+			.setJdbcUrl("jdbc:h2:mem:further" + DB_SEQUENCE.incrementAndGet() + ";DB_CLOSE_DELAY=1000")
+			.setProcessEngineName("further" + DB_SEQUENCE.get())
+			.setAuthorizationEnabled(true)
+			.setJobExecutorActivate(false)
+			.buildProcessEngine();
+		try {
+			providerUtil.processEngines.put(further.getName(), further);
+
+			assertThat(provider.requiresSetup(further.getName())).isTrue();
+			provider.createSetupUser(newUser("furtherAdmin"), further.getName());
+
+			assertThat(further.getIdentityService().createUserQuery().memberOfGroup(Groups.CAMUNDA_ADMIN)
+				.userId("furtherAdmin").count()).isEqualTo(1);
+			assertThat(engine.getIdentityService().createUserQuery().userId("furtherAdmin").count()).isZero();
+			assertThat(provider.requiresSetup(further.getName())).isFalse();
+		} finally {
+			further.close();
+		}
+	}
+
+	// --- engine order --------------------------------------------------------------------------------
+
+	/** Like the HTTP provider: sorted by name ignoring case, so the first one does not depend on the Set. */
+	@Test
+	void toEngines_sortsTheNamesIgnoringCase() {
+		List<String> names = DirectEngineProvider.toEngines(new LinkedHashSet<>(List.of("beta", "Gamma", "alpha")))
+			.stream().map(Engine::getId).toList();
+
+		assertThat(names).containsExactly("alpha", "beta", "Gamma");
 	}
 
 	// --- one transaction ---------------------------------------------------------------------------
