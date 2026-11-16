@@ -51,11 +51,6 @@
 					<groupId>io.swagger.core.v3</groupId>
 					<artifactId>swagger-annotations-jakarta</artifactId>
 				</exclusion>
-				<!-- Brings Jackson 2; jjwt-gson below reads and writes the tokens' JSON instead -->
-				<exclusion>
-					<groupId>io.jsonwebtoken</groupId>
-					<artifactId>jjwt-jackson</artifactId>
-				</exclusion>
 			</exclusions>
 		</dependency>
 
