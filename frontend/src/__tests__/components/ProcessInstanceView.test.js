@@ -102,23 +102,14 @@ describe('ProcessInstanceView', () => {
     })
 
     // Opened from the definition view, which already loaded them for this definition
-    it('reuses them when they are already loaded for the definition', async () => {
+    it('reuses them when they are already loaded for the definition', () => {
       const vm = context({ getStaticCalledProcessDefinitionsFor: vi.fn(() => []) })
 
-      await vm.ensureStaticCalledProcessDefinitions()
+      vm.ensureStaticCalledProcessDefinitions()
 
       expect(vm.getStaticCalledProcessDefinitionsFor).toHaveBeenCalledWith('pd-1')
       expect(vm.loadStaticCalledProcessDefinitions).not.toHaveBeenCalled()
     })
 
-    it('reports a failed load instead of leaving it unhandled', async () => {
-      const failure = new Error('forbidden')
-      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
-      const vm = context({ loadStaticCalledProcessDefinitions: vi.fn(() => Promise.reject(failure)) })
-
-      await expect(vm.ensureStaticCalledProcessDefinitions()).resolves.toBeUndefined()
-
-      expect(consoleError).toHaveBeenCalledWith(expect.any(String), failure)
-    })
   })
 })

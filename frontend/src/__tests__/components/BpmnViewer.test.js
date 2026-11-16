@@ -1261,8 +1261,9 @@ describe('BpmnViewer - navigateToSubprocess', () => {
 })
 
 describe('BpmnViewer - drawSubprocessLinks', () => {
-  const callActivity = (id, calledElement, $attrs) => ({
-    id, type: 'bpmn:CallActivity', businessObject: { calledElement, $attrs }
+  // Without the camunda moddle extension, get() reads camunda: attributes from $attrs
+  const callActivity = (id, calledElement, $attrs = {}) => ({
+    id, type: 'bpmn:CallActivity', businessObject: { calledElement, $attrs, get: (name) => $attrs[name] }
   })
 
   const vmWith = (overrides = {}) => ({
@@ -1314,7 +1315,7 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
 
     expect(buttonFrom(vm).disabled).toBe(false)
     buttonFrom(vm).click()
-    expect(vm.openSubprocess).toHaveBeenCalledWith('call_1', expect.objectContaining({ key: 'sub' }), false)
+    expect(vm.openSubprocess).toHaveBeenCalledWith('call_1', expect.objectContaining({ key: 'sub' }), false, 'sub')
   })
 
   // The called instance exists even when the engine could not resolve the fixed name statically
@@ -1380,7 +1381,7 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
     BpmnViewer.methods.drawSubprocessLinks.call(vm, registry)
     buttonFrom(vm).click()
 
-    expect(vm.openSubprocess).toHaveBeenCalledWith('call_1', expect.objectContaining({ key: 'sub' }), false)
+    expect(vm.openSubprocess).toHaveBeenCalledWith('call_1', expect.objectContaining({ key: 'sub' }), false, 'sub')
   })
 
   // A dynamic calledElement is an expression, so the target is unknown until something has
@@ -1484,6 +1485,39 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
     expect(vm.setHtmlOnDiagram.mock.calls[0][1].title).toBe('bpmn-viewer.legend.currentSubprocess')
   })
 
+  // The link opens the called instance there, which is a different page than the one shown
+  it('should enable a recursive call in an instance once it ran', () => {
+    const vm = vmWith({
+      selectedInstance: { id: 'pi1', processDefinitionId: 'sub-1' },
+      historicActivityStatistics: [{ id: 'call_1', finished: 1 }],
+      staticCalledProcessDefinitions: [{ id: 'sub-1', key: 'sub', calledFromActivityIds: ['call_1'] }]
+    })
+
+    BpmnViewer.methods.drawSubprocessLinks.call(vm, registryWith(callActivity('call_1', 'sub')))
+
+    expect(buttonFrom(vm).disabled).toBe(false)
+  })
+
+  it('should disable a recursive call in the definition view', () => {
+    const vm = vmWith({
+      processDefinitionId: 'sub-1',
+      staticCalledProcessDefinitions: [{ id: 'sub-1', key: 'sub', calledFromActivityIds: ['call_1'] }]
+    })
+
+    BpmnViewer.methods.drawSubprocessLinks.call(vm, registryWith(callActivity('call_1', 'sub')))
+
+    expect(buttonFrom(vm).disabled).toBe(true)
+    expect(titleFrom(vm)).toBe('bpmn-viewer.legend.currentSubprocess')
+  })
+
+  it('should remember the link overlays so they can be redrawn on their own', () => {
+    const vm = vmWith({ setHtmlOnDiagram: vi.fn(() => 'overlay-1') })
+
+    BpmnViewer.methods.drawSubprocessLinks.call(vm, registryWith(callActivity('call_1', 'sub')))
+
+    expect(vm.subprocessLinkOverlays).toEqual(['overlay-1'])
+  })
+
   // CIB7-2717: a fixed calledElement is never "resolved at runtime"; without a matching
   // deployed definition the tooltip must say so instead.
   it('should not claim runtime resolution for a fixed calledElement without a definition', () => {
@@ -1570,32 +1604,55 @@ describe('BpmnViewer - static called process definitions', () => {
   })
 
   // The data can arrive after the diagram was drawn, e.g. when an instance is opened directly
-  it('should redraw the diagram when the static definitions change', () => {
-    const vm = { viewer: {}, drawDiagramState: vi.fn() }
+  it('should redraw the call activity links when the static definitions change', () => {
+    const vm = { viewer: {}, redrawSubprocessLinks: vi.fn() }
 
     BpmnViewer.watch.staticCalledProcessDefinitions.call(vm)
 
-    expect(vm.drawDiagramState).toHaveBeenCalled()
+    expect(vm.redrawSubprocessLinks).toHaveBeenCalled()
   })
 
   it('should not redraw before the viewer exists', () => {
-    const vm = { viewer: null, drawDiagramState: vi.fn() }
+    const vm = { viewer: null, redrawSubprocessLinks: vi.fn() }
 
     BpmnViewer.watch.staticCalledProcessDefinitions.call(vm)
 
-    expect(vm.drawDiagramState).not.toHaveBeenCalled()
+    expect(vm.redrawSubprocessLinks).not.toHaveBeenCalled()
+  })
+
+  // Only the links depend on this data: badges and the activity map stay as they are
+  it('should replace only the link overlays on a redraw', () => {
+    const overlays = { remove: vi.fn() }
+    const registry = {}
+    const vm = {
+      viewer: { get: (name) => (name === 'overlays' ? overlays : registry) },
+      overlayList: ['badge-1', 'link-1', 'badge-2'],
+      subprocessLinkOverlays: ['link-1'],
+      drawSubprocessLinks: vi.fn()
+    }
+    vm.cleanDiagramState = BpmnViewer.methods.cleanDiagramState.bind(vm)
+
+    BpmnViewer.methods.redrawSubprocessLinks.call(vm)
+
+    expect(overlays.remove.mock.calls).toEqual([['link-1']])
+    expect(vm.overlayList).toEqual(['badge-1', 'badge-2'])
+    expect(vm.drawSubprocessLinks).toHaveBeenCalledWith(registry)
   })
 })
 
 describe('BpmnViewer - openSubprocess', () => {
-  const vmWith = (overrides = {}) => ({
-    selectedInstance: { id: 'pi1' },
-    $route: { path: '/process', query: {} },
-    $router: { push: vi.fn() },
-    loadActivitiesInstanceHistory: vi.fn(() => Promise.resolve([])),
-    navigateToSubprocess: vi.fn(),
-    ...overrides
-  })
+  const vmWith = (overrides = {}) => {
+    const vm = {
+      selectedInstance: { id: 'pi1' },
+      $route: { path: '/process', query: {} },
+      $router: { push: vi.fn() },
+      loadActivitiesInstanceHistory: vi.fn(() => Promise.resolve([])),
+      navigateToSubprocess: vi.fn(),
+      ...overrides
+    }
+    vm.findCalledProcessInstance = BpmnViewer.methods.findCalledProcessInstance.bind(vm)
+    return vm
+  }
 
   afterEach(() => {
     vi.restoreAllMocks()
@@ -1603,13 +1660,14 @@ describe('BpmnViewer - openSubprocess', () => {
 
   it('should open the called instance when the call activity already ran', async () => {
     vi.spyOn(HistoryService, 'findProcessesInstancesHistory')
-      .mockResolvedValue([{ processDefinitionKey: 'sub', processDefinitionVersion: 3 }])
+      .mockResolvedValue([{ id: 'sub-pi', processDefinitionKey: 'sub', processDefinitionVersion: 3 }])
     const vm = vmWith({
       loadActivitiesInstanceHistory: vi.fn(() => Promise.resolve([{ calledProcessInstanceId: 'sub-pi' }]))
     })
 
-    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', { key: 'sub', version: 1 }, false)
+    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', { key: 'sub', version: 1 }, false, 'sub')
 
+    expect(vm.loadActivitiesInstanceHistory).toHaveBeenCalledWith(expect.objectContaining({ processInstanceId: 'pi1', activityId: 'call_1' }))
     expect(HistoryService.findProcessesInstancesHistory).toHaveBeenCalledWith({ processInstanceId: 'sub-pi' })
     expect(vm.navigateToSubprocess).toHaveBeenCalledWith('sub', 3, 'sub-pi')
   })
@@ -1619,27 +1677,57 @@ describe('BpmnViewer - openSubprocess', () => {
     const findHistory = vi.spyOn(HistoryService, 'findProcessesInstancesHistory')
     const vm = vmWith()
 
-    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', { key: 'sub', version: 1 }, false)
+    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', { key: 'sub', version: 1 }, false, 'sub')
 
     expect(findHistory).not.toHaveBeenCalled()
     expect(vm.navigateToSubprocess).toHaveBeenCalledWith('sub', 1, null)
   })
 
+  // Removed by history cleanup or deleted, while the call activity still names it
+  it('should fall back to the called definition when the called instance has no history', async () => {
+    vi.spyOn(HistoryService, 'findProcessesInstancesHistory').mockResolvedValue([])
+    const vm = vmWith({
+      loadActivitiesInstanceHistory: vi.fn(() => Promise.resolve([{ calledProcessInstanceId: 'gone' }]))
+    })
+
+    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', { key: 'sub', version: 1 }, false, 'sub')
+
+    expect(vm.navigateToSubprocess).toHaveBeenCalledWith('sub', 1, null)
+  })
+
+  // Cancelled before the called process started, or waiting on an async job
+  it('should open the latest version of an unresolved fixed name without a called instance', async () => {
+    const vm = vmWith()
+
+    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', undefined, false, 'sub')
+
+    expect(vm.navigateToSubprocess).toHaveBeenCalledWith('sub', undefined, null)
+  })
+
+  it('should switch to the called process instances tab for an expression without a called instance', async () => {
+    const vm = vmWith({ $route: { path: '/process/p/1/pi1', query: { tab: 'variables' } } })
+
+    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', undefined, true, '${key}')
+
+    expect(vm.navigateToSubprocess).not.toHaveBeenCalled()
+    expect(vm.$router.push).toHaveBeenCalledWith({ path: '/process/p/1/pi1', query: { tab: 'calledProcessInstances' } })
+  })
+
   it('should switch to the called process definitions tab for a dynamic call outside an instance', async () => {
     const vm = vmWith({ selectedInstance: null, $route: { path: '/process/p', query: { a: '1' } } })
 
-    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', undefined, true)
+    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', undefined, true, '${key}')
 
     expect(vm.$router.push).toHaveBeenCalledWith({ path: '/process/p', query: { a: '1', tab: 'calledProcessDefinitions' } })
   })
 
-  it('should do nothing without a called definition to open', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    const vm = vmWith()
+  it('should log instead of throwing when the lookup fails', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const vm = vmWith({ loadActivitiesInstanceHistory: vi.fn(() => Promise.reject(new Error('down'))) })
 
-    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', undefined, true)
+    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', { key: 'sub', version: 1 }, false, 'sub')
 
+    expect(consoleError).toHaveBeenCalled()
     expect(vm.navigateToSubprocess).not.toHaveBeenCalled()
-    expect(warn).toHaveBeenCalled()
   })
 })

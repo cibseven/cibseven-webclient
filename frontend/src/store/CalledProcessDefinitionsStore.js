@@ -17,24 +17,25 @@
 
 import { ProcessService, HistoryService } from '@/services.js'
 
-// The load in flight, so callers asking for the same definition share one request
-let pendingStaticLoad = null
+// The load in flight per store, so callers asking for the same definition share one request
+const pendingStaticLoads = new WeakMap()
 
 async function fetchStaticCalledProcessDefinitions({ commit, state }, processDefinitionId) {
-  // Never keep the data of another definition while the new one loads
+  // Never keep the data of another definition while the new one loads; null first, so it is never shown under the new id
   if (state.staticCalledProcessDefinitionsId !== processDefinitionId) {
+    commit('setStaticCalledProcessDefinitions', null)
     commit('setStaticCalledProcessDefinitionsId', processDefinitionId)
-    commit('setStaticCalledProcessDefinitionsLoaded', false)
-    commit('setStaticCalledProcessDefinitions', [])
   }
   try {
     const staticCalledProcessDefinitions = await ProcessService.findCalledProcessDefinitions(processDefinitionId)
     // Another definition was requested meanwhile, so this answer is out of date
     if (state.staticCalledProcessDefinitionsId !== processDefinitionId) return
     commit('setStaticCalledProcessDefinitions', staticCalledProcessDefinitions)
-    commit('setStaticCalledProcessDefinitionsLoaded', true)
+  } catch (error) {
+    // Only the call activity links depend on this: they stay "unknown", the views keep working
+    console.error('Failed to load the called process definitions:', error)
   } finally {
-    if (pendingStaticLoad?.processDefinitionId === processDefinitionId) pendingStaticLoad = null
+    if (pendingStaticLoads.get(state)?.processDefinitionId === processDefinitionId) pendingStaticLoads.delete(state)
   }
 }
 
@@ -43,10 +44,9 @@ export default {
   state: {
     calledProcessDefinitions: [],
     allCalledProcessDefinitions: [],
-    staticCalledProcessDefinitions: [],
-    // Id of the process definition the static definitions above belong to, and whether they have arrived
-    staticCalledProcessDefinitionsId: null,
-    staticCalledProcessDefinitionsLoaded: false
+    // null until they have loaded for staticCalledProcessDefinitionsId
+    staticCalledProcessDefinitions: null,
+    staticCalledProcessDefinitionsId: null
   },
   mutations: {
     setCalledProcessDefinitions(state, calledProcessDefinitions) {
@@ -61,22 +61,24 @@ export default {
     setStaticCalledProcessDefinitionsId: function (state, processDefinitionId) {
       state.staticCalledProcessDefinitionsId = processDefinitionId
     },
-    setStaticCalledProcessDefinitionsLoaded: function (state, loaded) {
-      state.staticCalledProcessDefinitionsLoaded = loaded
-    },
   },
   actions: {
     loadStaticCalledProcessDefinitions(context, { processDefinitionId }) {
-      if (pendingStaticLoad?.processDefinitionId === processDefinitionId) return pendingStaticLoad.promise
+      const pending = pendingStaticLoads.get(context.state)
+      if (pending?.processDefinitionId === processDefinitionId) return pending.promise
       const promise = fetchStaticCalledProcessDefinitions(context, processDefinitionId)
-      pendingStaticLoad = { processDefinitionId, promise }
+      pendingStaticLoads.set(context.state, { processDefinitionId, promise })
       return promise
     },
 
-    async loadCalledProcessDefinitions({ commit, getters, rootGetters }, { processId, chunkSize = 50 }) {
+    async loadCalledProcessDefinitions({ commit, dispatch, getters, rootGetters }, { processId, chunkSize = 50 }) {
       commit('setCalledProcessDefinitions', [])
       commit('setAllCalledProcessDefinitions', [])
 
+      // Not loaded yet does not mean "calls nothing statically": wait for them (shares a load in flight)
+      if (processId && !getters.getStaticCalledProcessDefinitionsFor(processId)) {
+        await dispatch('loadStaticCalledProcessDefinitions', { processDefinitionId: processId })
+      }
       const staticDefinitions = getters.getStaticCalledProcessDefinitionsFor(processId) || []
       const historicStats = rootGetters.getHistoricActivityStatistics(processId) || []
       const getActivityName = rootGetters.getProcessActivities || {}
@@ -308,11 +310,11 @@ export default {
       if (hasReferenced) return 'process-instance.calledProcessDefinitions.referenced'
       return 'process-instance.calledProcessDefinitions.unknown'
     },
-    getStaticCalledProcessDefinitions: state => state.staticCalledProcessDefinitions,
+    // Kept for library consumers; it does not say which definition the list belongs to, use getStaticCalledProcessDefinitionsFor
+    getStaticCalledProcessDefinitions: state => state.staticCalledProcessDefinitions || [],
     // The static definitions once they have loaded for the given process definition; null while they are unknown
     getStaticCalledProcessDefinitionsFor: state => processDefinitionId =>
-      processDefinitionId && state.staticCalledProcessDefinitionsLoaded &&
-        state.staticCalledProcessDefinitionsId === processDefinitionId
+      processDefinitionId && state.staticCalledProcessDefinitionsId === processDefinitionId
         ? state.staticCalledProcessDefinitions
         : null
   }

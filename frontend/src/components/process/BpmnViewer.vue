@@ -104,6 +104,8 @@ export default {
       viewer: null,
       currentHighlight: null,
       overlayList: [],
+      // The call activity link overlays, also in overlayList, so they can be redrawn on their own
+      subprocessLinkOverlays: [],
       loader: true,
       suspendedOverlayMap: {},
       overlayClickHandler: null,
@@ -128,7 +130,7 @@ export default {
       deep: true
     },
     staticCalledProcessDefinitions: function() {
-      if (this.viewer) this.drawDiagramState()
+      if (this.viewer) this.redrawSubprocessLinks()
     },
     statistics: {
       handler() { if (this.viewer) this.drawDiagramState() },
@@ -561,7 +563,14 @@ export default {
         this.setHtmlOnDiagram(stat.id, html, position)
       }
     },
+    redrawSubprocessLinks: function() {
+      const removed = new Set(this.subprocessLinkOverlays)
+      this.cleanDiagramState(this.subprocessLinkOverlays)
+      this.overlayList = this.overlayList.filter(overlayId => !removed.has(overlayId))
+      this.drawSubprocessLinks(this.viewer.get('elementRegistry'))
+    },
     drawSubprocessLinks: function(elementRegistry) {
+      this.subprocessLinkOverlays = []
       if (this.badgeOptions?.showCalledProcesses === false) return
       const staticCalledProcesses = this.staticCalledProcessDefinitions || []
       const activityStats = this.historicActivityStatistics || []
@@ -603,8 +612,10 @@ export default {
         // Without a resolved definition the called instance is the target: always for an expression,
         // and in an instance also for a fixed name the engine could not resolve statically
         const canOpenCalledInstance = hasRun && (isDynamic || (inInstanceView && !!calledElement))
-        const isCurrentDefinitionAlreadyVisible = !!this.selectedInstance && !!calledProcess &&
-          calledProcess.id === this.selectedInstance.processDefinitionId
+        const callsDisplayedDefinition = !!calledProcess &&
+          calledProcess.id === (this.selectedInstance?.processDefinitionId ?? this.processDefinitionId)
+        // In an instance a recursive call that ran opens the called instance, which is another page
+        const isCurrentDefinitionAlreadyVisible = callsDisplayedDefinition && !(inInstanceView && hasRun)
 
         const disabled = (!isStatic && !canOpenCalledInstance) || isCurrentDefinitionAlreadyVisible
 
@@ -625,20 +636,21 @@ export default {
           wrapper.style.cursor = 'not-allowed'
         } else {
           button.addEventListener('click', () => {
-            this.openSubprocess(ca.id, calledProcess, isDynamic)
+            this.openSubprocess(ca.id, calledProcess, isDynamic, calledElement)
           })
         }
 
         wrapper.appendChild(button)
-        this.setHtmlOnDiagram(ca.id, wrapper, { bottom: -7, right: 15 })
+        this.subprocessLinkOverlays.push(this.setHtmlOnDiagram(ca.id, wrapper, { bottom: -7, right: 15 }))
       })
     },
     // The engine resolves a call activity at runtime when its process key, version, version tag or tenant is an expression
     hasExpressionReference: function(businessObject) {
-      const attributes = Object.entries(businessObject?.$attrs || {})
-        .filter(([name]) => calledElementReferenceAttributes.includes(name.split(':').pop()))
-        .map(([, value]) => value)
-      return [businessObject?.calledElement, ...attributes].some(value => /[$#]\{.+\}/.test(value || ''))
+      const references = [
+        businessObject?.calledElement,
+        ...calledElementReferenceAttributes.map(name => businessObject?.get?.(`camunda:${name}`))
+      ]
+      return references.some(value => /[$#]\{.+\}/.test(value || ''))
     },
     getSubprocessLinkTitleKey: function({ disabled, isDynamic, isCurrentDefinitionAlreadyVisible, staticDefinitionsLoaded }) {
       if (!disabled) return 'bpmn-viewer.legend.openSubprocess'
@@ -682,41 +694,41 @@ export default {
     getTypeAllowed: function(typeI, types) {
       return types.some(type => typeI.includes(type))
     },
-    async openSubprocess(activityId, calledProcess, isDynamic) {
+    async openSubprocess(activityId, calledProcess, isDynamic, calledElement) {
       try {
         if (this.selectedInstance) {
-          const params = {
-            processInstanceId: this.selectedInstance.id,
-            activityType: 'callActivity',
-            activityId,
-            sortBy: 'startTime',
-            sortOrder: 'desc',
-            maxResults: 1
-          }
-          const calledInstance = await this.loadActivitiesInstanceHistory(params)
-          const calledProcessInstanceId = calledInstance?.[0]?.calledProcessInstanceId
-          // A call activity the instance has not reached yet has no called instance: fall back to the definition
-          if (calledProcessInstanceId) {
-            const processDefinition = await HistoryService.findProcessesInstancesHistory({ processInstanceId: calledProcessInstanceId })
-            return this.navigateToSubprocess(processDefinition[0].processDefinitionKey, processDefinition[0].processDefinitionVersion, calledProcessInstanceId)
+          const calledProcessInstance = await this.findCalledProcessInstance(activityId)
+          if (calledProcessInstance) {
+            return this.navigateToSubprocess(calledProcessInstance.processDefinitionKey, calledProcessInstance.processDefinitionVersion, calledProcessInstance.id)
           }
         }
-        // If no instance view or no instance found, try to get the called process directly
-        if (isDynamic && !this.selectedInstance) {
-          this.$router.push({
-            path: this.$route.path,
-            query: { ...this.$route.query, tab: 'calledProcessDefinitions' }
-          })
-        } else {
-          if (!calledProcess) {
-            console.warn('No called process definition for activityId:', activityId)
-            return
-          }
-          this.navigateToSubprocess(calledProcess.key, calledProcess.version, null)
-        }
+        // Without a called instance, open the called definition
+        if (calledProcess) return this.navigateToSubprocess(calledProcess.key, calledProcess.version, null)
+        // A fixed name the engine could not resolve statically: its latest version
+        if (!isDynamic && calledElement) return this.navigateToSubprocess(calledElement, undefined, null)
+        // An expression has no known target: show what was called instead
+        const tab = this.selectedInstance ? 'calledProcessInstances' : 'calledProcessDefinitions'
+        this.$router.push({ path: this.$route.path, query: { ...this.$route.query, tab } })
       } catch (error) {
         console.error('Failed to open subprocess:', error)
       }
+    },
+    // The latest instance the call activity started in the selected instance, or null
+    findCalledProcessInstance: async function(activityId) {
+      const activities = await this.loadActivitiesInstanceHistory({
+        processInstanceId: this.selectedInstance.id,
+        activityType: 'callActivity',
+        activityId,
+        sortBy: 'startTime',
+        sortOrder: 'desc',
+        maxResults: 1
+      })
+      const calledProcessInstanceId = activities?.[0]?.calledProcessInstanceId
+      // Not reached yet, cancelled before the called process started, or waiting on an async job
+      if (!calledProcessInstanceId) return null
+      const instances = await HistoryService.findProcessesInstancesHistory({ processInstanceId: calledProcessInstanceId })
+      // Its history can be gone (cleanup, deletion) while the call activity still names it
+      return instances?.[0] ?? null
     },
     async navigateToSubprocess(processKey, versionIndex, calledProcessInstanceId) {
       if (calledProcessInstanceId) {

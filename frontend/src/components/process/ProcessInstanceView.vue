@@ -239,13 +239,9 @@ export default {
     ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'selectActivity', 'loadHistoricActivityStatistics', 'clearHistoricActivityStatistics']),
     ...mapActions('calledProcessDefinitions', ['loadStaticCalledProcessDefinitions']),
     // The instance can be opened directly, so the call activity links cannot rely on the definition view having loaded this
-    ensureStaticCalledProcessDefinitions: async function() {
+    ensureStaticCalledProcessDefinitions: function() {
       if (this.getStaticCalledProcessDefinitionsFor(this.process.id)) return
-      try {
-        await this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
-      } catch (error) {
-        console.error('Failed to load the called process definitions:', error)
-      }
+      this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
     },
     selectTask: function(event) {
       this.$emit('task-selected', event);
