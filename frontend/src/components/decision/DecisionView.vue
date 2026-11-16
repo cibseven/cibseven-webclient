@@ -27,8 +27,11 @@
         <DecisionVersionListSidebar v-if="versions.length > 0" ref="navbar"
           :versions="versions" @refresh-decision-versions="loadDecisionVersionsByKey(decisionKey, $event)"></DecisionVersionListSidebar>
       </template>
+      <div v-if="notAvailable" class="p-4 text-center text-secondary" role="status">
+        {{ tenantId ? $t('decision.notAvailableForTenant', { tenantId }) : $t('decision.notAvailable') }}
+      </div>
       <router-view
-        v-if="decision && versionLoaded"
+        v-else-if="decision && versionLoaded"
         :key="$route.fullPath"
         :loading="loading"
         :left-open="leftOpen"
@@ -65,8 +68,8 @@ export default {
       versionLoaded: false,
       // Counts the loads, so that an answer to an older one cannot overwrite a newer one
       loadRequest: 0,
-      // Tenants dropped for having no versions, so that the fallback without a tenant cannot reopen them
-      droppedTenantIds: []
+      // Nothing to show for the link: never another tenant's definition in its place
+      notAvailable: false
     }
   },
   watch: {
@@ -118,71 +121,59 @@ export default {
       const request = ++this.loadRequest
       const outdated = () => request !== this.loadRequest
       this.versionLoaded = false
+      this.notAvailable = false
       const instanceId = this.$route.params.instanceId
-      // Looked up once per load: one instance and one definition request
-      let instanceDefinitionRequest
-      const instanceDefinition = () => (instanceDefinitionRequest ??= this.instanceDefinition(instanceId))
 
-      // A link to an instance without the tenant (an old bookmark): its definition's
-      if (instanceId && !this.tenantId) {
-        const definition = await instanceDefinition()
-        if (outdated()) return
-        if (definition?.tenantId) return this.replaceTenant(definition.tenantId)
-      }
+      // An instance link opens the definition the instance evaluated, whatever tenant the link names:
+      // none in an old bookmark, maybe another one in a hand-made link, even with the same version number
+      const definition = instanceId ? await this.instanceDefinition(instanceId) : undefined
+      if (outdated()) return
+      if (definition && (definition.tenantId ?? null) !== (this.tenantId ?? null)) return this.replaceTenant(definition.tenantId)
 
       const tenantId = this.tenantId ?? null
       // The store holds one list of versions per key: hide another tenant's while this one loads
       const shown = this.getDecisionVersions(decisionKey)
       if (shown.length && (shown[0].tenantId ?? null) !== tenantId) this.setDecisionVersions({ key: decisionKey, versions: [] })
-      const versions = await this.getDecisionVersionsByKey({ key: decisionKey, lazyLoad, tenantId })
+      // Committed only if this load is still the current one: a late answer for another tenant is dropped
+      const versions = await this.getDecisionVersionsByKey({ key: decisionKey, lazyLoad, tenantId, isCurrent: () => !outdated() })
       if (outdated()) return
 
       // The version of the route now, which the user may have changed while the versions loaded
       const versionIndex = this.versionIndex
-      let version = versionIndex ? this.getDecisionVersion({ key: decisionKey, version: versionIndex }) : null
-      if (!version && instanceId) {
-        const definition = await instanceDefinition()
-        if (outdated()) return
-        if (definition) {
-          // A link with another tenant than its definition's
-          const definitionTenantId = definition.tenantId ?? null
-          if (definitionTenantId !== tenantId) return this.replaceTenant(definitionTenantId)
-          // A link with another version than its definition's: the instance's own, keeping the instance
-          version = this.getDecisionVersion({ key: decisionKey, version: String(definition.version) })
-          if (version) {
-            this.$router.replace({
-              name: 'decision-instance',
-              params: { decisionKey, versionIndex: String(version.version), instanceId },
-              query: this.$route.query
-            })
-          }
-        }
-      }
 
       if (!versions?.length) {
-        // The instance's definition is gone (its history kept): nothing to show, and no other tenant to try
-        if (instanceId) return
-        // An outdated link: the tenant has no version of this key any more
-        if (tenantId) {
-          this.droppedTenantIds.push(tenantId)
-          return this.replaceTenant(null)
+        // A link without a tenant to a key deployed only for tenants: a tenant with the requested version,
+        // else the tenant of the newest version
+        if (!tenantId && !instanceId) {
+          let everyTenantsVersions = []
+          try {
+            everyTenantsVersions = await DecisionService.getDecisionVersionsByKey(decisionKey, true) ?? []
+          } catch (error) {
+            console.error('Error loading the versions of every tenant:', error)
+          }
+          if (outdated()) return
+          const tenantsVersions = everyTenantsVersions.filter(v => v.tenantId)
+          const target = tenantsVersions.find(v => String(v.version) === versionIndex) ?? tenantsVersions[0]
+          if (target) return this.replaceTenant(target.tenantId)
         }
-        // A key deployed only for tenants: open a tenant with the requested version, else the newest tenant.
-        // Never one already dropped (its own listing came back empty, e.g. for a tenant id the engine splits):
-        // no endless bouncing
-        let everyTenantsVersions = []
-        try {
-          everyTenantsVersions = await DecisionService.getDecisionVersionsByKey(decisionKey, true) ?? []
-        } catch (error) {
-          console.error('Error loading the versions of every tenant:', error)
-        }
-        if (outdated()) return
-        const tenantsVersions = everyTenantsVersions.filter(v => v.tenantId && !this.droppedTenantIds.includes(v.tenantId))
-        const target = tenantsVersions.find(v => String(v.version) === versionIndex) ?? tenantsVersions[0]
-        if (target) this.replaceTenant(target.tenantId)
+        // A tenant without this key, an instance whose definition is gone, an unknown key: say so, and never
+        // open another tenant's definition in its place. This also ends a tenant the fallback opened but
+        // engine-rest cannot list (it splits tenantIdIn at commas)
+        this.notAvailable = true
         return
       }
-      this.droppedTenantIds = []
+
+      // An instance link: the version of its definition, keeping the instance
+      let version = definition ? this.getDecisionVersion({ key: decisionKey, version: String(definition.version) }) : null
+      if (version?.id !== definition?.id) version = null
+      if (version && String(version.version) !== versionIndex) {
+        this.$router.replace({
+          name: 'decision-instance',
+          params: { decisionKey, versionIndex: String(version.version), instanceId },
+          query: this.$route.query
+        })
+      }
+      if (!version && versionIndex) version = this.getDecisionVersion({ key: decisionKey, version: versionIndex })
       if (!version) {
         // Not in this tenant: its latest version, keeping the rest of the query (e.g. ?tab=)
         version = versions[0]
@@ -207,6 +198,7 @@ export default {
         return undefined
       }
     },
+    // null or undefined removes the tenant from the query
     replaceTenant(tenantId) {
       const query = { ...this.$route.query }
       if (tenantId) query.tenantId = tenantId

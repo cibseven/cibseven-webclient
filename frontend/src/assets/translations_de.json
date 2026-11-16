@@ -1364,7 +1364,9 @@
 		"value": "Wert",
 		"inputs": "Eingaben",
 		"outputs": "Ausgaben",
-		"decisionInstanceId": "Entscheidungsinstanz-ID"
+		"decisionInstanceId": "Entscheidungsinstanz-ID",
+		"notAvailableForTenant": "Diese Entscheidung ist für den Mandanten \"{tenantId}\" nicht verfügbar.",
+		"notAvailable": "Diese Entscheidung ist nicht verfügbar."
 	},
 	"decision-instance": {
 		"edit": "@:commons.edit"

@@ -66,4 +66,11 @@ class DecisionServiceVersionsTest {
 
 		verify(bpmProvider).getDecisionVersionsByKey("risk", null, false, Optional.empty(), user);
 	}
+
+	@Test
+	void treatsAnEmptyTenantAsNone() {
+		decisionService.getDecisionVersionsByKey("risk", Optional.of(""), Optional.of(true), Optional.empty(), Locale.ENGLISH, user);
+
+		verify(bpmProvider).getDecisionVersionsByKey("risk", null, true, Optional.empty(), user);
+	}
 }

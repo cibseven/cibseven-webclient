@@ -1363,7 +1363,9 @@
 		"value": "Значение",
 		"inputs": "Входные данные",
 		"outputs": "Выходные данные",
-		"decisionInstanceId": "ID экземпляра решения"
+		"decisionInstanceId": "ID экземпляра решения",
+		"notAvailableForTenant": "Это решение недоступно для тенанта \"{tenantId}\".",
+		"notAvailable": "Это решение недоступно."
 	},
 	"decision-instance": {
 		"edit": "@:commons.edit"

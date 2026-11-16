@@ -110,4 +110,12 @@ class DirectDecisionVersionsOfTenantTest {
 	void listsNothingForATenantWithoutTheKey() {
 		assertThat(decisionProvider.getDecisionVersionsByKey("risk", "other", false, Optional.of(true), user)).isEmpty();
 	}
+
+	@Test
+	void treatsAnEmptyTenantAsNone() {
+		assertThat(decisionProvider.getDecisionVersionsByKey("risk", "", true, Optional.of(true), user))
+			.extracting(Decision::getTenantId)
+			.containsExactly(null, null);
+		assertThat(decisionProvider.getDecisionVersionsByKey("risk", "", false, Optional.of(true), user)).hasSize(3);
+	}
 }

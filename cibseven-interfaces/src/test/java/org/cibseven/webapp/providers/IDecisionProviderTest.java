@@ -70,4 +70,10 @@ class IDecisionProviderTest {
 		assertThat(provider.getDecisionVersionsByKey("risk", null, false, Optional.of(true), user))
 			.containsExactly(withoutTenant, ofAcme, ofGlobex);
 	}
+
+	@Test
+	void treatsAnEmptyTenantAsNone() {
+		assertThat(provider.getDecisionVersionsByKey("risk", "", true, Optional.of(true), user)).containsExactly(withoutTenant);
+		assertThat(provider.getDecisionVersionsByKey("risk", "", false, Optional.of(true), user)).containsExactly(withoutTenant, ofAcme, ofGlobex);
+	}
 }

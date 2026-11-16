@@ -153,7 +153,7 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	public Collection<Decision> getDecisionVersionsByKey(String key, String tenantId, boolean withoutTenantId, Optional<Boolean> lazyLoad, CIBUser user) {
 		// encoded here and sent as it is: a tenant id like "a&withoutTenantId=true" cannot add parameters
 		String url = getEngineRestUrl(user) + "/decision-definition" + addQueryParameter("", "key", Optional.of(key), true) + "&sortBy=version&sortOrder=desc";
-		if (tenantId != null) url += addQueryParameter(url, "tenantIdIn", Optional.of(tenantId), true);
+		if (tenantId != null && !tenantId.isEmpty()) url += addQueryParameter(url, "tenantIdIn", Optional.of(tenantId), true);
 		else if (withoutTenantId) url += "&withoutTenantId=true";
 		Collection<Decision> decisions = Arrays.asList(((ResponseEntity<Decision[]>) doGet(url, Decision[].class, user, true)).getBody());
 		

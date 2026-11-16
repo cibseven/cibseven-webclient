@@ -254,4 +254,13 @@ public class DecisionProviderTest {
 
 		assertThat(engine.takePath()).isEqualTo("/decision-definition?key=risk&sortBy=version&sortOrder=desc");
 	}
+
+	@Test
+	void getDecisionVersionsByKey_treatsAnEmptyTenantAsNone() throws Exception {
+		engine.enqueueJson("[]");
+
+		decisionProvider.getDecisionVersionsByKey("risk", "", true, Optional.of(true), user);
+
+		assertThat(engine.takePath()).isEqualTo("/decision-definition?key=risk&sortBy=version&sortOrder=desc&withoutTenantId=true");
+	}
 }

@@ -18,6 +18,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import DecisionStore from '../../store/DecisionStore.js'
 import { DecisionService } from '@/services.js'
 import { createStoreTestSuite } from './store-test-utils.js'
+import { createStore } from 'vuex'
 
 vi.mock('@/services.js', () => ({
   DecisionService: {
@@ -482,6 +483,17 @@ createStoreTestSuite('DecisionStore', DecisionStore, {
 
         expect(DecisionService.getDecisionVersionsByKey).toHaveBeenCalledWith('invoice', true, { tenantId: null, withoutTenantId: true })
       })
+
+      // Review (CIB7-2392): a late answer for the previous tenant replaced the list of the tenant shown now
+      it('should not store an answer its caller no longer waits for', async () => {
+        const context = getContext()
+        DecisionService.getDecisionVersionsByKey.mockResolvedValue([version({ tenantId: 'T1' })])
+
+        const result = await action(context, { key: 'invoice', tenantId: 'T1', isCurrent: () => false })
+
+        expect(context.commit).not.toHaveBeenCalled()
+        expect(result).toEqual([version({ tenantId: 'T1' })])
+      })
     },
 
     refreshDecisionVersions: (action, getContext) => {
@@ -541,6 +553,17 @@ createStoreTestSuite('DecisionStore', DecisionStore, {
 
         expect(DecisionService.getDecisionVersionsByKey).toHaveBeenCalledWith('invoice', undefined, { tenantId: undefined, withoutTenantId: true })
         expect(context.commit).toHaveBeenCalledWith('setDecisionVersions', { key: 'invoice', versions: [version({ id: 'dd-1', version: 1 })] })
+      })
+
+      // Review (CIB7-2392): the view switched to another tenant while the refresh was under way
+      it('should not merge into the list of another tenant', async () => {
+        const context = getContext()
+        context.getters.getDecisionVersions = () => [version({ id: 'dd-t2', version: 1, tenantId: 'T2' })]
+        DecisionService.getDecisionVersionsByKey.mockResolvedValue([version({ id: 'dd-t1-new', version: 2, tenantId: 'T1' })])
+
+        await action(context, { key: 'invoice', tenantId: 'T1' })
+
+        expect(context.commit).not.toHaveBeenCalled()
       })
 
       it('should not commit when nothing new appeared', async () => {
@@ -666,4 +689,29 @@ createStoreTestSuite('DecisionStore', DecisionStore, {
       })
     })
   }
+})
+
+// Review (CIB7-2392), with the real store: a tenant switch while the previous tenant's versions are still loading
+describe('DecisionStore - versions of a tenant switch, real store', () => {
+  it('keeps the list of the newer load when the older answer arrives last', async () => {
+    const store = createStore({ modules: { decision: { ...DecisionStore, state: structuredClone(DecisionStore.state) } } })
+    store.commit('setDecisions', { decisions: [decision({ versions: [] })] })
+    let answerT1
+    DecisionService.getDecisionVersionsByKey
+      .mockImplementationOnce(() => new Promise(resolve => { answerT1 = resolve }))
+      .mockResolvedValueOnce([version({ id: 'dd-t2', tenantId: 'T2' })])
+    // the view counts its loads; only the newest is current
+    let loadRequest = 0
+    const load = tenantId => {
+      const request = ++loadRequest
+      return store.dispatch('getDecisionVersionsByKey', { key: 'invoice', tenantId, isCurrent: () => request === loadRequest })
+    }
+
+    const loadingT1 = load('T1')
+    await load('T2')
+    answerT1([version({ id: 'dd-t1', tenantId: 'T1' })])
+    await loadingT1
+
+    expect(store.getters.getDecisionVersions('invoice').map(v => v.tenantId)).toEqual(['T2'])
+  })
 })

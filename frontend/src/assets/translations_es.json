@@ -1363,7 +1363,9 @@
 		"value": "Valor",
 		"inputs": "Entradas",
 		"outputs": "Salidas",
-		"decisionInstanceId": "ID de instancia de decisión"
+		"decisionInstanceId": "ID de instancia de decisión",
+		"notAvailableForTenant": "Esta decisión no está disponible para el tenant \"{tenantId}\".",
+		"notAvailable": "Esta decisión no está disponible."
 	},
 	"decision-instance": {
 		"edit": "@:commons.edit"

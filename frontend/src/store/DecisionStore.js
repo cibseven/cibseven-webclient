@@ -154,15 +154,17 @@ const DecisionStore = {
       return DecisionService.getDecisionByKeyAndTenant(key, tenant)
     },
     // The versions of the opened tenant, or those without a tenant: a key can be deployed for several
-    // tenants, and for a tenant and without one (CIB7-2392)
-    async getDecisionVersionsByKey({ commit }, { key, lazyLoad, tenantId }) {
+    // tenants, and for a tenant and without one (CIB7-2392).
+    // isCurrent: false when the caller has moved on meanwhile, so that a late answer for another tenant
+    // cannot replace the list of the tenant shown now
+    async getDecisionVersionsByKey({ commit }, { key, lazyLoad, tenantId, isCurrent = () => true }) {
       const result = await DecisionService.getDecisionVersionsByKey(key, lazyLoad, { tenantId, withoutTenantId: !tenantId })
       if (lazyLoad) {
         result.forEach(v => {
           v.allInstances = '-'
         })
       }
-      commit('setDecisionVersions', { key, versions: result })
+      if (isCurrent()) commit('setDecisionVersions', { key, versions: result })
       return result
     },
     // One payload: a Vuex action receives no second argument. A caller passing only the key keeps the
@@ -173,6 +175,8 @@ const DecisionStore = {
         : payload
       const freshVersions = await DecisionService.getDecisionVersionsByKey(key, lazyLoad, { tenantId, withoutTenantId: !tenantId })
       const currentVersions = getters.getDecisionVersions(key)
+      // The view switched to another tenant meanwhile: its list is not the one to merge into
+      if (currentVersions.length && (currentVersions[0].tenantId ?? null) !== (tenantId ?? null)) return
       const newVersions = freshVersions.filter(freshVersion =>
         !currentVersions.some(currentVersion => currentVersion.id === freshVersion.id))
       if (lazyLoad) newVersions.forEach(v => { v.allInstances = '-' })

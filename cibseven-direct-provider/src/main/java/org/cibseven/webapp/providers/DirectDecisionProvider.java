@@ -227,7 +227,7 @@ public class DirectDecisionProvider implements IDecisionProvider {
 		// without either restriction every tenant's versions, like the REST provider: a decision deployed only for a tenant has versions too
 		DecisionDefinitionQuery query = directProviderUtil.getProcessEngine(user).getRepositoryService().createDecisionDefinitionQuery()
 				.decisionDefinitionKey(key);
-		if (tenantId != null) query.tenantIdIn(tenantId);
+		if (tenantId != null && !tenantId.isEmpty()) query.tenantIdIn(tenantId);
 		else if (withoutTenantId) query.withoutTenantId();
 		List<DecisionDefinition> decisionDefinitions = query.orderByDecisionDefinitionVersion().desc().unlimitedList();
 
