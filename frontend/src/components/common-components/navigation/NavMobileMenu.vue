@@ -42,18 +42,21 @@
               <!-- Marked by item.active only, as in NavCluster: Vue Router's active class ignores the query -->
               <router-link v-if="item.to" :to="item.to" active-class="" exact-active-class="" class="cib-nav-mobile-item" :class="{ active: item.active }"
                 :aria-current="item.active ? 'page' : null" @click="$emit('navigate')">
-                <NavIcon v-if="item.icon" class="cib-nav-mobile-item-icon" :icon="item.icon" :size="18"></NavIcon>
+                <NavIcon v-if="leadingIcon(item)" class="cib-nav-mobile-item-icon" :icon="leadingIcon(item)" :size="18"></NavIcon>
                 <span v-if="item.tag" class="cib-nav-mobile-tag">{{ item.tag }}</span>{{ item.label }}
+                <NavIcon v-if="trailingIcon(item)" class="cib-nav-mobile-item-icon-end" :icon="trailingIcon(item)" :size="18"></NavIcon>
               </router-link>
               <a v-else-if="item.href" :href="item.href" class="cib-nav-mobile-item"
                 :target="item.external ? '_blank' : null" :rel="item.external ? 'noopener noreferrer' : null" @click="$emit('navigate')">
-                <NavIcon v-if="item.icon" class="cib-nav-mobile-item-icon" :icon="item.icon" :size="18"></NavIcon>
+                <NavIcon v-if="leadingIcon(item)" class="cib-nav-mobile-item-icon" :icon="leadingIcon(item)" :size="18"></NavIcon>
                 {{ item.label }}<span v-if="item.external" class="mdi mdi-14px mdi-open-in-new ms-1" aria-hidden="true"></span>
+                <NavIcon v-if="trailingIcon(item)" class="cib-nav-mobile-item-icon-end" :icon="trailingIcon(item)" :size="18"></NavIcon>
               </a>
               <button v-else type="button" class="cib-nav-mobile-item" :class="{ active: item.active }"
                 :aria-current="item.checkable && item.active ? 'true' : null" @click="$emit('select', item)">
-                <NavIcon v-if="item.icon" class="cib-nav-mobile-item-icon" :icon="item.icon" :size="18"></NavIcon>
+                <NavIcon v-if="leadingIcon(item)" class="cib-nav-mobile-item-icon" :icon="leadingIcon(item)" :size="18"></NavIcon>
                 <span v-if="item.tag" class="cib-nav-mobile-tag">{{ item.tag }}</span>{{ item.label }}
+                <NavIcon v-if="trailingIcon(item)" class="cib-nav-mobile-item-icon-end" :icon="trailingIcon(item)" :size="18"></NavIcon>
               </button>
             </li>
           </ul>
@@ -65,6 +68,7 @@
 
 <script>
 import NavIcon from './NavIcon.vue'
+import { leadingIcon, trailingIcon } from './navItemIcons.js'
 
 /**
  * Full-screen mobile navigation: every cluster is an accordion row (tapping a row expands it,
@@ -98,6 +102,8 @@ export default {
     document.body.style.overflow = this.previousBodyOverflow
   },
   methods: {
+    leadingIcon,
+    trailingIcon,
     hasMenu(cluster) {
       return !!cluster.sections?.some(section => section.length)
     },
@@ -161,10 +167,14 @@ export default {
   text-align: left;
   text-decoration: none;
 }
-/* An entry's icon (e.g. Logout) sits in the column of the row icons above, so its label stays in line with the others */
+/* An entry's icon before its label sits in the column of the row icons above, so its label stays in line with the others */
 .cib-nav-mobile-item-icon {
   position: absolute;
   left: calc(16px + (24px - 18px) / 2);
+}
+/* An icon that follows its label (iconEnd, e.g. Logout) stays in the row, after the text */
+.cib-nav-mobile-item-icon-end {
+  flex-shrink: 0;
 }
 /* Same feedback as the desktop menus (NavCluster), only where a pointer can hover: on touch screens
    :hover sticks after a tap and left the tapped row gray */

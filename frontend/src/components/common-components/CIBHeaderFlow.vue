@@ -147,6 +147,8 @@ export default {
         sections: [this.userItems, [{
           key: 'logout',
           icon: 'mdi-logout',
+          // After the label, on desktop and mobile alike
+          iconEnd: true,
           label: this.$t('start.account.logout.title'),
           tooltip: this.$t('start.account.logout.tooltip', { productName: this.productName }),
           logout: true

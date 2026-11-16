@@ -18,6 +18,7 @@ package org.cibseven.webapp.rest;
 
 import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.providers.BpmProvider;
+import org.cibseven.webapp.providers.IEngineProvider;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.cibseven.webapp.rest.model.PasswordPolicyRequest;
 import org.cibseven.webapp.rest.model.PasswordPolicyResponse;
@@ -82,7 +83,7 @@ public class SetupService extends BaseService implements InitializingBean {
 		if (!SEVEN_USER_PROVIDER.equals(properties.getUser().getProvider())) {
 			return false;
 		}
-		return bpmProvider.requiresSetup(engineId);
+		return bpmProvider.requiresSetup(setupEngine(engineId));
 	}
 
 	/**
@@ -111,14 +112,26 @@ public class SetupService extends BaseService implements InitializingBean {
 		if (!SEVEN_USER_PROVIDER.equals(properties.getUser().getProvider())) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
-		if (!bpmProvider.requiresSetup(engineId)) {
+		String setupEngine = setupEngine(engineId);
+		if (!bpmProvider.requiresSetup(setupEngine)) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
 
 		// Create the admin user - backend handles group and authorization setup
-		bpmProvider.createSetupUser(newUser, engineId);
-		
+		bpmProvider.createSetupUser(newUser, setupEngine);
+
 		return ResponseEntity.status(HttpStatus.CREATED).build();
+	}
+
+	/**
+	 * The engine to set up, the same for every provider (CIB7-2554): the engine named in
+	 * X-Process-Engine, otherwise the effective default engine (the engine named "default",
+	 * otherwise the first one by name). Each engine without an admin can be set up.
+	 */
+	private String setupEngine(String requestedEngine) {
+		return IEngineProvider.isEngineUnspecified(requestedEngine)
+			? bpmProvider.getEngineProvider().getEffectiveDefaultEngineId()
+			: requestedEngine;
 	}
 
 	@PostMapping("/validate-password")

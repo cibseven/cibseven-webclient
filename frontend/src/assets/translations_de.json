@@ -249,7 +249,8 @@
 			"referenced": "Referenziert",
 			"running": "Laufend",
 			"runningAndReferenced": "Laufend und referenziert",
-			"unknown": "Unbekannt"
+			"unknown": "Unbekannt",
+			"loadFailed": "Die aufgerufenen Prozessdefinitionen konnten nicht geladen werden"
 		},
 		"details": {
 			"instancesChain": "Hauptprozess",
@@ -475,7 +476,10 @@
 			"activitiesHistory": "Ausgeführte Aktivitätsinstanzen",
 			"canceledInstances": "Abgebrochene Aktivitätsinstanzen",
 			"openSubprocess": "Aufgerufene Prozessdefinition anzeigen",
-			"disabledSubprocess": "Die Prozessdefinition wird zur Laufzeit ermittelt"
+			"disabledSubprocess": "Die Prozessdefinition wird zur Laufzeit ermittelt",
+			"notFoundSubprocess": "Keine aufgerufene Prozessdefinition gefunden: Sie ist nicht deployt, oder Sie dürfen sie nicht sehen",
+			"currentSubprocess": "Die aufgerufene Prozessdefinition wird bereits angezeigt",
+			"unknownSubprocess": "Die aufgerufene Prozessdefinition konnte nicht ermittelt werden"
 		}
 	},
 	"task": {
@@ -1206,6 +1210,7 @@
 	},
 	"navigation": {
 		"home": "Startseite",
+		"logoText": "@:login.productName",
 		"menu": "Navigationsmenü",
 		"infoAndHelp": "Infos & Hilfe"
 	},

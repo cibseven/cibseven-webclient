@@ -16,18 +16,9 @@
  */
 package org.cibseven.webapp.providers;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.cibseven.bpm.engine.management.Metrics;
 import org.cibseven.bpm.engine.management.MetricsQuery;

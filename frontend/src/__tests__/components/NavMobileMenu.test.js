@@ -131,6 +131,22 @@ describe('NavMobileMenu.vue', () => {
     expect(wrapper.find('.cib-nav-mobile-item .mdi-logout').classes()).toContain('cib-nav-mobile-item-icon')
   })
 
+  // Logout's icon follows its label, in the row rather than in the icon column
+  it.each([
+    ['a button', { key: 'logout', label: 'Logout', icon: 'mdi-logout', iconEnd: true }],
+    ['a route', { key: 'route', label: 'Logout', to: '/seven/logout', icon: 'mdi-logout', iconEnd: true }],
+    ['a link', { key: 'href', label: 'Logout', href: 'https://idp/logout', icon: 'mdi-logout', iconEnd: true }]
+  ])('shows an iconEnd icon after the label of %s', (kind, item) => {
+    const wrapper = mountMenu({ main: [{ id: 'user', label: 'Ada', avatar: 'AM', active: true, sections: [[item]] }] })
+
+    const entry = wrapper.find('.cib-nav-mobile-item')
+    const icon = entry.find('.mdi-logout')
+    expect(icon.classes()).toContain('cib-nav-mobile-item-icon-end')
+    expect(icon.classes()).not.toContain('cib-nav-mobile-item-icon')
+    expect(entry.element.lastElementChild).toBe(icon.element)
+    expect(entry.text()).toBe('Logout')
+  })
+
   it('keeps the page behind it from scrolling while open', () => {
     document.body.style.overflow = 'auto'
     const wrapper = mountMenu({ main: [tasks] })

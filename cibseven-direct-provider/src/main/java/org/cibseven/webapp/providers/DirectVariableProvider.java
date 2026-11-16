@@ -42,7 +42,6 @@ import org.cibseven.bpm.engine.rest.dto.history.HistoricVariableInstanceQueryDto
 import org.cibseven.bpm.engine.rest.dto.runtime.ProcessInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.VariableInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.exception.RestException;
-import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.bpm.engine.runtime.DeserializationTypeValidator;
 import org.cibseven.bpm.engine.variable.VariableMap;
 import org.cibseven.bpm.engine.variable.Variables;
@@ -91,15 +90,8 @@ public class DirectVariableProvider implements IVariableProvider {
 	@Override
 	public void modifyVariableByExecutionId(String executionId, Map<String, Object> data, CIBUser user)
 			throws SystemException {
-		PatchVariablesDto patch = directProviderUtil.getObjectMapper(user).convertValue(data, PatchVariablesDto.class);
-		VariableMap variableModifications = null;
-		try {
-			variableModifications = VariableValueDto.toMap(patch.getModifications(), directProviderUtil.getProcessEngine(user), directProviderUtil.getObjectMapper(user));
-		} catch (RestException e) {
-			String errorMessage = String.format("Cannot modify variables for %s: %s", "modifyVariableByExecutionId",
-					e.getMessage());
-			throw new SystemException(errorMessage, e);
-		}
+		PatchVariablesDto patch = directProviderUtil.toPatchVariables(data, "modifyVariableByExecutionId", user);
+		VariableMap variableModifications = directProviderUtil.toVariableMap(patch.getModifications(), "modifyVariableByExecutionId", user);
 
 		List<String> variableDeletions = patch.getDeletions();
 		try {
@@ -161,7 +153,7 @@ public class DirectVariableProvider implements IVariableProvider {
 		if (data != null && data.containsKey("deserializeValues"))
 			data.remove("deserializeValues");
 
-		VariableInstanceQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(data, VariableInstanceQueryDto.class);
+		VariableInstanceQueryDto queryDto = directProviderUtil.parseQueryDto(data, VariableInstanceQueryDto.class, user);
 
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
 
@@ -533,16 +525,16 @@ public class DirectVariableProvider implements IVariableProvider {
 
 	@Override
 	public void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user) {
-		try {
-			VariableValueDto variable = directProviderUtil.getObjectMapper(user).convertValue(data, VariableValueDto.class);
-			TypedValue typedValue = variable.toTypedValue(directProviderUtil.getProcessEngine(user), directProviderUtil.getObjectMapper(user));
-			directProviderUtil.getProcessEngine(user).getRuntimeService().setVariableLocal(executionId, varName, typedValue);
+		TypedValue typedValue = directProviderUtil.toTypedValue(data, varName, user);
+		directProviderUtil.writeVariables("put execution variable " + varName, () ->
+			directProviderUtil.getProcessEngine(user).getRuntimeService().setVariableLocal(executionId, varName, typedValue));
+	}
 
-		} catch (AuthorizationException e) {
-			throw new SystemException(e.getMessage(), e);
-		} catch (ProcessEngineException|RestException e) {
-			throw new SystemException(String.format("Cannot put %s variable %s: %s", "execution", varName, e.getMessage()), e);
-		}
+	@Override
+	public void putProcessInstanceVariable(String processInstanceId, String variableName, Map<String, Object> variable, CIBUser user) {
+		TypedValue typedValue = directProviderUtil.toTypedValue(variable, variableName, user);
+		directProviderUtil.writeVariables("put process instance variable " + variableName, () ->
+			directProviderUtil.getProcessEngine(user).getRuntimeService().setVariable(processInstanceId, variableName, typedValue));
 	}
 
 	/*
@@ -611,14 +603,8 @@ public class DirectVariableProvider implements IVariableProvider {
 	// updates execution variables
 	private void updateVariableEntities(String processInstanceId, Map<String, VariableValueDto> modifications,
 			List<String> deletions, CIBUser user) {
-		VariableMap variableModifications = null;
 		ProcessEngine processEngine = directProviderUtil.getProcessEngine(user);
-		try {
-			variableModifications = VariableValueDto.toMap(modifications, processEngine, directProviderUtil.getObjectMapper(user));
-		} catch (RestException e) {
-			String errorMessage = String.format("Cannot modify variables for %s: %s", "processInstance", e.getMessage());
-			throw new SystemException(errorMessage, e);
-		}
+		VariableMap variableModifications = directProviderUtil.toVariableMap(modifications, "processInstance", user);
 		try {
 			RuntimeServiceImpl runtimeServiceImpl = (RuntimeServiceImpl) processEngine.getRuntimeService();
 			runtimeServiceImpl.updateVariables(processInstanceId, variableModifications, deletions);
@@ -740,14 +726,8 @@ public class DirectVariableProvider implements IVariableProvider {
 			query.disableCustomObjectDeserialization();
 		}
 
-		List<HistoricVariableInstance> matchingHistoricVariableInstances = QueryUtil.list(query, firstResult, maxResults);
-		List<VariableHistory> historicVariableInstanceDtoResults = new ArrayList<>();
-		for (HistoricVariableInstance historicVariableInstance : matchingHistoricVariableInstances) {
-			HistoricVariableInstanceDto resultHistoricVariableInstance = HistoricVariableInstanceDto
-					.fromHistoricVariableInstance(historicVariableInstance);
-			historicVariableInstanceDtoResults.add(directProviderUtil.convertValue(resultHistoricVariableInstance, VariableHistory.class, user));
-		}
-		return historicVariableInstanceDtoResults;
+		return directProviderUtil.listAndConvert(query, firstResult, maxResults, 
+				HistoricVariableInstanceDto::fromHistoricVariableInstance, VariableHistory.class, user);
 	}
 
 	private Variable fetchTaskVariableImpl(String taskId, String variableName, boolean deserializeValue, CIBUser user)
@@ -805,15 +785,8 @@ public class DirectVariableProvider implements IVariableProvider {
 			query.disableCustomObjectDeserialization();
 		}
 
-		List<HistoricVariableInstance> matchingInstances = QueryUtil.list(query, firstResult, maxResults);
-
-		List<VariableHistory> instanceResults = new ArrayList<>();
-		for (HistoricVariableInstance instance : matchingInstances) {
-			HistoricVariableInstanceDto resultInstanceDto = HistoricVariableInstanceDto.fromHistoricVariableInstance(instance);
-			VariableHistory resultInstance = directProviderUtil.convertValue(resultInstanceDto, VariableHistory.class, user);
-			instanceResults.add(resultInstance);
-		}
-		return instanceResults;
+		return directProviderUtil.listAndConvert(query, firstResult, maxResults, 
+				HistoricVariableInstanceDto::fromHistoricVariableInstance, VariableHistory.class, user);
 	}
 
 	@Override

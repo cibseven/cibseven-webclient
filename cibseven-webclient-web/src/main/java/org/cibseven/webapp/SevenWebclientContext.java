@@ -24,6 +24,7 @@ import java.util.List;
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.User;
 import org.cibseven.webapp.config.SevenWebclientProperties;
+import org.cibseven.webapp.config.StaticResourceEtags;
 import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.rest.CustomRestTemplate;
@@ -126,6 +127,16 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 		cacheConfig.addCacheMapping(strictNoStoreControl, "/sso-login.html");
 
 		registry.addInterceptor(cacheConfig);
+	}
+
+	/**
+	 * Static files are revalidated by their content instead of their modification time, so a logo, favicon
+	 * or translation file replaced under the same name reaches the browser without clearing its cache. See
+	 * {@link StaticResourceEtags}. Static, as a post-processor must be created before the other beans.
+	 */
+	@Bean
+	public static StaticResourceEtags staticResourceEtags() {
+		return new StaticResourceEtags();
 	}
 
 	@Override

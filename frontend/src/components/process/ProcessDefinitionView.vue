@@ -200,8 +200,13 @@ export default {
       this.task = null
     }
   },
+  // Leaving the process pages: the next visit loads the called process definitions again, so a newer deployment is seen
+  beforeUnmount: function() {
+    this.clearStaticCalledProcessDefinitions()
+  },
   methods: {
     ...mapActions(['clearActivitySelection', 'getProcessById']),
+    ...mapActions('calledProcessDefinitions', ['clearStaticCalledProcessDefinitions']),
     formatDate,
     onLeftOpenChanged(isOpen) {
       this.leftOpen = isOpen

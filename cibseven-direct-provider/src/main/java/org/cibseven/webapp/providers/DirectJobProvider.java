@@ -49,31 +49,14 @@ public class DirectJobProvider implements IJobProvider {
 
 	@Override
 	public Collection<Job> getJobs(Map<String, Object> params, CIBUser user) {
-		Integer firstResult = null;
-		Integer maxResults = null;
+		Integer firstResult = directProviderUtil.getFirstResult(params);
+		Integer maxResults = directProviderUtil.getMaxResults(params);
+		Map<String, Object> queryParams = directProviderUtil.withoutPagingParams(params);
 
-		Map<String, Object> queryParams = new java.util.HashMap<>(params);
-		queryParams.remove("firstResult");
-		queryParams.remove("maxResults");
-
-		for (Entry<String, Object> entry : params.entrySet()) {
-			if (entry.getKey().equals("firstResult"))
-				firstResult = Integer.parseInt((String) params.get("firstResult"));
-			else if (entry.getKey().equals("maxResults"))
-				maxResults = Integer.parseInt((String) params.get("maxResults"));
-		}
-
-		JobQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(queryParams, JobQueryDto.class);
+		JobQueryDto queryDto = directProviderUtil.parseQueryDto(queryParams, JobQueryDto.class, user);
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
 		JobQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
-		List<org.cibseven.bpm.engine.runtime.Job> matchingJobs = QueryUtil.list(query, firstResult, maxResults);
-
-		List<Job> jobResults = new ArrayList<>();
-		for (org.cibseven.bpm.engine.runtime.Job job : matchingJobs) {
-			JobDto result = JobDto.fromJob(job);
-			jobResults.add(directProviderUtil.convertValue(result, Job.class, user));
-		}
-		return jobResults;
+		return directProviderUtil.listAndConvert(query, firstResult, maxResults, JobDto::fromJob, Job.class, user);
 	}
 
 	@Override
@@ -111,7 +94,7 @@ public class DirectJobProvider implements IJobProvider {
 	@Override
 	public Collection<Object> getHistoryJobLog(Map<String, Object> params, CIBUser user) {
 
-		HistoricJobLogQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(params, HistoricJobLogQueryDto.class);
+		HistoricJobLogQueryDto queryDto = directProviderUtil.parseQueryDto(params, HistoricJobLogQueryDto.class, user);
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
 		HistoricJobLogQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 		Integer firstResult = null;

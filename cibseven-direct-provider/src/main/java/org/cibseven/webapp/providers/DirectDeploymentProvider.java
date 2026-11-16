@@ -40,7 +40,6 @@ import org.cibseven.bpm.engine.rest.dto.repository.DeploymentQueryDto;
 import org.cibseven.bpm.engine.rest.dto.repository.DeploymentResourceDto;
 import org.cibseven.bpm.engine.rest.dto.repository.DeploymentWithDefinitionsDto;
 import org.cibseven.bpm.engine.rest.dto.repository.RedeploymentDto;
-import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.NoRessourcesFoundException;
@@ -170,14 +169,8 @@ public final static String TENANT_ID = "tenant-id";
 
 		DeploymentQueryDto queryDto = new DeploymentQueryDto(directProviderUtil.getObjectMapper(user), queryParamsMap);
 		DeploymentQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
-		List<org.cibseven.bpm.engine.repository.Deployment> matchingDeployments = QueryUtil.list(query, firstResult,
-				maxResults);
-		List<Deployment> deployments = new ArrayList<>();
-		for (org.cibseven.bpm.engine.repository.Deployment deployment : matchingDeployments) {
-			DeploymentDto def = DeploymentDto.fromDeployment(deployment);
-			deployments.add(directProviderUtil.convertValue(def, Deployment.class, user));
-		}
-		return deployments;
+		return directProviderUtil.listAndConvert(query, firstResult, maxResults, DeploymentDto::fromDeployment, Deployment.class, user);
+
 	}
 
 	@Override
