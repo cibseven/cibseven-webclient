@@ -30,6 +30,7 @@ import org.cibseven.bpm.engine.ProcessEngineException;
 import org.cibseven.bpm.engine.identity.Group;
 import org.cibseven.bpm.engine.identity.Tenant;
 import org.cibseven.bpm.engine.impl.identity.Authentication;
+import org.cibseven.bpm.engine.rest.dto.PatchVariablesDto;
 import org.cibseven.bpm.engine.rest.dto.VariableValueDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.VariableInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.VariableInstanceQueryDto;
@@ -38,6 +39,7 @@ import org.cibseven.bpm.engine.rest.mapper.JacksonConfigurator;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.bpm.engine.runtime.VariableInstance;
 import org.cibseven.bpm.engine.runtime.VariableInstanceQuery;
+import org.cibseven.bpm.engine.variable.VariableMap;
 import org.cibseven.bpm.engine.variable.value.TypedValue;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.SystemException;
@@ -160,6 +162,45 @@ public class DirectProviderUtil {
 		if (valueInfo != null)
 			variableValueDto.setValueInfo(valueInfo);
 		return variableValueDto;
+	}
+
+	/** An engine-rest variable value (value, type, valueInfo) as a typed value, converted the way engine-rest converts it. */
+	protected TypedValue toTypedValue(Map<String, Object> variable, String variableName, CIBUser user) {
+		return converting("Cannot convert variable " + variableName, () -> getObjectMapper(user)
+			.convertValue(variable, VariableValueDto.class)
+			.toTypedValue(getProcessEngine(user), getObjectMapper(user)));
+	}
+
+	/** Engine-rest variable values by name as a variable map, converted the way engine-rest converts them. */
+	protected VariableMap toVariableMap(Map<String, VariableValueDto> variables, String what, CIBUser user) {
+		return converting("Cannot modify variables for " + what,
+			() -> VariableValueDto.toMap(variables, getProcessEngine(user), getObjectMapper(user)));
+	}
+
+	/** An engine-rest variable patch body (modifications, deletions) as its DTO. */
+	protected PatchVariablesDto toPatchVariables(Map<String, Object> patch, String what, CIBUser user) {
+		return converting("Cannot modify variables for " + what,
+			() -> getObjectMapper(user).convertValue(patch, PatchVariablesDto.class));
+	}
+
+	/** Every way the engine-rest conversions fail, reported as a SystemException. */
+	private static <T> T converting(String failure, Supplier<T> conversion) {
+		try {
+			return conversion.get();
+		} catch (RestException | IllegalArgumentException | JacksonException | ProcessEngineException e) {
+			throw new SystemException(String.format("%s: %s", failure, e.getMessage()), e);
+		}
+	}
+
+	/** Runs a variable write against the engine like the other variable writes: a missing permission is passed on, any other failure becomes a SystemException. */
+	protected void writeVariables(String what, Runnable write) {
+		try {
+			write.run();
+		} catch (AuthorizationException e) {
+			throw e;
+		} catch (ProcessEngineException e) {
+			throw new SystemException(String.format("Cannot %s: %s", what, e.getMessage()), e);
+		}
 	}
 
 	protected <V extends Object> V runWithoutAuthorization(Supplier<V> action, CIBUser user) {
