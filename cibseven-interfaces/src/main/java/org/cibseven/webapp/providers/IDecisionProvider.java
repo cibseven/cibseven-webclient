@@ -18,6 +18,7 @@ package org.cibseven.webapp.providers;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
@@ -44,14 +45,18 @@ public interface IDecisionProvider {
 	public Object evaluateDecisionDefinitionById(String id, Map<String, Object> data, CIBUser user);
 	public void updateHistoryTTLById(String id, Map<String, Object> data, CIBUser user);
 	public Object getXmlById(String id, CIBUser user);
+	/** The versions of every tenant, newest first. */
+	public Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad, CIBUser user);
 	/**
 	 * The versions of a key, newest first: of one tenant when tenantId is set, of the definitions
 	 * without a tenant when withoutTenantId is true, otherwise of every tenant.
+	 * The default filters every tenant's versions, so that other implementations keep compiling;
+	 * the providers here let the engine filter.
 	 */
-	public Collection<Decision> getDecisionVersionsByKey(String key, String tenantId, boolean withoutTenantId, Optional<Boolean> lazyLoad, CIBUser user);
-	/** The versions of every tenant. */
-	public default Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad, CIBUser user) {
-		return getDecisionVersionsByKey(key, null, false, lazyLoad, user);
+	public default Collection<Decision> getDecisionVersionsByKey(String key, String tenantId, boolean withoutTenantId, Optional<Boolean> lazyLoad, CIBUser user) {
+		Collection<Decision> versions = getDecisionVersionsByKey(key, lazyLoad, user);
+		if (tenantId == null && !withoutTenantId) return versions;
+		return versions.stream().filter(version -> Objects.equals(version.getTenantId(), tenantId)).toList();
 	}
 	public Collection<HistoricDecisionInstance> getHistoricDecisionInstances(Map<String, Object> queryParams, CIBUser user);
 	public Long getHistoricDecisionInstanceCount(Map<String, Object> queryParams, CIBUser user);

@@ -145,11 +145,17 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	}
 	
 	@Override
+	public Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad, CIBUser user) {
+		return getDecisionVersionsByKey(key, null, false, lazyLoad, user);
+	}
+
+	@Override
 	public Collection<Decision> getDecisionVersionsByKey(String key, String tenantId, boolean withoutTenantId, Optional<Boolean> lazyLoad, CIBUser user) {
-		String url = getEngineRestUrl(user) + "/decision-definition?key=" + key + "&sortBy=version&sortOrder=desc";
-		if (tenantId != null) url += "&tenantIdIn=" + tenantId;
+		// encoded here and sent as it is: a tenant id like "a&withoutTenantId=true" cannot add parameters
+		String url = getEngineRestUrl(user) + "/decision-definition" + addQueryParameter("", "key", Optional.of(key), true) + "&sortBy=version&sortOrder=desc";
+		if (tenantId != null) url += addQueryParameter(url, "tenantIdIn", Optional.of(tenantId), true);
 		else if (withoutTenantId) url += "&withoutTenantId=true";
-		Collection<Decision> decisions = Arrays.asList(((ResponseEntity<Decision[]>) doGet(url, Decision[].class, user, false)).getBody());		
+		Collection<Decision> decisions = Arrays.asList(((ResponseEntity<Decision[]>) doGet(url, Decision[].class, user, true)).getBody());
 		
 		if (!lazyLoad.isPresent() || (lazyLoad.isPresent() && !lazyLoad.get())) {
 			for(Decision decision : decisions) {

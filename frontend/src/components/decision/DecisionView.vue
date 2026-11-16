@@ -25,7 +25,7 @@
     <SidebarsFlow ref="sidebars" class="border-top" :left-open="leftOpen" @update:left-open="onLeftOpenChanged" :left-caption="shortendLeftCaption">
       <template v-slot:left>
         <DecisionVersionListSidebar v-if="versions.length > 0" ref="navbar"
-          :versions="versions" @refresh-decision-versions="loadDecisionVersionsByKey(decisionKey, versionIndex, $event)"></DecisionVersionListSidebar>
+          :versions="versions" @refresh-decision-versions="loadDecisionVersionsByKey(decisionKey, $event)"></DecisionVersionListSidebar>
       </template>
       <router-view
         v-if="decision && versionLoaded"
@@ -65,19 +65,21 @@ export default {
       versionLoaded: false,
       // Counts the loads, so that an answer to an older one cannot overwrite a newer one
       loadRequest: 0,
-      // A tenant dropped for having no versions, so that the fallback without a tenant cannot reopen it
-      droppedTenantId: null
+      // Tenants dropped for having no versions, so that the fallback without a tenant cannot reopen them
+      droppedTenantIds: []
     }
   },
   watch: {
     // One watcher for both: a navigation can change the tenant and the version at once
     routeSelection(selection, previous) {
       if (selection.tenantId !== previous.tenantId) {
-        this.loadDecisionVersionsByKey(this.decisionKey, this.versionIndex, this.$root.config.lazyLoadHistory)
+        this.loadDecisionVersionsByKey(this.decisionKey, this.$root.config.lazyLoadHistory)
       } else if (selection.versionIndex !== previous.versionIndex && selection.versionIndex) {
         const version = this.getDecisionVersion({ key: this.decisionKey, version: selection.versionIndex })
+        // A version the list does not know yet (e.g. deployed in another tab): load the list again
+        if (!version) this.loadDecisionVersionsByKey(this.decisionKey, this.$root.config.lazyLoadHistory)
         // Already selected when the load itself moved the route to the tenant's latest version
-        if (version && version.id !== this.getSelectedDecisionVersion()?.id) this.selectVersion(this.decisionKey, version)
+        else if (version.id !== this.getSelectedDecisionVersion()?.id) this.selectVersion(this.decisionKey, version)
       }
     }
   },
@@ -101,7 +103,7 @@ export default {
     }
   },
   mounted() {
-    this.loadDecisionVersionsByKey(this.decisionKey, this.versionIndex, this.$root.config.lazyLoadHistory)
+    this.loadDecisionVersionsByKey(this.decisionKey, this.$root.config.lazyLoadHistory)
   },
   methods: {
     ...mapActions(['getDecisionVersionsByKey']),
@@ -110,21 +112,22 @@ export default {
       this.leftOpen = isOpen
       this.saveLeftOpen(SIDEBAR_SCOPE, isOpen)
     },
+    // The version comes from the route at the end of the load, as the user may change it meanwhile.
     // A tenant correction ends in replaceTenant: the route watcher then loads again for the corrected tenant
-    async loadDecisionVersionsByKey(decisionKey, _versionIndex, lazyLoad) {
+    async loadDecisionVersionsByKey(decisionKey, lazyLoad) {
       const request = ++this.loadRequest
       const outdated = () => request !== this.loadRequest
       this.versionLoaded = false
       const instanceId = this.$route.params.instanceId
       // Looked up once per load: one instance and one definition request
-      let definitionTenantRequest
-      const definitionTenantOfInstance = () => (definitionTenantRequest ??= this.definitionTenantId(instanceId))
+      let instanceDefinitionRequest
+      const instanceDefinition = () => (instanceDefinitionRequest ??= this.instanceDefinition(instanceId))
 
       // A link to an instance without the tenant (an old bookmark): its definition's
       if (instanceId && !this.tenantId) {
-        const definitionTenantId = await definitionTenantOfInstance()
+        const definition = await instanceDefinition()
         if (outdated()) return
-        if (definitionTenantId) return this.replaceTenant(definitionTenantId)
+        if (definition?.tenantId) return this.replaceTenant(definition.tenantId)
       }
 
       const tenantId = this.tenantId ?? null
@@ -138,10 +141,22 @@ export default {
       const versionIndex = this.versionIndex
       let version = versionIndex ? this.getDecisionVersion({ key: decisionKey, version: versionIndex }) : null
       if (!version && instanceId) {
-        // A link with another tenant than its definition's
-        const definitionTenantId = await definitionTenantOfInstance()
+        const definition = await instanceDefinition()
         if (outdated()) return
-        if (definitionTenantId !== undefined && definitionTenantId !== tenantId) return this.replaceTenant(definitionTenantId)
+        if (definition) {
+          // A link with another tenant than its definition's
+          const definitionTenantId = definition.tenantId ?? null
+          if (definitionTenantId !== tenantId) return this.replaceTenant(definitionTenantId)
+          // A link with another version than its definition's: the instance's own, keeping the instance
+          version = this.getDecisionVersion({ key: decisionKey, version: String(definition.version) })
+          if (version) {
+            this.$router.replace({
+              name: 'decision-instance',
+              params: { decisionKey, versionIndex: String(version.version), instanceId },
+              query: this.$route.query
+            })
+          }
+        }
       }
 
       if (!versions?.length) {
@@ -149,17 +164,25 @@ export default {
         if (instanceId) return
         // An outdated link: the tenant has no version of this key any more
         if (tenantId) {
-          this.droppedTenantId = tenantId
+          this.droppedTenantIds.push(tenantId)
           return this.replaceTenant(null)
         }
-        // A key deployed only for tenants: open the tenant of its newest version, unless that is the one just
-        // dropped (its own listing came back empty, e.g. for a tenant id the engine splits): no endless bouncing
-        const everyTenantsVersions = await DecisionService.getDecisionVersionsByKey(decisionKey, true)
-        const newestTenantId = everyTenantsVersions?.find(v => v.tenantId)?.tenantId
-        if (!outdated() && newestTenantId && newestTenantId !== this.droppedTenantId) this.replaceTenant(newestTenantId)
+        // A key deployed only for tenants: open a tenant with the requested version, else the newest tenant.
+        // Never one already dropped (its own listing came back empty, e.g. for a tenant id the engine splits):
+        // no endless bouncing
+        let everyTenantsVersions = []
+        try {
+          everyTenantsVersions = await DecisionService.getDecisionVersionsByKey(decisionKey, true) ?? []
+        } catch (error) {
+          console.error('Error loading the versions of every tenant:', error)
+        }
+        if (outdated()) return
+        const tenantsVersions = everyTenantsVersions.filter(v => v.tenantId && !this.droppedTenantIds.includes(v.tenantId))
+        const target = tenantsVersions.find(v => String(v.version) === versionIndex) ?? tenantsVersions[0]
+        if (target) this.replaceTenant(target.tenantId)
         return
       }
-      this.droppedTenantId = null
+      this.droppedTenantIds = []
       if (!version) {
         // Not in this tenant: its latest version, keeping the rest of the query (e.g. ?tab=)
         version = versions[0]
@@ -172,15 +195,14 @@ export default {
       this.selectVersion(decisionKey, version)
       this.versionLoaded = true
     },
-    // The tenant of the definition a historic instance evaluated (null for none), undefined when unknown or gone.
-    // Not the instance's own tenant: an evaluation from a process gets the process's tenant
-    async definitionTenantId(instanceId) {
-      const instances = await DecisionService.getHistoricDecisionInstances({ decisionInstanceId: instanceId, maxResults: 1 })
-      const definitionId = instances?.[0]?.decisionDefinitionId
-      if (!definitionId) return undefined
+    // The definition a historic instance evaluated, undefined when unknown, gone or not readable.
+    // Its tenant, not the instance's: an evaluation from a process gets the process's tenant
+    async instanceDefinition(instanceId) {
       try {
-        const definition = await DecisionService.getDecisionDefinitionById(definitionId)
-        return definition ? (definition.tenantId ?? null) : undefined
+        const instances = await DecisionService.getHistoricDecisionInstances({ decisionInstanceId: instanceId, maxResults: 1 })
+        const definitionId = instances?.[0]?.decisionDefinitionId
+        if (!definitionId) return undefined
+        return (await DecisionService.getDecisionDefinitionById(definitionId)) ?? undefined
       } catch {
         return undefined
       }

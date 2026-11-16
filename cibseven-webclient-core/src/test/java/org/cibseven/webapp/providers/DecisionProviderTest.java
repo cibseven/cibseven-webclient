@@ -229,6 +229,24 @@ public class DecisionProviderTest {
 	}
 
 	@Test
+	void getDecisionVersionsByKey_encodesTheTenantSoItCannotAddParameters() throws Exception {
+		engine.enqueueJson("[]");
+
+		decisionProvider.getDecisionVersionsByKey("risk", "a&withoutTenantId=true", false, Optional.of(true), user);
+
+		assertThat(engine.takePath()).isEqualTo("/decision-definition?key=risk&sortBy=version&sortOrder=desc&tenantIdIn=a%26withoutTenantId%3Dtrue");
+	}
+
+	@Test
+	void getDecisionVersionsByKey_encodesTheKey() throws Exception {
+		engine.enqueueJson("[]");
+
+		decisionProvider.getDecisionVersionsByKey("risk&tenantIdIn=acme", null, true, Optional.of(true), user);
+
+		assertThat(engine.takePath()).isEqualTo("/decision-definition?key=risk%26tenantIdIn%3Dacme&sortBy=version&sortOrder=desc&withoutTenantId=true");
+	}
+
+	@Test
 	void getDecisionVersionsByKey_keepsEveryTenantsVersionsWithoutARestriction() throws Exception {
 		engine.enqueueJson("[]");
 

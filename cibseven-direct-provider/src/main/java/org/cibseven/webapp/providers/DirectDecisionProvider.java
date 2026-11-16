@@ -218,6 +218,11 @@ public class DirectDecisionProvider implements IDecisionProvider {
 	}
 
 	@Override
+	public Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad, CIBUser user) {
+		return getDecisionVersionsByKey(key, null, false, lazyLoad, user);
+	}
+
+	@Override
 	public Collection<Decision> getDecisionVersionsByKey(String key, String tenantId, boolean withoutTenantId, Optional<Boolean> lazyLoad, CIBUser user) {
 		// without either restriction every tenant's versions, like the REST provider: a decision deployed only for a tenant has versions too
 		DecisionDefinitionQuery query = directProviderUtil.getProcessEngine(user).getRepositoryService().createDecisionDefinitionQuery()
