@@ -1319,10 +1319,10 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
   })
 
   // The called instance exists even when the engine could not resolve the fixed name statically
-  it('should enable an unresolved fixed name in an instance once the activity ran', () => {
+  it('should enable an unresolved fixed name in an instance once it started a called instance', () => {
     const vm = vmWith({
       selectedInstance: { id: 'pi1', processDefinitionId: 'pd-parent' },
-      historicActivityStatistics: [{ id: 'call_1', finished: 1 }]
+      activityInstanceHistory: [{ activityId: 'call_1', calledProcessInstanceId: 'sub-pi' }]
     })
 
     BpmnViewer.methods.drawSubprocessLinks.call(vm, registryWith(callActivity('call_1', 'sub')))
@@ -1338,14 +1338,29 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
     expect(buttonFrom(vm).disabled).toBe(true)
   })
 
-  // A case call (camunda:caseRef) has no calledElement and no called process instance to open
-  it('should keep a call activity without calledElement disabled even after it ran', () => {
+  // Cancelled before the called process started, waiting on an async job, or a case call (camunda:caseRef):
+  // it ran, but there is no called process instance to open, so an enabled link would do nothing
+  it('should keep a call activity that ran without starting a called instance disabled', () => {
     const vm = vmWith({
       selectedInstance: { id: 'pi1', processDefinitionId: 'pd-parent' },
-      historicActivityStatistics: [{ id: 'call_1', finished: 1 }]
+      historicActivityStatistics: [{ id: 'call_1', canceled: 1 }],
+      activityInstanceHistory: [{ activityId: 'call_1', calledProcessInstanceId: null }]
     })
 
-    BpmnViewer.methods.drawSubprocessLinks.call(vm, registryWith(callActivity('call_1', undefined)))
+    BpmnViewer.methods.drawSubprocessLinks.call(vm, registryWith(callActivity('call_1', '${subKey}')))
+
+    expect(buttonFrom(vm).disabled).toBe(true)
+  })
+
+  // The instance's activity history may still be loading or not exist (history level none)
+  it('should keep an unresolved call disabled in an instance without its activity history', () => {
+    const vm = vmWith({
+      selectedInstance: { id: 'pi1', processDefinitionId: 'pd-parent' },
+      historicActivityStatistics: [{ id: 'call_1', instances: 1 }],
+      activityInstanceHistory: null
+    })
+
+    BpmnViewer.methods.drawSubprocessLinks.call(vm, registryWith(callActivity('call_1', '${subKey}')))
 
     expect(buttonFrom(vm).disabled).toBe(true)
   })
@@ -1411,10 +1426,10 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
     expect(buttonFrom(vm).disabled).toBe(false)
   })
 
-  it('should enable a dynamic call activity that already executed in this instance', () => {
+  it('should enable a dynamic call activity that started a called instance in this instance', () => {
     const vm = vmWith({
       selectedInstance: { id: 'pi1', processDefinitionId: 'pd-other' },
-      historicActivityStatistics: [{ id: 'call_1', finished: 2 }]
+      activityInstanceHistory: [{ activityId: 'call_1', calledProcessInstanceId: 'sub-pi' }]
     })
     const registry = {
       getAll: () => [callActivity('call_1', '${subKey}')],
@@ -1426,10 +1441,12 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
     expect(buttonFrom(vm).disabled).toBe(false)
   })
 
-  it('should count a canceled activity as executed', () => {
+  // Cancelled after it started the called process: that instance is still there to open
+  it('should enable a cancelled call activity that had started a called instance', () => {
     const vm = vmWith({
       selectedInstance: { id: 'pi1', processDefinitionId: 'pd-parent' },
-      historicActivityStatistics: [{ id: 'call_1', canceled: 1 }]
+      historicActivityStatistics: [{ id: 'call_1', canceled: 1 }],
+      activityInstanceHistory: [{ activityId: 'call_1', calledProcessInstanceId: 'sub-pi' }]
     })
     const registry = {
       getAll: () => [callActivity('call_1', '${subKey}')],
@@ -1446,7 +1463,7 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
   it('should enable an executed dynamic link when neither the call nor the instance has a definition id', () => {
     const vm = vmWith({
       selectedInstance: { id: 'pi1' },
-      historicActivityStatistics: [{ id: 'call_1', canceled: 1 }]
+      activityInstanceHistory: [{ activityId: 'call_1', calledProcessInstanceId: 'sub-pi' }]
     })
     const registry = {
       getAll: () => [callActivity('call_1', '${subKey}')],
@@ -1486,10 +1503,10 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
   })
 
   // The link opens the called instance there, which is a different page than the one shown
-  it('should enable a recursive call in an instance once it ran', () => {
+  it('should enable a recursive call in an instance once it started a called instance', () => {
     const vm = vmWith({
       selectedInstance: { id: 'pi1', processDefinitionId: 'sub-1' },
-      historicActivityStatistics: [{ id: 'call_1', finished: 1 }],
+      activityInstanceHistory: [{ activityId: 'call_1', calledProcessInstanceId: 'sub-pi' }],
       staticCalledProcessDefinitions: [{ id: 'sub-1', key: 'sub', calledFromActivityIds: ['call_1'] }]
     })
 
@@ -1648,6 +1665,8 @@ describe('BpmnViewer - openSubprocess', () => {
       $router: { push: vi.fn() },
       loadActivitiesInstanceHistory: vi.fn(() => Promise.resolve([])),
       navigateToSubprocess: vi.fn(),
+      viewer: { get: () => ({ get: (id) => ({ id, type: 'bpmn:CallActivity' }) }) },
+      selectDiagramElement: vi.fn(),
       ...overrides
     }
     vm.findCalledProcessInstance = BpmnViewer.methods.findCalledProcessInstance.bind(vm)
@@ -1704,6 +1723,7 @@ describe('BpmnViewer - openSubprocess', () => {
 
     expect(vm.navigateToSubprocess).not.toHaveBeenCalled()
     expect(vm.$router.push).toHaveBeenCalledWith({ path: '/process/p/1/pi1', query: { tab: 'calledProcessInstances' } })
+    expect(vm.selectDiagramElement).toHaveBeenCalledWith(expect.objectContaining({ id: 'call_1' }))
   })
 
   it('should switch to the called process instances tab for an expression without a called instance', async () => {
@@ -1713,6 +1733,7 @@ describe('BpmnViewer - openSubprocess', () => {
 
     expect(vm.navigateToSubprocess).not.toHaveBeenCalled()
     expect(vm.$router.push).toHaveBeenCalledWith({ path: '/process/p/1/pi1', query: { tab: 'calledProcessInstances' } })
+    expect(vm.selectDiagramElement).toHaveBeenCalledWith(expect.objectContaining({ id: 'call_1' }))
   })
 
   it('should switch to the called process definitions tab for a dynamic call outside an instance', async () => {
@@ -1721,6 +1742,16 @@ describe('BpmnViewer - openSubprocess', () => {
     await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', undefined)
 
     expect(vm.$router.push).toHaveBeenCalledWith({ path: '/process/p', query: { a: '1', tab: 'calledProcessDefinitions' } })
+    expect(vm.selectDiagramElement).toHaveBeenCalledWith(expect.objectContaining({ id: 'call_1' }))
+  })
+
+  // The route push is a no-op when the tab is already open; the selection narrows that tab to the call activity
+  it('should still select the call activity when its tab is already open', async () => {
+    const vm = vmWith({ selectedInstance: null, $route: { path: '/process/p', query: { tab: 'calledProcessDefinitions' } } })
+
+    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', undefined)
+
+    expect(vm.selectDiagramElement).toHaveBeenCalledWith(expect.objectContaining({ id: 'call_1' }))
   })
 
   it('should log instead of throwing when the lookup fails', async () => {
@@ -1731,5 +1762,71 @@ describe('BpmnViewer - openSubprocess', () => {
 
     expect(consoleError).toHaveBeenCalled()
     expect(vm.navigateToSubprocess).not.toHaveBeenCalled()
+  })
+})
+
+describe('BpmnViewer - selectDiagramElement', () => {
+  const element = { id: 'call_1', type: 'bpmn:CallActivity' }
+  const vmWith = (overrides = {}) => ({
+    $root: { config: { camundaHistoryLevel: 'full' } },
+    $emit: vi.fn(),
+    activityInstance: null,
+    setHighlightedElement: vi.fn(),
+    selectActivity: vi.fn(),
+    ...overrides
+  })
+
+  it('should highlight the activity and select it in the definition view', () => {
+    const vm = vmWith()
+
+    BpmnViewer.methods.selectDiagramElement.call(vm, element)
+
+    expect(vm.setHighlightedElement).toHaveBeenCalledWith('call_1')
+    expect(vm.selectActivity).toHaveBeenCalledWith({ activityId: 'call_1', listMode: 'all' })
+  })
+
+  it('should list only active instances without history', () => {
+    const vm = vmWith({ $root: { config: { camundaHistoryLevel: 'none' } } })
+
+    BpmnViewer.methods.selectDiagramElement.call(vm, element)
+
+    expect(vm.selectActivity).toHaveBeenCalledWith({ activityId: 'call_1', listMode: 'active' })
+  })
+
+  it('should hand the running child activity to the instance view', () => {
+    const child = { activityId: 'call_1', id: 'ai-1' }
+    const vm = vmWith({ activityInstance: { childActivityInstances: [child] } })
+
+    BpmnViewer.methods.selectDiagramElement.call(vm, element)
+
+    expect(vm.$emit).toHaveBeenCalledWith('child-activity', child)
+    expect(vm.selectActivity).not.toHaveBeenCalled()
+  })
+
+  it('should hand the element itself to the instance view when it is not running', () => {
+    const vm = vmWith({ activityInstance: { childActivityInstances: [] } })
+
+    BpmnViewer.methods.selectDiagramElement.call(vm, element)
+
+    expect(vm.$emit).toHaveBeenCalledWith('child-activity', element)
+  })
+})
+
+describe('BpmnViewer - activityInstanceHistory watcher', () => {
+  // It decides which call activities have a called instance to open
+  it('should redraw the call activity links when the activity history arrives', () => {
+    const vm = { viewer: {}, redrawSubprocessLinks: vi.fn() }
+
+    BpmnViewer.watch.activityInstanceHistory.call(vm)
+
+    expect(vm.redrawSubprocessLinks).toHaveBeenCalled()
+  })
+
+  it('should not redraw before the viewer exists', () => {
+    const vm = { viewer: null, redrawSubprocessLinks: vi.fn() }
+
+    BpmnViewer.watch.activityInstanceHistory.call(vm)
+
+    expect(vm.redrawSubprocessLinks).not.toHaveBeenCalled()
   })
 })

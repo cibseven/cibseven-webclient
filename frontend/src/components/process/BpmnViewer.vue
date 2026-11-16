@@ -132,6 +132,10 @@ export default {
     staticCalledProcessDefinitions: function() {
       if (this.viewer) this.redrawSubprocessLinks()
     },
+    // It tells which call activities started a called instance, and can arrive after the diagram was drawn
+    activityInstanceHistory: function() {
+      if (this.viewer) this.redrawSubprocessLinks()
+    },
     statistics: {
       handler() { if (this.viewer) this.drawDiagramState() },
       deep: true
@@ -239,6 +243,17 @@ export default {
     resetZoom: function() {
       this.viewer.get('zoomScroll').reset()
     },
+    // What clicking an activity does: highlight it and narrow the lists below the diagram to it
+    selectDiagramElement: function(element) {
+      this.setHighlightedElement(element.id)
+      if (this.activityInstance) {
+        const childActivity = this.activityInstance.childActivityInstances.find(obj => obj.activityId === element.id)
+        this.$emit('child-activity', childActivity || element)
+      } else {
+        const listMode = this.$root.config.camundaHistoryLevel === 'none' ? 'active' : 'all'
+        this.selectActivity({ activityId: element.id, listMode })
+      }
+    },
     attachEventListeners: function() {
       // Remove existing overlay click handler if it exists
       if (this.overlayClickHandler) {
@@ -255,14 +270,7 @@ export default {
       // BPMN element click
       eventBus.on('element.click', (event) => {
         if (this.getTypeAllowed(event.element.type, interactionTypes)) {
-          this.setHighlightedElement(event.element.id)
-          if (this.activityInstance) {
-            const childActivity = this.activityInstance.childActivityInstances.find(obj => obj.activityId === event.element.id)
-            this.$emit('child-activity', childActivity || event.element)
-          } else {
-            const listMode = this.$root.config.camundaHistoryLevel === 'none' ? 'active' : 'all'
-            this.selectActivity({ activityId: event.element.id, listMode })
-          }
+          this.selectDiagramElement(event.element)
         } else {
           if (this.currentHighlight) {
             this.currentHighlight.shape.classList.remove('bpmn-highlight')
@@ -583,12 +591,11 @@ export default {
         })
       })
 
-      // Map to know which activities have been executed
-      // This is used to determine if a call activity without a resolved definition can be opened
-      const executedActivities = new Set(
-        activityStats
-          .filter(stat => (stat.finished ?? 0) > 0 || (stat.canceled ?? 0) > 0)
-          .map(stat => stat.id)
+      // Call activities of the selected instance that started a called instance, the target of their link
+      const activitiesWithCalledInstance = new Set(
+        (this.activityInstanceHistory || [])
+          .filter(activity => activity.calledProcessInstanceId)
+          .map(activity => activity.activityId)
       )
 
       const callActivitiesList = elementRegistry.getAll().filter(el => el.type === 'bpmn:CallActivity')
@@ -601,21 +608,19 @@ export default {
         const activityStat = activityStats.find(stat => stat.id === ca.id)
         const runningInstances = activityStat?.instances || 0
 
-        const calledElement = ca.businessObject?.calledElement || ''
         // A definition the engine resolved is static; without one, an expression in the reference means it is only known at runtime
         const isStatic = !!calledProcess
         const isDynamic = !isStatic && this.hasExpressionReference(ca.businessObject)
 
         const inInstanceView = !!this.selectedInstance
-        const wasExecuted = inInstanceView && executedActivities.has(ca.id)
-        const hasRun = runningInstances > 0 || wasExecuted
-        // Without a resolved definition the called instance is the target: always for an expression,
-        // and in an instance also for a fixed name the engine could not resolve statically
-        const canOpenCalledInstance = hasRun && (isDynamic || (inInstanceView && !!calledElement))
+        const hasCalledInstance = inInstanceView && activitiesWithCalledInstance.has(ca.id)
+        // Without a resolved definition: in an instance only a called instance it started is a target;
+        // in the definition view a running expression opens the called process definitions tab
+        const canOpenCalledInstance = inInstanceView ? hasCalledInstance : (isDynamic && runningInstances > 0)
         const callsDisplayedDefinition = !!calledProcess &&
           calledProcess.id === (this.selectedInstance?.processDefinitionId ?? this.processDefinitionId)
-        // In an instance a recursive call that ran opens the called instance, which is another page
-        const isCurrentDefinitionAlreadyVisible = callsDisplayedDefinition && !(inInstanceView && hasRun)
+        // In an instance a recursive call opens the called instance, which is another page
+        const isCurrentDefinitionAlreadyVisible = callsDisplayedDefinition && !hasCalledInstance
 
         const disabled = (!isStatic && !canOpenCalledInstance) || isCurrentDefinitionAlreadyVisible
 
@@ -708,6 +713,8 @@ export default {
         // Guessing the latest version of the name could open a definition that is not deployed, or the wrong version or tenant
         const tab = this.selectedInstance ? 'calledProcessInstances' : 'calledProcessDefinitions'
         this.$router.push({ path: this.$route.path, query: { ...this.$route.query, tab } })
+        // Narrows that tab to this call activity, so the click shows something even when the tab is already open
+        this.selectDiagramElement(this.viewer.get('elementRegistry').get(activityId))
       } catch (error) {
         console.error('Failed to open subprocess:', error)
       }
