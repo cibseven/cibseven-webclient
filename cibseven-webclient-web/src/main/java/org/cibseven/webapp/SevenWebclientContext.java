@@ -24,13 +24,12 @@ import java.util.List;
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.User;
 import org.cibseven.webapp.config.SevenWebclientProperties;
-import org.cibseven.webapp.config.StaticFileEtagFilter;
+import org.cibseven.webapp.config.StaticResourceEtags;
 import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.rest.CustomRestTemplate;
 import org.cibseven.webapp.rest.model.InfoVersion;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -131,15 +130,13 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 	}
 
 	/**
-	 * The files served under a fixed name (the theme's logo, favicon and translations, config.json) are
-	 * revalidated by their content instead of their modification time, so a logo replaced under the same
-	 * name reaches the browser without clearing its cache. See {@link StaticFileEtagFilter}.
+	 * Static files are revalidated by their content instead of their modification time, so a logo, favicon
+	 * or translation file replaced under the same name reaches the browser without clearing its cache. See
+	 * {@link StaticResourceEtags}. Static, as a post-processor must be created before the other beans.
 	 */
 	@Bean
-	public FilterRegistrationBean<StaticFileEtagFilter> staticFileEtagFilter() {
-		FilterRegistrationBean<StaticFileEtagFilter> registration = new FilterRegistrationBean<>(new StaticFileEtagFilter());
-		registration.setName("staticFileEtagFilter");
-		return registration;
+	public static StaticResourceEtags staticResourceEtags() {
+		return new StaticResourceEtags();
 	}
 
 	@Override
