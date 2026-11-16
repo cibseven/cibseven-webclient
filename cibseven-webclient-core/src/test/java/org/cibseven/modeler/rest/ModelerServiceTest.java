@@ -307,6 +307,22 @@ public class ModelerServiceTest {
 		assertThat(created.getUpdatedBy()).isEqualTo("demo");
 	}
 
+	/**
+	 * CIB7-2206 listed {@code formSchema.getBytes()} as a JVM-default-charset conversion, but it is
+	 * {@link MultipartFile#getBytes()}: the raw upload, never decoded into a String. This pins that the
+	 * schema is stored byte for byte, whatever the JVM default charset is.
+	 */
+	@Test
+	void saveForm_storesTheUploadedSchemaBytesUnchanged() {
+		byte[] upload = "{\"label\":\"Begründung 審査\"}".getBytes(StandardCharsets.UTF_8);
+		MockMultipartFile schema = new MockMultipartFile("form_schema", "f.json", "application/json", upload);
+		when(formProvider.createForm(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+		FormEntity created = service.saveForm("invoice-form", schema, null, request);
+
+		assertThat(created.getFormSchema()).isEqualTo(upload);
+	}
+
 	@Test
 	void saveForm_storesANullSchemaWhenTheUploadCannotBeRead() throws Exception {
 		MultipartFile unreadable = mock(MultipartFile.class);
@@ -329,6 +345,18 @@ public class ModelerServiceTest {
 
 		assertThat(updated.getId()).isEqualTo("f-1");
 		assertThat(updated.getUpdatedBy()).isEqualTo("demo");
+	}
+
+	@Test
+	void updateForm_storesTheUploadedSchemaBytesUnchanged() {
+		// see saveForm_storesTheUploadedSchemaBytesUnchanged (CIB7-2206)
+		byte[] upload = "{\"label\":\"Begründung 審査\"}".getBytes(StandardCharsets.UTF_8);
+		MockMultipartFile schema = new MockMultipartFile("form_schema", "f.json", "application/json", upload);
+		when(formProvider.updateForm(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+		FormEntity updated = service.updateForm("f-1", "invoice-form", schema, request);
+
+		assertThat(updated.getFormSchema()).isEqualTo(upload);
 	}
 
 	@Test
