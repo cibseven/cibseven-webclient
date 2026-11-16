@@ -67,4 +67,11 @@ describe('DmnViewer.showDiagram with the real dmn-js', () => {
     expect(ctx.viewer.getActiveView().element.id).toBe('dish')
     expect(ctx.setDiagramReady).toHaveBeenLastCalledWith(true)
   })
+
+  it('restores a saved viewbox and resets the zoom on a decision table without throwing', async () => {
+    const ctx = await show('beverages')
+
+    expect(() => DmnViewer.methods.setViewbox.call(ctx, { x: 0, y: 0, width: 100, height: 100 })).not.toThrow()
+    expect(() => DmnViewer.methods.resetZoom.call(ctx)).not.toThrow()
+  })
 })

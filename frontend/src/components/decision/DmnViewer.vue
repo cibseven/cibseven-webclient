@@ -130,8 +130,14 @@ export default {
       this.setDiagramReady(false)
       this.loader = true
       return this.viewer.importXML(xml).then(() => {
+        const shown = this.viewer.getActiveView()
         const view = decisionId && this.viewer.getViews().find(v => v.element?.id === decisionId)
-        if (view && view !== this.viewer.getActiveView()) return this.viewer.open(view)
+        if (!view || view === shown) return
+        // dmn-js has already cleared the view it showed, so a decision that fails to render would leave an empty pane
+        return this.viewer.open(view).catch(err => {
+          console.error(`Error opening decision ${decisionId}:`, err)
+          return this.viewer.open(shown)
+        })
       }).then(() => {
         // Auto-fit the viewport; only the DRD has a canvas, a decision table has none
         this.viewer.getActiveViewer()?.get('canvas', false)?.zoom('fit-viewport')
@@ -162,10 +168,9 @@ export default {
         }, 300)
       })
     },
+    // Only the DRD has a canvas; a decision table has none to restore
     setViewbox(viewbox) {
-      const activeViewer = this.viewer?.getActiveViewer()
-      if (!activeViewer) return
-      activeViewer.get('canvas').viewbox(viewbox)
+      this.viewer?.getActiveViewer()?.get('canvas', false)?.viewbox(viewbox)
     },
     // Method to add HTML overlays to DMN elements
     setHtmlOnDiagram(elementId, html, position) {
@@ -201,7 +206,7 @@ export default {
       this.viewer.getActiveViewer()?.get('zoomScroll')?.stepZoom(-1)
     },
     resetZoom() {
-      this.viewer.getActiveViewer()?.get('canvas')?.zoom('fit-viewport')
+      this.viewer.getActiveViewer()?.get('canvas', false)?.zoom('fit-viewport')
     },
     getBadgeOverlayHtml(number, classes, type, elementId) {
       // Options are:
