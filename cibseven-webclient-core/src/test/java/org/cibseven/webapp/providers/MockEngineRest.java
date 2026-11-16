@@ -91,6 +91,12 @@ final class MockEngineRest implements AutoCloseable {
 		server.enqueue(new MockResponse().setBody(body).addHeader("Content-Type", "application/json"));
 	}
 
+	/** A JSON answer whose headers leave only after {@code delay}, so the request holds its connection. */
+	void enqueueJsonAfter(String body, long delay, TimeUnit unit) {
+		server.enqueue(new MockResponse().setBody(body).addHeader("Content-Type", "application/json")
+			.setHeadersDelay(delay, unit));
+	}
+
 	/** Raw bytes, for endpoints that do not answer JSON; MockWebServer sets Content-Length from them. */
 	void enqueueBytes(byte[] body, String contentType) {
 		server.enqueue(new MockResponse().setBody(new Buffer().write(body)).addHeader("Content-Type", contentType));
