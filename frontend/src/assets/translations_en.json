@@ -249,7 +249,8 @@
 			"referenced": "Referenced",
 			"running": "Running",
 			"runningAndReferenced": "Running and referenced",			
-			"unknown": "Unknown"
+			"unknown": "Unknown",
+			"loadFailed": "The called process definitions could not be loaded"
 		},
 		"details": {
 			"instancesChain": "Root process",
@@ -475,7 +476,10 @@
 			"activitiesHistory": "Executed activity instances",
 			"canceledInstances": "Canceled activity instances",		
 			"openSubprocess": "Show called process definition",
-			"disabledSubprocess": "Called process definition will be resolved at runtime"
+			"disabledSubprocess": "Called process definition will be resolved at runtime",
+			"notFoundSubprocess": "No called process definition found: it is not deployed, or you are not allowed to see it",
+			"currentSubprocess": "The called process definition is the one already shown",
+			"unknownSubprocess": "The called process definition could not be determined"
 		}
 	},
 	"task": {
@@ -1207,6 +1211,7 @@
 	},
 	"navigation": {
 		"home": "Home",
+		"logoText": "@:login.productName",
 		"menu": "Navigation menu",
 		"infoAndHelp": "Info & help"
 	},

@@ -249,7 +249,8 @@
 			"referenced": "Referenciado",
 			"running": "En ejecución",
 			"runningAndReferenced": "En ejecución y referenciado",			
-			"unknown": "Desconocido"
+			"unknown": "Desconocido",
+			"loadFailed": "No se pudieron cargar las definiciones de proceso llamadas"
 		},
 		"details": {
 			"instancesChain": "Proceso principal",
@@ -475,7 +476,10 @@
 			"activitiesHistory": "Instancias de actividad ejecutadas",
 			"canceledInstances": "Instancias de actividad canceladas",
 			"openSubprocess": "Mostrar la definición del proceso llamado",
-			"disabledSubprocess": "La definición del proceso se resolverá en tiempo de ejecución"
+			"disabledSubprocess": "La definición del proceso se resolverá en tiempo de ejecución",
+			"notFoundSubprocess": "No se encontró la definición del proceso llamado: no está desplegada o no tiene permiso para verla",
+			"currentSubprocess": "La definición del proceso llamado ya se está mostrando",
+			"unknownSubprocess": "No se pudo determinar la definición del proceso llamado"
 		}
 	},
 	"task": {
@@ -1206,6 +1210,7 @@
 	},
 	"navigation": {
 		"home": "Inicio",
+		"logoText": "@:login.productName",
 		"menu": "Menú de Navegación",
 		"infoAndHelp": "Información y ayuda"
 	},

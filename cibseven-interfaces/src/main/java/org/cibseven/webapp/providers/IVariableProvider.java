@@ -58,6 +58,8 @@ public interface IVariableProvider {
 	public void saveVariableInProcessInstanceId(String processInstanceId, List<Variable> variables, CIBUser user) throws SystemException;
 	public void submitVariables(String processInstanceId, List<Variable> formResult, CIBUser user, String processDefinitionId) throws SystemException;
 	public void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user);
+	/** Sets one process variable from an engine-rest value (value, type, valueInfo). */
+	public void putProcessInstanceVariable(String processInstanceId, String variableName, Map<String, Object> variable, CIBUser user);
 
 	public default void mergeVariablesValuesRuntime(
 			Collection<Variable> variablesDeserialized,

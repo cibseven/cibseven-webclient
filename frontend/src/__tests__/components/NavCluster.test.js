@@ -123,7 +123,7 @@ describe('NavCluster.vue', () => {
       expect(wrapper.find('.cib-nav-menu-item .mdi').attributes('aria-hidden')).toBe('true')
     })
 
-    // e.g. Logout, the only entry of the user menu with an icon, would otherwise start further right than the rest
+    // An entry with an icon in front would otherwise start further right than the rest
     it('gives every entry the 18px icon column once one entry has an icon, so the labels line up', () => {
       wrapper = mountCluster({ ...cockpit, sections: [[{ key: 'profile', label: 'Profile', to: '/profile' }], [{ key: 'logout', label: 'Logout', icon: 'mdi-logout' }]] }, { open: true })
 
@@ -134,6 +134,38 @@ describe('NavCluster.vue', () => {
     it('has no icon column in a menu without entry icons', () => {
       wrapper = mountCluster(cockpit, { open: true })
       expect(wrapper.find('.cib-nav-menu-icon').exists()).toBe(false)
+    })
+
+    // Logout's icon follows its label
+    it.each([
+      ['a button', { key: 'logout', label: 'Logout', icon: 'mdi-logout', iconEnd: true }],
+      ['a route', { key: 'route', label: 'Logout', to: '/seven/logout', icon: 'mdi-logout', iconEnd: true }],
+      ['a link', { key: 'href', label: 'Logout', href: 'https://idp/logout', icon: 'mdi-logout', iconEnd: true }]
+    ])('shows an iconEnd icon after the label of %s, with no icon column in front', (kind, item) => {
+      wrapper = mountCluster({ ...cockpit, sections: [[{ key: 'profile', label: 'Profile', to: '/profile' }], [item]] }, { open: true })
+
+      const entries = wrapper.findAll('.cib-nav-menu-item')
+      // No other entry has an icon in front, so there is no icon column
+      expect(entries[0].find('.cib-nav-menu-icon').exists()).toBe(false)
+      const logout = entries[1]
+      expect(logout.findAll('.cib-nav-menu-icon')).toHaveLength(1)
+      expect(logout.element.lastElementChild).toBe(logout.find('.mdi-logout').element)
+      // Keeps its size beside a long label (flex-shrink: 0 in the scoped styles)
+      expect(logout.find('.mdi-logout').classes()).toContain('cib-nav-menu-icon-end')
+      expect(logout.text()).toBe('Logout')
+    })
+
+    it('keeps the icon column for the entries with an icon in front, and an empty one before an iconEnd entry', () => {
+      wrapper = mountCluster({ ...cockpit, sections: [
+        [{ key: 'settings', label: 'Settings', to: '/settings', icon: 'mdi-cog' }],
+        [{ key: 'logout', label: 'Logout', icon: 'mdi-logout', iconEnd: true }]
+      ] }, { open: true })
+
+      const logout = wrapper.findAll('.cib-nav-menu-item')[1]
+      const icons = logout.findAll('.cib-nav-menu-icon')
+      expect(icons).toHaveLength(2)
+      expect(icons[0].classes().some(c => c.startsWith('mdi-') && c !== 'mdi-18px')).toBe(false)
+      expect(icons[1].classes()).toContain('mdi-logout')
     })
 
     // Small files are inlined as data URIs, so the URL is quoted in the mask

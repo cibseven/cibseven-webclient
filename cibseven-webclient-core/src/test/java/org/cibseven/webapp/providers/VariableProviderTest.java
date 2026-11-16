@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.junit.jupiter.api.AfterEach;
@@ -255,5 +256,22 @@ public class VariableProviderTest {
 		var request = engine.take();
 		assertThat(request.getMethod()).isEqualTo("POST");
 		assertThat(request.getPath()).endsWith("/execution/exec-1/localVariables/");
+	}
+
+	// ---------- process variable write of embedded forms (CIB7-2757) ----------
+
+	@Test
+	void putProcessInstanceVariable_putsTheSdkBodyUnchanged() throws Exception {
+		engine.enqueueEmpty(204);
+		// process-instance.setVariable sends the name next to the value
+		Map<String, Object> variable = Map.of("name", "order data", "value", "{\"a\":1}", "type", "Json");
+
+		variableProvider.putProcessInstanceVariable("pi-1", "order data", variable, user);
+
+		var request = engine.take();
+		assertThat(request.getMethod()).isEqualTo("PUT");
+		assertThat(request.getPath()).isEqualTo("/engine-rest/process-instance/pi-1/variables/order%20data");
+		assertThat(WebclientJsonMapper.plain().readTree(request.getBody().readUtf8()))
+			.isEqualTo(WebclientJsonMapper.plain().valueToTree(variable));
 	}
 }

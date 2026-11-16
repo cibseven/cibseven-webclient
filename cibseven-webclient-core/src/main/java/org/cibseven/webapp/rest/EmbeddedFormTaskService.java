@@ -21,11 +21,15 @@ import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.config.SevenWebclientProperties;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -91,6 +95,41 @@ public class EmbeddedFormTaskService extends BaseService {
 			@Parameter(description = "Task Id") @PathVariable String taskId,
 			CIBUser user) {
 		return bpmProvider.findLocalVariables(taskId, user);
+	}
+
+	@Operation(
+			summary = "Set and remove local variables of a task (engine-rest compatible path used by embedded forms)",
+			description = "Body as engine-rest: modifications (name to value, type, valueInfo) and deletions (names)")
+	@PostMapping("/{taskId}/localVariables")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void modifyLocalVariables(
+			@Parameter(description = "Task Id") @PathVariable String taskId,
+			@Parameter(description = "The modifications and deletions") @RequestBody Map<String, Object> patch,
+			CIBUser user) {
+		bpmProvider.modifyLocalVariables(taskId, patch, user);
+	}
+
+	@Operation(
+			summary = "Set a local variable of a task (engine-rest compatible path used by embedded forms)",
+			description = "Body as engine-rest: value, type and valueInfo")
+	@PutMapping("/{taskId}/localVariables/{variableName}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void putLocalVariable(
+			@Parameter(description = "Task Id") @PathVariable String taskId,
+			@Parameter(description = "Variable name") @PathVariable String variableName,
+			@Parameter(description = "The variable value") @RequestBody Map<String, Object> variable,
+			CIBUser user) {
+		bpmProvider.putLocalVariable(taskId, variableName, variable, user);
+	}
+
+	@Operation(summary = "Remove a local variable of a task (engine-rest compatible path used by embedded forms)")
+	@DeleteMapping("/{taskId}/localVariables/{variableName}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void deleteLocalVariable(
+			@Parameter(description = "Task Id") @PathVariable String taskId,
+			@Parameter(description = "Variable name") @PathVariable String variableName,
+			CIBUser user) {
+		bpmProvider.deleteLocalVariable(taskId, variableName, user);
 	}
 
 	@Operation(

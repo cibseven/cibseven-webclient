@@ -368,9 +368,9 @@ describe('CIBHeaderFlow.vue', () => {
       expect(wrapper.vm.userCluster.sections.map(section => section.map(i => i.key))).toEqual([['profile', 'groups'], ['logout']])
     })
 
-    it('gives logout an icon', () => {
+    it('gives logout an icon, after its label', () => {
       wrapper = createWrapper()
-      expect(wrapper.vm.userCluster.sections.at(-1)[0]).toMatchObject({ key: 'logout', icon: 'mdi-logout' })
+      expect(wrapper.vm.userCluster.sections.at(-1)[0]).toMatchObject({ key: 'logout', icon: 'mdi-logout', iconEnd: true })
     })
 
     it('shows only logout, without an empty section, when there are no user entries', () => {
