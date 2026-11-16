@@ -19,7 +19,9 @@ package org.cibseven.webapp.rest;
 import java.util.Collection;
 import java.util.Map;
 
+import org.cibseven.webapp.auth.AuthorizationChecker;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.rest.model.Metric;
@@ -44,8 +46,16 @@ public class SystemService extends BaseService implements InitializingBean {
 
  @Autowired BpmProvider bpmProvider;
 
-	@Autowired
-	private CustomRestTemplate restTemplate;
+	/** Engine permission on the SYSTEM resource that the connection-pool statistics require. */
+	static final String POOL_STATUS_PERMISSION = "READ";
+
+	private final CustomRestTemplate restTemplate;
+	private final AuthorizationChecker authorizationChecker;
+
+	public SystemService(CustomRestTemplate restTemplate, AuthorizationChecker authorizationChecker) {
+		this.restTemplate = restTemplate;
+		this.authorizationChecker = authorizationChecker;
+	}
 
 	public void afterPropertiesSet() {
 	}
@@ -60,8 +70,14 @@ public class SystemService extends BaseService implements InitializingBean {
 			return bpmProvider.getMetrics(queryParams, user);
 	}
 
+	/**
+	 * Statistics of the connection pool towards the engine. Operational data, so it is reserved for
+	 * users who may read the engine's system data (SYSTEM READ, which administrators hold).
+	 */
+	@ApiResponse(responseCode = "403", description = "Missing READ permission on the SYSTEM resource")
 	@GetMapping("/pool-status")
-	public String poolStatus() {
+	public String poolStatus(CIBUser user) {
+		authorizationChecker.requireAuthorized(user, SevenResourceType.SYSTEM, "*", POOL_STATUS_PERMISSION);
 		return restTemplate.getConnectionPoolStats();
 	}
 
