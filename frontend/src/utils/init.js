@@ -19,6 +19,7 @@
  */
 import { axios } from '@/globals.js'
 import { getServicesBasePath } from '@/services.js'
+import { versionedUrl } from '@/utils/assetVersion.js'
 
 export function getTheme(config) {
   return config.theme || "cib"
@@ -196,7 +197,7 @@ export function applyTheme(theme) {
   const favicon = document.createElement('Link')
   favicon.setAttribute('rel', 'icon')
   favicon.setAttribute('type', 'image/x-icon')
-  favicon.setAttribute('href', 'themes/' + theme + '/favicon.ico')
+  favicon.setAttribute('href', versionedUrl(`themes/${theme}/favicon.ico`))
 
   document.head.appendChild(favicon)
 }
@@ -250,7 +251,7 @@ export function setupTaskNotifications(app, root, theme) {
         const options = {
           body: app.$t('notification.newTasks'),
           tag: 'cib-flow-check-new-tasks',
-          icon: 'themes/' + theme + '/notification-icon.svg'
+          icon: versionedUrl(`themes/${theme}/notification-icon.svg`)
         }
         const notification = new Notification(app.$t('notification.newTasksTitle'), options)
         notification.onclick = () => {

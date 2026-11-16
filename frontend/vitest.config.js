@@ -21,6 +21,10 @@ import viteConfig from './vite.config'
 export default mergeConfig(
   viteConfig,
   defineConfig({
+    // A fixed build version, so tests can expect the versioned URLs of src/utils/assetVersion.js
+    define: {
+      __BUILD_VERSION__: JSON.stringify('test')
+    },
     test: {
       server: {
         deps: {

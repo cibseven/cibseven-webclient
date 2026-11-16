@@ -18,6 +18,7 @@ import { createI18n } from 'vue-i18n'
 import { mergeLocaleMessage as commonFrontendMergeLocaleMessage } from '@cib/common-frontend'
 import { axios, moment } from './globals.js'
 import { getTheme } from './utils/init'
+import { versionedUrl } from './utils/assetVersion.js'
 import 'moment/dist/locale/de'
 import 'moment/dist/locale/es'
 import 'moment/dist/locale/uk'
@@ -49,23 +50,27 @@ const loadTranslationsFromSevenComponents = function(i18n, lang) {
   i18n.global.mergeLocaleMessage(lang, translation)
 }
 
+// The two files below keep their names from release to release, so they are requested with the build version
+// (versionedUrl): a browser that kept an older one asks for it anew after an update
 const loadTranslationsFromPublic = async function(lang) {
   // Load translations from public/translations_*.json
+  const file = `translations_${lang}.json`
   try {
-    const res = await axios.create().get('translations_' + lang + '.json')
+    const res = await axios.create().get(versionedUrl(file))
     i18n.global.mergeLocaleMessage(lang, res.data)
   } catch {
-    console.debug('Optional translations file not found:', 'translations_' + lang + '.json')
+    console.debug('Optional translations file not found:', file)
   }
 }
 
 const loadTranslationsFromThemes = async function(config, lang) {
   // Load translations from public/themes/translations_*.json
+  const file = `themes/${getTheme(config)}/translations_${lang}.json`
   try {
-    const res = await axios.create().get('themes/' + getTheme(config) + '/translations_' + lang + '.json')
+    const res = await axios.create().get(versionedUrl(file))
     i18n.global.mergeLocaleMessage(lang, res.data)
   } catch {
-    console.debug('Optional theme translations file not found:', 'themes/' + getTheme(config) + '/translations_' + lang + '.json')
+    console.debug('Optional theme translations file not found:', file)
   }
 }
 

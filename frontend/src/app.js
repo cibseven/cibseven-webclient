@@ -33,6 +33,7 @@ import { hasHeader, checkExternalReturn,
   getTheme, loadTheme, applyTheme,
   handleAxiosError, fetchAndStoreProcesses, setupTaskNotifications } from './utils/init'
 import { applyConfigDefaults } from './utils/config.js'
+import { versionedUrl } from './utils/assetVersion.js'
 import { i18n, switchLanguage } from './i18n'
 import { createProvideObject } from './utils/provide.js'
 import { setPluginContext } from './plugins/pluginContext.js'
@@ -44,7 +45,7 @@ import { initPlugins } from './plugins/pluginLoader.js'
 checkExternalReturn(window.location.href, window.location.hash)
 
 Promise.all([
-  axios.get('config.json').then(response => {
+  axios.get(versionedUrl('config.json')).then(response => {
     // Check if response data is not an object
     if (typeof response.data !== 'object' || response.data === null) {
       console.warn('Received non-object response for config.json, using defaults')
@@ -88,9 +89,10 @@ Promise.all([
             config: config,
             consent: localStorage.getItem('consent'),
             // The theme's logo, the file themes have always replaced: the header shows it as an icon, with the product
-            // name (productNamePageTitle) as text on the start, account and sign-in pages
-            logoPath: 'themes/' + theme + '/logo.svg',
-            loginImgPath: 'themes/' + theme + '/login-image.svg',
+            // name (productNamePageTitle) as text on the start, account and sign-in pages. Versioned, so a logo
+            // replaced under the same name is not taken from the cache after an update
+            logoPath: versionedUrl(`themes/${theme}/logo.svg`),
+            loginImgPath: versionedUrl(`themes/${theme}/login-image.svg`),
             resetPasswordImgPath: imagePath,
             theme: theme,
             header: hasHeader(),

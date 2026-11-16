@@ -189,12 +189,12 @@ describe('updateAppTitle', () => {
 })
 
 describe('applyTheme', () => {
-  it('should add a favicon link pointing into the theme folder', () => {
+  it('should add a favicon link pointing into the theme folder, versioned by the build', () => {
     applyTheme('dark')
 
     const link = document.head.querySelector('link[rel="icon"]')
     expect(link).not.toBeNull()
-    expect(link.getAttribute('href')).toBe('themes/dark/favicon.ico')
+    expect(link.getAttribute('href')).toBe('themes/dark/favicon.ico?v=test')
     expect(link.getAttribute('type')).toBe('image/x-icon')
   })
 })
@@ -434,7 +434,7 @@ describe('setupTaskNotifications', () => {
       expect(window.Notification).toHaveBeenCalledWith('notification.newTasksTitle', {
         body: 'notification.newTasks',
         tag: 'cib-flow-check-new-tasks',
-        icon: 'themes/dark/notification-icon.svg'
+        icon: 'themes/dark/notification-icon.svg?v=test'
       })
     })
 
