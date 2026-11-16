@@ -71,7 +71,7 @@ public class ProcessDefinitionService extends BaseService implements Initializin
 			@Parameter(description = "Process definition Id") @PathVariable String processDefinitionId,
 			@RequestParam Map<String, Object> params,
 			Locale loc, CIBUser user) {
-		return bpmProvider.getRenderedStartForm(processDefinitionId, params, user);
+		return EngineResponses.relay(bpmProvider.getRenderedStartForm(processDefinitionId, params, user));
 	}
 
 	/*
