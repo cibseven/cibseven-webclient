@@ -64,7 +64,9 @@ export default {
       loading: false,
       versionLoaded: false,
       // Counts the loads, so that an answer to an older one cannot overwrite a newer one
-      loadRequest: 0
+      loadRequest: 0,
+      // A tenant dropped for having no versions, so that the fallback without a tenant cannot reopen it
+      droppedTenantId: null
     }
   },
   watch: {
@@ -114,10 +116,13 @@ export default {
       const outdated = () => request !== this.loadRequest
       this.versionLoaded = false
       const instanceId = this.$route.params.instanceId
+      // Looked up once per load: one instance and one definition request
+      let definitionTenantRequest
+      const definitionTenantOfInstance = () => (definitionTenantRequest ??= this.definitionTenantId(instanceId))
 
       // A link to an instance without the tenant (an old bookmark): its definition's
       if (instanceId && !this.tenantId) {
-        const definitionTenantId = await this.definitionTenantId(instanceId)
+        const definitionTenantId = await definitionTenantOfInstance()
         if (outdated()) return
         if (definitionTenantId) return this.replaceTenant(definitionTenantId)
       }
@@ -134,7 +139,7 @@ export default {
       let version = versionIndex ? this.getDecisionVersion({ key: decisionKey, version: versionIndex }) : null
       if (!version && instanceId) {
         // A link with another tenant than its definition's
-        const definitionTenantId = await this.definitionTenantId(instanceId)
+        const definitionTenantId = await definitionTenantOfInstance()
         if (outdated()) return
         if (definitionTenantId !== undefined && definitionTenantId !== tenantId) return this.replaceTenant(definitionTenantId)
       }
@@ -143,13 +148,18 @@ export default {
         // The instance's definition is gone (its history kept): nothing to show, and no other tenant to try
         if (instanceId) return
         // An outdated link: the tenant has no version of this key any more
-        if (tenantId) return this.replaceTenant(null)
-        // A key deployed only for tenants: open the tenant of its newest version
+        if (tenantId) {
+          this.droppedTenantId = tenantId
+          return this.replaceTenant(null)
+        }
+        // A key deployed only for tenants: open the tenant of its newest version, unless that is the one just
+        // dropped (its own listing came back empty, e.g. for a tenant id the engine splits): no endless bouncing
         const everyTenantsVersions = await DecisionService.getDecisionVersionsByKey(decisionKey, true)
         const newestTenantId = everyTenantsVersions?.find(v => v.tenantId)?.tenantId
-        if (!outdated() && newestTenantId) this.replaceTenant(newestTenantId)
+        if (!outdated() && newestTenantId && newestTenantId !== this.droppedTenantId) this.replaceTenant(newestTenantId)
         return
       }
+      this.droppedTenantId = null
       if (!version) {
         // Not in this tenant: its latest version, keeping the rest of the query (e.g. ?tab=)
         version = versions[0]

@@ -45,6 +45,7 @@ describe('DecisionView - tenant (CIB7-2392)', () => {
       tenantId: query.tenantId ?? null,
       versionIndex: params.versionIndex ?? '',
       loadRequest: 0,
+      droppedTenantId: null,
       versionLoaded: false,
       $route: { params, query },
       $router: { replace: vi.fn() },
@@ -189,6 +190,40 @@ describe('DecisionView - tenant (CIB7-2392)', () => {
     expect(c.versionLoaded).toBe(false)
     DecisionService.getHistoricDecisionInstances.mockResolvedValue([])
     DecisionService.getDecisionDefinitionById.mockResolvedValue(null)
+  })
+
+  // Code review: both lookups of one load asked for the instance and its definition again
+  it("asks once per load for the tenant of the instance's definition", async () => {
+    instanceOf(null, 'T1')
+    const c = ctx({ params: { instanceId: 'inst-1' }, versions: [v(2)] })
+
+    await load(c, '5')
+
+    expect(DecisionService.getHistoricDecisionInstances).toHaveBeenCalledTimes(1)
+    expect(c.$router.replace).toHaveBeenCalledWith(expect.objectContaining({ name: 'decision-version', params: { decisionKey: 'dec', versionIndex: '2' } }))
+  })
+
+  // Code review: dropping a tenant and reopening the newest tenant could bounce between each other forever
+  it('does not reopen a tenant it dropped for having no versions', async () => {
+    const c = ctx({ query: { tenantId: 'x,y' } })
+    await load(c, '1')
+    expect(c.$router.replace).toHaveBeenCalledWith({ query: {} })
+
+    // the route watcher loads again without the tenant, and the listing of every tenant still names it
+    c.tenantId = null
+    c.$route.query = {}
+    DecisionService.getDecisionVersionsByKey.mockResolvedValueOnce([v(1, 'x,y')])
+    await load(c, '1')
+
+    expect(c.$router.replace).toHaveBeenCalledTimes(1)
+  })
+
+  it('forgets the dropped tenant once a load finds versions', async () => {
+    const c = ctx({ versions: [v(1)], droppedTenantId: 'gone' })
+
+    await load(c, '1')
+
+    expect(c.droppedTenantId).toBe(null)
   })
 
   it('takes no tenant from an unknown instance', async () => {
