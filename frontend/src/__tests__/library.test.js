@@ -19,7 +19,6 @@ import * as library from '@/library.js'
 import * as pluginsConfig from '@/plugins/pluginsConfig.js'
 import * as pluginLoader from '@/plugins/pluginLoader.js'
 import * as configUtils from '@/utils/config.js'
-import * as assetVersion from '@/utils/assetVersion.js'
 import PluginSlot from '@/components/common/PluginSlot.vue'
 import { findComponents } from './utils.js'
 import fs from 'node:fs'
@@ -125,12 +124,6 @@ describe('library.js', () => {
   // EE decides with the same check as the modeler route and the navigation
   it('exports the modeler-enabled check', () => {
     expect(library.isModelerEnabled).toBe(configUtils.isModelerEnabled)
-  })
-
-  // EE versions its own logo and theme files the same way, so they are not taken from the cache after an update
-  it('exports the versioned URL of files served under a fixed name', () => {
-    expect(library.versionedUrl).toBe(assetVersion.versionedUrl)
-    expect(library.buildVersion).toBe(assetVersion.buildVersion)
   })
 
   describe('*Mixin.js', () => {

@@ -19,13 +19,9 @@ import { flushPromises } from '@vue/test-utils'
 import { mergeLocaleMessage } from '@cib/common-frontend'
 import { i18n, switchLanguage, registerTranslationLoader, loadTranslations, translationSources } from '@/i18n'
 
-const { get } = vi.hoisted(() => ({
-  // Every optional translation file is absent, which the loaders treat as normal
-  get: vi.fn(() => Promise.reject(new Error('404')))
-}))
-
 vi.mock('@/globals.js', () => ({
-  axios: { create: () => ({ get }), defaults: { headers: { common: {} } } },
+  // Every optional translation file is absent, which the loaders treat as normal
+  axios: { create: () => ({ get: () => Promise.reject(new Error('404')) }), defaults: { headers: { common: {} } } },
   moment: { locale: vi.fn() }
 }))
 
@@ -81,26 +77,6 @@ describe('loadTranslations', () => {
     await switchLanguage({ supportedLanguages: ['en', 'it'] }, 'it')
 
     expect(mergeLocaleMessage).not.toHaveBeenCalled()
-  })
-})
-
-// The public and theme translation files keep their names from release to release, so they are requested with
-// the build version: a browser that kept the old ones asks for them anew after an update
-describe('translation files served under a fixed name', () => {
-  it('requests the public and the theme translations with the build version', async () => {
-    get.mockClear()
-    get.mockImplementation(url => url.startsWith('themes/')
-      ? Promise.resolve({ data: { custom: { greeting: 'Theme greeting' } } })
-      : Promise.reject(new Error('404')))
-
-    await loadTranslations({ theme: 'acme' }, 'fr', [translationSources.public, translationSources.themes])
-
-    expect(get.mock.calls.map(([url]) => url)).toEqual([
-      'translations_fr.json?v=test',
-      'themes/acme/translations_fr.json?v=test'
-    ])
-    expect(i18n.global.getLocaleMessage('fr')).toMatchObject({ custom: { greeting: 'Theme greeting' } })
-    get.mockImplementation(() => Promise.reject(new Error('404')))
   })
 })
 

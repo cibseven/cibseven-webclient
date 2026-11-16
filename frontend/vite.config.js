@@ -43,12 +43,6 @@ const pluginRuntimeUrl = isLibrary ? null : './plugin-runtime.js'
 // https://vite.dev/config/
 export default defineConfig({
   base: './',
-  // Added to the URLs of the files served under a fixed name (logo, favicon, translations, config.json, see
-  // src/utils/assetVersion.js), so a browser asks for them anew after every build instead of showing a cached old one
-  define: {
-    /* eslint-disable-next-line no-undef */
-    __BUILD_VERSION__: JSON.stringify(process.env.BUILD_VERSION || Date.now().toString(36))
-  },
   plugins: [
     vue(),
     vueDevTools(),
