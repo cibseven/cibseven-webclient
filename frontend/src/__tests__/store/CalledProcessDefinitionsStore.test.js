@@ -224,6 +224,26 @@ createStoreTestSuite('CalledProcessDefinitionsStore', CalledProcessDefinitionsSt
         expect(ProcessService.findCalledProcessDefinitions).toHaveBeenCalledTimes(2)
       })
 
+      // A, then B, then A again: the first A finishing must not drop the second A's shared request
+      it('should not let an older load clear the shared request of a newer one', async () => {
+        const context = getContext()
+        context.commit.mockImplementation((name, value) => CalledProcessDefinitionsStore.mutations[name](context.state, value))
+        let finishFirstA
+        ProcessService.findCalledProcessDefinitions
+          .mockReturnValueOnce(new Promise(resolve => { finishFirstA = resolve }))
+          .mockResolvedValueOnce([])
+          .mockReturnValueOnce(new Promise(() => {}))
+
+        const firstA = action(context, { processDefinitionId: 'pd-a' })
+        await action(context, { processDefinitionId: 'pd-b' })
+        action(context, { processDefinitionId: 'pd-a' })
+        finishFirstA([staticDef()])
+        await firstA
+        action(context, { processDefinitionId: 'pd-a' })
+
+        expect(ProcessService.findCalledProcessDefinitions).toHaveBeenCalledTimes(3)
+      })
+
       // Each store has its own state; a load in flight in one must not answer for another
       it('should not share a request between stores', async () => {
         const first = getContext()
@@ -342,6 +362,25 @@ createStoreTestSuite('CalledProcessDefinitionsStore', CalledProcessDefinitionsSt
 
         expect(context.dispatch).toHaveBeenCalledWith('loadStaticCalledProcessDefinitions', { processDefinitionId: 'pd-1' })
         expect(lastGrouping(context).map(def => def.definitionId)).toEqual(['sub-1'])
+      })
+
+      // e.g. the instance view refreshing them after a redeploy: the table must not group the older list
+      it('should wait for a refresh in flight of the static definitions', async () => {
+        const context = contextWith(getContext, { statics: [staticDef({ id: 'old' })] })
+        context.state.staticCalledProcessDefinitionsId = 'pd-1'
+        let statics = [staticDef({ id: 'old' })]
+        context.getters.getStaticCalledProcessDefinitionsFor = () => statics
+        context.dispatch.mockImplementation(async () => { statics = [staticDef({ id: 'new' })] })
+        let finishRefresh
+        ProcessService.findCalledProcessDefinitions.mockReturnValueOnce(new Promise(resolve => { finishRefresh = resolve }))
+        const refresh = CalledProcessDefinitionsStore.actions.loadStaticCalledProcessDefinitions(context, { processDefinitionId: 'pd-1' })
+
+        await action(context, { processId: 'pd-1' })
+        finishRefresh([])
+        await refresh
+
+        expect(context.dispatch).toHaveBeenCalledWith('loadStaticCalledProcessDefinitions', { processDefinitionId: 'pd-1' })
+        expect(lastGrouping(context).map(def => def.definitionId)).toEqual(['new'])
       })
 
       // Shown as an error by the table instead of a table that silently lacks the static rows

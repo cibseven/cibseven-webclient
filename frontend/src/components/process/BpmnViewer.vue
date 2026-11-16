@@ -585,6 +585,8 @@ export default {
     drawSubprocessLinks: function(elementRegistry) {
       this.subprocessLinkOverlays = []
       if (this.badgeOptions?.showCalledProcesses === false) return
+      // Without a process definition (e.g. a deployment's resource preview) there is nothing to resolve the links against
+      if (!this.processDefinitionId) return
       const staticCalledProcesses = this.staticCalledProcessDefinitions || []
       const activityStats = this.historicActivityStatistics || []
 
@@ -608,6 +610,8 @@ export default {
       callActivitiesList.forEach(ca => {
         const shape = elementRegistry.get(ca.id)
         if (!shape) return
+        // A case call (camunda:caseRef) names no process, so there is no process to link to
+        if (!ca.businessObject?.calledElement) return
 
         const calledProcess = activityToProcessMap[ca.id]
         const activityStat = activityStats.find(stat => stat.id === ca.id)

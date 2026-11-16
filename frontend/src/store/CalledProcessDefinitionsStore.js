@@ -22,7 +22,8 @@ const pendingStaticLoads = new WeakMap()
 // The latest table load per store; an older one stops committing once a newer one has started
 const currentTableLoads = new WeakMap()
 
-async function fetchStaticCalledProcessDefinitions({ commit, state }, processDefinitionId) {
+async function fetchStaticCalledProcessDefinitions({ commit, state }, pending) {
+  const { processDefinitionId } = pending
   // Never keep the data of another definition while the new one loads; null first, so it is never shown under the new id
   if (state.staticCalledProcessDefinitionsId !== processDefinitionId) {
     commit('setStaticCalledProcessDefinitions', null)
@@ -37,7 +38,8 @@ async function fetchStaticCalledProcessDefinitions({ commit, state }, processDef
     // Only the call activity links depend on this: they stay "unknown", the views keep working
     console.error('Failed to load the called process definitions:', error)
   } finally {
-    if (pendingStaticLoads.get(state)?.processDefinitionId === processDefinitionId) pendingStaticLoads.delete(state)
+    // Only its own entry: a newer load of the same definition may have replaced it meanwhile
+    if (pendingStaticLoads.get(state) === pending) pendingStaticLoads.delete(state)
   }
 }
 
@@ -66,11 +68,12 @@ export default {
   },
   actions: {
     loadStaticCalledProcessDefinitions(context, { processDefinitionId }) {
-      const pending = pendingStaticLoads.get(context.state)
-      if (pending?.processDefinitionId === processDefinitionId) return pending.promise
-      const promise = fetchStaticCalledProcessDefinitions(context, processDefinitionId)
-      pendingStaticLoads.set(context.state, { processDefinitionId, promise })
-      return promise
+      const current = pendingStaticLoads.get(context.state)
+      if (current?.processDefinitionId === processDefinitionId) return current.promise
+      const pending = { processDefinitionId }
+      pendingStaticLoads.set(context.state, pending)
+      pending.promise = fetchStaticCalledProcessDefinitions(context, pending)
+      return pending.promise
     },
 
     // A definition switch before the new table can load: drop the previous rows and outdate a load still running for them
@@ -89,8 +92,9 @@ export default {
       commit('setCalledProcessDefinitions', [])
       commit('setAllCalledProcessDefinitions', [])
 
-      // Not loaded yet does not mean "calls nothing statically": wait for them (shares a load in flight)
-      if (processId && !getters.getStaticCalledProcessDefinitionsFor(processId)) {
+      // Not loaded yet does not mean "calls nothing statically", and a refresh in flight may bring a newer list: wait for it
+      const refreshing = pendingStaticLoads.get(state)?.processDefinitionId === processId
+      if (processId && (refreshing || !getters.getStaticCalledProcessDefinitionsFor(processId))) {
         await dispatch('loadStaticCalledProcessDefinitions', { processDefinitionId: processId })
         if (isOutdated()) return
       }

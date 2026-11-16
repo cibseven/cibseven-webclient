@@ -1269,6 +1269,7 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
   const vmWith = (overrides = {}) => ({
     $t: (key) => key,
     badgeOptions: {},
+    processDefinitionId: 'pd-parent',
     selectedInstance: null,
     historicActivityStatistics: [],
     staticCalledProcessDefinitions: [],
@@ -1621,7 +1622,26 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
 
     BpmnViewer.methods.drawSubprocessLinks.call(vm, registry)
 
-    expect(buttonFrom(vm).disabled).toBe(true)
+    expect(vm.setHtmlOnDiagram).not.toHaveBeenCalled()
+  })
+
+  // A case call names no process: a process link would only ever say "not deployed"
+  it('should draw no link on a call activity that calls a case', () => {
+    const vm = vmWith()
+
+    BpmnViewer.methods.drawSubprocessLinks.call(vm, registryWith(callActivity('call_1', undefined, { 'camunda:caseRef': 'claimCase' })))
+
+    expect(vm.setHtmlOnDiagram).not.toHaveBeenCalled()
+  })
+
+  // e.g. a deployment's resource preview or the start process preview: nothing to resolve the links against
+  it('should draw no links without a process definition', () => {
+    const vm = vmWith({ processDefinitionId: undefined })
+
+    BpmnViewer.methods.drawSubprocessLinks.call(vm, registryWith(callActivity('call_1', 'sub')))
+
+    expect(vm.setHtmlOnDiagram).not.toHaveBeenCalled()
+    expect(vm.subprocessLinkOverlays).toEqual([])
   })
 })
 
