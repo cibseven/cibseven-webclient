@@ -477,7 +477,8 @@
 			"openSubprocess": "Aufgerufene Prozessdefinition anzeigen",
 			"disabledSubprocess": "Die Prozessdefinition wird zur Laufzeit ermittelt",
 			"notFoundSubprocess": "Für das aufgerufene Element ist keine Prozessdefinition deployt",
-			"currentSubprocess": "Die aufgerufene Prozessdefinition wird bereits angezeigt"
+			"currentSubprocess": "Die aufgerufene Prozessdefinition wird bereits angezeigt",
+			"unknownSubprocess": "Die aufgerufene Prozessdefinition konnte nicht ermittelt werden"
 		}
 	},
 	"task": {

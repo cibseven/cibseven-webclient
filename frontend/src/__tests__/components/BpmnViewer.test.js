@@ -1261,8 +1261,8 @@ describe('BpmnViewer - navigateToSubprocess', () => {
 })
 
 describe('BpmnViewer - drawSubprocessLinks', () => {
-  const callActivity = (id, calledElement) => ({
-    id, type: 'bpmn:CallActivity', businessObject: { calledElement }
+  const callActivity = (id, calledElement, $attrs) => ({
+    id, type: 'bpmn:CallActivity', businessObject: { calledElement, $attrs }
   })
 
   const vmWith = (overrides = {}) => ({
@@ -1273,11 +1273,91 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
     staticCalledProcessDefinitions: [],
     setHtmlOnDiagram: vi.fn(),
     openSubprocess: vi.fn(),
+    hasExpressionReference: BpmnViewer.methods.hasExpressionReference,
     getSubprocessLinkTitleKey: BpmnViewer.methods.getSubprocessLinkTitleKey,
     ...overrides
   })
 
   const buttonFrom = (vm) => vm.setHtmlOnDiagram.mock.calls[0][1].querySelector('button')
+  const titleFrom = (vm) => vm.setHtmlOnDiagram.mock.calls[0][1].title
+  const registryWith = (element) => ({ getAll: () => [element], get: () => element })
+
+  // The engine leaves such a call activity out of its static list, so the target is only known at runtime
+  it.each([
+    'camunda:calledElementVersion',
+    'camunda:calledElementVersionTag',
+    'camunda:calledElementTenantId'
+  ])('should treat a fixed name with an expression in %s as dynamic', (attribute) => {
+    const vm = vmWith()
+
+    BpmnViewer.methods.drawSubprocessLinks.call(vm, registryWith(callActivity('call_1', 'sub', { [attribute]: '${v}' })))
+
+    expect(buttonFrom(vm).disabled).toBe(true)
+    expect(titleFrom(vm)).toBe('bpmn-viewer.legend.disabledSubprocess')
+  })
+
+  it('should ignore expressions in attributes that do not pick the called definition', () => {
+    const vm = vmWith()
+
+    BpmnViewer.methods.drawSubprocessLinks.call(vm, registryWith(callActivity('call_1', 'sub', { 'camunda:asyncBefore': '${x}' })))
+
+    expect(titleFrom(vm)).toBe('bpmn-viewer.legend.notFoundSubprocess')
+  })
+
+  // Trust the engine: a definition it resolved is static even if some attribute holds an expression
+  it('should keep a resolved definition static despite an expression attribute', () => {
+    const vm = vmWith({
+      staticCalledProcessDefinitions: [{ id: 'sub-1', key: 'sub', calledFromActivityIds: ['call_1'] }]
+    })
+
+    BpmnViewer.methods.drawSubprocessLinks.call(vm, registryWith(callActivity('call_1', 'sub', { 'camunda:calledElementVersion': '${v}' })))
+
+    expect(buttonFrom(vm).disabled).toBe(false)
+    buttonFrom(vm).click()
+    expect(vm.openSubprocess).toHaveBeenCalledWith('call_1', expect.objectContaining({ key: 'sub' }), false)
+  })
+
+  // The called instance exists even when the engine could not resolve the fixed name statically
+  it('should enable an unresolved fixed name in an instance once the activity ran', () => {
+    const vm = vmWith({
+      selectedInstance: { id: 'pi1', processDefinitionId: 'pd-parent' },
+      historicActivityStatistics: [{ id: 'call_1', finished: 1 }]
+    })
+
+    BpmnViewer.methods.drawSubprocessLinks.call(vm, registryWith(callActivity('call_1', 'sub')))
+
+    expect(buttonFrom(vm).disabled).toBe(false)
+  })
+
+  it('should keep an unresolved fixed name disabled outside an instance', () => {
+    const vm = vmWith({ historicActivityStatistics: [{ id: 'call_1', instances: 2 }] })
+
+    BpmnViewer.methods.drawSubprocessLinks.call(vm, registryWith(callActivity('call_1', 'sub')))
+
+    expect(buttonFrom(vm).disabled).toBe(true)
+  })
+
+  // A case call (camunda:caseRef) has no calledElement and no called process instance to open
+  it('should keep a call activity without calledElement disabled even after it ran', () => {
+    const vm = vmWith({
+      selectedInstance: { id: 'pi1', processDefinitionId: 'pd-parent' },
+      historicActivityStatistics: [{ id: 'call_1', finished: 1 }]
+    })
+
+    BpmnViewer.methods.drawSubprocessLinks.call(vm, registryWith(callActivity('call_1', undefined)))
+
+    expect(buttonFrom(vm).disabled).toBe(true)
+  })
+
+  // Loading, failed, or a viewer without a definition: "not deployed" would be a guess
+  it('should not claim "not deployed" while the static definitions are unknown', () => {
+    const vm = vmWith({ staticCalledProcessDefinitions: null })
+
+    BpmnViewer.methods.drawSubprocessLinks.call(vm, registryWith(callActivity('call_1', 'sub')))
+
+    expect(buttonFrom(vm).disabled).toBe(true)
+    expect(titleFrom(vm)).toBe('bpmn-viewer.legend.unknownSubprocess')
+  })
 
   it('should place an enabled link button on a statically called activity', () => {
     const vm = vmWith({

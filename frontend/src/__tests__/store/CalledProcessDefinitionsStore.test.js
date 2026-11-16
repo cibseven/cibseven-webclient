@@ -70,7 +70,8 @@ createStoreTestSuite('CalledProcessDefinitionsStore', CalledProcessDefinitionsSt
         calledProcessDefinitions: [],
         allCalledProcessDefinitions: [],
         staticCalledProcessDefinitions: [],
-        staticCalledProcessDefinitionsId: null
+        staticCalledProcessDefinitionsId: null,
+        staticCalledProcessDefinitionsLoaded: false
       })
     })
   },
@@ -93,25 +94,31 @@ createStoreTestSuite('CalledProcessDefinitionsStore', CalledProcessDefinitionsSt
     },
 
     getStaticCalledProcessDefinitionsFor: (getter, getState) => {
-      it('should expose the static definitions of the definition they were loaded for', () => {
-        const state = getState()
+      const loadedFor = (state, processDefinitionId) => {
         state.staticCalledProcessDefinitions = [staticDef()]
-        state.staticCalledProcessDefinitionsId = 'pd-1'
-        expect(getter(state)('pd-1')).toEqual([staticDef()])
+        state.staticCalledProcessDefinitionsId = processDefinitionId
+        state.staticCalledProcessDefinitionsLoaded = true
+        return state
+      }
+
+      it('should expose the static definitions of the definition they were loaded for', () => {
+        expect(getter(loadedFor(getState(), 'pd-1'))('pd-1')).toEqual([staticDef()])
       })
 
       // The store is global: after switching definitions it may still hold the previous one's data
       it('should hide the static definitions of another definition', () => {
-        const state = getState()
-        state.staticCalledProcessDefinitions = [staticDef()]
-        state.staticCalledProcessDefinitionsId = 'pd-other'
-        expect(getter(state)('pd-1')).toEqual([])
+        expect(getter(loadedFor(getState(), 'pd-other'))('pd-1')).toBeNull()
+      })
+
+      // Loading or failed: an empty list would wrongly mean "calls nothing static"
+      it('should report them as unknown until they have loaded', () => {
+        const state = loadedFor(getState(), 'pd-1')
+        state.staticCalledProcessDefinitionsLoaded = false
+        expect(getter(state)('pd-1')).toBeNull()
       })
 
       it('should return nothing without a definition id', () => {
-        const state = getState()
-        state.staticCalledProcessDefinitions = [staticDef()]
-        expect(getter(state)(undefined)).toEqual([])
+        expect(getter(loadedFor(getState(), 'pd-1'))(undefined)).toBeNull()
       })
     },
 
@@ -183,8 +190,10 @@ createStoreTestSuite('CalledProcessDefinitionsStore', CalledProcessDefinitionsSt
 
         expect(context.commit.mock.calls).toEqual([
           ['setStaticCalledProcessDefinitionsId', 'pd-1'],
+          ['setStaticCalledProcessDefinitionsLoaded', false],
           ['setStaticCalledProcessDefinitions', []],
-          ['setStaticCalledProcessDefinitions', [staticDef()]]
+          ['setStaticCalledProcessDefinitions', [staticDef()]],
+          ['setStaticCalledProcessDefinitionsLoaded', true]
         ])
         expect(context.state.staticCalledProcessDefinitionsId).toBe('pd-1')
       })
@@ -196,7 +205,38 @@ createStoreTestSuite('CalledProcessDefinitionsStore', CalledProcessDefinitionsSt
 
         await action(context, { processDefinitionId: 'pd-1' })
 
-        expect(context.commit.mock.calls).toEqual([['setStaticCalledProcessDefinitions', [staticDef()]]])
+        expect(context.commit.mock.calls).toEqual([
+          ['setStaticCalledProcessDefinitions', [staticDef()]],
+          ['setStaticCalledProcessDefinitionsLoaded', true]
+        ])
+      })
+
+      // e.g. the instance view's mount and watcher, or the definition view's mount and watcher
+      it('should share one request between loads of the same definition', async () => {
+        const context = getContext()
+        context.commit.mockImplementation((name, value) => CalledProcessDefinitionsStore.mutations[name](context.state, value))
+        ProcessService.findCalledProcessDefinitions.mockResolvedValue([staticDef()])
+
+        await Promise.all([
+          action(context, { processDefinitionId: 'pd-1' }),
+          action(context, { processDefinitionId: 'pd-1' })
+        ])
+        await action(context, { processDefinitionId: 'pd-1' })
+
+        expect(ProcessService.findCalledProcessDefinitions).toHaveBeenCalledTimes(2)
+      })
+
+      it('should leave the definitions unknown and pass the error on when the request fails', async () => {
+        const context = getContext()
+        context.commit.mockImplementation((name, value) => CalledProcessDefinitionsStore.mutations[name](context.state, value))
+        ProcessService.findCalledProcessDefinitions.mockRejectedValueOnce(new Error('forbidden'))
+
+        await expect(action(context, { processDefinitionId: 'pd-1' })).rejects.toThrow('forbidden')
+
+        expect(context.state.staticCalledProcessDefinitionsLoaded).toBe(false)
+        ProcessService.findCalledProcessDefinitions.mockResolvedValueOnce([staticDef()])
+        await action(context, { processDefinitionId: 'pd-1' })
+        expect(context.state.staticCalledProcessDefinitionsLoaded).toBe(true)
       })
 
       it('should ignore an answer that arrives after another definition was requested', async () => {
@@ -561,7 +601,8 @@ createStoreTestSuite('CalledProcessDefinitionsStore', CalledProcessDefinitionsSt
         ['setCalledProcessDefinitions', 'calledProcessDefinitions', [{ id: 'new' }]],
         ['setAllCalledProcessDefinitions', 'allCalledProcessDefinitions', [{ id: 'new' }]],
         ['setStaticCalledProcessDefinitions', 'staticCalledProcessDefinitions', [staticDef()]],
-        ['setStaticCalledProcessDefinitionsId', 'staticCalledProcessDefinitionsId', 'pd-1']
+        ['setStaticCalledProcessDefinitionsId', 'staticCalledProcessDefinitionsId', 'pd-1'],
+        ['setStaticCalledProcessDefinitionsLoaded', 'staticCalledProcessDefinitionsLoaded', true]
       ]
 
       it.each(cases)('%s should replace state.%s', (mutationName, field, value) => {

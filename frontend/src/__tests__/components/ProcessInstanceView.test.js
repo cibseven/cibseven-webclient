@@ -66,12 +66,18 @@ describe('ProcessInstanceView', () => {
   // CIB7-2717: an instance opened directly (search, links, tables) never passed through the
   // definition view, so the view has to load the call activity targets itself
   describe('static called process definitions', () => {
-    const context = () => ({
-      process: { id: 'pd-1' },
-      selectedInstance: null,
-      $refs: {},
-      loadStaticCalledProcessDefinitions: vi.fn()
-    })
+    const context = (overrides = {}) => {
+      const vm = {
+        process: { id: 'pd-1' },
+        selectedInstance: null,
+        $refs: {},
+        getStaticCalledProcessDefinitionsFor: vi.fn(() => null),
+        loadStaticCalledProcessDefinitions: vi.fn(() => Promise.resolve()),
+        ...overrides
+      }
+      vm.ensureStaticCalledProcessDefinitions = ProcessInstanceView.methods.ensureStaticCalledProcessDefinitions.bind(vm)
+      return vm
+    }
 
     afterEach(() => {
       vi.restoreAllMocks()
@@ -88,11 +94,31 @@ describe('ProcessInstanceView', () => {
 
     it('reloads them when the displayed definition changes', () => {
       vi.spyOn(ProcessService, 'fetchDiagram').mockResolvedValue({ bpmn20Xml: '' })
-      const vm = { ...context(), process: { id: 'pd-2' } }
+      const vm = context({ process: { id: 'pd-2' } })
 
       ProcessInstanceView.watch['process.id'].call(vm)
 
       expect(vm.loadStaticCalledProcessDefinitions).toHaveBeenCalledWith({ processDefinitionId: 'pd-2' })
+    })
+
+    // Opened from the definition view, which already loaded them for this definition
+    it('reuses them when they are already loaded for the definition', async () => {
+      const vm = context({ getStaticCalledProcessDefinitionsFor: vi.fn(() => []) })
+
+      await vm.ensureStaticCalledProcessDefinitions()
+
+      expect(vm.getStaticCalledProcessDefinitionsFor).toHaveBeenCalledWith('pd-1')
+      expect(vm.loadStaticCalledProcessDefinitions).not.toHaveBeenCalled()
+    })
+
+    it('reports a failed load instead of leaving it unhandled', async () => {
+      const failure = new Error('forbidden')
+      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const vm = context({ loadStaticCalledProcessDefinitions: vi.fn(() => Promise.reject(failure)) })
+
+      await expect(vm.ensureStaticCalledProcessDefinitions()).resolves.toBeUndefined()
+
+      expect(consoleError).toHaveBeenCalledWith(expect.any(String), failure)
     })
   })
 })

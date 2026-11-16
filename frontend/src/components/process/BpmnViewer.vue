@@ -67,6 +67,9 @@ const interactionTypes = [
   'bpmn:IntermediateCatchEvent', 'bpmn:BoundaryEvent'
 ]
 
+// camunda: attributes of a call activity that, next to calledElement, pick the called definition
+const calledElementReferenceAttributes = ['calledElementVersion', 'calledElementVersionTag', 'calledElementTenantId']
+
 export default {
   name: 'BpmnViewer',
   emits: ['task-selected', 'child-activity', 'overlay-click', 'viewbox-changed'],
@@ -572,7 +575,7 @@ export default {
       })
 
       // Map to know which activities have been executed
-      // This is used to determine if a dynamic call activity can be opened
+      // This is used to determine if a call activity without a resolved definition can be opened
       const executedActivities = new Set(
         activityStats
           .filter(stat => (stat.finished ?? 0) > 0 || (stat.canceled ?? 0) > 0)
@@ -590,19 +593,25 @@ export default {
         const runningInstances = activityStat?.instances || 0
 
         const calledElement = ca.businessObject?.calledElement || ''
-        // The engine evaluates any ${...} or #{...} in calledElement at runtime
-        const isDynamic = /[$#]\{.+\}/.test(calledElement)
-        const isStatic = !isDynamic && !!calledProcess
+        // A definition the engine resolved is static; without one, an expression in the reference means it is only known at runtime
+        const isStatic = !!calledProcess
+        const isDynamic = !isStatic && this.hasExpressionReference(ca.businessObject)
 
         const inInstanceView = !!this.selectedInstance
         const wasExecuted = inInstanceView && executedActivities.has(ca.id)
-        const shouldEnableDynamic = isDynamic && (runningInstances > 0 || wasExecuted)
+        const hasRun = runningInstances > 0 || wasExecuted
+        // Without a resolved definition the called instance is the target: always for an expression,
+        // and in an instance also for a fixed name the engine could not resolve statically
+        const canOpenCalledInstance = hasRun && (isDynamic || (inInstanceView && !!calledElement))
         const isCurrentDefinitionAlreadyVisible = !!this.selectedInstance && !!calledProcess &&
           calledProcess.id === this.selectedInstance.processDefinitionId
 
-        const disabled = (!isStatic && !shouldEnableDynamic) || isCurrentDefinitionAlreadyVisible
+        const disabled = (!isStatic && !canOpenCalledInstance) || isCurrentDefinitionAlreadyVisible
 
-        const title = this.$t(this.getSubprocessLinkTitleKey(disabled, isDynamic, isCurrentDefinitionAlreadyVisible))
+        const title = this.$t(this.getSubprocessLinkTitleKey({
+          disabled, isDynamic, isCurrentDefinitionAlreadyVisible,
+          staticDefinitionsLoaded: !!this.staticCalledProcessDefinitions
+        }))
 
         const wrapper = document.createElement('div')
         wrapper.title = title
@@ -624,11 +633,19 @@ export default {
         this.setHtmlOnDiagram(ca.id, wrapper, { bottom: -7, right: 15 })
       })
     },
-    getSubprocessLinkTitleKey: function(disabled, isDynamic, isCurrentDefinitionAlreadyVisible) {
+    // The engine resolves a call activity at runtime when its process key, version, version tag or tenant is an expression
+    hasExpressionReference: function(businessObject) {
+      const attributes = Object.entries(businessObject?.$attrs || {})
+        .filter(([name]) => calledElementReferenceAttributes.includes(name.split(':').pop()))
+        .map(([, value]) => value)
+      return [businessObject?.calledElement, ...attributes].some(value => /[$#]\{.+\}/.test(value || ''))
+    },
+    getSubprocessLinkTitleKey: function({ disabled, isDynamic, isCurrentDefinitionAlreadyVisible, staticDefinitionsLoaded }) {
       if (!disabled) return 'bpmn-viewer.legend.openSubprocess'
       if (isCurrentDefinitionAlreadyVisible) return 'bpmn-viewer.legend.currentSubprocess'
-      // "Resolved at runtime" only holds for an expression; a fixed name that resolves to nothing has no deployed definition
-      return isDynamic ? 'bpmn-viewer.legend.disabledSubprocess' : 'bpmn-viewer.legend.notFoundSubprocess'
+      if (isDynamic) return 'bpmn-viewer.legend.disabledSubprocess'
+      // "Not deployed" only holds once the static definitions of this diagram are known
+      return staticDefinitionsLoaded ? 'bpmn-viewer.legend.notFoundSubprocess' : 'bpmn-viewer.legend.unknownSubprocess'
     },
     getBadgeOverlayHtml: function(number, classes, type, activityId) {
       const title = this.$t('bpmn-viewer.legend.' + type)

@@ -477,7 +477,8 @@
 			"openSubprocess": "Show called process definition",
 			"disabledSubprocess": "Called process definition will be resolved at runtime",
 			"notFoundSubprocess": "No deployed process definition matches the called element",
-			"currentSubprocess": "The called process definition is the one already shown"
+			"currentSubprocess": "The called process definition is the one already shown",
+			"unknownSubprocess": "The called process definition could not be determined"
 		}
 	},
 	"task": {

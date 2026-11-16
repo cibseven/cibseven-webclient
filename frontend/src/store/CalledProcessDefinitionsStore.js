@@ -17,14 +17,36 @@
 
 import { ProcessService, HistoryService } from '@/services.js'
 
+// The load in flight, so callers asking for the same definition share one request
+let pendingStaticLoad = null
+
+async function fetchStaticCalledProcessDefinitions({ commit, state }, processDefinitionId) {
+  // Never keep the data of another definition while the new one loads
+  if (state.staticCalledProcessDefinitionsId !== processDefinitionId) {
+    commit('setStaticCalledProcessDefinitionsId', processDefinitionId)
+    commit('setStaticCalledProcessDefinitionsLoaded', false)
+    commit('setStaticCalledProcessDefinitions', [])
+  }
+  try {
+    const staticCalledProcessDefinitions = await ProcessService.findCalledProcessDefinitions(processDefinitionId)
+    // Another definition was requested meanwhile, so this answer is out of date
+    if (state.staticCalledProcessDefinitionsId !== processDefinitionId) return
+    commit('setStaticCalledProcessDefinitions', staticCalledProcessDefinitions)
+    commit('setStaticCalledProcessDefinitionsLoaded', true)
+  } finally {
+    if (pendingStaticLoad?.processDefinitionId === processDefinitionId) pendingStaticLoad = null
+  }
+}
+
 export default {
   namespaced: true,
   state: {
     calledProcessDefinitions: [],
     allCalledProcessDefinitions: [],
     staticCalledProcessDefinitions: [],
-    // Id of the process definition the static definitions above belong to
-    staticCalledProcessDefinitionsId: null
+    // Id of the process definition the static definitions above belong to, and whether they have arrived
+    staticCalledProcessDefinitionsId: null,
+    staticCalledProcessDefinitionsLoaded: false
   },
   mutations: {
     setCalledProcessDefinitions(state, calledProcessDefinitions) {
@@ -39,18 +61,16 @@ export default {
     setStaticCalledProcessDefinitionsId: function (state, processDefinitionId) {
       state.staticCalledProcessDefinitionsId = processDefinitionId
     },
+    setStaticCalledProcessDefinitionsLoaded: function (state, loaded) {
+      state.staticCalledProcessDefinitionsLoaded = loaded
+    },
   },
   actions: {
-    async loadStaticCalledProcessDefinitions({ commit, state }, { processDefinitionId }) {
-      // Never keep the data of another definition while the new one loads
-      if (state.staticCalledProcessDefinitionsId !== processDefinitionId) {
-        commit('setStaticCalledProcessDefinitionsId', processDefinitionId)
-        commit('setStaticCalledProcessDefinitions', [])
-      }
-      const staticCalledProcessDefinitions = await ProcessService.findCalledProcessDefinitions(processDefinitionId)
-      // Another definition was requested meanwhile, so this answer is out of date
-      if (state.staticCalledProcessDefinitionsId !== processDefinitionId) return
-      commit('setStaticCalledProcessDefinitions', staticCalledProcessDefinitions)
+    loadStaticCalledProcessDefinitions(context, { processDefinitionId }) {
+      if (pendingStaticLoad?.processDefinitionId === processDefinitionId) return pendingStaticLoad.promise
+      const promise = fetchStaticCalledProcessDefinitions(context, processDefinitionId)
+      pendingStaticLoad = { processDefinitionId, promise }
+      return promise
     },
 
     async loadCalledProcessDefinitions({ commit, getters, rootGetters }, { processId, chunkSize = 50 }) {
@@ -289,10 +309,11 @@ export default {
       return 'process-instance.calledProcessDefinitions.unknown'
     },
     getStaticCalledProcessDefinitions: state => state.staticCalledProcessDefinitions,
-    // The static definitions only when they were loaded for the given process definition
+    // The static definitions once they have loaded for the given process definition; null while they are unknown
     getStaticCalledProcessDefinitionsFor: state => processDefinitionId =>
-      processDefinitionId && state.staticCalledProcessDefinitionsId === processDefinitionId
+      processDefinitionId && state.staticCalledProcessDefinitionsLoaded &&
+        state.staticCalledProcessDefinitionsId === processDefinitionId
         ? state.staticCalledProcessDefinitions
-        : []
+        : null
   }
 }

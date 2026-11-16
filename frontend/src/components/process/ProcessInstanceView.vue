@@ -167,7 +167,7 @@ export default {
   },
   watch: {
     'process.id': function() {
-      this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
+      this.ensureStaticCalledProcessDefinitions()
       ProcessService.fetchDiagram(this.process.id).then(response => {
         this.$refs.diagram?.showDiagram(response.bpmn20Xml, this.selectedActivityId)?.then(() => this.restoreViewboxIfSaved())
       })
@@ -183,6 +183,7 @@ export default {
   },
   computed: {
     ...mapGetters(['selectedActivityId']),
+    ...mapGetters('calledProcessDefinitions', ['getStaticCalledProcessDefinitionsFor']),
     ProcessInstanceTabsPlugin() {
       return this.$options.components && this.$options.components.ProcessInstanceTabsPlugin
         ? this.$options.components.ProcessInstanceTabsPlugin
@@ -220,8 +221,7 @@ export default {
     },
   },
   mounted: function() {
-    // The instance can be opened directly, so the call activity links cannot rely on the definition view having loaded this
-    this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
+    this.ensureStaticCalledProcessDefinitions()
     ProcessService.fetchDiagram(this.process.id).then(response => {
       this.$refs.diagram?.showDiagram(response.bpmn20Xml, this.selectedActivityId)?.then(() => this.restoreViewboxIfSaved())
     })
@@ -238,6 +238,15 @@ export default {
   methods: {
     ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'selectActivity', 'loadHistoricActivityStatistics', 'clearHistoricActivityStatistics']),
     ...mapActions('calledProcessDefinitions', ['loadStaticCalledProcessDefinitions']),
+    // The instance can be opened directly, so the call activity links cannot rely on the definition view having loaded this
+    ensureStaticCalledProcessDefinitions: async function() {
+      if (this.getStaticCalledProcessDefinitionsFor(this.process.id)) return
+      try {
+        await this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
+      } catch (error) {
+        console.error('Failed to load the called process definitions:', error)
+      }
+    },
     selectTask: function(event) {
       this.$emit('task-selected', event);
     },
