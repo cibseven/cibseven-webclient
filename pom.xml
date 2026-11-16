@@ -60,9 +60,10 @@
 		     do NOT take effect — the fixed versions are pinned via explicit dependencyManagement
 		     entries below.
 		     ============================================================================ -->
-		<!-- Apache Tomcat: CVE-2026-41293, -43512, -43515, -41284, -43513, -42498, -43514 (fixed in
-		     11.0.22), plus CVE-2026-65182, -65905, -68525 (fixed in 11.0.25). -->
-		<version.tomcat>11.0.25</version.tomcat>
+		<!-- Apache Tomcat: CVE-2026-76183, -86350, -78383, -77791 (Important) and CVE-2026-86248,
+		     -79677, -73581 (Moderate), fixed in 11.0.26, plus CVE-2026-103119, -101356, -101296
+		     (Important), fixed in 11.0.27. Low-severity fixes in both releases are not listed. -->
+		<version.tomcat>11.0.27</version.tomcat>
 
 		<version.commons-lang3>3.18.0</version.commons-lang3>
 		<!-- Temporary Apache HttpComponents CVE overrides.
