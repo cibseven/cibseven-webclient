@@ -219,6 +219,9 @@ export default {
         this.search = newFilter || ''
       }
     },
+   'task.assignee': function(val) {
+        this.$store.dispatch('addUsersByIds', [val])
+    },
     search: debounce(800, function() { this.listTasksWithFilter() })
   },
   created: function() {
@@ -323,6 +326,7 @@ export default {
           if (skipVariables) this.preserveExistingVariables(result)
           //Only needed to fetch the businessKey of every instance.
           this.updateProcessesInstances(result, showMore)
+          this.$store.dispatch('addUsersByIds', result.map(t => t.assignee))
         }, () => {
           this.setTaskLoaderDone(true)
         })

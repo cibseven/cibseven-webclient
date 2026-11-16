@@ -16,6 +16,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import TasksNavBar from '@/components/task/TasksNavBar.vue'
+import usersMixin from '@/mixins/usersMixin.js'
 import { mountWithDefaults } from '../support/mountWithDefaults.js'
 import { moment } from '@/globals.js'
 import { TaskService, AdminService } from '@/services.js'
@@ -988,35 +989,9 @@ describe('TasksNavBar - names', () => {
     expect(m.getProcessName.call(vm, 'invoice:1:xyz')).toBe('')
   })
 
-  describe('getCompleteName', () => {
-    it('should return the current user id for their own task', () => {
-      expect(m.getCompleteName.call(context(), { assignee: 'DEMO' })).toBe('demo')
-    })
-
-    it('should return a candidate display name when known', () => {
-      const vm = context()
-      vm.$store.state.user.listCandidates = [{ id: 'other', displayName: 'Other User' }]
-
-      expect(m.getCompleteName.call(vm, { assignee: 'other' })).toBe('Other User')
-    })
-
-    it('should fall back to the raw assignee when no candidate matches', () => {
-      expect(m.getCompleteName.call(context(), { assignee: 'other' })).toBe('other')
-    })
-
-    it('should fall back when the candidate has no display name', () => {
-      const vm = context()
-      vm.$store.state.user.listCandidates = [{ id: 'other' }]
-
-      expect(m.getCompleteName.call(vm, { assignee: 'other' })).toBe('other')
-    })
-
-    it('should fall back when candidates are not loaded', () => {
-      const vm = context()
-      vm.$store.state.user.listCandidates = null
-
-      expect(m.getCompleteName.call(vm, { assignee: 'other' })).toBe('other')
-    })
+  // Each row shows its assignee through usersMixin.getDisplayName (tested in usersMixin.test.js).
+  it('should take the assignee display name from usersMixin', () => {
+    expect(TasksNavBar.mixins).toContain(usersMixin)
   })
 })
 

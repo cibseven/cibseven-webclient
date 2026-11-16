@@ -56,6 +56,9 @@ public class DirectTenantProvider implements ITenantProvider {
 	@Override
 	public Tenant fetchTenant(String tenantId, CIBUser user) {
 		org.cibseven.bpm.engine.identity.Tenant tenant = findTenantObject(tenantId, user);
+		if (tenant == null) {
+			throw new NoObjectFoundException(new SystemException("Tenant with id " + tenantId + " does not exist"));
+		}
 		TenantDto dto = TenantDto.fromTenant(tenant);
 		return directProviderUtil.convertValue(dto, Tenant.class, user);
 	}

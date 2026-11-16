@@ -461,6 +461,66 @@ describe('inline route hooks', () => {
     })
   })
 
+  // CIB7-2743: an address no route matched left a blank page without navigation
+  describe('not-found', () => {
+    it.each([
+      '/seven/auth/nosuchpage',
+      '/seven/auth/admin/nosuchpage',
+      '/seven/nosuchpage',
+      '/nosuchpage',
+      '/seven/auth/account/demo/authorizations'
+    ])('should match the unknown address %s', (path) => {
+      expect(router.resolve(path).name).toBe('not-found')
+    })
+
+    it.each([
+      ['/seven/auth/start', 'start'],
+      ['/seven/auth/admin', 'usersManagement'],
+      ['/seven/auth/process/invoice', 'process'],
+      ['/seven/auth/tasks/f1/t1', 'tasklist'],
+      ['/seven/login', 'login'],
+      ['/deployed-form/en/t1', 'deployed-form']
+    ])('should leave the known address %s to its own route', (path, name) => {
+      expect(router.resolve(path).name).toBe(name)
+    })
+
+    it('should forward the unknown address to the start page', () => {
+      const [hook] = hooks('not-found')
+
+      expect(hook(router.resolve('/seven/auth/nosuchpage?x=1'))).toEqual({
+        name: 'start',
+        query: { errorType: 'notFoundPage', path: '/seven/auth/nosuchpage?x=1' }
+      })
+    })
+
+    it('should show the unknown address as typed, not percent-encoded', () => {
+      const [hook] = hooks('not-found')
+      // The browser hands the address over encoded
+      const to = router.resolve('/seven/auth/my%20page/%C3%BC')
+
+      expect(hook(to).query.path).toBe('/seven/auth/my page/ü')
+    })
+
+    it('should show an address with a malformed % sequence as it is', () => {
+      const [hook] = hooks('not-found')
+
+      expect(hook({ fullPath: '/seven/auth/100%' }).query.path).toBe('/seven/auth/100%')
+    })
+
+    // These matched a parent route without any child, which showed the header and nothing below it
+    it.each([
+      ['/seven', 'seven-index'],
+      ['/seven/', 'seven-index'],
+      ['/seven/auth', 'auth-index'],
+      ['/seven/auth/', 'auth-index']
+    ])('should send %s to the start page', (path, name) => {
+      const to = router.resolve(path)
+
+      expect(to.name).toBe(name)
+      expect(to.matched.at(-1).redirect).toEqual({ name: 'start-configurable' })
+    })
+  })
+
   describe('start-configurable', () => {
     const STARTPAGE_KEY = 'cibseven:preferences:startPage'
     const hook = () => hooks('start-configurable')[0]

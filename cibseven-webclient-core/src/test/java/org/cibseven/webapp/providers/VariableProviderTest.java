@@ -135,13 +135,23 @@ public class VariableProviderTest {
 	}
 
 	@Test
-	void fetchProcessFormVariables_withNamesAlsoAsksByProcessDefinitionKey() throws Exception {
+	void fetchProcessFormVariables_withNamesAddressesTheDefinitionById() throws Exception {
 		engine.enqueueJson("{}");
 
-		variableProvider.fetchProcessFormVariables(List.of("amount", "customer"), "invoice", false, user);
+		variableProvider.fetchProcessFormVariables(List.of("amount"), "definition-1", false, user);
 
-		// CIB7-2356: the services route passes a definition key, so this overload must use the
-		// engine's key endpoint like the overload above, not the id endpoint
+		// note the missing "/key/" segment: this overload addresses the definition by id, which is
+		// what the bpm-sdk start forms rely on (#1402)
+		assertThat(engine.takePath()).startsWith("/process-definition/definition-1/form-variables");
+	}
+
+	@Test
+	void fetchProcessFormVariablesByKey_withNamesAsksByProcessDefinitionKey() throws Exception {
+		engine.enqueueJson("{}");
+
+		variableProvider.fetchProcessFormVariablesByKey(List.of("amount", "customer"), "invoice", false, user);
+
+		// CIB7-2356
 		assertThat(engine.takePath())
 			.isEqualTo("/process-definition/key/invoice/form-variables?deserializeValues=false&variableNames=amount,customer");
 	}

@@ -1017,9 +1017,14 @@ public interface BpmProvider {
 		return getVariableProvider().fetchProcessFormVariables(key, deserializeValues, user);
 	}
 
-	default Map<String, Variable> fetchProcessFormVariables(List<String> variableListName, String key, boolean deserializeValues, CIBUser user)
+	default Map<String, Variable> fetchProcessFormVariables(List<String> variableListName, String processDefinitionId, boolean deserializeValues, CIBUser user)
 			throws NoObjectFoundException, SystemException {
-				return getVariableProvider().fetchProcessFormVariables(variableListName, key, deserializeValues, user);
+				return getVariableProvider().fetchProcessFormVariables(variableListName, processDefinitionId, deserializeValues, user);
+	}
+
+	default Map<String, Variable> fetchProcessFormVariablesByKey(List<String> variableListName, String key, boolean deserializeValues, CIBUser user)
+			throws NoObjectFoundException, SystemException {
+		return getVariableProvider().fetchProcessFormVariablesByKey(variableListName, key, deserializeValues, user);
 	}
 
 	default NamedByteArrayDataSource fetchVariableFileData(String taskId, String variableName, CIBUser user) throws NoObjectFoundException, UnexpectedTypeException, SystemException {
