@@ -199,13 +199,7 @@ public class TaskProviderTest {
 		assertThat(request.getBody().readUtf8()).contains("\"userId\":null");
 	}
 
-	/**
-	 * TODO KNOWN BUG (not fixed): the unclaim path is chosen by comparing the assignee to the
-	 * string "null", so an actual null reference reaches {@code assignee.equals(...)} and throws a
-	 * {@link NullPointerException} instead of unclaiming the task. This test asserts that a null
-	 * assignee unclaims like the literal "null" does; it fails until the comparison is
-	 * null-safe.
-	 */
+	/** A null assignee reference unclaims like the literal "null" does. */
 	@Test
 	void setAssignee_unclaimsOnANullAssigneeReference() throws Exception {
 		engine.enqueueJson("");

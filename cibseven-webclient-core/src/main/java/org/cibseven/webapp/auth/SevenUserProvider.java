@@ -147,7 +147,9 @@ public class SevenUserProvider extends BaseUserProvider<StandardLogin> {
         	return (CIBUser) deserialize(userClaims.get("user").toString(), null);
 			//TODO? Verify User if wants to use in prod.
 		} catch(Exception e) {
-			throw new AuthenticationException(e);
+			// the details stay in the server log: the client learns only that the token was refused
+			log.warn("Token verification failed: the claims carry no readable user", e);
+			throw new AuthenticationException("Invalid token");
 		}
         
 	}

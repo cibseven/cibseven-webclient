@@ -374,6 +374,8 @@ public class SevenUserProviderTest {
 		when(claims.get("user")).thenReturn(null);
 
 		assertThatThrownBy(() -> provider.verify(claims))
-			.isInstanceOf(AuthenticationException.class);
+			.isInstanceOf(AuthenticationException.class)
+			// the client gets a generic reason only; the failure itself goes to the server log
+			.satisfies(e -> assertThat(((AuthenticationException) e).getData()).containsExactly("Invalid token"));
 	}
 }

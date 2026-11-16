@@ -16,16 +16,19 @@
  */
 package org.cibseven.webapp.exception;
 
+import java.util.Objects;
+
 import lombok.Getter;
 
 abstract public class ApplicationException extends RuntimeException {
 	
 	private static final long serialVersionUID = 1L;
+	private static final String DEFAULT_MESSAGE = "An application error occurred";
 	
 	@Getter protected Object[] data;
 	
 	public ApplicationException(Object ...data) {
-		super(data != null && data.length > 0 ? data[0].toString() : "An application error occured");
+		super(data != null && data.length > 0 ? Objects.toString(data[0], DEFAULT_MESSAGE) : DEFAULT_MESSAGE);
 		if (data != null && data.length > 1 && data[1] instanceof Throwable cause) {
 			this.initCause(cause);
 		}
