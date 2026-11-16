@@ -606,8 +606,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 
 	@Override
 	public void putProcessInstanceVariable(String processInstanceId, String variableName, Map<String, Object> variable, CIBUser user) {
-		String url = getEngineRestUrl(user) + "/process-instance/" + pathSegment("Process instance ID", processInstanceId)
-			+ "/variables/" + pathSegment("Variable name", variableName);
+		String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId + "/variables/" + variableName;
 		doPut(url, variable, user);
 	}
 

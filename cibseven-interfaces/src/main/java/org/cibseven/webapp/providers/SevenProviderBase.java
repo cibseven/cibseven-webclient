@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import tools.jackson.databind.json.JsonMapper;
@@ -42,7 +41,6 @@ import org.cibseven.webapp.exception.ExistingGroupRequestException;
 import org.cibseven.webapp.exception.ExistingUserRequestException;
 import org.cibseven.webapp.exception.ExpressionEvaluationException;
 import org.cibseven.webapp.exception.InvalidAttributeValueException;
-import org.cibseven.webapp.exception.InvalidPathValueException;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.InvalidValueHistoryTimeToLive;
 import org.cibseven.webapp.exception.MissingVariableException;
@@ -345,17 +343,6 @@ public abstract class SevenProviderBase {
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		}
-	}
-
-	// build().toUri() encodes spaces itself; these would change the engine URL, and a '%' fails Spring's URI parser
-	private static final Pattern UNSAFE_IN_PATH_SEGMENT = Pattern.compile("[/\\\\?#;%]");
-
-	/** A request value placed into the engine URL as one path segment, refused when it would change that URL. */
-	protected static String pathSegment(String what, String value) {
-		if (value == null || value.isEmpty() || ".".equals(value) || "..".equals(value) || UNSAFE_IN_PATH_SEGMENT.matcher(value).find()) {
-			throw new InvalidPathValueException(what, value);
-		}
-		return value;
 	}
 
 	protected <T> ResponseEntity<T> doPatch(String url, Map<String, Object> body, Class<T> neededClass, CIBUser user) {

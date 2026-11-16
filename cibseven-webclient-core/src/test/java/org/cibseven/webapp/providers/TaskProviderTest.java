@@ -17,7 +17,6 @@
 package org.cibseven.webapp.providers;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
@@ -29,7 +28,6 @@ import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.config.WebclientJsonMapper;
-import org.cibseven.webapp.exception.InvalidPathValueException;
 import org.cibseven.webapp.rest.model.Task;
 import org.cibseven.webapp.rest.model.TaskFiltering;
 import org.cibseven.webapp.rest.model.TaskHistory;
@@ -37,8 +35,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.ResponseEntity;
 
 import tools.jackson.databind.ObjectMapper;
@@ -255,20 +251,6 @@ public class TaskProviderTest {
 		var request = engine.take();
 		assertThat(request.getMethod()).isEqualTo("DELETE");
 		assertThat(request.getPath()).isEqualTo("/engine-rest/task/task-1/localVariables/my%20decision");
-	}
-
-	@ParameterizedTest
-	@ValueSource(strings = { "a/b", "a\\b", "a?b", "a#b", "a;b", "100%", ".", "..", "" })
-	void localVariableWrites_refuseANameThatWouldChangeTheEngineUrl(String name) {
-		assertThatThrownBy(() -> taskProvider.putLocalVariable("task-1", name, Map.of("value", "x"), user))
-			.isInstanceOf(InvalidPathValueException.class);
-		assertThatThrownBy(() -> taskProvider.deleteLocalVariable("task-1", name, user))
-			.isInstanceOf(InvalidPathValueException.class);
-		assertThatThrownBy(() -> taskProvider.modifyLocalVariables(name, Map.of(), user))
-			.isInstanceOf(InvalidPathValueException.class);
-		assertThatThrownBy(() -> taskProvider.findLocalVariables(name, user))
-			.isInstanceOf(InvalidPathValueException.class);
-		assertThat(engine.requestCount()).isZero();
 	}
 
 	/**

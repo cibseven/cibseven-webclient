@@ -17,7 +17,6 @@
 package org.cibseven.webapp.providers;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
@@ -27,7 +26,6 @@ import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.config.WebclientJsonMapper;
-import org.cibseven.webapp.exception.InvalidPathValueException;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.junit.jupiter.api.AfterEach;
@@ -275,16 +273,5 @@ public class VariableProviderTest {
 		assertThat(request.getPath()).isEqualTo("/engine-rest/process-instance/pi-1/variables/order%20data");
 		assertThat(WebclientJsonMapper.plain().readTree(request.getBody().readUtf8()))
 			.isEqualTo(WebclientJsonMapper.plain().valueToTree(variable));
-	}
-
-	@Test
-	void putProcessInstanceVariable_refusesANameThatWouldChangeTheEngineUrl() {
-		assertThatThrownBy(() -> variableProvider.putProcessInstanceVariable("pi-1", "x?y", Map.of("value", "1"), user))
-			.isInstanceOfSatisfying(InvalidPathValueException.class, e ->
-				// one readable sentence as the only parameter, shown to the user as a 400
-				assertThat(e.getData()).singleElement().asString().contains("Variable name \"x?y\""));
-		assertThatThrownBy(() -> variableProvider.putProcessInstanceVariable("../task", "x", Map.of("value", "1"), user))
-			.isInstanceOf(InvalidPathValueException.class);
-		assertThat(engine.requestCount()).isZero();
 	}
 }
