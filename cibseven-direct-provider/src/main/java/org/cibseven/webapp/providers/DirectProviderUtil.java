@@ -162,6 +162,27 @@ public class DirectProviderUtil {
 		return variableValueDto;
 	}
 
+	/** An engine-rest variable value (value, type, valueInfo) as a typed value, converted the way engine-rest converts it. */
+	protected TypedValue toTypedValue(Map<String, Object> variable, String variableName, CIBUser user) {
+		try {
+			VariableValueDto dto = getObjectMapper(user).convertValue(variable, VariableValueDto.class);
+			return dto.toTypedValue(getProcessEngine(user), getObjectMapper(user));
+		} catch (RestException | IllegalArgumentException | JacksonException e) {
+			throw new SystemException(String.format("Cannot convert variable %s: %s", variableName, e.getMessage()), e);
+		}
+	}
+
+	/** Runs a variable write against the engine, reporting a failure as a SystemException like the other variable writes. */
+	protected void writeVariables(String what, Runnable write) {
+		try {
+			write.run();
+		} catch (AuthorizationException e) {
+			throw new SystemException(e.getMessage(), e);
+		} catch (ProcessEngineException e) {
+			throw new SystemException(String.format("Cannot %s: %s", what, e.getMessage()), e);
+		}
+	}
+
 	protected <V extends Object> V runWithoutAuthorization(Supplier<V> action, CIBUser user) {
 		IdentityService identityService = getProcessEngine(user).getIdentityService();
 		Authentication currentAuthentication = identityService.getCurrentAuthentication();

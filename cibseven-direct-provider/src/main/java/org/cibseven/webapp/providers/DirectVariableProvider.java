@@ -533,16 +533,16 @@ public class DirectVariableProvider implements IVariableProvider {
 
 	@Override
 	public void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user) {
-		try {
-			VariableValueDto variable = directProviderUtil.getObjectMapper(user).convertValue(data, VariableValueDto.class);
-			TypedValue typedValue = variable.toTypedValue(directProviderUtil.getProcessEngine(user), directProviderUtil.getObjectMapper(user));
-			directProviderUtil.getProcessEngine(user).getRuntimeService().setVariableLocal(executionId, varName, typedValue);
+		TypedValue typedValue = directProviderUtil.toTypedValue(data, varName, user);
+		directProviderUtil.writeVariables("put execution variable " + varName, () ->
+			directProviderUtil.getProcessEngine(user).getRuntimeService().setVariableLocal(executionId, varName, typedValue));
+	}
 
-		} catch (AuthorizationException e) {
-			throw new SystemException(e.getMessage(), e);
-		} catch (ProcessEngineException|RestException e) {
-			throw new SystemException(String.format("Cannot put %s variable %s: %s", "execution", varName, e.getMessage()), e);
-		}
+	@Override
+	public void putProcessInstanceVariable(String processInstanceId, String variableName, Map<String, Object> variable, CIBUser user) {
+		TypedValue typedValue = directProviderUtil.toTypedValue(variable, variableName, user);
+		directProviderUtil.writeVariables("put process instance variable " + variableName, () ->
+			directProviderUtil.getProcessEngine(user).getRuntimeService().setVariable(processInstanceId, variableName, typedValue));
 	}
 
 	/*

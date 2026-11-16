@@ -147,8 +147,29 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public Map<String, Object> findLocalVariables(String taskId, CIBUser user) {
-		String url = getEngineRestUrl(user) + "/task/" + taskId + "/localVariables";
+		String url = getEngineRestUrl(user) + "/task/" + pathSegment("Task ID", taskId) + "/localVariables";
 		return ((ResponseEntity<Map>) doGet(url, Map.class, user, false)).getBody();
+	}
+
+	@Override
+	public void modifyLocalVariables(String taskId, Map<String, Object> patch, CIBUser user) {
+		String url = getEngineRestUrl(user) + "/task/" + pathSegment("Task ID", taskId) + "/localVariables";
+		doPost(url, patch, String.class, user);
+	}
+
+	@Override
+	public void putLocalVariable(String taskId, String variableName, Map<String, Object> variable, CIBUser user) {
+		doPut(localVariableUrl(taskId, variableName, user), variable, user);
+	}
+
+	@Override
+	public void deleteLocalVariable(String taskId, String variableName, CIBUser user) {
+		doDelete(localVariableUrl(taskId, variableName, user), user);
+	}
+
+	private String localVariableUrl(String taskId, String variableName, CIBUser user) {
+		return getEngineRestUrl(user) + "/task/" + pathSegment("Task ID", taskId)
+			+ "/localVariables/" + pathSegment("Variable name", variableName);
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })

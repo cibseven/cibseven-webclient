@@ -17,13 +17,19 @@
 package org.cibseven.webapp.providers;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.config.WebclientJsonMapper;
+import org.cibseven.webapp.exception.InvalidPathValueException;
 import org.cibseven.webapp.rest.model.Task;
 import org.cibseven.webapp.rest.model.TaskFiltering;
 import org.cibseven.webapp.rest.model.TaskHistory;
@@ -31,9 +37,15 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.http.ResponseEntity;
 
+import tools.jackson.databind.ObjectMapper;
+
 public class TaskProviderTest {
+
+	private static final ObjectMapper JSON = WebclientJsonMapper.plain();
 
 	private MockEngineRest engine;
 	private TaskProvider taskProvider;
@@ -198,6 +210,65 @@ public class TaskProviderTest {
 		var request = engine.take();
 		assertThat(request.getPath()).endsWith("/task/task-1/delegate");
 		assertThat(request.getBody().readUtf8()).contains("\"userId\":null");
+	}
+
+	// ---------- task-local variable writes of embedded forms (CIB7-2757) ----------
+
+	@Test
+	void modifyLocalVariables_postsTheSdkBodyUnchanged() throws Exception {
+		engine.enqueueEmpty(204);
+		Map<String, Object> patch = new LinkedHashMap<>();
+		patch.put("id", "task-1");
+		patch.put("modifications", Map.of("payload", Map.of(
+			"value", "{\"a\":1}", "type", "Object",
+			"valueInfo", Map.of("objectTypeName", "java.util.HashMap", "serializationDataFormat", "application/json"))));
+		patch.put("deletions", List.of("outdated"));
+
+		taskProvider.modifyLocalVariables("task-1", patch, user);
+
+		var request = engine.take();
+		assertThat(request.getMethod()).isEqualTo("POST");
+		assertThat(request.getPath()).isEqualTo("/engine-rest/task/task-1/localVariables");
+		// the serialized value and its valueInfo reach the engine as the form sent them
+		assertThat(JSON.readTree(request.getBody().readUtf8())).isEqualTo(JSON.valueToTree(patch));
+	}
+
+	@Test
+	void putLocalVariable_putsTheValueUnderTheEncodedName() throws Exception {
+		engine.enqueueEmpty(204);
+		Map<String, Object> variable = Map.of("value", "accept", "type", "String", "varId", "my decision");
+
+		taskProvider.putLocalVariable("task-1", "my decision", variable, user);
+
+		var request = engine.take();
+		assertThat(request.getMethod()).isEqualTo("PUT");
+		assertThat(request.getPath()).isEqualTo("/engine-rest/task/task-1/localVariables/my%20decision");
+		assertThat(JSON.readTree(request.getBody().readUtf8())).isEqualTo(JSON.valueToTree(variable));
+	}
+
+	@Test
+	void deleteLocalVariable_deletesTheName() throws Exception {
+		engine.enqueueEmpty(204);
+
+		taskProvider.deleteLocalVariable("task-1", "my decision", user);
+
+		var request = engine.take();
+		assertThat(request.getMethod()).isEqualTo("DELETE");
+		assertThat(request.getPath()).isEqualTo("/engine-rest/task/task-1/localVariables/my%20decision");
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "a/b", "a\\b", "a?b", "a#b", "a;b", "100%", ".", "..", "" })
+	void localVariableWrites_refuseANameThatWouldChangeTheEngineUrl(String name) {
+		assertThatThrownBy(() -> taskProvider.putLocalVariable("task-1", name, Map.of("value", "x"), user))
+			.isInstanceOf(InvalidPathValueException.class);
+		assertThatThrownBy(() -> taskProvider.deleteLocalVariable("task-1", name, user))
+			.isInstanceOf(InvalidPathValueException.class);
+		assertThatThrownBy(() -> taskProvider.modifyLocalVariables(name, Map.of(), user))
+			.isInstanceOf(InvalidPathValueException.class);
+		assertThatThrownBy(() -> taskProvider.findLocalVariables(name, user))
+			.isInstanceOf(InvalidPathValueException.class);
+		assertThat(engine.requestCount()).isZero();
 	}
 
 	/**
