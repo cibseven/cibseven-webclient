@@ -96,13 +96,15 @@ export default {
     formatDateForTooltips,
     goToInstance(instance) {
       this.setSelectedInstance(instance)
+      // The definition's tenant: an evaluation from a process gets the process's tenant (CIB7-2392)
+      const version = this.getSelectedDecisionVersion()
       this.$router.push({
         name: 'decision-instance',
         params: {
-          versionIndex: this.getSelectedDecisionVersion.version,
+          versionIndex: String(version.version),
           instanceId: instance.id
         },
-        query: instance.tenantId ? { tenantId: instance.tenantId } : {}
+        query: version.tenantId ? { tenantId: version.tenantId } : {}
       })
     },
     getProcessDefinitionRoute(instance) {

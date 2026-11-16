@@ -123,11 +123,12 @@ export default {
   computed: {
     ...mapGetters('diagram', ['isDiagramReady']),
     ...mapGetters(['getSelectedDecisionVersion']),
-    // Back to the version this instance belongs to, of its own tenant (CIB7-2392)
+    // Back to the version this instance belongs to, with the definition's tenant: the instance's can be its process's (CIB7-2392)
     backLink() {
+      const tenantId = this.decisionDefinition?.tenantId
       return {
         path: `/seven/auth/decision/${this.instance.decisionDefinitionKey}/${this.versionIndex}`,
-        query: this.instance.tenantId ? { tenantId: this.instance.tenantId } : {}
+        query: tenantId ? { tenantId } : {}
       }
     },
     decisionDefinition() {

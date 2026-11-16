@@ -44,26 +44,29 @@ describe('Decision links keep the tenant (CIB7-2392)', () => {
     })
   })
 
+  // The definition's tenant, not the instance's: an evaluation from a process gets the process's tenant
   it.each([
-    ['with its tenant', 'T1', { tenantId: 'T1' }],
-    ['without the query when it has no tenant', null, {}]
-  ])('opens an instance from the instances table %s', (_, tenantId, query) => {
-    const ctx = { $router: { push: vi.fn() }, setSelectedInstance: vi.fn(), getSelectedDecisionVersion: { version: 3 } }
-    const instance = { id: 'inst-1', tenantId }
+    ["with the definition's tenant", 'T1', 'T1', { tenantId: 'T1' }],
+    ['without the query for a shared definition evaluated by a tenant', null, 'T1', {}],
+    ["with the definition's tenant when a process without one evaluated it", 'T1', null, { tenantId: 'T1' }]
+  ])('opens an instance from the instances table %s', (_, definitionTenantId, instanceTenantId, query) => {
+    const ctx = { $router: { push: vi.fn() }, setSelectedInstance: vi.fn(), getSelectedDecisionVersion: () => ({ version: 3, tenantId: definitionTenantId }) }
+    const instance = { id: 'inst-1', tenantId: instanceTenantId }
 
     DecisionInstancesTable.methods.goToInstance.call(ctx, instance)
 
     expect(ctx.setSelectedInstance).toHaveBeenCalledWith(instance)
     expect(ctx.$router.push).toHaveBeenCalledWith({
-      name: 'decision-instance', params: { versionIndex: 3, instanceId: 'inst-1' }, query
+      name: 'decision-instance', params: { versionIndex: '3', instanceId: 'inst-1' }, query
     })
   })
 
   it.each([
-    ['with its tenant', 'T1', { tenantId: 'T1' }],
-    ['without the query when it has no tenant', null, {}]
-  ])("leads from an instance back to its version %s", (_, tenantId, query) => {
-    const ctx = { instance: { decisionDefinitionKey: 'dec', tenantId }, versionIndex: '3' }
+    ["with the definition's tenant", 'T1', 'T1', { tenantId: 'T1' }],
+    ['without the query for a shared definition evaluated by a tenant', null, 'T1', {}],
+    ["with the definition's tenant when a process without one evaluated it", 'T1', null, { tenantId: 'T1' }]
+  ])("leads from an instance back to its version %s", (_, definitionTenantId, instanceTenantId, query) => {
+    const ctx = { instance: { decisionDefinitionKey: 'dec', tenantId: instanceTenantId }, decisionDefinition: { tenantId: definitionTenantId }, versionIndex: '3' }
 
     expect(DecisionInstance.computed.backLink.call(ctx)).toEqual({ path: '/seven/auth/decision/dec/3', query })
   })

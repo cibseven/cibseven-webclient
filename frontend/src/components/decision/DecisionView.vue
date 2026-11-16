@@ -115,11 +115,11 @@ export default {
       this.versionLoaded = false
       const instanceId = this.$route.params.instanceId
 
-      // A link to an instance without the tenant (an old bookmark): the instance's own
+      // A link to an instance without the tenant (an old bookmark): its definition's
       if (instanceId && !this.tenantId) {
-        const instanceTenantId = await this.instanceTenantId(instanceId)
+        const definitionTenantId = await this.definitionTenantId(instanceId)
         if (outdated()) return
-        if (instanceTenantId) return this.replaceTenant(instanceTenantId)
+        if (definitionTenantId) return this.replaceTenant(definitionTenantId)
       }
 
       const tenantId = this.tenantId ?? null
@@ -133,10 +133,10 @@ export default {
       const versionIndex = this.versionIndex
       let version = versionIndex ? this.getDecisionVersion({ key: decisionKey, version: versionIndex }) : null
       if (!version && instanceId) {
-        // A link with another tenant than the instance's
-        const instanceTenantId = await this.instanceTenantId(instanceId)
+        // A link with another tenant than its definition's
+        const definitionTenantId = await this.definitionTenantId(instanceId)
         if (outdated()) return
-        if (instanceTenantId !== undefined && instanceTenantId !== tenantId) return this.replaceTenant(instanceTenantId)
+        if (definitionTenantId !== undefined && definitionTenantId !== tenantId) return this.replaceTenant(definitionTenantId)
       }
 
       if (!versions?.length) {
@@ -162,10 +162,18 @@ export default {
       this.selectVersion(decisionKey, version)
       this.versionLoaded = true
     },
-    // The tenant of a historic instance (null for none), undefined when the instance is unknown
-    async instanceTenantId(instanceId) {
+    // The tenant of the definition a historic instance evaluated (null for none), undefined when unknown or gone.
+    // Not the instance's own tenant: an evaluation from a process gets the process's tenant
+    async definitionTenantId(instanceId) {
       const instances = await DecisionService.getHistoricDecisionInstances({ decisionInstanceId: instanceId, maxResults: 1 })
-      return instances?.length ? (instances[0].tenantId ?? null) : undefined
+      const definitionId = instances?.[0]?.decisionDefinitionId
+      if (!definitionId) return undefined
+      try {
+        const definition = await DecisionService.getDecisionDefinitionById(definitionId)
+        return definition ? (definition.tenantId ?? null) : undefined
+      } catch {
+        return undefined
+      }
     },
     replaceTenant(tenantId) {
       const query = { ...this.$route.query }
