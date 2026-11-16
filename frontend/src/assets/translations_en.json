@@ -1146,6 +1146,7 @@
 		"processNotFound": "Process with key \"{0}\" not found",
 		"tenantNotFound": "Tenant with ID \"{0}\" does not exist",
 		"notFoundInstanceId": "The process instance with ID \"{instanceId}\" could not be found.\nReferenced from: {refPath}",
+		"notFoundPage": "The page \"{path}\" could not be found.",
 		"filterSaveError": "An error occurred  trying to save the filter, please check the data introduced.",
 		"passwordDoNotMatch": "Passwords do not match",
 		"PasswordPolicyException": "Password does not match policy",

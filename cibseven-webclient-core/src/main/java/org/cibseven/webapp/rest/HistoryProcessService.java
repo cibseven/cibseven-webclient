@@ -215,7 +215,7 @@ public class HistoryProcessService extends BaseService {
 	public ResponseEntity<byte[]> fetchHistoryVariableDataById(
 			@Parameter(description = "Id of the variable") @PathVariable String id,
 			Locale loc, CIBUser user) {
-		return bpmProvider.fetchHistoryVariableDataById(id, user);
+		return EngineResponses.relay(bpmProvider.fetchHistoryVariableDataById(id, user));
 	}
 
 	@Operation(summary = "Queries for historic activity statistics of process instances that fulfill the given parameters")

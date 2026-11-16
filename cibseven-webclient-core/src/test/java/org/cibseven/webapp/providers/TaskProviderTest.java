@@ -144,7 +144,6 @@ public class TaskProviderTest {
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 		assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.parseMediaType("text/html;charset=UTF-8"));
 		// Spring computes the length of the bytes it writes when the header is absent
-		
 		assertThat(response.getHeaders().containsHeader(HttpHeaders.CONTENT_LENGTH)).isFalse();
 	}
 

@@ -1146,6 +1146,7 @@
 		"processNotFound": "Процес з ключем \"{0}\" не знайдено",
 		"tenantNotFound": "Тенант з ID \"{0}\" не існує",
 		"notFoundInstanceId": "Екземпляр процесу з ідентифікатором \"{instanceId}\" не знайдено.\nПосилання з: {refPath}",
+		"notFoundPage": "Сторінку \"{path}\" не знайдено.",
 		"filterSaveError": "Сталася помилка під час спроби зберегти фільтр, перевірте введені дані.",
 		"passwordDoNotMatch": "Паролі не збігаються",
 		"PasswordPolicyException": "Пароль не відповідає політиці",
