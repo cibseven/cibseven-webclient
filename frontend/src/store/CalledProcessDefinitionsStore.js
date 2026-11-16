@@ -77,9 +77,10 @@ export default {
     },
 
     // Leaving the process pages: the next visit loads them again, so a newer deployment is seen then.
-    // A load still running no longer commits
+    // A load still running, of them or of the table, no longer commits
     clearStaticCalledProcessDefinitions({ commit, state }) {
       pendingStaticLoads.delete(state)
+      currentTableLoads.delete(state)
       commit('setStaticCalledProcessDefinitions', null)
       commit('setStaticCalledProcessDefinitionsId', null)
     },

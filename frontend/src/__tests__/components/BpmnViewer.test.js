@@ -1368,8 +1368,8 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
     expect(buttonFrom(vm).disabled).toBe(true)
   })
 
-  // The instance's activity history may still be loading or not exist (history level none)
-  it('should keep an unresolved call disabled in an instance without its activity history', () => {
+  // Its called instance may have started after the history was loaded: the click looks it up
+  it('should enable a running expression in an instance without a called instance in its history', () => {
     const vm = vmWith({
       selectedInstance: { id: 'pi1', processDefinitionId: 'pd-parent' },
       historicActivityStatistics: [{ id: 'call_1', instances: 1 }],
@@ -1378,7 +1378,33 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
 
     BpmnViewer.methods.drawSubprocessLinks.call(vm, registryWith(callActivity('call_1', '${subKey}')))
 
+    expect(buttonFrom(vm).disabled).toBe(false)
+    buttonFrom(vm).click()
+    expect(vm.openSubprocess).toHaveBeenCalledWith('call_1', undefined)
+  })
+
+  // The instance's activity history may still be loading or not exist (history level none)
+  it('should keep an expression that is not running disabled in an instance without its activity history', () => {
+    const vm = vmWith({
+      selectedInstance: { id: 'pi1', processDefinitionId: 'pd-parent' },
+      activityInstanceHistory: null
+    })
+
+    BpmnViewer.methods.drawSubprocessLinks.call(vm, registryWith(callActivity('call_1', '${subKey}')))
+
     expect(buttonFrom(vm).disabled).toBe(true)
+  })
+
+  // Switching definitions: the new definition's links belong on its diagram, which is not imported yet
+  it('should draw no links while the previous definition\'s diagram is still shown', () => {
+    const vm = vmWith({
+      diagramOutdated: true,
+      staticCalledProcessDefinitions: [{ id: 'sub-1', key: 'sub', calledFromActivityIds: ['call_1'] }]
+    })
+
+    BpmnViewer.methods.drawSubprocessLinks.call(vm, registryWith(callActivity('call_1', 'sub')))
+
+    expect(vm.setHtmlOnDiagram).not.toHaveBeenCalled()
   })
 
   // Loading, failed, or a viewer without a definition: "not deployed" would be a guess
@@ -1672,6 +1698,25 @@ describe('BpmnViewer - static called process definitions', () => {
     expect(vm.redrawSubprocessLinks).not.toHaveBeenCalled()
   })
 
+  it('should take the links off the previous diagram when the definition changes', () => {
+    const vm = { viewer: {}, diagramOutdated: false, redrawSubprocessLinks: vi.fn() }
+
+    BpmnViewer.watch.processDefinitionId.call(vm, 'pd-2', 'pd-1')
+
+    expect(vm.diagramOutdated).toBe(true)
+    expect(vm.redrawSubprocessLinks).toHaveBeenCalled()
+  })
+
+  // e.g. a definition set after the diagram was imported for it: there is no other diagram to wait for
+  it('should keep the links when a definition is set for the first time', () => {
+    const vm = { viewer: {}, diagramOutdated: false, redrawSubprocessLinks: vi.fn() }
+
+    BpmnViewer.watch.processDefinitionId.call(vm, 'pd-1', undefined)
+
+    expect(vm.diagramOutdated).toBe(false)
+    expect(vm.redrawSubprocessLinks).not.toHaveBeenCalled()
+  })
+
   // Only the links depend on this data: badges and the activity map stay as they are
   it('should replace only the link overlays on a redraw', () => {
     const overlays = { remove: vi.fn() }
@@ -1726,10 +1771,35 @@ describe('BpmnViewer - openSubprocess', () => {
 
     await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', { key: 'sub', version: 1 })
 
+    // Only the latest run, however often the call activity ran
     expect(HistoryService.findActivitiesInstancesHistoryWithFilter).toHaveBeenCalledWith({
-      processInstanceId: 'pi1', activityType: 'callActivity', activityId: 'call_1'
+      processInstanceId: 'pi1', activityType: 'callActivity', activityId: 'call_1',
+      sortBy: 'startTime', sortOrder: 'desc', maxResults: 1
     })
     expect(vm.navigateToSubprocess).toHaveBeenCalledWith(null, null, 'started-later')
+  })
+
+  // e.g. the user may not read the history (403): the called definition is still known
+  it('should open the called definition when the lookup fails', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    HistoryService.findActivitiesInstancesHistoryWithFilter.mockRejectedValue(new Error('forbidden'))
+    const vm = vmWith()
+
+    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', { key: 'sub', version: 1 })
+
+    expect(vm.navigateToSubprocess).toHaveBeenCalledWith('sub', 1, null)
+    expect(consoleError).toHaveBeenCalled()
+  })
+
+  it('should show the called process instances tab for an expression when the lookup fails', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    HistoryService.findActivitiesInstancesHistoryWithFilter.mockRejectedValue(new Error('forbidden'))
+    const vm = vmWith({ $route: { path: '/process/p/1/pi1', query: {} } })
+
+    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', undefined)
+
+    expect(vm.navigateToSubprocess).not.toHaveBeenCalled()
+    expect(vm.$router.push).toHaveBeenCalledWith({ path: '/process/p/1/pi1', query: { tab: 'calledProcessInstances' } })
   })
 
   // The viewer already has the instance's history, and the instance route needs only the id

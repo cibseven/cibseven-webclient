@@ -339,6 +339,25 @@ createStoreTestSuite('CalledProcessDefinitionsStore', CalledProcessDefinitionsSt
 
         expect(context.state.staticCalledProcessDefinitions).toBeNull()
       })
+
+      // The table may still be loading too: it must neither fail nor fill the store with the previous definition's rows
+      it('should keep a table load still running from committing or failing', async () => {
+        const context = contextWith(getContext)
+        context.commit.mockImplementation((name, value) => CalledProcessDefinitionsStore.mutations[name](context.state, value))
+        context.getters.getStaticCalledProcessDefinitionsFor = id =>
+          CalledProcessDefinitionsStore.getters.getStaticCalledProcessDefinitionsFor(context.state)(id)
+        context.dispatch.mockImplementation((name, payload) => CalledProcessDefinitionsStore.actions[name](context, payload))
+        let finishLoad
+        ProcessService.findCalledProcessDefinitions.mockReturnValueOnce(new Promise(resolve => { finishLoad = resolve }))
+
+        const tableLoad = CalledProcessDefinitionsStore.actions.loadCalledProcessDefinitions(context, { processId: 'pd-1' })
+        action(context)
+        finishLoad([staticDef()])
+
+        await expect(tableLoad).resolves.toBeUndefined()
+        expect(context.state.calledProcessDefinitions).toEqual([])
+        expect(context.state.allCalledProcessDefinitions).toEqual([])
+      })
     },
 
     resetCalledProcessDefinitions: (action, getContext) => {

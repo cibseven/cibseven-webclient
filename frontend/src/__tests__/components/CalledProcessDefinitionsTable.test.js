@@ -95,16 +95,25 @@ describe('CalledProcessDefinitionsTable - loadCalledProcessDefinitionsData', () 
     expect(vm.loadCalledProcessDefinitions).not.toHaveBeenCalled()
   })
 
-  // Otherwise the previous definition's rows stay, and a load still running for them would fill or block this one
-  it('should clear the previous rows and outdate their load when the new diagram is not ready', () => {
-    const vm = { ...tableContext(vi.fn()), isDiagramReady: false, loading: true, initialLoading: true, loadRequest: 3 }
+  // Otherwise the previous definition's rows stay, and a load still running for them would fill or block this one.
+  // The spinner shows while the new diagram loads, not "No results"
+  it('should clear the previous rows, outdate their load and show the spinner when the new diagram is not ready', () => {
+    const vm = { ...tableContext(vi.fn()), isDiagramReady: false, loading: true, initialLoading: false, loadRequest: 3 }
 
     CalledProcessDefinitionsTable.watch['process.id'].handler.call(vm, 'pd-2')
 
     expect(vm.resetCalledProcessDefinitions).toHaveBeenCalled()
     expect(vm.loading).toBe(false)
-    expect(vm.initialLoading).toBe(false)
+    expect(vm.initialLoading).toBe(true)
     expect(vm.loadRequest).toBe(4)
+  })
+
+  it('should not show the spinner without a process to load', () => {
+    const vm = { ...tableContext(vi.fn()), isDiagramReady: false, initialLoading: true }
+
+    CalledProcessDefinitionsTable.watch['process.id'].handler.call(vm, undefined, 'pd-1')
+
+    expect(vm.initialLoading).toBe(false)
   })
 
   // Switching versions: the previous diagram still counts as ready, so loading now would use its statistics and names

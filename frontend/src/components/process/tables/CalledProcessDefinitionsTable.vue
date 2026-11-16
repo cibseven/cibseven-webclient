@@ -121,11 +121,11 @@ export default {
         if (id && this.isDiagramReady && oldId === undefined) {
           this.loadCalledProcessDefinitionsData()
         } else {
-          // It loads once its diagram is ready; until then show nothing of the previous definition.
+          // It loads once its diagram is ready, so it shows the spinner, not "No results", and nothing of the previous definition.
           // A load still running for that one no longer counts, so it cannot block or fill this one
           this.loadRequest++
           this.loading = false
-          this.initialLoading = false
+          this.initialLoading = !!id
           this.resetCalledProcessDefinitions()
         }
       },

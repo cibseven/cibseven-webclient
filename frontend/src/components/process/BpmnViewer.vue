@@ -117,6 +117,8 @@ export default {
       overlayList: [],
       // The call activity link overlays, also in overlayList, so they can be redrawn on their own
       subprocessLinkOverlays: [],
+      // The process definition changed and its diagram is not shown yet: no links on the previous diagram meanwhile
+      diagramOutdated: false,
       loader: true,
       suspendedOverlayMap: {},
       overlayClickHandler: null,
@@ -151,6 +153,12 @@ export default {
     historicActivityStatistics: {
       handler() { this.drawDiagramState() },
       deep: true
+    },
+    // The new definition's diagram is imported next (import.done draws its links)
+    processDefinitionId: function(id, oldId) {
+      if (!oldId) return
+      this.diagramOutdated = true
+      if (this.viewer) this.redrawSubprocessLinks()
     },
     staticCalledProcessDefinitions: function() {
       if (this.viewer) this.redrawSubprocessLinks()
@@ -196,6 +204,7 @@ export default {
       additionalModules: [ElementTemplateIconRendererModule]
     })
     this.viewer.on('import.done', () => {
+      this.diagramOutdated = false
       this.drawDiagramState()
       this.attachEventListeners()
       this.applyElementTemplateIcons()
@@ -605,6 +614,8 @@ export default {
       if (this.badgeOptions?.showCalledProcesses === false) return
       // Without a process definition (e.g. a deployment's resource preview) there is nothing to resolve the links against
       if (!this.processDefinitionId) return
+      // The diagram still shown is the previous definition's
+      if (this.diagramOutdated) return
       const staticCalledProcesses = this.staticCalledProcessDefinitions || []
       const activityStats = this.historicActivityStatistics || []
 
@@ -641,9 +652,9 @@ export default {
 
         const inInstanceView = !!this.selectedInstance
         const hasCalledInstance = inInstanceView && activitiesWithCalledInstance.has(ca.id)
-        // Without a resolved definition: in an instance only a called instance it started is a target;
-        // in the definition view a running expression opens the called process definitions tab
-        const canOpenCalledInstance = inInstanceView ? hasCalledInstance : (isDynamic && runningInstances > 0)
+        // Without a resolved definition: a called instance it started in the selected instance is a target,
+        // and so is a running expression, whose called instance the click looks up (or shows the called processes tab)
+        const canOpenCalledInstance = hasCalledInstance || (isDynamic && runningInstances > 0)
         const callsDisplayedDefinition = !!calledProcess &&
           calledProcess.id === (this.selectedInstance?.processDefinitionId ?? this.processDefinitionId)
         // In an instance a recursive call opens the called instance, which is another page
@@ -739,7 +750,7 @@ export default {
         if (calledProcess) return await this.navigateToSubprocess(calledProcess.key, calledProcess.version, null)
         // No known target (an expression, or a name the engine did not resolve): show what was called instead.
         // Guessing the latest version of the name could open a definition that is not deployed, or the wrong version or tenant.
-        // In an instance the link is only enabled with a called instance, so this is the definition view's tab
+        // In an instance: a running expression that started nothing here yet, or a lookup that failed
         const tab = this.selectedInstance ? 'calledProcessInstances' : 'calledProcessDefinitions'
         this.$router.push({ path: this.$route.path, query: { ...this.$route.query, tab } })
         // Narrows that tab to this call activity, so the click shows something even when the tab is already open
@@ -752,14 +763,24 @@ export default {
     findCalledProcessInstanceId: function(activityId) {
       return latestCalledProcessInstanceId(this.selectedInstanceActivityHistory, activityId)
     },
-    // The same from the engine; directly, so the store's shared activity history is left alone
+    // The same from the engine; directly, so the store's shared activity history is left alone.
+    // Only the latest run: a call activity in a loop can have run many times
     fetchCalledProcessInstanceId: async function(activityId) {
-      const activities = await HistoryService.findActivitiesInstancesHistoryWithFilter({
-        processInstanceId: this.selectedInstance.id,
-        activityType: 'callActivity',
-        activityId
-      })
-      return latestCalledProcessInstanceId(activities || [], activityId)
+      try {
+        const activities = await HistoryService.findActivitiesInstancesHistoryWithFilter({
+          processInstanceId: this.selectedInstance.id,
+          activityType: 'callActivity',
+          activityId,
+          sortBy: 'startTime',
+          sortOrder: 'desc',
+          maxResults: 1
+        })
+        return latestCalledProcessInstanceId(activities || [], activityId)
+      } catch (error) {
+        // e.g. the user may not read the history: the click opens the called definition instead
+        console.error('Failed to look up the called process instance:', error)
+        return null
+      }
     },
     async navigateToSubprocess(processKey, versionIndex, calledProcessInstanceId) {
       if (calledProcessInstanceId) {
