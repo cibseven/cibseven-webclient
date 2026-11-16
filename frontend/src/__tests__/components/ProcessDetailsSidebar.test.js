@@ -270,6 +270,17 @@ describe('ProcessDetailsSidebar', () => {
       expect(wrapper.findAll('.list-group-item-action')[0].find('.open-incidents').text()).toContain('3')
     })
 
+    it('keep the incidents of the version selected during a reload', async () => {
+      const wrapper = mountSidebar({ processDefinitions: versions(), selectedStatistics: statistics([3]) })
+      await flushPromises()
+
+      const reloaded = [version({ incidents: '-' }), lazyVersion()]
+      await wrapper.setProps({ processDefinitions: reloaded })
+      await select36(wrapper, reloaded, statistics([1]))
+
+      expect(wrapper.findAll('.list-group-item-action')[0].find('.open-incidents').text()).toContain('3')
+    })
+
     it('lose their incidents when the versions are reloaded, like their counts', async () => {
       const processDefinitions = versions()
       const wrapper = mountSidebar({ processDefinitions, selectedStatistics: statistics([2]) })
@@ -514,6 +525,47 @@ describe('ProcessDetailsSidebar', () => {
       await open(wrapper, 1)
 
       expect(ProcessService.findProcessById).toHaveBeenCalledTimes(2)
+    })
+
+    it('loads the open version again when the list is reloaded', async () => {
+      const wrapper = mountSidebar({ processDefinitions: [version(), lazyVersion()] })
+      await flushPromises()
+      await open(wrapper, 1)
+
+      await wrapper.setProps({ processDefinitions: [version(), lazyVersion()] })
+      await flushPromises()
+
+      expect(ProcessService.findProcessById).toHaveBeenCalledTimes(2)
+      expect(card(wrapper, 1).find('.running-instances').text()).toContain('3')
+    })
+
+    it('loads nothing more on a reload when the open version is the selected one or none is open', async () => {
+      const wrapper = mountSidebar({ processDefinitions: [version(), lazyVersion()] })
+      await flushPromises()
+      await open(wrapper, 0)
+
+      await wrapper.setProps({ processDefinitions: [version(), lazyVersion()] })
+      await open(wrapper, 0)
+      await wrapper.setProps({ processDefinitions: [version(), lazyVersion()] })
+      await flushPromises()
+
+      expect(ProcessService.findProcessById).not.toHaveBeenCalled()
+    })
+
+    it('leaves out the counts that answer after the list was reloaded', async () => {
+      let answerOld
+      ProcessService.findProcessById.mockReturnValueOnce(new Promise(resolve => { answerOld = resolve }))
+      const processDefinitions = [version(), lazyVersion()]
+      const wrapper = mountSidebar({ processDefinitions })
+      await flushPromises()
+      await open(wrapper, 1)
+      await open(wrapper, 1)
+
+      await wrapper.setProps({ processDefinitions: [version(), lazyVersion()] })
+      answerOld({ runningInstances: 99, allInstances: 99, completedInstances: 99 })
+      await flushPromises()
+
+      expect(processDefinitions[1].runningInstances).toBe('-')
     })
 
     it('loads nothing when the details close', async () => {

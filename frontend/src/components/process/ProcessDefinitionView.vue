@@ -357,14 +357,10 @@ export default {
     },
     async findProcessAndAssignData(selectedProcess) {
       if (selectedProcess) {
-          await ProcessService.findProcessById(selectedProcess.id, true).then(process => {
-            for (const v of this.processDefinitions) {
-              if (v.id === process.id) {
-                Object.assign(v, process)
-                break
-              }
-            }
-          })
+          const process = await ProcessService.findProcessById(selectedProcess.id, true)
+          const version = this.processDefinitions.find(v => v.id === process.id)
+          // without its incidents and deployment time, which the definition never fills in
+          if (version) Object.assign(version, { ...process, incidents: version.incidents, deploymentTime: version.deploymentTime })
         }
     },
     async loadProcessVersion(process) {

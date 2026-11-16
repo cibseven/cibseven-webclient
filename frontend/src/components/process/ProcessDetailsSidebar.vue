@@ -193,6 +193,8 @@ export default {
     processDefinitions() {
       this.incidentsByVersionId = {}
       this.loadingVersionIds.clear()
+      this.rememberSelectedIncidents()
+      this.loadExpandedVersionData()
     }
   },
   methods: {
@@ -233,27 +235,32 @@ export default {
       this.loadingVersionIds.add(version.id)
       // a reload of the list meanwhile makes this load stale
       const list = this.processDefinitions
+      const isCurrent = () => this.processDefinitions === list
+      const loadCounts = async () => {
+        const { runningInstances, allInstances, completedInstances } = await ProcessService.findProcessById(version.id, true)
+        if (isCurrent()) Object.assign(version, { runningInstances, allInstances, completedInstances })
+      }
+      const loadIncidents = async () => {
+        const statistics = await ProcessService.findProcessStatistics(version.id)
+        if (isCurrent()) this.incidentsByVersionId[version.id] = this.countIncidents(statistics)
+      }
       const loads = []
       if (!this.deploymentTimeOf(version)) loads.push(this.loadDeployment(version.deploymentId))
-      if (typeof version.runningInstances !== 'number') {
-        loads.push(ProcessService.findProcessById(version.id, true).then(({ runningInstances, allInstances, completedInstances }) =>
-          Object.assign(version, { runningInstances, allInstances, completedInstances })))
-      }
-      if (typeof this.incidentsOf(version) !== 'number') {
-        loads.push(ProcessService.findProcessStatistics(version.id).then(statistics => {
-          if (this.processDefinitions === list) this.incidentsByVersionId[version.id] = this.countIncidents(statistics)
-        }))
-      }
+      if (typeof version.runningInstances !== 'number') loads.push(loadCounts())
+      if (typeof this.incidentsOf(version) !== 'number') loads.push(loadIncidents())
       await Promise.allSettled(loads)
       // nor clear the mark of a newer load of the same version
-      if (this.processDefinitions === list) this.loadingVersionIds.delete(version.id)
+      if (isCurrent()) this.loadingVersionIds.delete(version.id)
+    },
+    // the open version, unless it is the selected one, whose data the view loads
+    loadExpandedVersionData() {
+      const version = this.processDefinitions.find(v => v.id === this.expandedVersionId)
+      if (version && version.version !== this.versionIndex) this.loadVersionData(version)
     },
     // one version's details open at a time
     toggleDetails(versionId) {
       this.expandedVersionId = this.expandedVersionId === versionId ? null : versionId
-      const version = this.processDefinitions.find(v => v.id === this.expandedVersionId)
-      // the selected version's data is loaded by the view
-      if (version && version.version !== this.versionIndex) this.loadVersionData(version)
+      this.loadExpandedVersionData()
     },
     onRefreshProcessDefinitions: function(lazyLoadHistory) {
       this.$emit('onRefreshProcessDefinitions', lazyLoadHistory)
