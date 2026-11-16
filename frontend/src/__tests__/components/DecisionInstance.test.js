@@ -28,7 +28,54 @@ vi.mock('@/services.js', async (importOriginal) => ({
   }
 }))
 
-const { normalizeCell, isDmnStringLiteral } = DecisionInstance.methods
+const { applyInstanceValues, applyInputHeaders, applyOutputRows, applyHighlightText, formatValue } = DecisionInstance.methods
+
+/**
+ * A decision table as the dmn-js viewer renders it: the rows carry no id, the rule id sits on the
+ * index cell and on every input and output cell (data-row-id), the column id on the clause cells.
+ */
+function decisionTable({ inputs, outputs, rules }) {
+  const cell = (className, ruleId, colId, text) =>
+    `<td class="${className}" data-row-id="${ruleId}" data-col-id="${colId}">${text}</td>`
+  const table = document.createElement('table')
+  table.className = 'tjs-table'
+  table.innerHTML = `
+    <thead><tr><th class="index-column"></th>
+      ${inputs.map(id => `<th class="input-cell" data-col-id="${id}"><div class="clause">${id}</div></th>`).join('')}
+      ${outputs.map(id => `<th class="output-cell" data-col-id="${id}">${id}</th>`).join('')}
+    </tr></thead>
+    <tbody>${rules.map((rule, index) => `<tr>
+      <td class="rule-index" data-element-id="${rule.id}" data-row-id="${rule.id}">${index + 1}</td>
+      ${rule.inputs.map((text, i) => cell('input-cell', rule.id, inputs[i], text)).join('')}
+      ${rule.outputs.map((text, i) => cell('output-cell', rule.id, outputs[i], text)).join('')}
+    </tr>`).join('')}</tbody>`
+  return table
+}
+
+/** The table of CIB7UNION-10 (hit policy First): rules 1, 3 and 4 share the output "true". */
+function customerTable() {
+  return decisionTable({
+    inputs: ['isCtmOrder', 'count'],
+    outputs: ['result'],
+    rules: [
+      { id: 'rule-1', inputs: ['true', ''], outputs: ['true'] },
+      { id: 'rule-2', inputs: ['', '0'], outputs: ['false'] },
+      { id: 'rule-3', inputs: ['false', '1'], outputs: ['true'] },
+      { id: 'rule-4', inputs: ['', '&gt; 1'], outputs: ['true'] },
+      { id: 'rule-5', inputs: ['', ''], outputs: ['false'] }
+    ]
+  })
+}
+
+function applyOutputs(table, outputs) {
+  applyOutputRows.call({ instance: { outputs }, applyHighlightText, formatValue }, table)
+}
+
+const firedRules = table => Array.from(table.querySelectorAll('tr.fired-rule'))
+  .map(row => row.querySelector('td.rule-index').getAttribute('data-row-id'))
+
+const outputCell = (table, ruleId, colId) =>
+  table.querySelector(`td.output-cell[data-row-id="${ruleId}"][data-col-id="${colId}"]`)
 
 function mountView({ dispatch = vi.fn(() => Promise.resolve({ dmnXml: '' })), showDiagram = () => Promise.resolve() } = {}) {
   return mountWithDefaults(DecisionInstance, {
@@ -136,26 +183,144 @@ describe('DecisionInstance', () => {
     })
   })
 
-  describe('normalizeCell', () => {
-    it.each([
-      [undefined,       ''],
-      [null,            ''],
-      ['',              ''],
-      ['""',            ''],
+  // CIB7-2716: the fired rules come from the outputs' ruleId, not from comparing cell texts
+  describe('fired rules', () => {
+    it('marks only the rule that fired, not the other rules with the same output (hit policy First)', () => {
+      const table = customerTable()
 
-      ['"hello"',       'hello'],
-      ['"  hello  "',   'hello'],
-      ['  "world"  ',   'world'],
-      ['  " unclosed  ','unclosed'],
-      ['  unclosed " ', 'unclosed'],
-      ['hello',         'hello'],
-      ['  hello  ',     'hello'],
-      ['"budget"',      'budget'],
-      ['"exceptional"', 'exceptional'],
-      ['"a"',           'a'],
-      ['"a", "b"',      'a", "b'], // ok - only removes surrounding quotes, not inner ones
-    ])('normalizeCell(%s) → %s', (input, expected) => {
-      expect(normalizeCell(input)).toBe(expected)
+      applyOutputs(table, [{ clauseId: 'result', ruleId: 'rule-3', value: true }])
+
+      expect(firedRules(table)).toEqual(['rule-3'])
+      expect(outputCell(table, 'rule-3', 'result').textContent).toBe('true = true')
+      // rules 1 and 4 have the same output text but did not fire
+      expect(outputCell(table, 'rule-1', 'result').textContent).toBe('true')
+      expect(outputCell(table, 'rule-4', 'result').textContent).toBe('true')
+    })
+
+    it('marks every rule that fired when the hit policy collects several', () => {
+      const table = customerTable()
+
+      applyOutputs(table, [
+        { clauseId: 'result', ruleId: 'rule-1', value: true },
+        { clauseId: 'result', ruleId: 'rule-5', value: false }
+      ])
+
+      expect(firedRules(table)).toEqual(['rule-1', 'rule-5'])
+      expect(outputCell(table, 'rule-1', 'result').textContent).toBe('true = true')
+      expect(outputCell(table, 'rule-5', 'result').textContent).toBe('false = false')
+      expect(outputCell(table, 'rule-3', 'result').textContent).toBe('true')
+    })
+
+    it('puts each output value into its own column of the fired rule', () => {
+      const table = decisionTable({
+        inputs: ['amount'],
+        outputs: ['approver', 'limit'],
+        rules: [
+          { id: 'rule-a', inputs: ['&lt; 1000'], outputs: ['"clerk"', '1000'] },
+          { id: 'rule-b', inputs: ['&gt;= 1000'], outputs: ['"manager"', 'amount * 2'] }
+        ]
+      })
+
+      applyOutputs(table, [
+        { clauseId: 'approver', ruleId: 'rule-b', value: 'manager' },
+        { clauseId: 'limit', ruleId: 'rule-b', value: 3000 }
+      ])
+
+      expect(firedRules(table)).toEqual(['rule-b'])
+      expect(outputCell(table, 'rule-b', 'approver').textContent).toBe('"manager" = manager')
+      // the value the expression produced, not the expression again
+      expect(outputCell(table, 'rule-b', 'limit').textContent).toBe('amount * 2 = 3000')
+      expect(outputCell(table, 'rule-a', 'approver').textContent).toBe('"clerk"')
+    })
+
+    it('shows an object value as JSON', () => {
+      const table = customerTable()
+
+      applyOutputs(table, [{ clauseId: 'result', ruleId: 'rule-3', value: { approved: true } }])
+
+      expect(outputCell(table, 'rule-3', 'result').textContent).toBe('true = {"approved":true}')
+    })
+
+    it('uses the only output cell of the rule when the output carries no column id', () => {
+      const table = customerTable()
+
+      applyOutputs(table, [{ clauseId: null, ruleId: 'rule-3', value: true }])
+
+      expect(outputCell(table, 'rule-3', 'result').textContent).toBe('true = true')
+    })
+
+    it('writes no value when the output carries no column id and the rule has several output cells', () => {
+      const table = decisionTable({
+        inputs: ['amount'],
+        outputs: ['approver', 'limit'],
+        rules: [{ id: 'rule-a', inputs: ['&lt; 1000'], outputs: ['"clerk"', '1000'] }]
+      })
+
+      applyOutputs(table, [{ clauseId: null, ruleId: 'rule-a', value: 'clerk' }])
+
+      expect(firedRules(table)).toEqual(['rule-a'])
+      expect(table.querySelectorAll('[data-original-text]')).toHaveLength(0)
+    })
+
+    it('shows a null result, but no value for an output that was not fetched or failed', () => {
+      const table = decisionTable({
+        inputs: ['amount'],
+        outputs: ['approver', 'document', 'limit'],
+        rules: [{ id: 'rule-a', inputs: ['&lt; 1000'], outputs: ['null', 'doc', 'limitOf(amount)'] }]
+      })
+
+      applyOutputs(table, [
+        { clauseId: 'approver', ruleId: 'rule-a', value: null },
+        // binary values are not fetched (disableBinaryFetching), so the value is missing
+        { clauseId: 'document', ruleId: 'rule-a' },
+        { clauseId: 'limit', ruleId: 'rule-a', value: null, errorMessage: 'Cannot serialize value' }
+      ])
+
+      expect(firedRules(table)).toEqual(['rule-a'])
+      expect(outputCell(table, 'rule-a', 'approver').textContent).toBe('null = null')
+      expect(outputCell(table, 'rule-a', 'document').textContent).toBe('doc')
+      expect(outputCell(table, 'rule-a', 'limit').textContent).toBe('limitOf(amount)')
+    })
+
+    it('marks nothing when the outputs name no rule', () => {
+      const table = customerTable()
+
+      applyOutputs(table, [{ clauseId: 'result', value: true }])
+      applyOutputs(table, [])
+
+      expect(firedRules(table)).toEqual([])
+      expect(table.querySelectorAll('[data-original-text]')).toHaveLength(0)
+    })
+
+    it('does not repeat the value when the table is marked again after a view change', () => {
+      const table = customerTable()
+      const outputs = [{ clauseId: 'result', ruleId: 'rule-3', value: true }]
+
+      applyOutputs(table, outputs)
+      applyOutputs(table, outputs)
+
+      expect(firedRules(table)).toEqual(['rule-3'])
+      expect(outputCell(table, 'rule-3', 'result').textContent).toBe('true = true')
+    })
+
+    it('marks inputs and fired rules on the table inside the diagram viewer', () => {
+      const table = customerTable()
+      const container = document.createElement('div')
+      container.appendChild(table)
+      const instance = {
+        inputs: [{ clauseId: 'isCtmOrder', value: false }, { clauseId: 'count', value: { pieces: 1 } }],
+        outputs: [{ clauseId: 'result', ruleId: 'rule-3', value: true }]
+      }
+
+      applyInstanceValues.call({
+        $refs: { diagram: { $refs: { diagram: container } } },
+        instance, applyInputHeaders, applyOutputRows, applyHighlightText, formatValue
+      })
+
+      expect(firedRules(table)).toEqual(['rule-3'])
+      expect(table.querySelector('th[data-col-id="isCtmOrder"] div.clause').textContent).toBe('isCtmOrder = false')
+      // inputs and outputs format their values the same way
+      expect(table.querySelector('th[data-col-id="count"] div.clause').textContent).toBe('count = {"pieces":1}')
     })
   })
 
@@ -268,29 +433,6 @@ describe('DecisionInstance', () => {
         decisionDefinitionTenantId: 'definition-tenant',
         lang: 'en'
       })
-    })
-  })
-
-  describe('isDmnStringLiteral', () => {
-    it.each([
-      ['"hello"',       true],
-      ['"budget"',      true],
-      ['"exceptional"', true],
-      ['""',            true],
-      ['  "hello"  ',   true],
-      ['"a", "b"',      true],
-
-      [undefined,       false],
-      [null,            false],
-      ['',              false],
-      ['  ',            false],
-
-      ['hello',         false],
-      ['123',           false],
-      ['"unclosed',     false],
-      ['unclosed"',     false],
-    ])('isDmnStringLiteral(%s) → %s', (input, expected) => {
-      expect(isDmnStringLiteral(input)).toBe(expected)
     })
   })
 })

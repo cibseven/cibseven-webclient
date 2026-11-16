@@ -227,86 +227,62 @@ export default {
         clauseDiv.setAttribute('data-original-text', original)
         clauseDiv.textContent = ''
         const span = document.createElement('span')
-        span.textContent = original + ' '
+        span.textContent = `${original} `
         clauseDiv.appendChild(span)
         const bold = document.createElement('strong')
         bold.className = 'fw-bold'
-        bold.textContent = '= ' + String(input.value)
+        bold.textContent = `= ${this.formatValue(input.value)}`
         clauseDiv.appendChild(bold)
       })
     },
+    // The engine reports the rule that produced each output (ruleId); dmn-js puts that rule's id on
+    // every cell of its row (data-row-id). History records outputs only for non-empty output entries,
+    // so a fired rule without any output value leaves no trace and cannot be marked.
     applyOutputRows(table) {
-      const headerRow = table.querySelector('thead tr')
-      if (!headerRow) return
-      const headerCells = Array.from(headerRow.children)
+      const outputs = (this.instance?.outputs ?? []).filter(output => output.ruleId)
+      const firedRuleIds = new Set(outputs.map(output => output.ruleId))
 
-      const tbody = table.querySelector('tbody')
-      if (!tbody) return
-
-      // Build input column map: colIndex → expected input value
-      const inputColumns = []
-      table.querySelectorAll('th.input-cell').forEach(th => {
-        const colId = th.getAttribute('data-col-id')
-        const input = this.instance?.inputs?.find(i => i.clauseId === colId)
-        if (colId && input) {
-          inputColumns.push({
-            colIndex: headerCells.indexOf(th),
-            value: String(input.value).trim()
-          })
-        }
+      table.querySelectorAll('tbody td.rule-index[data-row-id]').forEach(indexCell => {
+        if (firedRuleIds.has(indexCell.getAttribute('data-row-id'))) indexCell.closest('tr')?.classList.add('fired-rule')
       })
-      table.querySelectorAll('th.output-cell').forEach(th => {
-        const colId = th.getAttribute('data-col-id')
-        const outputs = colId
-          ? this.instance?.outputs?.filter(o => o.clauseId === colId)
-          : this.instance?.outputs
-        if (!outputs?.length) return
 
-        const outputColIndex = headerCells.indexOf(th)
-        const outputValues = new Set(outputs.map(o => String(o.value).trim()).filter(Boolean))
+      const outputCellsByRule = new Map()
+      table.querySelectorAll('tbody td.output-cell[data-row-id]').forEach(cell => {
+        const ruleId = cell.getAttribute('data-row-id')
+        outputCellsByRule.set(ruleId, [...(outputCellsByRule.get(ruleId) ?? []), cell])
+      })
 
-        Array.from(tbody.rows).forEach(row => {
-          const td = row.children[outputColIndex]
-          if (!td) return
-
-          const tdText = td.getAttribute('data-original-text') ?? td.textContent
-          if (!outputValues.has(this.normalizeCell(tdText))) return
-
-          // DMN string literals can disambiguate; numeric expressions cannot
-          // Multi-value cells like "budget", "exceptional" are split and checked individually
-          const disqualified = inputColumns.some(({ colIndex, value }) => {
-            const cell = row.children[colIndex]
-            if (!cell) return false
-            const raw = (cell.getAttribute('data-original-text') ?? cell.textContent).trim()
-            if (!this.isDmnStringLiteral(raw)) return false
-            const cellValues = raw.split(',').map(v => this.normalizeCell(v.trim()))
-            return !cellValues.includes(value)
-          })
-
-          if (!disqualified) this.applyHighlightText(row, td)
-        })
+      outputs.forEach(output => {
+        // no value to show: binary values are not fetched, and a failed output carries only its error
+        if (output.value === undefined || output.errorMessage) return
+        const ruleCells = outputCellsByRule.get(output.ruleId) ?? []
+        const cell = output.clauseId
+          ? ruleCells.find(td => td.getAttribute('data-col-id') === output.clauseId)
+          : (ruleCells.length === 1 ? ruleCells[0] : undefined)
+        if (cell) this.applyHighlightText(cell, output.value)
       })
     },
-    applyHighlightText(row, td) {
+    applyHighlightText(td, value) {
       if (td.getAttribute('data-original-text')) return
       const originalValue = td.textContent.trim()
       td.setAttribute('data-original-text', originalValue)
-      td.textContent = originalValue + ' '
+      td.textContent = `${originalValue} `
       const span = document.createElement('span')
       span.className = 'fw-bold'
-      span.textContent = '= ' + originalValue
+      span.textContent = `= ${this.formatValue(value)}`
       td.appendChild(span)
     },
-    // Strips surrounding DMN double-quotes and trims whitespace for exact comparison
-    normalizeCell(text) {
-      if (!text) return ''
-      return text.trim().replace(/(^")|("$)/g, '').trim()
-    },
-    // Returns true if the cell text is a DMN string literal (wrapped in double quotes)
-    isDmnStringLiteral(text) {
-      if (!text) return false
-      return /^".*"$/.test(text.trim())
+    formatValue(value) {
+      return value !== null && typeof value === 'object' ? JSON.stringify(value) : String(value)
     }
   }
 }
 </script>
+
+<style>
+/* Not scoped: dmn-js renders the decision table itself. Every cell, because dmn-js colours every
+   second row and the sticky rule index cell on their own. */
+.dmn-decision-table-container tbody tr.fired-rule > td {
+  background-color: var(--bs-success-bg-subtle, #d1e7dd);
+}
+</style>
