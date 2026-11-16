@@ -249,7 +249,8 @@
 			"referenced": "Referenciado",
 			"running": "En ejecución",
 			"runningAndReferenced": "En ejecución y referenciado",			
-			"unknown": "Desconocido"
+			"unknown": "Desconocido",
+			"loadFailed": "No se pudieron cargar las definiciones de proceso llamadas"
 		},
 		"details": {
 			"instancesChain": "Proceso principal",

@@ -1315,7 +1315,7 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
 
     expect(buttonFrom(vm).disabled).toBe(false)
     buttonFrom(vm).click()
-    expect(vm.openSubprocess).toHaveBeenCalledWith('call_1', expect.objectContaining({ key: 'sub' }), false, 'sub')
+    expect(vm.openSubprocess).toHaveBeenCalledWith('call_1', expect.objectContaining({ key: 'sub' }))
   })
 
   // The called instance exists even when the engine could not resolve the fixed name statically
@@ -1381,7 +1381,7 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
     BpmnViewer.methods.drawSubprocessLinks.call(vm, registry)
     buttonFrom(vm).click()
 
-    expect(vm.openSubprocess).toHaveBeenCalledWith('call_1', expect.objectContaining({ key: 'sub' }), false, 'sub')
+    expect(vm.openSubprocess).toHaveBeenCalledWith('call_1', expect.objectContaining({ key: 'sub' }))
   })
 
   // A dynamic calledElement is an expression, so the target is unknown until something has
@@ -1665,7 +1665,7 @@ describe('BpmnViewer - openSubprocess', () => {
       loadActivitiesInstanceHistory: vi.fn(() => Promise.resolve([{ calledProcessInstanceId: 'sub-pi' }]))
     })
 
-    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', { key: 'sub', version: 1 }, false, 'sub')
+    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', { key: 'sub', version: 1 })
 
     expect(vm.loadActivitiesInstanceHistory).toHaveBeenCalledWith(expect.objectContaining({ processInstanceId: 'pi1', activityId: 'call_1' }))
     expect(HistoryService.findProcessesInstancesHistory).toHaveBeenCalledWith({ processInstanceId: 'sub-pi' })
@@ -1677,7 +1677,7 @@ describe('BpmnViewer - openSubprocess', () => {
     const findHistory = vi.spyOn(HistoryService, 'findProcessesInstancesHistory')
     const vm = vmWith()
 
-    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', { key: 'sub', version: 1 }, false, 'sub')
+    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', { key: 'sub', version: 1 })
 
     expect(findHistory).not.toHaveBeenCalled()
     expect(vm.navigateToSubprocess).toHaveBeenCalledWith('sub', 1, null)
@@ -1690,24 +1690,26 @@ describe('BpmnViewer - openSubprocess', () => {
       loadActivitiesInstanceHistory: vi.fn(() => Promise.resolve([{ calledProcessInstanceId: 'gone' }]))
     })
 
-    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', { key: 'sub', version: 1 }, false, 'sub')
+    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', { key: 'sub', version: 1 })
 
     expect(vm.navigateToSubprocess).toHaveBeenCalledWith('sub', 1, null)
   })
 
-  // Cancelled before the called process started, or waiting on an async job
-  it('should open the latest version of an unresolved fixed name without a called instance', async () => {
-    const vm = vmWith()
+  // Cancelled before the called process started, or waiting on an async job, and no definition the engine resolved:
+  // the latest version of the name could be undeployed or the wrong version or tenant, so do not guess
+  it('should not guess a definition for an unresolved call without a called instance', async () => {
+    const vm = vmWith({ $route: { path: '/process/p/1/pi1', query: {} } })
 
-    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', undefined, false, 'sub')
+    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', undefined)
 
-    expect(vm.navigateToSubprocess).toHaveBeenCalledWith('sub', undefined, null)
+    expect(vm.navigateToSubprocess).not.toHaveBeenCalled()
+    expect(vm.$router.push).toHaveBeenCalledWith({ path: '/process/p/1/pi1', query: { tab: 'calledProcessInstances' } })
   })
 
   it('should switch to the called process instances tab for an expression without a called instance', async () => {
     const vm = vmWith({ $route: { path: '/process/p/1/pi1', query: { tab: 'variables' } } })
 
-    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', undefined, true, '${key}')
+    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', undefined)
 
     expect(vm.navigateToSubprocess).not.toHaveBeenCalled()
     expect(vm.$router.push).toHaveBeenCalledWith({ path: '/process/p/1/pi1', query: { tab: 'calledProcessInstances' } })
@@ -1716,7 +1718,7 @@ describe('BpmnViewer - openSubprocess', () => {
   it('should switch to the called process definitions tab for a dynamic call outside an instance', async () => {
     const vm = vmWith({ selectedInstance: null, $route: { path: '/process/p', query: { a: '1' } } })
 
-    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', undefined, true, '${key}')
+    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', undefined)
 
     expect(vm.$router.push).toHaveBeenCalledWith({ path: '/process/p', query: { a: '1', tab: 'calledProcessDefinitions' } })
   })
@@ -1725,7 +1727,7 @@ describe('BpmnViewer - openSubprocess', () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
     const vm = vmWith({ loadActivitiesInstanceHistory: vi.fn(() => Promise.reject(new Error('down'))) })
 
-    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', { key: 'sub', version: 1 }, false, 'sub')
+    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', { key: 'sub', version: 1 })
 
     expect(consoleError).toHaveBeenCalled()
     expect(vm.navigateToSubprocess).not.toHaveBeenCalled()

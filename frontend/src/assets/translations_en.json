@@ -249,7 +249,8 @@
 			"referenced": "Referenced",
 			"running": "Running",
 			"runningAndReferenced": "Running and referenced",			
-			"unknown": "Unknown"
+			"unknown": "Unknown",
+			"loadFailed": "The called process definitions could not be loaded"
 		},
 		"details": {
 			"instancesChain": "Root process",

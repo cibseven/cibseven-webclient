@@ -249,7 +249,8 @@
 			"referenced": "Referenziert",
 			"running": "Laufend",
 			"runningAndReferenced": "Laufend und referenziert",
-			"unknown": "Unbekannt"
+			"unknown": "Unbekannt",
+			"loadFailed": "Die aufgerufenen Prozessdefinitionen konnten nicht geladen werden"
 		},
 		"details": {
 			"instancesChain": "Hauptprozess",

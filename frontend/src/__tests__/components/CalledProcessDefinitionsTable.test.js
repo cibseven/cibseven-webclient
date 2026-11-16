@@ -1,0 +1,103 @@
+/*
+ * Copyright CIB software GmbH and/or licensed to CIB software GmbH
+ * under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright
+ * ownership. CIB software licenses this file to you under the Apache License,
+ * Version 2.0; you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+import { describe, it, expect, vi, afterEach } from 'vitest'
+import CalledProcessDefinitionsTable from '@/components/process/tables/CalledProcessDefinitionsTable.vue'
+
+const load = CalledProcessDefinitionsTable.methods.loadCalledProcessDefinitionsData
+
+function tableContext(loadCalledProcessDefinitions) {
+  return {
+    ...CalledProcessDefinitionsTable.data(),
+    process: { id: 'pd-1' },
+    $root: { config: {} },
+    loadCalledProcessDefinitions
+  }
+}
+
+describe('CalledProcessDefinitionsTable - loadCalledProcessDefinitionsData', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('should load the called definitions of the displayed process', async () => {
+    const vm = tableContext(vi.fn(() => Promise.resolve()))
+
+    await load.call(vm)
+
+    expect(vm.loadCalledProcessDefinitions).toHaveBeenCalledWith({ processId: 'pd-1', chunkSize: 50 })
+    expect(vm.loading).toBe(false)
+    expect(vm.loadFailed).toBe(false)
+  })
+
+  // CIB7-2717: e.g. the static definitions could not be loaded; an empty table would claim there are none
+  it('should report a failed load instead of showing an empty table', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    const vm = tableContext(vi.fn(() => Promise.reject(new Error('could not be loaded'))))
+
+    await load.call(vm)
+
+    expect(vm.loadFailed).toBe(true)
+    expect(vm.loading).toBe(false)
+  })
+
+  it('should clear an earlier failure when it loads again', async () => {
+    const vm = tableContext(vi.fn(() => Promise.resolve()))
+    vm.loadFailed = true
+
+    await load.call(vm)
+
+    expect(vm.loadFailed).toBe(false)
+  })
+
+  // Switching definitions: the older load ending must not end the newer one's spinner or flag an error
+  it('should leave the flags to the latest load', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    let failOlder
+    const loads = [
+      new Promise((resolve, reject) => { failOlder = reject }),
+      new Promise(() => {})
+    ]
+    const vm = tableContext(vi.fn(() => loads.shift()))
+
+    const older = load.call(vm)
+    load.call(vm)
+    failOlder(new Error('outdated'))
+    await older
+
+    expect(vm.loading).toBe(true)
+    expect(vm.loadFailed).toBe(false)
+  })
+
+  // The diagram of the new definition may not be ready yet, so no load would reset it
+  it('should drop the previous definition\'s error when the definition changes', () => {
+    const vm = { ...tableContext(vi.fn()), isDiagramReady: false, loadFailed: true }
+
+    CalledProcessDefinitionsTable.watch['process.id'].handler.call(vm, 'pd-2')
+
+    expect(vm.loadFailed).toBe(false)
+    expect(vm.loadCalledProcessDefinitions).not.toHaveBeenCalled()
+  })
+
+  it('should not load without a process', async () => {
+    const vm = tableContext(vi.fn())
+    vm.process = null
+
+    await load.call(vm)
+
+    expect(vm.loadCalledProcessDefinitions).not.toHaveBeenCalled()
+  })
+})

@@ -19,6 +19,8 @@ import { ProcessService, HistoryService } from '@/services.js'
 
 // The load in flight per store, so callers asking for the same definition share one request
 const pendingStaticLoads = new WeakMap()
+// The latest table load per store; an older one stops committing once a newer one has started
+const currentTableLoads = new WeakMap()
 
 async function fetchStaticCalledProcessDefinitions({ commit, state }, processDefinitionId) {
   // Never keep the data of another definition while the new one loads; null first, so it is never shown under the new id
@@ -71,15 +73,24 @@ export default {
       return promise
     },
 
-    async loadCalledProcessDefinitions({ commit, dispatch, getters, rootGetters }, { processId, chunkSize = 50 }) {
+    async loadCalledProcessDefinitions({ commit, dispatch, getters, rootGetters, state }, { processId, chunkSize = 50 }) {
+      // e.g. after switching definitions, a slow load of the previous one must not fill the table
+      const load = {}
+      currentTableLoads.set(state, load)
+      const isOutdated = () => currentTableLoads.get(state) !== load
+
       commit('setCalledProcessDefinitions', [])
       commit('setAllCalledProcessDefinitions', [])
 
       // Not loaded yet does not mean "calls nothing statically": wait for them (shares a load in flight)
       if (processId && !getters.getStaticCalledProcessDefinitionsFor(processId)) {
         await dispatch('loadStaticCalledProcessDefinitions', { processDefinitionId: processId })
+        if (isOutdated()) return
       }
-      const staticDefinitions = getters.getStaticCalledProcessDefinitionsFor(processId) || []
+      const loadedStaticDefinitions = getters.getStaticCalledProcessDefinitionsFor(processId)
+      // Their load failed: a table without them would wrongly say the definition calls nothing statically
+      if (processId && !loadedStaticDefinitions) throw new Error('The static called process definitions could not be loaded')
+      const staticDefinitions = loadedStaticDefinitions || []
       const historicStats = rootGetters.getHistoricActivityStatistics(processId) || []
       const getActivityName = rootGetters.getProcessActivities || {}
 
@@ -144,6 +155,7 @@ export default {
           activityType: 'callActivity',
           unfinished: true
         })
+        if (isOutdated()) return
 
         const filtered = activitiesHistory.filter(a =>
           a.calledProcessInstanceId && !a.endTime
@@ -163,6 +175,7 @@ export default {
         for (let i = 0; i < instanceIds.length; i += chunkSize) {
           const chunk = instanceIds.slice(i, i + chunkSize)
           const definitionsInfo = await HistoryService.findProcessesInstancesHistory({ processInstanceIds: chunk })
+          if (isOutdated()) return
 
           for (const inst of definitionsInfo) {
             const key = `${inst.processDefinitionKey}:${inst.processDefinitionVersion}`

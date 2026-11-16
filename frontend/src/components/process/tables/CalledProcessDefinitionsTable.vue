@@ -66,6 +66,9 @@
     <div v-if="loading && calledProcessDefinitions.length > 0">
       <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loadingMoreData') }}</p>
     </div>
+    <div v-else-if="loadFailed">
+      <p class="text-center p-4 text-danger">{{ $t('process-instance.calledProcessDefinitions.loadFailed') }}</p>
+    </div>
     <div v-else-if="!initialLoading && calledProcessDefinitions.length === 0">
       <p class="text-center p-4">{{ $t('process-instance.noResults') }}</p>
     </div>
@@ -88,7 +91,10 @@ export default {
   data() {
     return {
       loading: false,
-      initialLoading: false
+      initialLoading: false,
+      loadFailed: false,
+      // Counts the loads, so only the latest one updates the flags above
+      loadRequest: 0
     }
   },
   computed: {
@@ -109,6 +115,8 @@ export default {
     },
     'process.id': {
       handler(id) {
+        // An error belongs to the previous definition, even if this one only loads once its diagram is ready
+        this.loadFailed = false
         if (id && this.isDiagramReady) {
           this.loadCalledProcessDefinitionsData()
         }
@@ -133,8 +141,10 @@ export default {
         return
       }
 
+      const request = ++this.loadRequest
       this.initialLoading = true
       this.loading = true
+      this.loadFailed = false
       try {
         await this.loadCalledProcessDefinitions({
           processId: this.process.id,
@@ -142,9 +152,12 @@ export default {
         })
       } catch (error) {
         console.error('Error loading called processes:', error)
+        if (request === this.loadRequest) this.loadFailed = true
       } finally {
-        this.loading = false
-        this.initialLoading = false
+        if (request === this.loadRequest) {
+          this.loading = false
+          this.initialLoading = false
+        }
       }
     }
   }

@@ -636,7 +636,7 @@ export default {
           wrapper.style.cursor = 'not-allowed'
         } else {
           button.addEventListener('click', () => {
-            this.openSubprocess(ca.id, calledProcess, isDynamic, calledElement)
+            this.openSubprocess(ca.id, calledProcess)
           })
         }
 
@@ -694,7 +694,7 @@ export default {
     getTypeAllowed: function(typeI, types) {
       return types.some(type => typeI.includes(type))
     },
-    async openSubprocess(activityId, calledProcess, isDynamic, calledElement) {
+    async openSubprocess(activityId, calledProcess) {
       try {
         if (this.selectedInstance) {
           const calledProcessInstance = await this.findCalledProcessInstance(activityId)
@@ -704,9 +704,8 @@ export default {
         }
         // Without a called instance, open the called definition
         if (calledProcess) return this.navigateToSubprocess(calledProcess.key, calledProcess.version, null)
-        // A fixed name the engine could not resolve statically: its latest version
-        if (!isDynamic && calledElement) return this.navigateToSubprocess(calledElement, undefined, null)
-        // An expression has no known target: show what was called instead
+        // No known target (an expression, or a name the engine did not resolve): show what was called instead.
+        // Guessing the latest version of the name could open a definition that is not deployed, or the wrong version or tenant
         const tab = this.selectedInstance ? 'calledProcessInstances' : 'calledProcessDefinitions'
         this.$router.push({ path: this.$route.path, query: { ...this.$route.query, tab } })
       } catch (error) {

@@ -249,7 +249,8 @@
 			"referenced": "Ссылается",
 			"running": "Выполняется",
 			"runningAndReferenced": "Запущен и ссылается",
-			"unknown": "Неизвестно"
+			"unknown": "Неизвестно",
+			"loadFailed": "Не удалось загрузить вызываемые определения процессов"
 		},
 		"details": {
 			"instancesChain": "Корневой процесс",

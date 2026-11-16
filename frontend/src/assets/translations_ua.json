@@ -249,7 +249,8 @@
 			"referenced": "Посилається",
 			"running": "Виконується",
 			"runningAndReferenced": "Запущено i посилається",
-			"unknown": "Невідомо"
+			"unknown": "Невідомо",
+			"loadFailed": "Не вдалося завантажити викликані визначення процесів"
 		},
 		"details": {
 			"instancesChain": "Кореневий процес",

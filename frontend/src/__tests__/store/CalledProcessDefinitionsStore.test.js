@@ -313,6 +313,40 @@ createStoreTestSuite('CalledProcessDefinitionsStore', CalledProcessDefinitionsSt
         expect(lastGrouping(context).map(def => def.definitionId)).toEqual(['sub-1'])
       })
 
+      // Shown as an error by the table instead of a table that silently lacks the static rows
+      it('should fail when the static definitions could not be loaded', async () => {
+        const context = contextWith(getContext)
+        context.getters.getStaticCalledProcessDefinitionsFor = () => null
+
+        await expect(action(context, { processId: 'pd-1' })).rejects.toThrow('could not be loaded')
+
+        expect(context.commit.mock.calls.filter(([name]) => name === 'setCalledProcessDefinitions')).toEqual([['setCalledProcessDefinitions', []]])
+      })
+
+      // Switching definitions while the table loads: the slower, older load must not fill the table
+      it('should drop an older load that finishes after a newer one started', async () => {
+        const first = contextWith(getContext, {
+          historicStats: [{ id: 'call_dyn', instances: 1 }],
+          activityNames: { call_dyn: 'Dynamic call' }
+        })
+        let finishFirst
+        HistoryService.findActivitiesProcessDefinitionHistory
+          .mockReturnValueOnce(new Promise(resolve => { finishFirst = resolve }))
+        HistoryService.findProcessesInstancesHistory.mockResolvedValue([])
+
+        const older = action(first, { processId: 'pd-old' })
+        const newer = { ...first, commit: vi.fn() }
+        newer.getters.getStaticCalledProcessDefinitionsFor = () => [staticDef()]
+        newer.rootGetters = { ...first.rootGetters, getHistoricActivityStatistics: () => [] }
+        await action(newer, { processId: 'pd-new' })
+        const commitsBefore = first.commit.mock.calls.length
+        finishFirst([{ activityId: 'call_dyn', calledProcessInstanceId: 'x' }])
+        await older
+
+        expect(first.commit.mock.calls.length).toBe(commitsBefore)
+        expect(lastGrouping(newer).map(def => def.definitionId)).toEqual(['sub-1'])
+      })
+
       it('should only use the static definitions loaded for this process definition', async () => {
         const context = contextWith(getContext)
         const forDefinition = vi.fn(() => [staticDef()])
