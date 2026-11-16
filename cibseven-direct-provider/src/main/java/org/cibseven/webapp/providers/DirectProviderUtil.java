@@ -38,6 +38,7 @@ import org.cibseven.bpm.engine.rest.mapper.JacksonConfigurator;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.bpm.engine.runtime.VariableInstance;
 import org.cibseven.bpm.engine.runtime.VariableInstanceQuery;
+import org.cibseven.bpm.engine.variable.VariableMap;
 import org.cibseven.bpm.engine.variable.value.TypedValue;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.SystemException;
@@ -167,8 +168,17 @@ public class DirectProviderUtil {
 		try {
 			VariableValueDto dto = getObjectMapper(user).convertValue(variable, VariableValueDto.class);
 			return dto.toTypedValue(getProcessEngine(user), getObjectMapper(user));
-		} catch (RestException | IllegalArgumentException | JacksonException e) {
+		} catch (RestException | IllegalArgumentException | JacksonException | ProcessEngineException e) {
 			throw new SystemException(String.format("Cannot convert variable %s: %s", variableName, e.getMessage()), e);
+		}
+	}
+
+	/** Engine-rest variable values by name as a variable map, converted the way engine-rest converts them. */
+	protected VariableMap toVariableMap(Map<String, VariableValueDto> variables, String what, CIBUser user) {
+		try {
+			return VariableValueDto.toMap(variables, getProcessEngine(user), getObjectMapper(user));
+		} catch (RestException e) {
+			throw new SystemException(String.format("Cannot modify variables for %s: %s", what, e.getMessage()), e);
 		}
 	}
 

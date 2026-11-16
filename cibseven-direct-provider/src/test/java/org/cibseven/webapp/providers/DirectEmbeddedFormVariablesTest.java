@@ -104,7 +104,8 @@ class DirectEmbeddedFormVariablesTest {
 
 		assertThatThrownBy(() -> taskProvider.modifyLocalVariables(taskId, patch, user))
 			.isInstanceOf(SystemException.class)
-			.hasMessageContaining(taskId);
+			.hasMessageContaining("Cannot modify variables for task " + taskId)
+			.hasMessageContaining("NoSuchType");
 		assertThat(engine.getTaskService().getVariablesLocal(taskId)).isEmpty();
 	}
 

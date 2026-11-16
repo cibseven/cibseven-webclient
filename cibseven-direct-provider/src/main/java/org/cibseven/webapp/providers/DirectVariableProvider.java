@@ -92,14 +92,7 @@ public class DirectVariableProvider implements IVariableProvider {
 	public void modifyVariableByExecutionId(String executionId, Map<String, Object> data, CIBUser user)
 			throws SystemException {
 		PatchVariablesDto patch = directProviderUtil.getObjectMapper(user).convertValue(data, PatchVariablesDto.class);
-		VariableMap variableModifications = null;
-		try {
-			variableModifications = VariableValueDto.toMap(patch.getModifications(), directProviderUtil.getProcessEngine(user), directProviderUtil.getObjectMapper(user));
-		} catch (RestException e) {
-			String errorMessage = String.format("Cannot modify variables for %s: %s", "modifyVariableByExecutionId",
-					e.getMessage());
-			throw new SystemException(errorMessage, e);
-		}
+		VariableMap variableModifications = directProviderUtil.toVariableMap(patch.getModifications(), "modifyVariableByExecutionId", user);
 
 		List<String> variableDeletions = patch.getDeletions();
 		try {
@@ -611,14 +604,8 @@ public class DirectVariableProvider implements IVariableProvider {
 	// updates execution variables
 	private void updateVariableEntities(String processInstanceId, Map<String, VariableValueDto> modifications,
 			List<String> deletions, CIBUser user) {
-		VariableMap variableModifications = null;
 		ProcessEngine processEngine = directProviderUtil.getProcessEngine(user);
-		try {
-			variableModifications = VariableValueDto.toMap(modifications, processEngine, directProviderUtil.getObjectMapper(user));
-		} catch (RestException e) {
-			String errorMessage = String.format("Cannot modify variables for %s: %s", "processInstance", e.getMessage());
-			throw new SystemException(errorMessage, e);
-		}
+		VariableMap variableModifications = directProviderUtil.toVariableMap(modifications, "processInstance", user);
 		try {
 			RuntimeServiceImpl runtimeServiceImpl = (RuntimeServiceImpl) processEngine.getRuntimeService();
 			runtimeServiceImpl.updateVariables(processInstanceId, variableModifications, deletions);
