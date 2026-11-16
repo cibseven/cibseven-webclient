@@ -31,8 +31,8 @@ async function fetchStaticCalledProcessDefinitions({ commit, state }, pending) {
   }
   try {
     const staticCalledProcessDefinitions = await ProcessService.findCalledProcessDefinitions(processDefinitionId)
-    // Another definition was requested meanwhile, so this answer is out of date
-    if (state.staticCalledProcessDefinitionsId !== processDefinitionId) return
+    // A newer request (another definition, or this one again after quick switches) replaced this one: its answer is older
+    if (pendingStaticLoads.get(state) !== pending) return
     commit('setStaticCalledProcessDefinitions', staticCalledProcessDefinitions)
   } catch (error) {
     // Only the call activity links depend on this: they stay "unknown", the views keep working
@@ -74,6 +74,14 @@ export default {
       pendingStaticLoads.set(context.state, pending)
       pending.promise = fetchStaticCalledProcessDefinitions(context, pending)
       return pending.promise
+    },
+
+    // Leaving the process pages: the next visit loads them again, so a newer deployment is seen then.
+    // A load still running no longer commits
+    clearStaticCalledProcessDefinitions({ commit, state }) {
+      pendingStaticLoads.delete(state)
+      commit('setStaticCalledProcessDefinitions', null)
+      commit('setStaticCalledProcessDefinitionsId', null)
     },
 
     // A definition switch before the new table can load: drop the previous rows and outdate a load still running for them

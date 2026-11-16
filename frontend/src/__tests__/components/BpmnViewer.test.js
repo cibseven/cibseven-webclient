@@ -1705,11 +1705,31 @@ describe('BpmnViewer - openSubprocess', () => {
       ...overrides
     }
     vm.findCalledProcessInstanceId = BpmnViewer.methods.findCalledProcessInstanceId.bind(vm)
+    vm.fetchCalledProcessInstanceId = BpmnViewer.methods.fetchCalledProcessInstanceId.bind(vm)
     return vm
   }
 
+  beforeEach(() => {
+    vi.spyOn(HistoryService, 'findActivitiesInstancesHistoryWithFilter').mockResolvedValue([])
+  })
+
   afterEach(() => {
     vi.restoreAllMocks()
+  })
+
+  // The call activity started its called instance after the page loaded the instance's history
+  it('should ask the engine when the loaded history has no called instance yet', async () => {
+    HistoryService.findActivitiesInstancesHistoryWithFilter.mockResolvedValue([
+      { activityId: 'call_1', calledProcessInstanceId: 'started-later', startTime: '2026-11-16T12:00:00.000+0000' }
+    ])
+    const vm = vmWith()
+
+    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', { key: 'sub', version: 1 })
+
+    expect(HistoryService.findActivitiesInstancesHistoryWithFilter).toHaveBeenCalledWith({
+      processInstanceId: 'pi1', activityType: 'callActivity', activityId: 'call_1'
+    })
+    expect(vm.navigateToSubprocess).toHaveBeenCalledWith(null, null, 'started-later')
   })
 
   // The viewer already has the instance's history, and the instance route needs only the id
@@ -1723,6 +1743,21 @@ describe('BpmnViewer - openSubprocess', () => {
 
     expect(vm.navigateToSubprocess).toHaveBeenCalledWith(null, null, 'sub-pi')
     expect(findHistory).not.toHaveBeenCalled()
+    expect(HistoryService.findActivitiesInstancesHistoryWithFilter).not.toHaveBeenCalled()
+  })
+
+  // Across a daylight saving change the offsets differ, so comparing the times as text picks the wrong run
+  it('should compare the start times as moments, not as text', async () => {
+    const vm = vmWith({
+      selectedInstanceActivityHistory: [
+        { activityId: 'call_1', calledProcessInstanceId: 'earlier', startTime: '2026-10-25T02:30:00.000+0200' },
+        { activityId: 'call_1', calledProcessInstanceId: 'later', startTime: '2026-10-25T02:10:00.000+0100' }
+      ]
+    })
+
+    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', undefined)
+
+    expect(vm.navigateToSubprocess).toHaveBeenCalledWith(null, null, 'later')
   })
 
   // A later run that started nothing (cancelled, waiting on an async job) must not hide an earlier called instance
@@ -1865,11 +1900,24 @@ describe('BpmnViewer - selected instance activity history', () => {
     expect(BpmnViewer.computed.selectedInstanceActivityHistory.call({ selectedInstance: { id: 'pi1' }, activityInstanceHistory: null })).toEqual([])
   })
 
-  // It decides which call activities have a called instance to open
-  it('should redraw the call activity links when it changes', () => {
+  // Text, so the links are redrawn only when the call activities with a called instance change
+  it('should key the call activities that started a called instance', () => {
+    const vm = {
+      selectedInstanceActivityHistory: [
+        { activityId: 'call_b', calledProcessInstanceId: 'x' },
+        { activityId: 'call_a', calledProcessInstanceId: 'y' },
+        { activityId: 'call_a', calledProcessInstanceId: 'z' },
+        { activityId: 'task_1' }
+      ]
+    }
+
+    expect(BpmnViewer.computed.calledInstanceActivitiesKey.call(vm)).toBe('call_a,call_b')
+  })
+
+  it('should redraw the call activity links when that key changes', () => {
     const vm = { viewer: {}, redrawSubprocessLinks: vi.fn() }
 
-    BpmnViewer.watch.selectedInstanceActivityHistory.call(vm)
+    BpmnViewer.watch.calledInstanceActivitiesKey.call(vm)
 
     expect(vm.redrawSubprocessLinks).toHaveBeenCalled()
   })
@@ -1877,7 +1925,7 @@ describe('BpmnViewer - selected instance activity history', () => {
   it('should not redraw before the viewer exists', () => {
     const vm = { viewer: null, redrawSubprocessLinks: vi.fn() }
 
-    BpmnViewer.watch.selectedInstanceActivityHistory.call(vm)
+    BpmnViewer.watch.calledInstanceActivitiesKey.call(vm)
 
     expect(vm.redrawSubprocessLinks).not.toHaveBeenCalled()
   })

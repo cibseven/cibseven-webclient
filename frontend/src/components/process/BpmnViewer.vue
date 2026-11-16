@@ -51,6 +51,8 @@ import { mapActions, mapGetters } from 'vuex'
 import { abbreviateNumber } from 'js-abbreviation-number'
 import ElementTemplateIconRendererModule from '@/components/process/ElementTemplateIconRenderer.js'
 import { isModelerEnabled } from '@/utils/config.js'
+import { HistoryService } from '@/services.js'
+import { moment } from '@/globals.js'
 
 const interactionTypes = [
   // Tasks
@@ -68,6 +70,16 @@ const interactionTypes = [
 
 // camunda: attributes of a call activity that, next to calledElement, pick the called definition
 const calledElementReferenceAttributes = ['calledElementVersion', 'calledElementVersionTag', 'calledElementTenantId']
+
+// The called instance of the latest run of a call activity that started one, or null. A later run that started nothing
+// (cancelled, waiting on an async job) must not hide an earlier one. Times are compared as moments: their offsets differ
+// across a daylight saving change, so comparing them as text can pick the older run
+function latestCalledProcessInstanceId(activities, activityId) {
+  const startedAt = activity => activity.startTime ? moment(activity.startTime).valueOf() : 0
+  return activities
+    .filter(activity => activity.activityId === activityId && activity.calledProcessInstanceId)
+    .sort((a, b) => startedAt(b) - startedAt(a))[0]?.calledProcessInstanceId ?? null
+}
 
 export default {
   name: 'BpmnViewer',
@@ -126,6 +138,13 @@ export default {
     selectedInstanceActivityHistory() {
       const processInstanceId = this.selectedInstance?.id
       return (this.activityInstanceHistory || []).filter(activity => activity.processInstanceId === processInstanceId)
+    },
+    // Which call activities started a called instance, as text, so the links are only redrawn when that changes
+    calledInstanceActivitiesKey() {
+      const activityIds = this.selectedInstanceActivityHistory
+        .filter(activity => activity.calledProcessInstanceId)
+        .map(activity => activity.activityId)
+      return [...new Set(activityIds)].sort().join(',')
     }
   },
   watch: {
@@ -136,8 +155,8 @@ export default {
     staticCalledProcessDefinitions: function() {
       if (this.viewer) this.redrawSubprocessLinks()
     },
-    // It tells which call activities started a called instance, and can arrive after the diagram was drawn
-    selectedInstanceActivityHistory: function() {
+    // The instance's history can arrive after the diagram was drawn
+    calledInstanceActivitiesKey: function() {
       if (this.viewer) this.redrawSubprocessLinks()
     },
     statistics: {
@@ -710,8 +729,10 @@ export default {
     async openSubprocess(activityId, calledProcess) {
       try {
         if (this.selectedInstance) {
-          // By id: the instance route needs nothing else, and shows "not found" if the instance was deleted meanwhile
-          const calledProcessInstanceId = this.findCalledProcessInstanceId(activityId)
+          // By id: the instance route needs nothing else, and shows "not found" if the instance was deleted meanwhile.
+          // The call activity may have started its called instance after the page loaded its history, so ask again
+          const calledProcessInstanceId = this.findCalledProcessInstanceId(activityId) ??
+            await this.fetchCalledProcessInstanceId(activityId)
           if (calledProcessInstanceId) return await this.navigateToSubprocess(null, null, calledProcessInstanceId)
         }
         // Without a called instance, open the called definition
@@ -727,13 +748,18 @@ export default {
         console.error('Failed to open subprocess:', error)
       }
     },
-    // The id of the latest instance the call activity started in the selected instance, or null
+    // The id of the latest instance the call activity started in the selected instance, from the history the viewer has
     findCalledProcessInstanceId: function(activityId) {
-      // From the history the viewer already has; a later run that started nothing (cancelled, waiting on an
-      // async job) must not hide an earlier run's called instance
-      return this.selectedInstanceActivityHistory
-        .filter(activity => activity.activityId === activityId && activity.calledProcessInstanceId)
-        .sort((a, b) => (b.startTime || '').localeCompare(a.startTime || ''))[0]?.calledProcessInstanceId ?? null
+      return latestCalledProcessInstanceId(this.selectedInstanceActivityHistory, activityId)
+    },
+    // The same from the engine; directly, so the store's shared activity history is left alone
+    fetchCalledProcessInstanceId: async function(activityId) {
+      const activities = await HistoryService.findActivitiesInstancesHistoryWithFilter({
+        processInstanceId: this.selectedInstance.id,
+        activityType: 'callActivity',
+        activityId
+      })
+      return latestCalledProcessInstanceId(activities || [], activityId)
     },
     async navigateToSubprocess(processKey, versionIndex, calledProcessInstanceId) {
       if (calledProcessInstanceId) {

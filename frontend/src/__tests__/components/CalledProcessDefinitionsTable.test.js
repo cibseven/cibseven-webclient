@@ -107,6 +107,17 @@ describe('CalledProcessDefinitionsTable - loadCalledProcessDefinitionsData', () 
     expect(vm.loadRequest).toBe(4)
   })
 
+  // Switching versions: the previous diagram still counts as ready, so loading now would use its statistics and names
+  it('should wait for the new diagram after a definition switch even while the old one counts as ready', () => {
+    const vm = { ...tableContext(vi.fn()), isDiagramReady: true }
+    vm.loadCalledProcessDefinitionsData = vi.fn()
+
+    CalledProcessDefinitionsTable.watch['process.id'].handler.call(vm, 'pd-2', 'pd-1')
+
+    expect(vm.loadCalledProcessDefinitionsData).not.toHaveBeenCalled()
+    expect(vm.resetCalledProcessDefinitions).toHaveBeenCalled()
+  })
+
   it('should load right away when the diagram is ready', () => {
     const vm = { ...tableContext(vi.fn(() => Promise.resolve())), isDiagramReady: true }
     vm.loadCalledProcessDefinitionsData = vi.fn()

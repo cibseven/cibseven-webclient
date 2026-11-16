@@ -244,6 +244,25 @@ createStoreTestSuite('CalledProcessDefinitionsStore', CalledProcessDefinitionsSt
         expect(ProcessService.findCalledProcessDefinitions).toHaveBeenCalledTimes(3)
       })
 
+      // A, then B, then A again, with the first A answering last: its older list must not replace the newer one
+      it('should not let an older answer overwrite a newer one for the same definition', async () => {
+        const context = getContext()
+        context.commit.mockImplementation((name, value) => CalledProcessDefinitionsStore.mutations[name](context.state, value))
+        let finishFirstA
+        ProcessService.findCalledProcessDefinitions
+          .mockReturnValueOnce(new Promise(resolve => { finishFirstA = resolve }))
+          .mockResolvedValueOnce([])
+          .mockResolvedValueOnce([staticDef({ id: 'newer' })])
+
+        const firstA = action(context, { processDefinitionId: 'pd-a' })
+        await action(context, { processDefinitionId: 'pd-b' })
+        await action(context, { processDefinitionId: 'pd-a' })
+        finishFirstA([staticDef({ id: 'older' })])
+        await firstA
+
+        expect(context.state.staticCalledProcessDefinitions).toEqual([staticDef({ id: 'newer' })])
+      })
+
       // Each store has its own state; a load in flight in one must not answer for another
       it('should not share a request between stores', async () => {
         const first = getContext()
@@ -290,6 +309,35 @@ createStoreTestSuite('CalledProcessDefinitionsStore', CalledProcessDefinitionsSt
 
         expect(context.state.staticCalledProcessDefinitionsId).toBe('pd-2')
         expect(context.state.staticCalledProcessDefinitions).toEqual([staticDef({ id: 'sub-2' })])
+      })
+    },
+
+    clearStaticCalledProcessDefinitions: (action, getContext) => {
+      it('should forget the static definitions', () => {
+        const context = getContext()
+        context.commit.mockImplementation((name, value) => CalledProcessDefinitionsStore.mutations[name](context.state, value))
+        context.state.staticCalledProcessDefinitions = [staticDef()]
+        context.state.staticCalledProcessDefinitionsId = 'pd-1'
+
+        action(context)
+
+        expect(context.state.staticCalledProcessDefinitions).toBeNull()
+        expect(context.state.staticCalledProcessDefinitionsId).toBeNull()
+      })
+
+      // Left the process pages while it was loading: the answer belongs to a visit that is over
+      it('should keep a load still running from committing', async () => {
+        const context = getContext()
+        context.commit.mockImplementation((name, value) => CalledProcessDefinitionsStore.mutations[name](context.state, value))
+        let finishLoad
+        ProcessService.findCalledProcessDefinitions.mockReturnValueOnce(new Promise(resolve => { finishLoad = resolve }))
+
+        const running = CalledProcessDefinitionsStore.actions.loadStaticCalledProcessDefinitions(context, { processDefinitionId: 'pd-1' })
+        action(context)
+        finishLoad([staticDef()])
+        await running
+
+        expect(context.state.staticCalledProcessDefinitions).toBeNull()
       })
     },
 

@@ -114,10 +114,11 @@ export default {
       this.filterByActivity(this.selectedActivityId)
     },
     'process.id': {
-      handler(id) {
+      handler(id, oldId) {
         // An error belongs to the previous definition, even if this one only loads once its diagram is ready
         this.loadFailed = false
-        if (id && this.isDiagramReady) {
+        // Only on opening: after a switch the previous definition's diagram still counts as ready until the new one is shown
+        if (id && this.isDiagramReady && oldId === undefined) {
           this.loadCalledProcessDefinitionsData()
         } else {
           // It loads once its diagram is ready; until then show nothing of the previous definition.

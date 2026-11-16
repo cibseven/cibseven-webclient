@@ -167,7 +167,7 @@ export default {
   },
   watch: {
     'process.id': function() {
-      this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
+      this.ensureStaticCalledProcessDefinitions()
       ProcessService.fetchDiagram(this.process.id).then(response => {
         this.$refs.diagram?.showDiagram(response.bpmn20Xml, this.selectedActivityId)?.then(() => this.restoreViewboxIfSaved())
       })
@@ -183,6 +183,7 @@ export default {
   },
   computed: {
     ...mapGetters(['selectedActivityId']),
+    ...mapGetters('calledProcessDefinitions', ['getStaticCalledProcessDefinitionsFor']),
     ProcessInstanceTabsPlugin() {
       return this.$options.components && this.$options.components.ProcessInstanceTabsPlugin
         ? this.$options.components.ProcessInstanceTabsPlugin
@@ -220,9 +221,7 @@ export default {
     },
   },
   mounted: function() {
-    // The instance can be opened directly, so the call activity links cannot rely on the definition view having loaded this.
-    // Always fetched, like the definition view does: a definition loaded earlier may call an older version by now
-    this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
+    this.ensureStaticCalledProcessDefinitions()
     ProcessService.fetchDiagram(this.process.id).then(response => {
       this.$refs.diagram?.showDiagram(response.bpmn20Xml, this.selectedActivityId)?.then(() => this.restoreViewboxIfSaved())
     })
@@ -239,6 +238,13 @@ export default {
   methods: {
     ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'selectActivity', 'loadHistoricActivityStatistics', 'clearHistoricActivityStatistics']),
     ...mapActions('calledProcessDefinitions', ['loadStaticCalledProcessDefinitions']),
+    // The instance can be opened directly, so the call activity links cannot rely on the definition view having loaded this.
+    // Loaded once per visit: ProcessDefinitionView drops them when the process pages are left, so a newer deployment is seen
+    // on the next visit without fetching them again for every instance opened
+    ensureStaticCalledProcessDefinitions: function() {
+      if (this.getStaticCalledProcessDefinitionsFor(this.process.id)) return
+      this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
+    },
     selectTask: function(event) {
       this.$emit('task-selected', event);
     },

@@ -810,3 +810,14 @@ describe('ProcessDefinitionView - exportCSV', () => {
     expect(filename).toMatch(/^Management_Instances_\d{8}_\d{4}\.csv$/)
   })
 })
+
+// CIB7-2717: the next visit loads them again, so a deployment made in between is seen
+describe('ProcessDefinitionView - leaving the process pages', () => {
+  it('should forget the called process definitions', () => {
+    const vm = { clearStaticCalledProcessDefinitions: vi.fn() }
+
+    ProcessDefinitionView.beforeUnmount.call(vm)
+
+    expect(vm.clearStaticCalledProcessDefinitions).toHaveBeenCalled()
+  })
+})

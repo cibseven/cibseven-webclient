@@ -66,13 +66,18 @@ describe('ProcessInstanceView', () => {
   // CIB7-2717: an instance opened directly (search, links, tables) never passed through the
   // definition view, so the view has to load the call activity targets itself
   describe('static called process definitions', () => {
-    const context = (overrides = {}) => ({
-      process: { id: 'pd-1' },
-      selectedInstance: null,
-      $refs: {},
-      loadStaticCalledProcessDefinitions: vi.fn(),
-      ...overrides
-    })
+    const context = (overrides = {}) => {
+      const vm = {
+        process: { id: 'pd-1' },
+        selectedInstance: null,
+        $refs: {},
+        getStaticCalledProcessDefinitionsFor: vi.fn(() => null),
+        loadStaticCalledProcessDefinitions: vi.fn(),
+        ...overrides
+      }
+      vm.ensureStaticCalledProcessDefinitions = ProcessInstanceView.methods.ensureStaticCalledProcessDefinitions.bind(vm)
+      return vm
+    }
 
     afterEach(() => {
       vi.restoreAllMocks()
@@ -87,13 +92,23 @@ describe('ProcessInstanceView', () => {
       expect(vm.loadStaticCalledProcessDefinitions).toHaveBeenCalledWith({ processDefinitionId: 'pd-1' })
     })
 
-    it('reloads them when the displayed definition changes', () => {
+    it('loads them when the displayed definition changes', () => {
       vi.spyOn(ProcessService, 'fetchDiagram').mockResolvedValue({ bpmn20Xml: '' })
       const vm = context({ process: { id: 'pd-2' } })
 
       ProcessInstanceView.watch['process.id'].call(vm)
 
       expect(vm.loadStaticCalledProcessDefinitions).toHaveBeenCalledWith({ processDefinitionId: 'pd-2' })
+    })
+
+    // Once per visit: they were loaded by this visit (ProcessDefinitionView drops them when the process pages are left)
+    it('reuses them when this visit already loaded them', () => {
+      const vm = context({ getStaticCalledProcessDefinitionsFor: vi.fn(() => []) })
+
+      vm.ensureStaticCalledProcessDefinitions()
+
+      expect(vm.getStaticCalledProcessDefinitionsFor).toHaveBeenCalledWith('pd-1')
+      expect(vm.loadStaticCalledProcessDefinitions).not.toHaveBeenCalled()
     })
   })
 })

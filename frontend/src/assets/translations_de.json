@@ -477,7 +477,7 @@
 			"canceledInstances": "Abgebrochene Aktivitätsinstanzen",
 			"openSubprocess": "Aufgerufene Prozessdefinition anzeigen",
 			"disabledSubprocess": "Die Prozessdefinition wird zur Laufzeit ermittelt",
-			"notFoundSubprocess": "Für das aufgerufene Element ist keine Prozessdefinition deployt",
+			"notFoundSubprocess": "Keine aufgerufene Prozessdefinition gefunden: Sie ist nicht deployt, oder Sie dürfen sie nicht sehen",
 			"currentSubprocess": "Die aufgerufene Prozessdefinition wird bereits angezeigt",
 			"unknownSubprocess": "Die aufgerufene Prozessdefinition konnte nicht ermittelt werden"
 		}

@@ -477,7 +477,7 @@
 			"canceledInstances": "Instancias de actividad canceladas",
 			"openSubprocess": "Mostrar la definición del proceso llamado",
 			"disabledSubprocess": "La definición del proceso se resolverá en tiempo de ejecución",
-			"notFoundSubprocess": "No hay ninguna definición de proceso desplegada para el elemento llamado",
+			"notFoundSubprocess": "No se encontró la definición del proceso llamado: no está desplegada o no tiene permiso para verla",
 			"currentSubprocess": "La definición del proceso llamado ya se está mostrando",
 			"unknownSubprocess": "No se pudo determinar la definición del proceso llamado"
 		}

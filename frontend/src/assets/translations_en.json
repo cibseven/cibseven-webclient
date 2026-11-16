@@ -477,7 +477,7 @@
 			"canceledInstances": "Canceled activity instances",		
 			"openSubprocess": "Show called process definition",
 			"disabledSubprocess": "Called process definition will be resolved at runtime",
-			"notFoundSubprocess": "No deployed process definition matches the called element",
+			"notFoundSubprocess": "No called process definition found: it is not deployed, or you are not allowed to see it",
 			"currentSubprocess": "The called process definition is the one already shown",
 			"unknownSubprocess": "The called process definition could not be determined"
 		}
