@@ -169,7 +169,7 @@ export default {
           clearTimeout(this.diagramTimer)
           this.diagramTimer = setTimeout(() => {
             // Gone if the view was left while the diagram loaded, which unmount cannot cancel
-            this.$refs.diagram?.showDiagram(response.dmnXml, this.decision.key).then(() => this.restoreViewboxIfSaved())
+            this.$refs.diagram?.showDiagram(response.dmnXml).then(() => this.restoreViewboxIfSaved())
           }, 100)
         })
         .catch(error => {

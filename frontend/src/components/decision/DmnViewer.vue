@@ -124,24 +124,17 @@ export default {
         isDrdView: this.isDrdView
       })
     },
-    // decisionId: the decision to open, e.g. the key of the decision definition; the first one otherwise
+    // dmn-js opens the DRD when the file has one, the first decision otherwise. decisionId (the key of
+    // a decision definition) opens that decision instead, if the file has it.
     showDiagram(xml, decisionId) {
       this.setDiagramReady(false)
       this.loader = true
       return this.viewer.importXML(xml).then(() => {
-        const decisions =
-          this.viewer.getDefinitions()?.drgElement?.filter(el => el.$type === 'dmn:Decision') || []
-        const decision = decisions.find(d => d.id === decisionId) ?? decisions[0]
-
-        if (decision && typeof this.viewer.openDecision === 'function') {
-          this.viewer.openDecision(decision.id)
-        }
-
-        // Auto-fit the viewport
-        const activeViewer = this.viewer.getActiveViewer()
-        if (activeViewer && activeViewer.get('canvas')) {
-          activeViewer.get('canvas').zoom('fit-viewport')
-        }
+        const view = decisionId && this.viewer.getViews().find(v => v.element?.id === decisionId)
+        if (view && view !== this.viewer.getActiveView()) return this.viewer.open(view)
+      }).then(() => {
+        // Auto-fit the viewport; only the DRD has a canvas, a decision table has none
+        this.viewer.getActiveViewer()?.get('canvas', false)?.zoom('fit-viewport')
         return new Promise(resolve => {
           setTimeout(() => {
             this.loader = false

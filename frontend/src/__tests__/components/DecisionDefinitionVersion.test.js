@@ -77,8 +77,7 @@ describe('DecisionDefinitionVersion', () => {
 
       vi.advanceTimersByTime(100)
 
-      // the definition's own decision, not the first one of its DRD
-      expect(showDiagram).toHaveBeenCalledWith('<dmn/>', 'myDecision')
+      expect(showDiagram).toHaveBeenCalledWith('<dmn/>')
       wrapper.unmount()
     })
 
