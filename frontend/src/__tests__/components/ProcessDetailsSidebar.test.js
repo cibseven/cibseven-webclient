@@ -259,6 +259,17 @@ describe('ProcessDetailsSidebar', () => {
       expect(wrapper.findAll('.deployment-time')[0].text()).not.toBe('deployment.deploymentTime: -')
     })
 
+    // the view copies findProcessById into the selected version, whose incidents always come as 0
+    it('keep the incidents they had when selected over the 0 the definition brings', async () => {
+      const processDefinitions = [version({ incidents: 0 }), lazyVersion()]
+      const wrapper = mountSidebar({ processDefinitions, selectedStatistics: statistics([3]) })
+      await flushPromises()
+
+      await select36(wrapper, processDefinitions, statistics([1]))
+
+      expect(wrapper.findAll('.list-group-item-action')[0].find('.open-incidents').text()).toContain('3')
+    })
+
     it('lose their incidents when the versions are reloaded, like their counts', async () => {
       const processDefinitions = versions()
       const wrapper = mountSidebar({ processDefinitions, selectedStatistics: statistics([2]) })

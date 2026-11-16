@@ -207,10 +207,10 @@ export default {
       return statistics.reduce((sum, activity) =>
         sum + (activity.incidents ?? []).reduce((count, incident) => count + (incident.incidentCount ?? 0), 0), 0)
     },
-    // live for the selected version; for the others, what Load data brought before what was remembered
+    // the selected version shows its live count, the others the one they had when selected or the loaded data
     incidentsOf(version) {
       if (version.id === this.selectedProcess?.id) return this.selectedIncidents
-      return typeof version.incidents === 'number' ? version.incidents : this.incidentsByVersionId[version.id]
+      return this.incidentsByVersionId[version.id] ?? version.incidents
     },
     // from the deployment read when the version was selected, or the loaded data
     deploymentTimeOf(version) {
@@ -238,8 +238,10 @@ export default {
           Object.assign(version, { runningInstances, allInstances, completedInstances })))
       }
       if (typeof this.incidentsOf(version) !== 'number') {
+        const list = this.processDefinitions
         loads.push(ProcessService.findProcessStatistics(version.id).then(statistics => {
-          this.incidentsByVersionId[version.id] = this.countIncidents(statistics)
+          // not once the list was reloaded meanwhile, so it does not hide the reloaded count
+          if (this.processDefinitions === list) this.incidentsByVersionId[version.id] = this.countIncidents(statistics)
         }))
       }
       await Promise.allSettled(loads)
