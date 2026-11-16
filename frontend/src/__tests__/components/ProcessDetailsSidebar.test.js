@@ -440,6 +440,20 @@ describe('ProcessDetailsSidebar', () => {
       expect(card(wrapper, 1).find('.open-incidents').text()).toContain('3')
     })
 
+    it('shows the incidents of Load data over those of an opening that answers after it', async () => {
+      let answerOpening
+      ProcessService.findProcessStatistics.mockReturnValueOnce(new Promise(resolve => { answerOpening = resolve }))
+      const wrapper = mountSidebar({ processDefinitions: [version(), lazyVersion()] })
+      await flushPromises()
+      await open(wrapper, 1)
+
+      await wrapper.setProps({ processDefinitions: [version(), lazyVersion({ runningInstances: 3, incidents: 5 })] })
+      answerOpening(statistics([2]))
+      await flushPromises()
+
+      expect(card(wrapper, 1).find('.open-incidents').text()).toContain('5')
+    })
+
     it('loads nothing when the details close', async () => {
       const wrapper = mountSidebar({ processDefinitions: [version(), lazyVersion()] })
       await flushPromises()

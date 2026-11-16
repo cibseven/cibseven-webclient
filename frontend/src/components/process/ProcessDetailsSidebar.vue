@@ -204,10 +204,10 @@ export default {
       return statistics.reduce((sum, activity) =>
         sum + (activity.incidents ?? []).reduce((count, incident) => count + (incident.incidentCount ?? 0), 0), 0)
     },
-    // the selected version shows its live count, the others the one they had when selected or the loaded data
+    // live for the selected version; for the others, what Load data brought before what was remembered
     incidentsOf(version) {
       if (version.id === this.selectedProcess?.id) return this.selectedIncidents
-      return this.incidentsByVersionId[version.id] ?? version.incidents
+      return typeof version.incidents === 'number' ? version.incidents : this.incidentsByVersionId[version.id]
     },
     // from the deployment read when the version was selected, or the loaded data
     deploymentTimeOf(version) {
