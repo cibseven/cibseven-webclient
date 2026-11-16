@@ -155,7 +155,7 @@ export default {
   data() {
     return {
       expandedVersionId: null,
-      // what was loaded for the versions selected before, so their cards keep it
+      // loaded for versions selected or opened before
       deployments: {},
       incidentsByVersionId: {}
     }
@@ -174,14 +174,12 @@ export default {
     },
     selectedIncidents() {
       const statistics = this.selectedProcess?.statistics
-      if (!statistics) return null
-      return statistics.reduce((sum, activity) =>
-        sum + (activity.incidents ?? []).reduce((count, incident) => count + (incident.incidentCount ?? 0), 0), 0)
+      return statistics ? this.countIncidents(statistics) : null
     }
   },
   watch: {
     selectedDeploymentId: {
-      handler: 'loadSelectedDeployment',
+      handler: 'loadDeployment',
       immediate: true
     },
     selectedIncidents: {
@@ -201,6 +199,11 @@ export default {
     countOrDash(value) {
       return typeof value === 'number' ? value : '-'
     },
+    // open incidents of a version, from its activity statistics
+    countIncidents(statistics) {
+      return statistics.reduce((sum, activity) =>
+        sum + (activity.incidents ?? []).reduce((count, incident) => count + (incident.incidentCount ?? 0), 0), 0)
+    },
     // the selected version shows its live count, the others the one they had when selected or the loaded data
     incidentsOf(version) {
       if (version.id === this.selectedProcess?.id) return this.selectedIncidents
@@ -213,17 +216,35 @@ export default {
     rememberSelectedIncidents() {
       if (this.selectedIncidents !== null) this.incidentsByVersionId[this.selectedProcess.id] = this.selectedIncidents
     },
-    async loadSelectedDeployment(deploymentId) {
+    async loadDeployment(deploymentId) {
       if (!deploymentId || this.deployments[deploymentId] || !this.canReadDeployment(deploymentId)) return
       try {
         this.deployments[deploymentId] = await ProcessService.findDeployment(deploymentId)
       } catch {
-        // the deployment time stays a dash; asked again the next time the version is selected
+        // the date stays a dash and is asked again next time
       }
+    },
+    // what a version opened without selecting it is missing; what fails stays a dash
+    async loadVersionData(version) {
+      const loads = []
+      if (!this.deploymentTimeOf(version)) loads.push(this.loadDeployment(version.deploymentId))
+      if (typeof version.runningInstances !== 'number') {
+        loads.push(ProcessService.findProcessById(version.id, true).then(({ runningInstances, allInstances, completedInstances }) =>
+          Object.assign(version, { runningInstances, allInstances, completedInstances })))
+      }
+      if (typeof this.incidentsOf(version) !== 'number') {
+        loads.push(ProcessService.findProcessStatistics(version.id).then(statistics => {
+          this.incidentsByVersionId[version.id] = this.countIncidents(statistics)
+        }))
+      }
+      await Promise.allSettled(loads)
     },
     // one version's details open at a time
     toggleDetails(versionId) {
       this.expandedVersionId = this.expandedVersionId === versionId ? null : versionId
+      const version = this.processDefinitions.find(v => v.id === this.expandedVersionId)
+      // the selected version's data is loaded by the view
+      if (version && version.version !== this.versionIndex) this.loadVersionData(version)
     },
     onRefreshProcessDefinitions: function(lazyLoadHistory) {
       this.$emit('onRefreshProcessDefinitions', lazyLoadHistory)

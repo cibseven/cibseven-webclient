@@ -19,7 +19,7 @@ import { flushPromises } from '@vue/test-utils'
 import { mountWithDefaults } from '../support/mountWithDefaults.js'
 
 vi.mock('@/services.js', () => ({
-  ProcessService: { findDeployment: vi.fn() }
+  ProcessService: { findDeployment: vi.fn(), findProcessById: vi.fn(), findProcessStatistics: vi.fn() }
 }))
 
 import { ProcessService } from '@/services.js'
@@ -76,6 +76,8 @@ describe('ProcessDetailsSidebar', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     ProcessService.findDeployment.mockResolvedValue({ id: 'dep-37', deploymentTime: DEPLOYMENT_TIME })
+    ProcessService.findProcessById.mockResolvedValue({ runningInstances: 0, allInstances: 0, completedInstances: 0 })
+    ProcessService.findProcessStatistics.mockResolvedValue([])
   })
 
   describe('version card', () => {
@@ -283,6 +285,7 @@ describe('ProcessDetailsSidebar', () => {
     })
 
     it('hands the details panel the deployment of its version once it was loaded', async () => {
+      ProcessService.findDeployment.mockImplementation(async id => ({ id, deploymentTime: DEPLOYMENT_TIME }))
       const wrapper = mountSidebar({ processDefinitions: [version(), lazyVersion()] })
       await flushPromises()
       const toggles = wrapper.findAll('.details-toggle')
@@ -291,8 +294,11 @@ describe('ProcessDetailsSidebar', () => {
       expect(wrapper.findComponent({ name: 'ProcessDefinitionDetails' }).props('selectedDeployment'))
         .toEqual({ id: 'dep-37', deploymentTime: DEPLOYMENT_TIME })
 
+      // a version opened without selecting it: its deployment is read on opening
       await toggles[1].trigger('click')
-      expect(wrapper.findComponent({ name: 'ProcessDefinitionDetails' }).props('selectedDeployment')).toBeNull()
+      await flushPromises()
+      expect(wrapper.findComponent({ name: 'ProcessDefinitionDetails' }).props('selectedDeployment'))
+        .toEqual({ id: 'dep-36', deploymentTime: DEPLOYMENT_TIME })
     })
 
     it('loads the new deployment when another version is selected', async () => {
@@ -352,6 +358,98 @@ describe('ProcessDetailsSidebar', () => {
       await flushPromises()
 
       expect(ProcessService.findDeployment).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('data of a version opened without selecting it', () => {
+    const open = async (wrapper, index) => {
+      await wrapper.findAll('.details-toggle')[index].trigger('click')
+      await flushPromises()
+    }
+    const card = (wrapper, index) => wrapper.findAll('.list-group-item-action')[index]
+
+    beforeEach(() => {
+      ProcessService.findProcessById.mockResolvedValue({ id: 'invoice:36:def', runningInstances: 3, allInstances: 10, completedInstances: 7, incidents: 0 })
+      ProcessService.findProcessStatistics.mockResolvedValue(statistics([2], [1]))
+      ProcessService.findDeployment.mockImplementation(async id => ({ id, deploymentTime: DEPLOYMENT_TIME }))
+    })
+
+    it('loads its counts, incidents and deployment time when its details open', async () => {
+      const processDefinitions = [version(), lazyVersion()]
+      const wrapper = mountSidebar({ processDefinitions })
+      await flushPromises()
+
+      await open(wrapper, 1)
+
+      expect(ProcessService.findProcessById).toHaveBeenCalledWith('invoice:36:def', true)
+      expect(ProcessService.findProcessStatistics).toHaveBeenCalledWith('invoice:36:def')
+      expect(ProcessService.findDeployment).toHaveBeenCalledWith('dep-36')
+      expect(card(wrapper, 1).find('.running-instances').text()).toContain('3')
+      expect(card(wrapper, 1).find('.open-incidents').text()).toContain('3')
+      expect(card(wrapper, 1).find('.finished-instances').text()).toContain('7')
+      expect(card(wrapper, 1).find('.deployment-time').text()).not.toBe('deployment.deploymentTime: -')
+      // only the counts are taken over (the total shows in the details), not the definition's other fields
+      expect(processDefinitions[1].allInstances).toBe(10)
+      expect(processDefinitions[1].incidents).toBeUndefined()
+    })
+
+    it('does not ask again for what it already loaded', async () => {
+      const wrapper = mountSidebar({ processDefinitions: [version(), lazyVersion()] })
+      await flushPromises()
+
+      await open(wrapper, 1)
+      await open(wrapper, 1)
+      await open(wrapper, 1)
+
+      expect(ProcessService.findProcessById).toHaveBeenCalledTimes(1)
+      expect(ProcessService.findProcessStatistics).toHaveBeenCalledTimes(1)
+      expect(ProcessService.findDeployment).toHaveBeenCalledTimes(2) // the selected one, then the opened one
+    })
+
+    it('asks nothing for a version whose data was loaded for every version', async () => {
+      const loaded = lazyVersion({ runningInstances: 3, allInstances: 10, completedInstances: 7, incidents: 1, deploymentTime: DEPLOYMENT_TIME })
+      const wrapper = mountSidebar({ processDefinitions: [version(), loaded] })
+      await flushPromises()
+      ProcessService.findDeployment.mockClear()
+
+      await open(wrapper, 1)
+
+      expect(ProcessService.findProcessById).not.toHaveBeenCalled()
+      expect(ProcessService.findProcessStatistics).not.toHaveBeenCalled()
+      expect(ProcessService.findDeployment).not.toHaveBeenCalled()
+    })
+
+    it('leaves the selected version to the view', async () => {
+      const wrapper = mountSidebar({ processDefinitions: [version({ runningInstances: '-' }), lazyVersion()] })
+      await flushPromises()
+
+      await open(wrapper, 0)
+
+      expect(ProcessService.findProcessById).not.toHaveBeenCalled()
+      expect(ProcessService.findProcessStatistics).not.toHaveBeenCalled()
+    })
+
+    it('keeps a dash for what cannot be read, and shows what could', async () => {
+      ProcessService.findProcessById.mockRejectedValue(new Error('down'))
+      const wrapper = mountSidebar({ processDefinitions: [version(), lazyVersion()] })
+      await flushPromises()
+
+      await open(wrapper, 1)
+
+      expect(card(wrapper, 1).find('.running-instances').text()).toBe('process.details.unfinishedInstances: -')
+      expect(card(wrapper, 1).find('.open-incidents').text()).toContain('3')
+    })
+
+    it('loads nothing when the details close', async () => {
+      const wrapper = mountSidebar({ processDefinitions: [version(), lazyVersion()] })
+      await flushPromises()
+      await open(wrapper, 1)
+      vi.clearAllMocks()
+
+      await open(wrapper, 1)
+
+      expect(wrapper.find('.version-details').exists()).toBe(false)
+      expect(ProcessService.findProcessById).not.toHaveBeenCalled()
     })
   })
 
