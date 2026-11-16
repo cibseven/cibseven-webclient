@@ -124,16 +124,17 @@ export default {
         isDrdView: this.isDrdView
       })
     },
-    showDiagram(xml) {
+    // decisionId: the decision to open, e.g. the key of the decision definition; the first one otherwise
+    showDiagram(xml, decisionId) {
       this.setDiagramReady(false)
       this.loader = true
       return this.viewer.importXML(xml).then(() => {
-        // Open the first decision if available
         const decisions =
           this.viewer.getDefinitions()?.drgElement?.filter(el => el.$type === 'dmn:Decision') || []
+        const decision = decisions.find(d => d.id === decisionId) ?? decisions[0]
 
-        if (decisions.length > 0 && typeof this.viewer.openDecision === 'function') {
-          this.viewer.openDecision(decisions[0].id)
+        if (decision && typeof this.viewer.openDecision === 'function') {
+          this.viewer.openDecision(decision.id)
         }
 
         // Auto-fit the viewport

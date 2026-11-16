@@ -96,6 +96,9 @@ const BUILTIN_TABS = [
 
 const RESERVED_TAB_IDS = BUILTIN_TABS.map(tab => tab.id)
 
+// Value types whose content history does not return here, see hasShownValue
+const NOT_FETCHED_TYPES = ['Bytes', 'File']
+
 const tabsFor = defineTabBar({
   deepLinkSection: 'decisionInstance',
   pluginSlot: 'decision-instance-tab',
@@ -192,7 +195,8 @@ export default {
         clearTimeout(this.diagramTimer)
         this.diagramTimer = setTimeout(() => {
           // Gone if the view was left while the diagram loaded, which unmount cannot cancel
-          this.$refs.diagram?.showDiagram(response.dmnXml).then(() => this.restoreViewboxIfSaved())
+          // A DRD holds several decisions: open the one this instance evaluated
+          this.$refs.diagram?.showDiagram(response.dmnXml, this.instance.decisionDefinitionKey).then(() => this.restoreViewboxIfSaved())
         }, 100)
       })
       .catch(error => {
@@ -220,9 +224,9 @@ export default {
       table.querySelectorAll('th.input-cell').forEach(th => {
         const colId = th.getAttribute('data-col-id')
         const input = this.instance?.inputs?.find(i => i.clauseId === colId)
-        if (!colId || !input) return
+        if (!colId || !input || !this.hasShownValue(input)) return
         const clauseDiv = th.querySelector('div.clause')
-        if (!clauseDiv || clauseDiv.getAttribute('data-original-text')) return
+        if (!clauseDiv || clauseDiv.hasAttribute('data-original-text')) return
         const original = clauseDiv.textContent.trim()
         clauseDiv.setAttribute('data-original-text', original)
         clauseDiv.textContent = ''
@@ -243,27 +247,27 @@ export default {
       const firedRuleIds = new Set(outputs.map(output => output.ruleId))
 
       table.querySelectorAll('tbody td.rule-index[data-row-id]').forEach(indexCell => {
-        if (firedRuleIds.has(indexCell.getAttribute('data-row-id'))) indexCell.closest('tr')?.classList.add('fired-rule')
-      })
+        const ruleId = indexCell.getAttribute('data-row-id')
+        const row = indexCell.closest('tr')
+        if (!firedRuleIds.has(ruleId) || !row) return
+        row.classList.add('fired-rule')
 
-      const outputCellsByRule = new Map()
-      table.querySelectorAll('tbody td.output-cell[data-row-id]').forEach(cell => {
-        const ruleId = cell.getAttribute('data-row-id')
-        outputCellsByRule.set(ruleId, [...(outputCellsByRule.get(ruleId) ?? []), cell])
-      })
-
-      outputs.forEach(output => {
-        // no value to show: binary values are not fetched, and a failed output carries only its error
-        if (output.value === undefined || output.errorMessage) return
-        const ruleCells = outputCellsByRule.get(output.ruleId) ?? []
-        const cell = output.clauseId
-          ? ruleCells.find(td => td.getAttribute('data-col-id') === output.clauseId)
-          : (ruleCells.length === 1 ? ruleCells[0] : undefined)
-        if (cell) this.applyHighlightText(cell, output.value)
+        const ruleCells = Array.from(row.querySelectorAll('td.output-cell'))
+        outputs.filter(output => output.ruleId === ruleId && this.hasShownValue(output)).forEach(output => {
+          const cell = output.clauseId
+            ? ruleCells.find(td => td.getAttribute('data-col-id') === output.clauseId)
+            : (ruleCells.length === 1 ? ruleCells[0] : undefined)
+          if (cell) this.applyHighlightText(cell, output.value)
+        })
       })
     },
+    // Binary values are not fetched (disableBinaryFetching): the engine sends them with value null,
+    // which must not read as a null result. A failed value carries only its error.
+    hasShownValue({ type, errorMessage }) {
+      return !errorMessage && !NOT_FETCHED_TYPES.includes(type)
+    },
     applyHighlightText(td, value) {
-      if (td.getAttribute('data-original-text')) return
+      if (td.hasAttribute('data-original-text')) return
       const originalValue = td.textContent.trim()
       td.setAttribute('data-original-text', originalValue)
       td.textContent = `${originalValue} `

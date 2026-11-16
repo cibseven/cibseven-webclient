@@ -28,7 +28,7 @@ vi.mock('@/services.js', async (importOriginal) => ({
   }
 }))
 
-const { applyInstanceValues, applyInputHeaders, applyOutputRows, applyHighlightText, formatValue } = DecisionInstance.methods
+const { applyInstanceValues, applyInputHeaders, applyOutputRows, applyHighlightText, formatValue, hasShownValue } = DecisionInstance.methods
 
 /**
  * A decision table as the dmn-js viewer renders it: the rows carry no id, the rule id sits on the
@@ -68,8 +68,14 @@ function customerTable() {
 }
 
 function applyOutputs(table, outputs) {
-  applyOutputRows.call({ instance: { outputs }, applyHighlightText, formatValue }, table)
+  applyOutputRows.call({ instance: { outputs }, applyHighlightText, formatValue, hasShownValue }, table)
 }
+
+function applyInputs(table, inputs) {
+  applyInputHeaders.call({ instance: { inputs }, formatValue, hasShownValue }, table)
+}
+
+const inputHeader = (table, colId) => table.querySelector(`th[data-col-id="${colId}"] div.clause`)
 
 const firedRules = table => Array.from(table.querySelectorAll('tr.fired-rule'))
   .map(row => row.querySelector('td.rule-index').getAttribute('data-row-id'))
@@ -137,7 +143,8 @@ describe('DecisionInstance', () => {
 
       vi.advanceTimersByTime(100)
 
-      expect(showDiagram).toHaveBeenCalledWith('<dmn/>')
+      // the decision this instance evaluated, not the first one of its DRD
+      expect(showDiagram).toHaveBeenCalledWith('<dmn/>', 'myDecision')
       wrapper.unmount()
     })
 
@@ -269,11 +276,12 @@ describe('DecisionInstance', () => {
         rules: [{ id: 'rule-a', inputs: ['&lt; 1000'], outputs: ['null', 'doc', 'limitOf(amount)'] }]
       })
 
+      // as the backend sends them: every field present, value null for all three
       applyOutputs(table, [
-        { clauseId: 'approver', ruleId: 'rule-a', value: null },
-        // binary values are not fetched (disableBinaryFetching), so the value is missing
-        { clauseId: 'document', ruleId: 'rule-a' },
-        { clauseId: 'limit', ruleId: 'rule-a', value: null, errorMessage: 'Cannot serialize value' }
+        { clauseId: 'approver', ruleId: 'rule-a', type: 'Null', value: null, errorMessage: null },
+        // binary values are not fetched (disableBinaryFetching)
+        { clauseId: 'document', ruleId: 'rule-a', type: 'Bytes', value: null, errorMessage: null },
+        { clauseId: 'limit', ruleId: 'rule-a', type: null, value: null, errorMessage: 'Cannot serialize value' }
       ])
 
       expect(firedRules(table)).toEqual(['rule-a'])
@@ -303,6 +311,40 @@ describe('DecisionInstance', () => {
       expect(outputCell(table, 'rule-3', 'result').textContent).toBe('true = true')
     })
 
+    it('does not show a file output as a null result', () => {
+      const table = decisionTable({ inputs: ['amount'], outputs: ['attachment'], rules: [{ id: 'rule-a', inputs: [''], outputs: ['file'] }] })
+
+      applyOutputs(table, [{ clauseId: 'attachment', ruleId: 'rule-a', type: 'File', value: null, errorMessage: null }])
+
+      expect(firedRules(table)).toEqual(['rule-a'])
+      expect(outputCell(table, 'rule-a', 'attachment').textContent).toBe('file')
+    })
+
+    it('treats input values like output values: no value for one that was not fetched or failed', () => {
+      const table = decisionTable({ inputs: ['amount', 'scan', 'customer'], outputs: [], rules: [] })
+
+      applyInputs(table, [
+        { clauseId: 'amount', type: 'Null', value: null, errorMessage: null },
+        { clauseId: 'scan', type: 'Bytes', value: null, errorMessage: null },
+        { clauseId: 'customer', type: null, value: null, errorMessage: 'Cannot deserialize object' }
+      ])
+
+      expect(inputHeader(table, 'amount').textContent).toBe('amount = null')
+      expect(inputHeader(table, 'scan').textContent).toBe('scan')
+      expect(inputHeader(table, 'customer').textContent).toBe('customer')
+    })
+
+    it('does not repeat the value of an input whose header is empty', () => {
+      const table = decisionTable({ inputs: ['amount'], outputs: [], rules: [] })
+      inputHeader(table, 'amount').textContent = ''
+      const inputs = [{ clauseId: 'amount', type: 'Integer', value: 5, errorMessage: null }]
+
+      applyInputs(table, inputs)
+      applyInputs(table, inputs)
+
+      expect(inputHeader(table, 'amount').textContent).toBe(' = 5')
+    })
+
     it('marks inputs and fired rules on the table inside the diagram viewer', () => {
       const table = customerTable()
       const container = document.createElement('div')
@@ -314,7 +356,7 @@ describe('DecisionInstance', () => {
 
       applyInstanceValues.call({
         $refs: { diagram: { $refs: { diagram: container } } },
-        instance, applyInputHeaders, applyOutputRows, applyHighlightText, formatValue
+        instance, applyInputHeaders, applyOutputRows, applyHighlightText, formatValue, hasShownValue
       })
 
       expect(firedRules(table)).toEqual(['rule-3'])

@@ -72,6 +72,38 @@ describe('DmnViewer - showDiagram', () => {
     vi.useRealTimers()
   })
 
+  describe('which decision of a DRD it opens', () => {
+    const drd = () => ({
+      setDiagramReady: vi.fn(),
+      viewer: {
+        importXML: vi.fn(() => Promise.resolve()),
+        getDefinitions: () => ({ drgElement: [
+          { $type: 'dmn:Decision', id: 'dish' },
+          { $type: 'dmn:InputData', id: 'season' },
+          { $type: 'dmn:Decision', id: 'beverages' }
+        ] }),
+        openDecision: vi.fn(),
+        getActiveViewer: () => null
+      }
+    })
+    const open = async (ctx, ...args) => {
+      vi.useFakeTimers()
+      const shown = DmnViewer.methods.showDiagram.call(ctx, '<xml/>', ...args)
+      await vi.runAllTimersAsync()
+      await shown
+      vi.useRealTimers()
+      return ctx.viewer.openDecision
+    }
+
+    it('opens the decision it is asked for', async () => {
+      expect(await open(drd(), 'beverages')).toHaveBeenCalledWith('beverages')
+    })
+
+    it.each([[undefined], ['not-in-this-file']])('opens the first decision when asked for %s', async (decisionId) => {
+      expect(await open(drd(), decisionId)).toHaveBeenCalledWith('dish')
+    })
+  })
+
   it('marks the diagram not-ready and does not throw when import fails', async () => {
     const ctx = {
       setDiagramReady: vi.fn(),
