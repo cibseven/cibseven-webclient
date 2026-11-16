@@ -179,13 +179,14 @@ describe('ResourcesNavBar.vue', () => {
     const FORM_FILE = '{\n    "type": "default",\n    "components": []\n}'
     const formResource = { id: 'r1', deploymentId: 'd1', name: 'invoice.form' }
 
-    it('reads a form from the deployment resource data, with the user\'s token', async () => {
+    it('reads a form from the deployment resource data, without handing on the user\'s token', async () => {
       DeploymentService.fetchDataFromDeploymentResource.mockResolvedValueOnce(FORM_FILE)
       const vm = context({ $root: { user: { authToken: 'tok' } } })
 
       const content = await vm.getContent(formResource)
 
-      expect(DeploymentService.fetchDataFromDeploymentResource).toHaveBeenCalledWith('d1', 'r1', 'invoice.form', 'tok')
+      // CIB7-2556: the Authorization header authenticates; the token must not go into the URL
+      expect(DeploymentService.fetchDataFromDeploymentResource).toHaveBeenCalledWith('d1', 'r1', 'invoice.form')
       expect(content).toBe(FORM_FILE)
     })
 

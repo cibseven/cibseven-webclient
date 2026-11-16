@@ -280,7 +280,7 @@ export default {
         content = response ? response.bpmn20Xml : null
       }
       else if (this.isForm(resource) || this.isHtml(resource)) {
-        content = await DeploymentService.fetchDataFromDeploymentResource(resource.deploymentId, resource.id, resource.name, this.$root.user.authToken)
+        content = await DeploymentService.fetchDataFromDeploymentResource(resource.deploymentId, resource.id, resource.name)
       }
       else {
         const decisions = await this.getDecisionList({ 
