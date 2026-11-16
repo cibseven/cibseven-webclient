@@ -496,6 +496,26 @@ describe('ProcessDetailsSidebar', () => {
       expect(card(wrapper, 1).find('.running-instances').text()).not.toContain('-')
     })
 
+    it('keeps a newer load of the same version marked when an older one ends', async () => {
+      let answerOld
+      ProcessService.findProcessById
+        .mockReturnValueOnce(new Promise(resolve => { answerOld = resolve }))
+        .mockReturnValueOnce(new Promise(() => {}))
+      const wrapper = mountSidebar({ processDefinitions: [version(), lazyVersion()] })
+      await flushPromises()
+      await open(wrapper, 1)
+
+      await wrapper.setProps({ processDefinitions: [version(), lazyVersion()] })
+      await open(wrapper, 1)
+      await open(wrapper, 1)
+      answerOld({ runningInstances: 3, allInstances: 10, completedInstances: 7 })
+      await flushPromises()
+      await open(wrapper, 1)
+      await open(wrapper, 1)
+
+      expect(ProcessService.findProcessById).toHaveBeenCalledTimes(2)
+    })
+
     it('loads nothing when the details close', async () => {
       const wrapper = mountSidebar({ processDefinitions: [version(), lazyVersion()] })
       await flushPromises()

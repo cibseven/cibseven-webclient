@@ -231,6 +231,8 @@ export default {
     async loadVersionData(version) {
       if (this.loadingVersionIds.has(version.id)) return
       this.loadingVersionIds.add(version.id)
+      // a reload of the list meanwhile makes this load stale
+      const list = this.processDefinitions
       const loads = []
       if (!this.deploymentTimeOf(version)) loads.push(this.loadDeployment(version.deploymentId))
       if (typeof version.runningInstances !== 'number') {
@@ -238,14 +240,13 @@ export default {
           Object.assign(version, { runningInstances, allInstances, completedInstances })))
       }
       if (typeof this.incidentsOf(version) !== 'number') {
-        const list = this.processDefinitions
         loads.push(ProcessService.findProcessStatistics(version.id).then(statistics => {
-          // not once the list was reloaded meanwhile, so it does not hide the reloaded count
           if (this.processDefinitions === list) this.incidentsByVersionId[version.id] = this.countIncidents(statistics)
         }))
       }
       await Promise.allSettled(loads)
-      this.loadingVersionIds.delete(version.id)
+      // nor clear the mark of a newer load of the same version
+      if (this.processDefinitions === list) this.loadingVersionIds.delete(version.id)
     },
     // one version's details open at a time
     toggleDetails(versionId) {
