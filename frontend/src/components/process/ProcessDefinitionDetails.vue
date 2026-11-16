@@ -145,8 +145,8 @@ export default {
       }
     },
     'version.allInstances': function(newVal, oldVal) {
-      // a count arriving for a version loaded without it ('-') is not a change
-      if (newVal === oldVal || typeof oldVal !== 'number') return
+      // only a count that changed is a change, not one arriving or going back to '-'
+      if (typeof newVal !== 'number' || typeof oldVal !== 'number' || newVal === oldVal) return
       this.resetTimestampsCache()
       if (this.shown) {
         this.getTimestamps()

@@ -258,6 +258,18 @@ describe('ProcessDefinitionDetails.vue mounted', () => {
     expect(HistoryService.findProcessesInstancesHistory).toHaveBeenCalledTimes(2)
   })
 
+  it('keeps the start times when a lazy refresh puts the count back to a dash', async () => {
+    startTimes('2025-01-01T10:00:00.000+0100', '2025-06-01T10:00:00.000+0200')
+    const wrapper = mountDetails({ version: { ...version, allInstances: 10 }, shown: true })
+    await flushPromises()
+
+    await wrapper.setProps({ version: { ...version, allInstances: '-' } })
+    await flushPromises()
+
+    expect(HistoryService.findProcessesInstancesHistory).toHaveBeenCalledTimes(2)
+    expect(wrapper.vm.maxTimestamp).toBe('2025-06-01T10:00:00.000+0200')
+  })
+
   it('drops the start times of a version that is no longer the one shown', async () => {
     let resolveOld
     HistoryService.findProcessesInstancesHistory.mockImplementation(() => new Promise(resolve => { resolveOld = resolve }))
