@@ -34,7 +34,6 @@ import org.cibseven.bpm.engine.rest.dto.runtime.EventSubscriptionDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.EventSubscriptionQueryDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.RetriesDto;
 import org.cibseven.bpm.engine.rest.exception.RestException;
-import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.bpm.engine.runtime.EventSubscriptionQuery;
 import org.cibseven.bpm.engine.runtime.MessageCorrelationBuilder;
 import org.cibseven.bpm.engine.runtime.MessageCorrelationResult;

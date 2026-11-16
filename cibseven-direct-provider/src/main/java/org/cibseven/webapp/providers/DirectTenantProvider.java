@@ -16,17 +16,13 @@
  */
 package org.cibseven.webapp.providers;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 import org.cibseven.bpm.engine.ProcessEngineException;
 import org.cibseven.bpm.engine.identity.TenantQuery;
-import org.cibseven.bpm.engine.rest.dto.history.batch.HistoricBatchQueryDto;
 import org.cibseven.bpm.engine.rest.dto.identity.TenantDto;
 import org.cibseven.bpm.engine.rest.dto.identity.TenantQueryDto;
-import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;

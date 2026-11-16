@@ -42,7 +42,6 @@ import org.cibseven.bpm.engine.rest.dto.history.HistoricVariableInstanceQueryDto
 import org.cibseven.bpm.engine.rest.dto.runtime.ProcessInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.VariableInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.exception.RestException;
-import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.bpm.engine.runtime.DeserializationTypeValidator;
 import org.cibseven.bpm.engine.variable.VariableMap;
 import org.cibseven.bpm.engine.variable.Variables;

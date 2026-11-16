@@ -30,7 +30,6 @@ import org.cibseven.bpm.engine.history.HistoricIncidentQuery;
 import org.cibseven.bpm.engine.rest.dto.AnnotationDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricIncidentDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricIncidentQueryDto;
-import org.cibseven.bpm.engine.rest.dto.history.batch.HistoricBatchQueryDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.IncidentDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.IncidentQueryDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.RetriesDto;
@@ -77,10 +76,7 @@ public class DirectIncidentProvider implements IIncidentProvider {
 
 		IncidentQueryDto queryDto = directProviderUtil.parseQueryDto(queryParams, IncidentQueryDto.class, user);
 		IncidentQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
-
-		List<org.cibseven.bpm.engine.runtime.Incident> queryResult = QueryUtil.list(query, firstResult, maxResults);
-
-		List<Incident> incidents = directProviderUtil.listAndConvert(query, null, null, IncidentDto::fromIncident, Incident.class, user);
+		List<Incident> incidents = directProviderUtil.listAndConvert(query, firstResult, maxResults, IncidentDto::fromIncident, Incident.class, user);
 
 		RuntimeService runtimeService = directProviderUtil.getProcessEngine(user).getRuntimeService();
 		for (Incident incident : incidents) {

@@ -30,7 +30,6 @@ import org.cibseven.bpm.engine.history.HistoricJobLogQuery;
 import org.cibseven.bpm.engine.runtime.JobQuery;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricJobLogDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricJobLogQueryDto;
-import org.cibseven.bpm.engine.rest.dto.history.batch.HistoricBatchQueryDto;
 import org.cibseven.bpm.engine.rest.dto.management.JobDefinitionSuspensionStateDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.JobDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.JobDuedateDto;
@@ -50,21 +49,11 @@ public class DirectJobProvider implements IJobProvider {
 
 	@Override
 	public Collection<Job> getJobs(Map<String, Object> params, CIBUser user) {
-		Integer firstResult = null;
-		Integer maxResults = null;
+		Integer firstResult = directProviderUtil.getFirstResult(params);
+		Integer maxResults = directProviderUtil.getMaxResults(params);
+		Map<String, Object> queryParams = directProviderUtil.withoutPagingParams(params);
 
-		Map<String, Object> queryParams = new java.util.HashMap<>(params);
-		queryParams.remove("firstResult");
-		queryParams.remove("maxResults");
-
-		for (Entry<String, Object> entry : params.entrySet()) {
-			if (entry.getKey().equals("firstResult"))
-				firstResult = Integer.parseInt((String) params.get("firstResult"));
-			else if (entry.getKey().equals("maxResults"))
-				maxResults = Integer.parseInt((String) params.get("maxResults"));
-		}
-
-		JobQueryDto queryDto = directProviderUtil.parseQueryDto(params, JobQueryDto.class, user);
+		JobQueryDto queryDto = directProviderUtil.parseQueryDto(queryParams, JobQueryDto.class, user);
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
 		JobQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 		return directProviderUtil.listAndConvert(query, firstResult, maxResults, JobDto::fromJob, Job.class, user);

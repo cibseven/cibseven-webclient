@@ -62,7 +62,7 @@ public class DirectBatchProvider implements IBatchProvider {
 		List<Batch> batches = directProviderUtil.listAndConvert(query, paged.getFirstResult(), paged.getMaxResults(),
 				BatchDto::fromBatch, Batch.class, user);
 
-    addBatchStatistics(batches, user);
+		addBatchStatistics(batches, user);
 		return batches;
 	}
 

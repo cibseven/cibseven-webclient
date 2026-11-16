@@ -38,7 +38,6 @@ import org.cibseven.bpm.engine.rest.dto.runtime.VariableInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.exception.RestException;
 import org.cibseven.bpm.engine.rest.mapper.JacksonConfigurator;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
-import org.cibseven.bpm.engine.runtime.VariableInstance;
 import org.cibseven.bpm.engine.runtime.VariableInstanceQuery;
 import org.cibseven.bpm.engine.variable.value.TypedValue;
 import org.cibseven.webapp.auth.CIBUser;
@@ -249,8 +248,10 @@ public class DirectProviderUtil {
 			query.disableCustomObjectDeserialization();
 		}
 
-		return listAndConvert(query, firstResult, maxResults, 
-				VariableInstanceDto::fromVariableInstance, Variable.class, user);
+		// VariableHistory, not Variable: the ids (id, processInstanceId, executionId, taskId, ...) are only
+		// mapped by the subclass and would otherwise be dropped from the response
+		return new ArrayList<>(listAndConvert(query, firstResult, maxResults,
+				VariableInstanceDto::fromVariableInstance, VariableHistory.class, user));
 	}
 
 	public TypedValue getTypedValueForTaskVariable(String taskId, String variableName, boolean deserializeValue, CIBUser user) {

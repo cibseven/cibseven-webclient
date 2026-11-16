@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.ActivityInstance;
 import org.cibseven.webapp.rest.model.ActivityInstanceHistory;
 import org.cibseven.webapp.providers.utils.URLUtils;

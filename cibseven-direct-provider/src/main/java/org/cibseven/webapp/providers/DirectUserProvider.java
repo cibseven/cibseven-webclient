@@ -37,7 +37,6 @@ import org.cibseven.bpm.engine.rest.dto.AbstractQueryDto;
 import org.cibseven.bpm.engine.rest.exception.InvalidRequestException;
 import org.cibseven.bpm.engine.rest.dto.authorization.AuthorizationDto;
 import org.cibseven.bpm.engine.rest.dto.authorization.AuthorizationQueryDto;
-import org.cibseven.bpm.engine.rest.dto.history.batch.HistoricBatchQueryDto;
 import org.cibseven.bpm.engine.rest.dto.identity.GroupQueryDto;
 import org.cibseven.bpm.engine.rest.dto.identity.UserQueryDto;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;

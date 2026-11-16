@@ -16,10 +16,8 @@
  */
 package org.cibseven.webapp.providers;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.cibseven.bpm.engine.AuthorizationException;
@@ -31,7 +29,6 @@ import org.cibseven.bpm.engine.rest.dto.management.JobDefinitionQueryDto;
 import org.cibseven.bpm.engine.rest.dto.management.JobDefinitionSuspensionStateDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.JobDefinitionPriorityDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.RetriesDto;
-import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;

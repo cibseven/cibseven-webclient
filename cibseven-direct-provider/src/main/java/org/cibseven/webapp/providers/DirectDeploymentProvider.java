@@ -40,7 +40,6 @@ import org.cibseven.bpm.engine.rest.dto.repository.DeploymentQueryDto;
 import org.cibseven.bpm.engine.rest.dto.repository.DeploymentResourceDto;
 import org.cibseven.bpm.engine.rest.dto.repository.DeploymentWithDefinitionsDto;
 import org.cibseven.bpm.engine.rest.dto.repository.RedeploymentDto;
-import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.NoRessourcesFoundException;

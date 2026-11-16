@@ -61,7 +61,6 @@ import org.cibseven.bpm.engine.rest.dto.history.HistoricActivityStatisticsDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricActivityStatisticsPostQueryDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricProcessInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricProcessInstanceQueryDto;
-import org.cibseven.bpm.engine.rest.dto.history.batch.HistoricBatchQueryDto;
 import org.cibseven.bpm.engine.rest.dto.repository.ActivityStatisticsResultDto;
 import org.cibseven.bpm.engine.rest.dto.repository.CalledProcessDefinitionDto;
 import org.cibseven.bpm.engine.rest.dto.repository.DeploymentDto;
