@@ -465,16 +465,16 @@ describe('ProcessDetailsSidebar', () => {
   })
 
   describe('load data button', () => {
-    it('is a flat icon with the statistics tooltip, named for screen readers', async () => {
+    it('shows its icon and label, with the statistics as tooltip', async () => {
       const wrapper = mountSidebar()
       await flushPromises()
 
       const button = wrapper.find('.load-data')
-      expect(button.text()).toBe('')
+      expect(button.text()).toBe('process.loadData')
       expect(button.find('.mdi-poll').exists()).toBe(true)
       expect(button.attributes('title')).toBe('process.loadAllStatistics')
-      expect(button.attributes('aria-label')).toBe('process.loadAllStatistics')
-      expect(button.classes()).toContain('border-0')
+      // the visible label names it, so it needs no aria-label
+      expect(button.attributes('aria-label')).toBeUndefined()
     })
 
     it('shows a spinner over its hidden icon, and holds both reload buttons, while every version loads', async () => {

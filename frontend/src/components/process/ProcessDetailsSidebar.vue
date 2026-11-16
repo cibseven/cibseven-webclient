@@ -19,15 +19,15 @@
 <template>
   <div class="h-100 d-flex flex-column bg-light">
     <div class="overflow-auto h-100">
-      <b-button style="top: 2px; right: 60px" class="load-data border-0 position-absolute"
-        variant="btn-outline-primary" size="sm"
-        :title="$t('process.loadAllStatistics')" :aria-label="$t('process.loadAllStatistics')"
+      <b-button style="top: 6px; right: 65px" class="load-data position-absolute d-inline-flex align-items-center"
+        variant="outline-secondary" size="sm" :title="$t('process.loadAllStatistics')"
         :disabled="!!refreshing" :aria-busy="refreshing === 'all' ? 'true' : null"
         @click="onRefreshProcessDefinitions(false)">
         <!-- while every version's data is loading, the spinner is drawn over the hidden icon, so the button keeps its size -->
-        <span class="mdi mdi-18px mdi-poll position-relative" :class="{ 'load-data-busy': refreshing === 'all' }" aria-hidden="true">
+        <span class="mdi mdi-18px mdi-poll lh-1 position-relative" :class="{ 'load-data-busy': refreshing === 'all' }" aria-hidden="true">
           <span v-if="refreshing === 'all'" class="load-data-spinner spinner-border"></span>
         </span>
+        <span class="ms-1">{{ $t('process.loadData') }}</span>
       </b-button>
       <b-button style="top: 2px; right: 30px" class="border-0 position-absolute"
         variant="btn-outline-primary" size="sm" :title="$t('process.refreshVersions')"

@@ -188,6 +188,7 @@
 		"copySuccess": "Valor seleccionado copiado",
 		"refreshVersions": "Actualizar el historial de versions",
 		"loadAllStatistics": "Cargar todas las estadísticas de instancias",
+		"loadData": "Cargar datos",
 		"externalProcessStarted": "Proceso iniciado con éxito",
 		"exportInstances": "Exportar instancias",
 		"deleteProcessDefinition": {
