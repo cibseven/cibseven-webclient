@@ -454,6 +454,37 @@ describe('ProcessDetailsSidebar', () => {
       expect(card(wrapper, 1).find('.open-incidents').text()).toContain('5')
     })
 
+    it('reuses the load still in progress when the details are reopened', async () => {
+      let answerCounts
+      ProcessService.findProcessById.mockReturnValueOnce(new Promise(resolve => { answerCounts = resolve }))
+      const wrapper = mountSidebar({ processDefinitions: [version(), lazyVersion()] })
+      await flushPromises()
+
+      await open(wrapper, 1)
+      await open(wrapper, 1)
+      await open(wrapper, 1)
+      answerCounts({ runningInstances: 3, allInstances: 10, completedInstances: 7 })
+      await flushPromises()
+
+      expect(ProcessService.findProcessById).toHaveBeenCalledTimes(1)
+      expect(ProcessService.findProcessStatistics).toHaveBeenCalledTimes(1)
+      expect(card(wrapper, 1).find('.running-instances').text()).toContain('3')
+    })
+
+    it('loads a reloaded list again, even while the previous load is still in progress', async () => {
+      ProcessService.findProcessById.mockReturnValueOnce(new Promise(() => {}))
+      const wrapper = mountSidebar({ processDefinitions: [version(), lazyVersion()] })
+      await flushPromises()
+      await open(wrapper, 1)
+
+      await wrapper.setProps({ processDefinitions: [version(), lazyVersion()] })
+      await open(wrapper, 1)
+      await open(wrapper, 1)
+
+      expect(ProcessService.findProcessById).toHaveBeenCalledTimes(2)
+      expect(card(wrapper, 1).find('.running-instances').text()).not.toContain('-')
+    })
+
     it('loads nothing when the details close', async () => {
       const wrapper = mountSidebar({ processDefinitions: [version(), lazyVersion()] })
       await flushPromises()

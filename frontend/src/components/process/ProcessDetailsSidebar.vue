@@ -157,7 +157,9 @@ export default {
       expandedVersionId: null,
       // loaded for versions selected or opened before
       deployments: {},
-      incidentsByVersionId: {}
+      incidentsByVersionId: {},
+      // versions whose data is being loaded, so reopening them does not load again
+      loadingVersionIds: new Set()
     }
   },
   computed: {
@@ -190,6 +192,7 @@ export default {
     // a reloaded list starts over, like its running and finished counts
     processDefinitions() {
       this.incidentsByVersionId = {}
+      this.loadingVersionIds.clear()
     }
   },
   methods: {
@@ -226,6 +229,8 @@ export default {
     },
     // what a version opened without selecting it is missing; what fails stays a dash
     async loadVersionData(version) {
+      if (this.loadingVersionIds.has(version.id)) return
+      this.loadingVersionIds.add(version.id)
       const loads = []
       if (!this.deploymentTimeOf(version)) loads.push(this.loadDeployment(version.deploymentId))
       if (typeof version.runningInstances !== 'number') {
@@ -238,6 +243,7 @@ export default {
         }))
       }
       await Promise.allSettled(loads)
+      this.loadingVersionIds.delete(version.id)
     },
     // one version's details open at a time
     toggleDetails(versionId) {
