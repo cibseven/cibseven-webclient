@@ -37,25 +37,31 @@ describe('DecisionView - sidebar persistence', () => {
 })
 
 describe('DecisionView - tenant (CIB7-2392)', () => {
-  const { loadDecisionVersionsByKey, tenantToOpen, replaceTenant, selectVersion } = DecisionView.methods
+  const { loadDecisionVersionsByKey, instanceTenantId, replaceTenant, selectVersion } = DecisionView.methods
 
-  // The view's methods on a plain context: the route, the router and the store actions are stubs
-  const ctx = ({ params = {}, query = {}, versions = [], ...overrides } = {}) => {
+  // The view's methods on a plain context: the route, the router and the store are stubs
+  const ctx = ({ params = {}, query = {}, versions = [], shown = [], ...overrides } = {}) => {
     const c = {
       tenantId: query.tenantId ?? null,
+      versionIndex: params.versionIndex ?? '',
       loadRequest: 0,
       versionLoaded: false,
       $route: { params, query },
       $router: { replace: vi.fn() },
       getDecisionVersionsByKey: vi.fn().mockResolvedValue(versions),
+      getDecisionVersions: vi.fn(() => shown),
       getDecisionVersion: vi.fn(({ version }) => versions.find(v => String(v.version) === version) ?? null),
+      setDecisionVersions: vi.fn(),
       setSelectedDecisionVersion: vi.fn(),
       updateVersion: vi.fn(),
       ...overrides
     }
-    return Object.assign(c, { tenantToOpen, replaceTenant, selectVersion })
+    return Object.assign(c, { instanceTenantId, replaceTenant, selectVersion })
   }
-  const load = (c, versionIndex) => loadDecisionVersionsByKey.call(c, 'dec', versionIndex, false)
+  const load = (c, versionIndex = c.versionIndex) => {
+    c.versionIndex = versionIndex
+    return loadDecisionVersionsByKey.call(c, 'dec', versionIndex, false)
+  }
   const v = (version, tenantId = null) => ({ id: `dd-${tenantId ?? 'none'}-${version}`, key: 'dec', version, tenantId })
 
   afterEach(() => vi.clearAllMocks())
@@ -118,14 +124,41 @@ describe('DecisionView - tenant (CIB7-2392)', () => {
     expect(c.$router.replace).toHaveBeenCalledWith({ query: {} })
   })
 
-  it('loads the instance link as it is when the tenant matches the instance', async () => {
+  it("moves an instance link with another tenant's version to the instance's tenant", async () => {
     DecisionService.getHistoricDecisionInstances.mockResolvedValueOnce([{ id: 'inst-1', tenantId: 'T1' }])
+    const c = ctx({ params: { instanceId: 'inst-1' }, query: { tenantId: 'T2' }, versions: [v(1, 'T2')] })
+
+    await load(c, '5')
+
+    expect(c.$router.replace).toHaveBeenCalledWith({ query: { tenantId: 'T1' } })
+    expect(c.setSelectedDecisionVersion).not.toHaveBeenCalled()
+  })
+
+  // Review point 5: every link carries the tenant, so a matching one costs no instance request
+  it('loads an instance link with its tenant without asking for the instance', async () => {
     const c = ctx({ params: { instanceId: 'inst-1' }, query: { tenantId: 'T1' }, versions: [v(5, 'T1')] })
 
     await load(c, '5')
 
+    expect(DecisionService.getHistoricDecisionInstances).not.toHaveBeenCalled()
     expect(c.$router.replace).not.toHaveBeenCalled()
     expect(c.setSelectedDecisionVersion).toHaveBeenCalledWith({ key: 'dec', version: '5' })
+  })
+
+  // Code review: the instance's tenant and the fallbacks for an empty list replaced each other forever
+  it.each([
+    ['its tenant', 'T1', { tenantId: 'T1' }],
+    ['no tenant', null, {}]
+  ])('stops for an instance whose definition is gone (instance with %s)', async (_, tenantId, query) => {
+    DecisionService.getHistoricDecisionInstances.mockResolvedValue([{ id: 'inst-1', tenantId }])
+    const c = ctx({ params: { instanceId: 'inst-1' }, query })
+
+    await load(c, '1')
+
+    expect(c.$router.replace).not.toHaveBeenCalled()
+    expect(DecisionService.getDecisionVersionsByKey).not.toHaveBeenCalled()
+    expect(c.versionLoaded).toBe(false)
+    DecisionService.getHistoricDecisionInstances.mockResolvedValue([])
   })
 
   // Review point 4: an outdated tenant used to leave an empty page
@@ -146,6 +179,62 @@ describe('DecisionView - tenant (CIB7-2392)', () => {
 
     expect(DecisionService.getDecisionVersionsByKey).toHaveBeenCalledWith('dec', true)
     expect(c.$router.replace).toHaveBeenCalledWith({ query: { tenantId: 'T2' } })
+  })
+
+  // Code review: a version without a tenant there (deployed meanwhile) made a no-op navigation
+  it('skips versions without a tenant when it looks for the newest tenant', async () => {
+    DecisionService.getDecisionVersionsByKey.mockResolvedValueOnce([v(4), v(3, 'T2')])
+    const c = ctx()
+
+    await load(c, '')
+
+    expect(c.$router.replace).toHaveBeenCalledWith({ query: { tenantId: 'T2' } })
+  })
+
+  // Code review: a version picked while the versions loaded must not be replaced by the latest one
+  it('keeps a version picked while the versions loaded', async () => {
+    let answer
+    const versions = [v(3), v(2)]
+    const c = ctx({ versions })
+    c.getDecisionVersionsByKey = vi.fn(() => new Promise(resolve => { answer = resolve }))
+
+    const loading = load(c, '')
+    await vi.waitFor(() => expect(c.getDecisionVersionsByKey).toHaveBeenCalled())
+    c.versionIndex = '2'
+    answer(versions)
+    await loading
+
+    expect(c.$router.replace).not.toHaveBeenCalled()
+    expect(c.setSelectedDecisionVersion).toHaveBeenCalledWith({ key: 'dec', version: '2' })
+  })
+
+  it("hides another tenant's versions while this tenant's load", async () => {
+    const c = ctx({ query: { tenantId: 'T1' }, shown: [v(1, 'T2')], versions: [v(1, 'T1')] })
+
+    await load(c, '1')
+
+    expect(c.setDecisionVersions).toHaveBeenCalledWith({ key: 'dec', versions: [] })
+  })
+
+  it("keeps the shown versions while the same tenant's load again", async () => {
+    const c = ctx({ query: { tenantId: 'T1' }, shown: [v(1, 'T1')], versions: [v(1, 'T1')] })
+
+    await load(c, '1')
+
+    expect(c.setDecisionVersions).not.toHaveBeenCalled()
+  })
+
+  it('keeps the selection when the extra info of the definition fails to load', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    DecisionService.getDecisionDefinitionById.mockRejectedValueOnce(new Error('gone'))
+    const c = ctx({ versions: [v(1)] })
+
+    await selectVersion.call(c, 'dec', v(1))
+
+    expect(c.setSelectedDecisionVersion).toHaveBeenCalledWith({ key: 'dec', version: '1' })
+    expect(c.updateVersion).not.toHaveBeenCalled()
+    expect(consoleError).toHaveBeenCalled()
+    consoleError.mockRestore()
   })
 
   it('stays quiet for a key that does not exist', async () => {
@@ -189,12 +278,28 @@ describe('DecisionView - tenant (CIB7-2392)', () => {
 
     it('only selects another version of the same tenant', () => {
       const version3 = v(3, 'T1')
-      const c = { decisionKey: 'dec', loadDecisionVersionsByKey: vi.fn(), getDecisionVersion: vi.fn(() => version3), selectVersion: vi.fn() }
+      const c = {
+        decisionKey: 'dec', loadDecisionVersionsByKey: vi.fn(), getDecisionVersion: vi.fn(() => version3),
+        getSelectedDecisionVersion: () => v(2, 'T1'), selectVersion: vi.fn()
+      }
 
       watcher.call(c, { tenantId: 'T1', versionIndex: '3' }, { tenantId: 'T1', versionIndex: '2' })
 
       expect(c.loadDecisionVersionsByKey).not.toHaveBeenCalled()
       expect(c.selectVersion).toHaveBeenCalledWith('dec', version3)
+    })
+
+    // Code review: the load selects the latest version itself before it moves the route there
+    it('does not select again the version the load already selected', () => {
+      const version3 = v(3, 'T1')
+      const c = {
+        decisionKey: 'dec', loadDecisionVersionsByKey: vi.fn(), getDecisionVersion: vi.fn(() => version3),
+        getSelectedDecisionVersion: () => version3, selectVersion: vi.fn()
+      }
+
+      watcher.call(c, { tenantId: 'T1', versionIndex: '3' }, { tenantId: 'T1', versionIndex: '' })
+
+      expect(c.selectVersion).not.toHaveBeenCalled()
     })
 
     it('leaves the selection alone when the version is not in the list', () => {

@@ -104,7 +104,7 @@ export default {
     },
     goToDecision: function(decision) {
       this.$router.push({
-        path: '/seven/auth/decision/' + decision.key + '/' + decision.latestVersion,
+        path: `/seven/auth/decision/${decision.key}/${decision.latestVersion}`,
         query: decision.tenantId ? { tenantId: decision.tenantId } : {}
       })
     }

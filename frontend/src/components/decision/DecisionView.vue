@@ -74,7 +74,8 @@ export default {
         this.loadDecisionVersionsByKey(this.decisionKey, this.versionIndex, this.$root.config.lazyLoadHistory)
       } else if (selection.versionIndex !== previous.versionIndex && selection.versionIndex) {
         const version = this.getDecisionVersion({ key: this.decisionKey, version: selection.versionIndex })
-        if (version) this.selectVersion(this.decisionKey, version)
+        // Already selected when the load itself moved the route to the tenant's latest version
+        if (version && version.id !== this.getSelectedDecisionVersion()?.id) this.selectVersion(this.decisionKey, version)
       }
     }
   },
@@ -102,33 +103,53 @@ export default {
   },
   methods: {
     ...mapActions(['getDecisionVersionsByKey']),
-    ...mapMutations(['setSelectedDecisionVersion', 'updateVersion']),
+    ...mapMutations(['setSelectedDecisionVersion', 'updateVersion', 'setDecisionVersions']),
     onLeftOpenChanged(isOpen) {
       this.leftOpen = isOpen
       this.saveLeftOpen(SIDEBAR_SCOPE, isOpen)
     },
-    async loadDecisionVersionsByKey(decisionKey, versionIndex, lazyLoad) {
+    // A tenant correction ends in replaceTenant: the route watcher then loads again for the corrected tenant
+    async loadDecisionVersionsByKey(decisionKey, _versionIndex, lazyLoad) {
       const request = ++this.loadRequest
+      const outdated = () => request !== this.loadRequest
       this.versionLoaded = false
-      const tenantId = await this.tenantToOpen()
-      if (request !== this.loadRequest) return
-      if (tenantId !== (this.tenantId ?? null)) {
-        // The watcher loads again for the corrected tenant
-        this.replaceTenant(tenantId)
-        return
+      const instanceId = this.$route.params.instanceId
+
+      // A link to an instance without the tenant (an old bookmark): the instance's own
+      if (instanceId && !this.tenantId) {
+        const instanceTenantId = await this.instanceTenantId(instanceId)
+        if (outdated()) return
+        if (instanceTenantId) return this.replaceTenant(instanceTenantId)
       }
 
+      const tenantId = this.tenantId ?? null
+      // The store holds one list of versions per key: hide another tenant's while this one loads
+      const shown = this.getDecisionVersions(decisionKey)
+      if (shown.length && (shown[0].tenantId ?? null) !== tenantId) this.setDecisionVersions({ key: decisionKey, versions: [] })
       const versions = await this.getDecisionVersionsByKey({ key: decisionKey, lazyLoad, tenantId })
-      if (request !== this.loadRequest) return
+      if (outdated()) return
+
+      // The version of the route now, which the user may have changed while the versions loaded
+      const versionIndex = this.versionIndex
+      let version = versionIndex ? this.getDecisionVersion({ key: decisionKey, version: versionIndex }) : null
+      if (!version && instanceId) {
+        // A link with another tenant than the instance's
+        const instanceTenantId = await this.instanceTenantId(instanceId)
+        if (outdated()) return
+        if (instanceTenantId !== undefined && instanceTenantId !== tenantId) return this.replaceTenant(instanceTenantId)
+      }
+
       if (!versions?.length) {
+        // The instance's definition is gone (its history kept): nothing to show, and no other tenant to try
+        if (instanceId) return
         // An outdated link: the tenant has no version of this key any more
         if (tenantId) return this.replaceTenant(null)
         // A key deployed only for tenants: open the tenant of its newest version
         const everyTenantsVersions = await DecisionService.getDecisionVersionsByKey(decisionKey, true)
-        if (request === this.loadRequest && everyTenantsVersions?.length) this.replaceTenant(everyTenantsVersions[0].tenantId)
+        const newestTenantId = everyTenantsVersions?.find(v => v.tenantId)?.tenantId
+        if (!outdated() && newestTenantId) this.replaceTenant(newestTenantId)
         return
       }
-      let version = versionIndex ? this.getDecisionVersion({ key: decisionKey, version: versionIndex }) : null
       if (!version) {
         // Not in this tenant: its latest version, keeping the rest of the query (e.g. ?tab=)
         version = versions[0]
@@ -141,15 +162,10 @@ export default {
       this.selectVersion(decisionKey, version)
       this.versionLoaded = true
     },
-    // The tenant whose versions to show: an instance's own, so that a link without (or with a wrong)
-    // tenant still opens the instance; otherwise the link's
-    async tenantToOpen() {
-      const instanceId = this.$route.params.instanceId
-      if (instanceId) {
-        const instances = await DecisionService.getHistoricDecisionInstances({ decisionInstanceId: instanceId, maxResults: 1 })
-        if (instances?.length) return instances[0].tenantId ?? null
-      }
-      return this.tenantId ?? null
+    // The tenant of a historic instance (null for none), undefined when the instance is unknown
+    async instanceTenantId(instanceId) {
+      const instances = await DecisionService.getHistoricDecisionInstances({ decisionInstanceId: instanceId, maxResults: 1 })
+      return instances?.length ? (instances[0].tenantId ?? null) : undefined
     },
     replaceTenant(tenantId) {
       const query = { ...this.$route.query }
@@ -157,11 +173,15 @@ export default {
       else delete query.tenantId
       this.$router.replace({ query })
     },
-    selectVersion(decisionKey, version) {
+    async selectVersion(decisionKey, version) {
       this.setSelectedDecisionVersion({ key: decisionKey, version: String(version.version) })
-      DecisionService.getDecisionDefinitionById(version.id, true).then(result => {
+      try {
+        const result = await DecisionService.getDecisionDefinitionById(version.id, true)
         if (result) this.updateVersion({ key: decisionKey, newVersion: result })
-      })
+      } catch (error) {
+        // The version list stays usable without the extra info, e.g. for a definition deleted meanwhile
+        console.error('Error loading the decision definition:', error)
+      }
     }
   }
 }
