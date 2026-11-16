@@ -66,6 +66,9 @@
     <div v-if="loading && calledProcessDefinitions.length > 0">
       <p class="text-center p-4"><BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loadingMoreData') }}</p>
     </div>
+    <div v-else-if="loadFailed">
+      <p class="text-center p-4 text-danger">{{ $t('process-instance.calledProcessDefinitions.loadFailed') }}</p>
+    </div>
     <div v-else-if="!initialLoading && calledProcessDefinitions.length === 0">
       <p class="text-center p-4">{{ $t('process-instance.noResults') }}</p>
     </div>
@@ -88,7 +91,10 @@ export default {
   data() {
     return {
       loading: false,
-      initialLoading: false
+      initialLoading: false,
+      loadFailed: false,
+      // Counts the loads, so only the latest one updates the flags above
+      loadRequest: 0
     }
   },
   computed: {
@@ -108,9 +114,19 @@ export default {
       this.filterByActivity(this.selectedActivityId)
     },
     'process.id': {
-      handler(id) {
-        if (id && this.isDiagramReady) {
+      handler(id, oldId) {
+        // An error belongs to the previous definition, even if this one only loads once its diagram is ready
+        this.loadFailed = false
+        // Only on opening: after a switch the previous definition's diagram still counts as ready until the new one is shown
+        if (id && this.isDiagramReady && oldId === undefined) {
           this.loadCalledProcessDefinitionsData()
+        } else {
+          // It loads once its diagram is ready, so it shows the spinner, not "No results", and nothing of the previous definition.
+          // A load still running for that one no longer counts, so it cannot block or fill this one
+          this.loadRequest++
+          this.loading = false
+          this.initialLoading = !!id
+          this.resetCalledProcessDefinitions()
         }
       },
       immediate: true
@@ -125,6 +141,7 @@ export default {
     ...mapActions(['setHighlightedElement', 'selectActivity']),
     ...mapActions('calledProcessDefinitions', [
       'loadCalledProcessDefinitions',
+      'resetCalledProcessDefinitions',
       'filterByActivity'
     ]),
     async loadCalledProcessDefinitionsData() {
@@ -133,18 +150,25 @@ export default {
         return
       }
 
+      const request = ++this.loadRequest
       this.initialLoading = true
       this.loading = true
+      this.loadFailed = false
       try {
         await this.loadCalledProcessDefinitions({
           processId: this.process.id,
           chunkSize: this.$root?.config?.maxProcessesResults || 50
         })
+        // An activity selected before the rows arrived (e.g. by a call activity link) narrows them too
+        if (request === this.loadRequest && this.selectedActivityId) this.filterByActivity(this.selectedActivityId)
       } catch (error) {
         console.error('Error loading called processes:', error)
+        if (request === this.loadRequest) this.loadFailed = true
       } finally {
-        this.loading = false
-        this.initialLoading = false
+        if (request === this.loadRequest) {
+          this.loading = false
+          this.initialLoading = false
+        }
       }
     }
   }
