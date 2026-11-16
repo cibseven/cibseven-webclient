@@ -1704,7 +1704,7 @@ describe('BpmnViewer - openSubprocess', () => {
       selectDiagramElement: vi.fn(),
       ...overrides
     }
-    vm.findCalledProcessInstance = BpmnViewer.methods.findCalledProcessInstance.bind(vm)
+    vm.findCalledProcessInstanceId = BpmnViewer.methods.findCalledProcessInstanceId.bind(vm)
     return vm
   }
 
@@ -1712,56 +1712,48 @@ describe('BpmnViewer - openSubprocess', () => {
     vi.restoreAllMocks()
   })
 
-  it('should open the called instance when the call activity already ran', async () => {
-    vi.spyOn(HistoryService, 'findProcessesInstancesHistory')
-      .mockResolvedValue([{ id: 'sub-pi', processDefinitionKey: 'sub', processDefinitionVersion: 3 }])
+  // The viewer already has the instance's history, and the instance route needs only the id
+  it('should open the called instance by its id without another request', async () => {
+    const findHistory = vi.spyOn(HistoryService, 'findProcessesInstancesHistory')
     const vm = vmWith({
       selectedInstanceActivityHistory: [{ activityId: 'call_1', calledProcessInstanceId: 'sub-pi', startTime: '2026-11-16T09:00:00.000+0000' }]
     })
 
     await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', { key: 'sub', version: 1 })
 
-    expect(HistoryService.findProcessesInstancesHistory).toHaveBeenCalledWith({ processInstanceId: 'sub-pi' })
-    expect(vm.navigateToSubprocess).toHaveBeenCalledWith('sub', 3, 'sub-pi')
+    expect(vm.navigateToSubprocess).toHaveBeenCalledWith(null, null, 'sub-pi')
+    expect(findHistory).not.toHaveBeenCalled()
+  })
+
+  // A later run that started nothing (cancelled, waiting on an async job) must not hide an earlier called instance
+  it('should open the latest called instance of a call activity that ran several times', async () => {
+    const vm = vmWith({
+      selectedInstanceActivityHistory: [
+        { activityId: 'call_1', calledProcessInstanceId: 'first', startTime: '2026-11-16T08:00:00.000+0000' },
+        { activityId: 'call_1', calledProcessInstanceId: 'second', startTime: '2026-11-16T09:00:00.000+0000' },
+        { activityId: 'call_1', calledProcessInstanceId: null, startTime: '2026-11-16T10:00:00.000+0000' },
+        { activityId: 'other', calledProcessInstanceId: 'other-pi', startTime: '2026-11-16T11:00:00.000+0000' }
+      ]
+    })
+
+    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', undefined)
+
+    expect(vm.navigateToSubprocess).toHaveBeenCalledWith(null, null, 'second')
   })
 
   // The instance has not reached the call activity yet, so there is no called instance to open
   it('should open the called definition when the call activity has not run yet', async () => {
-    const findHistory = vi.spyOn(HistoryService, 'findProcessesInstancesHistory')
     const vm = vmWith()
 
     await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', { key: 'sub', version: 1 })
 
-    expect(findHistory).not.toHaveBeenCalled()
     expect(vm.navigateToSubprocess).toHaveBeenCalledWith('sub', 1, null)
   })
 
-  // Removed by history cleanup or deleted, while the call activity still names it
-  it('should fall back to the called definition when the called instance has no history', async () => {
-    vi.spyOn(HistoryService, 'findProcessesInstancesHistory').mockResolvedValue([])
-    const vm = vmWith({
-      selectedInstanceActivityHistory: [{ activityId: 'call_1', calledProcessInstanceId: 'gone' }]
-    })
-
-    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', { key: 'sub', version: 1 })
-
-    expect(vm.navigateToSubprocess).toHaveBeenCalledWith('sub', 1, null)
-  })
-
-  // Cancelled before the called process started, or waiting on an async job, and no definition the engine resolved:
-  // the latest version of the name could be undeployed or the wrong version or tenant, so do not guess
+  // No definition the engine resolved and no called instance: the latest version of the name could be undeployed
+  // or the wrong version or tenant, so do not guess
   it('should not guess a definition for an unresolved call without a called instance', async () => {
     const vm = vmWith({ $route: { path: '/process/p/1/pi1', query: {} } })
-
-    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', undefined)
-
-    expect(vm.navigateToSubprocess).not.toHaveBeenCalled()
-    expect(vm.$router.push).toHaveBeenCalledWith({ path: '/process/p/1/pi1', query: { tab: 'calledProcessInstances' } })
-    expect(vm.selectDiagramElement).toHaveBeenCalledWith(expect.objectContaining({ id: 'call_1' }))
-  })
-
-  it('should switch to the called process instances tab for an expression without a called instance', async () => {
-    const vm = vmWith({ $route: { path: '/process/p/1/pi1', query: { tab: 'variables' } } })
 
     await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', undefined)
 
@@ -1788,33 +1780,24 @@ describe('BpmnViewer - openSubprocess', () => {
     expect(vm.selectDiagramElement).toHaveBeenCalledWith(expect.objectContaining({ id: 'call_1' }))
   })
 
-  // A later run that started nothing (cancelled, waiting on an async job) must not hide an earlier called instance
-  it('should open the latest called instance of a call activity that ran several times', async () => {
-    vi.spyOn(HistoryService, 'findProcessesInstancesHistory')
-      .mockImplementation(async ({ processInstanceId }) => [{ id: processInstanceId, processDefinitionKey: 'sub', processDefinitionVersion: 1 }])
+  it('should log instead of throwing when the navigation fails', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
     const vm = vmWith({
-      selectedInstanceActivityHistory: [
-        { activityId: 'call_1', calledProcessInstanceId: 'first', startTime: '2026-11-16T08:00:00.000+0000' },
-        { activityId: 'call_1', calledProcessInstanceId: 'second', startTime: '2026-11-16T09:00:00.000+0000' },
-        { activityId: 'call_1', calledProcessInstanceId: null, startTime: '2026-11-16T10:00:00.000+0000' },
-        { activityId: 'other', calledProcessInstanceId: 'other-pi', startTime: '2026-11-16T11:00:00.000+0000' }
-      ]
+      selectedInstanceActivityHistory: [{ activityId: 'call_1', calledProcessInstanceId: 'sub-pi' }],
+      navigateToSubprocess: vi.fn(() => Promise.reject(new Error('down')))
     })
 
-    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', undefined)
-
-    expect(vm.navigateToSubprocess).toHaveBeenCalledWith('sub', 1, 'second')
-  })
-
-  it('should log instead of throwing when the lookup fails', async () => {
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
-    vi.spyOn(HistoryService, 'findProcessesInstancesHistory').mockRejectedValue(new Error('down'))
-    const vm = vmWith({ selectedInstanceActivityHistory: [{ activityId: 'call_1', calledProcessInstanceId: 'sub-pi' }] })
-
-    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', { key: 'sub', version: 1 })
+    await expect(BpmnViewer.methods.openSubprocess.call(vm, 'call_1', undefined)).resolves.toBeUndefined()
 
     expect(consoleError).toHaveBeenCalled()
-    expect(vm.navigateToSubprocess).not.toHaveBeenCalled()
+  })
+})
+
+describe('BpmnViewer - findCalledProcessInstanceId', () => {
+  it('should be null when the call activity started no called instance', () => {
+    const vm = { selectedInstanceActivityHistory: [{ activityId: 'call_1', calledProcessInstanceId: null }] }
+
+    expect(BpmnViewer.methods.findCalledProcessInstanceId.call(vm, 'call_1')).toBeNull()
   })
 })
 

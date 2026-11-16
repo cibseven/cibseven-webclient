@@ -48,7 +48,6 @@
 import NavigatedViewer from 'bpmn-js/lib/NavigatedViewer'
 import { BWaitingBox } from '@cib/common-frontend'
 import { mapActions, mapGetters } from 'vuex'
-import { HistoryService } from '@/services.js'
 import { abbreviateNumber } from 'js-abbreviation-number'
 import ElementTemplateIconRendererModule from '@/components/process/ElementTemplateIconRenderer.js'
 import { isModelerEnabled } from '@/utils/config.js'
@@ -711,15 +710,15 @@ export default {
     async openSubprocess(activityId, calledProcess) {
       try {
         if (this.selectedInstance) {
-          const calledProcessInstance = await this.findCalledProcessInstance(activityId)
-          if (calledProcessInstance) {
-            return this.navigateToSubprocess(calledProcessInstance.processDefinitionKey, calledProcessInstance.processDefinitionVersion, calledProcessInstance.id)
-          }
+          // By id: the instance route needs nothing else, and shows "not found" if the instance was deleted meanwhile
+          const calledProcessInstanceId = this.findCalledProcessInstanceId(activityId)
+          if (calledProcessInstanceId) return await this.navigateToSubprocess(null, null, calledProcessInstanceId)
         }
         // Without a called instance, open the called definition
-        if (calledProcess) return this.navigateToSubprocess(calledProcess.key, calledProcess.version, null)
+        if (calledProcess) return await this.navigateToSubprocess(calledProcess.key, calledProcess.version, null)
         // No known target (an expression, or a name the engine did not resolve): show what was called instead.
-        // Guessing the latest version of the name could open a definition that is not deployed, or the wrong version or tenant
+        // Guessing the latest version of the name could open a definition that is not deployed, or the wrong version or tenant.
+        // In an instance the link is only enabled with a called instance, so this is the definition view's tab
         const tab = this.selectedInstance ? 'calledProcessInstances' : 'calledProcessDefinitions'
         this.$router.push({ path: this.$route.path, query: { ...this.$route.query, tab } })
         // Narrows that tab to this call activity, so the click shows something even when the tab is already open
@@ -728,17 +727,13 @@ export default {
         console.error('Failed to open subprocess:', error)
       }
     },
-    // The latest instance the call activity started in the selected instance, or null
-    findCalledProcessInstance: async function(activityId) {
+    // The id of the latest instance the call activity started in the selected instance, or null
+    findCalledProcessInstanceId: function(activityId) {
       // From the history the viewer already has; a later run that started nothing (cancelled, waiting on an
       // async job) must not hide an earlier run's called instance
-      const calledProcessInstanceId = this.selectedInstanceActivityHistory
+      return this.selectedInstanceActivityHistory
         .filter(activity => activity.activityId === activityId && activity.calledProcessInstanceId)
-        .sort((a, b) => (b.startTime || '').localeCompare(a.startTime || ''))[0]?.calledProcessInstanceId
-      if (!calledProcessInstanceId) return null
-      const instances = await HistoryService.findProcessesInstancesHistory({ processInstanceId: calledProcessInstanceId })
-      // Its history can be gone (cleanup, deletion) while the call activity still names it
-      return instances?.[0] ?? null
+        .sort((a, b) => (b.startTime || '').localeCompare(a.startTime || ''))[0]?.calledProcessInstanceId ?? null
     },
     async navigateToSubprocess(processKey, versionIndex, calledProcessInstanceId) {
       if (calledProcessInstanceId) {
