@@ -1206,6 +1206,7 @@
 	},
 	"navigation": {
 		"home": "Головна сторінка",
+		"brandName": "@:login.productName",
 		"menu": "Навігаційне меню",
 		"infoAndHelp": "Інформація та допомога"
 	},

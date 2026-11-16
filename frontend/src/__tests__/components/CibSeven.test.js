@@ -17,6 +17,8 @@
 import { describe, it, expect, vi } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
 import CibSeven from '@/components/CibSeven.vue'
+import { createI18n } from 'vue-i18n'
+import enMessages from '@/assets/translations_en.json'
 
 // Mock services
 vi.mock('@/services.js', () => ({
@@ -61,11 +63,11 @@ describe('CibSeven.vue', () => {
   // The theme's icon is always used. On the start, account and sign-in pages it comes with the product name as text;
   // elsewhere it stands alone beside the page title
   describe('brand', () => {
-    const mountBrand = (routeName, { matched = [], productNamePageTitle } = {}) => shallowMount(CibSeven, {
+    const mountBrand = (routeName, { matched = [], productNamePageTitle, messages = {} } = {}) => shallowMount(CibSeven, {
       global: {
         mocks: {
           user: { id: 'demo' }, header: 'true', logoPath: 'themes/acme/logo.svg',
-          $t: key => key, $route: { path: '/seven/auth/x', name: routeName, meta: { title: 'page.title' }, matched },
+          $t: key => messages[key] ?? key, $route: { path: '/seven/auth/x', name: routeName, meta: { title: 'page.title' }, matched },
           config: { permissions: {}, layout: {}, supportedLanguages: [], productNamePageTitle },
           $store: { state: { process: { list: [] } }, getters: {}, dispatch: vi.fn(() => Promise.resolve()) }
         },
@@ -120,12 +122,63 @@ describe('CibSeven.vue', () => {
       expect(brand.find('span').classes()).toContain('text-truncate')
     })
 
+    // The gap to the icon (0.75rem) and the 1px lift are global CSS of these classes, so a utility margin must not
+    // add to the gap, and EE, which renders this template, gets both
+    it('sets the name apart from the icon and lifts it through its class, not a spacing utility', () => {
+      const name = mountBrand('start').find('.brand span')
+      expect(name.classes()).toContain('cib-brand-name')
+      expect(name.classes().filter(c => /^m[se]?-\d$/.test(c))).toEqual([])
+    })
+
+    it('lifts the page title through its class', () => {
+      const title = mountBrand('tasklist').find('h1')
+      expect(title.text()).toBe('page.title')
+      expect(title.classes()).toContain('cib-page-title')
+    })
+
     it('keeps the icon-only brand from shrinking beside the page title', () => {
       expect(mountBrand('tasklist').find('.brand').classes()).not.toContain('cib-brand-with-name')
     })
 
-    it('falls back to the CIB seven product name without a configured one', () => {
-      expect(mountBrand('start').find('.brand').text()).toBe('login.productName')
+    it('takes the name from navigation.brandName without a configured one', () => {
+      expect(mountBrand('start', { messages: { 'navigation.brandName': 'ACME' } }).find('.brand').text()).toBe('ACME')
+    })
+
+    // A theme whose logo already shows the name switches the text off, so the name does not appear twice
+    it.each(['start', 'account', 'login'])('shows just the icon on the %s page when navigation.brandName is empty', (routeName) => {
+      const brand = mountBrand(routeName, { productNamePageTitle: 'ACME Flow', messages: { 'navigation.brandName': '' } }).find('.brand')
+
+      expect(brand.find('img').attributes('src')).toBe('themes/acme/logo.svg')
+      expect(brand.find('span').exists()).toBe(false)
+      expect(brand.classes()).not.toContain('cib-brand-with-name')
+    })
+
+    it('still names the product in the label of the link when the text is switched off', () => {
+      const wrapper = mountBrand('start', { productNamePageTitle: 'ACME Flow', messages: { 'navigation.brandName': '' } })
+
+      expect(wrapper.vm.brandLabel).toBe('ACME Flow - navigation.home')
+    })
+
+    // With the real translations: the key follows login.productName (a theme's own product name included),
+    // and an empty string from a theme's translations really is empty, not the key
+    describe('navigation.brandName in the translations', () => {
+      const translate = (themeMessages = {}) => {
+        const i18n = createI18n({ legacy: false, locale: 'en', missingWarn: false, fallbackWarn: false, messages: { en: enMessages } })
+        i18n.global.mergeLocaleMessage('en', themeMessages)
+        return i18n.global.t('navigation.brandName')
+      }
+
+      it('is the product name by default', () => {
+        expect(translate()).toBe('CIB seven')
+      })
+
+      it("follows a theme's own product name", () => {
+        expect(translate({ login: { productName: 'ACME Flow' } })).toBe('ACME Flow')
+      })
+
+      it('is empty when a theme sets it to an empty string', () => {
+        expect(translate({ navigation: { brandName: '' } })).toBe('')
+      })
     })
 
     it('sets the page title as an h4 beside the icon', () => {
