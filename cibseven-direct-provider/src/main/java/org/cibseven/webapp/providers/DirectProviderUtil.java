@@ -177,7 +177,7 @@ public class DirectProviderUtil {
 	protected VariableMap toVariableMap(Map<String, VariableValueDto> variables, String what, CIBUser user) {
 		try {
 			return VariableValueDto.toMap(variables, getProcessEngine(user), getObjectMapper(user));
-		} catch (RestException e) {
+		} catch (RestException | IllegalArgumentException | JacksonException | ProcessEngineException e) {
 			throw new SystemException(String.format("Cannot modify variables for %s: %s", what, e.getMessage()), e);
 		}
 	}

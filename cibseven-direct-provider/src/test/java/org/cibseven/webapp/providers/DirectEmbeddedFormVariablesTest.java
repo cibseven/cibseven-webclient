@@ -110,6 +110,18 @@ class DirectEmbeddedFormVariablesTest {
 	}
 
 	@Test
+	void modifyLocalVariables_reportsAFileWithoutFilenameAsSystemException() {
+		// the engine's conversion refuses it with an IllegalArgumentException, not a RestException
+		Map<String, Object> patch = Map.of("modifications", Map.of("document",
+			Map.of("value", "aGVsbG8=", "type", "File", "valueInfo", Map.of("mimeType", "text/plain"))));
+
+		assertThatThrownBy(() -> taskProvider.modifyLocalVariables(taskId, patch, user))
+			.isInstanceOf(SystemException.class)
+			.hasMessageContaining("Cannot modify variables for task " + taskId);
+		assertThat(engine.getTaskService().getVariablesLocal(taskId)).isEmpty();
+	}
+
+	@Test
 	void putLocalVariable_setsOneTaskLocalVariable() {
 		// task.localVariable sends id and varId next to the value
 		taskProvider.putLocalVariable(taskId, "decision", Map.of(

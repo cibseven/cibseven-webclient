@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.ProcessEngineException;
+import org.cibseven.bpm.engine.rest.dto.VariableValueDto;
 import org.cibseven.bpm.engine.rest.mapper.JacksonConfigurator;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.SystemException;
@@ -55,6 +56,19 @@ class DirectProviderUtilVariableConversionTest {
 		assertThatThrownBy(() -> util.toTypedValue(Map.of("value", "x", "type", "String"), "decision", user))
 			.isInstanceOf(SystemException.class)
 			.hasMessageContaining("Cannot convert variable decision")
+			.hasMessageContaining("engine not ready");
+	}
+
+	@Test
+	void toVariableMap_reportsAnEngineFailureDuringTheConversionAsSystemException() {
+		when(engine.getProcessEngineConfiguration()).thenThrow(new ProcessEngineException("engine not ready"));
+		VariableValueDto value = new VariableValueDto();
+		value.setValue("x");
+		value.setType("String");
+
+		assertThatThrownBy(() -> util.toVariableMap(Map.of("decision", value), "task task-1", user))
+			.isInstanceOf(SystemException.class)
+			.hasMessageContaining("Cannot modify variables for task task-1")
 			.hasMessageContaining("engine not ready");
 	}
 }
