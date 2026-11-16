@@ -327,3 +327,38 @@ describe('StartView.vue waits for plugins before redirecting', () => {
     expect(typeof StartView.computed.pluginsSettled.call({})).toBe('boolean')
   })
 })
+
+describe('StartView.vue explains the redirect that led to it', () => {
+  function errorView(query) {
+    const vm = evaluateStartView({ $route: { query } })
+    vm.$refs = { errorPopup: { show: vi.fn() } }
+    vm.$nextTick = (callback) => callback()
+    vm.showRouteError = StartView.methods.showRouteError.bind(vm)
+    vm.updateItems = StartView.methods.updateItems.bind(vm)
+    return vm
+  }
+
+  it('shows the error named in the query', () => {
+    const query = { errorType: 'notFoundPage', path: '/seven/auth/nosuchpage' }
+    const vm = errorView(query)
+    vm.showRouteError()
+    expect(vm.$refs.errorPopup.show).toHaveBeenCalledWith({ type: 'notFoundPage', params: query })
+  })
+
+  it('shows nothing without an error in the query', () => {
+    const vm = errorView({})
+    vm.showRouteError()
+    expect(vm.$refs.errorPopup.show).not.toHaveBeenCalled()
+  })
+
+  // CIB7-2743: a second unknown address, opened from the start page, reuses the page and showed no message
+  it('shows the error of a redirect to the already open start page', () => {
+    const vm = errorView({})
+    StartView.mounted.call(vm)
+    expect(vm.$refs.errorPopup.show).not.toHaveBeenCalled()
+
+    vm.$route = { query: { errorType: 'notFoundPage', path: '/seven/auth/other' } }
+    StartView.watch['$route.query'].call(vm)
+    expect(vm.$refs.errorPopup.show).toHaveBeenCalledWith({ type: 'notFoundPage', params: vm.$route.query })
+  })
+})

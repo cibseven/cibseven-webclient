@@ -16,14 +16,12 @@
  */
 package org.cibseven.webapp.rest;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.providers.BpmProvider;
-import org.cibseven.webapp.rest.model.Authorizations;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -40,10 +38,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -65,7 +63,6 @@ class TaskBpmnEscalationRoutingTest {
 		bpmProvider = mock(BpmProvider.class);
 		taskService = new TaskService();
 		ReflectionTestUtils.setField(taskService, "bpmProvider", bpmProvider);
-		taskService.properties.getDeprecated().getAuthorization().setEnabled(false);
 		mockMvc = MockMvcBuilders.standaloneSetup(taskService)
 			.setCustomArgumentResolvers(new CibUserArgumentResolver())
 			.addPlaceholderValue("cibseven.webclient.services.basePath", "/services/v1")
@@ -115,18 +112,16 @@ class TaskBpmnEscalationRoutingTest {
 	}
 
 	@Test
-	void escalationRequiresTaskUpdatePermissionLikeBpmnError() {
-		taskService.properties.getDeprecated().getAuthorization().setEnabled(true);
-		Authorizations noRights = new Authorizations();
-		noRights.setTask(List.of());
-		when(bpmProvider.getUserAuthorization(USER)).thenReturn(noRights);
+	void escalationAndBpmnErrorLeaveThePermissionCheckToTheEngine() throws Exception {
+		doThrow(new AccessDeniedException("no task update")).when(bpmProvider).handleBpmnEscalation(any(), any(), any());
+		doThrow(new AccessDeniedException("no task update")).when(bpmProvider).handleBpmnError(any(), any(), any());
 
 		assertThrows(AccessDeniedException.class, () -> taskService.handleBpmnEscalation("task-1",
 			Map.<String, Object>of("escalationCode", "esc-1"), Optional.<String>empty(), USER));
 		assertThrows(AccessDeniedException.class, () -> taskService.handleBpmnError("task-1",
 			Map.<String, Object>of("errorCode", "err-1"), Optional.<String>empty(), USER));
 
-		verify(bpmProvider, never()).handleBpmnEscalation(any(), any(), any());
+		verify(bpmProvider, never()).getUserAuthorization(any());
 	}
 
 	private static class CibUserArgumentResolver implements HandlerMethodArgumentResolver {

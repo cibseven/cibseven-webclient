@@ -31,13 +31,13 @@
         @pointerenter="hoverOpen" @mouseenter="showTip = true" @mouseleave="showTip = false" @focus="showTip = true" @blur="showTip = false">
         <span class="cib-nav-current-bar" aria-hidden="true"></span>
         <span v-if="cluster.avatar" class="cib-nav-avatar" aria-hidden="true">{{ cluster.avatar }}</span>
-        <span v-else :class="['mdi', 'mdi-24px', cluster.icon]" aria-hidden="true"></span>
+        <NavIcon v-else :icon="cluster.icon" :image="cluster.iconImage"></NavIcon>
         <span v-if="cluster.badge" class="cib-nav-badge" aria-hidden="true">{{ cluster.badge }}</span>
       </router-link>
       <button v-if="hasMenu" ref="toggle" type="button" class="cib-nav-btn cib-nav-btn-chevron"
         :aria-label="$t('cib-header.openMenu', { label: cluster.label })" aria-haspopup="true" :aria-expanded="open ? 'true' : 'false'"
         @click="toggle" @pointerenter="hoverOpen" @keydown.down.prevent="openAndFocusFirst" @keydown.esc="closeAndFocus">
-        <span class="mdi mdi-18px mdi-chevron-down" aria-hidden="true"></span>
+        <span class="mdi mdi-chevron-down cib-nav-chevron" aria-hidden="true"></span>
       </button>
     </template>
 
@@ -50,33 +50,35 @@
       @keydown.down.prevent="hasMenu && openAndFocusFirst()" @keydown.esc="closeAndFocus">
       <span class="cib-nav-current-bar" aria-hidden="true"></span>
       <span v-if="cluster.avatar" class="cib-nav-avatar" aria-hidden="true">{{ cluster.avatar }}</span>
-      <span v-else :class="['mdi', 'mdi-24px', cluster.icon]" aria-hidden="true"></span>
-      <span v-if="hasMenu" class="mdi mdi-18px mdi-chevron-down" aria-hidden="true"></span>
+      <NavIcon v-else :icon="cluster.icon" :image="cluster.iconImage"></NavIcon>
+      <span v-if="hasMenu" class="mdi mdi-chevron-down cib-nav-chevron" aria-hidden="true"></span>
     </button>
 
     <span v-if="tipVisible" :id="tooltipId" role="tooltip" class="cib-nav-tooltip">{{ cluster.label }}</span>
 
     <div v-if="open" ref="menu" class="cib-nav-menu" :class="align === 'end' ? 'cib-nav-menu-end' : 'cib-nav-menu-start'"
       role="menu" tabindex="-1" :aria-label="cluster.label" @keydown.down.prevent="moveFocus(1)" @keydown.up.prevent="moveFocus(-1)"
-      @keydown.esc="closeAndFocus" @click="onMenuClick">
+      @keydown.esc="closeAndFocus">
       <router-link v-if="cluster.titleTo" :to="cluster.titleTo" active-class="" exact-active-class="" class="cib-nav-menu-title cib-nav-menu-title-link"
         role="menuitem" @click="close">{{ cluster.label }}</router-link>
       <div v-else class="cib-nav-menu-title" role="presentation">{{ cluster.label }}</div>
-      <div v-if="$slots['menu-prepend']" ref="prepend" role="none"><slot name="menu-prepend" :cluster="cluster"></slot></div>
       <div v-for="(section, sIdx) in cluster.sections" :key="sIdx" class="cib-nav-menu-section" role="group">
         <template v-for="item in section" :key="item.key">
           <router-link v-if="item.to" :to="item.to" active-class="" exact-active-class="" class="cib-nav-menu-item" :class="{ active: item.active }"
             role="menuitem" :title="item.tooltip" :aria-current="item.active ? 'page' : null" @click="close">
+            <NavIcon v-if="hasItemIcons" class="cib-nav-menu-icon" :icon="item.icon" :size="18"></NavIcon>
             <span v-if="item.tag" class="cib-nav-menu-tag">{{ item.tag }}</span>{{ item.label }}
           </router-link>
           <a v-else-if="item.href" :href="item.href" class="cib-nav-menu-item" role="menuitem" :title="item.tooltip"
             :target="item.external ? '_blank' : null" :rel="item.external ? 'noopener noreferrer' : null" @click="close">
+            <NavIcon v-if="hasItemIcons" class="cib-nav-menu-icon" :icon="item.icon" :size="18"></NavIcon>
             {{ item.label }}<span v-if="item.external" class="mdi mdi-14px mdi-open-in-new ms-1" aria-hidden="true"></span>
           </a>
           <button v-else type="button" class="cib-nav-menu-item" :class="{ active: item.active }"
             :role="item.checkable ? 'menuitemradio' : 'menuitem'"
             :title="item.tooltip" :aria-checked="item.checkable ? (item.active ? 'true' : 'false') : null"
             @click="select(item)">
+            <NavIcon v-if="hasItemIcons" class="cib-nav-menu-icon" :icon="item.icon" :size="18"></NavIcon>
             <span v-if="item.tag" class="cib-nav-menu-tag">{{ item.tag }}</span>{{ item.label }}
           </button>
         </template>
@@ -86,6 +88,8 @@
 </template>
 
 <script>
+import NavIcon from './NavIcon.vue'
+
 let uid = 0
 
 // Grace period before a hover-opened menu closes, so moving the pointer from the chevron
@@ -98,12 +102,13 @@ const HOVER_CLOSE_DELAY = 150
  * action). The menu opens on click and on mouse hover; which cluster is open is owned by
  * the parent (v-model:open) so only one menu is open at a time.
  *
- * cluster: { id, label, icon, avatar?, badge?, to?, titleTo?, active?, sections: [[item]] }
- * item:    { key, label, tooltip?, to?, href?, external?, tag?, active?, checkable? }
+ * cluster: { id, label, icon, iconImage?, avatar?, badge?, to?, titleTo?, active?, sections: [[item]] }
+ * item:    { key, label, icon?, tooltip?, to?, href?, external?, tag?, active?, checkable? }
  * Items without to/href are emitted through `select`.
  */
 export default {
   name: 'NavCluster',
+  components: { NavIcon },
   props: {
     cluster: { type: Object, required: true },
     open: { type: Boolean, default: false },
@@ -127,6 +132,10 @@ export default {
     },
     hasMenu() {
       return !!this.cluster.sections?.some(section => section.length)
+    },
+    // When one entry has an icon (e.g. Logout), every entry gets the icon column, so the labels line up
+    hasItemIcons() {
+      return !!this.cluster.sections?.some(section => section.some(item => item.icon))
     },
     isSplit() {
       return !!this.cluster.to
@@ -211,14 +220,8 @@ export default {
       this.close()
       this.$emit('select', item)
     },
-    // Prepended items come from the parent and don't close the menu themselves (e.g. one that opens a modal)
-    onMenuClick(event) {
-      if (this.$refs.prepend?.contains(event.target)) this.close()
-    },
     menuItems() {
-      // Includes legacy slot content (plain dropdown items without a menu role)
-      const selector = '[role="menuitem"], [role="menuitemradio"], .cib-nav-legacy-items a, .cib-nav-legacy-items button'
-      return Array.from(this.$refs.menu?.querySelectorAll(selector) || [])
+      return Array.from(this.$refs.menu?.querySelectorAll('[role="menuitem"], [role="menuitemradio"]') || [])
     },
     async openAndFocusFirst() {
       // Keyboard focus moves into the menu, so it must not close when the pointer leaves
@@ -255,12 +258,18 @@ export default {
   text-decoration: none;
   cursor: pointer;
 }
-.cib-nav-btn:hover,
 .cib-nav-btn:focus-visible,
 .cib-nav-cluster-open .cib-nav-btn-chevron,
 .cib-nav-cluster-open .cib-nav-btn-single {
   background: var(--bs-gray-300);
   color: var(--bs-gray-900);
+}
+/* Hover only where a pointer can hover: on touch screens (tablets get this header) :hover sticks after a tap */
+@media (hover: hover) {
+  .cib-nav-btn:hover {
+    background: var(--bs-gray-300);
+    color: var(--bs-gray-900);
+  }
 }
 .cib-nav-btn:active {
   background: var(--bs-gray-400);
@@ -277,6 +286,10 @@ export default {
   gap: 2px;
   padding: 0 6px;
   border-radius: 4px;
+}
+/* 16px: MDI's size classes jump from 14px to 18px */
+.cib-nav-chevron {
+  font-size: 16px;
 }
 /* Current section: dark icon plus a red bar on the header's bottom edge */
 .cib-nav-cluster-current .cib-nav-btn {
@@ -368,9 +381,13 @@ export default {
   font-weight: 600;
   text-decoration: none;
 }
-.cib-nav-menu-title-link:hover,
 .cib-nav-menu-title-link:focus-visible {
   background: var(--bs-gray-200);
+}
+@media (hover: hover) {
+  .cib-nav-menu-title-link:hover {
+    background: var(--bs-gray-200);
+  }
 }
 .cib-nav-menu-section {
   padding: 4px 0;
@@ -395,10 +412,18 @@ export default {
   white-space: nowrap;
   cursor: pointer;
 }
-.cib-nav-menu-item:hover,
 .cib-nav-menu-item:focus-visible {
   background: var(--bs-gray-200);
   color: var(--bs-gray-900);
+}
+@media (hover: hover) {
+  .cib-nav-menu-item:hover {
+    background: var(--bs-gray-200);
+    color: var(--bs-gray-900);
+  }
+  .cib-nav-menu-item:hover .cib-nav-menu-tag {
+    background: var(--bs-gray-400);
+  }
 }
 .cib-nav-menu-item.active {
   background: var(--bs-gray-300);
@@ -423,7 +448,6 @@ export default {
   font-size: 11.2px;
   font-weight: 700;
 }
-.cib-nav-menu-item:hover .cib-nav-menu-tag,
 .cib-nav-menu-item:focus-visible .cib-nav-menu-tag {
   background: var(--bs-gray-400);
 }

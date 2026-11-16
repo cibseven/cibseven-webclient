@@ -115,9 +115,8 @@ public class DirectBatchProvider implements IBatchProvider {
 
 	@Override
 	public Collection<HistoryBatch> getHistoricBatches(Map<String, Object> params, CIBUser user) {
-		HistoricBatchQueryDto queryDto = directProviderUtil.parseQueryDto(params, HistoricBatchQueryDto.class, user);
-		HistoricBatchQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 		DirectProviderUtil.PagedParams paged = directProviderUtil.extractPagedParams(params);
+		HistoricBatchQuery query = createHistoricBatchQuery(paged.getQueryParams(), user);
 		List<HistoricBatch> matchingBatches = QueryUtil.list(query, paged.getFirstResult(), paged.getMaxResults());
 
 		List<HistoryBatch> batchResults = new ArrayList<>();
@@ -129,9 +128,18 @@ public class DirectBatchProvider implements IBatchProvider {
 
 	@Override
 	public Long getHistoricBatchCount(Map<String, Object> queryParams, CIBUser user) {
-		HistoricBatchQueryDto queryDto = directProviderUtil.parseQueryDto(queryParams, HistoricBatchQueryDto.class, user);
-		HistoricBatchQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
-		return query.count();
+		return createHistoricBatchQuery(directProviderUtil.toMultivaluedMap(queryParams), user).count();
+	}
+
+	/**
+	 * Builds the historic batch query the way engine-rest does: through the query parameter
+	 * constructor of {@link HistoricBatchQueryDto}, so that its converters apply. A plain Jackson
+	 * conversion of the parameter map cannot turn a string like "tenant-a,tenant-b" into the
+	 * list typed tenantIdIn field and fails with an IllegalArgumentException.
+	 */
+	private HistoricBatchQuery createHistoricBatchQuery(MultivaluedMap<String, String> queryParams, CIBUser user) {
+		HistoricBatchQueryDto queryDto = new HistoricBatchQueryDto(directProviderUtil.getObjectMapper(user), queryParams);
+		return queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 	}
 
 	@Override

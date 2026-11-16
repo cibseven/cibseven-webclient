@@ -49,6 +49,9 @@ public class SetupService extends BaseService implements InitializingBean {
 
 	@Autowired BpmProvider bpmProvider;
 
+	@Autowired(required = false)
+	protected SevenWebclientProperties properties = new SevenWebclientProperties();
+
 	// Initial setup is only available for internal providers, not for external identity
 	// providers like LDAP, ADFS, or SSO where users are managed externally.
 	private static final String SEVEN_USER_PROVIDER = "org.cibseven.webapp.auth.SevenUserProvider";

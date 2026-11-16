@@ -69,6 +69,7 @@ public class DirectProviderUtil {
 	protected IEngineProvider engineProvider;
 
 	protected ProcessEngine getProcessEngine(String engineId) {
+		engineId = resolveEngineId(engineId);
 		ProcessEngine processEngine = null;
 		if (processEngines.containsKey(engineId))
 			processEngine = processEngines.get(engineId);
@@ -99,15 +100,25 @@ public class DirectProviderUtil {
 	}
 
 	protected ObjectMapper getObjectMapper(String engineId) {
+		engineId = resolveEngineId(engineId);
 		getProcessEngine(engineId);
 		return objectMappers.get(engineId);
 	}
 
 	protected String getEngineId(CIBUser user) {
-		String engineId = user != null ? user.getEngine() : null;
-		// If engine name is provided and not "default", add it to the path
-		if (engineId == null || engineId.isEmpty())
-			engineId = engineProvider.getEffectiveDefaultEngineId();
+		return resolveEngineId(user != null ? user.getEngine() : null);
+	}
+
+	/**
+	 * An unspecified engine (a call without a user and without an X-Process-Engine header, such as
+	 * the setup status asked before the login) resolves to the effective default engine. It must not
+	 * be looked up by the name null: EngineUtil only maps null to the default engine through the
+	 * ProcessEngineProvider SPI, which the webclient on Tomcat and WildFly does not have, and the
+	 * BpmPlatform fallback finds no engine named null (CIB7-2554).
+	 */
+	protected String resolveEngineId(String engineId) {
+		if (IEngineProvider.isEngineUnspecified(engineId) && engineProvider != null)
+			return engineProvider.getEffectiveDefaultEngineId();
 		return engineId;
 	}
 
@@ -347,12 +358,15 @@ public class DirectProviderUtil {
 	}
 
 	/**
-	 * Builds a {@link MultivaluedMap} containing all entries of the given params.
+	 * Builds a {@link MultivaluedMap} containing all non-null entries of the given params.
+	 * Null values are left out, as engine-rest never receives them; otherwise they would
+	 * reach the query DTO as the filter value "null".
 	 */
 	protected MultivaluedMap<String, String> toMultivaluedMap(Map<String, Object> params) {
 		MultivaluedMap<String, String> multiValueMap = new MultivaluedHashMap<>();
 		for (Entry<String, Object> entry : params.entrySet()) {
-			multiValueMap.putSingle(entry.getKey(), String.valueOf(entry.getValue()));
+			if (entry.getValue() != null)
+				multiValueMap.putSingle(entry.getKey(), String.valueOf(entry.getValue()));
 		}
 		return multiValueMap;
 	}

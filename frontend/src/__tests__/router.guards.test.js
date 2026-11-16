@@ -42,6 +42,7 @@ function tabRules(page, tabs, rule) {
 // route can't silently end up untested.
 const ROUTE_PERMISSIONS = {
   auth: null,
+  'auth-index': null,
   start: null,
   'start-configurable': null,
   'no-permission': null,
