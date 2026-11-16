@@ -24,7 +24,10 @@ function tableContext(loadCalledProcessDefinitions) {
     ...CalledProcessDefinitionsTable.data(),
     process: { id: 'pd-1' },
     $root: { config: {} },
-    loadCalledProcessDefinitions
+    selectedActivityId: '',
+    loadCalledProcessDefinitions,
+    resetCalledProcessDefinitions: vi.fn(),
+    filterByActivity: vi.fn()
   }
 }
 
@@ -90,6 +93,45 @@ describe('CalledProcessDefinitionsTable - loadCalledProcessDefinitionsData', () 
 
     expect(vm.loadFailed).toBe(false)
     expect(vm.loadCalledProcessDefinitions).not.toHaveBeenCalled()
+  })
+
+  // Otherwise the previous definition's rows stay, and a load still running for them would fill or block this one
+  it('should clear the previous rows and outdate their load when the new diagram is not ready', () => {
+    const vm = { ...tableContext(vi.fn()), isDiagramReady: false, loading: true, initialLoading: true, loadRequest: 3 }
+
+    CalledProcessDefinitionsTable.watch['process.id'].handler.call(vm, 'pd-2')
+
+    expect(vm.resetCalledProcessDefinitions).toHaveBeenCalled()
+    expect(vm.loading).toBe(false)
+    expect(vm.initialLoading).toBe(false)
+    expect(vm.loadRequest).toBe(4)
+  })
+
+  it('should load right away when the diagram is ready', () => {
+    const vm = { ...tableContext(vi.fn(() => Promise.resolve())), isDiagramReady: true }
+    vm.loadCalledProcessDefinitionsData = vi.fn()
+
+    CalledProcessDefinitionsTable.watch['process.id'].handler.call(vm, 'pd-2')
+
+    expect(vm.loadCalledProcessDefinitionsData).toHaveBeenCalled()
+    expect(vm.resetCalledProcessDefinitions).not.toHaveBeenCalled()
+  })
+
+  // e.g. a call activity link selected it while the tab was opening: the loaded rows must be narrowed too
+  it('should narrow the loaded rows to an activity selected before they arrived', async () => {
+    const vm = { ...tableContext(vi.fn(() => Promise.resolve())), selectedActivityId: 'call_1' }
+
+    await load.call(vm)
+
+    expect(vm.filterByActivity).toHaveBeenCalledWith('call_1')
+  })
+
+  it('should not narrow when no activity is selected', async () => {
+    const vm = tableContext(vi.fn(() => Promise.resolve()))
+
+    await load.call(vm)
+
+    expect(vm.filterByActivity).not.toHaveBeenCalled()
   })
 
   it('should not load without a process', async () => {

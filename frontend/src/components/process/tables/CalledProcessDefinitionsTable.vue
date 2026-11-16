@@ -119,6 +119,13 @@ export default {
         this.loadFailed = false
         if (id && this.isDiagramReady) {
           this.loadCalledProcessDefinitionsData()
+        } else {
+          // It loads once its diagram is ready; until then show nothing of the previous definition.
+          // A load still running for that one no longer counts, so it cannot block or fill this one
+          this.loadRequest++
+          this.loading = false
+          this.initialLoading = false
+          this.resetCalledProcessDefinitions()
         }
       },
       immediate: true
@@ -133,6 +140,7 @@ export default {
     ...mapActions(['setHighlightedElement', 'selectActivity']),
     ...mapActions('calledProcessDefinitions', [
       'loadCalledProcessDefinitions',
+      'resetCalledProcessDefinitions',
       'filterByActivity'
     ]),
     async loadCalledProcessDefinitionsData() {
@@ -150,6 +158,8 @@ export default {
           processId: this.process.id,
           chunkSize: this.$root?.config?.maxProcessesResults || 50
         })
+        // An activity selected before the rows arrived (e.g. by a call activity link) narrows them too
+        if (request === this.loadRequest && this.selectedActivityId) this.filterByActivity(this.selectedActivityId)
       } catch (error) {
         console.error('Error loading called processes:', error)
         if (request === this.loadRequest) this.loadFailed = true

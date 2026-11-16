@@ -1276,6 +1276,9 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
     openSubprocess: vi.fn(),
     hasExpressionReference: BpmnViewer.methods.hasExpressionReference,
     getSubprocessLinkTitleKey: BpmnViewer.methods.getSubprocessLinkTitleKey,
+    get selectedInstanceActivityHistory() {
+      return BpmnViewer.computed.selectedInstanceActivityHistory.call(this)
+    },
     ...overrides
   })
 
@@ -1322,7 +1325,7 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
   it('should enable an unresolved fixed name in an instance once it started a called instance', () => {
     const vm = vmWith({
       selectedInstance: { id: 'pi1', processDefinitionId: 'pd-parent' },
-      activityInstanceHistory: [{ activityId: 'call_1', calledProcessInstanceId: 'sub-pi' }]
+      activityInstanceHistory: [{ processInstanceId: 'pi1', activityId: 'call_1', calledProcessInstanceId: 'sub-pi' }]
     })
 
     BpmnViewer.methods.drawSubprocessLinks.call(vm, registryWith(callActivity('call_1', 'sub')))
@@ -1344,7 +1347,19 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
     const vm = vmWith({
       selectedInstance: { id: 'pi1', processDefinitionId: 'pd-parent' },
       historicActivityStatistics: [{ id: 'call_1', canceled: 1 }],
-      activityInstanceHistory: [{ activityId: 'call_1', calledProcessInstanceId: null }]
+      activityInstanceHistory: [{ processInstanceId: 'pi1', activityId: 'call_1', calledProcessInstanceId: null }]
+    })
+
+    BpmnViewer.methods.drawSubprocessLinks.call(vm, registryWith(callActivity('call_1', '${subKey}')))
+
+    expect(buttonFrom(vm).disabled).toBe(true)
+  })
+
+  // ProcessDefinitionView keeps passing the previous instance's history until the new one has loaded
+  it('should ignore the activity history of another instance', () => {
+    const vm = vmWith({
+      selectedInstance: { id: 'pi2', processDefinitionId: 'pd-parent' },
+      activityInstanceHistory: [{ processInstanceId: 'pi1', activityId: 'call_1', calledProcessInstanceId: 'sub-pi' }]
     })
 
     BpmnViewer.methods.drawSubprocessLinks.call(vm, registryWith(callActivity('call_1', '${subKey}')))
@@ -1429,7 +1444,7 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
   it('should enable a dynamic call activity that started a called instance in this instance', () => {
     const vm = vmWith({
       selectedInstance: { id: 'pi1', processDefinitionId: 'pd-other' },
-      activityInstanceHistory: [{ activityId: 'call_1', calledProcessInstanceId: 'sub-pi' }]
+      activityInstanceHistory: [{ processInstanceId: 'pi1', activityId: 'call_1', calledProcessInstanceId: 'sub-pi' }]
     })
     const registry = {
       getAll: () => [callActivity('call_1', '${subKey}')],
@@ -1446,7 +1461,7 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
     const vm = vmWith({
       selectedInstance: { id: 'pi1', processDefinitionId: 'pd-parent' },
       historicActivityStatistics: [{ id: 'call_1', canceled: 1 }],
-      activityInstanceHistory: [{ activityId: 'call_1', calledProcessInstanceId: 'sub-pi' }]
+      activityInstanceHistory: [{ processInstanceId: 'pi1', activityId: 'call_1', calledProcessInstanceId: 'sub-pi' }]
     })
     const registry = {
       getAll: () => [callActivity('call_1', '${subKey}')],
@@ -1463,7 +1478,7 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
   it('should enable an executed dynamic link when neither the call nor the instance has a definition id', () => {
     const vm = vmWith({
       selectedInstance: { id: 'pi1' },
-      activityInstanceHistory: [{ activityId: 'call_1', calledProcessInstanceId: 'sub-pi' }]
+      activityInstanceHistory: [{ processInstanceId: 'pi1', activityId: 'call_1', calledProcessInstanceId: 'sub-pi' }]
     })
     const registry = {
       getAll: () => [callActivity('call_1', '${subKey}')],
@@ -1506,7 +1521,7 @@ describe('BpmnViewer - drawSubprocessLinks', () => {
   it('should enable a recursive call in an instance once it started a called instance', () => {
     const vm = vmWith({
       selectedInstance: { id: 'pi1', processDefinitionId: 'sub-1' },
-      activityInstanceHistory: [{ activityId: 'call_1', calledProcessInstanceId: 'sub-pi' }],
+      activityInstanceHistory: [{ processInstanceId: 'pi1', activityId: 'call_1', calledProcessInstanceId: 'sub-pi' }],
       staticCalledProcessDefinitions: [{ id: 'sub-1', key: 'sub', calledFromActivityIds: ['call_1'] }]
     })
 
@@ -1663,7 +1678,7 @@ describe('BpmnViewer - openSubprocess', () => {
       selectedInstance: { id: 'pi1' },
       $route: { path: '/process', query: {} },
       $router: { push: vi.fn() },
-      loadActivitiesInstanceHistory: vi.fn(() => Promise.resolve([])),
+      selectedInstanceActivityHistory: [],
       navigateToSubprocess: vi.fn(),
       viewer: { get: () => ({ get: (id) => ({ id, type: 'bpmn:CallActivity' }) }) },
       selectDiagramElement: vi.fn(),
@@ -1681,12 +1696,11 @@ describe('BpmnViewer - openSubprocess', () => {
     vi.spyOn(HistoryService, 'findProcessesInstancesHistory')
       .mockResolvedValue([{ id: 'sub-pi', processDefinitionKey: 'sub', processDefinitionVersion: 3 }])
     const vm = vmWith({
-      loadActivitiesInstanceHistory: vi.fn(() => Promise.resolve([{ calledProcessInstanceId: 'sub-pi' }]))
+      selectedInstanceActivityHistory: [{ activityId: 'call_1', calledProcessInstanceId: 'sub-pi', startTime: '2026-11-16T09:00:00.000+0000' }]
     })
 
     await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', { key: 'sub', version: 1 })
 
-    expect(vm.loadActivitiesInstanceHistory).toHaveBeenCalledWith(expect.objectContaining({ processInstanceId: 'pi1', activityId: 'call_1' }))
     expect(HistoryService.findProcessesInstancesHistory).toHaveBeenCalledWith({ processInstanceId: 'sub-pi' })
     expect(vm.navigateToSubprocess).toHaveBeenCalledWith('sub', 3, 'sub-pi')
   })
@@ -1706,7 +1720,7 @@ describe('BpmnViewer - openSubprocess', () => {
   it('should fall back to the called definition when the called instance has no history', async () => {
     vi.spyOn(HistoryService, 'findProcessesInstancesHistory').mockResolvedValue([])
     const vm = vmWith({
-      loadActivitiesInstanceHistory: vi.fn(() => Promise.resolve([{ calledProcessInstanceId: 'gone' }]))
+      selectedInstanceActivityHistory: [{ activityId: 'call_1', calledProcessInstanceId: 'gone' }]
     })
 
     await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', { key: 'sub', version: 1 })
@@ -1754,9 +1768,28 @@ describe('BpmnViewer - openSubprocess', () => {
     expect(vm.selectDiagramElement).toHaveBeenCalledWith(expect.objectContaining({ id: 'call_1' }))
   })
 
+  // A later run that started nothing (cancelled, waiting on an async job) must not hide an earlier called instance
+  it('should open the latest called instance of a call activity that ran several times', async () => {
+    vi.spyOn(HistoryService, 'findProcessesInstancesHistory')
+      .mockImplementation(async ({ processInstanceId }) => [{ id: processInstanceId, processDefinitionKey: 'sub', processDefinitionVersion: 1 }])
+    const vm = vmWith({
+      selectedInstanceActivityHistory: [
+        { activityId: 'call_1', calledProcessInstanceId: 'first', startTime: '2026-11-16T08:00:00.000+0000' },
+        { activityId: 'call_1', calledProcessInstanceId: 'second', startTime: '2026-11-16T09:00:00.000+0000' },
+        { activityId: 'call_1', calledProcessInstanceId: null, startTime: '2026-11-16T10:00:00.000+0000' },
+        { activityId: 'other', calledProcessInstanceId: 'other-pi', startTime: '2026-11-16T11:00:00.000+0000' }
+      ]
+    })
+
+    await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', undefined)
+
+    expect(vm.navigateToSubprocess).toHaveBeenCalledWith('sub', 1, 'second')
+  })
+
   it('should log instead of throwing when the lookup fails', async () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
-    const vm = vmWith({ loadActivitiesInstanceHistory: vi.fn(() => Promise.reject(new Error('down'))) })
+    vi.spyOn(HistoryService, 'findProcessesInstancesHistory').mockRejectedValue(new Error('down'))
+    const vm = vmWith({ selectedInstanceActivityHistory: [{ activityId: 'call_1', calledProcessInstanceId: 'sub-pi' }] })
 
     await BpmnViewer.methods.openSubprocess.call(vm, 'call_1', { key: 'sub', version: 1 })
 
@@ -1812,12 +1845,28 @@ describe('BpmnViewer - selectDiagramElement', () => {
   })
 })
 
-describe('BpmnViewer - activityInstanceHistory watcher', () => {
+describe('BpmnViewer - selected instance activity history', () => {
+  const history = [
+    { processInstanceId: 'pi1', activityId: 'call_1' },
+    { processInstanceId: 'pi2', activityId: 'call_1' }
+  ]
+
+  it('should keep only the entries of the selected instance', () => {
+    const vm = { selectedInstance: { id: 'pi2' }, activityInstanceHistory: history }
+
+    expect(BpmnViewer.computed.selectedInstanceActivityHistory.call(vm)).toEqual([history[1]])
+  })
+
+  it('should be empty without a selected instance or history', () => {
+    expect(BpmnViewer.computed.selectedInstanceActivityHistory.call({ selectedInstance: null, activityInstanceHistory: history })).toEqual([])
+    expect(BpmnViewer.computed.selectedInstanceActivityHistory.call({ selectedInstance: { id: 'pi1' }, activityInstanceHistory: null })).toEqual([])
+  })
+
   // It decides which call activities have a called instance to open
-  it('should redraw the call activity links when the activity history arrives', () => {
+  it('should redraw the call activity links when it changes', () => {
     const vm = { viewer: {}, redrawSubprocessLinks: vi.fn() }
 
-    BpmnViewer.watch.activityInstanceHistory.call(vm)
+    BpmnViewer.watch.selectedInstanceActivityHistory.call(vm)
 
     expect(vm.redrawSubprocessLinks).toHaveBeenCalled()
   })
@@ -1825,7 +1874,7 @@ describe('BpmnViewer - activityInstanceHistory watcher', () => {
   it('should not redraw before the viewer exists', () => {
     const vm = { viewer: null, redrawSubprocessLinks: vi.fn() }
 
-    BpmnViewer.watch.activityInstanceHistory.call(vm)
+    BpmnViewer.watch.selectedInstanceActivityHistory.call(vm)
 
     expect(vm.redrawSubprocessLinks).not.toHaveBeenCalled()
   })

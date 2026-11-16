@@ -273,6 +273,37 @@ createStoreTestSuite('CalledProcessDefinitionsStore', CalledProcessDefinitionsSt
       })
     },
 
+    resetCalledProcessDefinitions: (action, getContext) => {
+      it('should clear both lists', () => {
+        const context = getContext()
+
+        action(context)
+
+        expect(context.commit.mock.calls).toEqual([
+          ['setCalledProcessDefinitions', []],
+          ['setAllCalledProcessDefinitions', []]
+        ])
+      })
+
+      it('should stop a table load that is still running', async () => {
+        const context = contextWith(getContext, {
+          historicStats: [{ id: 'call_dyn', instances: 1 }],
+          activityNames: { call_dyn: 'Dynamic call' }
+        })
+        let finishLoad
+        HistoryService.findActivitiesProcessDefinitionHistory
+          .mockReturnValueOnce(new Promise(resolve => { finishLoad = resolve }))
+
+        const running = CalledProcessDefinitionsStore.actions.loadCalledProcessDefinitions(context, { processId: 'pd-old' })
+        action(context)
+        const commitsAfterReset = context.commit.mock.calls.length
+        finishLoad([])
+        await running
+
+        expect(context.commit.mock.calls.length).toBe(commitsAfterReset)
+      })
+    },
+
     filterByActivity: (action, getContext) => {
       it('should keep only definitions touching the activity, narrowed to it', () => {
         const context = getContext()

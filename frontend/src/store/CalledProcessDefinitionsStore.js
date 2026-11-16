@@ -73,6 +73,13 @@ export default {
       return promise
     },
 
+    // A definition switch before the new table can load: drop the previous rows and outdate a load still running for them
+    resetCalledProcessDefinitions({ commit, state }) {
+      currentTableLoads.delete(state)
+      commit('setCalledProcessDefinitions', [])
+      commit('setAllCalledProcessDefinitions', [])
+    },
+
     async loadCalledProcessDefinitions({ commit, dispatch, getters, rootGetters, state }, { processId, chunkSize = 50 }) {
       // e.g. after switching definitions, a slow load of the previous one must not fill the table
       const load = {}

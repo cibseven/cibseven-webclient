@@ -122,6 +122,11 @@ export default {
     },
     staticCalledProcessDefinitions() {
       return this.getStaticCalledProcessDefinitionsFor(this.processDefinitionId)
+    },
+    // The selected instance's own entries: the previous instance's history can still be passed in while the new one loads
+    selectedInstanceActivityHistory() {
+      const processInstanceId = this.selectedInstance?.id
+      return (this.activityInstanceHistory || []).filter(activity => activity.processInstanceId === processInstanceId)
     }
   },
   watch: {
@@ -133,7 +138,7 @@ export default {
       if (this.viewer) this.redrawSubprocessLinks()
     },
     // It tells which call activities started a called instance, and can arrive after the diagram was drawn
-    activityInstanceHistory: function() {
+    selectedInstanceActivityHistory: function() {
       if (this.viewer) this.redrawSubprocessLinks()
     },
     statistics: {
@@ -184,7 +189,7 @@ export default {
     this.ensureElementTemplatesLoaded()
   },
   methods: {
-    ...mapActions(['selectActivity', 'clearActivitySelection', 'setHighlightedElement', 'loadActivitiesInstanceHistory', 'getProcessById']),
+    ...mapActions(['selectActivity', 'clearActivitySelection', 'setHighlightedElement', 'getProcessById']),
     ...mapActions('diagram', ['setDiagramReady']),
     ...mapActions('elementTemplates', ['fetchAllElementTemplates']),
     ensureElementTemplatesLoaded: function() {
@@ -593,7 +598,7 @@ export default {
 
       // Call activities of the selected instance that started a called instance, the target of their link
       const activitiesWithCalledInstance = new Set(
-        (this.activityInstanceHistory || [])
+        this.selectedInstanceActivityHistory
           .filter(activity => activity.calledProcessInstanceId)
           .map(activity => activity.activityId)
       )
@@ -721,16 +726,11 @@ export default {
     },
     // The latest instance the call activity started in the selected instance, or null
     findCalledProcessInstance: async function(activityId) {
-      const activities = await this.loadActivitiesInstanceHistory({
-        processInstanceId: this.selectedInstance.id,
-        activityType: 'callActivity',
-        activityId,
-        sortBy: 'startTime',
-        sortOrder: 'desc',
-        maxResults: 1
-      })
-      const calledProcessInstanceId = activities?.[0]?.calledProcessInstanceId
-      // Not reached yet, cancelled before the called process started, or waiting on an async job
+      // From the history the viewer already has; a later run that started nothing (cancelled, waiting on an
+      // async job) must not hide an earlier run's called instance
+      const calledProcessInstanceId = this.selectedInstanceActivityHistory
+        .filter(activity => activity.activityId === activityId && activity.calledProcessInstanceId)
+        .sort((a, b) => (b.startTime || '').localeCompare(a.startTime || ''))[0]?.calledProcessInstanceId
       if (!calledProcessInstanceId) return null
       const instances = await HistoryService.findProcessesInstancesHistory({ processInstanceId: calledProcessInstanceId })
       // Its history can be gone (cleanup, deletion) while the call activity still names it
