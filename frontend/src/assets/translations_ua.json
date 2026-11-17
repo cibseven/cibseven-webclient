@@ -1369,7 +1369,9 @@
 		"value": "Значення",
 		"inputs": "Вхідні дані",
 		"outputs": "Вихідні дані",
-		"decisionInstanceId": "ID екземпляра рішення"
+		"decisionInstanceId": "ID екземпляра рішення",
+		"notAvailableForTenant": "Це рішення недоступне для орендаря \"{tenantId}\".",
+		"notAvailable": "Це рішення недоступне."
 	},
 	"decision-instance": {
 		"edit": "@:commons.edit"

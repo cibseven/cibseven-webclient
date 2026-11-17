@@ -657,8 +657,12 @@ const DecisionService = {
   getDecisionList: function(params) {
     return axios.get(getServicesBasePath() + "/decision", { params })
   },
-  getDecisionVersionsByKey: function(key, lazyLoad = false) {
-    return axios.get(getServicesBasePath() + "/decision/key/" + key + "/versions" + '?lazyLoad=' + lazyLoad)
+  // Without tenantId or withoutTenantId, the versions of every tenant
+  getDecisionVersionsByKey: function(key, lazyLoad = false, { tenantId, withoutTenantId } = {}) {
+    let url = `${getServicesBasePath()}/decision/key/${key}/versions?lazyLoad=${lazyLoad}`
+    if (tenantId) url += `&tenantId=${encodeURIComponent(tenantId)}`
+    else if (withoutTenantId) url += '&withoutTenantId=true'
+    return axios.get(url)
   },
   getDecisionDefinitionById: function(id, extraInfo = false) {
     return axios.get(getServicesBasePath() + "/decision/id/" + id + '?extraInfo=' + extraInfo)

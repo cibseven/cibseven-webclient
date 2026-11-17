@@ -219,10 +219,9 @@ export function fetchAndStoreProcesses(app, store, config, extraInfo) {
 
 export async function fetchDecisionsIfEmpty(store) {
   if (store.state.decision.list.length < 1) {
-    const decisions = await store.dispatch('getDecisionList', { latestVersion: true })
-    const reduced = decisions.map(d => ({ key: d.key, id: d.id, name: d.name, latestVersion: d.latestVersion }))
-    store.commit('setDecisions', { decisions: reduced })
-    return reduced
+    // The action commits the list itself, with each row's tenant: committing a reduced copy again dropped
+    // the tenant, so the rows opened the wrong tenant's decision (CIB7-2392)
+    return store.dispatch('getDecisionList', { latestVersion: true })
   } else {
     return store.state.decision.list
   }

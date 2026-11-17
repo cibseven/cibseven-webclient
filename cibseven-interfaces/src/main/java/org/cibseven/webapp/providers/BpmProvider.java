@@ -1154,6 +1154,10 @@ public interface BpmProvider {
 		return getDecisionProvider().getDecisionVersionsByKey(key, lazyLoad, user);
 	}
 
+	default Collection<Decision> getDecisionVersionsByKey(String key, String tenantId, boolean withoutTenantId, Optional<Boolean> lazyLoad, CIBUser user) {
+		return getDecisionProvider().getDecisionVersionsByKey(key, tenantId, withoutTenantId, lazyLoad, user);
+	}
+
 	default Collection<HistoricDecisionInstance> getHistoricDecisionInstances(Map<String, Object> queryParams, CIBUser user) {
 		return getDecisionProvider().getHistoricDecisionInstances(queryParams, user);
 	}

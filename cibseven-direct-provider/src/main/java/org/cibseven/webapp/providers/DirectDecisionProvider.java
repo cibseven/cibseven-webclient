@@ -214,9 +214,17 @@ public class DirectDecisionProvider implements IDecisionProvider {
 
 	@Override
 	public Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad, CIBUser user) {
-		// no tenant restriction, like the REST provider: a decision deployed only for a tenant has versions too
-		List<DecisionDefinition> decisionDefinitions = directProviderUtil.getProcessEngine(user).getRepositoryService().createDecisionDefinitionQuery()
-				.decisionDefinitionKey(key).orderByDecisionDefinitionVersion().desc().unlimitedList();
+		return getDecisionVersionsByKey(key, null, false, lazyLoad, user);
+	}
+
+	@Override
+	public Collection<Decision> getDecisionVersionsByKey(String key, String tenantId, boolean withoutTenantId, Optional<Boolean> lazyLoad, CIBUser user) {
+		// without either restriction every tenant's versions, like the REST provider: a decision deployed only for a tenant has versions too
+		DecisionDefinitionQuery query = directProviderUtil.getProcessEngine(user).getRepositoryService().createDecisionDefinitionQuery()
+				.decisionDefinitionKey(key);
+		if (tenantId != null && !tenantId.isEmpty()) query.tenantIdIn(tenantId);
+		else if (withoutTenantId) query.withoutTenantId();
+		List<DecisionDefinition> decisionDefinitions = query.orderByDecisionDefinitionVersion().desc().unlimitedList();
 
 		// a key without a match yields an empty list, like the REST provider
 		List<Decision> decisions = new ArrayList<>();
