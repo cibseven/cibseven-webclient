@@ -19,15 +19,15 @@
 <template>
   <div class="h-100 d-flex flex-column bg-light">
     <div class="overflow-auto h-100">
-      <b-button style="top: 2px; right: 60px" class="load-data border-0 position-absolute"
-        variant="btn-outline-primary" size="sm"
-        :title="$t('process.loadAllStatistics')" :aria-label="$t('process.loadAllStatistics')"
+      <b-button style="top: 6px; right: 65px" class="load-data position-absolute d-inline-flex align-items-center"
+        variant="outline-secondary" size="sm" :title="$t('process.loadAllStatistics')"
         :disabled="!!refreshing" :aria-busy="refreshing === 'all' ? 'true' : null"
         @click="onRefreshProcessDefinitions(false)">
         <!-- while every version's data is loading, the spinner is drawn over the hidden icon, so the button keeps its size -->
-        <span class="mdi mdi-18px mdi-poll position-relative" :class="{ 'load-data-busy': refreshing === 'all' }" aria-hidden="true">
+        <span class="mdi mdi-18px mdi-poll lh-1 position-relative" :class="{ 'load-data-busy': refreshing === 'all' }" aria-hidden="true">
           <span v-if="refreshing === 'all'" class="load-data-spinner spinner-border"></span>
         </span>
+        <span class="ms-1">{{ $t('process.loadData') }}</span>
       </b-button>
       <b-button style="top: 2px; right: 30px" class="border-0 position-absolute"
         variant="btn-outline-primary" size="sm" :title="$t('process.refreshVersions')"
@@ -155,9 +155,11 @@ export default {
   data() {
     return {
       expandedVersionId: null,
-      // what was loaded for the versions selected before, so their cards keep it
+      // loaded for versions selected or opened before
       deployments: {},
-      incidentsByVersionId: {}
+      incidentsByVersionId: {},
+      // versions whose data is being loaded, so reopening them does not load again
+      loadingVersionIds: new Set()
     }
   },
   computed: {
@@ -174,14 +176,12 @@ export default {
     },
     selectedIncidents() {
       const statistics = this.selectedProcess?.statistics
-      if (!statistics) return null
-      return statistics.reduce((sum, activity) =>
-        sum + (activity.incidents ?? []).reduce((count, incident) => count + (incident.incidentCount ?? 0), 0), 0)
+      return statistics ? this.countIncidents(statistics) : null
     }
   },
   watch: {
     selectedDeploymentId: {
-      handler: 'loadSelectedDeployment',
+      handler: 'loadDeployment',
       immediate: true
     },
     selectedIncidents: {
@@ -192,6 +192,9 @@ export default {
     // a reloaded list starts over, like its running and finished counts
     processDefinitions() {
       this.incidentsByVersionId = {}
+      this.loadingVersionIds.clear()
+      this.rememberSelectedIncidents()
+      this.loadExpandedVersionData()
     }
   },
   methods: {
@@ -200,6 +203,11 @@ export default {
     // lazy loaded counts come as '-' until the version is selected
     countOrDash(value) {
       return typeof value === 'number' ? value : '-'
+    },
+    // open incidents of a version, from its activity statistics
+    countIncidents(statistics) {
+      return statistics.reduce((sum, activity) =>
+        sum + (activity.incidents ?? []).reduce((count, incident) => count + (incident.incidentCount ?? 0), 0), 0)
     },
     // the selected version shows its live count, the others the one they had when selected or the loaded data
     incidentsOf(version) {
@@ -213,17 +221,46 @@ export default {
     rememberSelectedIncidents() {
       if (this.selectedIncidents !== null) this.incidentsByVersionId[this.selectedProcess.id] = this.selectedIncidents
     },
-    async loadSelectedDeployment(deploymentId) {
+    async loadDeployment(deploymentId) {
       if (!deploymentId || this.deployments[deploymentId] || !this.canReadDeployment(deploymentId)) return
       try {
         this.deployments[deploymentId] = await ProcessService.findDeployment(deploymentId)
       } catch {
-        // the deployment time stays a dash; asked again the next time the version is selected
+        // the date stays a dash and is asked again next time
       }
+    },
+    // what a version opened without selecting it is missing; what fails stays a dash
+    async loadVersionData(version) {
+      if (this.loadingVersionIds.has(version.id)) return
+      this.loadingVersionIds.add(version.id)
+      // a reload of the list meanwhile makes this load stale
+      const list = this.processDefinitions
+      const isCurrent = () => this.processDefinitions === list
+      const loadCounts = async () => {
+        const { runningInstances, allInstances, completedInstances } = await ProcessService.findProcessById(version.id, true)
+        if (isCurrent()) Object.assign(version, { runningInstances, allInstances, completedInstances })
+      }
+      const loadIncidents = async () => {
+        const statistics = await ProcessService.findProcessStatistics(version.id)
+        if (isCurrent()) this.incidentsByVersionId[version.id] = this.countIncidents(statistics)
+      }
+      const loads = []
+      if (!this.deploymentTimeOf(version)) loads.push(this.loadDeployment(version.deploymentId))
+      if (typeof version.runningInstances !== 'number') loads.push(loadCounts())
+      if (typeof this.incidentsOf(version) !== 'number') loads.push(loadIncidents())
+      await Promise.allSettled(loads)
+      // nor clear the mark of a newer load of the same version
+      if (isCurrent()) this.loadingVersionIds.delete(version.id)
+    },
+    // the open version, unless it is the selected one, whose data the view loads
+    loadExpandedVersionData() {
+      const version = this.processDefinitions.find(v => v.id === this.expandedVersionId)
+      if (version && version.version !== this.versionIndex) this.loadVersionData(version)
     },
     // one version's details open at a time
     toggleDetails(versionId) {
       this.expandedVersionId = this.expandedVersionId === versionId ? null : versionId
+      this.loadExpandedVersionData()
     },
     onRefreshProcessDefinitions: function(lazyLoadHistory) {
       this.$emit('onRefreshProcessDefinitions', lazyLoadHistory)

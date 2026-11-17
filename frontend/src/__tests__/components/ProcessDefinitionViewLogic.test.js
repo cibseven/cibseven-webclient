@@ -474,6 +474,17 @@ describe('ProcessDefinitionView - findProcessAndAssignData', () => {
     expect(entry).toMatchObject({ name: 'Invoice', runningInstances: 3 })
   })
 
+  // the backend does not fill them in there: incidents always come as 0, the deployment time as null
+  it('should keep the incidents and deployment time of the version entry', async () => {
+    const entry = version({ id: 'pd:2:abc', incidents: 3, deploymentTime: '2025-05-16T12:44:00.000+0200' })
+    const vm = context({ processDefinitions: [entry] })
+    ProcessService.findProcessById.mockResolvedValue({ id: 'pd:2:abc', runningInstances: 3, incidents: 0, deploymentTime: null })
+
+    await m.findProcessAndAssignData.call(vm, entry)
+
+    expect(entry).toMatchObject({ runningInstances: 3, incidents: 3, deploymentTime: '2025-05-16T12:44:00.000+0200' })
+  })
+
   it('should leave other version entries untouched', async () => {
     const other = version({ id: 'pd:1:abc' })
     const vm = context({ processDefinitions: [other] })

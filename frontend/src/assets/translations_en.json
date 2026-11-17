@@ -188,6 +188,7 @@
 		"copySuccess": "Selected value copied",
 		"refreshVersions": "Refresh history versions",
 		"loadAllStatistics": "Load all instance statistics",
+		"loadData": "Load data",
 		"externalProcessStarted": "Process successfully started",
 		"exportInstances": "Export instances",
 		"deleteProcessDefinition": {

@@ -188,6 +188,7 @@
 		"copySuccess": "Выбранное значение скопировано",
 		"refreshVersions": "Обновить версии истории",
 		"loadAllStatistics": "Загрузить всю статистику экземпляров",
+		"loadData": "Загрузить данные",
 		"externalProcessStarted": "Процесс успешно запущен",
 		"exportInstances": "Экспорт экземпляров",
 		"deleteProcessDefinition": {
