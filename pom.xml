@@ -45,7 +45,7 @@
 		<jjwt.version>0.12.6</jjwt.version>
 		<commons-io.version>2.18.0</commons-io.version>
 		<common-auth.version>1.5.0</common-auth.version>
-		<version.spring.boot>4.1.1</version.spring.boot>
+		<version.spring.boot>4.1.2</version.spring.boot>
 		<version.openapi-starter-webmvc-ui>3.1.0</version.openapi-starter-webmvc-ui>
 		<!-- The webclient is on Jackson 3 (tools.jackson.*, version.jackson3). Jackson 2 is left only
 		     where others bring it: springdoc's swagger-core (YAML), and jackson-annotations, which
@@ -484,25 +484,6 @@ You may obtain a copy of the License at
 				<groupId>org.apache.logging.log4j</groupId>
 				<artifactId>log4j-to-slf4j</artifactId>
 				<version>${version.log4j2}</version>
-			</dependency>
-
-			<!-- Override Apache Tomcat (BOM pins a vulnerable version) to fix
-			     CVE-2026-41293, -43512, -43515, -41284, -43513, -42498, -43514, -65182, -65905, -68525.
-			     Remove once the imported Spring Boot BOM manages a fixed version. -->
-			<dependency>
-				<groupId>org.apache.tomcat.embed</groupId>
-				<artifactId>tomcat-embed-core</artifactId>
-				<version>${version.tomcat}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.tomcat.embed</groupId>
-				<artifactId>tomcat-embed-el</artifactId>
-				<version>${version.tomcat}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.tomcat.embed</groupId>
-				<artifactId>tomcat-embed-websocket</artifactId>
-				<version>${version.tomcat}</version>
 			</dependency>
 
 			<!-- Override pgjdbc (managed by the Spring Boot BOM at 42.7.10) to fix
