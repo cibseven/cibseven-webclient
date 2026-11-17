@@ -16,22 +16,16 @@
  */
 package org.cibseven.webapp.rest;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import org.cibseven.webapp.auth.AuthorizationChecker;
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.auth.exception.AuthenticationException;
-import org.cibseven.webapp.exception.AccessDeniedException;
-import org.cibseven.webapp.providers.BpmProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,9 +44,8 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
 /**
- * GET system/pool-status through the dispatcher: the user comes from the Authorization header as in
- * SevenWebclientContext, and the permission decision is the real AuthorizationChecker asking the
- * (mocked) engine.
+ * GET system/pool-status through the dispatcher, with the user taken from the Authorization header
+ * as SevenWebclientContext does.
  */
 @ExtendWith(MockitoExtension.class)
 class SystemServiceTest {
@@ -61,23 +54,15 @@ class SystemServiceTest {
 	private static final String STATS = "MaxTotal: 40, DefaultMaxPerRoute: 20, Available: 3, Leased: 0, Pending: 0";
 
 	@Mock
-	private BpmProvider bpmProvider;
-
-	@Mock
 	private CustomRestTemplate restTemplate;
 
-	private final CIBUser user = new CIBUser("demo");
 	private MockMvc mvc;
 
-	/** Status codes as ExceptionConverter (web module) maps them. */
+	/** The status ExceptionConverter (web module) answers an AuthenticationException with. */
 	@RestControllerAdvice
 	static class StatusAdvice {
 		@ExceptionHandler @ResponseStatus(HttpStatus.UNAUTHORIZED)
 		void unauthorized(AuthenticationException x) {
-		}
-
-		@ExceptionHandler @ResponseStatus(HttpStatus.FORBIDDEN)
-		void forbidden(AccessDeniedException x) {
 		}
 	}
 
@@ -95,12 +80,11 @@ class SystemServiceTest {
 				if (request.getHeader("Authorization") == null) {
 					throw new AuthenticationException();
 				}
-				return user;
+				return new CIBUser("demo");
 			}
 		};
 
-		SystemService service = new SystemService(restTemplate, new AuthorizationChecker(bpmProvider));
-		mvc = MockMvcBuilders.standaloneSetup(service)
+		mvc = MockMvcBuilders.standaloneSetup(new SystemService(restTemplate))
 				.setCustomArgumentResolvers(userResolver)
 				.setControllerAdvice(new StatusAdvice())
 				.build();
@@ -111,27 +95,18 @@ class SystemServiceTest {
 		mvc.perform(get(POOL_STATUS))
 				.andExpect(status().isUnauthorized());
 
-		verify(bpmProvider, never()).isUserAuthorized(any(), anyInt(), anyString(), anyString());
-		verify(restTemplate, never()).getConnectionPoolStats();
+		verifyNoInteractions(restTemplate);
 	}
 
 	@Test
-	void poolStatus_withoutSystemRead_answers403() throws Exception {
-		when(bpmProvider.isUserAuthorized(user, SevenResourceType.SYSTEM.getType(), "*", "READ")).thenReturn(false);
-
-		mvc.perform(get(POOL_STATUS).header("Authorization", "Bearer token"))
-				.andExpect(status().isForbidden());
-
-		verify(restTemplate, never()).getConnectionPoolStats();
-	}
-
-	@Test
-	void poolStatus_withSystemRead_returnsThePoolStatistics() throws Exception {
-		when(bpmProvider.isUserAuthorized(user, SevenResourceType.SYSTEM.getType(), "*", "READ")).thenReturn(true);
+	void poolStatus_loggedIn_returnsThePoolStatisticsWithoutAnyOtherCallThroughThePool() throws Exception {
 		when(restTemplate.getConnectionPoolStats()).thenReturn(STATS);
 
 		mvc.perform(get(POOL_STATUS).header("Authorization", "Bearer token"))
 				.andExpect(status().isOk())
 				.andExpect(content().string(STATS));
+
+		verify(restTemplate).getConnectionPoolStats();
+		verifyNoMoreInteractions(restTemplate);
 	}
 }
