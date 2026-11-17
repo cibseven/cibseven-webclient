@@ -66,20 +66,23 @@
         <template v-for="item in section" :key="item.key">
           <router-link v-if="item.to" :to="item.to" active-class="" exact-active-class="" class="cib-nav-menu-item" :class="{ active: item.active }"
             role="menuitem" :title="item.tooltip" :aria-current="item.active ? 'page' : null" @click="close">
-            <NavIcon v-if="hasItemIcons" class="cib-nav-menu-icon" :icon="item.icon" :size="18"></NavIcon>
+            <NavIcon v-if="hasItemIcons" class="cib-nav-menu-icon" :icon="leadingIcon(item)" :size="18"></NavIcon>
             <span v-if="item.tag" class="cib-nav-menu-tag">{{ item.tag }}</span>{{ item.label }}
+            <NavIcon v-if="trailingIcon(item)" class="cib-nav-menu-icon cib-nav-menu-icon-end" :icon="trailingIcon(item)" :size="18"></NavIcon>
           </router-link>
           <a v-else-if="item.href" :href="item.href" class="cib-nav-menu-item" role="menuitem" :title="item.tooltip"
             :target="item.external ? '_blank' : null" :rel="item.external ? 'noopener noreferrer' : null" @click="close">
-            <NavIcon v-if="hasItemIcons" class="cib-nav-menu-icon" :icon="item.icon" :size="18"></NavIcon>
+            <NavIcon v-if="hasItemIcons" class="cib-nav-menu-icon" :icon="leadingIcon(item)" :size="18"></NavIcon>
             {{ item.label }}<span v-if="item.external" class="mdi mdi-14px mdi-open-in-new ms-1" aria-hidden="true"></span>
+            <NavIcon v-if="trailingIcon(item)" class="cib-nav-menu-icon cib-nav-menu-icon-end" :icon="trailingIcon(item)" :size="18"></NavIcon>
           </a>
           <button v-else type="button" class="cib-nav-menu-item" :class="{ active: item.active }"
             :role="item.checkable ? 'menuitemradio' : 'menuitem'"
             :title="item.tooltip" :aria-checked="item.checkable ? (item.active ? 'true' : 'false') : null"
             @click="select(item)">
-            <NavIcon v-if="hasItemIcons" class="cib-nav-menu-icon" :icon="item.icon" :size="18"></NavIcon>
+            <NavIcon v-if="hasItemIcons" class="cib-nav-menu-icon" :icon="leadingIcon(item)" :size="18"></NavIcon>
             <span v-if="item.tag" class="cib-nav-menu-tag">{{ item.tag }}</span>{{ item.label }}
+            <NavIcon v-if="trailingIcon(item)" class="cib-nav-menu-icon cib-nav-menu-icon-end" :icon="trailingIcon(item)" :size="18"></NavIcon>
           </button>
         </template>
       </div>
@@ -89,6 +92,7 @@
 
 <script>
 import NavIcon from './NavIcon.vue'
+import { leadingIcon, trailingIcon } from './navItemIcons.js'
 
 let uid = 0
 
@@ -103,7 +107,8 @@ const HOVER_CLOSE_DELAY = 150
  * the parent (v-model:open) so only one menu is open at a time.
  *
  * cluster: { id, label, icon, iconImage?, avatar?, badge?, to?, titleTo?, active?, sections: [[item]] }
- * item:    { key, label, icon?, tooltip?, to?, href?, external?, tag?, active?, checkable? }
+ * item:    { key, label, icon?, iconEnd?, tooltip?, to?, href?, external?, tag?, active?, checkable? }
+ * iconEnd draws the icon after the label (Logout) instead of in the icon column before it.
  * Items without to/href are emitted through `select`.
  */
 export default {
@@ -133,9 +138,10 @@ export default {
     hasMenu() {
       return !!this.cluster.sections?.some(section => section.length)
     },
-    // When one entry has an icon (e.g. Logout), every entry gets the icon column, so the labels line up
+    // When one entry has an icon before its label, every entry gets the icon column, so the labels line up.
+    // An icon after the label (iconEnd, e.g. Logout) needs no column.
     hasItemIcons() {
-      return !!this.cluster.sections?.some(section => section.some(item => item.icon))
+      return !!this.cluster.sections?.some(section => section.some(item => leadingIcon(item)))
     },
     isSplit() {
       return !!this.cluster.to
@@ -169,6 +175,8 @@ export default {
     this.$el.removeEventListener('focusout', this.onFocusOut)
   },
   methods: {
+    leadingIcon,
+    trailingIcon,
     setOpen(value) {
       if (value !== this.open) this.$emit('update:open', value)
     },
@@ -421,7 +429,11 @@ export default {
     background: var(--bs-gray-200);
     color: var(--bs-gray-900);
   }
-  .cib-nav-menu-item:hover .cib-nav-menu-tag {
+  .cib-nav-menu-item:hover /* An icon after the label (Logout) keeps its size beside a long label, as in the mobile menu */
+.cib-nav-menu-icon-end {
+  flex-shrink: 0;
+}
+.cib-nav-menu-tag {
     background: var(--bs-gray-400);
   }
 }

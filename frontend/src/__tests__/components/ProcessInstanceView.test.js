@@ -14,8 +14,9 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import ProcessInstanceView from '@/components/process/ProcessInstanceView.vue'
+import { ProcessService } from '@/services.js'
 
 describe('ProcessInstanceView', () => {
   describe('matchedDeepLink', () => {
@@ -59,6 +60,55 @@ describe('ProcessInstanceView', () => {
         processDefinitionTenantId: 'definition-tenant',
         lang: 'en'
       })
+    })
+  })
+
+  // CIB7-2717: an instance opened directly (search, links, tables) never passed through the
+  // definition view, so the view has to load the call activity targets itself
+  describe('static called process definitions', () => {
+    const context = (overrides = {}) => {
+      const vm = {
+        process: { id: 'pd-1' },
+        selectedInstance: null,
+        $refs: {},
+        getStaticCalledProcessDefinitionsFor: vi.fn(() => null),
+        loadStaticCalledProcessDefinitions: vi.fn(),
+        ...overrides
+      }
+      vm.ensureStaticCalledProcessDefinitions = ProcessInstanceView.methods.ensureStaticCalledProcessDefinitions.bind(vm)
+      return vm
+    }
+
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
+
+    it('loads them for the displayed definition when mounted', () => {
+      vi.spyOn(ProcessService, 'fetchDiagram').mockResolvedValue({ bpmn20Xml: '' })
+      const vm = context()
+
+      ProcessInstanceView.mounted.call(vm)
+
+      expect(vm.loadStaticCalledProcessDefinitions).toHaveBeenCalledWith({ processDefinitionId: 'pd-1' })
+    })
+
+    it('loads them when the displayed definition changes', () => {
+      vi.spyOn(ProcessService, 'fetchDiagram').mockResolvedValue({ bpmn20Xml: '' })
+      const vm = context({ process: { id: 'pd-2' } })
+
+      ProcessInstanceView.watch['process.id'].call(vm)
+
+      expect(vm.loadStaticCalledProcessDefinitions).toHaveBeenCalledWith({ processDefinitionId: 'pd-2' })
+    })
+
+    // Once per visit: they were loaded by this visit (ProcessDefinitionView drops them when the process pages are left)
+    it('reuses them when this visit already loaded them', () => {
+      const vm = context({ getStaticCalledProcessDefinitionsFor: vi.fn(() => []) })
+
+      vm.ensureStaticCalledProcessDefinitions()
+
+      expect(vm.getStaticCalledProcessDefinitionsFor).toHaveBeenCalledWith('pd-1')
+      expect(vm.loadStaticCalledProcessDefinitions).not.toHaveBeenCalled()
     })
   })
 })

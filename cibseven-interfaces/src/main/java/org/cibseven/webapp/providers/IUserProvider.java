@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.auth.SevenResourceType;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.SystemException;
@@ -89,5 +90,38 @@ public interface IUserProvider {
 	public ResponseEntity<Authorization> createAuthorization(Authorization authorization, CIBUser user);
 	public void updateAuthorization(String authorizationId, Map<String, Object> data, CIBUser user);
 	public void deleteAuthorization(String authorizationId, CIBUser user);	
+	
+	/**
+	 * Builds an {@link Authorizations} object by grouping the given authorizations by
+	 * their resource type. Shared by all {@link IUserProvider} implementations.
+	 */
+	default Authorizations buildAuthorizations(Collection<Authorization> userAuthorizations) {
+		Authorizations auths = new Authorizations();
+		auths.setApplication(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.APPLICATION.getType()));
+		auths.setFilter(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.FILTER.getType()));
+		auths.setProcessDefinition(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.PROCESS_DEFINITION.getType()));
+		auths.setProcessInstance(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.PROCESS_INSTANCE.getType()));
+		auths.setTask(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.TASK.getType()));
+		auths.setAuthorization(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.AUTHORIZATION.getType()));
+		auths.setUser(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.USER.getType()));
+		auths.setGroup(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.GROUP.getType()));
+		auths.setDecisionDefinition(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.DECISION_DEFINITION.getType()));
+		auths.setDecisionRequirementsDefinition(
+				SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.DECISION_REQUIREMENTS_DEFINITION.getType()));
+		auths.setDeployment(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.DEPLOYMENT.getType()));
+		auths.setBatch(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.BATCH.getType()));
+		auths.setGroupMembership(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.GROUP_MEMBERSHIP.getType()));
+		auths.setHistoricTask(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.HISTORIC_TASK.getType()));
+		auths.setHistoricProcessInstance(
+				SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.HISTORIC_PROCESS_INSTANCE.getType()));
+		auths.setTenant(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.TENANT.getType()));
+		auths.setTenantMembership(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.TENANT_MEMBERSHIP.getType()));
+		auths.setReport(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.REPORT.getType()));
+		auths.setDashboard(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.DASHBOARD.getType()));
+		auths.setUserOperationLogCategory(
+				SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.USER_OPERATION_LOG_CATEGORY.getType()));
+		auths.setSystem(SevenProviderBase.filterResources(userAuthorizations, SevenResourceType.SYSTEM.getType()));
+		return auths;
+	}
 	
 }

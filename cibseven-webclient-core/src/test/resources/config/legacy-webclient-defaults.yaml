@@ -52,8 +52,9 @@ cibseven:
       connectTimeout: 30
       connectionRequestTimeout: 180
       connectionResponseTimeout:
-      maxConnPerRoute: 20
-      maxConnTotal: 40
+      # Raised from 20 and 40 in 3.0.0 on purpose, since GET requests share the pool too (CIB7-2802).
+      maxConnPerRoute: 100
+      maxConnTotal: 200
       connectionTimeToLive: 50000
       connectionPoolingEnabled: true
       connectionReuseEnabled: true

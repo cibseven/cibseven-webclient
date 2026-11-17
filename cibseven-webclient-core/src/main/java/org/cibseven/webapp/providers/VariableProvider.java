@@ -17,6 +17,7 @@
 package org.cibseven.webapp.providers;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -83,7 +84,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 				body.add("valueType", valueType);
 			} else {
 				// Handle JSON/serialized data
-				String jsonContent = new String(data.getBytes());
+				String jsonContent = new String(data.getBytes(), StandardCharsets.UTF_8);
 				HttpHeaders jsonHeaders = new HttpHeaders();
 				jsonHeaders.setContentType(MediaType.APPLICATION_JSON);
 				HttpEntity<String> jsonEntity = new HttpEntity<>(jsonContent, jsonHeaders);
@@ -602,6 +603,12 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	public void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/execution/" + executionId + "/localVariables/" + varName;
 		doPut(url, data, user);
+	}
+
+	@Override
+	public void putProcessInstanceVariable(String processInstanceId, String variableName, Map<String, Object> variable, CIBUser user) {
+		String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId + "/variables/" + variableName;
+		doPut(url, variable, user);
 	}
 
 	protected ResponseEntity<byte[]> generateFileResponse(byte[] content) throws IOException {
