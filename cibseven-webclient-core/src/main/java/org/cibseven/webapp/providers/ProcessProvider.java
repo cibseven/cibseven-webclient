@@ -581,7 +581,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		Map<String, Object> data = new HashMap<String, Object>();
 		List<TaskSorting> sorting = Arrays.asList(new TaskSorting("startTime", "desc"));
 		data.put("sorting", sorting);
-		if (text != "") {
+		if (text != null && !text.isEmpty()) {
 			Map<String, Object> orQueries = new HashMap<String, Object>();
 			orQueries.put("processInstanceBusinessKeyLike", "%" + text + "%");
 			orQueries.put("processInstanceId", text);

@@ -373,6 +373,40 @@ public class ProcessProviderTest {
 	}
 
 	@Test
+	void findProcessesInstancesHistoryById_searchesBusinessKeyAndInstanceIdForFreeText() throws Exception {
+		engine.enqueueJson("[]");
+
+		processProvider.findProcessesInstancesHistoryById(
+			"id-1", Optional.empty(), Optional.empty(), 0, 50, "INV-42", user);
+
+		String body = engine.take().getBody().readUtf8();
+		assertThat(body).contains("\"orQueries\"")
+			.contains("\"processInstanceBusinessKeyLike\":\"%INV-42%\"")
+			.contains("\"processInstanceId\":\"INV-42\"");
+	}
+
+	@Test
+	void findProcessesInstancesHistoryById_addsNoTextFilterForAnEmptySearch() throws Exception {
+		engine.enqueueJson("[]");
+
+		// a request parameter is a new String instance, not the interned "" literal (CIB7-2810)
+		processProvider.findProcessesInstancesHistoryById(
+			"id-1", Optional.empty(), Optional.empty(), 0, 50, new String(""), user);
+
+		assertThat(engine.take().getBody().readUtf8()).doesNotContain("orQueries");
+	}
+
+	@Test
+	void findProcessesInstancesHistoryById_addsNoTextFilterWithoutText() throws Exception {
+		engine.enqueueJson("[]");
+
+		processProvider.findProcessesInstancesHistoryById(
+			"id-1", Optional.empty(), Optional.empty(), 0, 50, null, user);
+
+		assertThat(engine.take().getBody().readUtf8()).doesNotContain("orQueries");
+	}
+
+	@Test
 	void findProcessStatistics_asksForFailedJobsAndIncidents() throws Exception {
 		engine.enqueueJson("[]");
 
