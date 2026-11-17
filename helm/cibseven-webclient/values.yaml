@@ -172,9 +172,9 @@ application:
         # Max response wait time in seconds (0 = infinite). If not set, the socketTimeout value will be used.
         connectionResponseTimeout:
         # Max HTTP connections per route. Limits the number of connections to a specific host.
-        maxConnPerRoute: 20
+        maxConnPerRoute: 100
         # Total max HTTP connections across all routes. Defaults to 2 * maxConnPerRoute if not specified.
-        maxConnTotal: 40
+        maxConnTotal: 200
         # Connection time to live in milliseconds. Maximum time a connection can be reused.
         connectionTimeToLive: 50000
         # Whether to enable connection pooling. Improves performance by reusing connections.

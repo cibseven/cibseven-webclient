@@ -59,15 +59,17 @@ public class RestTemplateConfiguration {
     private Integer connectionResponseTimeout = null;
 
     /**
-     * Max HTTP connections per route.
+     * Max HTTP connections per route, that is the max number of parallel requests to one engine.
+     * Every request to the engine shares this pool, GET requests included since 3.0.0 (CIB7-2206),
+     * so the default leaves room for 100 parallel requests per engine (load test in CIB7-2802).
      */
-    private int maxConnPerRoute = 20;
+    private int maxConnPerRoute = 100;
 
     /**
      * Total max HTTP connections.
      * Defaults to 2 * maxConnPerRoute.
      */
-    private int maxConnTotal = 40;
+    private int maxConnTotal = 200;
 
     /**
      * Connection time to live in milliseconds.

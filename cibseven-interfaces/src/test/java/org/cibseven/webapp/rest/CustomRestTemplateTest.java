@@ -76,6 +76,30 @@ public class CustomRestTemplateTest {
 		assertThat(plain.getDefaultCharset()).isEqualTo(StringHttpMessageConverter.DEFAULT_CHARSET);
 	}
 
+	/** GET requests share the pool since 3.0.0, so its default has room for 100 parallel requests per engine (CIB7-2802). */
+	@Test
+	void defaultConfiguration_poolsUpTo100ConnectionsPerEngineAnd200InTotal() throws Exception {
+		CustomRestTemplate template = CustomRestTemplate.create(new RestTemplateConfiguration());
+		try {
+			assertThat(template.getConnectionPoolStats()).startsWith("MaxTotal: 200, DefaultMaxPerRoute: 100,");
+		} finally {
+			template.destroy();
+		}
+	}
+
+	@Test
+	void maxConnTotalZero_fallsBackToTwiceMaxConnPerRoute() throws Exception {
+		RestTemplateConfiguration config = new RestTemplateConfiguration();
+		config.setMaxConnPerRoute(30);
+		config.setMaxConnTotal(0);
+		CustomRestTemplate template = CustomRestTemplate.create(config);
+		try {
+			assertThat(template.getConnectionPoolStats()).startsWith("MaxTotal: 60, DefaultMaxPerRoute: 30,");
+		} finally {
+			template.destroy();
+		}
+	}
+
 	@Test
 	void connectionClosedByServer_isNotReused() throws Exception {
 		// like Tomcat after maxKeepAliveRequests: "Connection: close" on the last response, then the socket is closed

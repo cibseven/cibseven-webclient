@@ -51,6 +51,19 @@ describe('DmnViewer - setViewbox', () => {
   it('is a no-op when the viewer has not been created yet', () => {
     expect(() => DmnViewer.methods.setViewbox.call({ viewer: null }, {})).not.toThrow()
   })
+
+  // didi: get(name) throws for a service the viewer lacks, get(name, false) answers null
+  const decisionTableViewer = { get: (name, strict) => { if (strict === false) return null; throw new Error(`No provider for "${name}"!`) } }
+
+  it('is a no-op on a decision table, which has no canvas', () => {
+    const ctx = { viewer: { getActiveViewer: () => decisionTableViewer } }
+    expect(() => DmnViewer.methods.setViewbox.call(ctx, { x: 1 })).not.toThrow()
+  })
+
+  it('resetZoom is a no-op on a decision table as well', () => {
+    const ctx = { viewer: { getActiveViewer: () => decisionTableViewer } }
+    expect(() => DmnViewer.methods.resetZoom.call(ctx)).not.toThrow()
+  })
 })
 
 describe('DmnViewer - showDiagram', () => {
@@ -60,7 +73,8 @@ describe('DmnViewer - showDiagram', () => {
       setDiagramReady: vi.fn(),
       viewer: {
         importXML: vi.fn(() => Promise.resolve()),
-        getDefinitions: vi.fn(() => ({ drgElement: [] })),
+        getViews: vi.fn(() => []),
+        getActiveView: vi.fn(() => null),
         getActiveViewer: vi.fn(() => null)
       }
     }
@@ -70,6 +84,89 @@ describe('DmnViewer - showDiagram', () => {
     await promise
     expect(ctx.setDiagramReady).toHaveBeenCalledWith(true)
     vi.useRealTimers()
+  })
+
+  // The views dmn-js offers after importing a DRD with diagram information; it opens the first one
+  describe('which view of a DRD it opens', () => {
+    const drdView = { type: 'drd', element: { id: 'definitions' } }
+    const dishView = { type: 'decisionTable', element: { id: 'dish' } }
+    const beveragesView = { type: 'decisionTable', element: { id: 'beverages' } }
+    const canvas = { zoom: vi.fn() }
+    const drd = () => {
+      const viewer = {
+        activeView: drdView,
+        importXML: vi.fn(() => Promise.resolve()),
+        getViews: () => [drdView, dishView, beveragesView],
+        getActiveView: () => viewer.activeView,
+        open: vi.fn(view => { viewer.activeView = view; return Promise.resolve() }),
+        // didi: get(name, false) answers null for a service the viewer does not have
+        getActiveViewer: () => ({ get: (name, strict) => viewer.activeView.type === 'drd' ? canvas : (strict === false ? null : (() => { throw new Error(`No provider for "${name}"!`) })()) })
+      }
+      return { setDiagramReady: vi.fn(), viewer }
+    }
+    const show = async (ctx, ...args) => {
+      vi.useFakeTimers()
+      const shown = DmnViewer.methods.showDiagram.call(ctx, '<xml/>', ...args)
+      await vi.runAllTimersAsync()
+      await shown
+      vi.useRealTimers()
+      return ctx
+    }
+
+    it('opens the decision it is asked for, and the decision table has no canvas to fit', async () => {
+      const ctx = await show(drd(), 'beverages')
+
+      expect(ctx.viewer.open).toHaveBeenCalledWith(beveragesView)
+      expect(ctx.setDiagramReady).toHaveBeenLastCalledWith(true)
+    })
+
+    it.each([[undefined], ['not-in-this-file']])('keeps the view dmn-js opened when asked for %s', async (decisionId) => {
+      canvas.zoom.mockClear()
+      const ctx = await show(drd(), decisionId)
+
+      expect(ctx.viewer.open).not.toHaveBeenCalled()
+      expect(canvas.zoom).toHaveBeenCalledWith('fit-viewport')
+      expect(ctx.setDiagramReady).toHaveBeenLastCalledWith(true)
+    })
+
+    it('goes back to the view dmn-js showed when the decision fails to render', async () => {
+      const ctx = drd()
+      const open = ctx.viewer.open.getMockImplementation()
+      ctx.viewer.open.mockImplementationOnce(view => { ctx.viewer.activeView = view; return Promise.reject(new Error('render failed')) })
+      ctx.viewer.open.mockImplementationOnce(open)
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+      await show(ctx, 'beverages')
+
+      expect(ctx.viewer.open).toHaveBeenNthCalledWith(2, drdView)
+      expect(ctx.viewer.activeView).toBe(drdView)
+      expect(ctx.setDiagramReady).toHaveBeenLastCalledWith(true)
+      expect(error).toHaveBeenCalledWith('Error opening decision beverages:', expect.any(Error))
+      error.mockRestore()
+    })
+
+    it('marks the diagram not-ready when the view it goes back to fails as well', async () => {
+      const ctx = drd()
+      ctx.viewer.open.mockImplementation(() => Promise.reject(new Error('render failed')))
+      const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+      await show(ctx, 'beverages')
+
+      expect(ctx.viewer.open).toHaveBeenCalledTimes(2)
+      expect(ctx.setDiagramReady).toHaveBeenLastCalledWith(false)
+      expect(error).toHaveBeenCalledWith('Error loading DMN diagram:', expect.any(Error))
+      error.mockRestore()
+    })
+
+    it('does not open the decision again when dmn-js already shows it (no diagram information)', async () => {
+      const ctx = drd()
+      ctx.viewer.activeView = beveragesView
+
+      await show(ctx, 'beverages')
+
+      expect(ctx.viewer.open).not.toHaveBeenCalled()
+      expect(ctx.setDiagramReady).toHaveBeenLastCalledWith(true)
+    })
   })
 
   it('marks the diagram not-ready and does not throw when import fails', async () => {
