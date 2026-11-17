@@ -237,7 +237,7 @@ describe('ProcessDefinitionDetails.vue mounted', () => {
 
   it('reloads the start times when the instance counts of the version change', async () => {
     startTimes('2025-01-01T10:00:00.000+0100', '2025-06-01T10:00:00.000+0200')
-    const wrapper = mountDetails()
+    const wrapper = mountDetails({ version: { ...version, allInstances: 3 } })
     await wrapper.setProps({ shown: true })
     await flushPromises()
 
@@ -245,6 +245,33 @@ describe('ProcessDefinitionDetails.vue mounted', () => {
     await flushPromises()
 
     expect(HistoryService.findProcessesInstancesHistory).toHaveBeenCalledTimes(4)
+  })
+
+  it('keeps the start times when the count of a lazily loaded version arrives', async () => {
+    startTimes('2025-01-01T10:00:00.000+0100', '2025-06-01T10:00:00.000+0200')
+    const wrapper = mountDetails({ version: { ...version, allInstances: '-' }, shown: true })
+    await flushPromises()
+
+    await wrapper.setProps({ version: { ...version, allInstances: 6 } })
+    await flushPromises()
+
+    expect(HistoryService.findProcessesInstancesHistory).toHaveBeenCalledTimes(2)
+  })
+
+  // a lazy refresh puts the count back to '-' before the new one arrives
+  it('reloads the start times once on a lazy refresh', async () => {
+    startTimes('2025-01-01T10:00:00.000+0100', '2025-06-01T10:00:00.000+0200')
+    const wrapper = mountDetails({ version: { ...version, allInstances: 5 }, shown: true })
+    await flushPromises()
+
+    startTimes('2025-01-01T10:00:00.000+0100', '2026-02-01T10:00:00.000+0100')
+    await wrapper.setProps({ version: { ...version, allInstances: '-' } })
+    await flushPromises()
+    await wrapper.setProps({ version: { ...version, allInstances: 6 } })
+    await flushPromises()
+
+    expect(HistoryService.findProcessesInstancesHistory).toHaveBeenCalledTimes(4)
+    expect(wrapper.vm.maxTimestamp).toBe('2026-02-01T10:00:00.000+0100')
   })
 
   it('drops the start times of a version that is no longer the one shown', async () => {

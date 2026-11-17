@@ -188,6 +188,7 @@
 		"copySuccess": "Ausgewählter Wert kopiert",
 		"refreshVersions": "Historische Versionen aktualisieren",
 		"loadAllStatistics": "Alle Instanzstatistiken laden",
+		"loadData": "Daten laden",
 		"externalProcessStarted": "Prozess erfolgreich gestarted",
 		"exportInstances": "Instanzen exportieren",
 		"deleteProcessDefinition": {
