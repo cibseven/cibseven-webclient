@@ -345,6 +345,7 @@
 			"dueDate": "Fecha de vencimiento",
 			"scheduleAt": "Programar para",
 			"invalidDateError": "Debe insertar una fecha válida",
+			"loadFailed": "No se pudieron cargar los incidentes",
 			"retry": "Reintentar",
 			"editAnnotation": "Editar anotación",
 			"causeIncidentProcessInstanceId": "ID de instancia del proceso causante",

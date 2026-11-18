@@ -16,8 +16,11 @@
  */
 export function debounce(delay, fn) {
     let timeoutID = null
-    return function (...args) {
+    const debounced = function (...args) {
       clearTimeout(timeoutID)
       timeoutID = setTimeout(() => fn.apply(this, args), delay)
     }
+    // Drops the call still waiting, e.g. when the component that made it unmounts
+    debounced.cancel = () => clearTimeout(timeoutID)
+    return debounced
 }
