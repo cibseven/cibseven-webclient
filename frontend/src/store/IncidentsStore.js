@@ -17,6 +17,12 @@
 
 import { IncidentService } from '@/services.js'
 
+/**
+ * @deprecated Nothing in the webclient reads or writes this module any more: since CIB7-2825
+ * `IncidentsTable` keeps its incidents itself, so `incidents/incidents` no longer lists what the table
+ * shows. The module stays registered and exported through `storeModules` for code that dispatches its
+ * actions itself, and can be removed once no such code is left.
+ */
 export default {
   namespaced: true,
   state: {

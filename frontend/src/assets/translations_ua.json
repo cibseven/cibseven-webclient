@@ -345,6 +345,7 @@
 			"dueDate": "Термін",
 			"scheduleAt": "Запланувати на",
 			"invalidDateError": "Введіть коректну дату",
+			"loadFailed": "Не вдалося завантажити інциденти",
 			"retry": "Повторити спробу",
 			"editAnnotation": "Редагувати анотацію",
 			"causeIncidentProcessInstanceId": "ID екземпляра процесу-джерела",

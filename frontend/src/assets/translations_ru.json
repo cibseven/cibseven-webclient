@@ -345,6 +345,7 @@
 			"dueDate": "Дата исполнения",
 			"scheduleAt": "Запланировать на",
 			"invalidDateError": "Вы должны ввести корректную дату",
+			"loadFailed": "Не удалось загрузить инциденты",
 			"retry": "Повторить попытку",
 			"editAnnotation": "Редактировать аннотацию",
 			"causeIncidentProcessInstanceId": "ID экземпляра процесса-причины",

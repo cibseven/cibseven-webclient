@@ -345,6 +345,7 @@
 			"dueDate": "Fälligkeitsdatum",
 			"scheduleAt": "Planen um",
 			"invalidDateError": "Sie müssen ein gültiges Datum eingeben",
+			"loadFailed": "Die Vorfälle konnten nicht geladen werden",
 			"retry": "Wiederholen",
 			"editAnnotation": "Anmerkung bearbeiten",
 			"causeIncidentProcessInstanceId": "Ursächliche Prozessinstanz-ID",
