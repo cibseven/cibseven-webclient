@@ -156,7 +156,7 @@ export default {
      * replaces nor extends the list of the newer one.
      */
     async loadCalledProcessInstances (showMore = false) {
-      const request = ++this.loadRequestId
+      const requestId = ++this.loadRequestId
       const append = showMore === true
       if (!append) {
         // A new list: never show the rows or continue the paging of the previous instance, also if this load fails
@@ -172,14 +172,14 @@ export default {
       this.loading = true
       try {
         const response = await this.findCalledProcessInstances({"superProcessInstanceId": this.selectedInstance.id}, firstResult, this.maxResults)
-        if (request !== this.loadRequestId) return
+        if (requestId !== this.loadRequestId) return
         this.firstResult = firstResult + this.maxResults
         this.calledInstanceList = append ? this.calledInstanceList.concat(response) : response
         this.matchCalledInstances()
       } catch (error) {
-        if (request === this.loadRequestId) console.error('Error loading called process instances:', error)
+        if (requestId === this.loadRequestId) console.error('Error loading called process instances:', error)
       } finally {
-        if (request === this.loadRequestId) this.loading = false
+        if (requestId === this.loadRequestId) this.loading = false
       }
     },
     matchCalledInstances() {
