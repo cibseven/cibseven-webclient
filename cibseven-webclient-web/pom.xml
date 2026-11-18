@@ -66,6 +66,19 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+
+		<!--
+			Declared directly, not only in the root pom's dependencyManagement, so the patched
+			swagger-ui (${version.swagger-ui}) also reaches consumers of this module's classes jar,
+			such as the Spring Boot starter and the Run distro in cibseven. A dependencyManagement
+			entry doesn't apply there, so they would otherwise get springdoc's own swagger-ui
+			(5.32.11 with springdoc 3.1.0, which bundles a vulnerable DOMPurify).
+		-->
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>swagger-ui</artifactId>
+			<version>${version.swagger-ui}</version>
+		</dependency>
 		
 		<!-- Override common transitive dependencies to ensure consistent versions -->
 		<dependency>
