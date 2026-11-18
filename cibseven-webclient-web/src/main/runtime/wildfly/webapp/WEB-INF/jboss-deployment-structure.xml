@@ -5,6 +5,15 @@
       <module name="org.jboss.logging"/>
       <module name="org.cibseven.bpm.cibseven-engine"/>
       <module name="org.cibseven.bpm.dmn.cibseven-engine-dmn"/>
+      <!-- CIB7-2858: Direct Provider runs scripts with this WAR's classloader: GraalJS, Spin and JUEL must be visible -->
+      <module name="org.graalvm.js.js-scriptengine" services="import"/>
+      <module name="org.graalvm.js.js" services="import"/>
+      <module name="org.graalvm.js.js-language" services="import"/>
+      <module name="org.graalvm.regex.regex" services="import"/>
+      <module name="org.graalvm.sdk.graal-sdk" services="import"/>
+      <module name="org.graalvm.truffle.truffle-api" services="import"/>
+      <module name="org.cibseven.spin.cibseven-spin-core" services="import"/>
+      <module name="org.cibseven.bpm.juel.cibseven-juel" services="import"/>
       <!-- ai-agent connector module: optional so the WAR still deploys when the
            module is absent (AI disabled). Gives the modeler visibility to the
            connector's bundled /element-templates/*.json (CIB7-1445). -->
