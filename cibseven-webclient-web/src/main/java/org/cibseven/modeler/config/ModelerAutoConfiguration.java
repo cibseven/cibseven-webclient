@@ -33,9 +33,9 @@ import org.springframework.context.annotation.Import;
  * <p>Schema creation is the responsibility of the parent project. This module
  * only wires the JPA entities and repositories against an already-existing schema.</p>
  *
- * <p>When the modeler is disabled and no {@code spring.datasource.url} is configured,
- * {@link ModelerEnvironmentPostProcessor} excludes {@code DataSourceAutoConfiguration}
- * to prevent Spring Boot from auto-creating an embedded H2 database. Hibernate and JPA
+ * <p>When the standalone webclient runs with the modeler disabled,
+ * {@link ModelerEnvironmentPostProcessor} excludes the data source auto-configurations,
+ * so it needs no database. Hibernate and JPA
  * repository auto-configurations are not excluded — Spring Boot's own conditionals
  * suppress them naturally when no {@code DataSource} bean exists.</p>
  *
