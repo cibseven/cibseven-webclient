@@ -62,7 +62,7 @@
         <div class="col-12">
           <div class="form-inline">
             <div class="form-group d-flex align-items-center mb-0">
-              <h3 ref="titleTask" class="mb-0 me-4 d-inline" :class="isMobile() ? 'h6' : 'h5'">{{ task.name }}</h3>
+              <h3 ref="titleTask" tabindex="-1" class="mb-0 me-4 d-inline" :class="isMobile() ? 'h6' : 'h5'">{{ task.name }}</h3>
               <span v-if="task.assignee != null">
                 <b-form-tag variant="secondary" :disabled="!hasUnassignButton" @remove="assignee = null; update()" :key="task.id"
                   :title="getCompleteName" :remove-label="$t('task.assignedUserTitle')"
