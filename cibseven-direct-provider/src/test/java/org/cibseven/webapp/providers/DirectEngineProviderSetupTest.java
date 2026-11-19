@@ -18,7 +18,9 @@ package org.cibseven.webapp.providers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -30,11 +32,15 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.cibseven.bpm.engine.AuthorizationService;
 import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.ProcessEngineConfiguration;
+import org.cibseven.bpm.engine.ProcessEngineException;
 import org.cibseven.bpm.engine.authorization.Authorization;
 import org.cibseven.bpm.engine.authorization.Groups;
+import org.cibseven.bpm.engine.authorization.Permissions;
 import org.cibseven.bpm.engine.authorization.Resources;
+import org.cibseven.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.cibseven.bpm.engine.impl.identity.Authentication;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.PasswordPolicyException;
@@ -177,6 +183,76 @@ public class DirectEngineProviderSetupTest {
 		}
 	}
 
+	// --- an engine that is configured already (CIB7-2885, the check of CIB7-2230) --------------------
+
+	/** The administrator comes from adminUsers, camunda-admin exists but has no member. */
+	@Test
+	void setup_withAdminUsersConfiguredAndAnEmptyCamundaAdminGroup_isRefused() {
+		engine.getIdentityService().saveGroup(engine.getIdentityService().newGroup(Groups.CAMUNDA_ADMIN));
+		configuration().setAdminUsers(List.of("root"));
+
+		assertSetupRefused();
+	}
+
+	@Test
+	void setup_withAdminUsersConfiguredAndNoCamundaAdminGroup_isRefused() {
+		configuration().setAdminUsers(List.of("root"));
+
+		assertSetupRefused();
+	}
+
+	@Test
+	void setup_withAdminGroupsConfiguredAndNoCamundaAdminGroup_isRefused() {
+		configuration().setAdminGroups(List.of(Groups.CAMUNDA_ADMIN, "operators"));
+
+		assertSetupRefused();
+	}
+
+	@Test
+	void setup_withUsersButNoAdministrator_isRefused() {
+		engine.getIdentityService().saveUser(engine.getIdentityService().newUser("someone"));
+
+		assertSetupRefused();
+	}
+
+	/** Users and groups kept outside the engine, administrators known only by their authorizations. */
+	@Test
+	void setup_withOnlyAuthorizationsForAnExternalGroup_isRefused() {
+		Authorization authorization = engine.getAuthorizationService().createNewAuthorization(Authorization.AUTH_TYPE_GRANT);
+		authorization.setGroupId("external-admins");
+		authorization.setResource(Resources.AUTHORIZATION);
+		authorization.setResourceId(Authorization.ANY);
+		authorization.addPermission(Permissions.ALL);
+		engine.getAuthorizationService().saveAuthorization(authorization);
+
+		assertSetupRefused();
+	}
+
+	@Test
+	void setup_withOnlyCamundaAdminInTheAdminGroups_staysOpen() {
+		configuration().setAdminGroups(List.of(Groups.CAMUNDA_ADMIN));
+
+		assertThat(provider.requiresSetup(null)).isTrue();
+		provider.createSetupUser(newUser("admin"), null);
+		assertThat(engine.getIdentityService().createUserQuery().memberOfGroup(Groups.CAMUNDA_ADMIN).userId("admin").count())
+			.isEqualTo(1);
+	}
+
+	private ProcessEngineConfigurationImpl configuration() {
+		return (ProcessEngineConfigurationImpl) engine.getProcessEngineConfiguration();
+	}
+
+	private void assertSetupRefused() {
+		long users = engine.getIdentityService().createUserQuery().count();
+
+		assertThat(provider.requiresSetup(null)).isFalse();
+		assertThat(provider.requiresSetup(engine.getName())).isFalse();
+		assertThatThrownBy(() -> provider.createSetupUser(newUser("intruder"), null))
+			.isInstanceOf(SystemException.class);
+		assertThat(engine.getIdentityService().createUserQuery().count()).isEqualTo(users);
+		assertThat(engine.getIdentityService().createUserQuery().userId("intruder").count()).isZero();
+	}
+
 	// --- engine order --------------------------------------------------------------------------------
 
 	/** Like the HTTP provider: sorted by name ignoring case, so the first one does not depend on the Set. */
@@ -190,14 +266,25 @@ public class DirectEngineProviderSetupTest {
 
 	// --- one transaction ---------------------------------------------------------------------------
 
-	/** The user exists already, so saving it fails: the admin group must not stay behind. */
+	/**
+	 * Saving the admin group's authorizations fails, after the user and the group were saved: neither
+	 * of them must stay behind.
+	 */
 	@Test
 	void createSetupUser_failingHalfway_leavesNothingAndTheSetupOpen() {
-		engine.getIdentityService().saveUser(engine.getIdentityService().newUser("admin"));
+		AuthorizationService failingAuthorizations = Mockito.spy(engine.getAuthorizationService());
+		doThrow(new ProcessEngineException("saving the authorization failed"))
+			.when(failingAuthorizations).saveAuthorization(any());
+		ProcessEngine failingEngine = Mockito.spy(engine);
+		doReturn(failingAuthorizations).when(failingEngine).getAuthorizationService();
+		providerUtil.processEngines.put(engine.getName(), failingEngine);
 
-		assertThatThrownBy(() -> provider.createSetupUser(newUser("admin"), null));
+		assertThatThrownBy(() -> provider.createSetupUser(newUser("admin"), null))
+			.hasMessageContaining("saving the authorization failed");
 
-		assertThat(engine.getIdentityService().createGroupQuery().groupId(Groups.CAMUNDA_ADMIN).count()).isZero();
+		providerUtil.processEngines.put(engine.getName(), engine);
+		assertThat(engine.getIdentityService().createUserQuery().count()).isZero();
+		assertThat(engine.getIdentityService().createGroupQuery().count()).isZero();
 		assertThat(engine.getAuthorizationService().createAuthorizationQuery().groupIdIn(Groups.CAMUNDA_ADMIN).count())
 			.isZero();
 		assertThat(provider.requiresSetup(null)).isTrue();
