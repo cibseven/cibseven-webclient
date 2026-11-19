@@ -41,9 +41,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
  * Setup service for initial system configuration.
  * These endpoints do NOT require authentication. The setup is only open while the engine is not
  * configured yet: its identity service is writable, it holds no users, groups or authorizations,
- * and no administrators are configured (adminUsers / adminGroups besides camunda-admin). Both
- * providers decide this with the engine's InitialSetupUtil (CIB7-2885): the default provider
- * through engine-rest's setup endpoint, the direct provider directly.
+ * and no administrators are configured (adminUsers / adminGroups besides camunda-admin). The direct
+ * provider decides this with the engine's InitialSetupUtil (CIB7-2885). The default provider asks
+ * engine-rest's setup endpoint and follows what the connected engine decides; engines that contain
+ * InitialSetupUtil apply this rule, older ones their own.
  */
 @ApiResponses({
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occurred")

@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.cibseven.bpm.engine.AuthorizationService;
+import org.cibseven.bpm.engine.IdentityService;
 import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.ProcessEngineConfiguration;
 import org.cibseven.bpm.engine.ProcessEngineException;
@@ -105,7 +106,7 @@ public class DirectEngineProviderSetupTest {
 	}
 
 	@Test
-	void requiresSetup_withoutEngineName_isFalseOnceAnAdminGroupExists() {
+	void requiresSetup_withoutEngineName_isFalseOnceAnyGroupExists() {
 		engine.getIdentityService().saveGroup(engine.getIdentityService().newGroup(Groups.CAMUNDA_ADMIN));
 
 		assertThat(provider.requiresSetup(null)).isFalse();
@@ -158,19 +159,12 @@ public class DirectEngineProviderSetupTest {
 			.isEqualTo(1);
 	}
 
-	/** Each engine without an admin can be set up, also when the default engine is set up already. */
+	/** Each engine that is not configured yet can be set up, also when the default engine is set up already. */
 	@Test
 	void setup_namingAFurtherEngine_setsUpThatEngine() {
 		provider.createSetupUser(newUser("admin"), null);
-		ProcessEngine further = ProcessEngineConfiguration.createStandaloneInMemProcessEngineConfiguration()
-			.setJdbcUrl("jdbc:h2:mem:further" + DB_SEQUENCE.incrementAndGet() + ";DB_CLOSE_DELAY=1000")
-			.setProcessEngineName("further" + DB_SEQUENCE.get())
-			.setAuthorizationEnabled(true)
-			.setJobExecutorActivate(false)
-			.buildProcessEngine();
+		ProcessEngine further = startFurtherEngine();
 		try {
-			providerUtil.processEngines.put(further.getName(), further);
-
 			assertThat(provider.requiresSetup(further.getName())).isTrue();
 			provider.createSetupUser(newUser("furtherAdmin"), further.getName());
 
@@ -181,6 +175,37 @@ public class DirectEngineProviderSetupTest {
 		} finally {
 			further.close();
 		}
+	}
+
+	/** The named engine is configured, the default one is still fresh: the setup decides on the named one. */
+	@Test
+	void setup_namingAConfiguredFurtherEngine_isRefusedThereWhileTheDefaultEngineStaysOpen() {
+		ProcessEngine further = startFurtherEngine();
+		try {
+			((ProcessEngineConfigurationImpl) further.getProcessEngineConfiguration()).setAdminUsers(List.of("root"));
+
+			assertThat(provider.requiresSetup(further.getName())).isFalse();
+			assertThatThrownBy(() -> provider.createSetupUser(newUser("intruder"), further.getName()))
+				.isInstanceOf(SystemException.class);
+			assertThat(further.getIdentityService().createUserQuery().count()).isZero();
+
+			assertThat(provider.requiresSetup(null)).isTrue();
+			assertThat(engine.getIdentityService().createUserQuery().count()).isZero();
+		} finally {
+			further.close();
+		}
+	}
+
+	/** A second engine without users, known to the provider by its name. */
+	private ProcessEngine startFurtherEngine() {
+		ProcessEngine further = ProcessEngineConfiguration.createStandaloneInMemProcessEngineConfiguration()
+			.setJdbcUrl("jdbc:h2:mem:further" + DB_SEQUENCE.incrementAndGet() + ";DB_CLOSE_DELAY=1000")
+			.setProcessEngineName("further" + DB_SEQUENCE.get())
+			.setAuthorizationEnabled(true)
+			.setJobExecutorActivate(false)
+			.buildProcessEngine();
+		providerUtil.processEngines.put(further.getName(), further);
+		return further;
 	}
 
 	// --- an engine that is configured already (CIB7-2885, the check of CIB7-2230) --------------------
@@ -204,6 +229,25 @@ public class DirectEngineProviderSetupTest {
 	@Test
 	void setup_withAdminGroupsConfiguredAndNoCamundaAdminGroup_isRefused() {
 		configuration().setAdminGroups(List.of(Groups.CAMUNDA_ADMIN, "operators"));
+
+		assertSetupRefused();
+	}
+
+	/** Users and groups kept in a read-only directory (LDAP), which may be empty or filtered. */
+	@Test
+	void setup_withAReadOnlyIdentityService_isRefused() {
+		IdentityService readOnlyIdentity = Mockito.spy(engine.getIdentityService());
+		doReturn(true).when(readOnlyIdentity).isReadOnly();
+		ProcessEngine readOnlyEngine = Mockito.spy(engine);
+		doReturn(readOnlyIdentity).when(readOnlyEngine).getIdentityService();
+		providerUtil.processEngines.put(engine.getName(), readOnlyEngine);
+
+		assertSetupRefused();
+	}
+
+	@Test
+	void setup_withOnlyANonAdminGroup_isRefused() {
+		engine.getIdentityService().saveGroup(engine.getIdentityService().newGroup("operators"));
 
 		assertSetupRefused();
 	}
