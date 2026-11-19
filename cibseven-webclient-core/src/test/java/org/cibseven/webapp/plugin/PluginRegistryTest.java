@@ -453,7 +453,7 @@ public class PluginRegistryTest {
 
 	@Test
 	public void namesTheFolderAPluginOutsideOfAJarCameFrom() {
-		ObjectNode entry = reportOf(new PluginRegistry(new PluginProperties()), "test-plugin");
+		ObjectNode entry = reportOf(new PluginRegistry(new SevenWebclientProperties()), "test-plugin");
 
 		assertEquals("test-classes", entry.get("source").asText());
 	}
