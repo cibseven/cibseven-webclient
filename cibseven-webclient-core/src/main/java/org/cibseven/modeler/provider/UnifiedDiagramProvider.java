@@ -35,13 +35,21 @@ public class UnifiedDiagramProvider implements IUnifiedDiagramProvider {
 
 	@Override
 	public List<UnifiedDiagram> getDiagrams(String keyword, String type, String folderId, int firstResult, int maxResults) throws SystemException {
+		return getDiagrams(keyword, type, folderId, ProjectGuard.HiddenProjects.NONE, firstResult, maxResults);
+	}
+
+	/** Leaves out the models of the hidden projects, counting only what is left for the paging. */
+	public List<UnifiedDiagram> getDiagrams(String keyword, String type, String folderId, ProjectGuard.HiddenProjects hidden,
+			int firstResult, int maxResults) throws SystemException {
 		String keywordPattern = (keyword == null || keyword.isEmpty()) ? null : "%" + keyword.toLowerCase() + "%";
     	String typePattern = (type == null || type.isEmpty()) ? null : type + "%";
 
 		// No folder means every folder, so a search still reaches across the whole tree
 		String folder = (folderId == null || folderId.isBlank()) ? null : folderId;
 
-		return processDiagramDao.findAllUnified(keywordPattern, typePattern, folder, PageRequest.of(firstResult / maxResults, maxResults));
+		return ProjectGuard.visiblePage(hidden, firstResult, maxResults,
+			(hiddenProjectIds, page, size) -> processDiagramDao.findAllUnified(keywordPattern, typePattern, folder, hiddenProjectIds, PageRequest.of(page, size)),
+			UnifiedDiagram::getFolderId);
 	}
 
 	@Override

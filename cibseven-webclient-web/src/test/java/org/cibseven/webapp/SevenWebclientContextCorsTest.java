@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Map;
 
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -41,7 +42,7 @@ class SevenWebclientContextCorsTest {
 
 	private CorsConfiguration configuration() {
 		ReadableCorsRegistry registry = new ReadableCorsRegistry();
-		new SevenWebclientContext().addCorsMappings(registry);
+		new SevenWebclientContext(new SevenWebclientProperties()).addCorsMappings(registry);
 
 		return registry.getCorsConfigurations().get("/**");
 	}

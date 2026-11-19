@@ -80,18 +80,18 @@ public class AdfsUserProviderTest {
 		server.start();
 
 		provider = new AdfsUserProvider();
-		ReflectionTestUtils.setField(provider, "tokenEndpoint", server.url("/token").toString());
-		ReflectionTestUtils.setField(provider, "certEndpoint", server.url("/certs").toString());
-		ReflectionTestUtils.setField(provider, "domain", "example.com");
-		ReflectionTestUtils.setField(provider, "clientId", "cibseven");
-		ReflectionTestUtils.setField(provider, "clientSecret", "s3cret");
-		ReflectionTestUtils.setField(provider, "userIdProperty", "sub");
-		ReflectionTestUtils.setField(provider, "userNameProperty", "name");
-		ReflectionTestUtils.setField(provider, "infoInIdToken", true);
-		ReflectionTestUtils.setField(provider, "technicalUserId", "technical");
-		ReflectionTestUtils.setField(provider, "secret", SECRET);
-		ReflectionTestUtils.setField(provider, "validMinutes", 60L);
-		ReflectionTestUtils.setField(provider, "prolongMinutes", 30L);
+		provider.properties.getSso().getEndpoints().setToken(server.url("/token").toString());
+		provider.properties.getSso().getEndpoints().setJwks(server.url("/certs").toString());
+		provider.properties.getSso().setDomain("example.com");
+		provider.properties.getSso().setClientId("cibseven");
+		provider.properties.getSso().setClientSecret("s3cret");
+		provider.properties.getSso().setUserIdProperty("sub");
+		provider.properties.getSso().setUserNameProperty("name");
+		provider.properties.getSso().setInfoInIdToken(true);
+		provider.properties.getSso().setTechnicalUserId("technical");
+		provider.properties.getAuthentication().setJwtSecret(SECRET);
+		provider.properties.getAuthentication().setTokenValidMinutes(60L);
+		provider.properties.getAuthentication().setTokenProlongMinutes(30L);
 
 		enqueueJson(jwks); // consumed by the SsoHelper's KeyResolver during init
 		provider.init();

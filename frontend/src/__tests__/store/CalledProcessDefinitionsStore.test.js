@@ -47,7 +47,7 @@ const staticDef = (overrides = {}) => ({
  */
 function contextWith(getContext, { statics = [], historicStats = [], activityNames = {} } = {}) {
   const context = getContext()
-  context.getters.getStaticCalledProcessDefinitions = statics
+  context.getters.getStaticCalledProcessDefinitionsFor = () => statics
   context.rootGetters.getHistoricActivityStatistics = () => historicStats
   context.rootGetters.getProcessActivities = activityNames
   return context
@@ -65,11 +65,12 @@ beforeEach(() => {
 
 createStoreTestSuite('CalledProcessDefinitionsStore', CalledProcessDefinitionsStore, {
   initialState: (getState) => {
-    it('should start with three empty collections', () => {
+    it('should start with empty lists and unknown static definitions', () => {
       expect(getState()).toEqual({
         calledProcessDefinitions: [],
         allCalledProcessDefinitions: [],
-        staticCalledProcessDefinitions: []
+        staticCalledProcessDefinitions: null,
+        staticCalledProcessDefinitionsId: null
       })
     })
   },
@@ -88,6 +89,38 @@ createStoreTestSuite('CalledProcessDefinitionsStore', CalledProcessDefinitionsSt
         const state = getState()
         state.staticCalledProcessDefinitions = [staticDef()]
         expect(getter(state)).toEqual([staticDef()])
+      })
+
+      it('should keep returning a list while they are unknown', () => {
+        expect(getter(getState())).toEqual([])
+      })
+    },
+
+    getStaticCalledProcessDefinitionsFor: (getter, getState) => {
+      const loadedFor = (state, processDefinitionId) => {
+        state.staticCalledProcessDefinitions = [staticDef()]
+        state.staticCalledProcessDefinitionsId = processDefinitionId
+        return state
+      }
+
+      it('should expose the static definitions of the definition they were loaded for', () => {
+        expect(getter(loadedFor(getState(), 'pd-1'))('pd-1')).toEqual([staticDef()])
+      })
+
+      // The store is global: after switching definitions it may still hold the previous one's data
+      it('should hide the static definitions of another definition', () => {
+        expect(getter(loadedFor(getState(), 'pd-other'))('pd-1')).toBeNull()
+      })
+
+      // Loading or failed: an empty list would wrongly mean "calls nothing static"
+      it('should report them as unknown until they have loaded', () => {
+        const state = loadedFor(getState(), 'pd-1')
+        state.staticCalledProcessDefinitions = null
+        expect(getter(state)('pd-1')).toBeNull()
+      })
+
+      it('should return nothing without a definition id', () => {
+        expect(getter(loadedFor(getState(), 'pd-1'))(undefined)).toBeNull()
       })
     },
 
@@ -140,12 +173,221 @@ createStoreTestSuite('CalledProcessDefinitionsStore', CalledProcessDefinitionsSt
     loadStaticCalledProcessDefinitions: (action, getContext) => {
       it('should fetch and store the static definitions', async () => {
         const context = getContext()
+        context.commit.mockImplementation((name, value) => CalledProcessDefinitionsStore.mutations[name](context.state, value))
         ProcessService.findCalledProcessDefinitions.mockResolvedValue([staticDef()])
 
         await action(context, { processDefinitionId: 'pd-1' })
 
         expect(ProcessService.findCalledProcessDefinitions).toHaveBeenCalledWith('pd-1')
         expect(context.commit).toHaveBeenCalledWith('setStaticCalledProcessDefinitions', [staticDef()])
+      })
+
+      it('should drop the data of another definition before loading', async () => {
+        const context = getContext()
+        context.state.staticCalledProcessDefinitionsId = 'pd-other'
+        context.commit.mockImplementation((name, value) => CalledProcessDefinitionsStore.mutations[name](context.state, value))
+        ProcessService.findCalledProcessDefinitions.mockResolvedValue([staticDef()])
+
+        await action(context, { processDefinitionId: 'pd-1' })
+
+        // null before the id, so the old list is never read under the new id
+        expect(context.commit.mock.calls).toEqual([
+          ['setStaticCalledProcessDefinitions', null],
+          ['setStaticCalledProcessDefinitionsId', 'pd-1'],
+          ['setStaticCalledProcessDefinitions', [staticDef()]]
+        ])
+        expect(context.state.staticCalledProcessDefinitionsId).toBe('pd-1')
+      })
+
+      it('should keep the data while the same definition reloads', async () => {
+        const context = getContext()
+        context.state.staticCalledProcessDefinitionsId = 'pd-1'
+        ProcessService.findCalledProcessDefinitions.mockResolvedValue([staticDef()])
+
+        await action(context, { processDefinitionId: 'pd-1' })
+
+        expect(context.commit.mock.calls).toEqual([['setStaticCalledProcessDefinitions', [staticDef()]]])
+      })
+
+      // e.g. the instance view's mount and watcher, or the definition view's mount and watcher
+      it('should share one request between loads of the same definition', async () => {
+        const context = getContext()
+        context.commit.mockImplementation((name, value) => CalledProcessDefinitionsStore.mutations[name](context.state, value))
+        ProcessService.findCalledProcessDefinitions.mockResolvedValue([staticDef()])
+
+        await Promise.all([
+          action(context, { processDefinitionId: 'pd-1' }),
+          action(context, { processDefinitionId: 'pd-1' })
+        ])
+        await action(context, { processDefinitionId: 'pd-1' })
+
+        expect(ProcessService.findCalledProcessDefinitions).toHaveBeenCalledTimes(2)
+      })
+
+      // A, then B, then A again: the first A finishing must not drop the second A's shared request
+      it('should not let an older load clear the shared request of a newer one', async () => {
+        const context = getContext()
+        context.commit.mockImplementation((name, value) => CalledProcessDefinitionsStore.mutations[name](context.state, value))
+        let finishFirstA
+        ProcessService.findCalledProcessDefinitions
+          .mockReturnValueOnce(new Promise(resolve => { finishFirstA = resolve }))
+          .mockResolvedValueOnce([])
+          .mockReturnValueOnce(new Promise(() => {}))
+
+        const firstA = action(context, { processDefinitionId: 'pd-a' })
+        await action(context, { processDefinitionId: 'pd-b' })
+        action(context, { processDefinitionId: 'pd-a' })
+        finishFirstA([staticDef()])
+        await firstA
+        action(context, { processDefinitionId: 'pd-a' })
+
+        expect(ProcessService.findCalledProcessDefinitions).toHaveBeenCalledTimes(3)
+      })
+
+      // A, then B, then A again, with the first A answering last: its older list must not replace the newer one
+      it('should not let an older answer overwrite a newer one for the same definition', async () => {
+        const context = getContext()
+        context.commit.mockImplementation((name, value) => CalledProcessDefinitionsStore.mutations[name](context.state, value))
+        let finishFirstA
+        ProcessService.findCalledProcessDefinitions
+          .mockReturnValueOnce(new Promise(resolve => { finishFirstA = resolve }))
+          .mockResolvedValueOnce([])
+          .mockResolvedValueOnce([staticDef({ id: 'newer' })])
+
+        const firstA = action(context, { processDefinitionId: 'pd-a' })
+        await action(context, { processDefinitionId: 'pd-b' })
+        await action(context, { processDefinitionId: 'pd-a' })
+        finishFirstA([staticDef({ id: 'older' })])
+        await firstA
+
+        expect(context.state.staticCalledProcessDefinitions).toEqual([staticDef({ id: 'newer' })])
+      })
+
+      // Each store has its own state; a load in flight in one must not answer for another
+      it('should not share a request between stores', async () => {
+        const first = getContext()
+        const second = { ...getContext(), commit: vi.fn(), state: structuredClone(CalledProcessDefinitionsStore.state) }
+        ProcessService.findCalledProcessDefinitions.mockResolvedValue([staticDef()])
+
+        await Promise.all([
+          action(first, { processDefinitionId: 'pd-1' }),
+          action(second, { processDefinitionId: 'pd-1' })
+        ])
+
+        expect(ProcessService.findCalledProcessDefinitions).toHaveBeenCalledTimes(2)
+      })
+
+      // Only the links depend on it, so callers (e.g. the definition view switching its diagram) must not fail
+      it('should leave the definitions unknown and not reject when the request fails', async () => {
+        const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+        const context = getContext()
+        context.commit.mockImplementation((name, value) => CalledProcessDefinitionsStore.mutations[name](context.state, value))
+        ProcessService.findCalledProcessDefinitions.mockRejectedValueOnce(new Error('forbidden'))
+
+        await expect(action(context, { processDefinitionId: 'pd-1' })).resolves.toBeUndefined()
+
+        expect(consoleError).toHaveBeenCalled()
+        expect(context.state.staticCalledProcessDefinitions).toBeNull()
+        ProcessService.findCalledProcessDefinitions.mockResolvedValueOnce([staticDef()])
+        await action(context, { processDefinitionId: 'pd-1' })
+        expect(context.state.staticCalledProcessDefinitions).toEqual([staticDef()])
+        consoleError.mockRestore()
+      })
+
+      it('should ignore an answer that arrives after another definition was requested', async () => {
+        const context = getContext()
+        context.commit.mockImplementation((name, value) => CalledProcessDefinitionsStore.mutations[name](context.state, value))
+        let resolveFirst
+        ProcessService.findCalledProcessDefinitions
+          .mockReturnValueOnce(new Promise(resolve => { resolveFirst = resolve }))
+          .mockResolvedValueOnce([staticDef({ id: 'sub-2' })])
+
+        const first = action(context, { processDefinitionId: 'pd-1' })
+        await action(context, { processDefinitionId: 'pd-2' })
+        resolveFirst([staticDef()])
+        await first
+
+        expect(context.state.staticCalledProcessDefinitionsId).toBe('pd-2')
+        expect(context.state.staticCalledProcessDefinitions).toEqual([staticDef({ id: 'sub-2' })])
+      })
+    },
+
+    clearStaticCalledProcessDefinitions: (action, getContext) => {
+      it('should forget the static definitions', () => {
+        const context = getContext()
+        context.commit.mockImplementation((name, value) => CalledProcessDefinitionsStore.mutations[name](context.state, value))
+        context.state.staticCalledProcessDefinitions = [staticDef()]
+        context.state.staticCalledProcessDefinitionsId = 'pd-1'
+
+        action(context)
+
+        expect(context.state.staticCalledProcessDefinitions).toBeNull()
+        expect(context.state.staticCalledProcessDefinitionsId).toBeNull()
+      })
+
+      // Left the process pages while it was loading: the answer belongs to a visit that is over
+      it('should keep a load still running from committing', async () => {
+        const context = getContext()
+        context.commit.mockImplementation((name, value) => CalledProcessDefinitionsStore.mutations[name](context.state, value))
+        let finishLoad
+        ProcessService.findCalledProcessDefinitions.mockReturnValueOnce(new Promise(resolve => { finishLoad = resolve }))
+
+        const running = CalledProcessDefinitionsStore.actions.loadStaticCalledProcessDefinitions(context, { processDefinitionId: 'pd-1' })
+        action(context)
+        finishLoad([staticDef()])
+        await running
+
+        expect(context.state.staticCalledProcessDefinitions).toBeNull()
+      })
+
+      // The table may still be loading too: it must neither fail nor fill the store with the previous definition's rows
+      it('should keep a table load still running from committing or failing', async () => {
+        const context = contextWith(getContext)
+        context.commit.mockImplementation((name, value) => CalledProcessDefinitionsStore.mutations[name](context.state, value))
+        context.getters.getStaticCalledProcessDefinitionsFor = id =>
+          CalledProcessDefinitionsStore.getters.getStaticCalledProcessDefinitionsFor(context.state)(id)
+        context.dispatch.mockImplementation((name, payload) => CalledProcessDefinitionsStore.actions[name](context, payload))
+        let finishLoad
+        ProcessService.findCalledProcessDefinitions.mockReturnValueOnce(new Promise(resolve => { finishLoad = resolve }))
+
+        const tableLoad = CalledProcessDefinitionsStore.actions.loadCalledProcessDefinitions(context, { processId: 'pd-1' })
+        action(context)
+        finishLoad([staticDef()])
+
+        await expect(tableLoad).resolves.toBeUndefined()
+        expect(context.state.calledProcessDefinitions).toEqual([])
+        expect(context.state.allCalledProcessDefinitions).toEqual([])
+      })
+    },
+
+    resetCalledProcessDefinitions: (action, getContext) => {
+      it('should clear both lists', () => {
+        const context = getContext()
+
+        action(context)
+
+        expect(context.commit.mock.calls).toEqual([
+          ['setCalledProcessDefinitions', []],
+          ['setAllCalledProcessDefinitions', []]
+        ])
+      })
+
+      it('should stop a table load that is still running', async () => {
+        const context = contextWith(getContext, {
+          historicStats: [{ id: 'call_dyn', instances: 1 }],
+          activityNames: { call_dyn: 'Dynamic call' }
+        })
+        let finishLoad
+        HistoryService.findActivitiesProcessDefinitionHistory
+          .mockReturnValueOnce(new Promise(resolve => { finishLoad = resolve }))
+
+        const running = CalledProcessDefinitionsStore.actions.loadCalledProcessDefinitions(context, { processId: 'pd-old' })
+        action(context)
+        const commitsAfterReset = context.commit.mock.calls.length
+        finishLoad([])
+        await running
+
+        expect(context.commit.mock.calls.length).toBe(commitsAfterReset)
       })
     },
 
@@ -176,6 +418,83 @@ createStoreTestSuite('CalledProcessDefinitionsStore', CalledProcessDefinitionsSt
     },
 
     loadCalledProcessDefinitions: (action, getContext) => {
+      // e.g. the table loading right after a definition switch, before the definition view's load finished
+      it('should wait for the static definitions when they are not loaded yet', async () => {
+        const context = contextWith(getContext)
+        let loaded = null
+        context.getters.getStaticCalledProcessDefinitionsFor = () => loaded
+        context.dispatch.mockImplementation(async () => { loaded = [staticDef()] })
+
+        await action(context, { processId: 'pd-1' })
+
+        expect(context.dispatch).toHaveBeenCalledWith('loadStaticCalledProcessDefinitions', { processDefinitionId: 'pd-1' })
+        expect(lastGrouping(context).map(def => def.definitionId)).toEqual(['sub-1'])
+      })
+
+      // e.g. the instance view refreshing them after a redeploy: the table must not group the older list
+      it('should wait for a refresh in flight of the static definitions', async () => {
+        const context = contextWith(getContext, { statics: [staticDef({ id: 'old' })] })
+        context.state.staticCalledProcessDefinitionsId = 'pd-1'
+        let statics = [staticDef({ id: 'old' })]
+        context.getters.getStaticCalledProcessDefinitionsFor = () => statics
+        context.dispatch.mockImplementation(async () => { statics = [staticDef({ id: 'new' })] })
+        let finishRefresh
+        ProcessService.findCalledProcessDefinitions.mockReturnValueOnce(new Promise(resolve => { finishRefresh = resolve }))
+        const refresh = CalledProcessDefinitionsStore.actions.loadStaticCalledProcessDefinitions(context, { processDefinitionId: 'pd-1' })
+
+        await action(context, { processId: 'pd-1' })
+        finishRefresh([])
+        await refresh
+
+        expect(context.dispatch).toHaveBeenCalledWith('loadStaticCalledProcessDefinitions', { processDefinitionId: 'pd-1' })
+        expect(lastGrouping(context).map(def => def.definitionId)).toEqual(['new'])
+      })
+
+      // Shown as an error by the table instead of a table that silently lacks the static rows
+      it('should fail when the static definitions could not be loaded', async () => {
+        const context = contextWith(getContext)
+        context.getters.getStaticCalledProcessDefinitionsFor = () => null
+
+        await expect(action(context, { processId: 'pd-1' })).rejects.toThrow('could not be loaded')
+
+        expect(context.commit.mock.calls.filter(([name]) => name === 'setCalledProcessDefinitions')).toEqual([['setCalledProcessDefinitions', []]])
+      })
+
+      // Switching definitions while the table loads: the slower, older load must not fill the table
+      it('should drop an older load that finishes after a newer one started', async () => {
+        const first = contextWith(getContext, {
+          historicStats: [{ id: 'call_dyn', instances: 1 }],
+          activityNames: { call_dyn: 'Dynamic call' }
+        })
+        let finishFirst
+        HistoryService.findActivitiesProcessDefinitionHistory
+          .mockReturnValueOnce(new Promise(resolve => { finishFirst = resolve }))
+        HistoryService.findProcessesInstancesHistory.mockResolvedValue([])
+
+        const older = action(first, { processId: 'pd-old' })
+        const newer = { ...first, commit: vi.fn() }
+        newer.getters.getStaticCalledProcessDefinitionsFor = () => [staticDef()]
+        newer.rootGetters = { ...first.rootGetters, getHistoricActivityStatistics: () => [] }
+        await action(newer, { processId: 'pd-new' })
+        const commitsBefore = first.commit.mock.calls.length
+        finishFirst([{ activityId: 'call_dyn', calledProcessInstanceId: 'x' }])
+        await older
+
+        expect(first.commit.mock.calls.length).toBe(commitsBefore)
+        expect(lastGrouping(newer).map(def => def.definitionId)).toEqual(['sub-1'])
+      })
+
+      it('should only use the static definitions loaded for this process definition', async () => {
+        const context = contextWith(getContext)
+        const forDefinition = vi.fn(() => [staticDef()])
+        context.getters.getStaticCalledProcessDefinitionsFor = forDefinition
+
+        await action(context, { processId: 'pd-1' })
+
+        expect(forDefinition).toHaveBeenCalledWith('pd-1')
+        expect(lastGrouping(context).map(def => def.definitionId)).toEqual(['sub-1'])
+      })
+
       it('should clear both lists before rebuilding them', async () => {
         const context = contextWith(getContext)
 
@@ -240,6 +559,55 @@ createStoreTestSuite('CalledProcessDefinitionsStore', CalledProcessDefinitionsSt
         const activities = lastGrouping(context)[0].activities
         expect(activities).toHaveLength(1)
         expect(activities[0].instances).toHaveLength(2)
+      })
+
+      it('should tolerate a static definition without calledFromActivityIds', async () => {
+        const context = contextWith(getContext, {
+          statics: [staticDef({ calledFromActivityIds: undefined })]
+        })
+
+        await action(context, { processId: null })
+
+        expect(lastGrouping(context)).toEqual([expect.objectContaining({ definitionKey: 'sub', activities: [] })])
+      })
+
+      // Intermediate commits must carry final labels and must not share objects with later commits,
+      // otherwise later in-loop mutations would reach state that was already committed.
+      it('should commit detached snapshots with final labels for every chunk', async () => {
+        const context = contextWith(getContext, {
+          statics: [],
+          historicStats: [{ id: 'call_dyn', instances: 1 }],
+          activityNames: { call_dyn: 'Dynamic call' }
+        })
+        HistoryService.findActivitiesProcessDefinitionHistory.mockResolvedValue([
+          { calledProcessInstanceId: 'pi-a', activityId: 'call_dyn', endTime: null },
+          { calledProcessInstanceId: 'pi-b', activityId: 'call_dyn', endTime: null }
+        ])
+        const info = (id) => ({
+          id,
+          processDefinitionId: 'dyn-1',
+          processDefinitionKey: 'dyn',
+          processDefinitionVersion: 1,
+          processDefinitionName: 'Dynamic',
+          tenantId: null
+        })
+        HistoryService.findProcessesInstancesHistory
+          .mockResolvedValueOnce([info('pi-a')])
+          .mockResolvedValueOnce([info('pi-b')])
+
+        await action(context, { processId: 'pi-1', chunkSize: 1 })
+
+        const commits = context.commit.mock.calls
+          .filter(([name]) => name === 'setCalledProcessDefinitions')
+          .map(([, payload]) => payload)
+          .filter(payload => payload.length > 0)
+        expect(commits).toHaveLength(2)
+        const [afterSecondChunkStart, final] = commits
+        expect(afterSecondChunkStart[0].label).toBe('dyn')
+        expect(afterSecondChunkStart[0]).not.toBe(final[0])
+        expect(afterSecondChunkStart[0].activities[0]).not.toBe(final[0].activities[0])
+        expect(afterSecondChunkStart[0].activities[0].instances).toHaveLength(2)
+        expect(final[0].activities[0].instances).toHaveLength(2)
       })
 
       // Two versions of the same key must stay distinguishable in the UI, so the label
@@ -414,7 +782,7 @@ createStoreTestSuite('CalledProcessDefinitionsStore', CalledProcessDefinitionsSt
 
       it('should tolerate missing statistics and activity maps', async () => {
         const context = getContext()
-        context.getters.getStaticCalledProcessDefinitions = null
+        context.getters.getStaticCalledProcessDefinitionsFor = () => null
         context.rootGetters.getHistoricActivityStatistics = () => null
         context.rootGetters.getProcessActivities = null
 
@@ -432,7 +800,8 @@ createStoreTestSuite('CalledProcessDefinitionsStore', CalledProcessDefinitionsSt
       const cases = [
         ['setCalledProcessDefinitions', 'calledProcessDefinitions', [{ id: 'new' }]],
         ['setAllCalledProcessDefinitions', 'allCalledProcessDefinitions', [{ id: 'new' }]],
-        ['setStaticCalledProcessDefinitions', 'staticCalledProcessDefinitions', [staticDef()]]
+        ['setStaticCalledProcessDefinitions', 'staticCalledProcessDefinitions', [staticDef()]],
+        ['setStaticCalledProcessDefinitionsId', 'staticCalledProcessDefinitionsId', 'pd-1']
       ]
 
       it.each(cases)('%s should replace state.%s', (mutationName, field, value) => {

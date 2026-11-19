@@ -42,15 +42,17 @@ import org.cibseven.bpm.engine.repository.ProcessDefinitionQuery;
 import org.cibseven.bpm.engine.rest.mapper.JacksonConfigurator;
 import org.cibseven.bpm.engine.variable.VariableMap;
 import org.cibseven.bpm.engine.variable.Variables;
+import org.cibseven.bpm.engine.variable.value.ObjectValue;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * The form- and process-instance-variable side of {@link DirectVariableProvider}; the binary
@@ -82,8 +84,7 @@ public class DirectVariableProviderFormsTest {
 		definitionQuery = mock(ProcessDefinitionQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
 		when(repositoryService.createProcessDefinitionQuery()).thenReturn(definitionQuery);
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		JacksonConfigurator.configureObjectMapper(objectMapper);
+		ObjectMapper objectMapper = JacksonConfigurator.configureObjectMapper();
 
 		directProviderUtil = Mockito.spy(new DirectProviderUtil());
 		doReturn(processEngine).when(directProviderUtil).getProcessEngine(any(CIBUser.class));
@@ -163,13 +164,81 @@ public class DirectVariableProviderFormsTest {
 	}
 
 	@Test
-	void fetchProcessFormVariablesById_skipsTheDefinitionLookup() {
-		when(formService.getStartFormVariables("definition-1", null, true)).thenReturn(variables());
+	void fetchProcessFormVariables_withNamesAddressesTheDefinitionById() {
+		List<String> names = List.of("amount");
+		when(formService.getStartFormVariables("definition-1", names, false)).thenReturn(variables());
 
-		Map<String, Variable> result = variableProvider.fetchProcessFormVariablesById("definition-1", user);
+		Map<String, Variable> result = variableProvider.fetchProcessFormVariables(names, "definition-1", false, user);
+
+		// the bpm-sdk start forms send the definition id (#1402): no key lookup
+		assertThat(result).containsOnlyKeys("amount", "customer");
+		verify(repositoryService, Mockito.never()).createProcessDefinitionQuery();
+	}
+
+	@Test
+	void fetchProcessFormVariablesByKey_resolvesTheKeyAndForwardsTheNames() {
+		ProcessDefinition definition = mock(ProcessDefinition.class);
+		when(definition.getId()).thenReturn("definition-1");
+		when(definitionQuery.singleResult()).thenReturn(definition);
+		List<String> names = List.of("amount");
+		when(formService.getStartFormVariables("definition-1", names, false)).thenReturn(variables());
+
+		Map<String, Variable> result = variableProvider.fetchProcessFormVariablesByKey(names, "invoice", false, user);
+
+		// CIB7-2356
+		assertThat(result).containsOnlyKeys("amount", "customer");
+		verify(definitionQuery).processDefinitionKey("invoice");
+		verify(definitionQuery).withoutTenantId();
+		verify(definitionQuery).latestVersion();
+	}
+
+	@Test
+	void fetchProcessFormVariablesByKey_throwsWhenTheDefinitionIsUnknown() {
+		when(definitionQuery.singleResult()).thenReturn(null);
+
+		assertThatThrownBy(() -> variableProvider.fetchProcessFormVariablesByKey(List.of("amount"), "missing", true, user))
+			.isInstanceOf(SystemException.class)
+			.hasMessageContaining("No matching process definition with key: missing");
+		// the form service is never asked with the key in place of an id
+		verify(formService, Mockito.never()).getStartFormVariables(any(), any(), anyBoolean());
+	}
+
+	@Test
+	void fetchProcessFormVariablesByKey_forwardsTheDeserializeFlag() {
+		ProcessDefinition definition = mock(ProcessDefinition.class);
+		when(definition.getId()).thenReturn("definition-1");
+		when(definitionQuery.singleResult()).thenReturn(definition);
+		List<String> names = List.of("amount", "customer");
+		when(formService.getStartFormVariables("definition-1", names, true)).thenReturn(variables());
+
+		Map<String, Variable> result = variableProvider.fetchProcessFormVariablesByKey(names, "invoice", true, user);
 
 		assertThat(result).containsOnlyKeys("amount", "customer");
-		// addressing by id needs no query at all
+		verify(formService).getStartFormVariables("definition-1", names, true);
+	}
+
+	@Test
+	void fetchProcessFormVariablesByKey_neverPassesTheKeyAsTheDefinitionId() {
+		ProcessDefinition definition = mock(ProcessDefinition.class);
+		when(definition.getId()).thenReturn("invoice:3:abc");
+		when(definitionQuery.singleResult()).thenReturn(definition);
+		List<String> names = List.of("amount");
+		when(formService.getStartFormVariables("invoice:3:abc", names, false)).thenReturn(variables());
+
+		variableProvider.fetchProcessFormVariablesByKey(names, "invoice", false, user);
+
+		verify(formService).getStartFormVariables("invoice:3:abc", names, false);
+		verify(formService, Mockito.never()).getStartFormVariables(eq("invoice"), any(), anyBoolean());
+	}
+
+	@Test
+	void fetchProcessFormVariables_withNamesForwardsTheDeserializeFlag() {
+		List<String> names = List.of("amount");
+		when(formService.getStartFormVariables("definition-1", names, true)).thenReturn(variables());
+
+		variableProvider.fetchProcessFormVariables(names, "definition-1", true, user);
+
+		verify(formService).getStartFormVariables("definition-1", names, true);
 		verify(repositoryService, Mockito.never()).createProcessDefinitionQuery();
 	}
 
@@ -226,6 +295,26 @@ public class DirectVariableProviderFormsTest {
 		variableProvider.submitVariables("pi-1", List.of(variable), user, "definition-1");
 
 		verify(runtimeService).updateVariables(eq("pi-1"), any(), eq(List.of()));
+	}
+
+	@Test
+	void submitVariables_serializesAnObjectValueThatArrivesAsParsedJson() {
+		// regression for CIB7-880: the engine rejected a non-string value for a serializable type
+		Variable variable = new Variable();
+		variable.setName("payload");
+		variable.setType("Object");
+		variable.setValue(Map.of("a", 1));
+		variable.setValueInfo(Map.of("objectTypeName", "java.util.HashMap", "serializationDataFormat", "application/json"));
+		RuntimeServiceImpl runtimeService =
+			(RuntimeServiceImpl) directProviderUtil.getProcessEngine(user).getRuntimeService();
+
+		variableProvider.submitVariables("pi-1", List.of(variable), user, "definition-1");
+
+		ArgumentCaptor<VariableMap> modifications = ArgumentCaptor.forClass(VariableMap.class);
+		verify(runtimeService).updateVariables(eq("pi-1"), modifications.capture(), eq(List.of()));
+		ObjectValue payload = modifications.getValue().getValueTyped("payload");
+		assertThat(payload.getValueSerialized()).isEqualTo("{\"a\":1}");
+		assertThat(payload.getObjectTypeName()).isEqualTo("java.util.HashMap");
 	}
 
 	@Test

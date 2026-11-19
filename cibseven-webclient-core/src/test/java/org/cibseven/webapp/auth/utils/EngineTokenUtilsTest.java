@@ -246,6 +246,15 @@ public class EngineTokenUtilsTest {
 	}
 
 	@Test
+	void extractEngineFromToken_decodesThePayloadAsUtf8() {
+		// a JWT payload is UTF-8 JSON, whatever the JVM default charset is (CIB7-2206)
+		String token = tokenWithUserClaim(quoted("{\"engine\":\"http://other|/engine-rest|Prüfung\"}"));
+
+		assertThat(EngineTokenUtils.extractEngineFromToken(token))
+			.isEqualTo("http://other|/engine-rest|Prüfung");
+	}
+
+	@Test
 	void extractEngineFromToken_stripsTheBearerPrefix() {
 		String token = tokenWithUserClaim(quoted("{\"engine\":\"remote\"}"));
 

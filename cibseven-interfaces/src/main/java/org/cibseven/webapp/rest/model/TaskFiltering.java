@@ -19,14 +19,14 @@ package org.cibseven.webapp.rest.model;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+
+import org.cibseven.webapp.config.WebclientJsonMapper;
 
 @Getter @Setter @ToString @AllArgsConstructor @NoArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -41,7 +41,7 @@ public class TaskFiltering {
 	String dueAfter;
 	String followUpAfter;
 
-	public String json() throws JsonProcessingException {
-		return new ObjectMapper().writeValueAsString(this);
+	public String json() {
+		return WebclientJsonMapper.plain().writeValueAsString(this);
 	}
 }

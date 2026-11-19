@@ -1,0 +1,120 @@
+/*
+ * Copyright CIB software GmbH and/or licensed to CIB software GmbH
+ * under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright
+ * ownership. CIB software licenses this file to you under the Apache License,
+ * Version 2.0; you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+package org.cibseven.modeler.util;
+
+import java.time.Duration;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import org.cibseven.modeler.provider.FolderProvider;
+import org.cibseven.webapp.providers.WebclientExtensions;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+class FolderProjectFillTest {
+
+	private final FolderProvider folders = Mockito.mock(FolderProvider.class);
+	private final WebclientExtensions extensions = Mockito.mock(WebclientExtensions.class);
+	private final FolderProjectFill fill = new FolderProjectFill(folders, extensions);
+
+	@Test
+	void storesTheProjectsOfTheFoldersOnStart() {
+		when(extensions.switchedOffNow()).thenReturn(false);
+		when(folders.fillProjects()).thenReturn(3).thenReturn(0);
+
+		fill.fill();
+		fill.fill();
+
+		verify(folders, Mockito.times(2)).fillProjects();
+	}
+
+	/** The engine may not have created the table yet; the webclient starts all the same. */
+	@Test
+	void letsTheStartGoOnWhenTheFoldersCannotBeRead() {
+		when(extensions.switchedOffNow()).thenReturn(false);
+		when(folders.fillProjects()).thenThrow(new IllegalStateException("MOD_FOLDERS not found"));
+
+		assertThatCode(fill::fill).doesNotThrowAnyException();
+	}
+
+	/**
+	 * In Tomcat or WildFly an engine-rest in the same server answers only after the deployment,
+	 * which waits for the start event: the event must not wait for the engine.
+	 */
+	@Test
+	void doesNotHoldTheStartWhileTheEngineDoesNotAnswer() throws Exception {
+		CountDownLatch engineAnswers = new CountDownLatch(1);
+		when(extensions.switchedOffNow()).thenAnswer(call -> {
+			engineAnswers.await();
+			return false;
+		});
+
+		assertTimeoutPreemptively(Duration.ofSeconds(2), fill::fillInBackground);
+		verify(folders, never()).fillProjects();
+
+		engineAnswers.countDown();
+		verify(folders, timeout(5_000)).fillProjects();
+	}
+
+	@Test
+	void stopsAFillStillWaitingForTheEngineOnShutdown() throws Exception {
+		CountDownLatch asked = new CountDownLatch(1);
+		when(extensions.switchedOffNow()).thenAnswer(call -> {
+			asked.countDown();
+			try {
+				new CountDownLatch(1).await();
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
+			return false;
+		});
+
+		fill.fillInBackground();
+		assertThat(asked.await(5, TimeUnit.SECONDS)).isTrue();
+		fill.destroy();
+
+		Thread filling = (Thread) ReflectionTestUtils.getField(fill, "filling");
+		filling.join(5_000);
+		assertThat(filling.isAlive()).isFalse();
+		assertThat(filling.isDaemon()).isTrue();
+		verify(folders, never()).fillProjects();
+	}
+
+	@Test
+	void shutsDownCleanlyWithoutHavingStarted() {
+		assertThatCode(fill::destroy).doesNotThrowAnyException();
+	}
+
+	/** Without the webclient tables there are no folders to read. */
+	@Test
+	void leavesTheFoldersAloneOnceTheEngineHasSwitchedTheTablesOff() {
+		when(extensions.switchedOffNow()).thenReturn(true);
+
+		fill.fill();
+
+		verify(folders, never()).fillProjects();
+	}
+}

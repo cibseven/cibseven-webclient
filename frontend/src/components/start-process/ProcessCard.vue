@@ -71,7 +71,7 @@
           <h2 class="h5 text-truncate" :title="$t('process.name') + ': ' + processName">
             <HighlightedText :text="processName" :keyword="filter">{{ processName }}</HighlightedText>
           </h2>
-          <div v-html="getDescription(this.process)" class="inline-description"></div>
+          <div class="inline-description">{{ getDescription(process) }}</div>
         </div>
       </template>
 

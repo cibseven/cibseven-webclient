@@ -17,6 +17,9 @@
 	"login": {
 		"productName": "CIB seven",
 		"productSlogan": "Process Management Platform",
+		"loggedOutText": "You have been logged out successfully.",
+		"loggingOut": "Signing out…",
+		"loggedOutAgain": "Log in again",
 		"username": "Username",
 		"password": "Password",
 		"rememberMe": "Remember me",
@@ -184,10 +187,10 @@
 		"activateInstance": "Activate process instance",
 		"copySuccess": "Selected value copied",
 		"refreshVersions": "Refresh history versions",
-		"loadVersions": "Load all history versions",
+		"loadAllStatistics": "Load all instance statistics",
+		"loadData": "Load data",
 		"externalProcessStarted": "Process successfully started",
 		"exportInstances": "Export instances",
-		"days": "days",
 		"deleteProcessDefinition": {
 			"tooltip": "Delete process definition",
 			"confirm": {
@@ -247,7 +250,8 @@
 			"referenced": "Referenced",
 			"running": "Running",
 			"runningAndReferenced": "Running and referenced",			
-			"unknown": "Unknown"
+			"unknown": "Unknown",
+			"loadFailed": "The called process definitions could not be loaded"
 		},
 		"details": {
 			"instancesChain": "Root process",
@@ -273,6 +277,14 @@
 			"deleteHistoryInstance": "Do you really want to delete the next historical instance of the process?"
 		},
 		"variables": {
+			"editVariable": {
+				"title": "Edit variable",
+				"tooltip": "Edit variable"
+			},
+			"runtimeVariable": {
+				"title": "Runtime variable",
+				"tooltip": "View runtime variable"
+			},
 			"historicVariable": {
 				"title": "Historic variable",
 				"tooltip": "View historic variable"
@@ -333,6 +345,7 @@
 			"dueDate": "Due date",
 			"scheduleAt": "Schedule at",
 			"invalidDateError": "You must enter a valid date",
+			"loadFailed": "The incidents could not be loaded",
 			"retry": "Retry",			
 			"editAnnotation": "Edit annotation",
 			"causeIncidentProcessInstanceId": "Cause process instance ID",
@@ -465,7 +478,10 @@
 			"activitiesHistory": "Executed activity instances",
 			"canceledInstances": "Canceled activity instances",		
 			"openSubprocess": "Show called process definition",
-			"disabledSubprocess": "Called process definition will be resolved at runtime"
+			"disabledSubprocess": "Called process definition will be resolved at runtime",
+			"notFoundSubprocess": "No called process definition found: it is not deployed, or you are not allowed to see it",
+			"currentSubprocess": "The called process definition is the one already shown",
+			"unknownSubprocess": "The called process definition could not be determined"
 		}
 	},
 	"task": {
@@ -478,6 +494,16 @@
 		"taskId": "Task ID",
 		"assign": "Assign to someone",
 		"assignToMe": "Assign to me",
+		"backToTaskList": "Back to task list",
+		"assignedTo": "Assigned to {0}",
+		"notAssigned": "Not assigned",
+		"unassign": "Remove assignment",
+		"searchUserLabel": "Find a user",
+		"searchUserPlaceholder": "Name or user ID",
+		"searchUserHint": "Type at least 3 characters to search",
+		"searchResults": "Search results",
+		"candidateUsers": "Candidate users",
+		"noUsersFound": "No users found",
 		"assignPopoverTitle": "Task is not assigned to you",
 		"assignPopoverContent": "To start working on the task, assign it to yourself.",
 		"assignPopoverContent2": "Remember you can also assign it to someone else, to do so go to the actions section on the top of the right sidebar.",
@@ -487,6 +513,10 @@
 		"completedTasks": "Completed tasks",
 		"notStarted": "The selected task has not been started yet.",
 		"setDeadline": "Set deadline",
+		"reminderLabel": "Reminder: {date}",
+		"dueLabel": "Deadline: {date}",
+		"dueSoonLabel": "Deadline: {date}, due soon",
+		"dueOverdueLabel": "Deadline: {date}, overdue",
 		"setReminder": "Set reminder",
 		"selectedTask": "Selected task",
 		"details": {
@@ -664,6 +694,7 @@
 			"deleteGroup": "Delete Group",
 			"updateGroupMessage": "Group {0} has been updated",
 			"deleteGroupMessage": "Group {0} has been removed",
+			"notFound": "This group does not exist. It may have been deleted.",
 			"user": {
 				"title": "Group users"
 			}
@@ -736,17 +767,13 @@
 				"tenantMembership": "Tenant Membership",
 				"batch": "Batch",
 				"decisionRequirements": "Decision Requirements Definition",
-				"report": "Report",
-				"dashboard": "Dashboard",
 				"userOperationLogCategory": "User Operation Log Category",
 				"historicTask": "Historic Task",
 				"historicProcessInstance": "Historic Process Instance",
-				"optimize": "Optimize",
-				"operationLogCategory": "Operation Log Category",
 				"property": "Property"
 			},
 			"resourcesTypesDescriptions": {
-				"application": "Controls which web applications a user or group is allowed to open, e.g. {tasklist}, {cockpit}, {admin}, or {modeler}. This resource only supports the {access} permission.",
+				"application": "Controls which web applications a user or group is allowed to open, e.g. {tasklist}, {cockpit}, {admin}, {userProfile}, {ins7ght} or {modeler}. This resource only supports the {access} permission.",
 				"user": "Controls who may view, create, edit, or delete user accounts, and whether users can see each other’s basic information, e.g. when picking a task assignee.",
 				"group": "Controls who may view, create, edit, or delete groups.",
 				"groupMembership": "Controls who may add users to a group or remove them from it.",
@@ -762,19 +789,14 @@
 				"tenantMembership": "Controls who may assign users and groups to a tenant, or remove them from it.",
 				"batch": "Controls who may create or cancel batch operations, i.e. bulk actions such as process instance migration, restart, deletion, or mass variable updates.{br}{create} controls all batch operations. Each {createBatch} permission controls one specific operation on top of {create}, overriding it.",
 				"decisionRequirements": "Controls who may view a decision requirements definition, i.e. the graph showing how a set of related {dmn} decisions depend on each other.",
-				"report": "Controls who may view or manage saved reports.",
-				"dashboard": "Controls who may view or manage saved dashboards.",
 				"userOperationLogCategory": "Controls who may read the {userOperationLog} audit trail recorded per task or process instance, grouped into categories such as task worker, admin, or operator actions.",
 				"historicTask": "Controls who may view the historic data kept for a task after it has been completed.",
 				"historicProcessInstance": "Controls who may view or delete the historic data of a process instance after it has finished.",
-				"optimize": "Controls who may access {optimize}, the process reporting and analytics application.",
-				"operationLogCategory": "Controls who may read or delete entries in the engine-wide {operationLog} shown in Cockpit — a single searchable audit trail across the whole engine.",
 				"property": "Controls who may view or change internal engine configuration entries stored as key/value properties, not application-level settings."
 			},
 			"resourcesTypesDescriptionsTerms": {
 				"systemSettings": "System Settings",
-				"userOperationLog": "User Operations",
-				"operationLog": "Operation Log"
+				"userOperationLog": "User Operations"
 			},
 			"unselectAll": "Unselect All",
 			"selectAll": "Select All",
@@ -834,11 +856,9 @@
 		"email": "@:login.email"
 	},
 	"cib-header": {
+		"openMenu": "{label} menu",
 		"languages": "Language",
-		"languagesMenu": "Language",
 		"engine": "Engine",
-		"engineMenu": "Engine selection",
-		"helpMenu": "Help",
 		"en": "English",
 		"de": "Deutsch",
 		"es": "Español",
@@ -878,6 +898,7 @@
 			"filterPriorityLabel": "Priority",
 			"selectProperty": "Select key",
 			"insertValue": "Enter value",
+			"invalidDate": "Invalid date. Use e.g. {iso}, {dotted}, {german} or {isoTime}",
 			"insertVariableKey": "Enter variable name",
 			"addCriteria": "Add criteria",
 			"filterExists": "This filter already exists",
@@ -1022,6 +1043,9 @@
 			"title": "@:process.startProcess",
 			"tooltip": "Open Start Process view with search possibility"
 		},
+		"tasks": {
+			"title": "Tasks"
+		},
 		"taskList": {
 			"title": "Tasklist",
 			"tooltip": "Open Tasklist"
@@ -1029,6 +1053,9 @@
 		"cockpit": {
 			"title": "Cockpit",
 			"tooltip": "Open Cockpit",
+			"dashboard": {
+				"title": "Dashboard"
+			},
 			"processes": {
 				"title": "Processes",
 				"tooltip": "Explore available process definitions"
@@ -1063,15 +1090,21 @@
 			}
 		},
 		"admin": {
-			"title": "Admin",
-			"tooltip": "Open Admin"
+			"title": "Admin"
+		},
+		"accessManagement": {
+			"title": "Access management"
+		},
+		"builder": {
+			"title": "Builder"
 		},
 		"modeler": {
 			"title": "Modeler",
-			"tooltip": "Open Modeler to design and edit BPMN, DMN, and Forms"
+			"tooltip": "Open Modeler to design and edit BPMN, DMN, and Forms",
+			"loading": "Loading the modeler...",
+			"loadFailed": "The modeler could not be loaded. Reload the page to try again."
 		},
 		"account": {
-			"tooltip": "View and edit your account information or log out",
 			"profile": {
 				"title": "User Profile",
 				"tooltip": "View and edit your account information"
@@ -1117,7 +1150,9 @@
 		"ExistingGroupRequestException": "Group already exists",
 		"VariableModificationException": "The variable could not be changed successfully. Please refresh the page and try again.",
 		"processNotFound": "Process with key \"{0}\" not found",
+		"tenantNotFound": "Tenant with ID \"{0}\" does not exist",
 		"notFoundInstanceId": "The process instance with ID \"{instanceId}\" could not be found.\nReferenced from: {refPath}",
+		"notFoundPage": "The page \"{path}\" could not be found.",
 		"filterSaveError": "An error occurred  trying to save the filter, please check the data introduced.",
 		"passwordDoNotMatch": "Passwords do not match",
 		"PasswordPolicyException": "Password does not match policy",
@@ -1171,11 +1206,14 @@
 		"showDeployment": "Load Deployment in list",
 		"deploymentsDeleted": "{0} out of {1} deployments have been successfully deleted",
 		"tenant": "Tenant",
-		"errorLoading": "Unable to load resource for the selected deployment"
+		"errorLoading": "Unable to load resource for the selected deployment",
+		"formPreviewError": "Unable to preview the selected form",
+		"formPreviewHeading": "Form Preview",
+		"formRawDataHeading": "Raw Data"
 	},
 	"navigation": {
 		"home": "Home",
-		"navigation": "Navigation",
+		"logoText": "@:login.productName",
 		"menu": "Navigation menu",
 		"infoAndHelp": "Info & help"
 	},
@@ -1298,7 +1336,6 @@
 		"decision": "Decision",
 		"refreshVersions": "Refresh history versions",
 		"loadVersions": "Load all history versions",
-		"days": "days",
 		"instances": "Instances",
 		"showInstance": "View instance",
 		"evaluationTime": "Evaluation Time",
@@ -1334,11 +1371,12 @@
 		"value": "Value",
 		"inputs": "Inputs",
 		"outputs": "Outputs",
-		"decisionInstanceId": "Decision Instance ID"
+		"decisionInstanceId": "Decision Instance ID",
+		"notAvailableForTenant": "This decision is not available for the tenant \"{tenantId}\".",
+		"notAvailable": "This decision is not available."
 	},
 	"decision-instance": {
-		"edit": "@:commons.edit",
-		"save": "@:commons.save"
+		"edit": "@:commons.edit"
 	},
 	"human-tasks": {
 		"assignmentsByType": "Assignments by type",
@@ -1397,5 +1435,17 @@
 	},
 	"deepLink": {
 		"tooltip": "Open {text}\n{url}"
+	},
+	"historyTimeToLive": {
+		"title": "Edit History Time To Live",
+		"ttl": "History time to live:",
+		"choiceUnlimited": "Unlimited (history is never cleaned up)",
+		"choiceZero": "0 days (history is removed by the next cleanup)",
+		"choiceCustom": "Custom",
+		"days": "days",
+		"placeholder": "Enter days (e.g., 30)",
+		"validation": "Please enter a valid number between {min} and {max}",
+		"engineDefaultHint": "Default value for this engine.",
+		"enforcedHint": "This engine requires an explicit history time to live; \"unlimited\" is not available."
 	}
 }

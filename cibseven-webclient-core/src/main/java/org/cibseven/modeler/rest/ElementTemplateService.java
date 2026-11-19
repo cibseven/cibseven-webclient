@@ -31,7 +31,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.exception.NoObjectException;
+import org.cibseven.webapp.config.SevenWebclientProperties;
+import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
@@ -81,7 +82,7 @@ import java.util.stream.Collectors;
 	@ApiResponse(responseCode = "401", description = "Unauthorized, invalid or missing authentication token",
 		content = @Content(schema = @Schema(implementation = String.class)))
 })
-@RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}/modeler/element-templates")
+@RestController @RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH + "/modeler/element-templates")
 public class ElementTemplateService extends ModelerBaseService {
 
     @Autowired
@@ -96,9 +97,9 @@ public class ElementTemplateService extends ModelerBaseService {
      * 
      * @param id the unique identifier of the element template to validate
      * @return the ElementTemplate if it exists
-     * @throws NoObjectException if no template is found with the given ID
+     * @throws NoObjectFoundException if no template is found with the given ID
      */
-    private ElementTemplate ensureIdExists(String id) throws NoObjectException {
+    private ElementTemplate ensureIdExists(String id) throws NoObjectFoundException {
     	log.debug("Validating existence of template with ID: {}", id);
     	final Optional<ElementTemplate> template = templateProvider.findById(id);
     	
@@ -107,7 +108,7 @@ public class ElementTemplateService extends ModelerBaseService {
         	return template.get();
     	}
     	log.warn("Template not found with ID: {}", id);
-    	throw new NoObjectException(id);
+    	throw new NoObjectFoundException("Element template not found: " + id);
     }
 
     /**
@@ -151,7 +152,7 @@ public class ElementTemplateService extends ModelerBaseService {
      * @param rq the HTTP servlet request containing authentication information
      * @param id the unique identifier of the element template to retrieve
      * @return the element template with the specified ID
-     * @throws NoObjectException if no template is found with the given ID
+     * @throws NoObjectFoundException if no template is found with the given ID
      */
     @Operation(
         summary = "Get element template by ID",
@@ -174,7 +175,7 @@ public class ElementTemplateService extends ModelerBaseService {
     	HttpServletRequest rq,
     	@Parameter(description = "Unique identifier of the element template", required = true)
     	@PathVariable String id
-    ) throws NoObjectException {
+    ) throws NoObjectFoundException {
     	log.info("Retrieving element template with ID: {}", id);
     	checkModelerAccess(rq);
     	
@@ -249,7 +250,7 @@ public class ElementTemplateService extends ModelerBaseService {
      * @param id the unique identifier of the template to update
      * @param properties a map of properties to update with their new values
      * @return ResponseEntity with the updated template if changes were made, or no content if no changes occurred
-     * @throws NoObjectException if no template is found with the given ID
+     * @throws NoObjectFoundException if no template is found with the given ID
      */
     @Operation(
         summary = "Partially update element template",
@@ -278,7 +279,7 @@ public class ElementTemplateService extends ModelerBaseService {
         @PathVariable String id, 
         @Parameter(description = "Map of properties to update", required = true)
         @RequestBody Map<String, Object> properties
-    ) throws NoObjectException {
+    ) throws NoObjectFoundException {
     	log.info("Performing partial update on template with ID: {}", id);
     	CIBUser user = checkModelerAccess(rq);
     	
@@ -310,7 +311,7 @@ public class ElementTemplateService extends ModelerBaseService {
      * @param id the unique identifier of the template to update
      * @param element the complete template data for the update
      * @return the updated element template
-     * @throws NoObjectException if no template is found with the given ID
+     * @throws NoObjectFoundException if no template is found with the given ID
      */
     @Operation(
         summary = "Fully update element template",
@@ -340,7 +341,7 @@ public class ElementTemplateService extends ModelerBaseService {
         @PathVariable String id,
         @Parameter(description = "Complete template data for the update", required = true)
         @RequestBody ElementTemplateRequest element
-    ) throws NoObjectException {
+    ) throws NoObjectFoundException {
     	log.info("Performing full update on template with ID: {}", id);
     	CIBUser user = checkModelerAccess(rq);
     	
@@ -371,6 +372,7 @@ public class ElementTemplateService extends ModelerBaseService {
      * 
      * @param rq the HTTP servlet request containing authentication information
      * @param id the unique identifier of the template to delete
+     * @throws NoObjectFoundException if no template is found with the given ID
      */
     @Operation(
         summary = "Delete element template",
@@ -392,9 +394,11 @@ public class ElementTemplateService extends ModelerBaseService {
     	HttpServletRequest rq,
     	@Parameter(description = "Unique identifier of the template to delete", required = true)
     	@PathVariable String id
-    ) {
+    ) throws NoObjectFoundException {
     	log.info("Deleting template with ID: {}", id);
     	checkModelerAccess(rq);
+    	// deleteById silently ignores an unknown id, so check first to answer 404 as documented
+    	ensureIdExists(id);
     	templateProvider.deleteTemplateById(id);
     	log.info("Successfully deleted template with ID: {}", id);
     }
@@ -410,7 +414,7 @@ public class ElementTemplateService extends ModelerBaseService {
      * @param rq the HTTP servlet request containing authentication information
      * @param id the unique identifier of the template to duplicate
      * @return the newly created duplicate template
-     * @throws NoObjectException if no template is found with the given ID
+     * @throws NoObjectFoundException if no template is found with the given ID
      */
     @Operation(
         summary = "Duplicate element template",
@@ -433,7 +437,7 @@ public class ElementTemplateService extends ModelerBaseService {
         HttpServletRequest rq,
         @Parameter(description = "Unique identifier of the template to duplicate", required = true)
         @PathVariable String id
-    ) throws NoObjectException {
+    ) throws NoObjectFoundException {
         log.info("Duplicating template with ID: {}", id);
         CIBUser user = checkModelerAccess(rq);
         
@@ -495,6 +499,12 @@ public class ElementTemplateService extends ModelerBaseService {
         
         for (String id : templateIds) {
             try {
+                // deleteById silently ignores an unknown id; report it as failed, like bulk-update-visibility
+                if (templateProvider.findById(id).isEmpty()) {
+                    failedIds.add(id);
+                    log.warn("Template not found with ID: {}", id);
+                    continue;
+                }
                 templateProvider.deleteTemplateById(id);
                 deletedIds.add(id);
                 log.debug("Successfully deleted template with ID: {}", id);

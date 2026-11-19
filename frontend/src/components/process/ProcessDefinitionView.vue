@@ -22,7 +22,7 @@
       <b-button :disabled="!instances || instances.length === 0" :title="$t('process.exportInstances')" variant="outline-secondary" @click="exportCSV()"
         class="ms-auto me-3 mdi mdi-18px mdi-download-outline border-0"></b-button>
     </div>
-    <SidebarsFlow ref="sidebars" class="border-top overflow-auto" :left-open="leftOpen" @update:left-open="onLeftOpenChanged" :left-caption="shortendLeftCaption">
+    <SidebarsFlow ref="sidebars" class="border-top overflow-auto fixed-left-sidebar" :left-open="leftOpen" @update:left-open="onLeftOpenChanged" :left-caption="shortendLeftCaption">
       <template v-slot:left>
         <template v-if="errorVersionNotFound !== null">
           <WarningBox :message="$t('process.definitionVersionNotFound', [errorVersionNotFound])"/>
@@ -32,6 +32,8 @@
           :process-key="processKey"
           :process-definitions="processDefinitions"
           :version-index="computedVersionIndex"
+          :selected-process="process"
+          :refreshing="refreshingVersions"
           @on-refresh-process-definitions="onRefreshProcessDefinitions"
           @on-delete-process-definition="onDeleteProcessDefinition"
           :selected-instance="selectedInstance"
@@ -146,6 +148,7 @@ export default {
       leftOpen: this.getSavedLeftOpen(this.instanceId ? 'process-instance' : 'process-definition'),
       process: null, // selected process definition
       processDefinitions: [],
+      refreshingVersions: null,
       errorVersionNotFound: null,
       errorLoadingInstanceId: null,
       selectedInstance: null,
@@ -197,8 +200,13 @@ export default {
       this.task = null
     }
   },
+  // Leaving the process pages: the next visit loads the called process definitions again, so a newer deployment is seen
+  beforeUnmount: function() {
+    this.clearStaticCalledProcessDefinitions()
+  },
   methods: {
     ...mapActions(['clearActivitySelection', 'getProcessById']),
+    ...mapActions('calledProcessDefinitions', ['clearStaticCalledProcessDefinitions']),
     formatDate,
     onLeftOpenChanged(isOpen) {
       this.leftOpen = isOpen
@@ -328,13 +336,19 @@ export default {
     // - user have deleted a non-selected process definition (this.process is still valid)
     // - user clicked "refresh process definitions" button
     async onRefreshProcessDefinitions(lazyLoad) {
-      const versions = await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, lazyLoad)
-      this.processDefinitions = versions
-      if (this.processDefinitions.length > 0) {
-        this.resetStatsLazyLoad(lazyLoad)
-        await this.loadProcessVersion(this.process)
+      // 'all' when every version's data is loaded, shown on the sidebar's load button
+      this.refreshingVersions = lazyLoad ? 'refresh' : 'all'
+      try {
+        const versions = await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, lazyLoad)
+        this.processDefinitions = versions
+        if (this.processDefinitions.length > 0) {
+          this.resetStatsLazyLoad(lazyLoad)
+          await this.loadProcessVersion(this.process)
+        }
+        return versions
+      } finally {
+        this.refreshingVersions = null
       }
-      return versions
     },
     resetStatsLazyLoad(lazyLoad) {
       if (lazyLoad) {
@@ -342,25 +356,24 @@ export default {
           v.runningInstances = '-'
           v.allInstances = '-'
           v.completedInstances = '-'
+          v.incidents = '-'
         })
       }
     },
     async findProcessAndAssignData(selectedProcess) {
       if (selectedProcess) {
-          await ProcessService.findProcessById(selectedProcess.id, true).then(process => {
-            for (const v of this.processDefinitions) {
-              if (v.id === process.id) {
-                Object.assign(v, process)
-                break
-              }
-            }
-          })
+          const process = await ProcessService.findProcessById(selectedProcess.id, true)
+          const version = this.processDefinitions.find(v => v.id === process.id)
+          // without its incidents and deployment time, which the definition never fills in
+          if (version) Object.assign(version, { ...process, incidents: version.incidents, deploymentTime: version.deploymentTime })
         }
     },
     async loadProcessVersion(process) {
       this.process = process
       await this.findProcessAndAssignData(process)
-      if (!this.process.statistics) await this.loadStatistics()
+      // ProcessInstancesView reloads runtime statistics with its instances on every tab
+      const showsInstancesView = !this.selectedInstance && !this.instanceId
+      if (!this.process.statistics && !showsInstancesView) await this.loadStatistics()
 
       // Load parent process if parentProcessDefinitionId exists in route query
       if (this.$route.query.parentProcessDefinitionId) {
@@ -372,9 +385,7 @@ export default {
       }
     },
     async loadStatistics() {
-      await ProcessService.findProcessStatistics(this.process.id).then(statistics => {
-        this.$store.dispatch('setStatistics', { process: this.process, statistics: statistics })
-      })
+      await this.$store.dispatch('loadStatistics', this.process)
     },
     async onInstanceDeleted() {
       await this.setSelectedInstance({ selectedInstance: null })
@@ -481,3 +492,19 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+/* fixed sidebar width outside phones, so the load button's label fits; the middle column follows it */
+@media (min-width: 576px) {
+  .fixed-left-sidebar {
+    --left-sidebar-width: 22.5rem;
+  }
+  .fixed-left-sidebar > :deep(.border-end.position-absolute) {
+    width: var(--left-sidebar-width);
+  }
+  .fixed-left-sidebar > :deep(.sidebars-middle[class*="offset-"]) {
+    margin-left: var(--left-sidebar-width);
+    width: calc(100% - var(--left-sidebar-width));
+  }
+}
+</style>

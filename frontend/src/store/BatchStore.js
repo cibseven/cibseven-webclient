@@ -21,10 +21,8 @@ const BatchStore = {
   state: {
     runtimeBatches: [],
     historicBatches: [],
-    cleanableBatchReport: [],
     selectedHistoricBatch: null,
-    historicBatchCount: 0,
-    cleanableBatchReportCount: 0
+    historicBatchCount: 0
   },
   mutations: {
     setRuntimeBatches(state, batches) {
@@ -42,17 +40,11 @@ const BatchStore = {
     prependHistoricBatches(state, newBatches) {
       state.historicBatches = newBatches.concat(state.historicBatches)
     },
-    setCleanableBatchReport(state, report) {
-        state.cleanableBatchReport = report
-    },
     setSelectedHistoricBatch(state, batch) {
         state.selectedHistoricBatch = batch
     },
     setHistoricBatchCount(state, count) {
         state.historicBatchCount = count
-    },
-    setCleanableBatchReportCount(state, count) {
-        state.cleanableBatchReportCount = count
     },
     removeHistoricBatch(state, id) {
       state.historicBatches = state.historicBatches.filter(b => b.id !== id)
@@ -111,31 +103,16 @@ const BatchStore = {
         commit('setHistoricBatchCount', result.count)
         return result.count
     },
-    async getCleanableBatchReport({ commit }, query) {
-        const result = await BatchService.getCleanableBatchReport(query)
-        commit('setCleanableBatchReport', result)
-        return result
-    },
-    async getCleanableBatchReportCount({ commit }) {
-        const result = await BatchService.getCleanableBatchReportCount()
-        commit('setCleanableBatchReportCount', result.count)
-        return result.count
-    },
     async deleteHistoricBatch({ commit }, id) {
       await BatchService.deleteHistoricBatch(id)
       commit('removeHistoricBatch', id)
-    },
-    async setHistoricBatchRemovalTime(_, payload) {
-        return BatchService.setHistoricBatchRemovalTime(payload)
     }
   },
   getters: {
     runtimeBatches: state => state.runtimeBatches,
     historicBatches: state => state.historicBatches,
-    cleanableBatchReport: state => state.cleanableBatchReport,
     selectedHistoricBatch: state => state.selectedHistoricBatch,
-    historicBatchCount: state => state.historicBatchCount,
-    cleanableBatchReportCount: state => state.cleanableBatchReportCount
+    historicBatchCount: state => state.historicBatchCount
   }
 }
 

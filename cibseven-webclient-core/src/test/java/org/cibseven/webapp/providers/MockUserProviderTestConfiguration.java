@@ -20,12 +20,13 @@ import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.User;
 import org.cibseven.webapp.auth.rest.StandardLogin;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
@@ -97,9 +98,9 @@ public class MockUserProviderTestConfiguration {
         @Override
         public String serialize(User user) {
             try {
-                ObjectMapper mapper = new ObjectMapper();
+                ObjectMapper mapper = WebclientJsonMapper.plain();
                 return mapper.writeValueAsString(user);
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 return "{}";
             }
         }
@@ -113,7 +114,7 @@ public class MockUserProviderTestConfiguration {
         @Override
         public User deserialize(String json, String token) {
             try {
-                ObjectMapper mapper = new ObjectMapper();
+                ObjectMapper mapper = WebclientJsonMapper.plain();
                 CIBUser user = mapper.readValue(json, CIBUser.class);
                 user.setAuthToken(token);
                 return user;

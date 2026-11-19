@@ -196,6 +196,10 @@ export default {
       type: Boolean,
       default: false
     },
+    runtimeVariable: {
+      type: Boolean,
+      default: false
+    },
     loading: {
       type: Boolean,
       default: false
@@ -335,9 +339,9 @@ export default {
   computed: {
     computedTitle: function() {
       if (this.disabled) {
-        return this.$t('process-instance.variables.historicVariable.title')
+        return this.runtimeVariable ? this.$t('process-instance.variables.runtimeVariable.title') : this.$t('process-instance.variables.historicVariable.title')
       }
-      return this.editMode ? this.$t('process-instance.edit') : this.$t('process-instance.addVariable')
+      return this.editMode ? this.$t('process-instance.variables.editVariable.title') : this.$t('process-instance.addVariable')
     },
     computedSubmitButtonText: function() {
       if (this.type === 'File') {

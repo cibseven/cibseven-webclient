@@ -16,12 +16,16 @@
  */
 
 import { getPlugin } from '@/plugins/pluginsConfig.js'
+import { hasStartableProcesses } from '@/utils/process.js'
+import { isModelerEnabled } from '@/utils/config.js'
 
 /**
  * Slot through which an extension (e.g. the enterprise edition) adds an area to the admin
  * navigation. A contribution carries no component, only its entry:
  * { id, text, tooltip?, icon, image, to, active?, permissions, resource },
- * shown when applicationPermissions(permissions, resource) allows it.
+ * shown when applicationPermissions(permissions, resource) allows it. `active` lists the paths
+ * that mark the entry as current (default: `to`); they match whole path segments, so
+ * 'seven/auth/admin/area' matches '/seven/auth/admin/area/1' but not '/seven/auth/admin/area-details'.
  */
 export const ADMIN_ENTRY_SLOT = 'admin-entry'
 
@@ -43,8 +47,10 @@ export default {
     permissionsCockpit() {
       return this.$root.user && this.applicationPermissions(this.$root.config.permissions.cockpit, 'cockpit')
     },
+    // Only when the backend reports the modeler on, with the same check as the modeler route (modelerGuard):
+    // otherwise Builder would lead nowhere but back to the start page
     permissionsModeler() {
-      return this.$root.user && this.$root.config.modelerEnabled !== false && this.applicationPermissions(this.$root.config.permissions.modeler, 'modeler')
+      return this.$root.user && isModelerEnabled(this.$root.config) && this.applicationPermissions(this.$root.config.permissions.modeler, 'modeler')
     },
     /** Whether the admin area is reachable at all: through a built-in section or a contributed one */
     permissionsUsers() {
@@ -68,6 +74,10 @@ export default {
     },
     permissionsUserProfile() {
       return this.$root.user && this.applicationPermissions(this.$root.config.permissions.userProfile, 'userProfile')
+    },
+    /** Whether the loaded process list has one the user can start (gates "Start process" in the navigation) */
+    startableProcesses() {
+      return hasStartableProcesses(this.$store?.state.process?.list)
     }
   }
 }

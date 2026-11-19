@@ -22,8 +22,8 @@ import java.util.Base64;
 import org.cibseven.webapp.auth.providers.JwtUserProvider;
 import org.cibseven.webapp.auth.rest.StandardLogin;
 import org.cibseven.webapp.config.EngineRestProperties;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -34,14 +34,31 @@ import lombok.Getter;
 
 public abstract class BaseUserProvider<R extends StandardLogin> implements JwtUserProvider<R> {
 
-	@Value("${cibseven.webclient.authentication.tokenValidMinutes:60}") 
-	protected long validMinutes;
+	@Autowired(required = false)
+	protected SevenWebclientProperties properties = new SevenWebclientProperties();
 	
-	@Value("${cibseven.webclient.authentication.tokenProlongMinutes:1440}") 
-	protected long prolongMinutes;
+	protected long getValidMinutes() {
+		return properties.getAuthentication().getTokenValidMinutes();
+	}
 
-	@Autowired(required = false) 
-	protected EngineRestProperties engineRestProperties;
+	protected long getProlongMinutes() {
+		return properties.getAuthentication().getTokenProlongMinutes();
+	}
+
+	protected EngineRestProperties getEngineRestProperties() {
+		return properties.getEngineRest();
+	}
+
+	/**
+	 * @param property name relative to {@code cibseven.webclient}
+	 * @throws IllegalStateException if a property required by this provider is not configured
+	 */
+	protected static String required(String value, String property) {
+		if (value == null) {
+			throw new IllegalStateException(SevenWebclientProperties.PREFIX + "." + property + " must be configured for " + "this user provider");
+		}
+		return value;
+	}
 
 	public abstract User login(R params, HttpServletRequest rq);
 	public abstract void logout(User user);

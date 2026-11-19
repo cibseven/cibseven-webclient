@@ -34,9 +34,7 @@ import HistoricVariableInstanceStore from './HistoricVariableInstanceStore.js'
 import ExternalTaskStore from './ExternalTaskStore.js'
 import DiagramStore from './DiagramStore.js'
 import TaskStore from './TaskStore'
-
-// Import store modules from cibseven-modeler for modeler component
-import { processStore, formStore, elementTemplateStore, xmlStore } from 'cibseven-modeler'
+import ElementTemplateStore from './ElementTemplateStore.js'
 
 export const modules = {
   process: ProcessStore,
@@ -56,16 +54,8 @@ export const modules = {
   externalTasks: ExternalTaskStore,
   diagram: DiagramStore,
   task: TaskStore,
-  // Modeler store modules (required by CibsevenModeler component)
-  modeler: {
-    namespaced: true,
-    modules: {
-      processes: processStore,
-      forms: formStore,
-      elementTemplates: elementTemplateStore,
-      xml: xmlStore
-    }
-  }
+  elementTemplates: ElementTemplateStore
+  // The modeler registers its own modules under "modeler" when it is opened, see installModeler
 }
 
 const store = createStore({

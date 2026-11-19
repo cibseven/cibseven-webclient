@@ -28,7 +28,7 @@ import org.cibseven.webapp.rest.model.HistoricDecisionInstance;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 @Component
 public class DecisionProvider extends SevenProviderBase implements IDecisionProvider{
@@ -61,7 +61,7 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	@Override
 	public Object evaluateDecisionDefinitionByKey(Map<String, Object> data, String key, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/decision-definition/key/" + key + "/evaluate";
-		return ((ResponseEntity<Object>) doPost(url, data, null, user)).getBody();
+		return ((ResponseEntity<Object>) doPost(url, data, Object.class, user)).getBody();
 	}
 
 	@Override
@@ -84,8 +84,8 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 
 	@Override
 	public Object evaluateDecisionDefinitionByKeyAndTenant(Map<String, Object> data, String key, String tenant, CIBUser user) {
-		String url = getEngineRestUrl(user) + "/decision-definition/key/" + key + "/tenant" + tenant + "/evaluate";
-		return ((ResponseEntity<Object>) doPost(url, data, null, user)).getBody();
+		String url = getEngineRestUrl(user) + "/decision-definition/key/" + key + "/tenant-id/" + tenant + "/evaluate";
+		return ((ResponseEntity<Object>) doPost(url, data, Object.class, user)).getBody();
 	}
 
 	@Override
@@ -97,13 +97,13 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	@Override
 	public Object getXmlByKey(String key, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/decision-definition/key/" + key + "/xml";
-		return ((ResponseEntity<Decision>) doGet(url, Decision.class, user, false)).getBody();
+		return ((ResponseEntity<Object>) doGet(url, Object.class, user, false)).getBody();
 	}
 
 	@Override
 	public Object getXmlByKeyAndTenant(String key, String tenant, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/decision-definition/key/" + key + "/tenant-id/" + tenant + "/xml";
-		return ((ResponseEntity<Decision>) doGet(url, Decision.class, user, false)).getBody();
+		return ((ResponseEntity<Object>) doGet(url, Object.class, user, false)).getBody();
 	}
 
 	@Override
@@ -129,7 +129,7 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	@Override
 	public Object evaluateDecisionDefinitionById(String id, Map<String, Object> data, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/decision-definition/" + id + "/evaluate";
-		return ((ResponseEntity<Object>) doPost(url, data, null, user)).getBody();
+		return ((ResponseEntity<Object>) doPost(url, data, Object.class, user)).getBody();
 	}
 
 	@Override
@@ -146,8 +146,16 @@ public class DecisionProvider extends SevenProviderBase implements IDecisionProv
 	
 	@Override
 	public Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad, CIBUser user) {
-		String url = getEngineRestUrl(user) + "/decision-definition?key=" + key + "&sortBy=version&sortOrder=desc";
-		Collection<Decision> decisions = Arrays.asList(((ResponseEntity<Decision[]>) doGet(url, Decision[].class, user, false)).getBody());		
+		return getDecisionVersionsByKey(key, null, false, lazyLoad, user);
+	}
+
+	@Override
+	public Collection<Decision> getDecisionVersionsByKey(String key, String tenantId, boolean withoutTenantId, Optional<Boolean> lazyLoad, CIBUser user) {
+		// encoded here and sent as it is: a tenant id like "a&withoutTenantId=true" cannot add parameters
+		String url = getEngineRestUrl(user) + "/decision-definition" + addQueryParameter("", "key", Optional.of(key), true) + "&sortBy=version&sortOrder=desc";
+		if (tenantId != null && !tenantId.isEmpty()) url += addQueryParameter(url, "tenantIdIn", Optional.of(tenantId), true);
+		else if (withoutTenantId) url += "&withoutTenantId=true";
+		Collection<Decision> decisions = Arrays.asList(((ResponseEntity<Decision[]>) doGet(url, Decision[].class, user, true)).getBody());
 		
 		if (!lazyLoad.isPresent() || (lazyLoad.isPresent() && !lazyLoad.get())) {
 			for(Decision decision : decisions) {

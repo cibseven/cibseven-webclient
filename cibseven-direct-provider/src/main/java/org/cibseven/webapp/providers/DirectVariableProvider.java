@@ -30,6 +30,7 @@ import org.apache.commons.io.IOUtils;
 import org.cibseven.bpm.engine.AuthorizationException;
 import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.ProcessEngineException;
+import org.cibseven.bpm.engine.exception.NullValueException;
 import org.cibseven.bpm.engine.history.HistoricVariableInstance;
 import org.cibseven.bpm.engine.history.HistoricVariableInstanceQuery;
 import org.cibseven.bpm.engine.impl.RuntimeServiceImpl;
@@ -41,7 +42,6 @@ import org.cibseven.bpm.engine.rest.dto.history.HistoricVariableInstanceQueryDto
 import org.cibseven.bpm.engine.rest.dto.runtime.ProcessInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.VariableInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.exception.RestException;
-import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.bpm.engine.runtime.DeserializationTypeValidator;
 import org.cibseven.bpm.engine.variable.VariableMap;
 import org.cibseven.bpm.engine.variable.Variables;
@@ -53,6 +53,7 @@ import org.cibseven.bpm.engine.variable.value.FileValue;
 import org.cibseven.bpm.engine.variable.value.TypedValue;
 import org.cibseven.webapp.NamedByteArrayDataSource;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.exception.ExpressionEvaluationException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
@@ -61,15 +62,16 @@ import org.cibseven.webapp.exception.UnsupportedTypeException;
 import org.cibseven.webapp.rest.model.ProcessStart;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.TypeFactory;
+import tools.jackson.databind.JavaType;
+import tools.jackson.databind.ObjectMapper;
+
 
 import jakarta.activation.DataSource;
 import jakarta.activation.MimeType;
@@ -88,19 +90,12 @@ public class DirectVariableProvider implements IVariableProvider {
 	@Override
 	public void modifyVariableByExecutionId(String executionId, Map<String, Object> data, CIBUser user)
 			throws SystemException {
-		PatchVariablesDto patch = directProviderUtil.getObjectMapper(user).convertValue(data, PatchVariablesDto.class);
-		VariableMap variableModifications = null;
-		try {
-			variableModifications = VariableValueDto.toMap(patch.getModifications(), directProviderUtil.getProcessEngine(user), directProviderUtil.getObjectMapper(user));
-		} catch (RestException e) {
-			String errorMessage = String.format("Cannot modify variables for %s: %s", "modifyVariableByExecutionId",
-					e.getMessage());
-			throw new SystemException(errorMessage, e);
-		}
+		PatchVariablesDto patch = directProviderUtil.toPatchVariables(data, "modifyVariableByExecutionId", user);
+		VariableMap variableModifications = directProviderUtil.toVariableMap(patch.getModifications(), "modifyVariableByExecutionId", user);
 
 		List<String> variableDeletions = patch.getDeletions();
 		try {
-			((RuntimeServiceImpl) directProviderUtil.getProcessEngine(user).getRuntimeService()).updateVariables(executionId, variableModifications, variableDeletions);
+			((RuntimeServiceImpl) directProviderUtil.getProcessEngine(user).getRuntimeService()).updateVariablesLocal(executionId, variableModifications, variableDeletions);
 		} catch (AuthorizationException e) {
 			throw e;
 		} catch (ProcessEngineException e) {
@@ -121,7 +116,7 @@ public class DirectVariableProvider implements IVariableProvider {
 				try {
 					TypedValue typedValue = valueDto.toTypedValue(directProviderUtil.getProcessEngine(user), directProviderUtil.getObjectMapper(user));// creates FileValueImpl
 
-					directProviderUtil.getProcessEngine(user).getRuntimeService().setVariable(executionId, variableName, typedValue);
+					directProviderUtil.getProcessEngine(user).getRuntimeService().setVariableLocal(executionId, variableName, typedValue);
 				} catch (AuthorizationException e) {
 					throw e;
 				} catch (ProcessEngineException e) {
@@ -141,7 +136,7 @@ public class DirectVariableProvider implements IVariableProvider {
 				}
 
 				if (object != null) {
-					directProviderUtil.getProcessEngine(user).getRuntimeService().setVariable(executionId, variableName, Variables.objectValue(object).create());
+					directProviderUtil.getProcessEngine(user).getRuntimeService().setVariableLocal(executionId, variableName, Variables.objectValue(object).create());
 				}
 			}
 		} catch (IOException e) { // from data.getBytes()
@@ -158,7 +153,7 @@ public class DirectVariableProvider implements IVariableProvider {
 		if (data != null && data.containsKey("deserializeValues"))
 			data.remove("deserializeValues");
 
-		VariableInstanceQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(data, VariableInstanceQueryDto.class);
+		VariableInstanceQueryDto queryDto = directProviderUtil.parseQueryDto(data, VariableInstanceQueryDto.class, user);
 
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
 
@@ -308,24 +303,22 @@ public class DirectVariableProvider implements IVariableProvider {
 	@Override
 	public Map<String, Variable> fetchProcessFormVariables(String key, boolean deserializeValues, CIBUser user)
 			throws NoObjectFoundException, SystemException {
-		List<String> formVariables = null;
+		return fetchProcessFormVariablesByKey(null, key, deserializeValues, user);
+	}
 
+	@Override
+	public Map<String, Variable> fetchProcessFormVariablesByKey(List<String> variableListName, String key,
+			boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException {
+		// resolve the key the way the engine's /process-definition/key/{key} endpoints do
 		ProcessDefinition processDefinition = directProviderUtil.getProcessEngine(user).getRepositoryService().createProcessDefinitionQuery()
 				.processDefinitionKey(key).withoutTenantId().latestVersion().singleResult();
 
 		if (processDefinition == null) {
 			String errorMessage = String.format("No matching process definition with key: %s and no tenant-id", key);
 			throw new SystemException(errorMessage);
-
 		}
 
-		VariableMap startFormVariables = directProviderUtil.getProcessEngine(user).getFormService().getStartFormVariables(processDefinition.getId(), formVariables, deserializeValues);
-		Map<String, VariableValueDto> variableDtos = VariableValueDto.fromMap(startFormVariables);
-		Map<String, Variable> variablesMap = new HashMap<>();
-		for (Entry<String, VariableValueDto> e : variableDtos.entrySet()) {
-			variablesMap.put(e.getKey(), directProviderUtil.convertValue(e.getValue(), Variable.class, user));
-		}
-		return variablesMap;
+		return fetchProcessFormVariables(variableListName, processDefinition.getId(), deserializeValues, user);
 	}
 
 	@Override
@@ -406,11 +399,11 @@ public class DirectVariableProvider implements IVariableProvider {
 				Class<?> clazz = Class.forName(objectType);
 
 				if (DataSource.class.isAssignableFrom(clazz)) {
-					final ObjectMapper mapper = new ObjectMapper();
+					final ObjectMapper mapper = WebclientJsonMapper.plain();
 					@SuppressWarnings("unchecked")
 					DataSource ds = mapper.convertValue(variable.getValue(), (Class<? extends DataSource>) clazz);
 
-					return ResponseEntity.ok(IOUtils.toByteArray(ds.getInputStream()));
+					return generateFileResponse(IOUtils.toByteArray(ds.getInputStream()));
 				}
 			} catch (ClassNotFoundException e) {
 				log.info("Class " + objectType + " could not be loaded!");
@@ -418,38 +411,24 @@ public class DirectVariableProvider implements IVariableProvider {
 				throw new SystemException(e.getMessage(), e);
 			}
 		}
-		TypedValue value = null;
-		try {
-			value = directProviderUtil.getProcessEngine(user).getRuntimeService().getVariableTyped(processInstanceId, variableName, false);
-		} catch (AuthorizationException e) {
-			throw e;
-		} catch (ProcessEngineException e) {
-			String errorMessage = String.format("Cannot get %s variable %s: %s", "processInstance", variableName,
-					e.getMessage());
-			throw new SystemException(errorMessage, e);
-		}
-
+		TypedValue value = getTypedValueForProcessInstanceVariable(processInstanceId, variableName, false, user);
 		if (value == null) {
 			String errorMessage = String.format("%s variable with name %s does not exist", "processInstance", variableName);
-			throw new SystemException(errorMessage);
+			throw new NoObjectFoundException(new SystemException(errorMessage));
 		}
+		// served as a download like the default provider does (VariableProvider#generateFileResponse),
+		// whatever the stored mime type, so a browser does not render or sniff the content
 		if (value instanceof BytesValue || ValueType.BYTES.equals(value.getType())) {
 			byte[] valueBytes = (byte[]) value.getValue();
 			if (valueBytes == null) {
 				valueBytes = new byte[0];
 			}
-			
-			ResponseEntity<byte[]> responseEntity = ResponseEntity.ok(valueBytes);
-			return responseEntity;
+			return generateFileResponse(valueBytes);
 		} else if (ValueType.FILE.equals(value.getType())) {
 			FileValue typedFileValue = (FileValue) value;
 			try {
 				byte[] bytes = typedFileValue.getValue() == null ? null : IOUtils.toByteArray(typedFileValue.getValue());
-				HttpHeaders headers = new HttpHeaders();
-				headers.setContentType(typedFileValue.getMimeType() != null ? MediaType.valueOf(typedFileValue.getMimeType())
-						: MediaType.APPLICATION_OCTET_STREAM);
-				ResponseEntity<byte[]> responseEntity = ResponseEntity.ok().headers(headers).body(bytes);
-				return responseEntity;
+				return generateFileResponse(bytes);
 			} catch (IOException e) {
 				throw new SystemException(e.getMessage(), e);
 			}
@@ -537,12 +516,7 @@ public class DirectVariableProvider implements IVariableProvider {
 		List<String> deletions = new ArrayList<>();
 		Map<String, VariableValueDto> modifications = new HashMap<>();
 		for (Variable variable : formResult) {
-			VariableValueDto variableValueDto = directProviderUtil.convertValue(variable, VariableValueDto.class, user);
-			variableValueDto.setType(variable.getType());
-			variableValueDto.setValue(variable.getValue());
-			if (variable.getValueInfo() != null)
-				variableValueDto.setValueInfo(new HashMap<>(variable.getValueInfo()));
-			modifications.put(variable.getName(), variableValueDto);
+			modifications.put(variable.getName(), directProviderUtil.toVariableValueDto(variable, user));
 		}
 
 		updateVariableEntities(processInstanceId, modifications, deletions, user);
@@ -550,28 +524,17 @@ public class DirectVariableProvider implements IVariableProvider {
 	}
 
 	@Override
-	public Map<String, Variable> fetchProcessFormVariablesById(String id, CIBUser user) throws SystemException {
-		VariableMap startFormVariables = directProviderUtil.getProcessEngine(user).getFormService().getStartFormVariables(id, null, true);
-		Map<String, Variable> resultMap = new HashMap<>();
-		Map<String, VariableValueDto> resultDtoMap = VariableValueDto.fromMap(startFormVariables);
-		for (Entry<String, VariableValueDto> resultDtoEntry : resultDtoMap.entrySet()) {
-			resultMap.put(resultDtoEntry.getKey(), directProviderUtil.convertValue(resultDtoEntry.getValue(), Variable.class, user));
-		}
-		return resultMap;
+	public void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user) {
+		TypedValue typedValue = directProviderUtil.toTypedValue(data, varName, user);
+		directProviderUtil.writeVariables("put execution variable " + varName, () ->
+			directProviderUtil.getProcessEngine(user).getRuntimeService().setVariableLocal(executionId, varName, typedValue));
 	}
 
 	@Override
-	public void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user) {
-		try {
-			VariableValueDto variable = directProviderUtil.getObjectMapper(user).convertValue(data, VariableValueDto.class);
-			TypedValue typedValue = variable.toTypedValue(directProviderUtil.getProcessEngine(user), directProviderUtil.getObjectMapper(user));
-			directProviderUtil.getProcessEngine(user).getRuntimeService().setVariable(executionId, varName, typedValue);
-
-		} catch (AuthorizationException e) {
-			throw new SystemException(e.getMessage(), e);
-		} catch (ProcessEngineException|RestException e) {
-			throw new SystemException(String.format("Cannot put %s variable %s: %s", "execution", varName, e.getMessage()), e);
-		}
+	public void putProcessInstanceVariable(String processInstanceId, String variableName, Map<String, Object> variable, CIBUser user) {
+		TypedValue typedValue = directProviderUtil.toTypedValue(variable, variableName, user);
+		directProviderUtil.writeVariables("put process instance variable " + variableName, () ->
+			directProviderUtil.getProcessEngine(user).getRuntimeService().setVariable(processInstanceId, variableName, typedValue));
 	}
 
 	/*
@@ -627,9 +590,11 @@ public class DirectVariableProvider implements IVariableProvider {
 
 	private Object deserializeJsonObject(String className, byte[] data, CIBUser user) {
 		try {
-			JavaType type = TypeFactory.defaultInstance().constructFromCanonical(className);
+			ObjectMapper mapper = directProviderUtil.getObjectMapper(user);
+			// the mapper's own type factory: Jackson 3 has no shared default instance
+			JavaType type = mapper.getTypeFactory().constructFromCanonical(className);
 			validateType(type, user);
-			return directProviderUtil.getObjectMapper(user).readValue(new String(data, Charset.forName("UTF-8")), type);
+			return mapper.readValue(new String(data, Charset.forName("UTF-8")), type);
 		} catch (Exception e) {
 			throw new SystemException("Could not deserialize JSON object: " + e.getMessage());
 		}
@@ -638,14 +603,8 @@ public class DirectVariableProvider implements IVariableProvider {
 	// updates execution variables
 	private void updateVariableEntities(String processInstanceId, Map<String, VariableValueDto> modifications,
 			List<String> deletions, CIBUser user) {
-		VariableMap variableModifications = null;
 		ProcessEngine processEngine = directProviderUtil.getProcessEngine(user);
-		try {
-			variableModifications = VariableValueDto.toMap(modifications, processEngine, directProviderUtil.getObjectMapper(user));
-		} catch (RestException e) {
-			String errorMessage = String.format("Cannot modify variables for %s: %s", "processInstance", e.getMessage());
-			throw new SystemException(errorMessage, e);
-		}
+		VariableMap variableModifications = directProviderUtil.toVariableMap(modifications, "processInstance", user);
 		try {
 			RuntimeServiceImpl runtimeServiceImpl = (RuntimeServiceImpl) processEngine.getRuntimeService();
 			runtimeServiceImpl.updateVariables(processInstanceId, variableModifications, deletions);
@@ -661,6 +620,11 @@ public class DirectVariableProvider implements IVariableProvider {
 	public Variable fetchVariableByProcessInstanceIdImpl(String processInstanceId, String variableName,
 			boolean deserializeValue, CIBUser user) throws SystemException {
 		TypedValue value = getTypedValueForProcessInstanceVariable(processInstanceId, variableName, deserializeValue, user);
+		if (value == null) {
+			// the engine REST answers 404 here, see AbstractVariablesResource#getTypedValue
+			String errorMessage = String.format("%s variable with name %s does not exist", "processInstance", variableName);
+			throw new NoObjectFoundException(new SystemException(errorMessage));
+		}
 		return directProviderUtil.convertValue(VariableValueDto.fromTypedValue(value), Variable.class, user);
 	}
 
@@ -670,8 +634,12 @@ public class DirectVariableProvider implements IVariableProvider {
 			return directProviderUtil.getProcessEngine(user).getRuntimeService().getVariableTyped(processInstanceId, variableName, deserializeValue);
 		} catch (AuthorizationException e) {
 			throw e;
+		} catch (NullValueException e) {
+			// unknown process instance: the default provider maps this to 404 (SevenProviderBase#wrapException)
+			String errorMessage = String.format("Cannot get %s variable %s: %s", "processInstance", variableName, e.getMessage());
+			throw new NoObjectFoundException(new SystemException(errorMessage, e));
 		} catch (ProcessEngineException e) {
-			String errorMessage = String.format("Cannot get %s variable %s: %s", "task", variableName, e.getMessage());
+			String errorMessage = String.format("Cannot get %s variable %s: %s", "processInstance", variableName, e.getMessage());
 			throw new SystemException(errorMessage, e);
 		}
 	}
@@ -715,6 +683,13 @@ public class DirectVariableProvider implements IVariableProvider {
 		}
 	}
 
+	private ResponseEntity<byte[]> generateFileResponse(byte[] content) {
+		HttpHeaders headers = new HttpHeaders();
+		headers.setCacheControl(CacheControl.noCache().getHeaderValue());
+		headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+		return ResponseEntity.ok().headers(headers).body(content);
+	}
+
 	private ResponseEntity<byte[]> getResponseForTypedVariable(TypedValue typedVariableValue, String id) {
 		if (typedVariableValue instanceof BytesValue || ValueType.BYTES.equals(typedVariableValue.getType())) {
 			byte[] valueBytes = (byte[]) typedVariableValue.getValue();
@@ -751,14 +726,8 @@ public class DirectVariableProvider implements IVariableProvider {
 			query.disableCustomObjectDeserialization();
 		}
 
-		List<HistoricVariableInstance> matchingHistoricVariableInstances = QueryUtil.list(query, firstResult, maxResults);
-		List<VariableHistory> historicVariableInstanceDtoResults = new ArrayList<>();
-		for (HistoricVariableInstance historicVariableInstance : matchingHistoricVariableInstances) {
-			HistoricVariableInstanceDto resultHistoricVariableInstance = HistoricVariableInstanceDto
-					.fromHistoricVariableInstance(historicVariableInstance);
-			historicVariableInstanceDtoResults.add(directProviderUtil.convertValue(resultHistoricVariableInstance, VariableHistory.class, user));
-		}
-		return historicVariableInstanceDtoResults;
+		return directProviderUtil.listAndConvert(query, firstResult, maxResults, 
+				HistoricVariableInstanceDto::fromHistoricVariableInstance, VariableHistory.class, user);
 	}
 
 	private Variable fetchTaskVariableImpl(String taskId, String variableName, boolean deserializeValue, CIBUser user)
@@ -816,15 +785,8 @@ public class DirectVariableProvider implements IVariableProvider {
 			query.disableCustomObjectDeserialization();
 		}
 
-		List<HistoricVariableInstance> matchingInstances = QueryUtil.list(query, firstResult, maxResults);
-
-		List<VariableHistory> instanceResults = new ArrayList<>();
-		for (HistoricVariableInstance instance : matchingInstances) {
-			HistoricVariableInstanceDto resultInstanceDto = HistoricVariableInstanceDto.fromHistoricVariableInstance(instance);
-			VariableHistory resultInstance = directProviderUtil.convertValue(resultInstanceDto, VariableHistory.class, user);
-			instanceResults.add(resultInstance);
-		}
-		return instanceResults;
+		return directProviderUtil.listAndConvert(query, firstResult, maxResults, 
+				HistoricVariableInstanceDto::fromHistoricVariableInstance, VariableHistory.class, user);
 	}
 
 	@Override

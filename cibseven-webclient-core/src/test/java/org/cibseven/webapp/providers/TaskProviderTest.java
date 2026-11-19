@@ -18,11 +18,16 @@ package org.cibseven.webapp.providers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.rest.model.Task;
 import org.cibseven.webapp.rest.model.TaskFiltering;
 import org.cibseven.webapp.rest.model.TaskHistory;
@@ -30,8 +35,16 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+
+import tools.jackson.databind.ObjectMapper;
 
 public class TaskProviderTest {
+
+	private static final ObjectMapper JSON = WebclientJsonMapper.plain();
 
 	private MockEngineRest engine;
 	private TaskProvider taskProvider;
@@ -114,6 +127,44 @@ public class TaskProviderTest {
 		assertThat(path).contains("processInstanceId=pi-1");
 	}
 
+	// ---------- rendered form ----------
+
+	@Test
+	void getRenderedForm_decodesUtf8WhenTheEngineDeclaresNoCharset() throws Exception {
+		// engine-rest answers application/xhtml+xml without a charset (CIB7-2204)
+		String form = "<form>\n  <label for=\"reason\">Begründung 姓名</label>\n</form>\n";
+		engine.enqueueBytes(form.getBytes(StandardCharsets.UTF_8), "application/xhtml+xml");
+
+		ResponseEntity<String> response = taskProvider.getRenderedForm("task-1", new HashMap<>(), user);
+
+		assertThat(response.getBody()).isEqualTo(form);
+		assertThat(engine.takePath()).startsWith("/task/task-1/rendered-form");
+	}
+
+	@Test
+	void getRenderedForm_answersUtf8HtmlLikeTheDirectProvider() throws Exception {
+		// CIB7-2206: the engine's media type and Content-Length are not forwarded
+		String form = "<form><label>Begründung</label></form>";
+		engine.enqueueBytes(form.getBytes(StandardCharsets.UTF_8), "application/xhtml+xml");
+
+		ResponseEntity<String> response = taskProvider.getRenderedForm("task-1", new HashMap<>(), user);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.parseMediaType("text/html;charset=UTF-8"));
+		// Spring computes the length of the bytes it writes when the header is absent
+		assertThat(response.getHeaders().containsHeader(HttpHeaders.CONTENT_LENGTH)).isFalse();
+	}
+
+	@Test
+	void getRenderedForm_honoursACharsetTheEngineDeclares() throws Exception {
+		String form = "<form><label>Begründung</label></form>";
+		engine.enqueueBytes(form.getBytes(StandardCharsets.ISO_8859_1), "application/xhtml+xml;charset=ISO-8859-1");
+
+		ResponseEntity<String> response = taskProvider.getRenderedForm("task-1", new HashMap<>(), user);
+
+		assertThat(response.getBody()).isEqualTo(form);
+	}
+
 	// ---------- assignment ----------
 
 	@Test
@@ -138,6 +189,83 @@ public class TaskProviderTest {
 		var request = engine.take();
 		assertThat(request.getPath()).endsWith("/task/task-1/unclaim");
 		assertThat(request.getBody().readUtf8()).isEqualTo("{}");
+	}
+
+	@Test
+	void claim_postsTheUserToTheEngine() throws Exception {
+		engine.enqueueJson("");
+
+		taskProvider.claim("task-1", "demo", user);
+
+		var request = engine.take();
+		assertThat(request.getPath()).endsWith("/task/task-1/claim");
+		assertThat(request.getBody().readUtf8()).contains("\"userId\":\"demo\"");
+	}
+
+	@Test
+	void claim_passesAMissingUserOnInsteadOfFailing() throws Exception {
+		engine.enqueueJson("");
+
+		// engine-rest accepts a null userId; failing here would turn a form's call into a 500
+		taskProvider.claim("task-1", null, user);
+
+		assertThat(engine.take().getBody().readUtf8()).contains("\"userId\":null");
+	}
+
+	@Test
+	void delegate_passesAMissingUserOnInsteadOfFailing() throws Exception {
+		engine.enqueueJson("");
+
+		taskProvider.delegate("task-1", null, user);
+
+		var request = engine.take();
+		assertThat(request.getPath()).endsWith("/task/task-1/delegate");
+		assertThat(request.getBody().readUtf8()).contains("\"userId\":null");
+	}
+
+	// ---------- task-local variable writes of embedded forms (CIB7-2757) ----------
+
+	@Test
+	void modifyLocalVariables_postsTheSdkBodyUnchanged() throws Exception {
+		engine.enqueueEmpty(204);
+		Map<String, Object> patch = new LinkedHashMap<>();
+		patch.put("id", "task-1");
+		patch.put("modifications", Map.of("payload", Map.of(
+			"value", "{\"a\":1}", "type", "Object",
+			"valueInfo", Map.of("objectTypeName", "java.util.HashMap", "serializationDataFormat", "application/json"))));
+		patch.put("deletions", List.of("outdated"));
+
+		taskProvider.modifyLocalVariables("task-1", patch, user);
+
+		var request = engine.take();
+		assertThat(request.getMethod()).isEqualTo("POST");
+		assertThat(request.getPath()).isEqualTo("/engine-rest/task/task-1/localVariables");
+		// the serialized value and its valueInfo reach the engine as the form sent them
+		assertThat(JSON.readTree(request.getBody().readUtf8())).isEqualTo(JSON.valueToTree(patch));
+	}
+
+	@Test
+	void putLocalVariable_putsTheValueUnderTheEncodedName() throws Exception {
+		engine.enqueueEmpty(204);
+		Map<String, Object> variable = Map.of("value", "accept", "type", "String", "varId", "my decision");
+
+		taskProvider.putLocalVariable("task-1", "my decision", variable, user);
+
+		var request = engine.take();
+		assertThat(request.getMethod()).isEqualTo("PUT");
+		assertThat(request.getPath()).isEqualTo("/engine-rest/task/task-1/localVariables/my%20decision");
+		assertThat(JSON.readTree(request.getBody().readUtf8())).isEqualTo(JSON.valueToTree(variable));
+	}
+
+	@Test
+	void deleteLocalVariable_deletesTheName() throws Exception {
+		engine.enqueueEmpty(204);
+
+		taskProvider.deleteLocalVariable("task-1", "my decision", user);
+
+		var request = engine.take();
+		assertThat(request.getMethod()).isEqualTo("DELETE");
+		assertThat(request.getPath()).isEqualTo("/engine-rest/task/task-1/localVariables/my%20decision");
 	}
 
 	/**
@@ -176,6 +304,21 @@ public class TaskProviderTest {
 		// unset fields are omitted so the engine does not clear them
 		assertThat(body).contains("\"name\":\"new name\"").contains("\"assignee\":\"demo\"");
 		assertThat(body).doesNotContain("description").doesNotContain("owner");
+	}
+
+	@Test
+	void update_keepsThePriorityWhenSettingADueDate() throws Exception {
+		engine.enqueueEmpty(204);
+		Task task = new Task();
+		task.setId("task-1");
+		task.setPriority(73);
+		task.setDue("2026-11-06T23:59:00.000+0100");
+
+		taskProvider.update(task, user);
+
+		// the engine replaces the whole task, so a priority left out of the body is stored as 0
+		String body = engine.take().getBody().readUtf8();
+		assertThat(body).contains("\"priority\":73").contains("\"due\":\"2026-11-06T23:59:00.000+0100\"");
 	}
 
 	// ---------- submitting ----------

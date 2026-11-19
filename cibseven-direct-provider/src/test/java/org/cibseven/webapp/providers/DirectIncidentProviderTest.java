@@ -19,12 +19,17 @@ package org.cibseven.webapp.providers;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.RETURNS_SELF;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,6 +41,7 @@ import org.cibseven.bpm.engine.ProcessEngineException;
 import org.cibseven.bpm.engine.RuntimeService;
 import org.cibseven.bpm.engine.exception.NotFoundException;
 import org.cibseven.bpm.engine.rest.mapper.JacksonConfigurator;
+import org.cibseven.bpm.engine.runtime.IncidentQuery;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
@@ -43,7 +49,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 public class DirectIncidentProviderTest {
 
@@ -66,14 +72,28 @@ public class DirectIncidentProviderTest {
 		when(processEngine.getExternalTaskService()).thenReturn(externalTaskService);
 		when(processEngine.getHistoryService()).thenReturn(historyService);
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		JacksonConfigurator.configureObjectMapper(objectMapper);
+		ObjectMapper objectMapper = JacksonConfigurator.configureObjectMapper();
 
 		directProviderUtil = Mockito.spy(new DirectProviderUtil());
 		doReturn(processEngine).when(directProviderUtil).getProcessEngine(any(CIBUser.class));
 		doReturn(objectMapper).when(directProviderUtil).getObjectMapper(any(CIBUser.class));
 
 		incidentProvider = new DirectIncidentProvider(directProviderUtil);
+	}
+
+	@Test
+	void findIncident_pagesTheQueryOnce() {
+		IncidentQuery query = mock(IncidentQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
+		when(runtimeService.createIncidentQuery()).thenReturn(query);
+		when(query.listPage(10, 25)).thenReturn(Collections.emptyList());
+
+		Map<String, Object> params = new HashMap<>();
+		params.put("firstResult", "10");
+		params.put("maxResults", "25");
+
+		assertThat(incidentProvider.findIncident(params, user)).isEmpty();
+		verify(query, times(1)).listPage(10, 25);
+		verify(query, never()).list();
 	}
 
 	@Test

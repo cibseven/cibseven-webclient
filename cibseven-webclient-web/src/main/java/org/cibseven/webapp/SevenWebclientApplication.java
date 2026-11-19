@@ -16,14 +16,22 @@
  */
 package org.cibseven.webapp;
 
-import org.springframework.boot.SpringApplication;
+import org.cibseven.webapp.config.StandaloneDefaults;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
 @SpringBootApplication
 public class SevenWebclientApplication extends SpringBootServletInitializer {
 	
 	public static void main(String[] args) {
-		SpringApplication.run(SevenWebclientApplication.class, args);
+		new SpringApplicationBuilder(SevenWebclientApplication.class)
+			.properties(StandaloneDefaults.properties())
+			.run(args);
+	}
+
+	@Override // deployment as WAR to an application server
+	protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
+		return builder.properties(StandaloneDefaults.properties());
 	}
 }

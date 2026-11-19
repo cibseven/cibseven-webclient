@@ -29,7 +29,7 @@ import org.cibseven.webapp.rest.model.HistoryBatch;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 @Component
 public class BatchProvider extends SevenProviderBase implements IBatchProvider {
@@ -40,22 +40,7 @@ public class BatchProvider extends SevenProviderBase implements IBatchProvider {
 	    List<Batch> batches = Arrays.asList(
 	        ((ResponseEntity<Batch[]>) doGet(url, Batch[].class, user, true)).getBody()
 	    );
-
-	    batches.forEach(batch -> {
-	    	String batchId = batch.getId();
-
-	        Map<String, Object> statParams = new HashMap<>();
-	        statParams.put("batchId", batchId);
-
-	        Collection<Batch> statList = getBatchStatistics(statParams, user);
-	        if (!statList.isEmpty()) {
-	        	Batch stats = statList.iterator().next();
-	            batch.setCompletedJobs(stats.getCompletedJobs());
-	            batch.setRemainingJobs(stats.getRemainingJobs());
-	            batch.setFailedJobs(stats.getFailedJobs());
-	        }
-        });
-	    
+	    addBatchStatistics(batches, user);
 	    return batches;
 	}
 	
@@ -107,23 +92,5 @@ public class BatchProvider extends SevenProviderBase implements IBatchProvider {
 	public void deleteHistoricBatch(String id, CIBUser user) {
         String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/history/batch/" + id, new HashMap<>());
         doDelete(url, user);
-    }
-	
-	@Override
-	public Object setRemovalTime(Map<String, Object> payload, CIBUser user) {
-        String url = getEngineRestUrl(user) + "/history/batch/set-removal-time";
-        return ((ResponseEntity<Object>) doPost(url, payload, Object.class, user)).getBody();
-    }
-    
-	@Override
-	public Object getCleanableBatchReport(Map<String, Object> queryParams, CIBUser user) {
-        String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/history/batch/cleanable-batch-report", queryParams);
-        return ((ResponseEntity<Object>) doGet(url, Object.class, user, true)).getBody();
-    }
-    
-	@Override
-	public Object getCleanableBatchReportCount(CIBUser user) {
-        String url = getEngineRestUrl(user) + "/history/batch/cleanable-batch-report/count";
-        return ((ResponseEntity<Object>) doGet(url, Object.class, user, false)).getBody();
     }
 }

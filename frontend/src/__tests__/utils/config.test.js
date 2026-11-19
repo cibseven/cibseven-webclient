@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 import { describe, it, expect } from 'vitest'
-import { applyConfigDefaults } from '@/utils/config.js'
+import { applyConfigDefaults, isModelerEnabled } from '@/utils/config.js'
 
 describe('config utility', () => {
   describe('applyConfigDefaults', () => {
@@ -97,6 +97,57 @@ describe('config utility', () => {
       applyConfigDefaults({ permissions: { tasklist: { application: ['CUSTOM'] } } })
       const config = applyConfigDefaults()
       expect(config.permissions.tasklist).toEqual({ application: ['ACCESS'] })
+    })
+
+    it('should not offer the deprecated optimize resource type', () => {
+      const config = applyConfigDefaults({ admin: { resourcesTypes: {} } })
+      const keys = Object.values(config.admin.resourcesTypes).map(resourceType => resourceType.key)
+      expect(keys).not.toContain('optimize')
+      // 15 is the engine's REPORT, which the defaults used to label as optimize
+      expect(config.admin.resourcesTypes['15']).toBeUndefined()
+    })
+
+    it('should not offer the deprecated report and dashboard resource types', () => {
+      const config = applyConfigDefaults({ admin: { resourcesTypes: {} } })
+      const keys = Object.values(config.admin.resourcesTypes).map(resourceType => resourceType.key)
+      expect(keys).not.toContain('report')
+      expect(keys).not.toContain('dashboard')
+      // 16 is the engine's DASHBOARD, which the defaults used to label as operationLogCategory
+      expect(keys).not.toContain('operationLogCategory')
+      expect(config.admin.resourcesTypes['16']).toBeUndefined()
+    })
+
+    it('should key every default resource type by its own id', () => {
+      const { resourcesTypes } = applyConfigDefaults().admin
+      Object.entries(resourcesTypes).forEach(([key, resourceType]) => {
+        expect(resourceType.id).toBe(key)
+      })
+    })
+
+    // ids and permissions as in the engine's Resources, TaskPermissions and ProcessInstancePermissions
+    it.each([
+      ['7', 'task', ['CREATE', 'READ', 'UPDATE', 'DELETE', 'TASK_ASSIGN', 'TASK_WORK', 'UPDATE_VARIABLE', 'READ_VARIABLE']],
+      ['8', 'processInstance', ['CREATE', 'READ', 'UPDATE', 'DELETE', 'RETRY_JOB', 'SUSPEND', 'UPDATE_VARIABLE']]
+    ])('should define resource type %j as %s with the engine permissions', (id, key, permissions) => {
+      const resourceType = applyConfigDefaults().admin.resourcesTypes[id]
+      expect(resourceType.key).toBe(key)
+      expect(resourceType.permissions).toEqual(permissions)
+    })
+  })
+
+  // The one check the modeler route, the navigation and the viewers share
+  describe('isModelerEnabled', () => {
+    it('is on only when the backend reports it on', () => {
+      expect(isModelerEnabled({ modelerEnabled: true })).toBe(true)
+    })
+
+    // undefined: a backend from before the flag existed (e.g. 2.2); 'true' and 1 are not the boolean the backend sends
+    it.each([[false], [undefined], ['true'], [1]])('is off for modelerEnabled %j', (modelerEnabled) => {
+      expect(isModelerEnabled({ modelerEnabled })).toBe(false)
+    })
+
+    it('is off without a loaded configuration', () => {
+      expect(isModelerEnabled(undefined)).toBe(false)
     })
   })
 })

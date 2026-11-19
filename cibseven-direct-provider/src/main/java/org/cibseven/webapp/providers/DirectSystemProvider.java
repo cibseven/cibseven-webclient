@@ -16,18 +16,9 @@
  */
 package org.cibseven.webapp.providers;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.cibseven.bpm.engine.management.Metrics;
 import org.cibseven.bpm.engine.management.MetricsQuery;
@@ -37,7 +28,7 @@ import org.cibseven.bpm.engine.telemetry.TelemetryData;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.Metric;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 public class DirectSystemProvider implements ISystemProvider {
 
@@ -50,8 +41,7 @@ public class DirectSystemProvider implements ISystemProvider {
 	@Override
 	public JsonNode getTelemetryData(CIBUser user) {
 		TelemetryData data = directProviderUtil.getProcessEngine(user).getManagementService().getTelemetryData();
-		JsonNode node = directProviderUtil.getObjectMapper(user).valueToTree(TelemetryDataDto.fromEngineDto(data));
-		return node;
+		return directProviderUtil.getObjectMapper(user).valueToTree(TelemetryDataDto.fromEngineDto(data));
 	}
 
 	@Override

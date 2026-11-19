@@ -73,12 +73,12 @@
 
       <template v-slot:cell(actions)="table">
         <div class="d-flex">
-          <CellActionButton v-if="table.item.state === 'ACTIVE' && processByPermissions($root.config.permissions.suspendProcessInstance, table.item)" @click="confirmSuspend(table.item)"
+          <CellActionButton v-if="hasSuspendInstanceButton(table.item)" @click="confirmSuspend(table.item)"
           icon="mdi-pause-circle-outline" :title="$t('process.suspendInstance')"></CellActionButton>
-          <CellActionButton v-else-if="table.item.state === 'SUSPENDED' && processByPermissions($root.config.permissions.suspendProcessInstance, table.item)" @click="confirmActivate(table.item)"
+          <CellActionButton v-else-if="hasActivateInstanceButton(table.item)" @click="confirmActivate(table.item)"
           icon="mdi-play-circle-outline" :title="$t('process.activateInstance')"></CellActionButton>
           <CellActionButton :to="selectInstanceRoute(table.item)" icon="mdi-eye-outline" :title="$t('process.showInstance')"></CellActionButton>
-          <CellActionButton v-if="['ACTIVE', 'SUSPENDED'].includes(table.item.state) && processByPermissions($root.config.permissions.deleteProcessInstance, table.item)"
+          <CellActionButton v-if="hasStopInstanceButton(table.item)"
           @click="confirmStopInstance(table.item)"
           icon="mdi-stop-circle-outline" :title="$t('process.stopInstance')"></CellActionButton>
           <CellActionButton v-else-if="['COMPLETED', 'EXTERNALLY_TERMINATED', 'INTERNALLY_TERMINATED'].includes(table.item.state) && hasDeleteHistoryProcessInstancePermission"
@@ -179,10 +179,9 @@ export default {
       if (!this.process) return
       if (!showMore) {
         this.resetInstances()
+        this.$emit('load-statistics', this.filter)
       }
       this.loading = true
-      // Load historic activity statistics for the loaded instances
-        this.$emit('load-statistics', this.filter)
       try {
         const instances = await this.loadInstances({
           processId: this.process.id,
@@ -268,6 +267,10 @@ export default {
       this.$router.push(this.selectInstanceRoute(instance))
     },
     // "Stop Instance" button
+    hasStopInstanceButton: function(instance) {
+      return ['ACTIVE', 'SUSPENDED'].includes(instance.state) &&
+        this.canDeleteRuntimeProcessInstance(instance.id, instance.processDefinitionKey)
+    },
     confirmStopInstance: function(instance) {
       this.$refs.confirm.show({
         ok: this.stopInstance,
@@ -301,6 +304,10 @@ export default {
       })
     },
     // "Suspend" button
+    hasSuspendInstanceButton: function(instance) {
+      return instance.state === 'ACTIVE' &&
+        this.canSuspendProcessInstance(instance.id, instance.processDefinitionKey)
+    },
     confirmSuspend: function(instance) {
       this.$refs.confirm.show({
         ok: this.suspendInstance,
@@ -316,6 +323,10 @@ export default {
       })
     },
     // "Activate" button
+    hasActivateInstanceButton: function(instance) {
+      return instance.state === 'SUSPENDED' &&
+        this.canSuspendProcessInstance(instance.id, instance.processDefinitionKey)
+    },
     confirmActivate: function(instance) {
       this.$refs.confirm.show({
         ok: this.activateInstance,

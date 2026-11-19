@@ -18,11 +18,6 @@
 -->
 <template>
   <div class="row">
-    <span class="text-secondary fw-bold col-8 pe-0">{{ $t('process.details.versionTag') }}</span>
-    <span class="col-4 text-end">{{ version.versionTag }}</span>
-  </div>
-  <hr class="my-2">
-  <div class="row">
     <span class="text-secondary fw-bold col-12">
       {{ $t('process.details.definitionId') }}
       <button @click="copyValueToClipboard(version.id)" class="btn btn-sm mdi mdi-content-copy float-end border-0"
@@ -58,15 +53,6 @@
     <router-link v-if="selectedDeployment" class="col-12" :to="'/seven/auth/deployments/' + version.deploymentId">{{ version.deploymentId }}</router-link>
     <span v-else class="col-12">{{ version.deploymentId }}</span>
   </div>
-  <template v-if="selectedDeployment">
-    <hr class="my-2">
-    <div class="row">
-      <span class="text-secondary fw-bold col-5 pe-0">
-        {{ $t('deployment.deploymentTime') }}
-      </span>
-      <span class="col-7 text-end" :title="formatDateForTooltips(selectedDeployment?.deploymentTime)">{{ formatDate(selectedDeployment?.deploymentTime) }}</span>
-    </div>
-  </template>
   <hr class="my-2">
   <div class="row">
     <span class="text-secondary fw-bold col-12">
@@ -96,7 +82,7 @@
       <button @click="editHistoryTimeToLive()" class="btn btn-sm mdi mdi-pencil float-end border-0"
         :title="$t('process-instance.edit')"></button>
     </span>
-    <span class="col-12">{{ historyTimeToLive !== 0 ? historyTimeToLive : '∞' }}{{ ' ' + $t('process.days') }}</span>
+    <span class="col-12">{{ historyTimeToLiveDisplay }}</span>
   </div>
   <hr class="my-2">
   <div class="row">
@@ -110,38 +96,11 @@
   </div>
   <hr class="my-2">
   <div class="row align-items-center">
-    <span class="text-secondary fw-bold col-8 pe-0">{{ $t('process.details.unfinishedInstances') }}</span>
-    <span class="col-4 text-end">{{ version.runningInstances }}</span>
-  </div>
-  <hr class="my-2">
-  <div class="row align-items-center">
     <span class="text-secondary fw-bold col-8 pe-0">{{ $t('process.details.totalInstances') }}</span>
     <span class="col-4 text-end">{{ version.allInstances }}</span>
   </div>
-  <hr class="my-2">
-  <div class="row align-items-center">
-    <span class="text-secondary fw-bold col-8 pe-0">{{ $t('process.details.finishedInstances') }}</span>
-    <span class="col-4 text-end">{{ version.completedInstances }}</span>
-  </div>
 
-  <b-modal ref="historyTimeToLive" :title="$t('process.details.historyTimeToLive')">
-    <p>
-      <span>{{ $t('process.details.definitionName') }}: </span>
-      <strong>{{ version.name }}</strong>
-      <br>
-      <span class="">{{ $t('process.details.definitionVersion') }}: </span>
-      <strong>{{ version.version }}</strong>
-    </p>
-    <label class="form-check-label pb-2" for="historyTimeToLiveInput">{{ $t('process.details.historyTimeToLive') }}</label>
-    <div class="input-group">
-      <input id="historyTimeToLiveInput" class="form-control" min="0" max="9999" type="number" v-model="historyTimeToLiveChanged">
-      <span class="input-group-text">{{ $t('process.days') }}</span>
-    </div>
-    <template v-slot:modal-footer>
-      <b-button @click="$refs.historyTimeToLive.hide()" variant="light">{{ $t('confirm.cancel') }}</b-button>
-      <b-button @click="updateHistoryTimeToLive()" variant="primary">{{ $t('process-instance.save') }}</b-button>
-    </template>
-  </b-modal>
+  <EditHistoryTimeToLiveModal ref="ttlModal" :description-items="ttlDescriptionItems" @ttl-updated="onTtlUpdated" />
 
   <SuccessAlert ref="messageCopy"> {{ $t('process.copySuccess') }} </SuccessAlert>
 </template>
@@ -151,23 +110,24 @@ import { formatDate, formatDateForTooltips } from '@/utils/dates.js'
 import { ProcessService, HistoryService } from '@/services.js'
 import copyToClipboardMixin from '@/mixins/copyToClipboardMixin.js'
 import { SuccessAlert } from '@cib/common-frontend'
-import { permissionsMixin } from '@/permissions.js'
+import EditHistoryTimeToLiveModal from '@/components/modals/EditHistoryTimeToLiveModal.vue'
+import { formatHistoryTimeToLive } from '@/utils/historyTimeToLive.js'
 
 export default {
   name: 'ProcessDefinitionDetails',
-  components: { SuccessAlert },
-  mixins: [ copyToClipboardMixin, permissionsMixin ],
+  components: { SuccessAlert, EditHistoryTimeToLiveModal },
+  mixins: [ copyToClipboardMixin ],
   props: {
     version: Object,
     selectedInstance: { type: Object, default: null },
     versionIndex: { type: String, default: '' },
-    shown: { type: Boolean, default: false }
+    shown: { type: Boolean, default: false },
+    // loaded by the sidebar, which also shows its time on the version card
+    selectedDeployment: { type: Object, default: null }
   },
   data: function() {
     return {
-      selectedDeployment: null,
       historyTimeToLive: null,
-      historyTimeToLiveChanged: null,
       minTimestamp: null,
       maxTimestamp: null,
       timestampsLoaded: false
@@ -185,36 +145,32 @@ export default {
       }
     },
     'version.allInstances': function(newVal, oldVal) {
-      if (newVal === oldVal) return
+      // a count arriving for a version loaded without it ('-') is not a change
+      if (newVal === oldVal || typeof oldVal !== 'number') return
       this.resetTimestampsCache()
       if (this.shown) {
         this.getTimestamps()
       }
-    },
-    versionIndex: {
-      handler() {
-        if (this.isVersionSelected && this.hasDeploymentReadPermission) {
-          ProcessService.findDeployment(this.version.deploymentId).then(deployment => {
-            this.selectedDeployment = deployment
-          })
-        }
-        else {
-          this.selectedDeployment = null
-        }
-      },
-      immediate: true
     }
   },
   computed: {
     isVersionSelected() {
       return this.version.version === this.versionIndex
     },
-    hasDeploymentReadPermission() {
-      return this.canReadDeployment(this.version.deploymentId)
+    ttlDescriptionItems() {
+      return [
+        { title: this.$t('process.details.definitionName'), value: this.version.name },
+        { title: this.$t('process.details.definitionVersion'), value: this.version.version }
+      ]
+    },
+    historyTimeToLiveDisplay() {
+      return formatHistoryTimeToLive(this.$t, this.historyTimeToLive)
     }
   },
   mounted() {
     this.historyTimeToLive = this.version.historyTimeToLive
+    // mounted already open when the sidebar expands a version
+    if (this.shown) this.getTimestamps()
   },
   methods: {
     resetTimestampsCache() {
@@ -247,18 +203,13 @@ export default {
     formatDate,
     formatDateForTooltips,
     editHistoryTimeToLive: function() {
-      this.historyTimeToLiveChanged = this.historyTimeToLive
-      this.$refs.historyTimeToLive.show()
+      this.$refs.ttlModal.show({ historyTimeToLive: this.historyTimeToLive })
     },
-    updateHistoryTimeToLive: function() {
-      if (this.historyTimeToLiveChanged === '') {
-        this.historyTimeToLiveChanged = 0
-      }
-      const data = { historyTimeToLive: this.historyTimeToLiveChanged }
+    onTtlUpdated({ ttlValue }) {
+      const data = { historyTimeToLive: ttlValue }
       ProcessService.updateHistoryTimeToLive(this.version.id, data).then(() => {
-        this.historyTimeToLive = data.historyTimeToLive
-        this.$refs.historyTimeToLive.hide()
-        this.$emit('onUpdateHistoryTimeToLive', this.version.id, data.historyTimeToLive);
+        this.historyTimeToLive = ttlValue
+        this.$emit('onUpdateHistoryTimeToLive', this.version.id, ttlValue)
       }).catch(error => {
         this.$root.$refs.error.show(error.response?.data)
       })

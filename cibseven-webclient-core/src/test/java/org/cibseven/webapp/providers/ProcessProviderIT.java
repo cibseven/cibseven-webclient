@@ -104,7 +104,7 @@ public class ProcessProviderIT extends BaseHelper {
 
         // Configure the base URL for the ProcessProvider to point to the MockWebServer
         String mockBaseUrl = mockWebServer.url("/").toString();
-        ReflectionTestUtils.setField(processProvider, "cibsevenUrl", mockBaseUrl);
+        processProvider.properties.getEngineRest().setUrl(mockBaseUrl);
 
         // The provider is a context-scoped singleton: without this, what one test remembered about the
         // historic activity statistics query would decide which path the next one takes.

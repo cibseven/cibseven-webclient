@@ -23,7 +23,7 @@
     </div>
     <div>
       <p v-for="(line, index) in message.split('\n')" :key="index" style="overflow-wrap: break-word">
-        <span v-html="toHtml(line)"></span>
+        <span><template v-for="(part, i) in quotedParts(line)" :key="i"><strong v-if="part.strong">{{ part.text }}</strong><template v-else>{{ part.text }}</template></template></span>
       </p>
       <slot></slot>
     </div>
@@ -37,9 +37,26 @@ export default {
     message: { type: String, default: '' },
   },
   methods: {
-    toHtml(line) {
-      // make strong each quoted word
-      return line.replaceAll(/"([^"]*)"/g, '&quot;<strong>$1</strong>&quot;')
+    /**
+     * Splits a line into the quoted words and the segments around them, keeping
+     * the quotes themselves as text. The segments are rendered as text nodes,
+     * so the markup this box emits is only the <strong> element in the
+     * template - the message is never turned into HTML.
+     */
+    quotedParts(line) {
+      const parts = []
+      // Splitting on a pattern with one capturing group keeps the quoted
+      // tokens in the result, at the odd positions.
+      line.split(/("[^"]*")/g).forEach((segment, index) => {
+        if (index % 2 === 0) {
+          if (segment) parts.push({ text: segment, strong: false })
+          return
+        }
+        parts.push({ text: '"', strong: false })
+        parts.push({ text: segment.slice(1, -1), strong: true })
+        parts.push({ text: '"', strong: false })
+      })
+      return parts
     },
   },
 }

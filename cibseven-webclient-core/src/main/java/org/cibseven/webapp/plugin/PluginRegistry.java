@@ -28,15 +28,18 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.cibseven.webapp.config.SevenWebclientProperties;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -59,7 +62,7 @@ public class PluginRegistry {
 
 	private static final String PLUGINS_ROOT = "META-INF/cibseven-plugins/";
 	private static final String MANIFESTS_PATTERN = "classpath*:/" + PLUGINS_ROOT + "*/plugin.json";
-	private static final String DISABLED_PROPERTY = "cibseven.webclient.plugins.disabled";
+	private static final String DISABLED_PROPERTY = SevenWebclientProperties.PLUGINS_PREFIX + ".disabled";
 
 	/** Ids end up in URLs, so anything that could leave the plugin folder is rejected */
 	private static final Pattern VALID_ID = Pattern.compile("[A-Za-z0-9][A-Za-z0-9._-]*");
@@ -79,7 +82,7 @@ public class PluginRegistry {
 	public enum Rejection { OUTSIDE_FOLDER, INVALID_ID, NO_ENTRY, UNREADABLE, DUPLICATE_ID, FOLDER_UNRESOLVED }
 
 	private final ResourcePatternResolver resolver;
-	private final ObjectMapper mapper = new ObjectMapper();
+	private final ObjectMapper mapper = WebclientJsonMapper.plain();
 
 	private final Set<String> disabled;
 	private List<ObjectNode> manifests;
@@ -89,8 +92,8 @@ public class PluginRegistry {
 	// Needed because of the other constructors: Spring picks one on its own only when
 	// there is exactly one.
 	@Autowired
-	public PluginRegistry(PluginProperties properties) {
-		this(new PathMatchingResourcePatternResolver(), properties.getDisabled());
+	public PluginRegistry(SevenWebclientProperties properties) {
+		this(new PathMatchingResourcePatternResolver(), properties.getPlugins().getDisabled());
 	}
 
 	PluginRegistry(ResourcePatternResolver resolver) {
@@ -225,7 +228,7 @@ public class PluginRegistry {
 		}
 		try (InputStream in = resource.getInputStream()) {
 			JsonNode json = mapper.readTree(in);
-			String entry = json.path("entry").asText(null);
+			String entry = json.path("entry").asString(null);
 			boolean hasEntry = entry != null && !entry.isBlank();
 			if (hasEntry) manifest.put("entry", entry);
 			// Passed on as declared: a plugin may name several versions it was tested against
@@ -244,7 +247,7 @@ public class PluginRegistry {
 				return Rejection.NO_ENTRY;
 			}
 			return null;
-		} catch (IOException e) {
+		} catch (IOException | JacksonException e) {
 			log.warn("Ignoring plugin \"{}\": its manifest could not be read", id, e);
 			return Rejection.UNREADABLE;
 		}

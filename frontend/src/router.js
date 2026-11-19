@@ -23,6 +23,9 @@ import { AuthService, SetupService } from '@/services.js'
 import { permissionsMixin } from '@/permissions.js'
 import CibSeven from '@/components/CibSeven.vue'
 import StartView from '@/components/start/StartView.vue'
+import TasksStartView from '@/components/start/TasksStartView.vue'
+import BuilderStartView from '@/components/start/BuilderStartView.vue'
+import AccessManagement from '@/components/admin/AccessManagement.vue'
 import StartProcessView from '@/components/start-process/StartProcessView.vue'
 import ProcessView from '@/components/process/ProcessView.vue'
 import ProcessListView from '@/components/processes/list/ProcessListView.vue'
@@ -35,8 +38,17 @@ import UsersManagement from '@/components/admin/UsersManagement.vue'
 import AdminUsers from '@/components/admin/AdminUsers.vue'
 import CreateUser from '@/components/admin/CreateUser.vue'
 import ProfileUser from '@/components/admin/ProfileUser.vue'
+import ProfileUserInformationTab from '@/components/admin/profile/ProfileUserInformationTab.vue'
+import ProfileUserPasswordTab from '@/components/admin/profile/ProfileUserPasswordTab.vue'
+import ProfileUserGroupsTab from '@/components/admin/profile/ProfileUserGroupsTab.vue'
+import ProfileUserTenantsTab from '@/components/admin/profile/ProfileUserTenantsTab.vue'
+import ProfilePreferencesTab from '@/components/admin/ProfilePreferencesTab.vue'
 import AdminGroups from '@/components/admin/AdminGroups.vue'
 import ProfileGroup from '@/components/admin/ProfileGroup.vue'
+import ProfileGroupInformationTab from '@/components/admin/profile/ProfileGroupInformationTab.vue'
+import ProfileGroupUsersTab from '@/components/admin/profile/ProfileGroupUsersTab.vue'
+import ProfileGroupTenantsTab from '@/components/admin/profile/ProfileGroupTenantsTab.vue'
+import { profileTabRouteName } from '@/components/admin/utils.js'
 import CreateGroup from '@/components/admin/CreateGroup.vue'
 import AdminAuthorizations from '@/components/admin/AdminAuthorizations.vue'
 import AdminAuthorizationsTable from '@/components/admin/AdminAuthorizationsTable.vue'
@@ -45,6 +57,8 @@ import HumanTasksView from '@/components/task/HumanTasksView.vue'
 import TasksView from '@/components/task/TasksView.vue'
 import TaskView from '@/components/task/TaskView.vue'
 import LoginView from '@/components/login/LoginView.vue'
+import LoggedOutView from '@/components/login/LoggedOutView.vue'
+import { LOGGED_OUT_KEY } from '@/constants.js'
 import InitialSetup from '@/components/setup/InitialSetup.vue'
 import { BWaitingBox, TranslationsDownload } from '@cib/common-frontend'
 import DeployedForm from '@/components/forms/DeployedForm.vue'
@@ -58,6 +72,23 @@ import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 import ModelerView from '@/components/modeler/ModelerView.vue'
 import { redirectToProcessInstance, redirectToProcessDefinition, redirectToTask } from '@/utils/redirects.js'
+import { isModelerEnabled } from '@/utils/config.js'
+
+// The tabs of the user and the group page, by the path of their child route
+const USER_TABS = {
+  profile: ProfileUserInformationTab,
+  password: ProfileUserPasswordTab,
+  groups: ProfileUserGroupsTab,
+  tenants: ProfileUserTenantsTab,
+  preferences: ProfilePreferencesTab
+}
+const GROUP_TABS = {
+  information: ProfileGroupInformationTab,
+  users: ProfileGroupUsersTab,
+  tenants: ProfileGroupTenantsTab
+}
+// Tabs whose ?tab= value differs from their path, for links from before the tabs had routes of their own
+const RENAMED_PROFILE_TABS = { account: 'password' }
 
 const appRoutes = [
   { path: '/', name: 'root', redirect: '/seven/auth/start-configurable' },
@@ -68,8 +99,12 @@ const appRoutes = [
   },
   {
     path: '/seven', name: 'seven', component: CibSeven, children: [
+      // /seven alone has no page of its own and would show only the header
+      { path: '', name: 'seven-index', redirect: { name: 'start-configurable' } },
       {
         path: 'login', name: 'login', beforeEnter: async function (to) {
+          // Back from an external system's logout: wait for the user instead of logging in again
+          if (sessionStorage.getItem(LOGGED_OUT_KEY)) return { name: 'loggedOut' }
           // Check if setup is required first
           try {
             const res = await SetupService.getStatus()
@@ -90,6 +125,8 @@ const appRoutes = [
         }, component: LoginView
       },
 
+      { path: 'logged-out', name: 'loggedOut', component: LoggedOutView },
+
       { path: 'setup', name: 'setup', beforeEnter: setupGuard, component: InitialSetup },
 
       {
@@ -109,6 +146,8 @@ const appRoutes = [
             })
           },
         }, children: [
+          // /seven/auth alone has no page of its own and would show only the header
+          { path: '', name: 'auth-index', redirect: { name: 'start-configurable' } },
           {
             path: 'no-permission', name: 'no-permission',
             beforeEnter: (to) => ({
@@ -149,12 +188,15 @@ const appRoutes = [
           },
 
           { path: 'start', name: 'start', component: StartView },
+          { path: 'tasks-home', name: 'tasksHome', beforeEnter: permissionsGuard('tasklist'), component: TasksStartView, meta: { title: 'start.tasks.title' } },
+          { path: 'builder', name: 'builderHome', beforeEnter: modelerGuard, component: BuilderStartView, meta: { title: 'start.builder.title' } },
 
           // Modeler
           { path: 'modeler/:diagramId?', name: 'modeler', beforeEnter: modelerGuard, component: ModelerView, meta: { title: 'start.modeler.title' } },
 
           {
             path: 'account/:userId', name: 'account', component: ProfileUser,
+            redirect: redirectToProfileTab('profile'), children: profileTabRoutes('account', USER_TABS),
             beforeEnter: [
               permissionsGuard('userProfile'),
               (to, from) => {
@@ -241,7 +283,11 @@ const appRoutes = [
             name: 'decision',
             beforeEnter: permissionsGuard('cockpit'),
             component: DecisionView,
-            props: true,
+            props: route => ({
+              decisionKey: route.params.decisionKey,
+              versionIndex: route.params.versionIndex,
+              tenantId: route.query.tenantId
+            }),
             children: [
               {
                 path: ':versionIndex', name: 'decision-version', component: DecisionDefinitionVersion, props: true
@@ -265,15 +311,26 @@ const appRoutes = [
               template: '<router-view></router-view>'
             },
             children: [
-              { path: '', name: 'usersManagement', component: UsersManagement },
+              { path: '', name: 'usersManagement', component: UsersManagement, meta: { title: 'start.admin.title' } },
+              {
+                path: 'access-management', name: 'accessManagement', component: AccessManagement, meta: { title: 'start.accessManagement.title' },
+                // Opens with ANY one of these permissions, as the page shows a tile for each one granted.
+                // A plain list of permissionsGuard would need ALL of them: Vue Router runs every guard in a list.
+                beforeEnter: anyPermissionGuard(['usersManagement', 'user'], ['groupsManagement', 'group'],
+                  ['tenantsManagement', 'tenant'], ['authorizationsManagement', 'authorization'])
+              },
               { path: 'users', name: 'adminUsers', beforeEnter: permissionsGuard('usersManagement', 'user'), component: AdminUsers },
               {
                 path: 'user/:userId', name: 'adminUser',
                 beforeEnter: permissionsGuard('usersManagement', 'user'), component: ProfileUser,
-                props: () => ({ editMode: true })
+                props: () => ({ editMode: true }),
+                redirect: redirectToProfileTab('profile'), children: profileTabRoutes('adminUser', USER_TABS)
               },
               { path: 'groups', name: 'adminGroups', beforeEnter: permissionsGuard('groupsManagement', 'group'), component: AdminGroups },
-              { path: 'group/:groupId', name: 'adminGroup', beforeEnter: permissionsGuard('groupsManagement', 'group'), component: ProfileGroup },
+              {
+                path: 'group/:groupId', name: 'adminGroup', beforeEnter: permissionsGuard('groupsManagement', 'group'), component: ProfileGroup,
+                redirect: redirectToProfileTab('information'), children: profileTabRoutes('adminGroup', GROUP_TABS)
+              },
               // Tenants
               { path: 'tenants', name: 'adminTenants', beforeEnter: permissionsGuard('tenantsManagement', 'tenant'), component: TenantsView },
               { path: 'tenant/:tenantId', name: 'adminTenant', beforeEnter: permissionsGuard('tenantsManagement', 'tenant'), component: EditTenant },
@@ -317,9 +374,48 @@ const appRoutes = [
     props: true,
     component: StartDeployedForm
   },
+  // An address no other route matches: the start page says so, with the navigation, instead of a blank page.
+  // vue-router ranks this below every other route, so routes that library consumers add still match first.
+  {
+    path: '/:pathMatch(.*)*', name: 'not-found',
+    beforeEnter: (to) => ({
+      name: 'start',
+      query: {
+        errorType: 'notFoundPage',
+        path: readablePath(to.fullPath),
+      }
+    })
+  },
 ];
 
 let router = null
+
+// The address as typed, e.g. "my page" rather than "my%20page". The error dialog shows it as text, never as HTML
+function readablePath(fullPath) {
+  try {
+    return decodeURI(fullPath)
+  } catch {
+    return fullPath // A malformed % sequence, e.g. "100%"
+  }
+}
+
+// The child routes of a page's tabs, e.g. 'account/:userId/preferences' named 'accountPreferences'
+function profileTabRoutes(page, tabs) {
+  return Object.entries(tabs).map(([tab, component]) => ({ path: tab, name: profileTabRouteName(page, tab), component }))
+}
+
+// Backward compatibility for profile tab routing before CIB seven 3.0.0.
+// Opens a tab of the page when the page itself is opened: the one in ?tab=, which picked the tab before the
+// tabs had routes of their own and which old links and bookmarks still carry, or else the default one
+function redirectToProfileTab(defaultTab) {
+  return function(to) {
+    const { tab: oldTab, ...query } = to.query
+    // A link may repeat ?tab=, which gives a list rather than a tab
+    const tab = typeof oldTab === 'string' ? RENAMED_PROFILE_TABS[oldTab] ?? oldTab : null
+    const name = tab && router.hasRoute(profileTabRouteName(to.name, tab)) ? profileTabRouteName(to.name, tab) : profileTabRouteName(to.name, defaultTab)
+    return { name, params: to.params, query, hash: to.hash }
+  }
+}
 
 function authGuard(strict) {
   return async function(to) {
@@ -331,7 +427,7 @@ function authGuard(strict) {
       const headers = { authorization: token }
       const inst = axios.create() // bypass standard error handling
       const res = await inst.get(router.root.config.servicesBasePath + '/auth', { headers: headers })
-      console?.info('auth successful', res.data)
+      console?.info('auth successful', res.data.userID)
       axios.defaults.headers.common.authorization = res.data.authToken
       const permissions = await AuthService.fetchAuths()
       router.root.user = { ...res.data, permissions }
@@ -392,7 +488,7 @@ async function setupGuard() {
 }
 
 function modelerGuard(to, from) {
-  if (!router.root?.config?.modelerEnabled) return { name: 'start-configurable' }
+  if (!isModelerEnabled(router.root?.config)) return { name: 'start-configurable' }
   return permissionsGuard('modeler')(to, from)
 }
 
@@ -406,6 +502,17 @@ function permissionsGuard(permission, condition = undefined) {
         refPath: from.fullPath,
       }
     }
+  }
+}
+
+// Like permissionsGuard, for several [permission, condition] pairs: passes as soon as one of them is
+// granted; if none is, redirects to "no permission" as the first pair would
+function anyPermissionGuard(...rules) {
+  return function(to, from) {
+    const granted = rules.some(([permission, condition]) => permissionsGuard(permission, condition)(to, from) === true)
+    if (granted) return true
+    const [permission, condition] = rules[0]
+    return permissionsGuard(permission, condition)(to, from)
   }
 }
 

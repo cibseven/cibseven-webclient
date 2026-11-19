@@ -17,6 +17,8 @@
 import { describe, it, expect, vi } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
 import CibSeven from '@/components/CibSeven.vue'
+import { createI18n } from 'vue-i18n'
+import enMessages from '@/assets/translations_en.json'
 
 // Mock services
 vi.mock('@/services.js', () => ({
@@ -58,6 +60,147 @@ describe('CibSeven.vue', () => {
     })
   })
 
+  // The theme's icon is always used. On the start, account and sign-in pages it comes with the logo text
+  // (navigation.logoText); elsewhere it stands alone beside the page title
+  describe('brand', () => {
+    const mountBrand = (routeName, { matched = [], productNamePageTitle, messages = { 'navigation.logoText': 'ACME Flow' } } = {}) => shallowMount(CibSeven, {
+      global: {
+        mocks: {
+          user: { id: 'demo' }, header: 'true', logoPath: 'themes/acme/logo.svg',
+          $t: key => messages[key] ?? key, $te: key => key in messages,
+          $route: { path: '/seven/auth/x', name: routeName, meta: { title: 'page.title' }, matched },
+          config: { permissions: {}, layout: {}, supportedLanguages: [], productNamePageTitle },
+          $store: { state: { process: { list: [] } }, getters: {}, dispatch: vi.fn(() => Promise.resolve()) }
+        },
+        provide: { isMobile: false },
+        stubs: {
+          'router-view': true, 'b-modal': true, PluginSlot: true,
+          CIBHeaderFlow: { template: '<header><slot></slot></header>' },
+          'b-navbar-brand': { template: '<a class="brand"><slot></slot></a>' }
+        }
+      }
+    })
+
+    it.each(['start', 'account', 'login', 'loggedOut', 'setup'])('shows the icon with the logo text on the %s page', (routeName) => {
+      const wrapper = mountBrand(routeName)
+
+      const brand = wrapper.find('.brand')
+      expect(brand.findAll('img')).toHaveLength(1)
+      expect(brand.find('img').attributes('src')).toBe('themes/acme/logo.svg')
+      expect(brand.text()).toBe('ACME Flow')
+    })
+
+    it('shows the icon with the logo text on every tab of the account page', () => {
+      const matched = [{ name: 'seven' }, { name: 'auth' }, { name: 'account' }, { name: 'accountPreferences' }]
+      expect(mountBrand('accountPreferences', { matched }).find('.brand').text()).toBe('ACME Flow')
+    })
+
+    it.each(['tasklist', 'adminUser'])('shows just the icon, without the logo text, on the %s page', (routeName) => {
+      const brand = mountBrand(routeName).find('.brand')
+
+      expect(brand.find('img').attributes('src')).toBe('themes/acme/logo.svg')
+      expect(brand.find('span').exists()).toBe(false)
+      expect(brand.text()).toBe('')
+    })
+
+    // The global cib-brand classes carry the design (Segoe UI, 22px, regular, dark name; 23.75px icon), as EE renders
+    // this template from its own component, where scoped styles would not apply
+    it('styles the brand through its global classes, not inline', () => {
+      const brand = mountBrand('start').find('.brand')
+
+      expect(brand.classes()).toContain('cib-brand')
+      expect(brand.find('img').classes()).toEqual(['cib-brand-icon'])
+      expect(brand.find('span').classes()).toContain('cib-brand-name')
+      expect(brand.find('img').attributes('style')).toBeUndefined()
+      expect(brand.find('span').attributes('style')).toBeUndefined()
+    })
+
+    // .cib-brand-with-name lets the brand shrink; text-truncate ends the name in an ellipsis
+    it('ends a logo text too long for the header in an ellipsis', () => {
+      const brand = mountBrand('start', { messages: { 'navigation.logoText': 'Acme Process Automation Platform' } }).find('.brand')
+
+      expect(brand.classes()).toContain('cib-brand-with-name')
+      expect(brand.find('span').classes()).toContain('text-truncate')
+    })
+
+    // The gap to the icon (0.75rem) and the 1px lift are global CSS of these classes, so a utility margin must not
+    // add to the gap, and EE, which renders this template, gets both
+    it('sets the name apart from the icon and lifts it through its class, not a spacing utility', () => {
+      const name = mountBrand('start').find('.brand span')
+      expect(name.classes()).toContain('cib-brand-name')
+      expect(name.classes().filter(c => /^m[se]?-\d$/.test(c))).toEqual([])
+    })
+
+    it('lifts the page title through its class', () => {
+      const title = mountBrand('tasklist').find('h1')
+      expect(title.text()).toBe('page.title')
+      expect(title.classes()).toContain('cib-page-title')
+    })
+
+    it('keeps the icon-only brand from shrinking beside the page title', () => {
+      expect(mountBrand('tasklist').find('.brand').classes()).not.toContain('cib-brand-with-name')
+    })
+
+    it('takes the text from navigation.logoText, not from productNamePageTitle', () => {
+      const brand = mountBrand('start', { productNamePageTitle: 'Configured Name', messages: { 'navigation.logoText': 'ACME' } }).find('.brand')
+      expect(brand.text()).toBe('ACME')
+    })
+
+    // A theme whose logo already shows the name switches the text off, so the name does not appear twice
+    it.each(['start', 'account', 'login'])('shows just the icon on the %s page when navigation.logoText is empty', (routeName) => {
+      const brand = mountBrand(routeName, { productNamePageTitle: 'ACME Flow', messages: { 'navigation.logoText': '' } }).find('.brand')
+
+      expect(brand.find('img').attributes('src')).toBe('themes/acme/logo.svg')
+      expect(brand.find('span').exists()).toBe(false)
+      expect(brand.classes()).not.toContain('cib-brand-with-name')
+    })
+
+    // vue-i18n has no fallback language here and returns a missing key as it is: "navigation.logoText" must
+    // not end up beside the logo in a language without the key, which shows the icon alone
+    it.each(['start', 'login'])('shows just the icon on the %s page in a language without navigation.logoText', (routeName) => {
+      const brand = mountBrand(routeName, { productNamePageTitle: 'ACME Flow', messages: { 'login.productName': 'ACME' } }).find('.brand')
+
+      expect(brand.find('span').exists()).toBe(false)
+      expect(brand.text()).toBe('')
+    })
+
+    it('still names the product in the label of the link when the text is switched off', () => {
+      const wrapper = mountBrand('start', { productNamePageTitle: 'ACME Flow', messages: { 'navigation.logoText': '' } })
+
+      expect(wrapper.vm.brandLabel).toBe('ACME Flow - navigation.home')
+    })
+
+    // With the real translations: the key follows login.productName (a theme's own product name included),
+    // and an empty string from a theme's translations really is empty, not the key
+    describe('navigation.logoText in the translations', () => {
+      const translate = (themeMessages = {}) => {
+        const i18n = createI18n({ legacy: false, locale: 'en', missingWarn: false, fallbackWarn: false, messages: { en: enMessages } })
+        i18n.global.mergeLocaleMessage('en', themeMessages)
+        return i18n.global.t('navigation.logoText')
+      }
+
+      it('is the product name by default', () => {
+        expect(translate()).toBe('CIB seven')
+      })
+
+      it("follows a theme's own product name", () => {
+        expect(translate({ login: { productName: 'ACME Flow' } })).toBe('ACME Flow')
+      })
+
+      it('is empty when a theme sets it to an empty string', () => {
+        expect(translate({ navigation: { logoText: '' } })).toBe('')
+      })
+    })
+
+    it('sets the page title as an h4 beside the icon', () => {
+      const title = mountBrand('tasklist').find('h1')
+
+      expect(title.text()).toBe('page.title')
+      expect(title.classes()).toContain('h4')
+      expect(title.classes()).not.toContain('h3')
+    })
+  })
+
   describe('admin menu', () => {
     const adminItems = (adminPluginEntries) => {
       const context = {
@@ -66,7 +209,7 @@ describe('CibSeven.vue', () => {
         permissionsTenantsManagement: false, permissionsAuthorizationsManagement: false, permissionsSystemManagement: false,
         adminPluginEntries
       }
-      return CibSeven.computed.menuItems.call(context).find(group => group.groupTitle === 'start.admin.title').items
+      return CibSeven.computed.menuItems.call(context).find(group => group.id === 'admin').items
     }
 
     // Contributed areas (the enterprise edition's notifications) follow the built-in ones
@@ -76,10 +219,13 @@ describe('CibSeven.vue', () => {
         to: '/seven/auth/admin/notifications'
       }])
 
+      expect(items.at(-2)).toEqual({ divider: true })
       expect(items.at(-1)).toEqual({
-        show: true,
+        pluginEntry: true,
         to: '/seven/auth/admin/notifications',
         active: ['seven/auth/admin/notifications'],
+        icon: undefined,
+        tileImage: undefined,
         tooltip: 'admin.notifications.tooltip',
         title: 'admin.notifications.title'
       })
@@ -94,71 +240,229 @@ describe('CibSeven.vue', () => {
     })
 
     it('adds nothing when no entry is contributed', () => {
-      expect(adminItems([]).at(-1).to).toBe('/seven/auth/admin/system')
+      expect(adminItems([]).some(item => item.pluginEntry)).toBe(false)
+    })
+  })
+
+  // Focused on load for screen readers, but a ring nobody asked for looks like a glitch
+  describe('focusBrandLink', () => {
+    const shell = (brandLink, headerFlow = {}) => ({ $refs: { headerFlow, brandHome: { $refs: { brandLink } } } })
+    const link = () => {
+      const a = document.createElement('a')
+      a.href = '#/seven/auth/start'
+      document.body.appendChild(a)
+      return a
+    }
+
+    it('focuses the brand link without its ring', () => {
+      const brandLink = link()
+
+      CibSeven.methods.focusBrandLink.call(shell(brandLink))
+
+      expect(document.activeElement).toBe(brandLink)
+      expect(brandLink.classList.contains('initial-focus')).toBe(true)
+      brandLink.remove()
+    })
+
+    it('gives the ring back with the first key press', () => {
+      const brandLink = link()
+      CibSeven.methods.focusBrandLink.call(shell(brandLink))
+
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab' }))
+
+      expect(brandLink.classList.contains('initial-focus')).toBe(false)
+      brandLink.remove()
+    })
+
+    it('does nothing without the header', () => {
+      const brandLink = link()
+
+      CibSeven.methods.focusBrandLink.call(shell(brandLink, null))
+
+      expect(document.activeElement).not.toBe(brandLink)
+      expect(brandLink.classList.contains('initial-focus')).toBe(false)
+      brandLink.remove()
     })
   })
 
   describe('Methods', () => {
-    it('should filter menu items based on show property', () => {
+    it('should filter navbar menus based on show and drop empty tools', () => {
       const items = [
-        { show: true, groupTitle: 'Group 1', items: [] },
-        { show: false, groupTitle: 'Group 2', items: [] },
-        { show: true, groupTitle: 'Group 3', items: [] }
+        { id: 'tasks', show: true, items: [{ title: 'a', to: '/a' }] },
+        { id: 'data', show: false, items: [] },
+        { id: 'admin', show: true, items: [{ title: 'b', to: '/b', show: false }] },
+        { id: 'builder', show: true, items: [{ divider: true }, { title: 'c', to: '/c' }, { divider: true }] }
       ]
-      
+
       const result = CibSeven.methods.getVisibleMenuItems(items)
-      expect(result.length).toBe(2)
-      expect(result[0].groupTitle).toBe('Group 1')
-      expect(result[1].groupTitle).toBe('Group 3')
+      expect(result.map(t => t.id)).toEqual(['tasks', 'builder'])
+      expect(result[1].items).toEqual([{ title: 'c', to: '/c' }])
+    })
+
+    it('should collapse consecutive and trailing dividers', () => {
+      const items = [{
+        id: 'cockpit',
+        show: true,
+        items: [
+          { divider: true },
+          { title: 'a', to: '/a' },
+          { divider: true },
+          { divider: true },
+          { title: 'b', to: '/b' },
+          { divider: true }
+        ]
+      }]
+      const result = CibSeven.methods.getVisibleMenuItems(items)
+      expect(result[0].items).toEqual([
+        { title: 'a', to: '/a' },
+        { divider: true },
+        { title: 'b', to: '/b' }
+      ])
+    })
+
+    it('should resolve tool default route from defaultTo or first item', () => {
+      expect(CibSeven.methods.getToolDefaultTo({ defaultTo: '/seven/auth/tasks', items: [] }))
+        .toBe('/seven/auth/tasks')
+      expect(CibSeven.methods.getToolDefaultTo({
+        items: [{ divider: true }, { to: '/seven/auth/admin/users' }]
+      })).toBe('/seven/auth/admin/users')
+    })
+
+    it('should treat a tool as active when the route matches one of its hubRouteNames', () => {
+      const tool = { startTo: { name: 'usersManagement' }, hubRouteNames: ['accessManagement'], items: [] }
+
+      expect(CibSeven.methods.isToolActive.call({ $route: { name: 'accessManagement' } }, tool)).toBe(true)
+      expect(CibSeven.methods.isToolActive.call({ $route: { name: 'usersManagement' } }, tool)).toBe(true)
+      expect(CibSeven.methods.isToolActive.call({ $route: { name: 'adminUsers' } }, tool)).toBe(false)
     })
 
     it('should check if menu item is active based on route path', () => {
       const mockThis = {
         $route: { path: '/seven/auth/tasks/123' }
       }
-      
+
       const activeItem = { active: ['seven/auth/tasks'], to: '/seven/auth/tasks' }
       const inactiveItem = { active: ['seven/auth/processes'], to: '/seven/auth/processes' }
       const noActiveItem = { to: '/seven/auth/admin' }
-      
+
       expect(CibSeven.methods.isMenuItemActive.call(mockThis, activeItem)).toBe(true)
       expect(CibSeven.methods.isMenuItemActive.call(mockThis, inactiveItem)).toBe(false)
       expect(CibSeven.methods.isMenuItemActive.call(mockThis, noActiveItem)).toBe(false)
+    })
+
+    it('should not match a hyphenated sibling route sharing the same prefix', () => {
+      const mockThis = {
+        $route: { path: '/seven/auth/tasks-home' }
+      }
+      const tasklistItem = { active: ['seven/auth/tasks'] }
+      expect(CibSeven.methods.isMenuItemActive.call(mockThis, tasklistItem)).toBe(false)
+    })
+
+    // Contributed entries may give paths with a leading slash (ADMIN_ENTRY_SLOT `active`)
+    it('should treat a leading slash in an active entry as optional', () => {
+      const mockThis = { $route: { path: '/seven/auth/admin/ee-area/1' } }
+      expect(CibSeven.methods.isMenuItemActive.call(mockThis, { active: ['/seven/auth/admin/ee-area'] })).toBe(true)
+      expect(CibSeven.methods.isMenuItemActive.call(mockThis, { active: ['/seven/auth/admin/ee-area/1'], activeExact: true })).toBe(true)
+    })
+
+    it('should match activeExact entries on whole segments only', () => {
+      const mockThis = { $route: { path: '/seven/auth/my-batches' } }
+      expect(CibSeven.methods.isMenuItemActive.call(mockThis, { active: ['batches'], activeExact: true })).toBe(false)
+      mockThis.$route.path = '/seven/auth/batches'
+      expect(CibSeven.methods.isMenuItemActive.call(mockThis, { active: ['batches'], activeExact: true })).toBe(true)
+    })
+
+    it('should match plural resource list pages via their explicit active pattern', () => {
+      const mockThis = {
+        $route: { path: '/seven/auth/admin/users' }
+      }
+      const usersItem = { active: ['seven/auth/admin/users', 'seven/auth/admin/user/', 'seven/auth/admin/create-user'] }
+      expect(CibSeven.methods.isMenuItemActive.call(mockThis, usersItem)).toBe(true)
+
+      mockThis.$route.path = '/seven/auth/admin/groups'
+      const groupsItem = { active: ['seven/auth/admin/groups', 'seven/auth/admin/group/', 'seven/auth/admin/create-group'] }
+      expect(CibSeven.methods.isMenuItemActive.call(mockThis, groupsItem)).toBe(true)
+    })
+
+    it('should not match a plural list page from its singular prefix alone', () => {
+      const mockThis = {
+        $route: { path: '/seven/auth/admin/tenants' }
+      }
+      const tenantItem = { active: ['seven/auth/admin/tenant'] }
+      expect(CibSeven.methods.isMenuItemActive.call(mockThis, tenantItem)).toBe(false)
+    })
+
+    it('should match a singular detail page via a trailing-slash active pattern', () => {
+      const mockThis = {
+        $route: { path: '/seven/auth/admin/user/42' }
+      }
+      const userItem = { active: ['seven/auth/admin/users', 'seven/auth/admin/user/', 'seven/auth/admin/create-user'] }
+      expect(CibSeven.methods.isMenuItemActive.call(mockThis, userItem)).toBe(true)
+    })
+
+    it('should match via routeName/activeRouteNames when present, ignoring path entirely', () => {
+      const usersItem = { routeName: 'adminUsers', activeRouteNames: ['adminUser', 'createUser'], active: ['seven/auth/admin/does-not-matter'] }
+
+      // Matches its own list-page routeName directly, with no duplicate entry needed in activeRouteNames
+      expect(CibSeven.methods.isMenuItemActive.call({ $route: { name: 'adminUsers', path: '/seven/auth/admin/users' } }, usersItem)).toBe(true)
+      // Matches sibling detail/create routes via activeRouteNames
+      expect(CibSeven.methods.isMenuItemActive.call({ $route: { name: 'adminUser', path: '/seven/auth/admin/user/42' } }, usersItem)).toBe(true)
+      // A different item's route name matches neither
+      expect(CibSeven.methods.isMenuItemActive.call({ $route: { name: 'adminGroups', path: '/seven/auth/admin/groups' } }, usersItem)).toBe(false)
+    })
+
+    // The tabs of a detail page are its child routes, so the page's name is only among the matched records
+    it('should match the page a tab belongs to via routeName/activeRouteNames', () => {
+      const usersItem = { routeName: 'adminUsers', activeRouteNames: ['adminUser', 'createUser'] }
+      const $route = { name: 'adminUserGroups', path: '/seven/auth/admin/user/42/groups', matched: [{ name: 'auth' }, { name: 'admin' }, { name: 'adminUser' }, { name: 'adminUserGroups' }] }
+      expect(CibSeven.methods.isMenuItemActive.call({ $route }, usersItem)).toBe(true)
+      expect(CibSeven.methods.isMenuItemActive.call({ $route }, { routeName: 'adminGroups', activeRouteNames: ['adminGroup'] })).toBe(false)
+    })
+
+    it('should not mark an item with only activeRouteNames active on a route without a name', () => {
+      const item = { activeRouteNames: ['eeArea'] }
+      expect(CibSeven.methods.isMenuItemActive.call({ $route: { name: undefined, path: '/seven/auth/somewhere' } }, item)).toBe(false)
+      expect(CibSeven.methods.isMenuItemActive.call({ $route: { name: 'eeArea', path: '/seven/auth/ee' } }, item)).toBe(true)
+    })
+
+    it('should match nested detail pages under a trailing-slash active pattern', () => {
+      const mockThis = {
+        $route: { path: '/seven/auth/process/myKey/1/inst1' }
+      }
+      const processItem = { active: ['seven/auth/process/'] }
+      expect(CibSeven.methods.isMenuItemActive.call(mockThis, processItem)).toBe(true)
     })
 
     it('should check exact match when activeExact is true', () => {
       const mockThis = {
         $route: { path: '/seven/auth/admin' }
       }
-      
+
       const exactItem = { active: ['seven/auth/admin'], activeExact: true }
       expect(CibSeven.methods.isMenuItemActive.call(mockThis, exactItem)).toBe(true)
-      
+
       mockThis.$route.path = '/seven/auth/admin/users'
       expect(CibSeven.methods.isMenuItemActive.call(mockThis, exactItem)).toBe(false)
     })
 
-    it('should navigate to the start page before reloading on logout', () => {
-      const originalLocation = window.location
-      const reloadOrder = []
-      delete window.location
-      window.location = {
-        hash: '#/seven/auth/processes/123',
-        reload: vi.fn(() => reloadOrder.push(window.location.hash))
-      }
+    // The logged-out page does the logout: the header's logout only hands over to it
+    describe('logout', () => {
+      it('should hand over to the logged-out page', () => {
+        const push = vi.fn()
 
-      CibSeven.methods.logout.call({})
+        CibSeven.methods.logout.call({ $router: { push } })
 
-      // reload must fire AFTER the hash moves to the start page, else login returns
-      // to the (now-stale) previous page
-      expect(reloadOrder).toEqual(['#/'])
-      expect(window.location.hash).toBe('#/')
-
-      window.location = originalLocation
+        expect(push).toHaveBeenCalledWith({ name: 'loggedOut' })
+      })
     })
   })
 
   describe('Computed Properties', () => {
+    // Used as the logo's aria-label and tooltip
+    it('labels the logo with the product name and where it leads', () => {
+      expect(CibSeven.computed.brandLabel.call({ productName: 'CIB seven', $t: key => key })).toBe('CIB seven - navigation.home')
+    })
+
     it('should generate helpMenuItems with configured links', () => {
       const mockThis = {
         $root: {
@@ -170,10 +474,155 @@ describe('CibSeven.vue', () => {
           }
         }
       }
-      
+
       const items = CibSeven.computed.helpMenuItems.call(mockThis)
       expect(items.length).toBeGreaterThan(0)
       expect(items.some(item => item.href === 'https://help.example.com')).toBe(true)
+    })
+
+    it('should expose id-keyed navbar menus with no CE-native data group', () => {
+      const mockThis = {
+        permissionsTaskList: true,
+        permissionsCockpit: true,
+        permissionsModeler: true,
+        permissionsUsers: true,
+        permissionsUsersManagement: true,
+        permissionsGroupsManagement: false,
+        permissionsTenantsManagement: false,
+        permissionsAuthorizationsManagement: false,
+        permissionsSystemManagement: true,
+        startableProcesses: true
+      }
+      const menus = CibSeven.computed.menuItems.call(mockThis)
+      expect(menus.map(m => m.id)).toEqual(['tasks', 'cockpit', 'builder', 'admin'])
+      expect(menus.find(m => m.id === 'builder').title).toBe('start.builder.title')
+      expect(menus.find(m => m.id === 'cockpit').items.some(i => i.divider)).toBe(true)
+    })
+  })
+
+  describe('Header navigation model', () => {
+    const t = key => `t:${key}`
+    const route = (name = 'tasklist', path = '/seven/auth/tasks') => ({ name, path })
+    const shell = (overrides = {}) => {
+      const vm = {
+        $t: t,
+        $route: route(),
+        $root: { user: { id: 'ada' }, config: { layout: { showFeedbackButton: true, showInfoAndHelp: true, showUserSettings: true } } },
+        permissionsUserProfile: true,
+        helpMenuItems: [
+          { type: 'link', href: 'https://help', title: 'help.title', tooltip: 'help.tooltip' },
+          { type: 'button', ref: 'about', title: 'about.title', tooltip: 'about.tooltip' }
+        ],
+        ...overrides
+      }
+      vm.isMenuItemActive = item => CibSeven.methods.isMenuItemActive.call(vm, item)
+      vm.isToolActive = tool => CibSeven.methods.isToolActive.call(vm, tool)
+      vm.getToolDefaultTo = tool => CibSeven.methods.getToolDefaultTo.call(vm, tool)
+      return vm
+    }
+    const tasksTool = {
+      id: 'tasks', title: 'start.tasks.title', icon: 'mdi-clipboard-text-outline', defaultTo: '/seven/auth/tasks',
+      startTo: { name: 'tasksHome' },
+      items: [
+        { to: '/seven/auth/tasks', active: ['seven/auth/tasks'], title: 'start.taskList.title' },
+        { divider: true },
+        { to: '/seven/auth/start-process', active: ['seven/auth/start-process'], title: 'start.startProcess.title', tooltip: 'start.startProcess.tooltip' }
+      ]
+    }
+    const builderTool = {
+      id: 'builder', title: 'start.builder.title', icon: 'mdi-tools', defaultTo: { name: 'builderHome' },
+      startTo: { name: 'builderHome' }, collapseSingle: true,
+      items: [{ to: '/seven/auth/modeler', active: ['seven/auth/modeler'], title: 'start.modeler.title' }]
+    }
+
+    it('turns the catalog into clusters: icon to the section, title to its overview, items in sections', () => {
+      const [tasks] = CibSeven.computed.navClusters.call(shell({ computedMenuItems: [tasksTool] }))
+
+      expect(tasks).toMatchObject({ id: 'tasks', label: 't:start.tasks.title', to: '/seven/auth/tasks', titleTo: { name: 'tasksHome' }, active: true })
+      expect(tasks.sections.map(section => section.map(item => item.label))).toEqual([['t:start.taskList.title'], ['t:start.startProcess.title']])
+      expect(tasks.sections[0][0]).toMatchObject({ active: true, tooltip: 't:start.taskList.title' })
+      expect(tasks.sections[1][0]).toMatchObject({ active: false, tooltip: 't:start.startProcess.tooltip' })
+    })
+
+    it('sends the icon of a section with a single tool straight to it, and its menu title to the overview page', () => {
+      const [single] = CibSeven.computed.navClusters.call(shell({ computedMenuItems: [builderTool] }))
+      expect(single).toMatchObject({ to: '/seven/auth/modeler', titleTo: { name: 'builderHome' } })
+
+      const twoTools = { ...builderTool, items: [...builderTool.items, { to: '/seven/auth/forms', title: 'forms' }] }
+      const [hub] = CibSeven.computed.navClusters.call(shell({ computedMenuItems: [twoTools] }))
+      expect(hub).toMatchObject({ to: { name: 'builderHome' }, titleTo: { name: 'builderHome' } })
+    })
+
+    it('offers feedback as an action and help as a menu of links and dialogs', () => {
+      const [feedback, help] = CibSeven.computed.utilityClusters.call(shell())
+
+      expect(feedback).toMatchObject({ id: 'feedback', modal: 'report' })
+      expect(feedback.sections).toBeUndefined()
+      expect(help.sections[0]).toEqual([
+        { key: 'https://help', label: 't:help.title', tooltip: 't:help.tooltip', href: 'https://help', external: true, modal: undefined },
+        { key: 'about', label: 't:about.title', tooltip: 't:about.tooltip', href: undefined, external: false, modal: 'about' }
+      ])
+    })
+
+    it('leaves out feedback and help when switched off', () => {
+      const vm = shell()
+      vm.$root.config.layout = { showFeedbackButton: false, showInfoAndHelp: false }
+      expect(CibSeven.computed.utilityClusters.call(vm)).toEqual([])
+    })
+
+    it('lists every tab of the account page when user settings are shown, marking the open one', () => {
+      const vm = shell({ $route: route('accountGroups', '/seven/auth/account/ada/groups') })
+      const items = CibSeven.computed.userMenuItems.call(vm)
+
+      expect(items.map(i => i.key)).toEqual(['profile', 'groups', 'tenants', 'preferences'])
+      expect(items[0]).toEqual({
+        key: 'profile', label: 't:start.account.profile.title', tooltip: 't:start.account.profile.tooltip',
+        to: { name: 'accountProfile', params: { userId: 'ada' } }, active: false
+      })
+      expect(items.filter(i => i.active).map(i => i.key)).toEqual(['groups'])
+      expect(items[1].tooltip).toBe('t:admin.users.groups')
+
+      vm.permissionsUserProfile = false
+      expect(CibSeven.computed.userMenuItems.call(vm)).toEqual([])
+    })
+
+    it('marks the entry of the open tab, and nothing elsewhere', () => {
+      const onAccount = CibSeven.computed.userMenuItems.call(shell({ $route: route('accountPreferences', '/seven/auth/account/ada/preferences') }))
+      expect(onAccount.filter(i => i.active).map(i => i.key)).toEqual(['preferences'])
+
+      const elsewhere = CibSeven.computed.userMenuItems.call(shell())
+      expect(elsewhere.some(i => i.active)).toBe(false)
+    })
+
+    // Same condition as the account page's own "Change password" tab
+    it('offers the password change only when users may edit and change passwords', () => {
+      const vm = shell()
+      vm.$root.config.userEditable = true
+      vm.$root.config.userPasswordChangeEnabled = true
+      expect(CibSeven.computed.userMenuItems.call(vm).map(i => i.key)).toContain('password')
+
+      vm.$root.config.userPasswordChangeEnabled = false
+      expect(CibSeven.computed.userMenuItems.call(vm).map(i => i.key)).not.toContain('password')
+    })
+
+    it('opens the dialog a header item asks for', () => {
+      const show = vi.fn()
+      CibSeven.methods.onHeaderSelect.call({ $refs: { about: { show } } }, { modal: 'about' })
+      expect(show).toHaveBeenCalled()
+      expect(() => CibSeven.methods.onHeaderSelect.call({ $refs: {} }, { key: 'other' })).not.toThrow()
+    })
+  })
+
+  describe('navbar catalog', () => {
+    it('applies registered nav group extenders, like the start page does', async () => {
+      const { registerNavGroupsExtender } = await import('@/navigation/navGroups.js')
+      const unregister = registerNavGroupsExtender(groups => [...groups, { id: 'data', show: true, items: [] }])
+      try {
+        const groups = CibSeven.computed.menuItems.call({ permissionsTaskList: true })
+        expect(groups.at(-1).id).toBe('data')
+      } finally {
+        unregister()
+      }
     })
   })
 })

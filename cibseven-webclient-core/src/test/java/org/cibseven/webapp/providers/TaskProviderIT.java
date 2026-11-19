@@ -72,7 +72,7 @@ public class TaskProviderIT extends BaseHelper {
 
         // Configure the base URL for the TaskProvider to point to the MockWebServer
         String mockBaseUrl = mockWebServer.url("/").toString();
-        ReflectionTestUtils.setField(taskProvider, "cibsevenUrl", mockBaseUrl);
+        taskProvider.properties.getEngineRest().setUrl(mockBaseUrl);
     }
 
 	@AfterEach

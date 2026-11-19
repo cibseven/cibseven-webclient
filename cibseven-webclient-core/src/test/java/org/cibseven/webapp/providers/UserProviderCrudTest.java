@@ -51,8 +51,8 @@ public class UserProviderCrudTest {
 		engine = new MockEngineRest();
 		userProvider = engine.wire(new UserProvider());
 		// UserProvider adds two @Value fields of its own on top of SevenProviderBase's
-		ReflectionTestUtils.setField(userProvider, "userProvider", "org.cibseven.webapp.auth.SevenUserProvider");
-		ReflectionTestUtils.setField(userProvider, "wildcard", "");
+		userProvider.properties.getUser().setProvider("org.cibseven.webapp.auth.SevenUserProvider");
+		userProvider.properties.getUsers().getSearch().setWildcard("");
 		user = MockEngineRest.user();
 	}
 

@@ -57,7 +57,7 @@ public class ActivityProviderIT extends BaseHelper {
 
         // Configure the base URL for the ActivityProvider to point to the MockWebServer
         String mockBaseUrl = mockWebServer.url("/").toString();
-        ReflectionTestUtils.setField(activityProvider, "cibsevenUrl", mockBaseUrl);
+        activityProvider.properties.getEngineRest().setUrl(mockBaseUrl);
     }
 
     @AfterEach

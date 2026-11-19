@@ -47,7 +47,7 @@
             v-model="selectedCriteriaValue" :elements="$store.state.user.searchUsers" noInvalidValues/>
             <template v-else>
               <label class="visually-hidden" for="filterable-select">{{ $t('nav-bar.filters.insertValue') }}</label>
-              <b-form-input id="filterable-select" size="sm" :placeholder="$t('nav-bar.filters.insertValue')" v-model="selectedCriteriaValue"></b-form-input>
+              <b-form-input id="filterable-select" size="sm" :placeholder="$t('nav-bar.filters.insertValue')" v-model="selectedCriteriaValue" :state="invalidDateValue ? false : null"></b-form-input>
             </template>
           </div>
           <div class="col-3 p-0">
@@ -58,6 +58,7 @@
             </div>
           </div>
         </div>
+        <div v-if="invalidDateValue" class="row mt-2" role="alert"><small class="col-12 text-danger">{{ $t('nav-bar.filters.invalidDate', dateExamples()) }}</small></div>
         <div class="row mt-2"><small class="col-12" style="color: var(--gray)" v-html="$t('nav-bar.filters.legendExpression')"></small></div>
         <div class="row"><small class="col-12" style="color: var(--gray)">{{ $t('nav-bar.filters.legendMultiple') }}</small></div>
         <div v-if="selectedCriteriaType === 'variable'" class="mt-4">
@@ -167,6 +168,7 @@
 import { permissionsMixin } from '@/permissions.js'
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import { FilterableSelect, FlowTable } from '@cib/common-frontend'
+import { dateExamples, isDateCriteriaKey, toEngineDate } from '@/utils/filterDates.js'
 
 const candidateOptions = ['candidateGroup', 'candidateGroupExpression',
   'candidateGroups', 'candidateGroupsExpression', 'candidateUser', 'candidateUserExpression']
@@ -197,6 +199,7 @@ export default {
       selectedCriteriaValue: null,
       selectedCriteriaType: null,
       selectedCriteriaVariable: [{ name: '', operator: 'eq', value: '' }],
+      invalidDateValue: false,
       criteriasToAdd: [],
       includeAssigned: false,
       isEditing: false,
@@ -218,6 +221,9 @@ export default {
     },
     selectedCriteriaKey: function(newValue) {
       this.selectCriteria(newValue)
+    },
+    selectedCriteriaValue: function() {
+      this.invalidDateValue = false
     }
   },
   computed: {
@@ -254,6 +260,7 @@ export default {
     this.selectFilter(this.$store.state.filter.selected.id)
   },
   methods: { // TODO: Refactor, many methods and unnecessary structur,,
+    dateExamples,
     selectFilter: function(value) {
       const selectedFilter = this.$store.state.filter.list.find(filter => {
         return filter.id === value
@@ -347,6 +354,11 @@ export default {
           valueToAdd.push(value.trim())
         })
       } else valueToAdd = this.selectedCriteriaValue
+      if (isDateCriteriaKey(this.selectedCriteriaKey)) {
+        valueToAdd = toEngineDate(valueToAdd)
+        this.invalidDateValue = valueToAdd === null
+        if (this.invalidDateValue) return
+      }
       this.criteriasToAdd.push({
         key: this.selectedCriteriaKey,
         name: this.$t('nav-bar.filters.keys.' + this.selectedCriteriaKey),
@@ -366,6 +378,11 @@ export default {
         valueToAdd.push(value.trim())
         })
       } else valueToAdd = this.selectedCriteriaValue
+      if (isDateCriteriaKey(this.selectedCriteriaKey)) {
+        valueToAdd = toEngineDate(valueToAdd)
+        this.invalidDateValue = valueToAdd === null
+        if (this.invalidDateValue) return
+      }
 
         this.criteriasToAdd.splice(this.criteriaEdited.rowIndex, 1, {
         key: this.selectedCriteriaKey,

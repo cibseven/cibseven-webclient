@@ -82,9 +82,6 @@ public class EmbeddedFormHistoryServiceTest {
 
 		EmbeddedFormHistoryService service = new EmbeddedFormHistoryService();
 		ReflectionTestUtils.setField(service, "bpmProvider", bpmProvider);
-		// checkPermission short-circuits when authorization is disabled, keeping these tests on
-		// the routing and payload handling rather than the authorization chain.
-		ReflectionTestUtils.setField(service, "authorizationEnabled", false);
 
 		mvc = MockMvcBuilders.standaloneSetup(service)
 				.setCustomArgumentResolvers(userResolver)

@@ -104,7 +104,7 @@
 
     <div ref="rContent" class="position-absolute w-100 overflow-hidden" style="left: 0; bottom: 0" :style="'top: ' + bottomContentPosition + 'px; ' + toggleTransition">
 
-      <VariablesTable v-if="activeTab === 'variables'" :selected-instance="selectedInstance" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory"></VariablesTable>
+      <VariablesTable v-if="activeTab === 'variables'" :process="process" :selected-instance="selectedInstance" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory"></VariablesTable>
       <IncidentsTable v-else-if="activeTab === 'incidents'" :scrollable-area="$refs.rContent" :instance="selectedInstance" :process="process" :activity-instance="activityInstance" 
         :is-instance-view="true" :activity-instance-history="activityInstanceHistory" :tenant-id="tenantId"></IncidentsTable>
       <UserTasksTable v-else-if="activeTab === 'usertasks'" :selected-instance="selectedInstance"></UserTasksTable>
@@ -167,6 +167,7 @@ export default {
   },
   watch: {
     'process.id': function() {
+      this.ensureStaticCalledProcessDefinitions()
       ProcessService.fetchDiagram(this.process.id).then(response => {
         this.$refs.diagram?.showDiagram(response.bpmn20Xml, this.selectedActivityId)?.then(() => this.restoreViewboxIfSaved())
       })
@@ -182,6 +183,7 @@ export default {
   },
   computed: {
     ...mapGetters(['selectedActivityId']),
+    ...mapGetters('calledProcessDefinitions', ['getStaticCalledProcessDefinitionsFor']),
     ProcessInstanceTabsPlugin() {
       return this.$options.components && this.$options.components.ProcessInstanceTabsPlugin
         ? this.$options.components.ProcessInstanceTabsPlugin
@@ -219,6 +221,7 @@ export default {
     },
   },
   mounted: function() {
+    this.ensureStaticCalledProcessDefinitions()
     ProcessService.fetchDiagram(this.process.id).then(response => {
       this.$refs.diagram?.showDiagram(response.bpmn20Xml, this.selectedActivityId)?.then(() => this.restoreViewboxIfSaved())
     })
@@ -234,6 +237,14 @@ export default {
   },
   methods: {
     ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'selectActivity', 'loadHistoricActivityStatistics', 'clearHistoricActivityStatistics']),
+    ...mapActions('calledProcessDefinitions', ['loadStaticCalledProcessDefinitions']),
+    // The instance can be opened directly, so the call activity links cannot rely on the definition view having loaded this.
+    // Loaded once per visit: ProcessDefinitionView drops them when the process pages are left, so a newer deployment is seen
+    // on the next visit without fetching them again for every instance opened
+    ensureStaticCalledProcessDefinitions: function() {
+      if (this.getStaticCalledProcessDefinitionsFor(this.process.id)) return
+      this.loadStaticCalledProcessDefinitions({ processDefinitionId: this.process.id })
+    },
     selectTask: function(event) {
       this.$emit('task-selected', event);
     },

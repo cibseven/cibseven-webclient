@@ -19,21 +19,24 @@ import { mount, flushPromises } from '@vue/test-utils'
 import { axios } from '@/globals.js'
 import { setServicesBasePath } from '@/services.js'
 
-vi.mock('cibseven-modeler', () => ({
+const modelerPackage = vi.hoisted(() => ({
   CibsevenModeler: { name: 'CibsevenModeler', template: '<div class="cibseven-modeler-stub" />' },
   setAxiosInstance: vi.fn(),
   setServicesBasePath: vi.fn()
 }))
-vi.mock('cibseven-modeler/dist/cibseven-modeler.css', () => ({}))
+vi.mock('@/utils/modelerLoader.js', () => ({ loadModeler: vi.fn() }))
+vi.mock('@cib/common-frontend', () => ({ BWaitingBox: { name: 'BWaitingBox', template: '<span />' } }))
 
 import ModelerView from '@/components/modeler/ModelerView.vue'
-import { setAxiosInstance, setServicesBasePath as setModelerServicesBasePath } from 'cibseven-modeler'
+import { loadModeler } from '@/utils/modelerLoader.js'
 
 function createWrapper({ dispatch = vi.fn().mockResolvedValue() } = {}) {
+  const $store = { dispatch }
   return mount(ModelerView, {
     global: {
       mocks: {
-        $store: { dispatch }
+        $store,
+        $t: key => key
       },
       mixins: [{
         data() {
@@ -54,6 +57,7 @@ describe('ModelerView.vue', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    loadModeler.mockResolvedValue(modelerPackage)
     setServicesBasePath('/services/v1')
   })
 
@@ -63,15 +67,35 @@ describe('ModelerView.vue', () => {
     setServicesBasePath('')
   })
 
-  it('configures the modeler to use the webclient axios instance and services base path', () => {
+  /** The modeler is loaded when the view opens, so there is something to show meanwhile. */
+  it('shows that the modeler is loading, then the modeler', async () => {
     wrapper = createWrapper()
-    expect(setAxiosInstance).toHaveBeenCalledWith(axios)
-    expect(setModelerServicesBasePath).toHaveBeenCalledWith('/services/v1')
+
+    expect(wrapper.find('[role="status"]').text()).toContain('start.modeler.loading')
+    expect(wrapper.find('.cibseven-modeler-stub').exists()).toBe(false)
+
+    await flushPromises()
+
+    expect(loadModeler).toHaveBeenCalledWith(wrapper.vm.$store)
+    expect(wrapper.find('.cibseven-modeler-stub').exists()).toBe(true)
+    expect(wrapper.find('[role="status"]').exists()).toBe(false)
   })
 
-  it('dispatches fetchAllElementTemplates on created', () => {
+  it('configures the modeler to use the webclient axios instance and services base path', async () => {
+    wrapper = createWrapper()
+    await flushPromises()
+
+    expect(modelerPackage.setAxiosInstance).toHaveBeenCalledWith(axios)
+    expect(modelerPackage.setServicesBasePath).toHaveBeenCalledWith('/services/v1')
+  })
+
+  it('dispatches fetchAllElementTemplates once the modeler is loaded', async () => {
     const dispatch = vi.fn().mockResolvedValue()
     wrapper = createWrapper({ dispatch })
+    expect(dispatch).not.toHaveBeenCalled()
+
+    await flushPromises()
+
     expect(dispatch).toHaveBeenCalledWith('modeler/elementTemplates/fetchAllElementTemplates')
   })
 
@@ -85,6 +109,22 @@ describe('ModelerView.vue', () => {
 
     expect(warnSpy).toHaveBeenCalledWith('Could not load element templates:', error)
     warnSpy.mockRestore()
+  })
+
+  /** A chunk that cannot be fetched, after a deployment for instance, must not leave a spinner forever. */
+  it('says so when the modeler cannot be loaded', async () => {
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    loadModeler.mockRejectedValue(new Error('Failed to fetch dynamically imported module'))
+    const dispatch = vi.fn()
+
+    wrapper = createWrapper({ dispatch })
+    await flushPromises()
+
+    expect(wrapper.find('[role="alert"]').text()).toBe('start.modeler.loadFailed')
+    expect(wrapper.find('[role="status"]').exists()).toBe(false)
+    expect(modelerPackage.setAxiosInstance).not.toHaveBeenCalled()
+    expect(dispatch).not.toHaveBeenCalled()
+    errorSpy.mockRestore()
   })
 
   it('rewrites requests to the engine REST prefix to the services base path', () => {

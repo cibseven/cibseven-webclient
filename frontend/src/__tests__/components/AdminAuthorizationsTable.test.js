@@ -17,6 +17,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { reactive, nextTick } from 'vue'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { i18n } from '@/i18n'
 import { AdminService } from '@/services.js'
 import AdminAuthorizationsTable from '@/components/admin/AdminAuthorizationsTable.vue'
@@ -544,6 +546,77 @@ describe('discarding an edit', () => {
     expect(ctx.edit).toBeNull()
     expect(ctx.selected).toEqual([])
     expect(ctx.authorizationSelected).toBeNull()
+  })
+})
+
+// The permissions dropdown puts a divider before some permissions to group long lists.
+describe('hasSeparatorBefore', () => {
+  const { hasSeparatorBefore } = AdminAuthorizationsTable.methods
+  // eslint-disable-next-line no-undef
+  const { resourcesTypes } = JSON.parse(readFileSync(resolve(__dirname, '../../../public/config.json'), 'utf-8')).admin
+
+  // splits the configured permissions of a resource type the way the dropdown renders them
+  function groups(resourceTypeId) {
+    return resourcesTypes[resourceTypeId].permissions.reduce((result, permission) => {
+      if (hasSeparatorBefore(resourceTypeId, permission)) result.push([])
+      result[result.length - 1].push(permission)
+      return result
+    }, [[]])
+  }
+
+  it.each([
+    ['6', 'processDefinition', [
+      ['READ', 'UPDATE', 'DELETE'],
+      ['SUSPEND', 'CREATE_INSTANCE', 'READ_INSTANCE', 'UPDATE_INSTANCE', 'RETRY_JOB', 'SUSPEND_INSTANCE', 'DELETE_INSTANCE', 'MIGRATE_INSTANCE'],
+      ['READ_TASK', 'UPDATE_TASK', 'TASK_ASSIGN', 'TASK_WORK', 'READ_TASK_VARIABLE', 'READ_HISTORY', 'READ_HISTORY_VARIABLE',
+        'DELETE_HISTORY', 'READ_INSTANCE_VARIABLE', 'UPDATE_INSTANCE_VARIABLE', 'UPDATE_TASK_VARIABLE', 'UPDATE_HISTORY']
+    ]],
+    ['7', 'task', [
+      ['CREATE', 'READ', 'UPDATE', 'DELETE'],
+      ['TASK_ASSIGN', 'TASK_WORK'],
+      ['UPDATE_VARIABLE', 'READ_VARIABLE']
+    ]],
+    ['8', 'processInstance', [
+      ['CREATE', 'READ', 'UPDATE', 'DELETE'],
+      ['RETRY_JOB', 'SUSPEND', 'UPDATE_VARIABLE']
+    ]],
+    ['10', 'decisionDefinition', [
+      ['READ', 'UPDATE'],
+      ['CREATE_INSTANCE'],
+      ['READ_HISTORY', 'DELETE_HISTORY']
+    ]]
+  ])('groups the configured permissions of resource type %j (%s)', (resourceTypeId, key, expected) => {
+    expect(resourcesTypes[resourceTypeId].key).toBe(key)
+    expect(groups(resourceTypeId)).toEqual(expected)
+  })
+
+  it('separates the batch permissions into read/delete, history and the CREATE_BATCH_* permissions', () => {
+    const [basic, history, createBatch] = groups('13')
+
+    expect(groups('13')).toHaveLength(3)
+    expect(basic).toEqual(['READ', 'CREATE', 'DELETE'])
+    expect(history).toEqual(['READ_HISTORY', 'DELETE_HISTORY'])
+    expect(createBatch.length).toBeGreaterThan(0)
+    expect(createBatch.every(permission => permission.startsWith('CREATE_BATCH_'))).toBe(true)
+  })
+
+  it.each(['0', '1', '2', '3', '4', '5', '9', '11', '14', '17', '19', '20', '21'])('shows no divider for resource type %j', (resourceTypeId) => {
+    expect(groups(resourceTypeId)).toEqual([resourcesTypes[resourceTypeId].permissions])
+  })
+
+  it('never puts a divider above the first permission, which would leave an empty group', () => {
+    Object.keys(resourcesTypes).forEach(resourceTypeId => {
+      expect(hasSeparatorBefore(resourceTypeId, resourcesTypes[resourceTypeId].permissions[0])).toBe(false)
+    })
+  })
+
+  // route params are strings, so a numeric id must not be matched
+  it.each([
+    [7, 'TASK_ASSIGN'],
+    [8, 'RETRY_JOB'],
+    [undefined, 'TASK_ASSIGN']
+  ])('returns false for resource type %j', (resourceTypeId, permission) => {
+    expect(hasSeparatorBefore(resourceTypeId, permission)).toBe(false)
   })
 })
 

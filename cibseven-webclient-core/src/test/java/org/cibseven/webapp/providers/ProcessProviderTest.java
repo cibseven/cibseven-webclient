@@ -19,6 +19,7 @@ package org.cibseven.webapp.providers;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +35,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 
 public class ProcessProviderTest {
 
@@ -117,6 +122,59 @@ public class ProcessProviderTest {
 	}
 
 	@Test
+	void findProcessVersionsByDefinitionKey_withoutLazyLoadAddsIncidentsAndDeploymentTime() throws Exception {
+		engine.enqueueJson("[{\"id\":\"id-2\",\"key\":\"invoice\",\"version\":2,\"deploymentId\":\"dep-2\"}]");
+		// the incidents of the key, counted per version; those of a version not listed are left aside
+		engine.enqueueJson("[{\"id\":\"i1\",\"processDefinitionId\":\"id-2\"},{\"id\":\"i2\",\"processDefinitionId\":\"id-2\"},"
+			+ "{\"id\":\"i3\",\"processDefinitionId\":\"id-2\"},{\"id\":\"i4\",\"processDefinitionId\":\"other:1\"}]");
+		engine.enqueueJson("{\"id\":\"dep-2\",\"deploymentTime\":\"2025-05-16T12:44:00.000+0200\"}");
+		engine.enqueueJson("{\"count\":9}");
+		engine.enqueueJson("{\"count\":2}");
+		engine.enqueueJson("{\"count\":7}");
+
+		Process version = processProvider.findProcessVersionsByDefinitionKey("invoice", null, Optional.of(false), user).iterator().next();
+
+		assertThat(version.getIncidents()).isEqualTo(3L);
+		assertThat(version.getDeploymentTime()).isEqualTo("2025-05-16T12:44:00.000+0200");
+		assertThat(version.getAllInstances()).isEqualTo(9L);
+		assertThat(version.getRunningInstances()).isEqualTo(2L);
+		assertThat(version.getCompletedInstances()).isEqualTo(7L);
+		engine.take();
+		assertThat(engine.takePath()).isEqualTo("/incident?processDefinitionKeyIn=invoice");
+		assertThat(engine.takePath()).isEqualTo("/deployment/dep-2");
+	}
+
+	@Test
+	void findProcessVersionsByDefinitionKey_withoutLazyLoadAsksTheIncidentsOfTheGivenTenantOnly() throws Exception {
+		engine.enqueueJson("[{\"id\":\"id-2\",\"key\":\"invoice\",\"version\":2,\"tenantId\":\"acme\"}]");
+		engine.enqueueJson("[]");
+		engine.enqueueJson("{\"count\":0}");
+		engine.enqueueJson("{\"count\":0}");
+		engine.enqueueJson("{\"count\":0}");
+
+		processProvider.findProcessVersionsByDefinitionKey("invoice", "acme", Optional.of(false), user);
+
+		engine.take();
+		assertThat(engine.takePath()).isEqualTo("/incident?processDefinitionKeyIn=invoice&tenantIdIn=acme");
+	}
+
+	@Test
+	void findProcessVersionsByDefinitionKey_withoutLazyLoadLeavesOutWhatTheEngineDoesNotGive() throws Exception {
+		engine.enqueueJson("[{\"id\":\"id-2\",\"key\":\"invoice\",\"version\":2,\"deploymentId\":\"dep-2\"}]");
+		engine.enqueueJson("[]");
+		engine.enqueueStatus(404, "{\"message\":\"Deployment not found\"}");
+		engine.enqueueJson("{\"count\":0}");
+		engine.enqueueJson("{\"count\":0}");
+		engine.enqueueJson("{\"count\":0}");
+
+		Process version = processProvider.findProcessVersionsByDefinitionKey("invoice", null, Optional.of(false), user).iterator().next();
+
+		assertThat(version.getIncidents()).isZero();
+		assertThat(version.getDeploymentTime()).isNull();
+		assertThat(engine.requestCount()).isEqualTo(6);
+	}
+
+	@Test
 	void findProcessById_asksForTheDefinitionById() throws Exception {
 		engine.enqueueJson("{\"id\":\"id-1\",\"key\":\"invoice\"}");
 
@@ -133,6 +191,44 @@ public class ProcessProviderTest {
 		processProvider.findProcessesWithFilters("name=Invoice%20Receipt", user);
 
 		assertThat(engine.take().getPath()).contains("name=Invoice");
+	}
+
+	// ---------- rendered form ----------
+
+	@Test
+	void getRenderedForm_decodesTheStartFormAsUtf8WhenTheEngineDeclaresNoCharset() throws Exception {
+		// engine-rest answers application/xhtml+xml without a charset (CIB7-2204)
+		String form = "<form>\n  <input name=\"reason\" value=\"Die Lieferung kam beschädigt an\" />\n</form>\n";
+		engine.enqueueBytes(form.getBytes(StandardCharsets.UTF_8), "application/xhtml+xml");
+
+		ResponseEntity<String> response = processProvider.getRenderedForm("id-1", new HashMap<>(), user);
+
+		assertThat(response.getBody()).isEqualTo(form);
+		assertThat(engine.takePath()).startsWith("/process-definition/id-1/rendered-form");
+	}
+
+	@Test
+	void getRenderedForm_answersUtf8HtmlLikeTheDirectProvider() throws Exception {
+		// CIB7-2206: the engine's media type and Content-Length are not forwarded
+		String form = "<form><input value=\"beschädigt\" /></form>";
+		engine.enqueueBytes(form.getBytes(StandardCharsets.UTF_8), "application/xhtml+xml");
+
+		ResponseEntity<String> response = processProvider.getRenderedForm("id-1", new HashMap<>(), user);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getHeaders().getContentType()).isEqualTo(MediaType.parseMediaType("text/html;charset=UTF-8"));
+		// Spring computes the length of the bytes it writes when the header is absent
+		assertThat(response.getHeaders().containsHeader(HttpHeaders.CONTENT_LENGTH)).isFalse();
+	}
+
+	@Test
+	void getRenderedForm_honoursACharsetTheEngineDeclares() throws Exception {
+		String form = "<form><input value=\"beschädigt\" /></form>";
+		engine.enqueueBytes(form.getBytes(StandardCharsets.ISO_8859_1), "application/xhtml+xml;charset=ISO-8859-1");
+
+		ResponseEntity<String> response = processProvider.getRenderedForm("id-1", new HashMap<>(), user);
+
+		assertThat(response.getBody()).isEqualTo(form);
 	}
 
 	// ---------- diagrams ----------
@@ -156,6 +252,20 @@ public class ProcessProviderTest {
 		assertThat(data.getName()).isEqualTo("invoice.bpmn");
 		assertThat(data.getContentType()).isEqualTo("application/bpmn+xml");
 		assertThat(data.getSize()).isEqualTo("<definitions/>".length());
+	}
+
+	@Test
+	void downloadBpmn_encodesTheXmlAsUtf8() throws Exception {
+		// the XML declaration promises UTF-8, so the bytes must not follow the JVM default charset (CIB7-2206)
+		String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><definitions name=\"Prüfung 審査\"/>";
+		engine.enqueueBytes(("{\"id\":\"id-1\",\"bpmn20Xml\":\"" + xml.replace("\"", "\\\"") + "\"}")
+			.getBytes(StandardCharsets.UTF_8), "application/json");
+
+		Data data = processProvider.downloadBpmn("id-1", "invoice.bpmn", user);
+
+		byte[] expected = xml.getBytes(StandardCharsets.UTF_8);
+		assertThat(data.getSize()).isEqualTo(expected.length);
+		assertThat(data.getInputStream().readAllBytes()).isEqualTo(expected);
 	}
 
 	// ---------- instances ----------
@@ -289,6 +399,40 @@ public class ProcessProviderTest {
 
 		assertThat(instance.getState()).isEqualTo("COMPLETED");
 		assertThat(engine.takePath()).isEqualTo("/history/process-instance/pi-1");
+	}
+
+	@Test
+	void findProcessesInstancesHistoryById_searchesBusinessKeyAndInstanceIdForFreeText() throws Exception {
+		engine.enqueueJson("[]");
+
+		processProvider.findProcessesInstancesHistoryById(
+			"id-1", Optional.empty(), Optional.empty(), 0, 50, "INV-42", user);
+
+		String body = engine.take().getBody().readUtf8();
+		assertThat(body).contains("\"orQueries\"")
+			.contains("\"processInstanceBusinessKeyLike\":\"%INV-42%\"")
+			.contains("\"processInstanceId\":\"INV-42\"");
+	}
+
+	@Test
+	void findProcessesInstancesHistoryById_addsNoTextFilterForAnEmptySearch() throws Exception {
+		engine.enqueueJson("[]");
+
+		// a request parameter is a new String instance, not the interned "" literal (CIB7-2810)
+		processProvider.findProcessesInstancesHistoryById(
+			"id-1", Optional.empty(), Optional.empty(), 0, 50, new String(""), user);
+
+		assertThat(engine.take().getBody().readUtf8()).doesNotContain("orQueries");
+	}
+
+	@Test
+	void findProcessesInstancesHistoryById_addsNoTextFilterWithoutText() throws Exception {
+		engine.enqueueJson("[]");
+
+		processProvider.findProcessesInstancesHistoryById(
+			"id-1", Optional.empty(), Optional.empty(), 0, 50, null, user);
+
+		assertThat(engine.take().getBody().readUtf8()).doesNotContain("orQueries");
 	}
 
 	@Test

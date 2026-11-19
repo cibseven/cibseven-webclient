@@ -12,8 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.util.MultiValueMap;
 import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.auth.SevenResourceType;
-import org.cibseven.webapp.providers.PermissionConstants;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -24,7 +23,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
     @ApiResponse(responseCode = "401", description = "Unauthorized")
 })
 @RestController
-@RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/deployment")
+@RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH + "/deployment")
 public class DeploymentService extends BaseService {
 
     /**
@@ -46,9 +45,6 @@ public class DeploymentService extends BaseService {
             @RequestParam MultiValueMap<String, Object> data,
             @RequestParam(required = true) MultipartFile[] files,
             CIBUser user) {
-        // Check permissions
-        checkPermission(user, SevenResourceType.DEPLOYMENT, PermissionConstants.CREATE_ALL);
-
         return bpmProvider.createDeployment(data, files, user);
     }
 
@@ -75,9 +71,6 @@ public class DeploymentService extends BaseService {
             @PathVariable("id") String id,
             @RequestBody(required = false) Map<String, Object> data,
             CIBUser user) {
-        // Check permissions
-        checkPermission(user, SevenResourceType.DEPLOYMENT, PermissionConstants.CREATE_ALL);
-
         return bpmProvider.redeployDeployment(id, data, user);
     }
 }

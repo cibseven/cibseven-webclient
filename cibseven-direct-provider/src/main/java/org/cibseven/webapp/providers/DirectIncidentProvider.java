@@ -40,7 +40,7 @@ import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Incident;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -55,14 +55,14 @@ public class DirectIncidentProvider implements IIncidentProvider {
 
 	@Override
 	public Long countIncident(Map<String, Object> params, CIBUser user) {
-		IncidentQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(params, IncidentQueryDto.class);
+		IncidentQueryDto queryDto = directProviderUtil.parseQueryDto(params, IncidentQueryDto.class, user);
 		IncidentQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 		return query.count();
 	}
 
 	@Override
 	public Long countHistoricIncident(Map<String, Object> params, CIBUser user) {
-		HistoricIncidentQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(params, HistoricIncidentQueryDto.class);
+		HistoricIncidentQueryDto queryDto = directProviderUtil.parseQueryDto(params, HistoricIncidentQueryDto.class, user);
 		HistoricIncidentQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 		long count = query.count();
 		return count;
@@ -74,16 +74,10 @@ public class DirectIncidentProvider implements IIncidentProvider {
 		Integer maxResults = directProviderUtil.getMaxResults(params);
 		Map<String, Object> queryParams = directProviderUtil.withoutPagingParams(params);
 
-		IncidentQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(queryParams, IncidentQueryDto.class);
+		IncidentQueryDto queryDto = directProviderUtil.parseQueryDto(queryParams, IncidentQueryDto.class, user);
 		IncidentQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
+		List<Incident> incidents = directProviderUtil.listAndConvert(query, firstResult, maxResults, IncidentDto::fromIncident, Incident.class, user);
 
-		List<org.cibseven.bpm.engine.runtime.Incident> queryResult = QueryUtil.list(query, firstResult, maxResults);
-
-		List<Incident> incidents = new ArrayList<>();
-		for (org.cibseven.bpm.engine.runtime.Incident incident : queryResult) {
-			IncidentDto dto = IncidentDto.fromIncident(incident);
-			incidents.add(directProviderUtil.convertValue(dto, Incident.class, user));
-		}
 		RuntimeService runtimeService = directProviderUtil.getProcessEngine(user).getRuntimeService();
 		for (Incident incident : incidents) {
 			if (incident.getId() != null && incident.getRootCauseIncidentId() != null
@@ -175,7 +169,7 @@ public class DirectIncidentProvider implements IIncidentProvider {
 		Integer maxResults = directProviderUtil.getMaxResults(params);
 		Map<String, Object> queryParams = directProviderUtil.withoutPagingParams(params);
 
-		HistoricIncidentQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(queryParams, HistoricIncidentQueryDto.class);
+		HistoricIncidentQueryDto queryDto = directProviderUtil.parseQueryDto(queryParams, HistoricIncidentQueryDto.class, user);
 		HistoricIncidentQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 
 		List<HistoricIncident> queryResult = QueryUtil.list(query, firstResult, maxResults);
@@ -251,19 +245,12 @@ public class DirectIncidentProvider implements IIncidentProvider {
 		queryDto.setProcessInstanceId(processInstanceId);
 
 		IncidentQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
-		List<org.cibseven.bpm.engine.runtime.Incident> queryResult = QueryUtil.list(query, null, null);
-
-		List<Incident> result = new ArrayList<>();
-		for (org.cibseven.bpm.engine.runtime.Incident incident : queryResult) {
-			IncidentDto dto = IncidentDto.fromIncident(incident);
-			result.add(directProviderUtil.convertValue(dto, Incident.class, user));
-		}
-		return result;
+		return directProviderUtil.listAndConvert(query, null, null, IncidentDto::fromIncident, Incident.class, user);
 	}
 
 	private HistoricIncidentDto fetchHistoricIncidentById(String incidentId, CIBUser user, ObjectMapper objectMapper) {
 		Map<String, Object> params = Map.of("incidentId", incidentId);
-		HistoricIncidentQueryDto queryDto = objectMapper.convertValue(params, HistoricIncidentQueryDto.class);
+		HistoricIncidentQueryDto queryDto = directProviderUtil.parseQueryDto(params, HistoricIncidentQueryDto.class, user);
 		HistoricIncidentQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 
 		List<HistoricIncident> queryResult = QueryUtil.list(query, null, 1);

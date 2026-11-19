@@ -25,12 +25,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockMultipartFile;
 
 public class VariableProviderTest {
 
@@ -48,6 +50,23 @@ public class VariableProviderTest {
 	@AfterEach
 	void tearDown() throws Exception {
 		engine.close();
+	}
+
+	// ---------- execution variables ----------
+
+	@Test
+	void modifyVariableDataByExecutionId_sendsAnUploadedJsonVariableAsUtf8() throws Exception {
+		// JSON is UTF-8 by definition, so the upload must not be decoded with the JVM default charset (CIB7-2206)
+		String json = "{\"customer\":\"Müller 審査\"}";
+		engine.enqueueEmpty(204);
+		MockMultipartFile upload = new MockMultipartFile("data", "payload.json", "application/json",
+			json.getBytes(StandardCharsets.UTF_8));
+
+		variableProvider.modifyVariableDataByExecutionId("exec-1", "payload", upload, "Object", user);
+
+		var request = engine.take();
+		assertThat(request.getPath()).endsWith("/execution/exec-1/localVariables/payload/data");
+		assertThat(request.getBody().readUtf8()).contains(json);
 	}
 
 	// ---------- task variables ----------
@@ -140,9 +159,20 @@ public class VariableProviderTest {
 
 		variableProvider.fetchProcessFormVariables(List.of("amount"), "definition-1", false, user);
 
-		// note the missing "/key/" segment: this overload addresses the definition by id, unlike
-		// the single-argument overload above, even though both name the parameter "key"
+		// note the missing "/key/" segment: this overload addresses the definition by id, which is
+		// what the bpm-sdk start forms rely on (#1402)
 		assertThat(engine.takePath()).startsWith("/process-definition/definition-1/form-variables");
+	}
+
+	@Test
+	void fetchProcessFormVariablesByKey_withNamesAsksByProcessDefinitionKey() throws Exception {
+		engine.enqueueJson("{}");
+
+		variableProvider.fetchProcessFormVariablesByKey(List.of("amount", "customer"), "invoice", false, user);
+
+		// CIB7-2356
+		assertThat(engine.takePath())
+			.isEqualTo("/process-definition/key/invoice/form-variables?deserializeValues=false&variableNames=amount,customer");
 	}
 
 	// ---------- process instance variables ----------
@@ -244,5 +274,22 @@ public class VariableProviderTest {
 		var request = engine.take();
 		assertThat(request.getMethod()).isEqualTo("POST");
 		assertThat(request.getPath()).endsWith("/execution/exec-1/localVariables/");
+	}
+
+	// ---------- process variable write of embedded forms (CIB7-2757) ----------
+
+	@Test
+	void putProcessInstanceVariable_putsTheSdkBodyUnchanged() throws Exception {
+		engine.enqueueEmpty(204);
+		// process-instance.setVariable sends the name next to the value
+		Map<String, Object> variable = Map.of("name", "order data", "value", "{\"a\":1}", "type", "Json");
+
+		variableProvider.putProcessInstanceVariable("pi-1", "order data", variable, user);
+
+		var request = engine.take();
+		assertThat(request.getMethod()).isEqualTo("PUT");
+		assertThat(request.getPath()).isEqualTo("/engine-rest/process-instance/pi-1/variables/order%20data");
+		assertThat(WebclientJsonMapper.plain().readTree(request.getBody().readUtf8()))
+			.isEqualTo(WebclientJsonMapper.plain().valueToTree(variable));
 	}
 }

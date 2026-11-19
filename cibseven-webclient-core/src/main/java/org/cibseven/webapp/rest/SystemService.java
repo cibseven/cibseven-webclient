@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.rest.model.Metric;
 import org.springframework.beans.factory.InitializingBean;
@@ -29,7 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -38,13 +39,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 	@ApiResponse(responseCode= "500", description = "An unexpected system error occured"),
 	@ApiResponse(responseCode= "401", description = "Unauthorized")
 })
-@RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/system")
+@RestController @RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH + "/system")
 public class SystemService extends BaseService implements InitializingBean {
 
  @Autowired BpmProvider bpmProvider;
 
-	@Autowired
-	private CustomRestTemplate restTemplate;
+	private final CustomRestTemplate restTemplate;
+
+	public SystemService(CustomRestTemplate restTemplate) {
+		this.restTemplate = restTemplate;
+	}
 
 	public void afterPropertiesSet() {
 	}
@@ -59,8 +63,13 @@ public class SystemService extends BaseService implements InitializingBean {
 			return bpmProvider.getMetrics(queryParams, user);
 	}
 
+	/**
+	 * Statistics of the connection pool towards the engine, for logged-in users. Deliberately
+	 * answered without a call to the engine (such as a permission check): that call would go
+	 * through this very pool, change the figures it reports and block when the pool is exhausted.
+	 */
 	@GetMapping("/pool-status")
-	public String poolStatus() {
+	public String poolStatus(CIBUser user) {
 		return restTemplate.getConnectionPoolStats();
 	}
 

@@ -21,9 +21,8 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.auth.SevenResourceType;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.providers.BpmProvider;
-import org.cibseven.webapp.providers.PermissionConstants;
 import org.cibseven.webapp.rest.model.HistoryBatch;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +32,7 @@ import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.servlet.http.HttpServletRequest;
 
-@RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/history/batch")
+@RestController @RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH + "/history/batch")
 public class HistoryBatchService extends BaseService implements InitializingBean {
 
 	@Autowired BpmProvider bpmProvider;
@@ -47,7 +46,6 @@ public class HistoryBatchService extends BaseService implements InitializingBean
 			@RequestParam Map<String, Object> params,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		checkPermission(user, SevenResourceType.BATCH, PermissionConstants.READ_HISTORY_ALL);
 		return bpmProvider.getHistoricBatches(params, user);
 	}
 
@@ -60,7 +58,6 @@ public class HistoryBatchService extends BaseService implements InitializingBean
 			@RequestParam Map<String, Object> params,
 			Locale loc, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		checkPermission(user, SevenResourceType.BATCH, PermissionConstants.READ_HISTORY_ALL);
 		return bpmProvider.getHistoricBatchCount(params, user);
 	}
 	
@@ -68,7 +65,6 @@ public class HistoryBatchService extends BaseService implements InitializingBean
 	public HistoryBatch getHistoricBatchById(
 			@Parameter(description = "Batch id") @PathVariable String id, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		checkPermission(user, SevenResourceType.BATCH, PermissionConstants.READ_HISTORY_ALL);
 		return bpmProvider.getHistoricBatchById(id, user);
 	}
 	
@@ -76,7 +72,6 @@ public class HistoryBatchService extends BaseService implements InitializingBean
 	public ResponseEntity<Void> deleteHistoricBatch(
 			@Parameter(description = "Batch id") @PathVariable String id, HttpServletRequest rq) {
 		CIBUser user = checkAuthorization(rq, true);
-		checkPermission(user, SevenResourceType.BATCH, PermissionConstants.DELETE_HISTORY_ALL);
 		bpmProvider.deleteHistoricBatch(id, user);
 	  // return 204 No Content, no body
 	  return ResponseEntity.noContent().build();

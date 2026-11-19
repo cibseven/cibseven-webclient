@@ -18,11 +18,15 @@ package org.cibseven.modeler.provider;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
+import java.util.stream.IntStream;
 
 import org.cibseven.modeler.model.FolderEntity;
+import org.cibseven.modeler.provider.FolderProvider.FolderChange;
 import org.cibseven.modeler.repository.FolderRepository;
 import org.cibseven.modeler.repository.FormRepository;
 import org.cibseven.modeler.repository.ProcessDiagramRepository;
+import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.exception.InvalidFolderException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,7 +41,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -167,7 +174,7 @@ class FolderProviderTest {
 		when(diagrams.findByFolderIdIn(anyList())).thenReturn(List.of());
 		when(forms.findByFolderIdIn(anyList())).thenReturn(List.of());
 
-		FolderProvider.FolderContents removed = provider.delete("project");
+		FolderProvider.FolderContents removed = provider.delete("project", () -> false);
 
 		assertThat(removed.folders()).isEqualTo(1);
 		assertThat(removed.models()).isEqualTo(1);
@@ -194,7 +201,7 @@ class FolderProviderTest {
 	 */
 	@Test
 	void refusesASecondTopLevelFolderWithTheSameName() {
-		when(folders.findByParentIdIsNullAndName("Invoicing")).thenReturn(Optional.of(project));
+		when(folders.findFirstByParentIdIsNullAndNameOrderByCreatedAsc("Invoicing")).thenReturn(Optional.of(project));
 
 		assertThatThrownBy(() -> provider.create(null, "Invoicing", "demo"))
 			.isInstanceOf(InvalidFolderException.class)
@@ -229,5 +236,294 @@ class FolderProviderTest {
 	@Test
 	void reportsALookupWithoutAnIdAsNotFound() {
 		assertThatThrownBy(() -> provider.find(null)).isInstanceOf(NoObjectFoundException.class);
+	}
+
+	private FolderEntity userFolder(String user) {
+		FolderEntity userFolder = folder("user-" + user, null, user);
+		userFolder.setCreatedBy(user);
+		return userFolder;
+	}
+
+	@Test
+	void createsTheFolderOfAUserOnTheFirstVisit() {
+		FolderEntity created = provider.userFolder("demo");
+
+		assertThat(created.getParentId()).isNull();
+		assertThat(created.getName()).isEqualTo("demo");
+		assertThat(created.getCreatedBy()).isEqualTo("demo");
+		assertThat(created.isUserFolder()).isTrue();
+	}
+
+	@Test
+	void findsTheUserFolderOnLaterVisitsInsteadOfCreatingAnother() {
+		FolderEntity existing = userFolder("demo");
+		when(folders.findFirstByParentIdIsNullAndNameAndCreatedByOrderByCreatedAsc("demo", "demo"))
+			.thenReturn(Optional.of(existing));
+
+		assertThat(provider.userFolder("demo")).isSameAs(existing);
+		verify(folders, never()).save(any());
+	}
+
+	@Test
+	void isAUserFolderOnlyAtTheTopLevelAndUnderTheNameOfItsCreator() {
+		FolderEntity nested = folder("nested", "project", "demo");
+		nested.setCreatedBy("demo");
+		project.setCreatedBy("demo");
+
+		assertThat(userFolder("demo").isUserFolder()).isTrue();
+		assertThat(nested.isUserFolder()).isFalse();
+		assertThat(project.isUserFolder()).isFalse();
+	}
+
+	@Test
+	void refusesToDeleteAUserFolderForAUserWhoMayNotManageUserFolders() {
+		userFolder("demo");
+
+		assertThatThrownBy(() -> provider.delete("user-demo", () -> false))
+			.isInstanceOf(AccessDeniedException.class);
+		verify(folders, never()).deleteAllById(any());
+	}
+
+	@Test
+	void refusesToRenameOrMoveAUserFolderForAUserWhoMayNotManageUserFolders() {
+		FolderEntity userFolder = userFolder("demo");
+
+		assertThatThrownBy(() -> provider.update("user-demo", new FolderChange(true, "Mine", false, null), "demo", () -> false))
+			.isInstanceOf(AccessDeniedException.class);
+		assertThatThrownBy(() -> provider.update("user-demo", new FolderChange(false, null, true, "project"), "demo", () -> false))
+			.isInstanceOf(AccessDeniedException.class);
+		assertThat(userFolder.getName()).isEqualTo("demo");
+		assertThat(userFolder.getParentId()).isNull();
+		verify(folders, never()).save(any());
+	}
+
+	/** An administrator cleans up the folder of somebody who left. */
+	@Test
+	void letsAnAdministratorDeleteAUserFolder() {
+		userFolder("demo");
+		when(diagrams.findByFolderIdIn(anyList())).thenReturn(List.of());
+		when(forms.findByFolderIdIn(anyList())).thenReturn(List.of());
+
+		provider.delete("user-demo", () -> true);
+
+		verify(folders).deleteAllById(List.of("user-demo"));
+	}
+
+	/** Whether the caller is an administrator costs a call to the engine, so only a user folder asks. */
+	@Test
+	void keepsWhatIsInsideAUserFolderChangeableWithoutAskingForAdministrators() {
+		folder("drafts", "user-demo", "Drafts");
+		userFolder("demo");
+		BooleanSupplier notToBeAsked = () -> {
+			throw new AssertionError("asked whether the caller may manage user folders for an ordinary folder");
+		};
+		when(diagrams.findByFolderIdIn(anyList())).thenReturn(List.of());
+		when(forms.findByFolderIdIn(anyList())).thenReturn(List.of());
+
+		FolderEntity renamed = provider.update("drafts", new FolderChange(true, "Sketches", false, null), "demo", notToBeAsked);
+		provider.delete("drafts", notToBeAsked);
+
+		assertThat(renamed.getName()).isEqualTo("Sketches");
+		verify(folders).deleteAllById(List.of("drafts"));
+	}
+
+	private ProjectAccess watchedAccess() {
+		ProjectAccess access = Mockito.mock(ProjectAccess.class);
+		ReflectionTestUtils.setField(provider, "projectAccess", access);
+		return access;
+	}
+
+	@Test
+	void findsTheProjectOfEveryFolderAtAnyDepth() {
+		FolderEntity drafts = folder("drafts", "project", "Drafts");
+		FolderEntity old = folder("old", "drafts", "Old");
+		FolderEntity archive = folder("archive", null, "Archive");
+		when(folders.findAll()).thenReturn(List.of(project, drafts, old, archive));
+
+		assertThat(provider.projectsByFolder())
+			.containsEntry("project", "project")
+			.containsEntry("drafts", "project")
+			.containsEntry("old", "project")
+			.containsEntry("archive", "archive");
+		assertThat(provider.projectOf("old")).isEqualTo("project");
+		assertThat(provider.projectOf("gone")).isNull();
+		assertThat(provider.projectOf(null)).isNull();
+	}
+
+	/** A broken chain would otherwise walk for ever; the folder whose parent is gone counts as the top. */
+	@Test
+	void stopsAtAFolderWhoseParentIsGone() {
+		FolderEntity orphan = folder("orphan", "deleted", "Orphan");
+		FolderEntity a = folder("a", "b", "A");
+		FolderEntity b = folder("b", "a", "B");
+		when(folders.findAll()).thenReturn(List.of(orphan, a, b));
+
+		assertThat(provider.projectOf("orphan")).isEqualTo("orphan");
+		assertThat(provider.projectOf("a")).isNotNull();
+	}
+
+	@Test
+	void makesTheCreatorTheFirstAdminOfANewProjectOnly() {
+		ProjectAccess access = watchedAccess();
+
+		FolderEntity created = provider.create(null, "Archive", "demo");
+		provider.create("project", "Drafts", "demo");
+
+		verify(access).projectCreated("demo", created);
+		verify(access, Mockito.times(1)).projectCreated(any(), any());
+	}
+
+	/** A user folder from before there were members is claimed by its owner on the next visit. */
+	@Test
+	void givesAnExistingUserFolderItsOwner() {
+		ProjectAccess access = watchedAccess();
+		FolderEntity existing = userFolder("demo");
+		when(folders.findFirstByParentIdIsNullAndNameAndCreatedByOrderByCreatedAsc("demo", "demo"))
+			.thenReturn(Optional.of(existing));
+
+		provider.userFolder("demo");
+
+		verify(access).projectCreated("demo", existing);
+	}
+
+	@Test
+	void handsAFolderTakenOutToTheTopLevelTheMembersOfItsFormerProject() {
+		ProjectAccess access = watchedAccess();
+		FolderEntity drafts = folder("drafts", "project", "Drafts");
+		FolderEntity old = folder("old", "drafts", "Old");
+		when(folders.findAll()).thenReturn(List.of(project, drafts, old));
+
+		FolderEntity moved = provider.move("old", null, "demo");
+
+		verify(access).becameProject("demo", moved, "project");
+	}
+
+	@Test
+	void asksNothingWhenAFolderStaysInsideItsProject() {
+		ProjectAccess access = watchedAccess();
+		folder("drafts", "project", "Drafts");
+		folder("old", "drafts", "Old");
+
+		provider.move("old", "project", "demo");
+
+		verify(access, never()).becameProject(any(), any(), any());
+	}
+
+	/** A folder at the top level is its own project, so it learns it once its id exists. */
+	@Test
+	void makesANewFolderAtTheTopLevelItsOwnProject() {
+		when(folders.save(any())).thenAnswer(call -> {
+			FolderEntity saved = call.getArgument(0);
+			if (saved.getId() == null) {
+				saved.setId("new");
+			}
+			return saved;
+		});
+
+		assertThat(provider.create(null, "Archive", "demo").getProjectId()).isEqualTo("new");
+	}
+
+	@Test
+	void putsANewFolderIntoTheProjectOfItsParent() {
+		project.setProjectId("project");
+		FolderEntity drafts = folder("drafts", "project", "Drafts");
+		drafts.setProjectId("project");
+
+		assertThat(provider.create("drafts", "Old", "demo").getProjectId()).isEqualTo("project");
+	}
+
+	/** A parent from before the project was kept has none stored; the tree tells it. */
+	@Test
+	void asksTheTreeForTheProjectOfAParentWithoutOne() {
+		FolderEntity drafts = folder("drafts", "project", "Drafts");
+		when(folders.findAll()).thenReturn(List.of(project, drafts));
+
+		assertThat(provider.create("drafts", "Old", "demo").getProjectId()).isEqualTo("project");
+	}
+
+	/** Moved into another project, the folder takes everything below it along. */
+	@Test
+	void movesTheWholeSubtreeIntoTheProjectOfTheTarget() {
+		project.setProjectId("project");
+		FolderEntity drafts = folder("drafts", "project", "Drafts");
+		drafts.setProjectId("project");
+		FolderEntity archive = folder("archive", null, "Archive");
+		archive.setProjectId("archive");
+		FolderEntity old = folder("old", "drafts", "Old");
+		when(folders.findByParentIdOrderByNameAsc("drafts")).thenReturn(List.of(old));
+
+		FolderEntity moved = provider.move("drafts", "archive", "demo");
+
+		assertThat(moved.getProjectId()).isEqualTo("archive");
+		verify(folders).setProject(List.of("drafts", "old"), "archive");
+	}
+
+	@Test
+	void makesAFolderTakenOutToTheTopLevelAProjectWithEverythingBelowIt() {
+		project.setProjectId("project");
+		FolderEntity drafts = folder("drafts", "project", "Drafts");
+		drafts.setProjectId("project");
+		when(folders.findAll()).thenReturn(List.of(project, drafts));
+
+		FolderEntity moved = provider.move("drafts", null, "demo");
+
+		assertThat(moved.getProjectId()).isEqualTo("drafts");
+		verify(folders).setProject(List.of("drafts"), "drafts");
+	}
+
+	@Test
+	void rewritesNothingWhenAFolderStaysInItsProject() {
+		project.setProjectId("project");
+		FolderEntity drafts = folder("drafts", "project", "Drafts");
+		drafts.setProjectId("project");
+		folder("old", "drafts", "Old").setProjectId("project");
+
+		provider.move("old", "project", "demo");
+
+		verify(folders, never()).setProject(any(), any());
+	}
+
+	/** A database takes only so many values in one list, so a large subtree goes in slices. */
+	@Test
+	void rewritesALargeSubtreeInSlices() {
+		FolderEntity archive = folder("archive", null, "Archive");
+		archive.setProjectId("archive");
+		List<FolderEntity> children = IntStream.range(0, ProjectGuard.QUERY_LIMIT + 100).mapToObj(i -> {
+			FolderEntity child = new FolderEntity();
+			child.setId("child-" + i);
+			child.setParentId("project");
+			return child;
+		}).toList();
+		when(folders.findByParentIdOrderByNameAsc("project")).thenReturn(children);
+
+		provider.move("project", "archive", "demo");
+
+		verify(folders, times(2)).setProject(any(), eq("archive"));
+		verify(folders).setProject(argThat(ids -> ids.size() == ProjectGuard.QUERY_LIMIT), eq("archive"));
+		verify(folders).setProject(argThat(ids -> ids.size() == 101), eq("archive"));
+	}
+
+	@Test
+	void namesTheFoldersAtTheTopLevelAsTheProjects() {
+		when(folders.findProjectIds()).thenReturn(List.of("project", "archive"));
+
+		assertThat(provider.projectIds()).containsExactlyInAnyOrder("project", "archive");
+		verify(folders, never()).findAll();
+	}
+
+	/** Folders from before the project was kept have none, and a stored one may be stale. */
+	@Test
+	void storesTheProjectOfEveryFolderThatHasAWrongOrNoOne() {
+		FolderEntity drafts = folder("drafts", "project", "Drafts");
+		drafts.setProjectId("elsewhere");
+		FolderEntity archive = folder("archive", null, "Archive");
+		archive.setProjectId("archive");
+		when(folders.findAll()).thenReturn(List.of(project, drafts, archive));
+
+		assertThat(provider.fillProjects()).isEqualTo(2);
+
+		assertThat(project.getProjectId()).isEqualTo("project");
+		assertThat(drafts.getProjectId()).isEqualTo("project");
+		verify(folders).saveAll(List.of(project, drafts));
 	}
 }

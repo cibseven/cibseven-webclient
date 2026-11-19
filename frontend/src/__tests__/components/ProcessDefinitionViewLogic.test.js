@@ -383,6 +383,15 @@ describe('ProcessDefinitionView - statistics placeholders', () => {
     )).toBe(true)
   })
 
+  // the backend sends 0 incidents when it did not count them
+  it('should placeholder the incidents when lazy loading', () => {
+    const vm = context({ processDefinitions: [version({ incidents: 0 })] })
+
+    m.resetStatsLazyLoad.call(vm, true)
+
+    expect(vm.processDefinitions[0].incidents).toBe('-')
+  })
+
   it('should leave the counts alone when not lazy loading', () => {
     const vm = context({ processDefinitions: [version({ runningInstances: 5 })] })
 
@@ -391,16 +400,12 @@ describe('ProcessDefinitionView - statistics placeholders', () => {
     expect(vm.processDefinitions[0].runningInstances).toBe(5)
   })
 
-  it('loadStatistics should publish the statistics for the loaded definition', async () => {
+  it('loadStatistics should load the statistics for the loaded definition', async () => {
     const vm = context({ process: version() })
-    ProcessService.findProcessStatistics.mockResolvedValue([{ id: 'task_1' }])
 
     await m.loadStatistics.call(vm)
 
-    expect(ProcessService.findProcessStatistics).toHaveBeenCalledWith('pd:2:abc')
-    expect(vm.$store.dispatch).toHaveBeenCalledWith('setStatistics', {
-      process: vm.process, statistics: [{ id: 'task_1' }]
-    })
+    expect(vm.$store.dispatch).toHaveBeenCalledWith('loadStatistics', vm.process)
   })
 })
 
@@ -416,12 +421,21 @@ describe('ProcessDefinitionView - loadProcessVersion', () => {
     expect(vm.loadStatistics).not.toHaveBeenCalled()
   })
 
-  it('should load statistics when the version has none yet', async () => {
-    const vm = context({ findProcessAndAssignData: vi.fn(), loadStatistics: vi.fn() })
+  it('should load statistics when the version has none yet and an instance is shown', async () => {
+    const vm = context({ instanceId: 'pi-1', findProcessAndAssignData: vi.fn(), loadStatistics: vi.fn() })
 
     await m.loadProcessVersion.call(vm, version())
 
     expect(vm.loadStatistics).toHaveBeenCalled()
+  })
+
+  // ProcessInstancesView loads them with its instances; loading here too doubled the request
+  it('should leave statistics to the instances view when no instance is shown', async () => {
+    const vm = context({ findProcessAndAssignData: vi.fn(), loadStatistics: vi.fn() })
+
+    await m.loadProcessVersion.call(vm, version())
+
+    expect(vm.loadStatistics).not.toHaveBeenCalled()
   })
 
   // Arriving from a call activity, the parent is shown as a breadcrumb.
@@ -458,6 +472,17 @@ describe('ProcessDefinitionView - findProcessAndAssignData', () => {
     await m.findProcessAndAssignData.call(vm, entry)
 
     expect(entry).toMatchObject({ name: 'Invoice', runningInstances: 3 })
+  })
+
+  // the backend does not fill them in there: incidents always come as 0, the deployment time as null
+  it('should keep the incidents and deployment time of the version entry', async () => {
+    const entry = version({ id: 'pd:2:abc', incidents: 3, deploymentTime: '2025-05-16T12:44:00.000+0200' })
+    const vm = context({ processDefinitions: [entry] })
+    ProcessService.findProcessById.mockResolvedValue({ id: 'pd:2:abc', runningInstances: 3, incidents: 0, deploymentTime: null })
+
+    await m.findProcessAndAssignData.call(vm, entry)
+
+    expect(entry).toMatchObject({ runningInstances: 3, incidents: 3, deploymentTime: '2025-05-16T12:44:00.000+0200' })
   })
 
   it('should leave other version entries untouched', async () => {
@@ -677,6 +702,29 @@ describe('ProcessDefinitionView - onRefreshProcessDefinitions', () => {
 
     expect(vm.loadProcessVersion).not.toHaveBeenCalled()
   })
+
+  it('should tell which reload is running while it runs', async () => {
+    const vm = context({ process: version(), resetStatsLazyLoad: vi.fn(), loadProcessVersion: vi.fn() })
+    let seen
+    ProcessService.findProcessVersionsByDefinitionKey.mockImplementation(async () => { seen = vm.refreshingVersions; return [version()] })
+
+    await m.onRefreshProcessDefinitions.call(vm, false)
+    expect(seen).toBe('all')
+    expect(vm.refreshingVersions).toBeNull()
+
+    await m.onRefreshProcessDefinitions.call(vm, true)
+    expect(seen).toBe('refresh')
+    expect(vm.refreshingVersions).toBeNull()
+  })
+
+  it('should end the reload state when the versions cannot be loaded', async () => {
+    const vm = context({ resetStatsLazyLoad: vi.fn(), loadProcessVersion: vi.fn() })
+    ProcessService.findProcessVersionsByDefinitionKey.mockRejectedValue(new Error('down'))
+
+    await expect(m.onRefreshProcessDefinitions.call(vm, false)).rejects.toThrow('down')
+
+    expect(vm.refreshingVersions).toBeNull()
+  })
 })
 
 describe('ProcessDefinitionView - misc', () => {
@@ -771,5 +819,16 @@ describe('ProcessDefinitionView - exportCSV', () => {
     const [blob, filename] = vm.$refs.importPopper.triggerDownload.mock.calls[0]
     expect(blob.type).toBe('text/csv')
     expect(filename).toMatch(/^Management_Instances_\d{8}_\d{4}\.csv$/)
+  })
+})
+
+// CIB7-2717: the next visit loads them again, so a deployment made in between is seen
+describe('ProcessDefinitionView - leaving the process pages', () => {
+  it('should forget the called process definitions', () => {
+    const vm = { clearStaticCalledProcessDefinitions: vi.fn() }
+
+    ProcessDefinitionView.beforeUnmount.call(vm)
+
+    expect(vm.clearStaticCalledProcessDefinitions).toHaveBeenCalled()
   })
 })

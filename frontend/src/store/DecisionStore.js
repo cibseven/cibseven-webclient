@@ -153,25 +153,33 @@ const DecisionStore = {
     async getDecisionByKeyAndTenant(_, { key, tenant }) {
       return DecisionService.getDecisionByKeyAndTenant(key, tenant)
     },
-    async getDecisionVersionsByKey({ commit }, { key, lazyLoad }) {
-      const result = await DecisionService.getDecisionVersionsByKey(key, lazyLoad)
+    // The versions of the opened tenant, or those without a tenant: a key can be deployed for several
+    // tenants, and for a tenant and without one (CIB7-2392).
+    // isCurrent: false when the caller has moved on meanwhile, so that a late answer for another tenant
+    // cannot replace the list of the tenant shown now
+    async getDecisionVersionsByKey({ commit }, { key, lazyLoad, tenantId, isCurrent = () => true }) {
+      const result = await DecisionService.getDecisionVersionsByKey(key, lazyLoad, { tenantId, withoutTenantId: !tenantId })
       if (lazyLoad) {
         result.forEach(v => {
           v.allInstances = '-'
         })
       }
-      commit('setDecisionVersions', { key, versions: result })
+      if (isCurrent()) commit('setDecisionVersions', { key, versions: result })
       return result
     },
-    async refreshDecisionVersions({ commit, getters }, key, lazyLoad) {
-      // Get fresh versions from service
-      const freshVersions = await DecisionService.getDecisionVersionsByKey(key, lazyLoad)
-      // Get current versions from store
+    // One payload: a Vuex action receives no second argument. A caller passing only the key keeps the
+    // tenant of the versions shown.
+    async refreshDecisionVersions({ commit, getters }, payload) {
+      const { key, lazyLoad, tenantId } = typeof payload === 'string'
+        ? { key: payload, tenantId: getters.getDecisionVersions(payload)[0]?.tenantId }
+        : payload
+      const freshVersions = await DecisionService.getDecisionVersionsByKey(key, lazyLoad, { tenantId, withoutTenantId: !tenantId })
       const currentVersions = getters.getDecisionVersions(key)
-      // Find new versions (versions that don't exist in current list)
-      const newVersions = freshVersions.filter(freshVersion => 
-        !currentVersions.some(currentVersion => currentVersion.id === freshVersion.id)
-      )
+      // The view switched to another tenant meanwhile: its list is not the one to merge into
+      if (currentVersions.length && (currentVersions[0].tenantId ?? null) !== (tenantId ?? null)) return
+      const newVersions = freshVersions.filter(freshVersion =>
+        !currentVersions.some(currentVersion => currentVersion.id === freshVersion.id))
+      if (lazyLoad) newVersions.forEach(v => { v.allInstances = '-' })
       if (newVersions.length > 0) {
         // Merge current versions with new versions, sorted by version number descending
         const mergedVersions = [...currentVersions, ...newVersions]

@@ -21,12 +21,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.Decision;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 public class DecisionProviderTest {
@@ -133,28 +134,33 @@ public class DecisionProviderTest {
 
 	@Test
 	void getXmlByKeyAndTenant_usesTheTenantIdSegment() throws Exception {
-		engine.enqueueJson("{\"dmnXml\":\"<definitions/>\"}");
+		engine.enqueueJson("{\"id\":\"dec-1\",\"dmnXml\":\"<definitions/>\"}");
 
-		decisionProvider.getXmlByKeyAndTenant("risk", "acme", user);
+		Object xml = decisionProvider.getXmlByKeyAndTenant("risk", "acme", user);
 
+		assertThat(xml).asInstanceOf(InstanceOfAssertFactories.MAP).containsEntry("dmnXml", "<definitions/>");
 		assertThat(engine.takePath()).isEqualTo("/decision-definition/key/risk/tenant-id/acme/xml");
 	}
 
-	/**
-	 * TODO KNOWN BUG (not fixed): every other tenant-scoped method in this provider builds
-	 * ".../key/{key}/tenant-id/{tenant}/...", but
-	 * {@code evaluateDecisionDefinitionByKeyAndTenant} concatenates {@code "/tenant" + tenant} with
-	 * no {@code "-id/"} and no separator, so it requests "/tenantacme" and the engine answers 404.
-	 * Evaluating a tenant-scoped decision cannot work through this method. This test asserts the
-	 * path the engine expects; it fails until the URL is built like its neighbours.
-	 */
 	@Test
-	@Disabled("KNOWN BUG: evaluateDecisionDefinitionByKeyAndTenant builds /tenant<id> instead of /tenant-id/<id>")
+	void getXmlByKey_returnsTheDmnXml() throws Exception {
+		engine.enqueueJson("{\"id\":\"dec-1\",\"dmnXml\":\"<definitions/>\"}");
+
+		Object xml = decisionProvider.getXmlByKey("risk", user);
+
+		assertThat(xml).asInstanceOf(InstanceOfAssertFactories.MAP)
+			.containsEntry("id", "dec-1")
+			.containsEntry("dmnXml", "<definitions/>");
+		assertThat(engine.takePath()).isEqualTo("/decision-definition/key/risk/xml");
+	}
+
+	@Test
 	void evaluateDecisionDefinitionByKeyAndTenant_usesTheTenantIdSegment() throws Exception {
-		engine.enqueueJson("[]");
+		engine.enqueueJson("[{\"risk\":{\"value\":\"high\",\"type\":\"String\"}}]");
 
-		decisionProvider.evaluateDecisionDefinitionByKeyAndTenant(new HashMap<>(), "risk", "acme", user);
+		Object result = decisionProvider.evaluateDecisionDefinitionByKeyAndTenant(new HashMap<>(), "risk", "acme", user);
 
+		assertThat(result).asInstanceOf(InstanceOfAssertFactories.LIST).hasSize(1);
 		assertThat(engine.takePath()).isEqualTo("/decision-definition/key/risk/tenant-id/acme/evaluate");
 	}
 
@@ -164,11 +170,24 @@ public class DecisionProviderTest {
 		Map<String, Object> data = new HashMap<>();
 		data.put("variables", new HashMap<>());
 
-		decisionProvider.evaluateDecisionDefinitionByKey(data, "risk", user);
+		Object result = decisionProvider.evaluateDecisionDefinitionByKey(data, "risk", user);
 
+		assertThat(result).asInstanceOf(InstanceOfAssertFactories.LIST)
+			.singleElement().asInstanceOf(InstanceOfAssertFactories.MAP)
+			.containsEntry("risk", Map.of("value", "high", "type", "String"));
 		var request = engine.take();
 		assertThat(request.getMethod()).isEqualTo("POST");
 		assertThat(request.getPath()).endsWith("/decision-definition/key/risk/evaluate");
+	}
+
+	@Test
+	void evaluateDecisionDefinitionById_returnsTheEvaluationResult() throws Exception {
+		engine.enqueueJson("[{\"risk\":{\"value\":\"high\",\"type\":\"String\"}}]");
+
+		Object result = decisionProvider.evaluateDecisionDefinitionById("dec-1", new HashMap<>(), user);
+
+		assertThat(result).asInstanceOf(InstanceOfAssertFactories.LIST).hasSize(1);
+		assertThat(engine.takePath()).isEqualTo("/decision-definition/dec-1/evaluate");
 	}
 
 	@Test
@@ -178,5 +197,70 @@ public class DecisionProviderTest {
 		decisionProvider.getDecisionDefinitionById("dec-1", java.util.Optional.empty(), user);
 
 		assertThat(engine.takePath()).startsWith("/decision-definition/dec-1");
+	}
+
+	// ---------- versions of one tenant (CIB7-2392) ----------
+
+	@Test
+	void getDecisionVersionsByKey_asksTheEngineForOneTenantsVersions() throws Exception {
+		engine.enqueueJson("[]");
+
+		decisionProvider.getDecisionVersionsByKey("risk", "acme", false, Optional.of(true), user);
+
+		assertThat(engine.takePath()).isEqualTo("/decision-definition?key=risk&sortBy=version&sortOrder=desc&tenantIdIn=acme");
+	}
+
+	@Test
+	void getDecisionVersionsByKey_asksTheEngineForTheVersionsWithoutTenant() throws Exception {
+		engine.enqueueJson("[]");
+
+		decisionProvider.getDecisionVersionsByKey("risk", null, true, Optional.of(true), user);
+
+		assertThat(engine.takePath()).isEqualTo("/decision-definition?key=risk&sortBy=version&sortOrder=desc&withoutTenantId=true");
+	}
+
+	@Test
+	void getDecisionVersionsByKey_letsTheTenantWinOverWithoutTenant() throws Exception {
+		engine.enqueueJson("[]");
+
+		decisionProvider.getDecisionVersionsByKey("risk", "acme", true, Optional.of(true), user);
+
+		assertThat(engine.takePath()).endsWith("&tenantIdIn=acme");
+	}
+
+	@Test
+	void getDecisionVersionsByKey_encodesTheTenantSoItCannotAddParameters() throws Exception {
+		engine.enqueueJson("[]");
+
+		decisionProvider.getDecisionVersionsByKey("risk", "a&withoutTenantId=true", false, Optional.of(true), user);
+
+		assertThat(engine.takePath()).isEqualTo("/decision-definition?key=risk&sortBy=version&sortOrder=desc&tenantIdIn=a%26withoutTenantId%3Dtrue");
+	}
+
+	@Test
+	void getDecisionVersionsByKey_encodesTheKey() throws Exception {
+		engine.enqueueJson("[]");
+
+		decisionProvider.getDecisionVersionsByKey("risk&tenantIdIn=acme", null, true, Optional.of(true), user);
+
+		assertThat(engine.takePath()).isEqualTo("/decision-definition?key=risk%26tenantIdIn%3Dacme&sortBy=version&sortOrder=desc&withoutTenantId=true");
+	}
+
+	@Test
+	void getDecisionVersionsByKey_keepsEveryTenantsVersionsWithoutARestriction() throws Exception {
+		engine.enqueueJson("[]");
+
+		decisionProvider.getDecisionVersionsByKey("risk", Optional.of(true), user);
+
+		assertThat(engine.takePath()).isEqualTo("/decision-definition?key=risk&sortBy=version&sortOrder=desc");
+	}
+
+	@Test
+	void getDecisionVersionsByKey_treatsAnEmptyTenantAsNone() throws Exception {
+		engine.enqueueJson("[]");
+
+		decisionProvider.getDecisionVersionsByKey("risk", "", true, Optional.of(true), user);
+
+		assertThat(engine.takePath()).isEqualTo("/decision-definition?key=risk&sortBy=version&sortOrder=desc&withoutTenantId=true");
 	}
 }

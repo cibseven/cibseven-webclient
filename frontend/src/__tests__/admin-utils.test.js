@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 import { describe, it, expect } from 'vitest'
-import { isValidEmail, same, isValidId, notEmpty, getStringObjByKeys } from '@/components/admin/utils'
+import { isValidEmail, same, isValidId, notEmpty, getStringObjByKeys, profileTabRouteName } from '@/components/admin/utils'
 
 describe('notEmpty', () => {
   it('null', () => {
@@ -167,5 +167,15 @@ describe('getStringObjByKeys', () => {
     const keys = ['type', 'userIdGroupId', 'permissions', 'resourceId']
     const obj = { type: '1', userId: 'kermit', groupId: null, permissions: 'ALL', resourceId: '*' }
     expect(getStringObjByKeys(keys, obj)).toBe('1;kermit;ALL;*')
+  })
+})
+
+describe('profileTabRouteName', () => {
+  it.each([
+    ['account', 'preferences', 'accountPreferences'],
+    ['adminUser', 'profile', 'adminUserProfile'],
+    ['adminGroup', 'information', 'adminGroupInformation']
+  ])('names the %s tab %s %s', (page, tab, name) => {
+    expect(profileTabRouteName(page, tab)).toBe(name)
   })
 })

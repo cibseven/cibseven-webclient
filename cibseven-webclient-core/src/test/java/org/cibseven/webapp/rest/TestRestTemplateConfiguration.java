@@ -16,12 +16,19 @@
  */
 package org.cibseven.webapp.rest;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.cibseven.webapp.config.SevenWebclientProperties;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 
 /**
  * Configuration class for tests that extends RestTemplateConfiguration.
@@ -49,10 +56,23 @@ public class TestRestTemplateConfiguration extends RestTemplateConfiguration {
     )
     public CustomRestTemplate customRestTemplate() {
         log.info("Creating CustomRestTemplate bean for tests");
-        // Create a new CustomRestTemplate instance
         // It will be configured via @PostConstruct using @Autowired dependencies
-        CustomRestTemplate template = new CustomRestTemplate();
+        CustomRestTemplate template = webclientCustomRestTemplate();
         log.info("CustomRestTemplate created");
+        return template;
+    }
+
+    /**
+     * Same converter setup as SevenWebclientContext#customRestTemplate: the JSON converter Spring 7
+     * registers by default is swapped for one on the webclient's own mapper.
+     */
+    public static CustomRestTemplate webclientCustomRestTemplate() {
+        CustomRestTemplate template = new CustomRestTemplate();
+        JacksonJsonHttpMessageConverter json = new JacksonJsonHttpMessageConverter(
+                WebclientJsonMapper.create(new SevenWebclientProperties()));
+        List<HttpMessageConverter<?>> converters = new ArrayList<>(template.getMessageConverters());
+        converters.replaceAll(c -> c instanceof JacksonJsonHttpMessageConverter ? json : c);
+        template.setMessageConverters(converters);
         return template;
     }
 }

@@ -1,0 +1,384 @@
+/*
+ * Copyright CIB software GmbH and/or licensed to CIB software GmbH
+ * under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright
+ * ownership. CIB software licenses this file to you under the Apache License,
+ * Version 2.0; you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+import { describe, it, expect, vi, afterEach } from 'vitest'
+import { mount } from '@vue/test-utils'
+import NavCluster from '@/components/common-components/navigation/NavCluster.vue'
+
+const cockpit = {
+  id: 'cockpit',
+  label: 'Cockpit',
+  icon: 'mdi-speedometer',
+  to: '/seven/auth/processes',
+  titleTo: { name: 'cockpit' },
+  sections: [
+    [{ key: 'dash', label: 'Dashboard', to: '/seven/auth/processes', active: true }, { key: 'proc', label: 'Processes', to: '/seven/auth/processes/list' }],
+    [{ key: 'dec', label: 'Decisions', to: '/seven/auth/decisions/list' }]
+  ]
+}
+const language = {
+  id: 'language',
+  label: 'Language',
+  icon: 'mdi-web',
+  sections: [[{ key: 'en', tag: 'EN', label: 'English', active: true, checkable: true, language: 'en' }, { key: 'de', tag: 'DE', label: 'Deutsch', checkable: true, language: 'de' }]]
+}
+const feedback = { id: 'feedback', label: 'Feedback', icon: 'mdi-message-alert-outline', modal: 'report' }
+
+// Mounts like its parent does: the open state round-trips through v-model:open
+const mountCluster = (cluster, props = {}) => {
+  const wrapper = mount(NavCluster, {
+    attachTo: document.body,
+    props: {
+      cluster,
+      open: false,
+      'onUpdate:open': value => wrapper.setProps({ open: value }),
+      ...props
+    },
+    global: {
+      mocks: { $t: (key, params) => params ? `${key}:${params.label}` : key },
+      stubs: { 'router-link': { props: ['to'], template: '<a class="router-link" :data-to="JSON.stringify(to)" href="#"><slot></slot></a>' } }
+    }
+  })
+  return wrapper
+}
+
+describe('NavCluster.vue', () => {
+  let wrapper
+  afterEach(() => {
+    wrapper?.unmount()
+    vi.useRealTimers()
+  })
+
+  describe('split control', () => {
+    it('leads the icon to the section and opens the menu from the chevron', async () => {
+      wrapper = mountCluster(cockpit)
+
+      expect(wrapper.find('.cib-nav-btn-main').attributes('data-to')).toBe('"/seven/auth/processes"')
+      expect(wrapper.find('.cib-nav-menu').exists()).toBe(false)
+
+      await wrapper.find('.cib-nav-btn-chevron').trigger('click')
+
+      expect(wrapper.emitted('update:open')[0]).toEqual([true])
+      expect(wrapper.find('.cib-nav-menu').exists()).toBe(true)
+      expect(wrapper.find('.cib-nav-btn-chevron').attributes('aria-expanded')).toBe('true')
+    })
+
+    it('names the chevron after its section', () => {
+      wrapper = mountCluster(cockpit)
+      expect(wrapper.find('.cib-nav-btn-chevron').attributes('aria-label')).toBe('cib-header.openMenu:Cockpit')
+    })
+
+    it('shows a linked title, the sections and the active item', async () => {
+      wrapper = mountCluster(cockpit, { open: true })
+
+      expect(wrapper.find('.cib-nav-menu-title-link').attributes('data-to')).toBe('{"name":"cockpit"}')
+      expect(wrapper.findAll('.cib-nav-menu-section')).toHaveLength(2)
+      const active = wrapper.find('.cib-nav-menu-item.active')
+      expect(active.text()).toBe('Dashboard')
+      expect(active.attributes('aria-current')).toBe('page')
+    })
+
+    it('marks the current section', () => {
+      wrapper = mountCluster({ ...cockpit, active: true })
+      expect(wrapper.classes()).toContain('cib-nav-cluster-current')
+    })
+
+    // MDI has no 16px class, so the arrows are sized by the component
+    it('draws the chevron arrows at 16px, not at the 18px size class', () => {
+      wrapper = mountCluster(cockpit)
+      const split = wrapper.find('.cib-nav-btn-chevron .mdi-chevron-down')
+      expect(split.classes()).toContain('cib-nav-chevron')
+      expect(split.classes()).not.toContain('mdi-18px')
+      wrapper.unmount()
+
+      wrapper = mountCluster(language)
+      const single = wrapper.find('.cib-nav-btn-single .mdi-chevron-down')
+      expect(single.classes()).toContain('cib-nav-chevron')
+      expect(single.classes()).not.toContain('mdi-18px')
+    })
+
+    it('shows the icon of a menu entry in front of its label, whatever kind of entry it is', () => {
+      wrapper = mountCluster({ ...cockpit, sections: [[
+        { key: 'link', label: 'Link', to: '/seven/auth/x', icon: 'mdi-link' },
+        { key: 'href', label: 'Docs', href: 'https://docs', icon: 'mdi-book' },
+        { key: 'logout', label: 'Logout', icon: 'mdi-logout' },
+        { key: 'plain', label: 'Plain', to: '/seven/auth/y' }
+      ]] }, { open: true })
+
+      const icons = wrapper.findAll('.cib-nav-menu-item').map(item => item.find('.cib-nav-menu-icon').classes().find(c => c.startsWith('mdi-') && c !== 'mdi-18px') ?? null)
+      expect(icons).toEqual(['mdi-link', 'mdi-book', 'mdi-logout', null])
+      expect(wrapper.find('.cib-nav-menu-item .mdi').attributes('aria-hidden')).toBe('true')
+    })
+
+    // An entry with an icon in front would otherwise start further right than the rest
+    it('gives every entry the 18px icon column once one entry has an icon, so the labels line up', () => {
+      wrapper = mountCluster({ ...cockpit, sections: [[{ key: 'profile', label: 'Profile', to: '/profile' }], [{ key: 'logout', label: 'Logout', icon: 'mdi-logout' }]] }, { open: true })
+
+      const columns = wrapper.findAll('.cib-nav-menu-item').map(item => item.find('.cib-nav-menu-icon').attributes('style'))
+      expect(columns).toEqual(Array(2).fill('width: 18px; height: 18px;'))
+    })
+
+    it('has no icon column in a menu without entry icons', () => {
+      wrapper = mountCluster(cockpit, { open: true })
+      expect(wrapper.find('.cib-nav-menu-icon').exists()).toBe(false)
+    })
+
+    // Logout's icon follows its label
+    it.each([
+      ['a button', { key: 'logout', label: 'Logout', icon: 'mdi-logout', iconEnd: true }],
+      ['a route', { key: 'route', label: 'Logout', to: '/seven/logout', icon: 'mdi-logout', iconEnd: true }],
+      ['a link', { key: 'href', label: 'Logout', href: 'https://idp/logout', icon: 'mdi-logout', iconEnd: true }]
+    ])('shows an iconEnd icon after the label of %s, with no icon column in front', (kind, item) => {
+      wrapper = mountCluster({ ...cockpit, sections: [[{ key: 'profile', label: 'Profile', to: '/profile' }], [item]] }, { open: true })
+
+      const entries = wrapper.findAll('.cib-nav-menu-item')
+      // No other entry has an icon in front, so there is no icon column
+      expect(entries[0].find('.cib-nav-menu-icon').exists()).toBe(false)
+      const logout = entries[1]
+      expect(logout.findAll('.cib-nav-menu-icon')).toHaveLength(1)
+      expect(logout.element.lastElementChild).toBe(logout.find('.mdi-logout').element)
+      // Keeps its size beside a long label (flex-shrink: 0 in the scoped styles)
+      expect(logout.find('.mdi-logout').classes()).toContain('cib-nav-menu-icon-end')
+      expect(logout.text()).toBe('Logout')
+    })
+
+    it('keeps the icon column for the entries with an icon in front, and an empty one before an iconEnd entry', () => {
+      wrapper = mountCluster({ ...cockpit, sections: [
+        [{ key: 'settings', label: 'Settings', to: '/settings', icon: 'mdi-cog' }],
+        [{ key: 'logout', label: 'Logout', icon: 'mdi-logout', iconEnd: true }]
+      ] }, { open: true })
+
+      const logout = wrapper.findAll('.cib-nav-menu-item')[1]
+      const icons = logout.findAll('.cib-nav-menu-icon')
+      expect(icons).toHaveLength(2)
+      expect(icons[0].classes().some(c => c.startsWith('mdi-') && c !== 'mdi-18px')).toBe(false)
+      expect(icons[1].classes()).toContain('mdi-logout')
+    })
+
+    // Small files are inlined as data URIs, so the URL is quoted in the mask
+    it('draws an image icon as a mask in the text colour instead of the font icon, in both control kinds', () => {
+      const image = "data:image/svg+xml,%3csvg width='24'%3e"
+
+      wrapper = mountCluster({ ...cockpit, iconImage: image })
+      expect(wrapper.find('.cib-nav-btn-main .cib-nav-icon-image').attributes('style')).toContain(`--cib-nav-icon: url("${image}")`)
+      expect(wrapper.find('.cib-nav-btn-main .mdi-speedometer').exists()).toBe(false)
+      wrapper.unmount()
+
+      wrapper = mountCluster({ ...language, iconImage: image })
+      expect(wrapper.find('.cib-nav-btn-single .cib-nav-icon-image').exists()).toBe(true)
+      expect(wrapper.find('.cib-nav-btn-single .mdi-web').exists()).toBe(false)
+    })
+
+    it('shows an avatar and a badge instead of the plain icon', () => {
+      wrapper = mountCluster({ ...cockpit, avatar: 'AM', badge: 3 })
+      expect(wrapper.find('.cib-nav-avatar').text()).toBe('AM')
+      expect(wrapper.find('.cib-nav-badge').text()).toBe('3')
+    })
+  })
+
+  describe('single control', () => {
+    it('opens its menu from the one button and has a plain title', async () => {
+      wrapper = mountCluster(language)
+      expect(wrapper.find('.cib-nav-btn-main').exists()).toBe(false)
+
+      await wrapper.find('.cib-nav-btn-single').trigger('click')
+
+      expect(wrapper.find('.cib-nav-menu-title-link').exists()).toBe(false)
+      expect(wrapper.find('.cib-nav-menu-title').text()).toBe('Language')
+      expect(wrapper.findAll('.cib-nav-menu-tag').map(t => t.text())).toEqual(['EN', 'DE'])
+      expect(wrapper.findAll('[aria-checked]').map(i => i.attributes('aria-checked'))).toEqual(['true', 'false'])
+    })
+
+    it('emits a picked item and closes', async () => {
+      wrapper = mountCluster(language, { open: true })
+
+      await wrapper.findAll('button.cib-nav-menu-item')[1].trigger('click')
+
+      expect(wrapper.emitted('select')).toEqual([[language.sections[0][1]]])
+      expect(wrapper.find('.cib-nav-menu').exists()).toBe(false)
+    })
+
+    it('emits itself when it is a plain action without a menu', async () => {
+      wrapper = mountCluster(feedback)
+
+      await wrapper.find('.cib-nav-btn-single').trigger('click')
+
+      expect(wrapper.emitted('select')).toEqual([[feedback]])
+      expect(wrapper.emitted('update:open')).toBeUndefined()
+      expect(wrapper.find('.cib-nav-btn-single').attributes('aria-haspopup')).toBeUndefined()
+    })
+  })
+
+  describe('hover', () => {
+    it('opens on mouse hover over the chevron, but not for touch', async () => {
+      wrapper = mountCluster(cockpit)
+      const chevron = wrapper.find('.cib-nav-btn-chevron')
+
+      await chevron.trigger('pointerenter', { pointerType: 'touch' })
+      expect(wrapper.emitted('update:open')).toBeUndefined()
+
+      await chevron.trigger('pointerenter', { pointerType: 'mouse' })
+      expect(wrapper.emitted('update:open')).toEqual([[true]])
+    })
+
+    // Coming from the left the pointer reaches the icon before the chevron: the menu must open there already
+    it('opens on mouse hover over the icon as well, but not for touch', async () => {
+      wrapper = mountCluster(cockpit)
+      const icon = wrapper.find('.cib-nav-btn-main')
+
+      await icon.trigger('pointerenter', { pointerType: 'touch' })
+      expect(wrapper.emitted('update:open')).toBeUndefined()
+
+      await icon.trigger('pointerenter', { pointerType: 'mouse' })
+      expect(wrapper.emitted('update:open')).toEqual([[true]])
+
+      // Moving on to the chevron keeps it open rather than toggling it
+      await wrapper.find('.cib-nav-btn-chevron').trigger('pointerenter', { pointerType: 'mouse' })
+      expect(wrapper.emitted('update:open')).toEqual([[true]])
+    })
+
+    it('does not open anything when hovering the icon of a section without a menu', async () => {
+      wrapper = mountCluster({ ...cockpit, sections: [] })
+      await wrapper.find('.cib-nav-btn-main').trigger('pointerenter', { pointerType: 'mouse' })
+      expect(wrapper.emitted('update:open')).toBeUndefined()
+    })
+
+    it('closes a hover-opened menu shortly after the pointer leaves, unless it comes back', async () => {
+      vi.useFakeTimers()
+      wrapper = mountCluster(cockpit)
+      await wrapper.find('.cib-nav-btn-chevron').trigger('pointerenter', { pointerType: 'mouse' })
+
+      await wrapper.trigger('mouseleave')
+      await wrapper.trigger('mouseenter')
+      vi.advanceTimersByTime(500)
+      expect(wrapper.props('open')).toBe(true)
+
+      await wrapper.trigger('mouseleave')
+      vi.advanceTimersByTime(500)
+      expect(wrapper.emitted('update:open')).toEqual([[true], [false]])
+    })
+
+    it('keeps a hover-opened menu open when the chevron is then clicked, and closes on the next click', async () => {
+      wrapper = mountCluster(cockpit)
+      const chevron = wrapper.find('.cib-nav-btn-chevron')
+
+      await chevron.trigger('pointerenter', { pointerType: 'mouse' })
+      await chevron.trigger('click')
+      expect(wrapper.props('open')).toBe(true)
+
+      await chevron.trigger('click')
+      expect(wrapper.props('open')).toBe(false)
+    })
+
+    it('keeps a clicked-open menu when the pointer leaves', async () => {
+      vi.useFakeTimers()
+      wrapper = mountCluster(language)
+
+      await wrapper.find('.cib-nav-btn-single').trigger('click')
+      await wrapper.trigger('mouseleave')
+      vi.advanceTimersByTime(500)
+
+      expect(wrapper.props('open')).toBe(true)
+    })
+
+    it('keeps a hover-opened menu open once the keyboard moves into it', async () => {
+      vi.useFakeTimers()
+      wrapper = mountCluster(cockpit)
+      const chevron = wrapper.find('.cib-nav-btn-chevron')
+
+      await chevron.trigger('pointerenter', { pointerType: 'mouse' })
+      await chevron.trigger('keydown', { key: 'ArrowDown' })
+      await wrapper.trigger('mouseleave')
+      vi.advanceTimersByTime(500)
+
+      expect(wrapper.props('open')).toBe(true)
+    })
+
+    it('does not reopen through hover while already open', async () => {
+      wrapper = mountCluster(cockpit, { open: true })
+      await wrapper.find('.cib-nav-btn-chevron').trigger('pointerenter', { pointerType: 'mouse' })
+      expect(wrapper.emitted('update:open')).toBeUndefined()
+    })
+
+    it('shows the tooltip while hovering the icon, not while the menu is open', async () => {
+      wrapper = mountCluster(cockpit)
+
+      await wrapper.find('.cib-nav-btn-main').trigger('mouseenter')
+      expect(wrapper.find('[role="tooltip"]').text()).toBe('Cockpit')
+
+      await wrapper.setProps({ open: true })
+      expect(wrapper.find('[role="tooltip"]').exists()).toBe(false)
+    })
+  })
+
+  describe('keyboard and outside clicks', () => {
+    it('opens with arrow down and moves focus through the items', async () => {
+      wrapper = mountCluster(cockpit)
+
+      await wrapper.find('.cib-nav-btn-chevron').trigger('keydown', { key: 'ArrowDown' })
+      await wrapper.vm.$nextTick()
+
+      const items = wrapper.findAll('[role="menuitem"]')
+      expect(document.activeElement).toBe(items[0].element)
+
+      await wrapper.find('.cib-nav-menu').trigger('keydown', { key: 'ArrowDown' })
+      expect(document.activeElement).toBe(items[1].element)
+      await wrapper.find('.cib-nav-menu').trigger('keydown', { key: 'ArrowUp' })
+      await wrapper.find('.cib-nav-menu').trigger('keydown', { key: 'ArrowUp' })
+      expect(document.activeElement).toBe(items.at(-1).element)
+    })
+
+    it('closes with escape and gives focus back to the toggle', async () => {
+      wrapper = mountCluster(cockpit, { open: true })
+
+      await wrapper.find('.cib-nav-menu-item').trigger('keydown', { key: 'Escape' })
+
+      expect(wrapper.find('.cib-nav-menu').exists()).toBe(false)
+      expect(document.activeElement).toBe(wrapper.find('.cib-nav-btn-chevron').element)
+    })
+
+    it('closes on a click outside and when focus leaves it', async () => {
+      wrapper = mountCluster(cockpit)
+      await wrapper.setProps({ open: true })
+
+      document.body.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }))
+      await wrapper.vm.$nextTick()
+      expect(wrapper.props('open')).toBe(false)
+
+      await wrapper.setProps({ open: true })
+      await wrapper.trigger('focusout', { relatedTarget: document.body })
+      expect(wrapper.props('open')).toBe(false)
+    })
+  })
+
+  describe('accessibility', () => {
+    it('marks pickable items as menuitemradio and plain ones as menuitem', () => {
+      wrapper = mountCluster({ ...language, sections: [[...language.sections[0], { key: 'x', label: 'Plain' }]] }, { open: true })
+      const roles = wrapper.findAll('button.cib-nav-menu-item').map(item => item.attributes('role'))
+      expect(roles).toEqual(['menuitemradio', 'menuitemradio', 'menuitem'])
+    })
+
+    it('only points aria-describedby at the tooltip while it is shown', async () => {
+      wrapper = mountCluster(cockpit)
+      const main = wrapper.find('.cib-nav-btn-main')
+      expect(main.attributes('aria-describedby')).toBeUndefined()
+
+      await main.trigger('mouseenter')
+      const id = main.attributes('aria-describedby')
+      expect(wrapper.find(`#${id}`).attributes('role')).toBe('tooltip')
+    })
+  })
+})

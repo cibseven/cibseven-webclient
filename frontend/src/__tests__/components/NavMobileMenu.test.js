@@ -1,0 +1,170 @@
+/*
+ * Copyright CIB software GmbH and/or licensed to CIB software GmbH
+ * under one or more contributor license agreements. See the NOTICE file
+ * distributed with this work for additional information regarding copyright
+ * ownership. CIB software licenses this file to you under the Apache License,
+ * Version 2.0; you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+import { describe, it, expect } from 'vitest'
+import { mount } from '@vue/test-utils'
+import NavMobileMenu from '@/components/common-components/navigation/NavMobileMenu.vue'
+
+const tasks = { id: 'tasks', label: 'Tasks', icon: 'mdi-clipboard-text-outline', to: '/seven/auth/tasks', sections: [[{ key: 'list', label: 'Task list', to: '/seven/auth/tasks' }]] }
+const cockpit = { id: 'cockpit', label: 'Cockpit', icon: 'mdi-speedometer', to: '/seven/auth/processes', active: true, sections: [[{ key: 'dash', label: 'Dashboard', to: '/seven/auth/processes', active: true }], [{ key: 'dec', label: 'Decisions', to: '/seven/auth/decisions/list' }]] }
+const help = { id: 'help', label: 'Help', icon: 'mdi-help-circle-outline', sections: [[{ key: 'docs', label: 'Docs', href: 'https://docs', external: true }, { key: 'about', label: 'About', modal: 'about' }]] }
+const user = { id: 'user', label: 'Ada Morris', avatar: 'AM', sections: [[{ key: 'logout', label: 'Logout', logout: true }]] }
+const feedback = { id: 'feedback', label: 'Feedback', icon: 'mdi-message-alert-outline', modal: 'report' }
+
+const mountMenu = (props) => mount(NavMobileMenu, {
+  props,
+  global: {
+    mocks: { $t: key => key },
+    stubs: { 'router-link': { props: ['to'], template: '<a class="router-link" href="#"><slot></slot></a>' } }
+  }
+})
+
+describe('NavMobileMenu.vue', () => {
+  it('lists main clusters, then the standard ones, in one list with the same line between all rows', () => {
+    const wrapper = mountMenu({ main: [tasks, cockpit], utility: [help, user] })
+
+    expect(wrapper.findAll('.cib-nav-mobile-label').map(l => l.text())).toEqual(['Tasks', 'Cockpit', 'Help', 'Ada Morris'])
+    expect(wrapper.findAll('.cib-nav-mobile-list')).toHaveLength(1)
+    expect(wrapper.findAll('.cib-nav-mobile-cluster').every(row => row.classes().length === 1)).toBe(true)
+  })
+
+  it('renders no list without clusters', () => {
+    expect(mountMenu({}).find('.cib-nav-mobile-list').exists()).toBe(false)
+  })
+
+  it('opens with the current section expanded and its active item marked', () => {
+    const wrapper = mountMenu({ main: [tasks, cockpit] })
+
+    const rows = wrapper.findAll('.cib-nav-mobile-row')
+    expect(rows.map(r => r.attributes('aria-expanded'))).toEqual(['false', 'true'])
+    expect(wrapper.findAll('.cib-nav-mobile-section')).toHaveLength(2)
+    expect(wrapper.find('.cib-nav-mobile-item.active').text()).toBe('Dashboard')
+  })
+
+  it('expands a row instead of navigating, one row at a time', async () => {
+    const wrapper = mountMenu({ main: [tasks, cockpit] })
+
+    await wrapper.findAll('.cib-nav-mobile-row')[0].trigger('click')
+
+    expect(wrapper.findAll('.cib-nav-mobile-row').map(r => r.attributes('aria-expanded'))).toEqual(['true', 'false'])
+    expect(wrapper.emitted('navigate')).toBeUndefined()
+
+    await wrapper.findAll('.cib-nav-mobile-row')[0].trigger('click')
+    expect(wrapper.find('.cib-nav-mobile-section').exists()).toBe(false)
+  })
+
+  it('reports navigation and passes action items on', async () => {
+    const wrapper = mountMenu({ main: [], utility: [help] })
+    await wrapper.find('.cib-nav-mobile-row').trigger('click')
+
+    const external = wrapper.find('a.cib-nav-mobile-item')
+    expect(external.attributes('target')).toBe('_blank')
+    await external.trigger('click')
+    expect(wrapper.emitted('navigate')).toHaveLength(1)
+
+    await wrapper.find('button.cib-nav-mobile-item').trigger('click')
+    expect(wrapper.emitted('select')).toEqual([[help.sections[0][1]]])
+  })
+
+  it('shows a cluster without menu as a plain action row', async () => {
+    const wrapper = mountMenu({ main: [], utility: [feedback] })
+
+    const row = wrapper.find('.cib-nav-mobile-row')
+    expect(row.attributes('aria-expanded')).toBeUndefined()
+    await row.trigger('click')
+
+    expect(wrapper.emitted('select')).toEqual([[feedback]])
+  })
+
+  it('shows a cluster without menu but with a route as a link', async () => {
+    const wrapper = mountMenu({ main: [{ ...tasks, sections: [] }] })
+
+    await wrapper.find('a.cib-nav-mobile-row').trigger('click')
+
+    expect(wrapper.emitted('navigate')).toHaveLength(1)
+  })
+
+  it('shows the outlined account icon for the user row', () => {
+    const wrapper = mountMenu({ main: [], utility: [user] })
+    expect(wrapper.find('.cib-nav-mobile-row .mdi-account-outline').exists()).toBe(true)
+    expect(wrapper.find('.cib-nav-mobile-row .mdi-account').exists()).toBe(false)
+  })
+
+  it('draws an image icon instead of the font icon on every kind of row', () => {
+    const image = '/img/cockpit.svg'
+    const expandable = { ...cockpit, iconImage: image }
+    const link = { id: 'link', label: 'Link', to: '/x', icon: 'mdi-link', iconImage: image }
+    const action = { id: 'act', label: 'Act', icon: 'mdi-flash', iconImage: image }
+    const wrapper = mountMenu({ main: [expandable, link, action] })
+
+    const rows = wrapper.findAll('.cib-nav-mobile-row')
+    rows.forEach(row => expect(row.find('.cib-nav-icon-image').attributes('style')).toContain('--cib-nav-icon: url("/img/cockpit.svg");'))
+    expect(wrapper.find('.mdi-speedometer').exists()).toBe(false)
+    expect(wrapper.find('.mdi-link').exists()).toBe(false)
+  })
+
+  it('shows the icon of an entry in front of its label, whatever kind of entry it is', () => {
+    const cluster = { id: 'user', label: 'Ada', avatar: 'AM', active: true, sections: [[
+      { key: 'profile', label: 'Profile', to: '/profile', icon: 'mdi-account-cog' },
+      { key: 'docs', label: 'Docs', href: 'https://docs', icon: 'mdi-book' },
+      { key: 'logout', label: 'Logout', icon: 'mdi-logout' },
+      { key: 'plain', label: 'Plain' }
+    ]] }
+    const wrapper = mountMenu({ main: [cluster] })
+
+    expect(wrapper.findAll('.cib-nav-mobile-item').map(item => item.find('.mdi').exists() ? item.find('.mdi').classes().find(c => c.startsWith('mdi-') && c !== 'mdi-18px') : null))
+      .toEqual(['mdi-account-cog', 'mdi-book', 'mdi-logout', null])
+    // In the column of the row icons, out of the label's way, so the labels line up with or without one
+    expect(wrapper.find('.cib-nav-mobile-item .mdi-logout').classes()).toContain('cib-nav-mobile-item-icon')
+  })
+
+  // Logout's icon follows its label, in the row rather than in the icon column
+  it.each([
+    ['a button', { key: 'logout', label: 'Logout', icon: 'mdi-logout', iconEnd: true }],
+    ['a route', { key: 'route', label: 'Logout', to: '/seven/logout', icon: 'mdi-logout', iconEnd: true }],
+    ['a link', { key: 'href', label: 'Logout', href: 'https://idp/logout', icon: 'mdi-logout', iconEnd: true }]
+  ])('shows an iconEnd icon after the label of %s', (kind, item) => {
+    const wrapper = mountMenu({ main: [{ id: 'user', label: 'Ada', avatar: 'AM', active: true, sections: [[item]] }] })
+
+    const entry = wrapper.find('.cib-nav-mobile-item')
+    const icon = entry.find('.mdi-logout')
+    expect(icon.classes()).toContain('cib-nav-mobile-item-icon-end')
+    expect(icon.classes()).not.toContain('cib-nav-mobile-item-icon')
+    expect(entry.element.lastElementChild).toBe(icon.element)
+    expect(entry.text()).toBe('Logout')
+  })
+
+  it('keeps the page behind it from scrolling while open', () => {
+    document.body.style.overflow = 'auto'
+    const wrapper = mountMenu({ main: [tasks] })
+    expect(document.body.style.overflow).toBe('hidden')
+
+    wrapper.unmount()
+    expect(document.body.style.overflow).toBe('auto')
+  })
+
+  it('marks the picked language or engine as current', async () => {
+    const language = { id: 'language', label: 'Language', icon: 'mdi-web', sections: [[
+      { key: 'en', label: 'English', checkable: true, active: true }, { key: 'de', label: 'Deutsch', checkable: true }
+    ]] }
+    const wrapper = mountMenu({ main: [], utility: [language] })
+    await wrapper.find('.cib-nav-mobile-row').trigger('click')
+
+    const items = wrapper.findAll('button.cib-nav-mobile-item')
+    expect(items.map(i => i.attributes('aria-current'))).toEqual(['true', undefined])
+    expect(items.every(i => i.attributes('aria-checked') === undefined)).toBe(true)
+  })
+})

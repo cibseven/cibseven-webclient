@@ -18,6 +18,7 @@ package org.cibseven.webapp.rest;
 
 import java.util.Collection;
 
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.rest.model.Engine;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,7 +32,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occurred")
 })
 @RestController
-@RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/engine")
+@RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH + "/engine")
 public class EngineService extends BaseService {
 
 	@Operation(summary = "Get process engine names", description = "Retrieves the names of all process engines available on the engine")

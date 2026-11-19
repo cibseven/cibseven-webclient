@@ -57,7 +57,7 @@ public class UtilsProviderIT extends BaseHelper {
         mockWebServer.start();
 
         String mockBaseUrl = mockWebServer.url("/").toString();
-        ReflectionTestUtils.setField(utilsProvider, "cibsevenUrl", mockBaseUrl);
+        utilsProvider.properties.getEngineRest().setUrl(mockBaseUrl);
     }
 
     @AfterEach

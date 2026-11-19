@@ -82,7 +82,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -178,6 +178,38 @@ public interface BpmProvider {
    */
 	default void setAssignee(String taskId, String assignee, CIBUser user) throws SystemException {
 		getTaskProvider().setAssignee(taskId, assignee, user);
+	}
+
+	/** Takes the task for a user, refused by the engine when someone else holds it. */
+	default void claim(String taskId, String userId, CIBUser user) throws SystemException {
+		getTaskProvider().claim(taskId, userId, user);
+	}
+
+	/** Hands the task to a user to act on behalf of its owner. */
+	default void delegate(String taskId, String userId, CIBUser user) throws SystemException {
+		getTaskProvider().delegate(taskId, userId, user);
+	}
+
+	/** The variables held by the task itself rather than by its process instance. */
+	default Map<String, Object> findLocalVariables(String taskId, CIBUser user) throws SystemException {
+		return getTaskProvider().findLocalVariables(taskId, user);
+	}
+
+	default void modifyLocalVariables(String taskId, Map<String, Object> patch, CIBUser user) throws SystemException {
+		getTaskProvider().modifyLocalVariables(taskId, patch, user);
+	}
+
+	default void putLocalVariable(String taskId, String variableName, Map<String, Object> variable, CIBUser user) throws SystemException {
+		getTaskProvider().putLocalVariable(taskId, variableName, variable, user);
+	}
+
+	default void deleteLocalVariable(String taskId, String variableName, CIBUser user) throws SystemException {
+		getTaskProvider().deleteLocalVariable(taskId, variableName, user);
+	}
+
+	/** The comments written on the task. */
+	default Collection<Map<String, Object>> findComments(String taskId, CIBUser user) throws SystemException {
+		return getTaskProvider().findComments(taskId, user);
 	}
 
 	/**
@@ -615,14 +647,6 @@ public interface BpmProvider {
 
 	/*UI Element templates methods migrated*/
 
-	default ActivityInstance findActivityInstances(String processInstanceId, CIBUser user) throws SystemException {
-		return getActivityProvider().findActivityInstances(processInstanceId, user);
-	}
-
-	default List<ActivityInstanceHistory> findActivityInstanceHistory(String processInstanceId, CIBUser user) throws SystemException {
-		return getActivityProvider().findActivityInstanceHistory(processInstanceId, user);
-	}
-
 	default void deleteVariableByExecutionId(String executionId, String variableName, CIBUser user) {
 		getActivityProvider().deleteVariableByExecutionId(executionId, variableName, user);
 	}
@@ -778,6 +802,11 @@ public interface BpmProvider {
 			Optional<String> member, Optional<String> memberOfTenant, Optional<String> sortBy, Optional<String> sortOrder, Optional<String> firstResult,
 			Optional<String> maxResults, CIBUser user) {
 		return getUserProvider().findGroups(id, name, nameLike, type, member, memberOfTenant, sortBy, sortOrder, firstResult, maxResults, user);
+	}
+
+	/** See {@link IUserProvider#findGroupIdsOfUser}. */
+	default Collection<String> findGroupIdsOfUser(CIBUser user) {
+		return getUserProvider().findGroupIdsOfUser(user);
 	}
 
 	/**
@@ -997,6 +1026,11 @@ public interface BpmProvider {
 				return getVariableProvider().fetchProcessFormVariables(variableListName, processDefinitionId, deserializeValues, user);
 	}
 
+	default Map<String, Variable> fetchProcessFormVariablesByKey(List<String> variableListName, String key, boolean deserializeValues, CIBUser user)
+			throws NoObjectFoundException, SystemException {
+		return getVariableProvider().fetchProcessFormVariablesByKey(variableListName, key, deserializeValues, user);
+	}
+
 	default NamedByteArrayDataSource fetchVariableFileData(String taskId, String variableName, CIBUser user) throws NoObjectFoundException, UnexpectedTypeException, SystemException {
 		return getVariableProvider().fetchVariableFileData(taskId, variableName, user);
 	}
@@ -1030,12 +1064,12 @@ public interface BpmProvider {
 		getVariableProvider().submitVariables(processInstanceId, formResult, user, processDefinitionId);
 	}
 
-	default Map<String, Variable> fetchProcessFormVariablesById(String id, CIBUser user) throws SystemException {
-		return getVariableProvider().fetchProcessFormVariablesById(id, user);
-	}
-
 	default void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user) {
 		getVariableProvider().putLocalExecutionVariable(executionId, varName, data, user);
+	}
+
+	default void putProcessInstanceVariable(String processInstanceId, String variableName, Map<String, Object> variable, CIBUser user) {
+		getVariableProvider().putProcessInstanceVariable(processInstanceId, variableName, variable, user);
 	}
 
 /*
@@ -1118,6 +1152,10 @@ public interface BpmProvider {
 
 	default Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad, CIBUser user) {
 		return getDecisionProvider().getDecisionVersionsByKey(key, lazyLoad, user);
+	}
+
+	default Collection<Decision> getDecisionVersionsByKey(String key, String tenantId, boolean withoutTenantId, Optional<Boolean> lazyLoad, CIBUser user) {
+		return getDecisionProvider().getDecisionVersionsByKey(key, tenantId, withoutTenantId, lazyLoad, user);
 	}
 
 	default Collection<HistoricDecisionInstance> getHistoricDecisionInstances(Map<String, Object> queryParams, CIBUser user) {
@@ -1244,18 +1282,6 @@ public interface BpmProvider {
 		getBatchProvider().deleteHistoricBatch(id, user);
 	}
 
-	default Object setRemovalTime(Map<String, Object> payload, CIBUser user) {
-		return getBatchProvider().setRemovalTime(payload, user);
-	  }
-
-	default Object getCleanableBatchReport(Map<String, Object> queryParams, CIBUser user) {
-		return getBatchProvider().getCleanableBatchReport(queryParams, user);
-	  }
-
-	default Object getCleanableBatchReportCount(CIBUser user) {
-		return getBatchProvider().getCleanableBatchReportCount(user);
-	  }
-
 /*
 
 ███████ ██    ██ ███████ ████████ ███████ ███    ███     ██████  ██████   ██████  ██    ██ ██ ██████  ███████ ██████  
@@ -1319,6 +1345,33 @@ public interface BpmProvider {
 	 */
 	default VariableHistory getHistoricVariableInstance(String id, boolean deserializeValue, CIBUser user) throws SystemException, NoObjectFoundException {
 		return getHistoricVariableInstanceProvider().getHistoricVariableInstance(id, deserializeValue, user);
+	}
+
+	/**
+	 * Queries historic variable instances the way the engine does, with the filters in the body.
+	 * @param filters The query as engine-rest takes it, empty for every instance
+	 * @param firstResult Index of the first result to return
+	 * @param maxResults Maximum number of results to return
+	 * @param deserializeValues Whether the values are deserialized, left to the engine when null
+	 * @param user the user performing the search
+	 * @return the matching historic variable instances
+	 * @throws SystemException in case of an error
+	 */
+	default Collection<VariableHistory> findHistoricVariableInstances(Map<String, Object> filters,
+			Optional<Integer> firstResult, Optional<Integer> maxResults, Boolean deserializeValues,
+			CIBUser user) throws SystemException {
+		return getHistoricVariableInstanceProvider().findHistoricVariableInstances(filters, firstResult, maxResults, deserializeValues, user);
+	}
+
+	/**
+	 * Counts the historic variable instances a query matches.
+	 * @param filters The query as engine-rest takes it, empty for every instance
+	 * @param user the user performing the search
+	 * @return how many instances match
+	 * @throws SystemException in case of an error
+	 */
+	default Integer findHistoricVariableInstancesCount(Map<String, Object> filters, CIBUser user) throws SystemException {
+		return getHistoricVariableInstanceProvider().findHistoricVariableInstancesCount(filters, user);
 	}
 
 /*

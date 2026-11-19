@@ -201,6 +201,19 @@ class DirectUserProviderAuthorizationTest {
 		assertTrue(provider.isUserAuthorized(TESTER, APPLICATION, MODELER, ACCESS));
 	}
 
+	/** Project members may be groups, so every group of the user counts, also one the user may not read. */
+	@Test
+	void namesEveryGroupOfTheUserWhileTheUserIsAuthenticated() {
+		for (String id : List.of("modelers", "sales")) {
+			engine.getIdentityService().saveGroup(engine.getIdentityService().newGroup(id));
+		}
+		engine.getIdentityService().createMembership("tester", "modelers");
+		engine.getIdentityService().createMembership("tester", "sales");
+		authenticateTester(null);
+
+		assertEquals(List.of("modelers", "sales"), provider.findGroupIdsOfUser(TESTER).stream().sorted().toList());
+	}
+
 	@Test
 	void anUnknownResourceTypeIsRejected() {
 		assertThrows(UnknownResourceTypeException.class,

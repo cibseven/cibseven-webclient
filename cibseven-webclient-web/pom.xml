@@ -3,12 +3,12 @@
 	<parent>
 		<groupId>org.cibseven.webapp</groupId>
 		<artifactId>cibseven-webclient</artifactId>
-		<version>2.3.0-SNAPSHOT</version>
+		<version>3.0.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>cibseven-webclient-web</artifactId>
 	<packaging>war</packaging>
 	<name>CIB seven webclient web</name>
-	<description>Web application module for the CIB seven webclient platform (Spring Boot 3.5.x).</description>
+	<description>Web application module for the CIB seven webclient platform (Spring Boot 4.x).</description>
 
 	<properties>
 		<!-- jacoco:check floors; measured 32.0% line / 0.0% branch. See the root pom for the rules. -->
@@ -24,9 +24,35 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!--
+			Spring Boot 4 renamed spring-boot-starter-web to spring-boot-starter-webmvc.
+			Also pulls in tools.jackson (Jackson 3) for the wire layer.
+		-->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
+			<artifactId>spring-boot-starter-webmvc</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- New in SB4: replaces RestTemplate idiom -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-restclient</artifactId>
+		</dependency>
+
+		<!--
+			The webclient reads and writes JSON with Jackson 3 (tools.jackson.*), see SevenWebclientContext.
+			Jackson 2 still reaches the war through springdoc (swagger-core, YAML); nothing of the
+			webclient's own JSON goes through it.
+		-->
+		<dependency>
+			<groupId>tools.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
 		</dependency>
 
 		<dependency>
@@ -39,6 +65,19 @@
         			<artifactId>commons-lang3</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+
+		<!--
+			Declared directly, not only in the root pom's dependencyManagement, so the patched
+			swagger-ui (${version.swagger-ui}) also reaches consumers of this module's classes jar,
+			such as the Spring Boot starter and the Run distro in cibseven. A dependencyManagement
+			entry doesn't apply there, so they would otherwise get springdoc's own swagger-ui
+			(5.32.11 with springdoc 3.1.0, which bundles a vulnerable DOMPurify).
+		-->
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>swagger-ui</artifactId>
+			<version>${version.swagger-ui}</version>
 		</dependency>
 		
 		<!-- Override common transitive dependencies to ensure consistent versions -->
@@ -71,6 +110,13 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>com.tngtech.archunit</groupId>
+			<artifactId>archunit-junit5</artifactId>
+			<version>${version.archunit}</version>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -80,7 +126,6 @@
 				<directory>src/main/resources</directory>
 				<filtering>false</filtering>
 				<includes>
-					<include>application*.yaml</include>
 					<include>*.jpg</include>
 					<include>*.txt</include>
 					<!-- <include>*.xml</include> -->
@@ -244,6 +289,17 @@
 						</goals>
 					</execution>
 				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>com.google.cloud.tools</groupId>
+				<artifactId>jib-maven-plugin</artifactId>
+				<configuration>
+					<skip>false</skip>
+					<container>
+						<appRoot>/usr/local/tomcat/webapps/seven</appRoot>
+					</container>
+				</configuration>
 			</plugin>
 
 			<plugin>

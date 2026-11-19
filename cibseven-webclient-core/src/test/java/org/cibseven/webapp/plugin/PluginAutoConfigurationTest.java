@@ -21,6 +21,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.nio.charset.StandardCharsets;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
+import org.cibseven.webapp.config.SevenWebclientProperties;
+import org.cibseven.webapp.config.SevenWebclientPropertiesAutoConfiguration;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -40,6 +42,7 @@ public class PluginAutoConfigurationTest {
 
 	// The controller extends BaseService, which every product wires these into
 	private final ApplicationContextRunner runner = new ApplicationContextRunner()
+		.withConfiguration(AutoConfigurations.of(SevenWebclientPropertiesAutoConfiguration.class))
 		.withBean(BpmProvider.class, () -> Mockito.mock(BpmProvider.class))
 		.withBean(BaseUserProvider.class, () -> Mockito.mock(BaseUserProvider.class))
 		.withConfiguration(AutoConfigurations.of(PluginAutoConfiguration.class));
@@ -49,7 +52,7 @@ public class PluginAutoConfigurationTest {
 	public void readsTheDisabledPluginsAsAYamlList() {
 		runner.withPropertyValues("cibseven.webclient.plugins.enabled=true",
 				"cibseven.webclient.plugins.disabled[0]=first", "cibseven.webclient.plugins.disabled[1]=second")
-			.run(context -> assertThat(context.getBean(PluginProperties.class).getDisabled())
+			.run(context -> assertThat(context.getBean(SevenWebclientProperties.class).getPlugins().getDisabled())
 				.containsExactly("first", "second"));
 	}
 

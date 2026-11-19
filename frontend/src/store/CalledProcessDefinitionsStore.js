@@ -17,12 +17,40 @@
 
 import { ProcessService, HistoryService } from '@/services.js'
 
+// The load in flight per store, so callers asking for the same definition share one request
+const pendingStaticLoads = new WeakMap()
+// The latest table load per store; an older one stops committing once a newer one has started
+const currentTableLoads = new WeakMap()
+
+async function fetchStaticCalledProcessDefinitions({ commit, state }, pending) {
+  const { processDefinitionId } = pending
+  // Never keep the data of another definition while the new one loads; null first, so it is never shown under the new id
+  if (state.staticCalledProcessDefinitionsId !== processDefinitionId) {
+    commit('setStaticCalledProcessDefinitions', null)
+    commit('setStaticCalledProcessDefinitionsId', processDefinitionId)
+  }
+  try {
+    const staticCalledProcessDefinitions = await ProcessService.findCalledProcessDefinitions(processDefinitionId)
+    // A newer request (another definition, or this one again after quick switches) replaced this one: its answer is older
+    if (pendingStaticLoads.get(state) !== pending) return
+    commit('setStaticCalledProcessDefinitions', staticCalledProcessDefinitions)
+  } catch (error) {
+    // Only the call activity links depend on this: they stay "unknown", the views keep working
+    console.error('Failed to load the called process definitions:', error)
+  } finally {
+    // Only its own entry: a newer load of the same definition may have replaced it meanwhile
+    if (pendingStaticLoads.get(state) === pending) pendingStaticLoads.delete(state)
+  }
+}
+
 export default {
   namespaced: true,
   state: {
     calledProcessDefinitions: [],
     allCalledProcessDefinitions: [],
-    staticCalledProcessDefinitions: [] 
+    // null until they have loaded for staticCalledProcessDefinitionsId
+    staticCalledProcessDefinitions: null,
+    staticCalledProcessDefinitionsId: null
   },
   mutations: {
     setCalledProcessDefinitions(state, calledProcessDefinitions) {
@@ -34,18 +62,55 @@ export default {
     setStaticCalledProcessDefinitions: function (state, params) {
       state.staticCalledProcessDefinitions = params
     },
+    setStaticCalledProcessDefinitionsId: function (state, processDefinitionId) {
+      state.staticCalledProcessDefinitionsId = processDefinitionId
+    },
   },
-  actions: {    
-    async loadStaticCalledProcessDefinitions({ commit }, { processDefinitionId }) {
-      const staticCalledProcessDefinitions = await ProcessService.findCalledProcessDefinitions(processDefinitionId)
-      commit('setStaticCalledProcessDefinitions', staticCalledProcessDefinitions)
+  actions: {
+    loadStaticCalledProcessDefinitions(context, { processDefinitionId }) {
+      const current = pendingStaticLoads.get(context.state)
+      if (current?.processDefinitionId === processDefinitionId) return current.promise
+      const pending = { processDefinitionId }
+      pendingStaticLoads.set(context.state, pending)
+      pending.promise = fetchStaticCalledProcessDefinitions(context, pending)
+      return pending.promise
     },
 
-    async loadCalledProcessDefinitions({ commit, getters, rootGetters }, { processId, chunkSize = 50 }) {
+    // Leaving the process pages: the next visit loads them again, so a newer deployment is seen then.
+    // A load still running, of them or of the table, no longer commits
+    clearStaticCalledProcessDefinitions({ commit, state }) {
+      pendingStaticLoads.delete(state)
+      currentTableLoads.delete(state)
+      commit('setStaticCalledProcessDefinitions', null)
+      commit('setStaticCalledProcessDefinitionsId', null)
+    },
+
+    // A definition switch before the new table can load: drop the previous rows and outdate a load still running for them
+    resetCalledProcessDefinitions({ commit, state }) {
+      currentTableLoads.delete(state)
+      commit('setCalledProcessDefinitions', [])
+      commit('setAllCalledProcessDefinitions', [])
+    },
+
+    async loadCalledProcessDefinitions({ commit, dispatch, getters, rootGetters, state }, { processId, chunkSize = 50 }) {
+      // e.g. after switching definitions, a slow load of the previous one must not fill the table
+      const load = {}
+      currentTableLoads.set(state, load)
+      const isOutdated = () => currentTableLoads.get(state) !== load
+
       commit('setCalledProcessDefinitions', [])
       commit('setAllCalledProcessDefinitions', [])
 
-      const staticDefinitions = getters.getStaticCalledProcessDefinitions || []
+      // Not loaded yet does not mean "calls nothing statically", and a refresh in flight may bring a newer list: wait for it
+      const refreshing = pendingStaticLoads.get(state)?.processDefinitionId === processId
+      if (processId && (refreshing || !getters.getStaticCalledProcessDefinitionsFor(processId))) {
+        await dispatch('loadStaticCalledProcessDefinitions', { processDefinitionId: processId })
+        if (isOutdated()) return
+      }
+      const loadedStaticDefinitions = getters.getStaticCalledProcessDefinitionsFor(processId)
+      // Their load failed: a table without them would wrongly say the definition calls nothing statically
+      if (processId && !loadedStaticDefinitions) throw new Error('The static called process definitions could not be loaded')
+      const staticDefinitions = loadedStaticDefinitions || []
       const historicStats = rootGetters.getHistoricActivityStatistics(processId) || []
       const getActivityName = rootGetters.getProcessActivities || {}
 
@@ -73,7 +138,7 @@ export default {
 
         const group = groupedMap.get(key)
 
-        for (const activityId of def.calledFromActivityIds) {
+        for (const activityId of def.calledFromActivityIds || []) {
           const stat = historicStats.find(s => s.id === activityId)
           const ended = stat ? stat.instances === 0 : true
           const name = getActivityName[activityId] || activityId
@@ -110,6 +175,7 @@ export default {
           activityType: 'callActivity',
           unfinished: true
         })
+        if (isOutdated()) return
 
         const filtered = activitiesHistory.filter(a =>
           a.calledProcessInstanceId && !a.endTime
@@ -117,11 +183,19 @@ export default {
 
         const instanceIds = [...new Set(filtered.map(a => a.calledProcessInstanceId))]
 
+        const activityByInstanceId = new Map()
+        for (const a of filtered) {
+          if (!activityByInstanceId.has(a.calledProcessInstanceId)) {
+            activityByInstanceId.set(a.calledProcessInstanceId, a)
+          }
+        }
+
         let isFirstChunk = true
 
         for (let i = 0; i < instanceIds.length; i += chunkSize) {
           const chunk = instanceIds.slice(i, i + chunkSize)
           const definitionsInfo = await HistoryService.findProcessesInstancesHistory({ processInstanceIds: chunk })
+          if (isOutdated()) return
 
           for (const inst of definitionsInfo) {
             const key = `${inst.processDefinitionKey}:${inst.processDefinitionVersion}`
@@ -146,7 +220,7 @@ export default {
             const def = groupedMap.get(key)
             def.isRunning = true
 
-            const match = filtered.find(a => a.calledProcessInstanceId === inst.id)
+            const match = activityByInstanceId.get(inst.id)
             if (match) {
               let activity = def.activities.find(a => a.activityId === match.activityId)
               if (!activity) {
@@ -167,7 +241,7 @@ export default {
           }
 
           if (!isFirstChunk || instanceIds.length <= chunkSize) {
-            const merged = mergeAndSplitByDefinition([...groupedMap.values()])
+            const merged = buildSnapshot()
             commit('setCalledProcessDefinitions', merged)
             commit('setAllCalledProcessDefinitions', merged)
           }
@@ -177,27 +251,41 @@ export default {
       }
 
       // 3. Final merge
-      const finalMerged = mergeAndSplitByDefinition([...groupedMap.values()])
-
-      const versionsByKey = {}
-      for (const def of finalMerged) {
-        if (!versionsByKey[def.definitionKey]) {
-          versionsByKey[def.definitionKey] = new Set()
-        }
-        versionsByKey[def.definitionKey].add(def.version)
-      }
-
-      for (const def of finalMerged) {
-        const versions = versionsByKey[def.definitionKey]
-        def.label = versions.size > 1
-          ? `${def.definitionKey}:${def.version}`
-          : def.definitionKey
-      }
+      const finalMerged = buildSnapshot()
 
       commit('setCalledProcessDefinitions', finalMerged)
       commit('setAllCalledProcessDefinitions', finalMerged)
 
-      // Helper
+      // Helpers
+      // Returns detached copies with final labels, so committed state is never mutated afterwards
+      function buildSnapshot() {
+        const snapshot = mergeAndSplitByDefinition([...groupedMap.values()]).map(def => ({
+          ...def,
+          instances: [...def.instances],
+          activities: def.activities.map(a => ({
+            ...a,
+            instances: a.instances.map(i => ({ ...i }))
+          }))
+        }))
+
+        const versionsByKey = {}
+        for (const def of snapshot) {
+          if (!versionsByKey[def.definitionKey]) {
+            versionsByKey[def.definitionKey] = new Set()
+          }
+          versionsByKey[def.definitionKey].add(def.version)
+        }
+
+        for (const def of snapshot) {
+          const versions = versionsByKey[def.definitionKey]
+          def.label = versions.size > 1
+            ? `${def.definitionKey}:${def.version}`
+            : def.definitionKey
+        }
+
+        return snapshot
+      }
+
       function mergeAndSplitByDefinition(definitions) {
         const map = new Map()
 
@@ -255,6 +343,12 @@ export default {
       if (hasReferenced) return 'process-instance.calledProcessDefinitions.referenced'
       return 'process-instance.calledProcessDefinitions.unknown'
     },
-    getStaticCalledProcessDefinitions: state => state.staticCalledProcessDefinitions
+    // Kept for library consumers; it does not say which definition the list belongs to, use getStaticCalledProcessDefinitionsFor
+    getStaticCalledProcessDefinitions: state => state.staticCalledProcessDefinitions || [],
+    // The static definitions once they have loaded for the given process definition; null while they are unknown
+    getStaticCalledProcessDefinitionsFor: state => processDefinitionId =>
+      processDefinitionId && state.staticCalledProcessDefinitionsId === processDefinitionId
+        ? state.staticCalledProcessDefinitions
+        : null
   }
 }

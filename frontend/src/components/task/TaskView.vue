@@ -19,9 +19,12 @@
 <template>
   <TaskContent ref="task"
     :task="task"
+    :has-options="hasOptions"
     @complete-task="$emit('complete-task', $event)"
     @update-assignee="$emit('update-assignee', $event)"
     @update-task="$emit('update-task', $event)"
+    @show-task-list="$emit('show-task-list')"
+    @show-options="$emit('show-options')"
   ></TaskContent>
 </template>
 
@@ -31,7 +34,7 @@ import TaskContent from '@/components/task/TaskContent.vue'
 export default {
   name: 'TaskView',
   components: { TaskContent },
-  props: { task: Object },
-  emits: ['complete-task', 'update-assignee', 'update-task']
+  props: { task: Object, hasOptions: Boolean },
+  emits: ['complete-task', 'update-assignee', 'update-task', 'show-task-list', 'show-options']
 }
 </script>

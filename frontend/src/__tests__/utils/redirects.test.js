@@ -109,7 +109,7 @@ describe('redirectToProcessInstance', () => {
     })
   })
 
-  it('should default the history level to full when the config omits it', async () => {
+  it('should default the history level to audit when the config omits it', async () => {
     HistoryService.findProcessInstance.mockResolvedValue({ processDefinitionKey: 'invoice', processDefinitionVersion: 1 })
 
     await redirectToProcessInstance(routerWith(undefined), route({ params: { instanceId: 'pi1' } }), route())

@@ -25,10 +25,9 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.auth.SevenResourceType;
+import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.providers.BpmProvider;
-import org.cibseven.webapp.providers.PermissionConstants;
 import org.cibseven.webapp.rest.model.Authorization;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.cibseven.webapp.rest.model.User;
@@ -52,7 +51,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 	@ApiResponse(responseCode  = "500", description  = "An unexpected system error occured"),
 	@ApiResponse(responseCode  = "401", description  = "Unauthorized")
 })
-@RestController @RequestMapping("${cibseven.webclient.services.basePath:/services/v1}" + "/admin")
+@RestController @RequestMapping(SevenWebclientProperties.SERVICES_BASE_PATH + "/admin")
 public class AdminService extends BaseService implements InitializingBean {
 
 	@Autowired BpmProvider bpmProvider;
@@ -83,7 +82,6 @@ public class AdminService extends BaseService implements InitializingBean {
 	@Parameter(description = "Specifies the order of the sorting") @RequestParam Optional<String> sortOrder,
 	@Parameter(description = "Whether to perform case-insensitive like pattern matching") @RequestParam Optional<Boolean> likePatternIgnoreCase,
 			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.USER, PermissionConstants.READ_ALL);
 		return bpmProvider.findUsers(id, firstName, firstNameLike, lastName, lastNameLike, 
 				email, emailLike, memberOfGroup, memberOfTenant, idIn, firstResult, maxResults, sortBy, sortOrder, likePatternIgnoreCase, user);
 	}
@@ -105,7 +103,6 @@ public class AdminService extends BaseService implements InitializingBean {
 	public ResponseEntity<Void> createUser(
 			@RequestBody NewUser user,
 			Locale loc, CIBUser flowUser) {
-		checkPermission(flowUser, SevenResourceType.USER, PermissionConstants.CREATE_ALL);
 		bpmProvider.createUser(user, flowUser);
     // return 204 No Content, no body
     return ResponseEntity.noContent().build();
@@ -131,7 +128,6 @@ public class AdminService extends BaseService implements InitializingBean {
 			@Parameter(description = "User Id") @PathVariable String userId, 
 			@RequestBody User user, 
 			Locale loc, CIBUser flowUser) {
-		checkPermission(flowUser, SevenResourceType.USER, PermissionConstants.UPDATE_ALL);
 		bpmProvider.updateUserProfile(userId, user, flowUser);
     // return 204 No Content, no body
     return ResponseEntity.noContent().build();
@@ -155,7 +151,6 @@ public class AdminService extends BaseService implements InitializingBean {
 			@Parameter(description = "Group Id") @PathVariable String groupId, 
 			@Parameter(description = "User Id") @PathVariable String userId, 
 			Locale loc, CIBUser flowUser) {
-		checkPermission(flowUser, SevenResourceType.GROUP, PermissionConstants.DELETE_ALL);
 		bpmProvider.addMemberToGroup(groupId, userId, flowUser);
     // return 204 No Content, no body
     return ResponseEntity.noContent().build();
@@ -180,7 +175,6 @@ public class AdminService extends BaseService implements InitializingBean {
 			@Parameter(description = "Group Id") @PathVariable String groupId, 
 			@Parameter(description = "User Id") @PathVariable String userId, 
 			Locale loc, CIBUser flowUser) {
-		checkPermission(flowUser, SevenResourceType.GROUP, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteMemberFromGroup(groupId, userId, flowUser);
     // return 204 No Content, no body
     return ResponseEntity.noContent().build();
@@ -208,7 +202,6 @@ public class AdminService extends BaseService implements InitializingBean {
 			@Parameter(description = "User Id") @PathVariable String userId, 
 			@RequestBody Map<String, Object> data, 
 			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.USER, PermissionConstants.UPDATE_ALL);
 		bpmProvider.updateUserCredentials(userId, data, user);
     // return 204 No Content, no body
     return ResponseEntity.noContent().build();
@@ -230,7 +223,6 @@ public class AdminService extends BaseService implements InitializingBean {
 	public ResponseEntity<Void> deleteUser(
 			@Parameter(description = "User Id") @PathVariable String userId, 
 			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.USER, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteUser(userId, user);
     // return 204 No Content, no body
     return ResponseEntity.noContent().build();
@@ -258,7 +250,6 @@ public class AdminService extends BaseService implements InitializingBean {
 			@Parameter(description = "Specifies the maximum number of results to return"
 					+ "<br>Will return less results if there are no more results left") @RequestParam Optional<String> maxResults,		
 			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.GROUP, PermissionConstants.READ_ALL);
 		String decodedMember = member.map(value -> {
 			try {
 				return URLDecoder.decode(value, StandardCharsets.UTF_8.toString());
@@ -308,7 +299,6 @@ public class AdminService extends BaseService implements InitializingBean {
 	public ResponseEntity<Void> createGroup(
 			@RequestBody UserGroup group,
 			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.GROUP, PermissionConstants.CREATE_ALL);
 		bpmProvider.createGroup(group, user);
     // return 204 No Content, no body
     return ResponseEntity.noContent().build();
@@ -334,7 +324,6 @@ public class AdminService extends BaseService implements InitializingBean {
 			@Parameter(description = "Group Id") @PathVariable String groupId, 
 			@RequestBody UserGroup group, 
 			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.GROUP, PermissionConstants.UPDATE_ALL);
 		bpmProvider.updateGroup(groupId, group, user);
     // return 204 No Content, no body
     return ResponseEntity.noContent().build();
@@ -356,7 +345,6 @@ public class AdminService extends BaseService implements InitializingBean {
 	public ResponseEntity<Void> deleteGroup(
 			@Parameter(description = "Group Id") @PathVariable String groupId, 
 			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.GROUP, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteGroup(groupId, user);
     // return 204 No Content, no body
     return ResponseEntity.noContent().build();
@@ -386,7 +374,6 @@ public class AdminService extends BaseService implements InitializingBean {
 			@Parameter(description = "Maximum number of results to return"
 					+ "<br>Will return less results if there are no more results left") @RequestParam Optional<String> maxResults,
 			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.AUTHORIZATION, PermissionConstants.READ_ALL);
 		return bpmProvider.findAuthorization(id, type, userIdIn, groupIdIn, resourceType, resourceId,
 				sortBy, sortOrder, firstResult, maxResults, user);
 	}
@@ -414,7 +401,6 @@ public class AdminService extends BaseService implements InitializingBean {
 	public ResponseEntity<Authorization> createAuthorization(
 			@RequestBody Authorization authorization,
 			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.AUTHORIZATION, PermissionConstants.CREATE_ALL);
 		return bpmProvider.createAuthorization(authorization, user);
 	}
 
@@ -436,7 +422,6 @@ public class AdminService extends BaseService implements InitializingBean {
 			@Parameter(description = "Authorization Id") @PathVariable String authorizationId, 
 			@RequestBody Map<String, Object> data, 
 			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.AUTHORIZATION, PermissionConstants.UPDATE_ALL);
 		bpmProvider.updateAuthorization(authorizationId, data, user);
     // return 204 No Content, no body
     return ResponseEntity.noContent().build();
@@ -458,7 +443,6 @@ public class AdminService extends BaseService implements InitializingBean {
 	public ResponseEntity<Void> deleteAuthorization(
 			@Parameter(description = "Authorization Id") @PathVariable String authorizationId, 
 			Locale loc, CIBUser user) {
-		checkPermission(user, SevenResourceType.AUTHORIZATION, PermissionConstants.DELETE_ALL);
 		bpmProvider.deleteAuthorization(authorizationId, user);
     // return 204 No Content, no body
     return ResponseEntity.noContent().build();

@@ -18,47 +18,46 @@ package org.cibseven.webapp;
 
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.User;
+import org.cibseven.webapp.config.SevenWebclientProperties;
+import org.cibseven.webapp.config.StaticResourceEtags;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.rest.CustomRestTemplate;
 import org.cibseven.webapp.rest.model.InfoVersion;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.MethodParameter;
+import org.springframework.util.ClassUtils;
 import org.springframework.http.CacheControl;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverters;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
-import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.mvc.WebContentInterceptor;
 
-import com.fasterxml.jackson.core.StreamReadConstraints;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.databind.json.JsonMapper;
 
 @Configuration
 @ConditionalOnProperty(
-	prefix = "cibseven.webclient",
+	prefix = SevenWebclientProperties.PREFIX,
 	name = "enabled",
 	havingValue = "true",
 	matchIfMissing = true
@@ -72,60 +71,44 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 })
 public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArgumentResolver {
 
+	@SuppressWarnings("rawtypes")
 	BaseUserProvider provider;
 
-	@Value("${cibseven.webclient.custom.spring.jackson.parser.max-size:20000000}")
-	int jacksonParserMaxSize;
+	final SevenWebclientProperties properties;
+
+	private JsonMapper jsonMapper;
+
+	public SevenWebclientContext(SevenWebclientProperties properties) {
+		this.properties = properties;
+	}
 
 	/**
-	 * Deprecated interim opt-out: serializes dates as epoch millis again. Kept only so
-	 * consumers that adapted to the pre-fix output have a migration window. Jackson 3
-	 * disables timestamp output by default, so this flag loses its purpose once the wire
-	 * layer moves to Jackson 3 - remove it together with that migration.
+	 * The JSON mapper of the webclient's REST services and of its engine REST client, see
+	 * {@link WebclientJsonMapper#create(SevenWebclientProperties)}. Deliberately not a bean: a
+	 * {@code JsonMapper} bean would replace Spring Boot's own one in an application that embeds the
+	 * webclient.
 	 */
-	@Value("${cibseven.webclient.custom.spring.jackson.serialization.write-dates-as-timestamps:false}")
-	boolean writeDatesAsTimestamps;
-
-	@Bean
-	public ObjectMapper objectMapper() {
-		ObjectMapper objectMapper = new ObjectMapper();
-		StreamReadConstraints streamReadConstraints = StreamReadConstraints
-				.builder()
-				.maxStringLength(jacksonParserMaxSize)
-				.build();
-		objectMapper.getFactory().setStreamReadConstraints(streamReadConstraints);
-		objectMapper.registerModule(new JavaTimeModule());
-		objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, writeDatesAsTimestamps);
-		objectMapper.configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, writeDatesAsTimestamps);
-		return objectMapper;
+	public synchronized JsonMapper jsonMapper() {
+		if (jsonMapper == null) {
+			jsonMapper = WebclientJsonMapper.create(properties);
+		}
+		return jsonMapper;
 	}
 
 	@Override
-	public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-		converters.add(new ResourceHttpMessageConverter()); // needed for DocumentService.download
-		converters.add(new StringHttpMessageConverter(StandardCharsets.UTF_8)); // needed for UiService
-		converters.add(new ByteArrayHttpMessageConverter()); // needed for fetching data variables
-		converters.add(new FormHttpMessageConverter());
-		MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
-		converter.setObjectMapper(objectMapper());
-		converters.add(converter);
+	public void configureMessageConverters(HttpMessageConverters.ServerBuilder builder) {
+		builder.registerDefaults()
+				.withStringConverter(new StringHttpMessageConverter(StandardCharsets.UTF_8)) // needed for UiService
+				.withJsonConverter(new JacksonJsonHttpMessageConverter(jsonMapper()))
+				.addCustomConverter(new FormHttpMessageConverter())
+				.addCustomConverter(new ResourceHttpMessageConverter()) // needed for DocumentService.download
+				.addCustomConverter(new ByteArrayHttpMessageConverter()); // needed for fetching data variables
 	}
 
 	@Override
 	public void addCorsMappings(CorsRegistry registry) {
 		registry.addMapping("/**").allowedMethods("GET", "POST", "DELETE", "PUT", "PATCH");
 	}
-
-	@Override // https://stackoverflow.com/questions/16332092/spring-mvc-pathvariable-with-dot-is-getting-truncated
-	public void configurePathMatch(PathMatchConfigurer configurer) {
-		configurer.setUseSuffixPatternMatch(false);
-	}
-
-	@Override
-    public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
-        configurer.favorPathExtension(false);
-    }
 
 	@Override
 	public void addInterceptors(InterceptorRegistry registry) {
@@ -146,6 +129,16 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 		registry.addInterceptor(cacheConfig);
 	}
 
+	/**
+	 * Static files are revalidated by their content instead of their modification time, so a logo, favicon
+	 * or translation file replaced under the same name reaches the browser without clearing its cache. See
+	 * {@link StaticResourceEtags}. Static, as a post-processor must be created before the other beans.
+	 */
+	@Bean
+	public static StaticResourceEtags staticResourceEtags() {
+		return new StaticResourceEtags();
+	}
+
 	@Override
 	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
 		argumentResolvers.add(this);
@@ -163,16 +156,19 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 	}
 
 	@Bean
-	public BpmProvider bpmProvider(@Value("${cibseven.webclient.bpm.provider:org.cibseven.webapp.providers.SevenProvider}") Class<BpmProvider> providerClass)
+	public BpmProvider bpmProvider()
 			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException {
+		Class<?> providerClass = ClassUtils.resolveClassName(properties.getBpm().getProvider(), ClassUtils.getDefaultClassLoader());
 		return (BpmProvider) providerClass.getConstructor().newInstance();
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Bean
-	public BaseUserProvider baseUserProvider(@Value("${cibseven.webclient.user.provider:org.cibseven.webapp.auth.SevenUserProvider}") Class<BaseUserProvider> providerClass)
+	public BaseUserProvider baseUserProvider()
 			throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
 			NoSuchMethodException, SecurityException {
+		Class<?> providerClass = ClassUtils.resolveClassName(properties.getUser().getProvider(), ClassUtils.getDefaultClassLoader());
 		this.provider = (BaseUserProvider) providerClass.getConstructor().newInstance();
 		return provider;
 	}
@@ -186,8 +182,8 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 	 * Creates a custom RestTemplate bean with configurable settings.
 	 * This can be injected into services that need to make HTTP requests.
 	 * 
-	 * The bean is configured using properties from application.yaml under
-	 * the cibseven.webclient.rest namespace.
+	 * The bean is configured by the cibseven.webclient.rest section of
+	 * {@link SevenWebclientProperties}.
 	 * 
 	 * This bean is conditional and will only be created if cibseven.webclient.rest.enabled=true
 	 * or if the property is not specified (default behavior).
@@ -196,15 +192,19 @@ public class SevenWebclientContext implements WebMvcConfigurer, HandlerMethodArg
 	 */
 	@Bean
 	@ConditionalOnProperty(
-		prefix = "cibseven.webclient.rest",
+		prefix = SevenWebclientProperties.REST_PREFIX,
 		name = "enabled",
 		havingValue = "true",
 		matchIfMissing = true
 	)
 	public CustomRestTemplate customRestTemplate() {
-		// Create a new CustomRestTemplate instance
 		// It will be configured via @PostConstruct using @Autowired dependencies
-		return new CustomRestTemplate();
+		CustomRestTemplate template = new CustomRestTemplate();
+		JacksonJsonHttpMessageConverter jacksonConverter = new JacksonJsonHttpMessageConverter(jsonMapper());
+		List<HttpMessageConverter<?>> converters = new ArrayList<>(template.getMessageConverters());
+		converters.replaceAll(c -> c instanceof JacksonJsonHttpMessageConverter ? jacksonConverter : c);
+		template.setMessageConverters(converters);
+		return template;
 	}
 
 }

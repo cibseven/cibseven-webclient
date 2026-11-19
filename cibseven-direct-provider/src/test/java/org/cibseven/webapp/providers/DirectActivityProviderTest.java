@@ -18,11 +18,18 @@ package org.cibseven.webapp.providers;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.RETURNS_SELF;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
+
+import java.util.List;
+import java.util.Map;
 
 import org.cibseven.bpm.engine.AuthorizationException;
 import org.cibseven.bpm.engine.HistoryService;
@@ -30,6 +37,7 @@ import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.ProcessEngineException;
 import org.cibseven.bpm.engine.RuntimeService;
 import org.cibseven.bpm.engine.exception.NotFoundException;
+import org.cibseven.bpm.engine.history.HistoricActivityInstanceQuery;
 import org.cibseven.bpm.engine.rest.mapper.JacksonConfigurator;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.SystemException;
@@ -37,7 +45,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 public class DirectActivityProviderTest {
 
@@ -57,14 +65,44 @@ public class DirectActivityProviderTest {
 		when(processEngine.getRuntimeService()).thenReturn(runtimeService);
 		when(processEngine.getHistoryService()).thenReturn(historyService);
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		JacksonConfigurator.configureObjectMapper(objectMapper);
+		ObjectMapper objectMapper = JacksonConfigurator.configureObjectMapper();
 
 		directProviderUtil = Mockito.spy(new DirectProviderUtil());
 		doReturn(processEngine).when(directProviderUtil).getProcessEngine(any(CIBUser.class));
 		doReturn(objectMapper).when(directProviderUtil).getObjectMapper(any(CIBUser.class));
 
 		activityProvider = new DirectActivityProvider(directProviderUtil);
+	}
+
+	private HistoricActivityInstanceQuery mockHistoricActivityQuery() {
+		HistoricActivityInstanceQuery query = mock(HistoricActivityInstanceQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
+		when(historyService.createHistoricActivityInstanceQuery()).thenReturn(query);
+		when(query.list()).thenReturn(List.of());
+		when(query.listPage(anyInt(), anyInt())).thenReturn(List.of());
+		return query;
+	}
+
+	@Test
+	void findActivitiesInstancesHistory_pagesWithTheParametersItIsGiven() {
+		HistoricActivityInstanceQuery query = mockHistoricActivityQuery();
+
+		// request parameters arrive as strings, and paging is no filter of the query DTO
+		activityProvider.findActivitiesInstancesHistory(
+				Map.of("processInstanceId", "pi-1", "firstResult", "5", "maxResults", "1"), user);
+
+		verify(query).processInstanceId("pi-1");
+		verify(query).listPage(5, 1);
+		verify(query, never()).list();
+	}
+
+	@Test
+	void findActivitiesInstancesHistory_listsEverythingWithoutPaging() {
+		HistoricActivityInstanceQuery query = mockHistoricActivityQuery();
+
+		activityProvider.findActivitiesInstancesHistory(Map.of("processInstanceId", "pi-1"), user);
+
+		verify(query).list();
+		verify(query, never()).listPage(anyInt(), anyInt());
 	}
 
 	@Test

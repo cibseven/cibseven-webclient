@@ -44,6 +44,7 @@
       <component :is="BpmnViewerPlugin" v-if="BpmnViewerPlugin" ref="diagram" @task-selected="selectTask($event)" @activity-map-ready="activityMap = $event"
         @viewbox-changed="onViewboxChanged"
         :process-definition-id="process.id" :activity-instance="activityInstance" :activity-instance-history="activityInstanceHistory" :statistics="process.statistics"
+        :use-runtime-stats="useRuntimeStats" :runtime-activity-id="runtimeActivityId"
         :active-tab="activeTab" class="h-100">
       </component>
       <BpmnViewer v-else ref="diagram"
@@ -51,6 +52,8 @@
         :activity-instance="activityInstance"
         :activity-instance-history="activityInstanceHistory"
         :statistics="process.statistics"
+        :use-runtime-stats="useRuntimeStats"
+        :runtime-activity-id="runtimeActivityId"
         :selected-instance="null"
         :active-tab="activeTab"
         @task-selected="selectTask($event)"
@@ -86,12 +89,8 @@
             </div>
             <template v-else>
               <div class="col-4 p-3">
-                <b-input-group size="sm">
-                  <template #prepend>
-                    <b-button :title="$t('searches.search')" aria-hidden="true" size="sm" class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
-                  </template>
-                  <label for="process-instances-search" class="visually-hidden">{{ $t('searches.search') }}</label>
-                  <b-form-input id="process-instances-search" :title="$t('searches.search')" size="sm" :placeholder="$t('searches.search')" @input="(evt) => onInput(evt.target.value.trim())"></b-form-input>
+                <div class="d-flex align-items-center">
+                  <SearchInput input-id="process-instances-search" size="sm" @update:model-value="value => onInput(value.trim())"/>
                   <b-button size="sm" variant="light" @click="$refs.sortModal.show()" class="ms-1 border"><span class="mdi mdi-sort" style="line-height: initial"></span></b-button>
                   <b-form-checkbox
                     v-model="unfinishedFilter"
@@ -101,7 +100,7 @@
                   >
                   {{ $t('process-instance.onlyUnfinished.title') }}
                   </b-form-checkbox>
-                </b-input-group>
+                </div>
               </div>
               <div v-if="selectedActivityId" class="col-3 p-3">
                 <RemovableBadge
@@ -207,12 +206,13 @@ import PluginSlot from '@/components/common/PluginSlot.vue'
 import DeepLinkButtons from '@/components/common-components/DeepLinkButtons.vue'
 import { getDeepLinkEntries } from '@/utils/deepLinks.js'
 import { mapGetters, mapActions } from 'vuex'
+import SearchInput from '@/components/common-components/SearchInput.vue'
 
 export default {
   name: 'ProcessInstancesView',
   components: { InstancesTable, JobDefinitionsTable, BpmnViewer, MultisortModal,
      SuccessAlert, ConfirmDialog, BWaitingBox, IncidentsTable, CalledProcessDefinitionsTable,
-     ProcessInstancesTabs, ScrollableTabsContainer, ViewerFrame, RemovableBadge, DeepLinkFrame, DeepLinkButtons, PluginSlot },
+     ProcessInstancesTabs, ScrollableTabsContainer, ViewerFrame, RemovableBadge, DeepLinkFrame, DeepLinkButtons, PluginSlot, SearchInput },
   inject: ['loadProcesses', 'currentLanguage'],
   mixins: [permissionsMixin, navigationPermissionsMixin, resizerMixin, copyToClipboardMixin, tabUrlMixin, bpmnViewportPersistenceMixin, viewerFrameSizePersistenceMixin],
   emits: ['task-selected', 'filter-instances', 'instance-deleted'],
@@ -330,6 +330,19 @@ export default {
 
       return result
     },
+    // Runtime statistics ignore the filter; neither `unfinished` nor an active selected activity narrow its tokens
+    isUnfiltered() {
+      const ignored = this.selectedActivityId ? ['unfinished', 'activityIdIn', 'activeOrExecutedActivityIdIn'] : ['unfinished']
+      return Object.entries(this.computedFilter)
+        .filter(([key]) => !ignored.includes(key))
+        .every(([, value]) => value === false || (value ?? '').length === 0)
+    },
+    useRuntimeStats() {
+      return this.isUnfiltered && !this.selectedActivityId
+    },
+    runtimeActivityId() {
+      return this.isUnfiltered ? this.selectedActivityId : null
+    },
     ProcessActionsPlugin: function() {
       return this.$options.components && this.$options.components.ProcessActionsPlugin
         ? this.$options.components.ProcessActionsPlugin
@@ -379,7 +392,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'setDiagramXml', 'clearHistoricActivityStatistics','loadHistoricActivityStatisticsForInstances']),
+    ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'setDiagramXml', 'clearHistoricActivityStatistics','loadHistoricActivityStatisticsForInstances', 'loadStatistics']),
     ...mapActions('calledProcessDefinitions', ['loadStaticCalledProcessDefinitions']),
     applySorting: function(sortingCriteria) {
       this.sorting = true
@@ -465,6 +478,8 @@ export default {
      syncStatisticsWithInstances: function(filter) {
       if (!this.process?.id) return
       this.loadHistoricActivityStatisticsForInstances({ processDefinitionId: this.process.id, filter})
+      // Running tokens and open incidents come from runtime, so they must refresh together with history
+      this.loadStatistics(this.process)
     },
     onInput: debounce(800, function(freeText) {
       this.$emit('filter-instances', {

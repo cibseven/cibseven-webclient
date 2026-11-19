@@ -21,17 +21,19 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.rest.CustomRestTemplate;
+import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.QueueDispatcher;
 import okhttp3.mockwebserver.RecordedRequest;
+import okio.Buffer;
 
 /**
  * Stands in for the engine REST API when testing a {@link SevenProviderBase} subclass.
@@ -70,11 +72,10 @@ final class MockEngineRest implements AutoCloseable {
 		BaseUserProvider<?> userProvider = mock(BaseUserProvider.class);
 		when(userProvider.getEngineRestToken(any(CIBUser.class))).thenReturn(AUTH_TOKEN);
 
-		ReflectionTestUtils.setField(provider, "customRestTemplate", new CustomRestTemplate());
+		ReflectionTestUtils.setField(provider, "customRestTemplate", TestRestTemplateConfiguration.webclientCustomRestTemplate());
 		ReflectionTestUtils.setField(provider, "baseUserProvider", userProvider);
-		ReflectionTestUtils.setField(provider, "cibsevenUrl", "http://localhost:" + server.getPort());
-		ReflectionTestUtils.setField(provider, "engineRestPath", ENGINE_REST_PATH);
-		ReflectionTestUtils.setField(provider, "jacksonParserMaxSize", 20_000_000);
+		provider.properties.getEngineRest().setUrl("http://localhost:" + server.getPort());
+		provider.properties.getEngineRest().setPath(ENGINE_REST_PATH);
 		return provider;
 	}
 
@@ -88,6 +89,40 @@ final class MockEngineRest implements AutoCloseable {
 
 	void enqueueJson(String body) {
 		server.enqueue(new MockResponse().setBody(body).addHeader("Content-Type", "application/json"));
+	}
+
+	/** A JSON answer whose headers leave only after {@code delay}, so the request holds its connection. */
+	void enqueueJsonAfter(String body, long delay, TimeUnit unit) {
+		server.enqueue(new MockResponse().setBody(body).addHeader("Content-Type", "application/json")
+			.setHeadersDelay(delay, unit));
+	}
+
+	/** Raw bytes, for endpoints that do not answer JSON; MockWebServer sets Content-Length from them. */
+	void enqueueBytes(byte[] body, String contentType) {
+		server.enqueue(new MockResponse().setBody(new Buffer().write(body)).addHeader("Content-Type", contentType));
+	}
+
+	/** UTF-8 text sent as {@code text/plain} without a charset, the way engine-rest sends stack traces. */
+	/** Like engine-rest streaming a large resource: chunked, on a keep-alive connection. */
+	void enqueueChunked(byte[] body, String contentType) {
+		server.enqueue(new MockResponse()
+			.setChunkedBody(new Buffer().write(body), 4096)
+			.addHeader("Content-Type", contentType)
+			.addHeader("Cache-Control", "no-cache")
+			.addHeader("Connection", "keep-alive")
+			.addHeader("Keep-Alive", "timeout=60"));
+	}
+
+	/** An already gzip-compressed resource with a fixed length, as an engine or proxy that compresses would send it. */
+	void enqueueGzip(byte[] gzipped, String contentType) {
+		server.enqueue(new MockResponse()
+			.setBody(new Buffer().write(gzipped))
+			.addHeader("Content-Type", contentType)
+			.addHeader("Content-Encoding", "gzip"));
+	}
+
+	void enqueuePlainText(String body) {
+		enqueueBytes(body.getBytes(StandardCharsets.UTF_8), "text/plain");
 	}
 
 	void enqueueEmpty(int status) {

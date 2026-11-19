@@ -16,12 +16,12 @@
  */
 package org.cibseven.webapp.providers;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,7 +36,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.cibseven.bpm.engine.AuthorizationException;
-import org.cibseven.bpm.engine.BadUserRequestException;
 import org.cibseven.bpm.engine.FormService;
 import org.cibseven.bpm.engine.ProcessEngine;
 import org.cibseven.bpm.engine.ProcessEngineException;
@@ -65,6 +64,7 @@ import org.cibseven.bpm.engine.rest.dto.history.HistoricProcessInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.history.HistoricProcessInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.dto.repository.ActivityStatisticsResultDto;
 import org.cibseven.bpm.engine.rest.dto.repository.CalledProcessDefinitionDto;
+import org.cibseven.bpm.engine.rest.dto.repository.DeploymentDto;
 import org.cibseven.bpm.engine.rest.dto.repository.ProcessDefinitionDiagramDto;
 import org.cibseven.bpm.engine.rest.dto.repository.ProcessDefinitionDto;
 import org.cibseven.bpm.engine.rest.dto.repository.ProcessDefinitionQueryDto;
@@ -75,23 +75,24 @@ import org.cibseven.bpm.engine.rest.dto.runtime.ProcessInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.ProcessInstanceSuspensionStateDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.ProcessInstanceWithVariablesDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.StartProcessInstanceDto;
-import org.cibseven.bpm.engine.rest.dto.runtime.VariableInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.modification.ProcessInstanceModificationInstructionDto;
 import org.cibseven.bpm.engine.rest.dto.task.FormDto;
 import org.cibseven.bpm.engine.rest.exception.RestException;
 import org.cibseven.bpm.engine.rest.impl.history.HistoricActivityStatisticsQueryDto;
 import org.cibseven.bpm.engine.rest.util.ApplicationContextPathUtil;
-import org.cibseven.bpm.engine.rest.util.EncodingUtil;
-import org.cibseven.bpm.engine.rest.util.QueryUtil;
+import org.cibseven.bpm.engine.runtime.IncidentQuery;
 import org.cibseven.bpm.engine.runtime.ProcessInstanceQuery;
 import org.cibseven.bpm.engine.runtime.ProcessInstanceWithVariables;
 import org.cibseven.bpm.engine.runtime.ProcessInstantiationBuilder;
+import org.cibseven.bpm.engine.variable.value.TypedValue;
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.exception.ExpressionEvaluationException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnsupportedTypeException;
+import org.cibseven.webapp.rest.model.Deployment;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.HistoryStatistics;
 import org.cibseven.webapp.rest.model.Incident;
@@ -105,13 +106,15 @@ import org.cibseven.webapp.rest.model.Variable;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import jakarta.ws.rs.core.MultivaluedHashMap;
 import jakarta.ws.rs.core.MultivaluedMap;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class DirectProcessProvider implements IProcessProvider {
 
 	private static final String FETCH_INCIDENTS = "fetchIncidents";
@@ -134,14 +137,7 @@ public class DirectProcessProvider implements IProcessProvider {
 		ProcessDefinitionQueryDto queryDto = new ProcessDefinitionQueryDto(directProviderUtil.getObjectMapper(user), queryParameters);
 
 		ProcessDefinitionQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
-		List<ProcessDefinition> matchingDefinitions = QueryUtil.list(query, null, null);
-
-		List<Process> processes = new ArrayList<>();
-		for (ProcessDefinition definition : matchingDefinitions) {
-			ProcessDefinitionDto def = ProcessDefinitionDto.fromProcessDefinition(definition);
-			processes.add(directProviderUtil.convertValue(def, Process.class, user));
-		}
-		return processes;
+		return directProviderUtil.listAndConvert(query, null, null, ProcessDefinitionDto::fromProcessDefinition, Process.class, user);
 	}
 
 	@Override
@@ -242,16 +238,12 @@ public class DirectProcessProvider implements IProcessProvider {
 				filterMap.put(splitValue[0], URLDecoder.decode(splitValue[1], Charset.forName("UTF-8")));
 		}
 		ObjectMapper objectMapper = directProviderUtil.getObjectMapper(user);
-		ProcessDefinitionQueryDto queryDto = objectMapper.convertValue(filterMap, ProcessDefinitionQueryDto.class);
-		List<Process> processes = new ArrayList<>();
+		ProcessDefinitionQueryDto queryDto = directProviderUtil.parseQueryDto(filterMap, ProcessDefinitionQueryDto.class, user);
 		ProcessEngine processEngine = directProviderUtil.getProcessEngine(user);
 		ProcessDefinitionQuery query = queryDto.toQuery(processEngine);
-		List<ProcessDefinition> matchingDefinitions = QueryUtil.list(query, null, null);
+		List<Process> processes = directProviderUtil.listAndConvert(query, null, null, 
+				ProcessDefinitionDto::fromProcessDefinition, Process.class, user);
 
-		for (ProcessDefinition definition : matchingDefinitions) {
-			ProcessDefinitionDto def = ProcessDefinitionDto.fromProcessDefinition(definition);
-			processes.add(directProviderUtil.convertValue(def, Process.class, user));
-		}
 		for (Process process : processes) {
 			ProcessInstanceQueryDto processInstanceQueryDto = new ProcessInstanceQueryDto();
 			queryDto.setObjectMapper(objectMapper);
@@ -293,15 +285,15 @@ public class DirectProcessProvider implements IProcessProvider {
 		else
 			queryDto.setWithoutTenantId(true);
 		ProcessDefinitionQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
-		List<ProcessDefinition> definitions = QueryUtil.list(query, null, null);
-		List<Process> processes = new ArrayList<>();
-		for (ProcessDefinition definition : definitions) {
-			ProcessDefinitionDto def = ProcessDefinitionDto.fromProcessDefinition(definition);
-			processes.add(directProviderUtil.convertValue(def, Process.class, user));
-		}
+		List<Process> processes = directProviderUtil.listAndConvert(query, null, null, 
+				ProcessDefinitionDto::fromProcessDefinition, Process.class, user);
 
 		if (!lazyLoad.isPresent() || (lazyLoad.isPresent() && !lazyLoad.get())) {
+			Map<String, Long> incidentsById = countIncidentsByDefinitionId(key, tenantId, user);
 			for (Process process : processes) {
+				process.setIncidents(incidentsById.getOrDefault(process.getId(), 0L));
+				process.setDeploymentTime(findDeploymentTime(process.getDeploymentId(), user));
+
 				HistoricProcessInstanceQueryDto historicProcessInstanceQueryDto = new HistoricProcessInstanceQueryDto();
 				historicProcessInstanceQueryDto.setProcessDefinitionId(process.getId());
 				historicProcessInstanceQueryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
@@ -326,6 +318,35 @@ public class DirectProcessProvider implements IProcessProvider {
 			}
 		}
 		return processes;
+	}
+
+	/**
+	 * Open incidents per version, from one incident query filtered by key. There is no withoutTenantId on
+	 * incidents: the ones of other tenants are dropped when matched by definition id.
+	 */
+	private Map<String, Long> countIncidentsByDefinitionId(String key, String tenantId, CIBUser user) {
+		IncidentQuery query = directProviderUtil.getProcessEngine(user).getRuntimeService().createIncidentQuery()
+				.processDefinitionKeyIn(key);
+		if (tenantId != null)
+			query.tenantIdIn(tenantId);
+		return query.list().stream()
+				.collect(Collectors.groupingBy(incident -> incident.getProcessDefinitionId(), Collectors.counting()));
+	}
+
+	/** The engine has no deployment time on the process definition; left out when the deployment cannot be read. */
+	private String findDeploymentTime(String deploymentId, CIBUser user) {
+		if (deploymentId == null)
+			return null;
+		try {
+			org.cibseven.bpm.engine.repository.Deployment deployment = directProviderUtil.getProcessEngine(user)
+					.getRepositoryService().createDeploymentQuery().deploymentId(deploymentId).singleResult();
+			return deployment != null
+					? directProviderUtil.convertValue(DeploymentDto.fromDeployment(deployment), Deployment.class, user).getDeploymentTime()
+					: null;
+		} catch (ProcessEngineException e) {
+			log.debug("Deployment time of {} not available: {}", deploymentId, e.getMessage());
+			return null;
+		}
 	}
 
 	@Override
@@ -419,7 +440,7 @@ public class DirectProcessProvider implements IProcessProvider {
 	public Data downloadBpmn(String id, String fileName, CIBUser user) {
 
 		ProcessDiagram diagram = fetchDiagram(id, user);
-		ByteArrayResource resource = new ByteArrayResource(diagram.getBpmn20Xml().getBytes());
+		ByteArrayResource resource = new ByteArrayResource(diagram.getBpmn20Xml().getBytes(StandardCharsets.UTF_8));
 		return new Data(fileName, "application/bpmn+xml", resource, resource.contentLength());
 	}
 
@@ -433,7 +454,7 @@ public class DirectProcessProvider implements IProcessProvider {
 
 	@Override
 	public void deleteProcessInstance(String processInstanceId, CIBUser user) {
-		directProviderUtil.getProcessEngine(user).getRuntimeService().deleteProcessInstance(processInstanceId, null);
+		directProviderUtil.getProcessEngine(user).getRuntimeService().deleteProcessInstance(processInstanceId, null, false, true);
 	}
 
 	@Override
@@ -550,7 +571,9 @@ public class DirectProcessProvider implements IProcessProvider {
 	@Override
 	public Collection<ProcessStatistics> findProcessStatistics(String processId, CIBUser user)
 			throws SystemException, UnsupportedTypeException, ExpressionEvaluationException {
-		ActivityStatisticsQuery query = directProviderUtil.getProcessEngine(user).getManagementService().createActivityStatisticsQuery(processId);
+		ActivityStatisticsQuery query = directProviderUtil.getProcessEngine(user).getManagementService().createActivityStatisticsQuery(processId)
+				.includeFailedJobs()
+				.includeIncidents();
 		List<ActivityStatistics> queryResults = query.unlimitedList();
 
 		Collection<ProcessStatistics> processStatistics = new ArrayList<>();
@@ -574,15 +597,10 @@ public class DirectProcessProvider implements IProcessProvider {
 		historicProcessInstanceQueryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
 		HistoricProcessInstanceQuery query = historicProcessInstanceQueryDto.toQuery(directProviderUtil.getProcessEngine(user));
 
-		List<HistoricProcessInstance> matchingHistoricProcessInstances = QueryUtil.list(query,
-				firstResult.isPresent() ? firstResult.get() : null, maxResults.isPresent() ? maxResults.get() : null);
+		List<HistoryProcessInstance> historicProcessInstanceResults = directProviderUtil.listAndConvert(query, 
+				firstResult.orElse(null), maxResults.orElse(null), 
+				HistoricProcessInstanceDto::fromHistoricProcessInstance, HistoryProcessInstance.class, user);
 
-		List<HistoryProcessInstance> historicProcessInstanceResults = new ArrayList<HistoryProcessInstance>();
-		for (HistoricProcessInstance historicProcessInstance : matchingHistoricProcessInstances) {
-			HistoricProcessInstanceDto resultHistoricProcessInstanceDto = HistoricProcessInstanceDto
-					.fromHistoricProcessInstance(historicProcessInstance);
-			historicProcessInstanceResults.add(directProviderUtil.convertValue(resultHistoricProcessInstanceDto, HistoryProcessInstance.class, user));
-		}
 		// Check if caller wants incident handling
 		if (fetchIncidents != null && fetchIncidents) {
 			String processDefinitionId = (String) filters.get("processDefinitionId");
@@ -655,7 +673,7 @@ public class DirectProcessProvider implements IProcessProvider {
 			historicProcessInstanceQueryDto.setActivityIdIn(Arrays.asList(activityId.get()));
 		if (active.isPresent())
 			historicProcessInstanceQueryDto.setActive(active.get());
-		if (text != "") {
+		if (text != null && !text.isEmpty()) {
 			List<HistoricProcessInstanceQueryDto> orQueries = new ArrayList<>();
 			HistoricProcessInstanceQueryDto orQuery = new HistoricProcessInstanceQueryDto();
 			orQuery.setProcessInstanceBusinessKeyLike("*" + text + "*");
@@ -697,17 +715,8 @@ public class DirectProcessProvider implements IProcessProvider {
 	@Override
 	public Variable fetchProcessInstanceVariable(String processInstanceId, String variableName, boolean deserializeValue,
 			CIBUser user) throws SystemException {
-		VariableInstanceQueryDto queryDto = new VariableInstanceQueryDto();
-		queryDto.setProcessInstanceIdIn(new String[] { processInstanceId });
-		queryDto.setVariableName(variableName);
-		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
-
-		List<Variable> variablesDeserialized = directProviderUtil.queryVariableInstances(queryDto, null, null, true, user);
-		List<Variable> variablesSerialized = directProviderUtil.queryVariableInstances(queryDto, null, null, false, user);
-		Variable variableDeserialized = variablesDeserialized.size() == 1 ? variablesDeserialized.get(0) : null;
-		Variable variableSerialized = variablesSerialized.size() == 1 ? variablesSerialized.get(0) : null;
-		if (variableDeserialized == null || variableSerialized == null)
-			throw new SystemException("Variable " + variableName + " not found in process instance " + processInstanceId);
+		Variable variableDeserialized = getProcessInstanceVariable(processInstanceId, variableName, true, user);
+		Variable variableSerialized = getProcessInstanceVariable(processInstanceId, variableName, false, user);
 		if (deserializeValue) {
 			variableDeserialized.setValueSerialized(variableSerialized.getValue());
 			variableDeserialized.setValueDeserialized(variableDeserialized.getValue());
@@ -718,6 +727,27 @@ public class DirectProcessProvider implements IProcessProvider {
 			return variableSerialized;
 		}
 
+	}
+
+	/**
+	 * Reads the variable as engine-rest's GET /process-instance/{id}/variables/{name} does. The typed
+	 * getter sees only the instance's own scope, so a variable of the same name local to a child
+	 * execution neither collides with it nor stands in for it, and a denied read fails instead of
+	 * coming back as an empty, authorization-filtered result. Only a really absent variable becomes
+	 * NoObjectFoundException, which callers like fetchStatusDataset / fetchChatComments treat as "no value".
+	 */
+	private Variable getProcessInstanceVariable(String processInstanceId, String variableName, boolean deserializeValue,
+			CIBUser user) {
+		TypedValue value;
+		try {
+			value = directProviderUtil.getProcessEngine(user).getRuntimeService().getVariableTyped(processInstanceId, variableName, deserializeValue);
+		} catch (ProcessEngineException e) {
+			// AuthorizationException included: the default provider answers a denied read with a SystemException too
+			throw new SystemException(String.format("Cannot get processInstance variable %s: %s", variableName, e.getMessage()), e);
+		}
+		if (value == null)
+			throw new NoObjectFoundException(new SystemException("Variable " + variableName + " not found in process instance " + processInstanceId));
+		return directProviderUtil.convertValue(VariableValueDto.fromTypedValue(value), Variable.class, user);
 	}
 
 	@Override
@@ -748,7 +778,7 @@ public class DirectProcessProvider implements IProcessProvider {
 	}
 
 	public static Process convertToProcess(CalledProcessDefinitionDto dto) {
-		ObjectMapper objectMapper = new ObjectMapper();
+		ObjectMapper objectMapper = WebclientJsonMapper.plain();
 		Map<String, Object> filterDtoMap = objectMapper.convertValue(dto, new TypeReference<Map<String, Object>>() {
 		});
 		return objectMapper.convertValue(filterDtoMap, Process.class);
@@ -781,8 +811,10 @@ public class DirectProcessProvider implements IProcessProvider {
 	public void deleteProcessInstanceFromHistory(String id, CIBUser user) {
 		try {
 			directProviderUtil.getProcessEngine(user).getHistoryService().deleteHistoricProcessInstance(id);
-		} catch (BadUserRequestException e) {
-			throw new SystemException(e.getMessage());
+		} catch (AuthorizationException e) {
+			throw e;
+		} catch (ProcessEngineException e) {
+			throw new NoObjectFoundException(new SystemException("Historic process instance with id " + id + " does not exist", e));
 		}
 	}
 
@@ -799,17 +831,13 @@ public class DirectProcessProvider implements IProcessProvider {
 	@Override
 	public Collection<ProcessInstance> findCurrentProcessesInstances(Map<String, Object> data, Optional<Integer> firstResult, Optional<Integer> maxResults, CIBUser user)
 			throws SystemException {
-		ProcessInstanceQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(data, ProcessInstanceQueryDto.class);
+		ProcessInstanceQueryDto queryDto = directProviderUtil.parseQueryDto(data, ProcessInstanceQueryDto.class, user);
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
 		ProcessInstanceQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 
-		List<org.cibseven.bpm.engine.runtime.ProcessInstance> matchingInstances = QueryUtil.list(query, firstResult.orElse(null), maxResults.orElse(null));
-
-		List<ProcessInstance> instanceResults = new ArrayList<>();
-		for (org.cibseven.bpm.engine.runtime.ProcessInstance instance : matchingInstances) {
-			ProcessInstanceDto resultInstance = ProcessInstanceDto.fromProcessInstance(instance);
-			instanceResults.add(directProviderUtil.convertValue(resultInstance, ProcessInstance.class, user));
-		}
+		List<ProcessInstance> instanceResults = directProviderUtil.listAndConvert(query,
+				firstResult.orElse(null), maxResults.orElse(null),
+				ProcessInstanceDto::fromProcessInstance, ProcessInstance.class, user);
 
 		boolean alreadyAllWithIncident = Boolean.TRUE.equals(data.get("withIncident"));
 		addWithIncidentsInfo(instanceResults, alreadyAllWithIncident, user);
@@ -908,15 +936,8 @@ public class DirectProcessProvider implements IProcessProvider {
 		historicProcessInstanceQueryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
 
 		HistoricProcessInstanceQuery query = historicProcessInstanceQueryDto.toQuery(directProviderUtil.getProcessEngine(user));
-		List<HistoricProcessInstance> matchingHistoricProcessInstances = QueryUtil.list(query, firstResult, maxResults);
-
-		List<HistoryProcessInstance> HistoryProcessInstanceResults = new ArrayList<HistoryProcessInstance>();
-		for (HistoricProcessInstance historicProcessInstance : matchingHistoricProcessInstances) {
-			HistoricProcessInstanceDto resultHistoricProcessInstanceDto = HistoricProcessInstanceDto
-					.fromHistoricProcessInstance(historicProcessInstance);
-			HistoryProcessInstanceResults.add(directProviderUtil.convertValue(resultHistoricProcessInstanceDto, HistoryProcessInstance.class, user));
-		}
-		return HistoryProcessInstanceResults;
+		return directProviderUtil.listAndConvert(query, firstResult, maxResults, 
+				HistoricProcessInstanceDto::fromHistoricProcessInstance, HistoryProcessInstance.class, user);
 	}
 
 	@Override
@@ -926,7 +947,7 @@ public class DirectProcessProvider implements IProcessProvider {
 		StartProcessInstanceDto parameters;
 		try {
 			parameters = objectMapper.readValue(formResult, StartProcessInstanceDto.class);
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			throw new SystemException(e.getMessage(), e);
 		}
 		FormService formService = directProviderUtil.getProcessEngine(user).getFormService();
@@ -957,13 +978,9 @@ public class DirectProcessProvider implements IProcessProvider {
 
 		Object startForm = formService.getRenderedStartForm(processDefinitionId);
 		if (startForm != null) {
-			String content = startForm.toString();
-			InputStream stream = new ByteArrayInputStream(content.getBytes(EncodingUtil.DEFAULT_ENCODING));
-			try {
-				return ResponseEntity.ok(IOUtils.toString(stream, Charset.defaultCharset()));
-			} catch (IOException e) {
-				throw new SystemException(e.getMessage(), e);
-			}
+			// the engine renders the form in memory, so no byte round trip is needed; re-encoding it
+			// through the JVM default charset garbled non-ASCII text (CIB7-2204)
+			return ResponseEntity.ok(startForm.toString());
 	}
 
 		throw new SystemException("No matching rendered start form for process definition with the id " + processDefinitionId + " found.");
@@ -975,17 +992,14 @@ public class DirectProcessProvider implements IProcessProvider {
 		// the two-call approach (runtime → history) is fundamentally the right design
 		// since "/process-instance" has runtime-specific filters not available in the history API.
 
-		ProcessInstanceQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(data, ProcessInstanceQueryDto.class);
+		ProcessInstanceQueryDto queryDto = directProviderUtil.parseQueryDto(data, ProcessInstanceQueryDto.class, user);
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
 		ProcessInstanceQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 
-		List<org.cibseven.bpm.engine.runtime.ProcessInstance> matchingInstances = QueryUtil.list(query, firstResult.orElse(null), maxResults.orElse(null));
+		List<ProcessInstance> instanceResults = directProviderUtil.listAndConvert(query, 
+				firstResult.orElse(null), maxResults.orElse(null), 
+				ProcessInstanceDto::fromProcessInstance, ProcessInstance.class, user);
 
-		List<ProcessInstance> instanceResults = new ArrayList<>();
-		for (org.cibseven.bpm.engine.runtime.ProcessInstance instance : matchingInstances) {
-			ProcessInstanceDto resultInstance = ProcessInstanceDto.fromProcessInstance(instance);
-			instanceResults.add(directProviderUtil.convertValue(resultInstance, ProcessInstance.class, user));
-		}
 		if (instanceResults.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -1013,12 +1027,9 @@ public class DirectProcessProvider implements IProcessProvider {
 
 	@Override
 	public Long countProcessesInstancesRuntime(Map<String, Object> filters, CIBUser user) {
-		ObjectMapper objectMapper = directProviderUtil.getObjectMapper(user);
-		HistoricProcessInstanceQueryDto historicProcessInstanceQueryDto = objectMapper.convertValue(filters,
-				HistoricProcessInstanceQueryDto.class);
-    ProcessEngine engine = directProviderUtil.getProcessEngine(user);
-    historicProcessInstanceQueryDto.setObjectMapper(objectMapper);
-    HistoricProcessInstanceQuery query = historicProcessInstanceQueryDto.toQuery(engine);
+		ProcessInstanceQueryDto queryDto = directProviderUtil.getObjectMapper(user).convertValue(filters, ProcessInstanceQueryDto.class);
+		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
+		ProcessInstanceQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
     return query.count();
 	}
 

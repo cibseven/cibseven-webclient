@@ -87,6 +87,9 @@ application:
       #    jwks: <certsUri>
       #    user: <usersUri>
       #    introspection:
+      #    revocation: <revocationUri>   # RFC 7009; tokens are revoked on logout when set
+      #    endSession: <endSessionUri>   # OIDC RP-Initiated Logout; ends the IdP session on logout when set.
+      #                                     # Register <app url>/ as a valid post logout redirect URI at the IdP
       #  clientId: <clientId>
       #  clientSecret: <clientSecret>
       #  scopes: openid email profile
@@ -95,7 +98,7 @@ application:
       #  accessTokenToEngineRest:
       #  assertion:
       #    type:
-      #    locationKey:
+      #    keyLocation:
 
       # Token generation
       authentication:
@@ -169,9 +172,9 @@ application:
         # Max response wait time in seconds (0 = infinite). If not set, the socketTimeout value will be used.
         connectionResponseTimeout:
         # Max HTTP connections per route. Limits the number of connections to a specific host.
-        maxConnPerRoute: 20
+        maxConnPerRoute: 100
         # Total max HTTP connections across all routes. Defaults to 2 * maxConnPerRoute if not specified.
-        maxConnTotal: 40
+        maxConnTotal: 200
         # Connection time to live in milliseconds. Maximum time a connection can be reused.
         connectionTimeToLive: 50000
         # Whether to enable connection pooling. Improves performance by reusing connections.
@@ -184,10 +187,6 @@ application:
         requestLoggingEnabled: false
         # Whether to automatically follow HTTP redirects (status codes 3xx).
         followRedirects: true
-      deprecated:
-      # Check permission for some usecases in the webclient backend (behaviour until 2.2.0)
-        authorization:
-          enabled: false
 
 ui:
   supportedLanguages: ["de", "en", "es", "ua", "ru"]
@@ -369,7 +368,7 @@ configmaps:
             { "key": "ownerExpression", "text": "ownerExpression", "type": "text", "group": "usersGroup" },
             { "key": "candidateGroup", "text": "candidateGroup", "type": "text", "group": "usersGroup" },
             { "key": "candidateGroupExpression", "text": "candidateGroupExpression", "type": "text", "group": "usersGroup" },
-            { "key": "candidateGroups", "text": "candidateGroups", "type": "text", "group": "usersGroup" },
+            { "key": "candidateGroups", "text": "candidateGroups", "type": "array", "group": "usersGroup" },
             { "key": "candidateGroupsExpression", "text": "candidateGroupsExpression", "type": "text", "group": "usersGroup" },
             { "key": "candidateUser", "text": "candidateUser", "type": "text", "group": "usersGroup" },
             { "key": "candidateUserExpression", "text": "candidateUserExpression", "type": "text", "group": "usersGroup" },
@@ -414,9 +413,6 @@ configmaps:
             },
             "modeler": {
               "application": ["ACCESS"]
-            },
-            "displayTasks": {
-              "task": ["READ", "UPDATE"]
             },
             "displayFilter": {
               "filter": ["READ"]
@@ -470,17 +466,8 @@ configmaps:
             "deleteProcessDefinition": {
               "processDefinition": ["DELETE"]
             },
-            "suspendProcessInstance": {
-              "processInstance": ["SUSPEND"]
-            },
             "updateProcessInstance": {
               "processInstance": ["UPDATE"]
-            },
-            "deleteProcessInstance": {
-              "processInstance": ["DELETE"]
-            },
-            "deleteHistoricProcessInstance": {
-              "historicProcessInstance": ["DELETE"]
             }
           },
           "taskSorting": {
@@ -542,7 +529,7 @@ configmaps:
               "7": { "id": "7", "key": "task", "permissions": ["CREATE","READ","UPDATE","DELETE","TASK_ASSIGN","TASK_WORK","UPDATE_VARIABLE","READ_VARIABLE"] },
               "11": { "id": "11", "key": "tenant", "permissions": ["READ","UPDATE","CREATE","DELETE"] },
               "12": { "id": "12", "key": "tenantMembership", "permissions": ["CREATE","DELETE"] },
-              "21": { "id": "21", "key": "system", "permissions": ["READ"] },
+              "21": { "id": "21", "key": "system", "permissions": ["READ","SET","DELETE"] },
               "1": { "id": "1", "key": "user", "permissions": ["READ","UPDATE","CREATE","DELETE"] }
             },
             "types": {

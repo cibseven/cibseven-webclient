@@ -32,6 +32,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -40,7 +41,9 @@ import lombok.Setter;
 
 @Setter @Getter @RequiredArgsConstructor
 @Entity
-@Table(name = "MOD_PROCESSES_DIAGRAMS")
+// The key repeats across folders, as files of the same process may sit side by side; within one it is unique
+@Table(name = "MOD_PROCESSES_DIAGRAMS",
+	uniqueConstraints = @UniqueConstraint(name = "MOD_UK_DIAGRAMS_KEY_FOLDER", columnNames = { "processkey", "folder_id" }))
 public class ProcessDiagramEntity {
 
 	@Id
@@ -53,7 +56,7 @@ public class ProcessDiagramEntity {
 	private String name;
 
 	@NotBlank
-	@Column(name = "processkey", unique = true, length = 100)
+	@Column(name = "processkey", length = 100)
 	private String processkey;
 
 	@Column(name = "description", length = 150)

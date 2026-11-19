@@ -18,6 +18,7 @@ package org.cibseven.webapp;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.cibseven.webapp.config.SevenWebclientPropertiesAutoConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
@@ -36,7 +37,8 @@ class SevenWebclientContextPlaceholderConfigurerTest {
 	void registersExactlyOnePlaceholderConfigurer() {
 		new ApplicationContextRunner()
 				.withPropertyValues("cibseven.webclient.authentication.jwtSecret=" + TEST_JWT_SECRET)
-				.withConfiguration(AutoConfigurations.of(PropertyPlaceholderAutoConfiguration.class))
+				.withConfiguration(AutoConfigurations.of(PropertyPlaceholderAutoConfiguration.class,
+						SevenWebclientPropertiesAutoConfiguration.class))
 				.withUserConfiguration(SevenWebclientContext.class)
 				.run(ctx -> assertThat(ctx.getBeansOfType(PropertySourcesPlaceholderConfigurer.class)).hasSize(1));
 	}

@@ -35,6 +35,7 @@ import java.util.function.Function;
 
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.exception.ExpressionEvaluationException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnsupportedTypeException;
@@ -55,16 +56,16 @@ import org.cibseven.webapp.rest.model.TaskSorting;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.providers.utils.URLUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -75,21 +76,14 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	 @Autowired private IIncidentProvider incidentProvider;
 	 @Autowired private IEngineProvider engineProvider;
 
-	@Value("${cibseven.webclient.fetchInstances:true}") boolean fetchInstances;
-	@Value("${cibseven.webclient.fetchIncidents:true}") boolean fetchIncidents;
 	/** engine-rest URLs known not to offer the filtered historic activity statistics query, keyed per engine. */
 	private final Set<String> historicActivityStatisticsQueryUnsupported = ConcurrentHashMap.newKeySet();
-	/**
-	 * Legacy fallback used only with engine-rest versions prior to 2.2.0, where the
-	 * engine configuration endpoint (which exposes the history level dynamically) is not available.
-	 */
-	@Value("${cibseven.webclient.historyLevel:full}") String legacyHistoryLevel;
 
 	private String getHistoryLevel(CIBUser user) {
 		EngineConfiguration engineConfig = IEngineProvider.isEngineUnspecified(user.getEngine())
 				? engineProvider.getEffectiveDefaultEngineConfiguration()
 				: engineProvider.getEngineConfiguration(user.getEngine());
-		return engineConfig != null ? engineConfig.getHistoryLevel() : legacyHistoryLevel;
+		return engineConfig != null ? engineConfig.getHistoryLevel() : properties.getHistoryLevel();
 	}
 
 	@Override
@@ -188,7 +182,11 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		Collection<Process> processes = Arrays.asList(((ResponseEntity<Process[]>) doGet(url, Process[].class, user, false)).getBody());		
 
 		if (!lazyLoad.isPresent() || (lazyLoad.isPresent() && !lazyLoad.get())) {
+			Map<String, Long> incidentsById = countIncidentsByDefinitionId(key, tenantId, user);
 			for(Process process : processes) {
+				process.setIncidents(incidentsById.getOrDefault(process.getId(), 0L));
+				process.setDeploymentTime(findDeploymentTime(process.getDeploymentId(), user));
+
 				String urlInstances = getEngineRestUrl(user) + "/history/process-instance/count?processDefinitionId=" + process.getId();
 
 				JsonNode body = ((ResponseEntity<JsonNode>) doGet(urlInstances, JsonNode.class, user, false)).getBody();
@@ -211,6 +209,33 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 			}
 		}
 		return processes;
+	}
+
+	/**
+	 * Open incidents per version, from one incident query filtered by key. Asked directly, as the incident
+	 * provider fetches the root cause of each incident. There is no withoutTenantId on incidents: the ones
+	 * of other tenants are dropped when matched by definition id.
+	 */
+	private Map<String, Long> countIncidentsByDefinitionId(String key, String tenantId, CIBUser user) {
+		String url = getEngineRestUrl(user) + "/incident?processDefinitionKeyIn=" + key + (tenantId != null ? "&tenantIdIn=" + tenantId : "");
+		JsonNode incidents = ((ResponseEntity<JsonNode>) doGet(url, JsonNode.class, user, false)).getBody();
+		Map<String, Long> incidentsById = new HashMap<>();
+		if (incidents != null)
+			incidents.forEach(incident -> incidentsById.merge(incident.path("processDefinitionId").asString(), 1L, Long::sum));
+		return incidentsById;
+	}
+
+	/** The engine has no deployment time on the process definition; left out when the deployment cannot be read. */
+	private String findDeploymentTime(String deploymentId, CIBUser user) {
+		if (deploymentId == null)
+			return null;
+		try {
+			JsonNode deployment = ((ResponseEntity<JsonNode>) doGet(getEngineRestUrl(user) + "/deployment/" + deploymentId, JsonNode.class, user, false)).getBody();
+			return deployment != null && deployment.hasNonNull("deploymentTime") ? deployment.get("deploymentTime").asString() : null;
+		} catch (RuntimeException e) {
+			log.debug("Deployment time of {} not available: {}", deploymentId, e.getMessage());
+			return null;
+		}
 	}
 
 	@Override
@@ -416,7 +441,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	@Override
 	public Data downloadBpmn(String id, String fileName, CIBUser user) {
 		ProcessDiagram diagram = fetchDiagram(id, user);
-			ByteArrayResource resource = new ByteArrayResource(diagram.getBpmn20Xml().getBytes());
+			ByteArrayResource resource = new ByteArrayResource(diagram.getBpmn20Xml().getBytes(StandardCharsets.UTF_8));
 			return new Data(fileName, "application/bpmn+xml", resource, resource.contentLength());
 	}
 
@@ -556,7 +581,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		Map<String, Object> data = new HashMap<String, Object>();
 		List<TaskSorting> sorting = Arrays.asList(new TaskSorting("startTime", "desc"));
 		data.put("sorting", sorting);
-		if (text != "") {
+		if (text != null && !text.isEmpty()) {
 			Map<String, Object> orQueries = new HashMap<String, Object>();
 			orQueries.put("processInstanceBusinessKeyLike", "%" + text + "%");
 			orQueries.put("processInstanceId", text);
@@ -570,11 +595,11 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		}
 		url += "&firstResult=" + firstResult + "&maxResults=" + maxResults;
 		data.put("processDefinitionId", id);
-		ObjectMapper objectMapper = new ObjectMapper();
+		ObjectMapper objectMapper = WebclientJsonMapper.plain();
 		String body = "";
 		try {
 			body = objectMapper.writeValueAsString(data);
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			throw new SystemException(e);
 		}
 		//findIncident
@@ -598,7 +623,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		        String bodyIdIn = "";
 		        try {
 		        	bodyIdIn = objectMapper.writeValueAsString(dataIdIn);
-		        } catch (JsonProcessingException e) {
+		        } catch (JacksonException e) {
 		            throw new SystemException(e);
 		        }
 
@@ -688,7 +713,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	@Override
 	public ResponseEntity<String> getRenderedForm(String processDefinitionId, Map<String, Object> params, CIBUser user) {
 		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/process-definition/" + processDefinitionId + "/rendered-form", params);
-		return doGetWithHeader(url, String.class, user, true, MediaType.ALL);
+		return renderedFormResponse(doGetWithHeader(url, String.class, user, true, MediaType.ALL));
 	}
 
 	@Override

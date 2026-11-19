@@ -26,6 +26,8 @@
         <template #tasklist><strong>tasklist</strong></template>
         <template #cockpit><strong>cockpit</strong></template>
         <template #admin><strong>admin</strong></template>
+        <template #userProfile><strong>userProfile</strong></template>
+        <template #ins7ght><strong>ins7ght</strong></template>
         <template #modeler><strong>modeler</strong></template>
         <template #access><strong>Access</strong></template>
         <template #all><strong>All</strong></template>
@@ -33,21 +35,13 @@
         <template #dmn><strong>DMN</strong></template>
         <template #create><strong>CREATE</strong></template>
         <template #createBatch><strong>CREATE_BATCH_*</strong></template>
-        <template #optimize><strong>Optimize</strong></template>
         <template #systemSettings><strong>{{ $t('admin.authorizations.resourcesTypesDescriptionsTerms.systemSettings') }}</strong></template>
         <template #userOperationLog><strong>{{ $t('admin.authorizations.resourcesTypesDescriptionsTerms.userOperationLog') }}</strong></template>
-        <template #operationLog><strong>{{ $t('admin.authorizations.resourcesTypesDescriptionsTerms.operationLog') }}</strong></template>
         <template #br><br></template>
       </i18n-t>
       <div class="row align-items-center px-4">
         <div class="col-4">
-          <b-input-group size="sm">
-            <template #prepend>
-              <b-button class="rounded-left" variant="secondary"><span class="mdi mdi-magnify" style="line-height: initial"></span></b-button>
-            </template>
-            <label for="authorizations-search" class="visually-hidden">{{ $t('searches.search') }}</label>
-            <b-form-input id="authorizations-search" :placeholder="$t('searches.search')" v-model.trim="filter"></b-form-input>
-          </b-input-group>
+          <SearchInput input-id="authorizations-search" size="sm" v-model.trim="filter"/>
         </div>
         <div class="col-8 text-end">
           <b-button class="me-1" size="sm" variant="secondary" @click="add()">
@@ -127,10 +121,10 @@
                   </span>
                 </b-form-checkbox>
                 <b-dropdown-divider></b-dropdown-divider>
-                <b-form-checkbox class="ms-2" v-for="permission in resourcesTypes[$route.params.resourceTypeId].permissions"
-                  :value="permission" :key="permission" v-model="selected">
-                  {{ permission }}
-                </b-form-checkbox>
+                <template v-for="permission in resourcesTypes[$route.params.resourceTypeId].permissions" :key="permission">
+                  <b-dropdown-divider v-if="hasSeparatorBefore($route.params.resourceTypeId, permission)"></b-dropdown-divider>
+                  <b-form-checkbox class="ms-2" :value="permission" v-model="selected">{{ permission }}</b-form-checkbox>
+                </template>
               </b-dropdown>
             </div>
             <div v-else>
@@ -202,6 +196,7 @@ import { getStringObjByKeys } from '@/components/admin/utils.js'
 import { FlowTable, TaskPopper, ConfirmDialog, BWaitingBox } from '@cib/common-frontend'
 import CellActionButton from '@/components/common-components/CellActionButton.vue'
 import WarningBox from '@/components/common-components/WarningBox.vue'
+import SearchInput from '@/components/common-components/SearchInput.vue'
 
 // admin.types is deployment configuration and has carried its ids as strings, while the engine
 // models the type as an int. Numbering them here keeps the type a number everywhere below.
@@ -216,7 +211,7 @@ const ALL_USERS = '*'
 
 export default {
   name: 'AdminAuthorizationsTable',
-  components: { FlowTable, TaskPopper, BWaitingBox, ConfirmDialog, CellActionButton, WarningBox },
+  components: { FlowTable, TaskPopper, BWaitingBox, ConfirmDialog, CellActionButton, WarningBox, SearchInput },
   data: function () {
     return {
       selected: [],
@@ -541,6 +536,22 @@ export default {
       const filter = this.$store.state.filter.list.find(obj => obj.name === item.name)
       if (filter) item.resourceId = filter.id
       else item.resourceId = '*'
+    },
+    hasSeparatorBefore: function(resourceTypeId, permission) {
+      switch (resourceTypeId) {
+        case '6': // processDefinition
+          return ['SUSPEND', 'READ_TASK'].includes(permission)
+        case '7': // task
+          return ['TASK_ASSIGN', 'UPDATE_VARIABLE'].includes(permission)
+        case '8': // processInstance
+          return ['RETRY_JOB'].includes(permission)
+        case '10': // decisionDefinition
+          return ['CREATE_INSTANCE', 'READ_HISTORY'].includes(permission)
+        case '13': // batch
+          return ['READ_HISTORY', 'CREATE_BATCH_MIGRATE_PROCESS_INSTANCES'].includes(permission)
+        default:
+          return false
+      }
     },
     exportCSV: function() {
       this.exporting = true

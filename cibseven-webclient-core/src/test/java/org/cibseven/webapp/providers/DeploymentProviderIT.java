@@ -57,7 +57,7 @@ public class DeploymentProviderIT extends BaseHelper {
 
         // Configure the base URL for the DeploymentProvider to point to the MockWebServer
         String mockBaseUrl = mockWebServer.url("/").toString();
-        ReflectionTestUtils.setField(deploymentProvider, "cibsevenUrl", mockBaseUrl);
+        deploymentProvider.properties.getEngineRest().setUrl(mockBaseUrl);
     }
 
     @AfterEach

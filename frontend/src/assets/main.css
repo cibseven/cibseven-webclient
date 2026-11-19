@@ -17,6 +17,16 @@
     border-left: 5px solid!important;
     border-color: var(--bs-primary)!important;
 }
+/* List items that are links (b-list-group-item with to, FilterNavBar): ring the whole row, not just its stretched link */
+@supports selector(:has(a)) {
+  .list-group-item:has(> .stretched-link:focus-visible) {
+    outline: 2px solid currentColor;
+    outline-offset: -2px;
+  }
+  .list-group-item > .stretched-link:focus-visible {
+    outline: none;
+  }
+}
 .mdi-16px { font-size: 16px; }
 .Pane2 { overflow: auto; }	/* Miragon Modeler - Fix scroll overflow in property panel.*/
 .resizer:hover { border-bottom: 5px solid var(--bs-gray)!important }
@@ -70,4 +80,11 @@ thead.resizable tr, thead.resizable + tbody tr {
 
 .bjs-breadcrumbs li:last-of-type a {
   text-decoration: none !important;
+}
+
+/* BModal has no "centered" prop: add this class to a <b-modal> to mirror Bootstrap's .modal-dialog-centered */
+.modal-centered .modal-dialog {
+  display: flex;
+  align-items: center;
+  min-height: calc(100% - var(--bs-modal-margin) * 2);
 }

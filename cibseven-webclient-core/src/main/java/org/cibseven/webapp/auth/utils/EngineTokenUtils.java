@@ -16,6 +16,7 @@
  */
 package org.cibseven.webapp.auth.utils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 import org.cibseven.webapp.auth.CIBUser;
@@ -24,8 +25,9 @@ import org.cibseven.webapp.auth.User;
 import org.cibseven.webapp.auth.providers.JwtUserProvider.TokenSettings;
 import org.cibseven.webapp.config.EngineRestProperties;
 import org.cibseven.webapp.config.EngineRestSource;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -156,17 +158,17 @@ public class EngineTokenUtils {
 			}
 			
 			// Decode the payload (middle part)
-			String payload = new String(Base64.getUrlDecoder().decode(parts[1]));
-			ObjectMapper mapper = new ObjectMapper();
+			String payload = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
+			ObjectMapper mapper = WebclientJsonMapper.plain();
 			var claims = mapper.readTree(payload);
 			
 			// Extract user JSON and parse engine from it
 			var userNode = claims.get("user");
-			if (userNode != null && userNode.isTextual()) {
-				var userData = mapper.readTree(userNode.asText());
+			if (userNode != null && userNode.isString()) {
+				var userData = mapper.readTree(userNode.asString());
 				var engineNode = userData.get("engine");
-				if (engineNode != null && engineNode.isTextual()) {
-					return engineNode.asText();
+				if (engineNode != null && engineNode.isString()) {
+					return engineNode.asString();
 				}
 			}
 		} catch (Exception e) {
