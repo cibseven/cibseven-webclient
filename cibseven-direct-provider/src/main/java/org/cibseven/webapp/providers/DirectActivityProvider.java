@@ -70,8 +70,8 @@ public class DirectActivityProvider implements IActivityProvider {
 		Map<String, Object> filters = new HashMap<>(queryParams);
 		Integer firstResult = toInteger(filters.remove("firstResult"));
 		Integer maxResults = toInteger(filters.remove("maxResults"));
-		HistoricActivityInstanceQueryDto queryHistoricActivityInstanceDto = directProviderUtil.getObjectMapper(user).convertValue(filters,
-				HistoricActivityInstanceQueryDto.class);
+		HistoricActivityInstanceQueryDto queryHistoricActivityInstanceDto = directProviderUtil.bindQueryParams(filters,
+				HistoricActivityInstanceQueryDto.class, user);
 		return queryHistoricActivityInstance(queryHistoricActivityInstanceDto, firstResult, maxResults, user);
 	}
 
@@ -113,8 +113,8 @@ public class DirectActivityProvider implements IActivityProvider {
 	@Override
 	public Collection<ActivityInstanceHistory> findActivitiesProcessDefinitionHistory(String processDefinitionId,
 			Map<String, Object> params, CIBUser user) {
-		HistoricActivityInstanceQueryDto queryHistoricActivityInstanceDto = directProviderUtil.getObjectMapper(user).convertValue(params,
-				HistoricActivityInstanceQueryDto.class);
+		HistoricActivityInstanceQueryDto queryHistoricActivityInstanceDto = directProviderUtil.bindQueryParams(params,
+				HistoricActivityInstanceQueryDto.class, user);
 		queryHistoricActivityInstanceDto.setProcessDefinitionId(processDefinitionId);
 		return queryHistoricActivityInstance(queryHistoricActivityInstanceDto, user);
 
@@ -128,7 +128,7 @@ public class DirectActivityProvider implements IActivityProvider {
 	private List<ActivityInstanceHistory> queryHistoricActivityInstance(
 			HistoricActivityInstanceQueryDto queryHistoricActivityInstanceDto, Integer firstResult, Integer maxResults, CIBUser user) {
 		queryHistoricActivityInstanceDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
-		HistoricActivityInstanceQuery query = queryHistoricActivityInstanceDto.toQuery(directProviderUtil.getProcessEngine(user));
+		HistoricActivityInstanceQuery query = directProviderUtil.badRequestOnInvalidParameters(() -> queryHistoricActivityInstanceDto.toQuery(directProviderUtil.getProcessEngine(user)));
 		List<HistoricActivityInstance> matchingHistoricActivityInstances = QueryUtil.list(query, firstResult, maxResults);
 
 		List<ActivityInstanceHistory> historicActivityInstanceResults = new ArrayList<>();

@@ -40,9 +40,9 @@ public class DirectExternalTaskProvider implements IExternalTaskProvider {
 		Integer maxResults = directProviderUtil.getMaxResults(params);
 		Map<String, Object> queryParams = directProviderUtil.withoutPagingParams(params);
 
-		ExternalTaskQueryDto queryDto = directProviderUtil.parseQueryDto(queryParams, ExternalTaskQueryDto.class, user);
+		ExternalTaskQueryDto queryDto = directProviderUtil.bindQueryParams(queryParams, ExternalTaskQueryDto.class, user);
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
-		ExternalTaskQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
+		ExternalTaskQuery query = directProviderUtil.badRequestOnInvalidParameters(() -> queryDto.toQuery(directProviderUtil.getProcessEngine(user)));
 		return directProviderUtil.listAndConvert(query, firstResult, maxResults, ExternalTaskDto::fromExternalTask, ExternalTask.class, user);
 	}
 
