@@ -39,7 +39,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * Setup service for initial system configuration.
- * These endpoints do NOT require authentication and are only accessible when no users exist in the system.
+ * These endpoints do NOT require authentication. The setup is only open while the engine is not
+ * configured yet: its identity service is writable, it holds no users, groups or authorizations,
+ * and no administrators are configured (adminUsers / adminGroups besides camunda-admin). Both
+ * providers decide this with the engine's InitialSetupUtil (CIB7-2885): the default provider
+ * through engine-rest's setup endpoint, the direct provider directly.
  */
 @ApiResponses({
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occurred")
@@ -62,7 +66,7 @@ public class SetupService extends BaseService implements InitializingBean {
 	}
 
 	/**
-	 * Check if initial setup is required (no users exist in the system).
+	 * Check if initial setup is required (the engine is not configured yet, see the class comment).
 	 * This endpoint does NOT require authentication.
 	 * 
 	 * Setup is only required when using the internal SevenUserProvider.
@@ -73,7 +77,7 @@ public class SetupService extends BaseService implements InitializingBean {
 	 */
 	@Operation(
 		summary = "Check if initial setup is required",
-		description = "Returns whether the system needs initial setup (no users exist)")
+		description = "Returns whether the engine needs initial setup (no users, groups or authorizations exist and no administrators are configured)")
 	@ApiResponse(responseCode = "200", description = "Setup status returned successfully")
 	@GetMapping("/status")
 	public boolean requiresSetup(
@@ -87,22 +91,22 @@ public class SetupService extends BaseService implements InitializingBean {
 	}
 
 	/**
-	 * Create the initial admin user. This endpoint only works when no users exist
-	 * and when using the internal SevenUserProvider.
+	 * Create the initial admin user. This endpoint only works while the engine is not configured
+	 * yet (see the class comment) and when using the internal SevenUserProvider.
 	 * This endpoint does NOT require authentication.
 	 * 
 	 * The backend will handle group creation, authorization setup, and group membership.
 	 * 
 	 * @param newUser The user to create with profile and credentials
 	 * @param engineId The process engine to use (from X-Process-Engine header)
-	 * @return Success response or error if users already exist or external provider is used
+	 * @return Success response or error if the engine is configured already or external provider is used
 	 */
 	@Operation(
 		summary = "Create initial admin user",
-		description = "Creates the first admin user. Only works when no users exist in the system. The backend handles group and authorization setup.")
+		description = "Creates the first admin user. Only works while the engine is not configured yet (no users, groups or authorizations exist and no administrators are configured). The backend handles group and authorization setup.")
 	@ApiResponses({
 		@ApiResponse(responseCode = "201", description = "User created successfully"),
-		@ApiResponse(responseCode = "403", description = "Setup not allowed - users already exist or external identity provider is used")
+		@ApiResponse(responseCode = "403", description = "Setup not allowed - the engine is configured already or external identity provider is used")
 	})
 	@PostMapping("/user")
 	public ResponseEntity<Void> createInitialUser(
@@ -126,7 +130,7 @@ public class SetupService extends BaseService implements InitializingBean {
 	/**
 	 * The engine to set up, the same for every provider (CIB7-2554): the engine named in
 	 * X-Process-Engine, otherwise the effective default engine (the engine named "default",
-	 * otherwise the first one by name). Each engine without an admin can be set up.
+	 * otherwise the first one by name). Each engine that is not configured yet can be set up.
 	 */
 	private String setupEngine(String requestedEngine) {
 		return IEngineProvider.isEngineUnspecified(requestedEngine)
