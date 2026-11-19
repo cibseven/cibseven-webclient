@@ -152,12 +152,17 @@ export function handleAxiosError(router, root, error) {
       const exceptions = ['NoObjectFoundException', 'InvalidAttributeValueException', 'SubmitDeniedException',
         'UnsupportedTypeException', 'ExpressionEvaluationException', 'ExistingUserRequestException',
         'ExistingGroupRequestException', 'AccessDeniedException', 'SystemException', 'InvalidUserIdException',
-        'VariableModificationException', 'WrongDeploymenIdException', 'NoRessourcesFoundException', 'DmnTransformationException', 'InvalidGroupIdException']
+        'VariableModificationException', 'WrongDeploymenIdException', 'NoRessourcesFoundException', 'DmnTransformationException', 'InvalidGroupIdException',
+        'EngineNotReachableException']
       if (showsDialog && res.data.type && exceptions.includes(res.data.type))
         root.$refs.error.show(res.data)
       //root.$refs.report.show(res.data)
       return Promise.reject(error)
     } else {
+      // A 400 is left to the component that sent the request, except an engine id that names no configured
+      // engine: any request can carry one, from a stale selection or token, so no component expects it
+      if (showsDialog && res.status === 400 && res.data?.type === 'UnknownEngineException')
+        root.$refs.error.show(res.data)
       //root.$refs.error.show(res.data || res.statusText)
       return Promise.reject(error)
     }

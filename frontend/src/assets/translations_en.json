@@ -1161,6 +1161,8 @@
 		"InvalidValueHistoryTimeToLive": "A history time to live is required. Set it in the model or configure a default in the engine.",
 		"DmnTransformationException": "The resource could not be updated. Unable to transform DMN resource.",
 		"InvalidGroupIdException": "The group ID is invalid. It may only contain alphanumeric characters (a-z, A-Z, 0-9) or camunda-admin. Please correct your entry.",
+		"UnknownEngineException": "The selected process engine is not configured. Please select another engine.",
+		"EngineNotReachableException": "The process engine could not be reached. Please try again later.",
 		"unknown": "An unexpected error occurred. Please try again."
 		
 	},

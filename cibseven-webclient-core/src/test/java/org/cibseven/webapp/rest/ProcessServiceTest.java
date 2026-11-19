@@ -23,6 +23,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.net.ConnectException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -31,6 +32,8 @@ import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.AccessDeniedException;
+import org.cibseven.webapp.exception.EngineNotReachableException;
+import org.cibseven.webapp.exception.UnknownEngineException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
@@ -221,5 +224,18 @@ public class ProcessServiceTest {
 			.isInstanceOf(AccessDeniedException.class)
 			.hasMessage("engine says no");
 		verify(bpmProvider, never()).getUserAuthorization(any());
+	}
+
+	@Test
+	void getDeployedStartForm_passesEngineErrorsOnUnwrapped() {
+		EngineNotReachableException unreachable = new EngineNotReachableException(new ConnectException("Connection refused"));
+		when(bpmProvider.getDeployedStartForm("def-1", user)).thenThrow(unreachable);
+
+		assertThatThrownBy(() -> processService.getDeployedStartForm("def-1", Locale.ENGLISH, user)).isSameAs(unreachable);
+
+		UnknownEngineException unknown = new UnknownEngineException();
+		when(bpmProvider.getDeployedStartForm("def-2", user)).thenThrow(unknown);
+
+		assertThatThrownBy(() -> processService.getDeployedStartForm("def-2", Locale.ENGLISH, user)).isSameAs(unknown);
 	}
 }

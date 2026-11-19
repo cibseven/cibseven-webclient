@@ -27,6 +27,10 @@ function serverError(type) {
   return { response: { status: 500, data: { type } } }
 }
 
+function badRequest(type) {
+  return { response: { status: 400, data: { type } } }
+}
+
 describe('handleAxiosError', () => {
   it('opens the error dialog for an unexpected failure', async () => {
     const root = rootWithErrorDialog()
@@ -53,6 +57,39 @@ describe('handleAxiosError', () => {
     const error = serverError('InvalidValueHistoryTimeToLive')
 
     await expect(handleAxiosError(router, rootWithErrorDialog(), error)).rejects.toBe(error)
+  })
+
+  it('opens the error dialog for an unreachable engine', async () => {
+    const root = rootWithErrorDialog()
+
+    await expect(handleAxiosError(router, root, serverError('EngineNotReachableException'))).rejects.toBeDefined()
+
+    expect(root.$refs.error.show).toHaveBeenCalledWith({ type: 'EngineNotReachableException' })
+  })
+
+  it('opens the error dialog for an engine that is not configured', async () => {
+    const root = rootWithErrorDialog()
+
+    await expect(handleAxiosError(router, root, badRequest('UnknownEngineException'))).rejects.toBeDefined()
+
+    expect(root.$refs.error.show).toHaveBeenCalledWith({ type: 'UnknownEngineException' })
+  })
+
+  it('leaves other bad requests to the caller', async () => {
+    const root = rootWithErrorDialog()
+
+    await expect(handleAxiosError(router, root, badRequest('InvalidAttributeValueException'))).rejects.toBeDefined()
+
+    expect(root.$refs.error.show).not.toHaveBeenCalled()
+  })
+
+  it('opens no dialog for an engine that is not configured inside a deployed form', async () => {
+    const root = rootWithErrorDialog()
+    const formRouter = { currentRoute: { value: { name: 'deployed-form' } } }
+
+    await expect(handleAxiosError(formRouter, root, badRequest('UnknownEngineException'))).rejects.toBeDefined()
+
+    expect(root.$refs.error.show).not.toHaveBeenCalled()
   })
 
   it('opens no dialog for an unknown type either', async () => {

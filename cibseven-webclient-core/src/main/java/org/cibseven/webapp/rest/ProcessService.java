@@ -29,8 +29,10 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.exception.ApplicationException;
+import org.cibseven.webapp.exception.EngineNotReachableException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.webapp.exception.UnknownEngineException;
 import org.cibseven.webapp.logger.TaskLogger;
 import org.cibseven.webapp.rest.model.ActivityInstance;
 import org.cibseven.webapp.rest.model.Deployment;
@@ -248,6 +250,9 @@ public class ProcessService extends BaseService implements InitializingBean {
 		
 		try {
 			return EngineResponses.relayOrNoContent(bpmProvider.getDeployedStartForm(processDefinitionId, user));
+		} catch (EngineNotReachableException | UnknownEngineException e) {
+			// answered with their own fixed messages, not as a failure of the form
+			throw e;
 		} catch (Exception e) {
 			throw new SystemException("Error getting deployed start form: " + e.getMessage(), e);
 		}

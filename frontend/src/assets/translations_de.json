@@ -1161,6 +1161,8 @@
 		"InvalidValueHistoryTimeToLive": "Eine Lebensdauer des Verlaufs (History Time To Live) ist erforderlich. Legen Sie sie im Modell fest oder konfigurieren Sie einen Standardwert in der Engine.",
 		"DmnTransformationException": "Die Ressource konnte nicht aktualisiert werden. DMN-Ressource kann nicht transformiert werden.",
 		"InvalidGroupIdException": "Die Gruppen-ID ist ungültig. Sie darf nur alphanumerische Zeichen (a-z, A-Z, 0-9) enthalten oder camunda-admin sein. Bitte korrigieren Sie Ihre Eingabe.",
+		"UnknownEngineException": "Die ausgewählte Process Engine ist nicht konfiguriert. Bitte wählen Sie eine andere Engine aus.",
+		"EngineNotReachableException": "Die Process Engine ist nicht erreichbar. Bitte versuchen Sie es später erneut.",
 		"unknown": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
 	},
 	"searches": {

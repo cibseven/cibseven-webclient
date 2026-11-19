@@ -54,7 +54,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 			if (IEngineProvider.isExternalEngine(engine)) {
 				String[] parts = engine.split("\\|", 3);
 				if (parts.length == 3) {
-					url = buildEngineRestUrl(parts[0], parts[1]);
+					url = getConfiguredEngineRestUrl(parts[0], parts[1]);
 				} else {
 					log.warn("Invalid engine ID format: {}, expected 'url|path|engineName'", engine);
 				}
@@ -99,9 +99,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 		if (engineRestProperties.getAdditionalEngineRest() != null) {
 			for (EngineRestSource additional : engineRestProperties.getAdditionalEngineRest()) {
 				try {
-					String additionalPath = additional.getPath() != null && !additional.getPath().isEmpty() 
-						? additional.getPath() 
-						: "/engine-rest";
+					String additionalPath = additional.effectivePath();
 					String additionalUrl = buildEngineRestUrl(additional.getUrl(), additionalPath) + ENGINE_SUB_PATH;
 					Engine[] additionalEngines = ((ResponseEntity<Engine[]>) doGet(additionalUrl, Engine[].class, null, false)).getBody();
 					

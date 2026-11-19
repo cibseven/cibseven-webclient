@@ -1161,6 +1161,8 @@
 		"InvalidValueHistoryTimeToLive": "Se requiere un tiempo de vida del histórico. Defínalo en el modelo o configure un valor por defecto en el motor.",
 		"DmnTransformationException": "El recurso no pudo ser actualizado. No se puede transformar el recurso DMN.",
 		"InvalidGroupIdException": "El ID del grupo contiene caracteres no válidos. Sólo se permiten caracteres alfanuméricos (a-z, A-Z, 0-9) o camunda-admin. Por favor, corrija su entrada.",
+		"UnknownEngineException": "El motor de procesos seleccionado no está configurado. Seleccione otro motor.",
+		"EngineNotReachableException": "No se pudo conectar con el motor de procesos. Inténtelo de nuevo más tarde.",
 		"unknown": "Se produjo un error inesperado. Por favor, inténtelo de nuevo."
 	},
 	"searches": {
