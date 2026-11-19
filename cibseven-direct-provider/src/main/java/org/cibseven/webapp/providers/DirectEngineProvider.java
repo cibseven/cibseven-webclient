@@ -40,6 +40,7 @@ import org.cibseven.bpm.engine.impl.persistence.entity.AuthorizationEntity;
 import org.cibseven.bpm.engine.impl.util.ParseUtil;
 import org.cibseven.bpm.engine.rest.exception.RestException;
 import org.cibseven.bpm.engine.rest.util.EngineUtil;
+import org.cibseven.bpm.engine.rest.util.InitialSetupUtil;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.PasswordPolicyException;
 import org.cibseven.webapp.exception.SystemException;
@@ -145,7 +146,10 @@ public class DirectEngineProvider implements IEngineProvider {
 	 * The setup works on the engine from directProviderUtil, which also finds it through the
 	 * BpmPlatform, instead of on engine-rest's SetupRestServiceImpl: that one looks the engine up
 	 * only through the ProcessEngineProvider SPI, which the webclient on Tomcat and WildFly does not
-	 * have (CIB7-2554). What it checks and creates is the same as in SetupRestServiceImpl.
+	 * have (CIB7-2554). What it creates is the same as in SetupRestServiceImpl, and whether the
+	 * setup is still open is decided by the same InitialSetupUtil (CIB7-2885): only while the
+	 * identity service is writable, it holds no users, groups or authorizations, and no
+	 * administrators are configured (adminUsers / adminGroups besides camunda-admin).
 	 *
 	 * Both calls are made without a login, so they are guarded more tightly than engine-rest's.
 	 * The engine is the one SetupService passes on: the engine named in X-Process-Engine, otherwise
@@ -161,10 +165,7 @@ public class DirectEngineProvider implements IEngineProvider {
 	@Override
 	public Boolean requiresSetup(String engineId) {
 		ProcessEngine processEngine = directProviderUtil.getProcessEngine(engineId);
-		if (processEngine.getIdentityService().isReadOnly()) {
-			return false;
-		}
-		return runWithoutAuthorization(processEngine, () -> hasNoAdminGroup(processEngine));
+		return runWithoutAuthorization(processEngine, () -> InitialSetupUtil.isSetupAvailable(processEngine));
 	}
 
 	@Override
@@ -181,7 +182,7 @@ public class DirectEngineProvider implements IEngineProvider {
 			try {
 				runWithoutAuthorization(processEngine, () -> inOneTransaction(processEngine, () -> {
 					// checked again here, in the same transaction as the creation
-					if (!hasNoAdminGroup(processEngine))
+					if (!InitialSetupUtil.isSetupAvailable(processEngine))
 						throw new SystemException("User creation not allowed - already initialized.");
 					User newUser = identityService.newUser(user.getProfile().getId());
 					newUser.setFirstName(user.getProfile().getFirstName());
@@ -199,11 +200,10 @@ public class DirectEngineProvider implements IEngineProvider {
 		}
 	}
 
-	private static boolean hasNoAdminGroup(ProcessEngine processEngine) {
-		return processEngine.getIdentityService().createGroupQuery().groupId(Groups.CAMUNDA_ADMIN).count() == 0;
-	}
-
-	/** Only called after hasNoAdminGroup in the same transaction, so the group is always inserted. */
+	/**
+	 * Only called after InitialSetupUtil.isSetupAvailable in the same transaction, which requires
+	 * that no group exists at all, so the admin group is always inserted.
+	 */
 	private static void createAdminGroup(ProcessEngine processEngine) {
 		IdentityService identityService = processEngine.getIdentityService();
 		AuthorizationService authorizationService = processEngine.getAuthorizationService();
