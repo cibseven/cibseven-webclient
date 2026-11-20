@@ -23,6 +23,7 @@ import java.util.TreeMap;
 import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.rest.model.InfoVersion;
 import org.springdoc.core.customizers.OpenApiCustomizer;
+import org.springdoc.core.utils.SpringDocUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -30,11 +31,23 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.media.ArraySchema;
+import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.servers.Server;
 
 @Configuration
 public class OpenApiConfig {
+
+	static {
+		// springdoc/swagger-core inspect return types with Jackson 2, which doesn't know the
+		// Jackson 3 node types and reads them as beans: ObjectNode then fails with "Conflicting
+		// setter definitions for property 'all'". Give them plain JSON schemas instead.
+		SpringDocUtils.getConfig()
+			.replaceWithSchema(tools.jackson.databind.node.ObjectNode.class, new ObjectSchema())
+			.replaceWithSchema(tools.jackson.databind.node.ArrayNode.class, new ArraySchema().items(new Schema<>()))
+			.replaceWithSchema(tools.jackson.databind.JsonNode.class, new Schema<>());
+	}
 
 	private final SevenWebclientProperties properties;
 
