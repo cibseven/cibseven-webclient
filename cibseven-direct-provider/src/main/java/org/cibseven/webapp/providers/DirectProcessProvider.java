@@ -293,31 +293,22 @@ public class DirectProcessProvider implements IProcessProvider {
 			for (Process process : processes) {
 				process.setIncidents(incidentsById.getOrDefault(process.getId(), 0L));
 				process.setDeploymentTime(findDeploymentTime(process.getDeploymentId(), user));
-
-				HistoricProcessInstanceQueryDto historicProcessInstanceQueryDto = new HistoricProcessInstanceQueryDto();
-				historicProcessInstanceQueryDto.setProcessDefinitionId(process.getId());
-				historicProcessInstanceQueryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
-				HistoricProcessInstanceQuery historicProcessInstanceQuery = historicProcessInstanceQueryDto
-						.toQuery(directProviderUtil.getProcessEngine(user));
-				List<HistoricProcessInstance> matchingHistoricProcessInstances = historicProcessInstanceQuery.unlimitedList();
-
-				process.setAllInstances(matchingHistoricProcessInstances.size());
-
-				historicProcessInstanceQueryDto.setUnfinished(true);
-				historicProcessInstanceQuery = historicProcessInstanceQueryDto.toQuery(directProviderUtil.getProcessEngine(user));
-				matchingHistoricProcessInstances = historicProcessInstanceQuery.unlimitedList();
-
-				process.setRunningInstances(matchingHistoricProcessInstances.size());
-
-				historicProcessInstanceQueryDto.setUnfinished(false);
-				historicProcessInstanceQueryDto.setCompleted(true);
-				historicProcessInstanceQuery = historicProcessInstanceQueryDto.toQuery(directProviderUtil.getProcessEngine(user));
-				matchingHistoricProcessInstances = historicProcessInstanceQuery.unlimitedList();
-
-				process.setCompletedInstances(matchingHistoricProcessInstances.size());
+				setInstanceCounts(process, user);
 			}
 		}
 		return processes;
+	}
+
+	/**
+	 * All, running (unfinished, so suspended ones included) and completed instances of one version, as
+	 * count queries: no historic instance is loaded. Same semantics as the REST ProcessProvider.
+	 */
+	private void setInstanceCounts(Process process, CIBUser user) {
+		process.setAllInstances(countProcessesInstancesHistory(Map.of("processDefinitionId", process.getId()), user));
+		process.setRunningInstances(countProcessesInstancesHistory(
+				Map.of("processDefinitionId", process.getId(), "unfinished", true), user));
+		process.setCompletedInstances(countProcessesInstancesHistory(
+				Map.of("processDefinitionId", process.getId(), "completed", true), user));
 	}
 
 	/**
@@ -361,20 +352,7 @@ public class DirectProcessProvider implements IProcessProvider {
 		ProcessDefinitionDto definitionDto = ProcessDefinitionDto.fromProcessDefinition(definition);
 		Process process = directProviderUtil.convertValue(definitionDto, Process.class, user);
 		if (extraInfo.isPresent() && extraInfo.get()) {
-			Map<String, Object> filters = new HashMap<>();
-			filters.put("processDefinitionId", id);
-			Long count = countProcessesInstancesHistory(filters, user);
-			process.setAllInstances(count);
-			filters.clear();
-			filters.put("processDefinitionId", process.getId());
-			filters.put("unfinished", true);
-			count = countProcessesInstancesHistory(filters, user);
-			process.setRunningInstances(count);
-			filters.clear();
-			filters.put("processDefinitionId", process.getId());
-			filters.put("completed", true);
-			count = countProcessesInstancesHistory(filters, user);
-			process.setCompletedInstances(count);
+			setInstanceCounts(process, user);
 		}
 		return process;
 	}

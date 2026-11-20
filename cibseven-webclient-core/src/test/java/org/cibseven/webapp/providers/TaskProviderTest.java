@@ -33,7 +33,6 @@ import org.cibseven.webapp.rest.model.TaskFiltering;
 import org.cibseven.webapp.rest.model.TaskHistory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -268,15 +267,8 @@ public class TaskProviderTest {
 		assertThat(request.getPath()).isEqualTo("/engine-rest/task/task-1/localVariables/my%20decision");
 	}
 
-	/**
-	 * TODO KNOWN BUG (not fixed): the unclaim path is chosen by comparing the assignee to the
-	 * string "null", so an actual null reference reaches {@code assignee.equals(...)} and throws a
-	 * {@link NullPointerException} instead of unclaiming the task. This test asserts that a null
-	 * assignee unclaims like the literal "null" does; it fails until the comparison is
-	 * null-safe.
-	 */
+	/** A null assignee reference unclaims like the literal "null" does. */
 	@Test
-	@Disabled("KNOWN BUG: setAssignee compares assignee.equals(\"null\"), so a null reference NPEs instead of unclaiming")
 	void setAssignee_unclaimsOnANullAssigneeReference() throws Exception {
 		engine.enqueueJson("");
 

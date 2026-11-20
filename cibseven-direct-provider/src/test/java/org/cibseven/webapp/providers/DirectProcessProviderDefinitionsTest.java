@@ -48,7 +48,6 @@ import org.cibseven.bpm.engine.ProcessEngineException;
 import org.cibseven.bpm.engine.RepositoryService;
 import org.cibseven.bpm.engine.RuntimeService;
 import org.cibseven.bpm.engine.exception.NotFoundException;
-import org.cibseven.bpm.engine.history.HistoricProcessInstance;
 import org.cibseven.bpm.engine.history.HistoricProcessInstanceQuery;
 import org.cibseven.bpm.engine.repository.ProcessDefinition;
 import org.cibseven.bpm.engine.repository.ProcessDefinitionQuery;
@@ -59,7 +58,6 @@ import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -215,11 +213,8 @@ public class DirectProcessProviderDefinitionsTest {
 		HistoricProcessInstanceQuery historyQuery =
 			mock(HistoricProcessInstanceQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
 		when(historyService.createHistoricProcessInstanceQuery()).thenReturn(historyQuery);
-		HistoricProcessInstance instance = mock(HistoricProcessInstance.class);
-		when(historyQuery.unlimitedList()).thenReturn(
-			Collections.nCopies(9, instance),   // all
-			Collections.nCopies(2, instance),   // unfinished
-			Collections.nCopies(7, instance));  // completed
+		// all, unfinished (suspended included), completed - in this order
+		when(historyQuery.count()).thenReturn(9L, 2L, 7L);
 
 		Collection<Process> versions =
 			processProvider.findProcessVersionsByDefinitionKey("invoice", null, Optional.empty(), user);
@@ -251,7 +246,6 @@ public class DirectProcessProviderDefinitionsTest {
 		HistoricProcessInstanceQuery historyQuery =
 			mock(HistoricProcessInstanceQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
 		when(historyService.createHistoricProcessInstanceQuery()).thenReturn(historyQuery);
-		when(historyQuery.unlimitedList()).thenReturn(List.of());
 
 		Process version = processProvider.findProcessVersionsByDefinitionKey("invoice", null, Optional.empty(), user).iterator().next();
 
@@ -269,7 +263,6 @@ public class DirectProcessProviderDefinitionsTest {
 		HistoricProcessInstanceQuery historyQuery =
 			mock(HistoricProcessInstanceQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
 		when(historyService.createHistoricProcessInstanceQuery()).thenReturn(historyQuery);
-		when(historyQuery.unlimitedList()).thenReturn(List.of());
 
 		processProvider.findProcessVersionsByDefinitionKey("invoice", "acme", Optional.empty(), user);
 
@@ -286,7 +279,6 @@ public class DirectProcessProviderDefinitionsTest {
 		HistoricProcessInstanceQuery historyQuery =
 			mock(HistoricProcessInstanceQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
 		when(historyService.createHistoricProcessInstanceQuery()).thenReturn(historyQuery);
-		when(historyQuery.unlimitedList()).thenReturn(List.of());
 
 		Process version = processProvider.findProcessVersionsByDefinitionKey("invoice", null, Optional.empty(), user).iterator().next();
 
@@ -306,29 +298,23 @@ public class DirectProcessProviderDefinitionsTest {
 		verify(deploymentQuery, never()).singleResult();
 	}
 
-	/**
-	 * TODO KNOWN BUG (not fixed, performance): the counts above cost three history queries per
-	 * version - all, unfinished, completed - so the version list of a process with many versions
-	 * costs 3xN engine round-trips. One query per version can carry all three counts. This test
-	 * asserts that budget; it fails until the three queries are folded into one.
-	 */
 	@Test
-	@Disabled("KNOWN BUG: findProcessVersionsByDefinitionKey runs three history queries per version instead of one")
-	void findProcessVersionsByDefinitionKey_countsInstancesWithOneHistoryQueryPerVersion() {
+	void findProcessVersionsByDefinitionKey_countsInstancesWithoutLoadingThem() {
 		ProcessDefinition v2 = mockDefinition("id-2", "invoice", "Invoice Receipt", 2);
-		when(definitionQuery.list()).thenReturn(List.of(v2));
+		ProcessDefinition v1 = mockDefinition("id-1", "invoice", "Invoice Receipt", 1);
+		when(definitionQuery.list()).thenReturn(List.of(v2, v1));
 		HistoricProcessInstanceQuery historyQuery =
 			mock(HistoricProcessInstanceQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
 		when(historyService.createHistoricProcessInstanceQuery()).thenReturn(historyQuery);
-		HistoricProcessInstance instance = mock(HistoricProcessInstance.class);
-		when(historyQuery.unlimitedList()).thenReturn(
-			Collections.nCopies(9, instance),
-			Collections.nCopies(2, instance),
-			Collections.nCopies(7, instance));
 
 		processProvider.findProcessVersionsByDefinitionKey("invoice", null, Optional.empty(), user);
 
-		verify(historyService, Mockito.times(1)).createHistoricProcessInstanceQuery();
+		// three count queries per version, like the REST provider; no historic instance is loaded
+		verify(historyQuery, Mockito.times(6)).count();
+		verify(historyQuery, Mockito.times(2)).unfinished();
+		verify(historyQuery, Mockito.times(2)).completed();
+		verify(historyQuery, never()).unlimitedList();
+		verify(historyQuery, never()).list();
 	}
 
 	@Test

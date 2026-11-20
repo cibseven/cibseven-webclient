@@ -463,7 +463,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		doPut(url, "{ "
 				+ "\"suspended\": " + suspend + ","
 				+ "\"includeProcessInstances\": " + includeProcessInstances + ","
-				+ "\"executionDate\": " + executionDate 
+				+ "\"executionDate\": " + (executionDate == null ? executionDate :  "\"" + executionDate + "\"")
 				+ " }", user);
 	}	
 
