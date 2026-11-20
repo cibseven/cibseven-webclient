@@ -226,6 +226,38 @@ class ModelKeyPerFolderTest {
 		assertThatCode(() -> formProvider.updateForm(form("f-1", null, null))).doesNotThrowAnyException();
 	}
 
+	/** The modeler saves the form id the schema carries, so a form renamed there keeps the new id. */
+	@Test
+	void renamesAFormToAFormIdTheFolderDoesNotHave() {
+		when(forms.findById("f-1")).thenReturn(Optional.of(form("f-1", "invoice-form", "sales")));
+
+		FormEntity saved = formProvider.updateForm(form("f-1", "order-form", null));
+
+		assertThat(saved.getFormId()).isEqualTo("order-form");
+		assertThat(saved.getFolderId()).isEqualTo("sales");
+		verify(forms).findByFormIdAndFolderId("order-form", "sales");
+	}
+
+	@Test
+	void refusesToRenameAFormToAFormIdTheFolderHas() {
+		FormEntity stored = form("f-1", "invoice-form", "sales");
+		when(forms.findById("f-1")).thenReturn(Optional.of(stored));
+		when(forms.findByFormIdAndFolderId("order-form", "sales")).thenReturn(form("f-2", "order-form", "sales"));
+
+		assertThatThrownBy(() -> formProvider.updateForm(form("f-1", "order-form", null)))
+			.isInstanceOf(ExistingFormIdException.class);
+		assertThat(stored.getFormId()).isEqualTo("invoice-form");
+		verify(forms, never()).save(any());
+	}
+
+	/** A move sends no new form id, so the form keeps the one it has. */
+	@Test
+	void keepsTheFormIdWhenTheUpdateNamesNone() {
+		when(forms.findById("f-1")).thenReturn(Optional.of(form("f-1", "invoice-form", "sales")));
+
+		assertThat(formProvider.updateForm(form("f-1", null, "archive")).getFormId()).isEqualTo("invoice-form");
+	}
+
 	@Test
 	void findsTheFormsWithAFormIdTheUserMaySee() {
 		FormEntity latest = form("f-2", "invoice-form", "archive");
