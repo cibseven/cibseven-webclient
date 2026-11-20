@@ -28,6 +28,9 @@ import org.cibseven.webapp.exception.ExistingFormIdException;
 import org.cibseven.webapp.exception.ExistingProcessKeyException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -250,12 +253,25 @@ class ModelKeyPerFolderTest {
 		verify(forms, never()).save(any());
 	}
 
-	/** A move sends no new form id, so the form keeps the one it has. */
+	/** A move sends the stored form, so it checks and keeps the form id in the folder it goes to. */
 	@Test
-	void keepsTheFormIdWhenTheUpdateNamesNone() {
+	void movesAFormWithItsFormId() {
 		when(forms.findById("f-1")).thenReturn(Optional.of(form("f-1", "invoice-form", "sales")));
 
-		assertThat(formProvider.updateForm(form("f-1", null, "archive")).getFormId()).isEqualTo("invoice-form");
+		FormEntity saved = formProvider.updateForm(form("f-1", "invoice-form", "archive"));
+
+		assertThat(saved.getFormId()).isEqualTo("invoice-form");
+		assertThat(saved.getFolderId()).isEqualTo("archive");
+		verify(forms).findByFormIdAndFolderId("invoice-form", "archive");
+	}
+
+	@ParameterizedTest
+	@NullAndEmptySource
+	@ValueSource(strings = { " ", "\t" })
+	void keepsTheFormIdWhenTheUpdateNamesNone(String formId) {
+		when(forms.findById("f-1")).thenReturn(Optional.of(form("f-1", "invoice-form", "sales")));
+
+		assertThat(formProvider.updateForm(form("f-1", formId, null)).getFormId()).isEqualTo("invoice-form");
 	}
 
 	@Test
