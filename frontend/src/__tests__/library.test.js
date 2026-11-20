@@ -90,7 +90,9 @@ describe('library.js', () => {
       'mergeTranslations', 'getRuntimeInfo',
       'PluginSlot', 'PluginBoundary',
       // The slot the enterprise edition adds its admin areas through
-      'ADMIN_ENTRY_SLOT'
+      'ADMIN_ENTRY_SLOT',
+      // What the enterprise edition's plugin overview shows
+      'getPluginOutcomes', 'getSlotsByPlugin', 'getPluginsSettled'
     ]
 
     it('exports the plugin API', () => {

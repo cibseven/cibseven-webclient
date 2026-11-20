@@ -147,9 +147,29 @@ function loadPluginStyles(manifest) {
   })
 }
 
+/** How loading went for each plugin, by id, for the administration page. */
+const outcomes = new Map()
+
+function record(manifest, status, error) {
+  if (!manifest?.id) return
+  outcomes.set(manifest.id, error ? { status, error: String(error?.message ?? error) } : { status })
+}
+
+/**
+ * The outcome of the last load for every plugin it was given, by id: a status of
+ * 'loaded', 'invalid', 'incompatible', 'no-register' or 'failed', and the error of a
+ * failure.
+ *
+ * @returns {Record<string, { status: string, error?: string }>}
+ */
+export function getPluginOutcomes() {
+  return Object.fromEntries(outcomes)
+}
+
 function isUsable(manifest) {
   if (!manifest?.id || !manifest?.entry) {
     console.warn('Ignoring plugin manifest without "id" or "entry":', manifest)
+    record(manifest, 'invalid')
     return false
   }
   // A plugin may name several versions it was built and tested against, so that one
@@ -159,6 +179,7 @@ function isUsable(manifest) {
     console.warn(
       `Ignoring plugin "${manifest.id}": it declares plugin API version ` +
       `"${declared.join('", "')}", this webclient provides "${PLUGIN_API_VERSION}"`)
+    record(manifest, 'incompatible')
     return false
   }
   return true
@@ -191,6 +212,7 @@ async function loadPlugin(manifest, lang, importer) {
     const register = module.register ?? module.default
     if (typeof register !== 'function') {
       console.warn(`Plugin "${manifest.id}" exports no register function, ignoring it`)
+      record(manifest, 'no-register')
       return false
     }
     await loadPluginTranslations(manifest, lang)
@@ -204,10 +226,12 @@ async function loadPlugin(manifest, lang, importer) {
         registerPlugin(slotName, component, { ...meta, pluginId: manifest.id })
     })
     console.info(`Plugin "${manifest.id}" loaded`)
+    record(manifest, 'loaded')
     return true
   } catch (error) {
     // A broken plugin must never keep the application from starting
     console.error(`Plugin "${manifest.id}" could not be loaded:`, error)
+    record(manifest, 'failed', error)
     return false
   }
 }
@@ -223,6 +247,7 @@ async function loadPlugin(manifest, lang, importer) {
 export async function loadPlugins(manifests, lang, importer = importModule) {
   loaded.length = 0
   merged.clear()
+  outcomes.clear()
   const usable = (manifests ?? []).filter(isUsable)
   const results = await Promise.all(usable.map(async manifest => {
     if (!await loadPlugin(manifest, lang, importer)) return null
