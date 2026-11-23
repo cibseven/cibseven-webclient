@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.cibseven.webapp</groupId>
 		<artifactId>cibseven-webclient</artifactId>
-		<version>3.0.0-SNAPSHOT</version>
+		<version>3.1.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>cibseven-webclient-web</artifactId>
 	<packaging>war</packaging>
@@ -22,11 +22,6 @@
 			<groupId>org.cibseven.webapp</groupId>
 			<artifactId>cibseven-webclient-core</artifactId>
 			<version>${project.version}</version>
-			<!--
-				cibseven-webclient-core compiles against Jackson 2 (com.fasterxml.jackson.*).
-				SB4 ships Jackson 3 (tools.jackson.*) by default; we add Jackson 2
-				back explicitly below so the shared code still works at runtime.
-			-->
 		</dependency>
 
 		<!--
@@ -51,20 +46,13 @@
 		</dependency>
 
 		<!--
-		    Spring Boot 4 defaults to Jackson 3 and deprecates Jackson 2 support, 
-			but still provides Jackson 2 compatibility modules.
-			cibseven-webclient-core's REST providers / model
-			classes use Jackson 2 ObjectMapper / JsonNode directly; this keeps them
-			working. Coexists with Jackson 3 (tools.jackson.*) since they're in
-			different top-level packages.
+			The webclient reads and writes JSON with Jackson 3 (tools.jackson.*), see SevenWebclientContext.
+			Jackson 2 still reaches the war through springdoc (swagger-core, YAML); nothing of the
+			webclient's own JSON goes through it.
 		-->
 		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
+			<groupId>tools.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.datatype</groupId>
-			<artifactId>jackson-datatype-jsr310</artifactId>
 		</dependency>
 
 		<dependency>
@@ -77,6 +65,19 @@
         			<artifactId>commons-lang3</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+
+		<!--
+			Declared directly, not only in the root pom's dependencyManagement, so the patched
+			swagger-ui (${version.swagger-ui}) also reaches consumers of this module's classes jar,
+			such as the Spring Boot starter and the Run distro in cibseven. A dependencyManagement
+			entry doesn't apply there, so they would otherwise get springdoc's own swagger-ui
+			(5.32.11 with springdoc 3.1.0, which bundles a vulnerable DOMPurify).
+		-->
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>swagger-ui</artifactId>
+			<version>${version.swagger-ui}</version>
 		</dependency>
 		
 		<!-- Override common transitive dependencies to ensure consistent versions -->

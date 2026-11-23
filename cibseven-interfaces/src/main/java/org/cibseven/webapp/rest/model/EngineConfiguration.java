@@ -16,7 +16,6 @@
  */
 package org.cibseven.webapp.rest.model;
 
-import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,11 +24,13 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.annotation.JsonDeserialize;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -158,7 +159,7 @@ public class EngineConfiguration {
 	 * rest of the engine configuration (history level, authorization, ...) stays usable.
 	 * A JSON {@code null} or a missing property stays {@code null} as usual.
 	 */
-	public static class HistoryTimeToLiveDeserializer extends JsonDeserializer<Integer> {
+	public static class HistoryTimeToLiveDeserializer extends ValueDeserializer<Integer> {
 
 		private static final Logger LOG = LoggerFactory.getLogger(HistoryTimeToLiveDeserializer.class);
 
@@ -166,13 +167,13 @@ public class EngineConfiguration {
 		private static final Pattern DAYS = Pattern.compile("^(?:P(\\d+)D|(\\d+))$");
 
 		@Override
-		public Integer deserialize(JsonParser parser, DeserializationContext context) throws IOException {
+		public Integer deserialize(JsonParser parser, DeserializationContext context) {
 			JsonToken token = parser.currentToken();
 			if (token == JsonToken.VALUE_NUMBER_INT && parser.getNumberType() == JsonParser.NumberType.INT) {
 				return parser.getIntValue();
 			}
 			if (token == JsonToken.VALUE_STRING) {
-				return parseDays(parser.getText());
+				return parseDays(parser.getString());
 			}
 			if (token == JsonToken.START_OBJECT || token == JsonToken.START_ARRAY) {
 				// consume the whole structure, so the remaining properties are still read

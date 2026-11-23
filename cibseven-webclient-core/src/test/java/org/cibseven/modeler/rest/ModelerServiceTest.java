@@ -23,12 +23,15 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.cibseven.modeler.provider.ProjectGuard;
@@ -48,10 +51,14 @@ import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.ModelerAccessChecker;
 import org.cibseven.webapp.exception.AccessDeniedException;
+import org.cibseven.webapp.exception.ApplicationException;
+import org.cibseven.webapp.exception.InvalidPathValueException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -300,6 +307,22 @@ public class ModelerServiceTest {
 		assertThat(created.getUpdatedBy()).isEqualTo("demo");
 	}
 
+	/**
+	 * CIB7-2206 listed {@code formSchema.getBytes()} as a JVM-default-charset conversion, but it is
+	 * {@link MultipartFile#getBytes()}: the raw upload, never decoded into a String. This pins that the
+	 * schema is stored byte for byte, whatever the JVM default charset is.
+	 */
+	@Test
+	void saveForm_storesTheUploadedSchemaBytesUnchanged() {
+		byte[] upload = "{\"label\":\"Begründung 審査\"}".getBytes(StandardCharsets.UTF_8);
+		MockMultipartFile schema = new MockMultipartFile("form_schema", "f.json", "application/json", upload);
+		when(formProvider.createForm(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+		FormEntity created = service.saveForm("invoice-form", schema, null, request);
+
+		assertThat(created.getFormSchema()).isEqualTo(upload);
+	}
+
 	@Test
 	void saveForm_storesANullSchemaWhenTheUploadCannotBeRead() throws Exception {
 		MultipartFile unreadable = mock(MultipartFile.class);
@@ -322,6 +345,18 @@ public class ModelerServiceTest {
 
 		assertThat(updated.getId()).isEqualTo("f-1");
 		assertThat(updated.getUpdatedBy()).isEqualTo("demo");
+	}
+
+	@Test
+	void updateForm_storesTheUploadedSchemaBytesUnchanged() {
+		// see saveForm_storesTheUploadedSchemaBytesUnchanged (CIB7-2206)
+		byte[] upload = "{\"label\":\"Begründung 審査\"}".getBytes(StandardCharsets.UTF_8);
+		MockMultipartFile schema = new MockMultipartFile("form_schema", "f.json", "application/json", upload);
+		when(formProvider.updateForm(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+		FormEntity updated = service.updateForm("f-1", "invoice-form", schema, request);
+
+		assertThat(updated.getFormSchema()).isEqualTo(upload);
 	}
 
 	@Test
@@ -408,5 +443,62 @@ public class ModelerServiceTest {
 		service.deployBpmn(data, file, request);
 
 		verify(bpmProvider).deployBpmn(data, file, user);
+	}
+
+	@Test
+	void startProcess_startsTheDefinitionOfTheTenantItWasDeployedFor() {
+		Map<String, Object> data = Map.of("variables", Map.of());
+
+		service.startProcess("invoice", "acme", data, request);
+
+		verify(bpmProvider).startProcess("invoice", "acme", data, user);
+	}
+
+	// A key alone finds only a definition of no tenant: without a tenant, or with a blank one, that is asked for
+	@Test
+	void startProcess_startsTheDefinitionOfNoTenantWithoutOne() {
+		Map<String, Object> data = Map.of();
+
+		service.startProcess("invoice", null, data, request);
+		service.startProcess("invoice", "  ", data, request);
+
+		verify(bpmProvider, times(2)).startProcess("invoice", null, data, user);
+	}
+
+	@Test
+	void startProcess_trimsTheTenant() {
+		Map<String, Object> data = Map.of();
+
+		service.startProcess("invoice", "  acme  ", data, request);
+
+		verify(bpmProvider).startProcess("invoice", "acme", data, user);
+	}
+
+	// Key and tenant become path segments of the engine URL: nothing may change that URL
+	@ParameterizedTest
+	@ValueSource(strings = { "a/../../message", "acme?x=1", "acme#frag", "ac%2Fme", "acme;x", "ac me", "..", "." })
+	void startProcess_refusesATenantThatWouldChangeTheEngineUrl(String tenant) {
+		// An ApplicationException, which ExceptionConverter answers with 400, carrying a readable sentence
+		assertThatThrownBy(() -> service.startProcess("invoice", tenant, Map.of(), request))
+			.isInstanceOf(InvalidPathValueException.class)
+			.isInstanceOf(ApplicationException.class)
+			.satisfies(e -> assertThat(((ApplicationException) e).getData()).containsExactly("Tenant ID \"" + tenant + "\" cannot be part of the engine URL"));
+		verifyNoInteractions(bpmProvider);
+	}
+
+	@Test
+	void startProcess_refusesAKeyThatWouldChangeTheEngineUrl() {
+		assertThatThrownBy(() -> service.startProcess("invoice?tenant-id=x", null, Map.of(), request))
+			.isInstanceOf(InvalidPathValueException.class);
+		verifyNoInteractions(bpmProvider);
+	}
+
+	@Test
+	void startProcess_isRefusedWithoutModelerAccess() {
+		doThrow(new AccessDeniedException("no modeler")).when(modelerAccessChecker).checkModelerAccess(user);
+
+		assertThatThrownBy(() -> service.startProcess("invoice", "acme", Map.of(), request))
+			.isInstanceOf(AccessDeniedException.class);
+		verifyNoInteractions(bpmProvider);
 	}
 }

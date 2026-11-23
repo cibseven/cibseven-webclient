@@ -20,6 +20,7 @@ import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Engine REST settings, bound from {@code cibseven.webclient.engineRest} as part of {@link SevenWebclientProperties}.
@@ -82,4 +83,24 @@ public class EngineRestProperties {
 	 * Each source will be queried for available engines and added to the list.
 	 */
 	private List<EngineRestSource> additionalEngineRest = new ArrayList<>();
+
+	/**
+	 * Finds the configured engine REST server with the given url and path: one of
+	 * {@link #getAdditionalEngineRest()}, or else the default one ({@link #getUrl()}, {@link #getPath()}).
+	 */
+	public Optional<EngineRestSource> findEngineRestSource(String url, String path) {
+		if (additionalEngineRest != null) {
+			for (EngineRestSource source : additionalEngineRest) {
+				if (source != null && source.matches(url, path)) {
+					return Optional.of(source);
+				}
+			}
+		}
+		EngineRestSource defaultSource = new EngineRestSource();
+		defaultSource.setUrl(this.url);
+		defaultSource.setPath(this.path);
+		defaultSource.setDisplayName(displayName);
+		defaultSource.setTooltip(tooltip);
+		return defaultSource.matches(url, path) ? Optional.of(defaultSource) : Optional.empty();
+	}
 }

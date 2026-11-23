@@ -187,7 +187,8 @@
 		"activateInstance": "Activar la instancia del proceso",
 		"copySuccess": "Valor seleccionado copiado",
 		"refreshVersions": "Actualizar el historial de versions",
-		"loadVersions": "Cargar todo el historial de versiones",
+		"loadAllStatistics": "Cargar todas las estadísticas de instancias",
+		"loadData": "Cargar datos",
 		"externalProcessStarted": "Proceso iniciado con éxito",
 		"exportInstances": "Exportar instancias",
 		"deleteProcessDefinition": {
@@ -249,7 +250,8 @@
 			"referenced": "Referenciado",
 			"running": "En ejecución",
 			"runningAndReferenced": "En ejecución y referenciado",			
-			"unknown": "Desconocido"
+			"unknown": "Desconocido",
+			"loadFailed": "No se pudieron cargar las definiciones de proceso llamadas"
 		},
 		"details": {
 			"instancesChain": "Proceso principal",
@@ -343,6 +345,7 @@
 			"dueDate": "Fecha de vencimiento",
 			"scheduleAt": "Programar para",
 			"invalidDateError": "Debe insertar una fecha válida",
+			"loadFailed": "No se pudieron cargar los incidentes",
 			"retry": "Reintentar",
 			"editAnnotation": "Editar anotación",
 			"causeIncidentProcessInstanceId": "ID de instancia del proceso causante",
@@ -475,7 +478,10 @@
 			"activitiesHistory": "Instancias de actividad ejecutadas",
 			"canceledInstances": "Instancias de actividad canceladas",
 			"openSubprocess": "Mostrar la definición del proceso llamado",
-			"disabledSubprocess": "La definición del proceso se resolverá en tiempo de ejecución"
+			"disabledSubprocess": "La definición del proceso se resolverá en tiempo de ejecución",
+			"notFoundSubprocess": "No se encontró la definición del proceso llamado: no está desplegada o no tiene permiso para verla",
+			"currentSubprocess": "La definición del proceso llamado ya se está mostrando",
+			"unknownSubprocess": "No se pudo determinar la definición del proceso llamado"
 		}
 	},
 	"task": {
@@ -1144,7 +1150,9 @@
 		"ExistingGroupRequestException": "El grupo ya existe",
 		"VariableModificationException": "La variable no pudo ser modificada exitosamente. Por favor, actualice la página e inténtelo de nuevo.",
 		"processNotFound": "Proceso con clave \"{0}\" no encontrado",
+		"tenantNotFound": "El tenant con ID \"{0}\" no existe",
 		"notFoundInstanceId": "La instancia del proceso con ID \"{instanceId}\" no pudo ser encontrada.\nReferenciado desde: {refPath}",
+		"notFoundPage": "La página \"{path}\" no pudo ser encontrada.",
 		"filterSaveError": "Ocurrió un error al intentar guardar el filtro, verifique los datos ingresados.",
 		"passwordDoNotMatch": "Las contraseñas no coinciden",
 		"PasswordPolicyException": "La contraseña no coincide con los parámetros de política de contraseña",
@@ -1153,6 +1161,8 @@
 		"InvalidValueHistoryTimeToLive": "Se requiere un tiempo de vida del histórico. Defínalo en el modelo o configure un valor por defecto en el motor.",
 		"DmnTransformationException": "El recurso no pudo ser actualizado. No se puede transformar el recurso DMN.",
 		"InvalidGroupIdException": "El ID del grupo contiene caracteres no válidos. Sólo se permiten caracteres alfanuméricos (a-z, A-Z, 0-9) o camunda-admin. Por favor, corrija su entrada.",
+		"UnknownEngineException": "El motor de procesos seleccionado no está configurado. Seleccione otro motor.",
+		"EngineNotReachableException": "No se pudo conectar con el motor de procesos. Inténtelo de nuevo más tarde.",
 		"unknown": "Se produjo un error inesperado. Por favor, inténtelo de nuevo."
 	},
 	"searches": {
@@ -1204,6 +1214,7 @@
 	},
 	"navigation": {
 		"home": "Inicio",
+		"logoText": "@:login.productName",
 		"menu": "Menú de Navegación",
 		"infoAndHelp": "Información y ayuda"
 	},
@@ -1361,7 +1372,9 @@
 		"value": "Valor",
 		"inputs": "Entradas",
 		"outputs": "Salidas",
-		"decisionInstanceId": "ID de instancia de decisión"
+		"decisionInstanceId": "ID de instancia de decisión",
+		"notAvailableForTenant": "Esta decisión no está disponible para el tenant \"{tenantId}\".",
+		"notAvailable": "Esta decisión no está disponible."
 	},
 	"decision-instance": {
 		"edit": "@:commons.edit"

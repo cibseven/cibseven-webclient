@@ -64,6 +64,31 @@ describe('debounce', () => {
     expect(fn).toHaveBeenCalledWith('second')
   })
 
+  // e.g. a component that unmounts while a search is still waiting
+  it('should drop the pending call when cancelled', () => {
+    const fn = vi.fn()
+    const debounced = debounce(200, fn)
+    debounced('pending')
+    debounced.cancel()
+    vi.advanceTimersByTime(200)
+    expect(fn).not.toHaveBeenCalled()
+  })
+
+  it('should call again after a cancel', () => {
+    const fn = vi.fn()
+    const debounced = debounce(200, fn)
+    debounced('dropped')
+    debounced.cancel()
+    debounced('next')
+    vi.advanceTimersByTime(200)
+    expect(fn).toHaveBeenCalledTimes(1)
+    expect(fn).toHaveBeenCalledWith('next')
+  })
+
+  it('should accept a cancel without a pending call', () => {
+    expect(() => debounce(200, vi.fn()).cancel()).not.toThrow()
+  })
+
   it('should invoke the function with the caller as `this`', () => {
     const context = {
       value: 42,

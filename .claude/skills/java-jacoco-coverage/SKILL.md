@@ -91,8 +91,8 @@ ProcessDefinitionQuery query = mock(ProcessDefinitionQuery.class,
     withSettings().defaultAnswer(RETURNS_SELF));
 when(repositoryService.createProcessDefinitionQuery()).thenReturn(query);
 
-ObjectMapper objectMapper = new ObjectMapper();
-JacksonConfigurator.configureObjectMapper(objectMapper);
+// engine-rest's mapper (Jackson 3, tools.jackson.databind.ObjectMapper)
+ObjectMapper objectMapper = JacksonConfigurator.configureObjectMapper();
 
 directProviderUtil = Mockito.spy(new DirectProviderUtil());
 doReturn(processEngine).when(directProviderUtil).getProcessEngine(any(CIBUser.class));
@@ -114,9 +114,10 @@ Plain Mockito plus `ReflectionTestUtils` for the `@Autowired` and `@Value` field
 ```java
 service = new ProcessService();
 ReflectionTestUtils.setField(service, "bpmProvider", bpmProvider);
-// the deprecated in-webclient permission check is off unless this is true
-ReflectionTestUtils.setField(service, "authorizationEnabled", false);
 ```
+
+Permissions are checked by the engine, not by the webclient services, so a facade test only pins
+what each endpoint hands on to the provider.
 
 A service whose endpoint takes an `HttpServletRequest` derives the user itself, so mock
 `baseUserProvider.checkAuthorization(request, true)` too. Modeler services additionally need
@@ -288,6 +289,4 @@ why they will surprise you:
 | `DecisionProviderTest` | `DecisionProvider.evaluateDecisionDefinitionByKeyAndTenant` builds `/tenant<id>` instead of `/tenant-id/<id>`. |
 | `TaskProviderTest` | `TaskProvider.setAssignee` compares `assignee.equals("null")`, so a real null reference NPEs instead of unclaiming. |
 | `DirectBatchProviderTest` | `DirectBatchProvider.deleteBatch` compares the cascade flag with `equals("true")`, so a real JSON boolean never cascades. |
-| `SevenAuthorizationUtilsTest` | `hasCockpitRights` inspects `permissions[0]` only, so a GRANT listing ACCESS in any later position is denied. The GLOBAL branch of the same method reads the whole array. |
-| `SevenAuthorizationUtilsTest` | `hasSpecificProcessRights` matches the resource id exactly, so a `"*"` grant — "every process" to the engine — authorises nothing. |
 | `DirectProcessProviderDefinitionsTest` | `findProcessVersionsByDefinitionKey` runs three history queries per version, so a process with many versions costs 3×N round-trips. |

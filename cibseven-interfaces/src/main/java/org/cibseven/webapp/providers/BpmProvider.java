@@ -82,7 +82,7 @@ import org.springframework.lang.Nullable;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -193,6 +193,18 @@ public interface BpmProvider {
 	/** The variables held by the task itself rather than by its process instance. */
 	default Map<String, Object> findLocalVariables(String taskId, CIBUser user) throws SystemException {
 		return getTaskProvider().findLocalVariables(taskId, user);
+	}
+
+	default void modifyLocalVariables(String taskId, Map<String, Object> patch, CIBUser user) throws SystemException {
+		getTaskProvider().modifyLocalVariables(taskId, patch, user);
+	}
+
+	default void putLocalVariable(String taskId, String variableName, Map<String, Object> variable, CIBUser user) throws SystemException {
+		getTaskProvider().putLocalVariable(taskId, variableName, variable, user);
+	}
+
+	default void deleteLocalVariable(String taskId, String variableName, CIBUser user) throws SystemException {
+		getTaskProvider().deleteLocalVariable(taskId, variableName, user);
 	}
 
 	/** The comments written on the task. */
@@ -635,14 +647,6 @@ public interface BpmProvider {
 
 	/*UI Element templates methods migrated*/
 
-	default ActivityInstance findActivityInstances(String processInstanceId, CIBUser user) throws SystemException {
-		return getActivityProvider().findActivityInstances(processInstanceId, user);
-	}
-
-	default List<ActivityInstanceHistory> findActivityInstanceHistory(String processInstanceId, CIBUser user) throws SystemException {
-		return getActivityProvider().findActivityInstanceHistory(processInstanceId, user);
-	}
-
 	default void deleteVariableByExecutionId(String executionId, String variableName, CIBUser user) {
 		getActivityProvider().deleteVariableByExecutionId(executionId, variableName, user);
 	}
@@ -1022,6 +1026,11 @@ public interface BpmProvider {
 				return getVariableProvider().fetchProcessFormVariables(variableListName, processDefinitionId, deserializeValues, user);
 	}
 
+	default Map<String, Variable> fetchProcessFormVariablesByKey(List<String> variableListName, String key, boolean deserializeValues, CIBUser user)
+			throws NoObjectFoundException, SystemException {
+		return getVariableProvider().fetchProcessFormVariablesByKey(variableListName, key, deserializeValues, user);
+	}
+
 	default NamedByteArrayDataSource fetchVariableFileData(String taskId, String variableName, CIBUser user) throws NoObjectFoundException, UnexpectedTypeException, SystemException {
 		return getVariableProvider().fetchVariableFileData(taskId, variableName, user);
 	}
@@ -1057,6 +1066,10 @@ public interface BpmProvider {
 
 	default void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user) {
 		getVariableProvider().putLocalExecutionVariable(executionId, varName, data, user);
+	}
+
+	default void putProcessInstanceVariable(String processInstanceId, String variableName, Map<String, Object> variable, CIBUser user) {
+		getVariableProvider().putProcessInstanceVariable(processInstanceId, variableName, variable, user);
 	}
 
 /*
@@ -1139,6 +1152,10 @@ public interface BpmProvider {
 
 	default Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad, CIBUser user) {
 		return getDecisionProvider().getDecisionVersionsByKey(key, lazyLoad, user);
+	}
+
+	default Collection<Decision> getDecisionVersionsByKey(String key, String tenantId, boolean withoutTenantId, Optional<Boolean> lazyLoad, CIBUser user) {
+		return getDecisionProvider().getDecisionVersionsByKey(key, tenantId, withoutTenantId, lazyLoad, user);
 	}
 
 	default Collection<HistoricDecisionInstance> getHistoricDecisionInstances(Map<String, Object> queryParams, CIBUser user) {

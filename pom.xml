@@ -9,7 +9,7 @@
 
 	<groupId>org.cibseven.webapp</groupId>
 	<artifactId>cibseven-webclient</artifactId>
- 	<version>3.0.0-SNAPSHOT</version>
+ 	<version>3.1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>CIB seven webclient</name>
@@ -44,14 +44,13 @@
 
 		<jjwt.version>0.12.6</jjwt.version>
 		<commons-io.version>2.18.0</commons-io.version>
-		<common-auth.version>1.4.0</common-auth.version>
-		<version.spring.boot>4.1.1</version.spring.boot>
+		<common-auth.version>1.5.0</common-auth.version>
+		<version.spring.boot>4.1.2</version.spring.boot>
 		<version.openapi-starter-webmvc-ui>3.1.0</version.openapi-starter-webmvc-ui>
-		<!-- Spring Boot 4's own BOM still manages Jackson 2 (it imports com.fasterxml.jackson:jackson-bom
-		     and ships spring-boot-jackson2), but its starters default to Jackson 3 (tools.jackson.*)
-		     for the wire layer and don't pull Jackson 2 in transitively. The shared core compiles
-		     against com.fasterxml.jackson.* (Jackson 2) directly, so Spring Boot's own Jackson 2 BOM
-		     version is overridden explicitly to this patched release. -->
+		<!-- The webclient is on Jackson 3 (tools.jackson.*, version.jackson3). Jackson 2 is left only
+		     where others bring it: springdoc's swagger-core (YAML), and jackson-annotations, which
+		     Jackson 3 uses too. Spring Boot's own Jackson 2 BOM version is overridden explicitly to this
+		     patched release. -->
 		<version.jackson2>2.21.7</version.jackson2>
 		<version.jackson3>3.1.7</version.jackson3>
 
@@ -61,9 +60,16 @@
 		     do NOT take effect — the fixed versions are pinned via explicit dependencyManagement
 		     entries below.
 		     ============================================================================ -->
-		<!-- Apache Tomcat: CVE-2026-41293, -43512, -43515, -41284, -43513, -42498, -43514 (fixed in
-		     11.0.22), plus CVE-2026-65182, -65905, -68525 (fixed in 11.0.25). -->
-		<version.tomcat>11.0.25</version.tomcat>
+		<!-- Apache Tomcat: CVE-2026-76183, -86350, -78383, -77791 (Important) and CVE-2026-86248,
+		     -79677, -73581 (Moderate), fixed in 11.0.26, plus CVE-2026-103119, -101356, -101296
+		     (Important), fixed in 11.0.27. Low-severity fixes in both releases are not listed. -->
+		<version.tomcat>11.0.27</version.tomcat>
+
+		<!-- swagger-ui webjar: springdoc 3.1.0 brings 5.32.11, which bundles DOMPurify 3.4.12 ->
+		     GHSA-cg2g-xh64-v4q7 (critical), GHSA-mrv2-3pqr-j5jr (high), GHSA-55q2-fjhq-7xh7 and the
+		     other DOMPurify advisories up to 3.4.16. 5.34.1 bundles DOMPurify 3.4.17. Remove once
+		     springdoc brings a swagger-ui with a patched DOMPurify itself. -->
+		<version.swagger-ui>5.34.1</version.swagger-ui>
 
 		<version.commons-lang3>3.18.0</version.commons-lang3>
 		<!-- Temporary Apache HttpComponents CVE overrides.
@@ -413,8 +419,8 @@ You may obtain a copy of the License at
 
 			<!-- Import the Jackson 2 BOM before spring-boot-dependencies so it wins for every
 			     com.fasterxml.jackson.* artifact (core, annotations, databind, datatype-*, module-*,
-			     dataformat-*, jakarta-rs) pulled in by the modules via jjwt-jackson, the cibseven-engine
-			     REST client and the explicit Jackson 2 dependencies of cibseven-webclient-web.
+			     dataformat-*) still pulled in: by springdoc's swagger-core, and jackson-annotations,
+			     which Jackson 3 uses too.
 			     spring-boot-dependencies imports this same jackson-bom itself (pinned to an older
 			     patch), so ours must be declared first to take precedence. -->
 			<dependency>
@@ -487,23 +493,11 @@ You may obtain a copy of the License at
 				<version>${version.log4j2}</version>
 			</dependency>
 
-			<!-- Override Apache Tomcat (BOM pins a vulnerable version) to fix
-			     CVE-2026-41293, -43512, -43515, -41284, -43513, -42498, -43514, -65182, -65905, -68525.
-			     Remove once the imported Spring Boot BOM manages a fixed version. -->
+			<!-- See version.swagger-ui: overrides the webjar springdoc pulls in. -->
 			<dependency>
-				<groupId>org.apache.tomcat.embed</groupId>
-				<artifactId>tomcat-embed-core</artifactId>
-				<version>${version.tomcat}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.tomcat.embed</groupId>
-				<artifactId>tomcat-embed-el</artifactId>
-				<version>${version.tomcat}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.tomcat.embed</groupId>
-				<artifactId>tomcat-embed-websocket</artifactId>
-				<version>${version.tomcat}</version>
+				<groupId>org.webjars</groupId>
+				<artifactId>swagger-ui</artifactId>
+				<version>${version.swagger-ui}</version>
 			</dependency>
 
 			<!-- Override pgjdbc (managed by the Spring Boot BOM at 42.7.10) to fix

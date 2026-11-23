@@ -72,7 +72,7 @@ final class MockEngineRest implements AutoCloseable {
 		BaseUserProvider<?> userProvider = mock(BaseUserProvider.class);
 		when(userProvider.getEngineRestToken(any(CIBUser.class))).thenReturn(AUTH_TOKEN);
 
-		ReflectionTestUtils.setField(provider, "customRestTemplate", TestRestTemplateConfiguration.jackson2CustomRestTemplate());
+		ReflectionTestUtils.setField(provider, "customRestTemplate", TestRestTemplateConfiguration.webclientCustomRestTemplate());
 		ReflectionTestUtils.setField(provider, "baseUserProvider", userProvider);
 		provider.properties.getEngineRest().setUrl("http://localhost:" + server.getPort());
 		provider.properties.getEngineRest().setPath(ENGINE_REST_PATH);
@@ -91,12 +91,36 @@ final class MockEngineRest implements AutoCloseable {
 		server.enqueue(new MockResponse().setBody(body).addHeader("Content-Type", "application/json"));
 	}
 
+	/** A JSON answer whose headers leave only after {@code delay}, so the request holds its connection. */
+	void enqueueJsonAfter(String body, long delay, TimeUnit unit) {
+		server.enqueue(new MockResponse().setBody(body).addHeader("Content-Type", "application/json")
+			.setHeadersDelay(delay, unit));
+	}
+
 	/** Raw bytes, for endpoints that do not answer JSON; MockWebServer sets Content-Length from them. */
 	void enqueueBytes(byte[] body, String contentType) {
 		server.enqueue(new MockResponse().setBody(new Buffer().write(body)).addHeader("Content-Type", contentType));
 	}
 
 	/** UTF-8 text sent as {@code text/plain} without a charset, the way engine-rest sends stack traces. */
+	/** Like engine-rest streaming a large resource: chunked, on a keep-alive connection. */
+	void enqueueChunked(byte[] body, String contentType) {
+		server.enqueue(new MockResponse()
+			.setChunkedBody(new Buffer().write(body), 4096)
+			.addHeader("Content-Type", contentType)
+			.addHeader("Cache-Control", "no-cache")
+			.addHeader("Connection", "keep-alive")
+			.addHeader("Keep-Alive", "timeout=60"));
+	}
+
+	/** An already gzip-compressed resource with a fixed length, as an engine or proxy that compresses would send it. */
+	void enqueueGzip(byte[] gzipped, String contentType) {
+		server.enqueue(new MockResponse()
+			.setBody(new Buffer().write(gzipped))
+			.addHeader("Content-Type", contentType)
+			.addHeader("Content-Encoding", "gzip"));
+	}
+
 	void enqueuePlainText(String body) {
 		enqueueBytes(body.getBytes(StandardCharsets.UTF_8), "text/plain");
 	}

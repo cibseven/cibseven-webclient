@@ -16,10 +16,8 @@
  */
 package org.cibseven.webapp.providers;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.cibseven.bpm.engine.AuthorizationException;
@@ -31,13 +29,12 @@ import org.cibseven.bpm.engine.rest.dto.management.JobDefinitionQueryDto;
 import org.cibseven.bpm.engine.rest.dto.management.JobDefinitionSuspensionStateDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.JobDefinitionPriorityDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.RetriesDto;
-import org.cibseven.bpm.engine.rest.util.QueryUtil;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.JobDefinition;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.core.JacksonException;
 
 public class DirectJobDefinitionProvider implements IJobDefinitionProvider {
 
@@ -52,21 +49,14 @@ public class DirectJobDefinitionProvider implements IJobDefinitionProvider {
 		JobDefinitionQueryDto queryDto;
 		try {
 			queryDto = directProviderUtil.getObjectMapper(user).readValue(params, JobDefinitionQueryDto.class);
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			throw new SystemException(e.getMessage());
 		}
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
 		JobDefinitionQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
 
-		List<org.cibseven.bpm.engine.management.JobDefinition> matchingJobDefinitions = QueryUtil.list(query, null, null);
-
-		List<JobDefinition> jobDefinitionResults = new ArrayList<>();
-		for (org.cibseven.bpm.engine.management.JobDefinition jobDefinition : matchingJobDefinitions) {
-			JobDefinitionDto result = JobDefinitionDto.fromJobDefinition(jobDefinition);
-			jobDefinitionResults.add(directProviderUtil.convertValue(result, JobDefinition.class, user));
-		}
-
-		return jobDefinitionResults;
+		return directProviderUtil.listAndConvert(query, null, null, 
+				JobDefinitionDto::fromJobDefinition, JobDefinition.class, user);
 	}
 
 	@Override
@@ -83,7 +73,7 @@ public class DirectJobDefinitionProvider implements IJobDefinitionProvider {
 					"The suspension state of Job Definition with id %s could not be updated due to: %s", jobDefinitionId,
 					e.getMessage());
 			throw new SystemException(message, e);
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			throw new SystemException(e.getMessage());
 		}
 	}
@@ -107,7 +97,7 @@ public class DirectJobDefinitionProvider implements IJobDefinitionProvider {
 
 		} catch (AuthorizationException e) {
 			throw e;
-		} catch (JsonProcessingException|ProcessEngineException e) {
+		} catch (JacksonException|ProcessEngineException e) {
 			throw new SystemException(e.getMessage());
 		}
 	}

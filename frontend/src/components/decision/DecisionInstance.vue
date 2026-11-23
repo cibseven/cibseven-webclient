@@ -20,7 +20,7 @@
   <div v-if="instance" class="h-100">
     <router-link
       class="btn btn-light rounded-0 border-bottom text-start w-100 align-middle d-flex align-items-center"
-      :to="'/seven/auth/decision/' + instance.decisionDefinitionKey + '/' + versionIndex">
+      :to="backLink">
       <span class="mdi mdi-18px mdi-arrow-left me-2 float-start"></span>
       <h5 class="m-0">
         {{ $t('decision.decisionInstanceId') }}: {{ instanceId }}
@@ -96,6 +96,9 @@ const BUILTIN_TABS = [
 
 const RESERVED_TAB_IDS = BUILTIN_TABS.map(tab => tab.id)
 
+// Value types whose content history does not return here, see hasShownValue
+const NOT_FETCHED_TYPES = ['Bytes', 'File']
+
 const tabsFor = defineTabBar({
   deepLinkSection: 'decisionInstance',
   pluginSlot: 'decision-instance-tab',
@@ -123,6 +126,14 @@ export default {
   computed: {
     ...mapGetters('diagram', ['isDiagramReady']),
     ...mapGetters(['getSelectedDecisionVersion']),
+    // Back to the version this instance belongs to, with the definition's tenant: the instance's can be its process's (CIB7-2392)
+    backLink() {
+      const tenantId = this.decisionDefinition?.tenantId
+      return {
+        path: `/seven/auth/decision/${this.instance.decisionDefinitionKey}/${this.versionIndex}`,
+        query: tenantId ? { tenantId } : {}
+      }
+    },
     decisionDefinition() {
       return this.getSelectedDecisionVersion()
     },
@@ -192,7 +203,8 @@ export default {
         clearTimeout(this.diagramTimer)
         this.diagramTimer = setTimeout(() => {
           // Gone if the view was left while the diagram loaded, which unmount cannot cancel
-          this.$refs.diagram?.showDiagram(response.dmnXml).then(() => this.restoreViewboxIfSaved())
+          // A DRD holds several decisions: open the one this instance evaluated
+          this.$refs.diagram?.showDiagram(response.dmnXml, this.instance.decisionDefinitionKey).then(() => this.restoreViewboxIfSaved())
         }, 100)
       })
       .catch(error => {
@@ -220,93 +232,69 @@ export default {
       table.querySelectorAll('th.input-cell').forEach(th => {
         const colId = th.getAttribute('data-col-id')
         const input = this.instance?.inputs?.find(i => i.clauseId === colId)
-        if (!colId || !input) return
+        if (!colId || !input || !this.hasShownValue(input)) return
         const clauseDiv = th.querySelector('div.clause')
-        if (!clauseDiv || clauseDiv.getAttribute('data-original-text')) return
+        if (!clauseDiv || clauseDiv.hasAttribute('data-original-text')) return
         const original = clauseDiv.textContent.trim()
         clauseDiv.setAttribute('data-original-text', original)
         clauseDiv.textContent = ''
         const span = document.createElement('span')
-        span.textContent = original + ' '
+        span.textContent = `${original} `
         clauseDiv.appendChild(span)
         const bold = document.createElement('strong')
         bold.className = 'fw-bold'
-        bold.textContent = '= ' + String(input.value)
+        bold.textContent = `= ${this.formatValue(input.value)}`
         clauseDiv.appendChild(bold)
       })
     },
+    // The engine reports the rule that produced each output (ruleId); dmn-js puts that rule's id on
+    // every cell of its row (data-row-id). History records outputs only for non-empty output entries,
+    // so a fired rule without any output value leaves no trace and cannot be marked.
     applyOutputRows(table) {
-      const headerRow = table.querySelector('thead tr')
-      if (!headerRow) return
-      const headerCells = Array.from(headerRow.children)
+      const outputs = (this.instance?.outputs ?? []).filter(output => output.ruleId)
+      const firedRuleIds = new Set(outputs.map(output => output.ruleId))
 
-      const tbody = table.querySelector('tbody')
-      if (!tbody) return
+      table.querySelectorAll('tbody td.rule-index[data-row-id]').forEach(indexCell => {
+        const ruleId = indexCell.getAttribute('data-row-id')
+        const row = indexCell.closest('tr')
+        if (!firedRuleIds.has(ruleId) || !row) return
+        row.classList.add('fired-rule')
 
-      // Build input column map: colIndex → expected input value
-      const inputColumns = []
-      table.querySelectorAll('th.input-cell').forEach(th => {
-        const colId = th.getAttribute('data-col-id')
-        const input = this.instance?.inputs?.find(i => i.clauseId === colId)
-        if (colId && input) {
-          inputColumns.push({
-            colIndex: headerCells.indexOf(th),
-            value: String(input.value).trim()
-          })
-        }
-      })
-      table.querySelectorAll('th.output-cell').forEach(th => {
-        const colId = th.getAttribute('data-col-id')
-        const outputs = colId
-          ? this.instance?.outputs?.filter(o => o.clauseId === colId)
-          : this.instance?.outputs
-        if (!outputs?.length) return
-
-        const outputColIndex = headerCells.indexOf(th)
-        const outputValues = new Set(outputs.map(o => String(o.value).trim()).filter(Boolean))
-
-        Array.from(tbody.rows).forEach(row => {
-          const td = row.children[outputColIndex]
-          if (!td) return
-
-          const tdText = td.getAttribute('data-original-text') ?? td.textContent
-          if (!outputValues.has(this.normalizeCell(tdText))) return
-
-          // DMN string literals can disambiguate; numeric expressions cannot
-          // Multi-value cells like "budget", "exceptional" are split and checked individually
-          const disqualified = inputColumns.some(({ colIndex, value }) => {
-            const cell = row.children[colIndex]
-            if (!cell) return false
-            const raw = (cell.getAttribute('data-original-text') ?? cell.textContent).trim()
-            if (!this.isDmnStringLiteral(raw)) return false
-            const cellValues = raw.split(',').map(v => this.normalizeCell(v.trim()))
-            return !cellValues.includes(value)
-          })
-
-          if (!disqualified) this.applyHighlightText(row, td)
+        const ruleCells = Array.from(row.querySelectorAll('td.output-cell'))
+        outputs.filter(output => output.ruleId === ruleId && this.hasShownValue(output)).forEach(output => {
+          const cell = output.clauseId
+            ? ruleCells.find(td => td.getAttribute('data-col-id') === output.clauseId)
+            : (ruleCells.length === 1 ? ruleCells[0] : undefined)
+          if (cell) this.applyHighlightText(cell, output.value)
         })
       })
     },
-    applyHighlightText(row, td) {
-      if (td.getAttribute('data-original-text')) return
+    // Binary values are not fetched (disableBinaryFetching): the engine sends them with value null,
+    // which must not read as a null result. A failed value carries only its error.
+    hasShownValue({ type, errorMessage }) {
+      return !errorMessage && !NOT_FETCHED_TYPES.includes(type)
+    },
+    applyHighlightText(td, value) {
+      if (td.hasAttribute('data-original-text')) return
       const originalValue = td.textContent.trim()
       td.setAttribute('data-original-text', originalValue)
-      td.textContent = originalValue + ' '
+      td.textContent = `${originalValue} `
       const span = document.createElement('span')
       span.className = 'fw-bold'
-      span.textContent = '= ' + originalValue
+      span.textContent = `= ${this.formatValue(value)}`
       td.appendChild(span)
     },
-    // Strips surrounding DMN double-quotes and trims whitespace for exact comparison
-    normalizeCell(text) {
-      if (!text) return ''
-      return text.trim().replace(/(^")|("$)/g, '').trim()
-    },
-    // Returns true if the cell text is a DMN string literal (wrapped in double quotes)
-    isDmnStringLiteral(text) {
-      if (!text) return false
-      return /^".*"$/.test(text.trim())
+    formatValue(value) {
+      return value !== null && typeof value === 'object' ? JSON.stringify(value) : String(value)
     }
   }
 }
 </script>
+
+<style>
+/* Not scoped: dmn-js renders the decision table itself. Every cell, because dmn-js colours every
+   second row and the sticky rule index cell on their own. */
+.dmn-decision-table-container tbody tr.fired-rule > td {
+  background-color: var(--bs-success-bg-subtle);
+}
+</style>

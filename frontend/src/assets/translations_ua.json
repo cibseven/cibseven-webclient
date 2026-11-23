@@ -187,7 +187,8 @@
 		"activateInstance": "Активувати екземпляр процесу",
 		"copySuccess": "Значення скопійовано",
 		"refreshVersions": "Оновити історію версій",
-		"loadVersions": "Завантажити всі версії історії",
+		"loadAllStatistics": "Завантажити всю статистику екземплярів",
+		"loadData": "Завантажити дані",
 		"externalProcessStarted": "Процес успішно запущено",
 		"exportInstances": "Експортувати екземпляри",
 		"deleteProcessDefinition": {
@@ -249,7 +250,8 @@
 			"referenced": "Посилається",
 			"running": "Виконується",
 			"runningAndReferenced": "Запущено i посилається",
-			"unknown": "Невідомо"
+			"unknown": "Невідомо",
+			"loadFailed": "Не вдалося завантажити викликані визначення процесів"
 		},
 		"details": {
 			"instancesChain": "Кореневий процес",
@@ -343,6 +345,7 @@
 			"dueDate": "Термін",
 			"scheduleAt": "Запланувати на",
 			"invalidDateError": "Введіть коректну дату",
+			"loadFailed": "Не вдалося завантажити інциденти",
 			"retry": "Повторити спробу",
 			"editAnnotation": "Редагувати анотацію",
 			"causeIncidentProcessInstanceId": "ID екземпляра процесу-джерела",
@@ -475,7 +478,10 @@
 				"activitiesHistory": "Історія екземплярів завдань",
 				"canceledInstances": "Скасовані екземпляри активності",
 				"openSubprocess": "Показати викликаний процес",
-				"disabledSubprocess": "Визначення процесу буде отримане під час виконання"
+				"disabledSubprocess": "Визначення процесу буде отримане під час виконання",
+				"notFoundSubprocess": "Викликане визначення процесу не знайдено: його не розгорнуто, або у вас немає прав на його перегляд",
+				"currentSubprocess": "Викликане визначення процесу вже відображається",
+				"unknownSubprocess": "Не вдалося визначити викликане визначення процесу"
 			}
 		},
 		"task": {
@@ -1144,7 +1150,9 @@
 		"ExistingGroupRequestException": "Група вже існує",
 		"VariableModificationException": "Змінна не може бути успішно змінена. Будь ласка, оновіть сторінку та спробуйте знову.",
 		"processNotFound": "Процес з ключем \"{0}\" не знайдено",
+		"tenantNotFound": "Тенант з ID \"{0}\" не існує",
 		"notFoundInstanceId": "Екземпляр процесу з ідентифікатором \"{instanceId}\" не знайдено.\nПосилання з: {refPath}",
+		"notFoundPage": "Сторінку \"{path}\" не знайдено.",
 		"filterSaveError": "Сталася помилка під час спроби зберегти фільтр, перевірте введені дані.",
 		"passwordDoNotMatch": "Паролі не збігаються",
 		"PasswordPolicyException": "Пароль не відповідає політиці",
@@ -1153,6 +1161,8 @@
 		"InvalidValueHistoryTimeToLive": "Необхідно вказати час зберігання історії. Задайте його в моделі або налаштуйте значення за замовчуванням у движку.",
 		"DmnTransformationException": "Ресурс не може бути оновлений. Неможливо перетворити ресурс DMN.",
 		"InvalidGroupIdException": "Ідентифікатор групи містить недопустимі символи. Дозволені лише буквено-цифрові символи (a-z, A-Z, 0-9) або camunda-admin. Будь ласка, виправте запис.",
+		"UnknownEngineException": "Вибраний рушій процесів не налаштовано. Виберіть інший рушій.",
+		"EngineNotReachableException": "Не вдалося підключитися до рушія процесів. Спробуйте пізніше.",
 		"unknown": "Сталася неочікувана помилка. Будь ласка, спробуйте ще раз."
 	},
 	"searches": {
@@ -1204,6 +1214,7 @@
 	},
 	"navigation": {
 		"home": "Головна сторінка",
+		"logoText": "@:login.productName",
 		"menu": "Навігаційне меню",
 		"infoAndHelp": "Інформація та допомога"
 	},
@@ -1361,7 +1372,9 @@
 		"value": "Значення",
 		"inputs": "Вхідні дані",
 		"outputs": "Вихідні дані",
-		"decisionInstanceId": "ID екземпляра рішення"
+		"decisionInstanceId": "ID екземпляра рішення",
+		"notAvailableForTenant": "Це рішення недоступне для орендаря \"{tenantId}\".",
+		"notAvailable": "Це рішення недоступне."
 	},
 	"decision-instance": {
 		"edit": "@:commons.edit"

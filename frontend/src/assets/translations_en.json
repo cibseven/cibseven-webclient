@@ -187,7 +187,8 @@
 		"activateInstance": "Activate process instance",
 		"copySuccess": "Selected value copied",
 		"refreshVersions": "Refresh history versions",
-		"loadVersions": "Load all history versions",
+		"loadAllStatistics": "Load all instance statistics",
+		"loadData": "Load data",
 		"externalProcessStarted": "Process successfully started",
 		"exportInstances": "Export instances",
 		"deleteProcessDefinition": {
@@ -249,7 +250,8 @@
 			"referenced": "Referenced",
 			"running": "Running",
 			"runningAndReferenced": "Running and referenced",			
-			"unknown": "Unknown"
+			"unknown": "Unknown",
+			"loadFailed": "The called process definitions could not be loaded"
 		},
 		"details": {
 			"instancesChain": "Root process",
@@ -343,6 +345,7 @@
 			"dueDate": "Due date",
 			"scheduleAt": "Schedule at",
 			"invalidDateError": "You must enter a valid date",
+			"loadFailed": "The incidents could not be loaded",
 			"retry": "Retry",			
 			"editAnnotation": "Edit annotation",
 			"causeIncidentProcessInstanceId": "Cause process instance ID",
@@ -475,7 +478,10 @@
 			"activitiesHistory": "Executed activity instances",
 			"canceledInstances": "Canceled activity instances",		
 			"openSubprocess": "Show called process definition",
-			"disabledSubprocess": "Called process definition will be resolved at runtime"
+			"disabledSubprocess": "Called process definition will be resolved at runtime",
+			"notFoundSubprocess": "No called process definition found: it is not deployed, or you are not allowed to see it",
+			"currentSubprocess": "The called process definition is the one already shown",
+			"unknownSubprocess": "The called process definition could not be determined"
 		}
 	},
 	"task": {
@@ -1144,7 +1150,9 @@
 		"ExistingGroupRequestException": "Group already exists",
 		"VariableModificationException": "The variable could not be changed successfully. Please refresh the page and try again.",
 		"processNotFound": "Process with key \"{0}\" not found",
+		"tenantNotFound": "Tenant with ID \"{0}\" does not exist",
 		"notFoundInstanceId": "The process instance with ID \"{instanceId}\" could not be found.\nReferenced from: {refPath}",
+		"notFoundPage": "The page \"{path}\" could not be found.",
 		"filterSaveError": "An error occurred  trying to save the filter, please check the data introduced.",
 		"passwordDoNotMatch": "Passwords do not match",
 		"PasswordPolicyException": "Password does not match policy",
@@ -1153,6 +1161,8 @@
 		"InvalidValueHistoryTimeToLive": "A history time to live is required. Set it in the model or configure a default in the engine.",
 		"DmnTransformationException": "The resource could not be updated. Unable to transform DMN resource.",
 		"InvalidGroupIdException": "The group ID is invalid. It may only contain alphanumeric characters (a-z, A-Z, 0-9) or camunda-admin. Please correct your entry.",
+		"UnknownEngineException": "The selected process engine is not configured. Please select another engine.",
+		"EngineNotReachableException": "The process engine could not be reached. Please try again later.",
 		"unknown": "An unexpected error occurred. Please try again."
 		
 	},
@@ -1205,6 +1215,7 @@
 	},
 	"navigation": {
 		"home": "Home",
+		"logoText": "@:login.productName",
 		"menu": "Navigation menu",
 		"infoAndHelp": "Info & help"
 	},
@@ -1362,7 +1373,9 @@
 		"value": "Value",
 		"inputs": "Inputs",
 		"outputs": "Outputs",
-		"decisionInstanceId": "Decision Instance ID"
+		"decisionInstanceId": "Decision Instance ID",
+		"notAvailableForTenant": "This decision is not available for the tenant \"{tenantId}\".",
+		"notAvailable": "This decision is not available."
 	},
 	"decision-instance": {
 		"edit": "@:commons.edit"

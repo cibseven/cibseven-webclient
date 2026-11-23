@@ -17,6 +17,7 @@
 package org.cibseven.webapp.providers;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -26,6 +27,7 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.cibseven.webapp.NamedByteArrayDataSource;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnexpectedTypeException;
@@ -47,8 +49,9 @@ import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import jakarta.activation.DataSource;
 import lombok.extern.slf4j.Slf4j;
@@ -81,7 +84,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 				body.add("valueType", valueType);
 			} else {
 				// Handle JSON/serialized data
-				String jsonContent = new String(data.getBytes());
+				String jsonContent = new String(data.getBytes(), StandardCharsets.UTF_8);
 				HttpHeaders jsonHeaders = new HttpHeaders();
 				jsonHeaders.setContentType(MediaType.APPLICATION_JSON);
 				HttpEntity<String> jsonEntity = new HttpEntity<>(jsonContent, jsonHeaders);
@@ -287,12 +290,19 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	}
 
 	@Override
-	public Map<String, Variable> fetchProcessFormVariables(List<String> variableListName, String key, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException {
-		String url = getEngineRestUrl(user) + "/process-definition/" + key + "/form-variables?deserializeValues=" + deserializeValues + "&variableNames=";
+	public Map<String, Variable> fetchProcessFormVariables(List<String> variableListName, String processDefinitionId, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException {
+		String url = getEngineRestUrl(user) + "/process-definition/" + processDefinitionId + "/form-variables?deserializeValues=" + deserializeValues + "&variableNames=";
 		for(String variable: variableListName) {
 			url += variable + ",";
 		}
 
+		return doGet(url, new ParameterizedTypeReference<Map<String, Variable>>() {}, user).getBody();
+	}
+
+	@Override
+	public Map<String, Variable> fetchProcessFormVariablesByKey(List<String> variableListName, String key, boolean deserializeValues, CIBUser user) throws NoObjectFoundException, SystemException {
+		String url = getEngineRestUrl(user) + "/process-definition/key/" + key + "/form-variables?deserializeValues=" + deserializeValues
+				+ "&variableNames=" + String.join(",", variableListName);
 		return doGet(url, new ParameterizedTypeReference<Map<String, Variable>>() {}, user).getBody();
 	}
 
@@ -312,7 +322,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 					Class<?> clazz =  Class.forName(objectType);
 
 					if (DataSource.class.isAssignableFrom(clazz)) {
-						final ObjectMapper mapper = new ObjectMapper();
+						final ObjectMapper mapper = WebclientJsonMapper.plain();
 						@SuppressWarnings("unchecked")
 						DataSource ds = mapper.convertValue(variable.getValue(), (Class<? extends DataSource>) clazz);
 
@@ -333,7 +343,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		    return new NamedByteArrayDataSource(filename, mimeType, data);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
-		} catch (IOException e) {
+		} catch (JacksonException | IOException e) {
 			throw new SystemException(e);
 		}
 	}
@@ -373,7 +383,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 					Class<?> clazz =  Class.forName(objectType);
 
 					if (DataSource.class.isAssignableFrom(clazz)) {
-						final ObjectMapper mapper = new ObjectMapper();
+						final ObjectMapper mapper = WebclientJsonMapper.plain();
 						@SuppressWarnings("unchecked")
 						DataSource ds = mapper.convertValue(variable.getValue(), (Class<? extends DataSource>) clazz);
 
@@ -390,7 +400,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 			return generateFileResponse(data); //ResponseEntity<>(data, HttpStatus.OK);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
-		} catch (IOException e) {
+		} catch (JacksonException | IOException e) {
 			throw new SystemException(e);
 		}
 	}
@@ -421,7 +431,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	public ProcessStart submitStartFormVariables(String processDefinitionId, List<Variable> formResult, CIBUser user) throws SystemException {
 		//String url = camundaUrl + "/engine-rest/process-definition/key/" + processDefinitionKey + "/submit-form";
 		String url = getEngineRestUrl(user) + "/process-definition/" + processDefinitionId + "/submit-form";
-		ObjectMapper mapper = new ObjectMapper();
+		ObjectMapper mapper = WebclientJsonMapper.plain();
 		ObjectNode variables = mapper.getNodeFactory().objectNode();
 		ObjectNode modifications = mapper.getNodeFactory().objectNode();
 		try {		
@@ -455,7 +465,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 					variablePost.put("type", "Object");
 					try {
 						variablePost.put("value", mapper.writeValueAsString(variable.getValue()));
-					} catch (IOException e) {
+					} catch (JacksonException e) {
 						SystemException se = new SystemException(e);
 						log.info("Exception in submitVariables(...):", se);
 						throw se;
@@ -499,7 +509,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	public void saveVariableInProcessInstanceId(String processInstanceId, List<Variable> variables, CIBUser user) throws SystemException {
 		String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId + "/variables";
 
-		ObjectMapper mapper = new ObjectMapper();
+		ObjectMapper mapper = WebclientJsonMapper.plain();
 		ObjectNode variablesF = mapper.getNodeFactory().objectNode();
 		ObjectNode modifications = mapper.getNodeFactory().objectNode();
 
@@ -524,7 +534,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	public void submitVariables(String processInstanceId, List<Variable> formResult, CIBUser user, String processDefinitionId) throws SystemException {
 		String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId + "/variables";
 
-		ObjectMapper mapper = new ObjectMapper();
+		ObjectMapper mapper = WebclientJsonMapper.plain();
 		ObjectNode variables = mapper.getNodeFactory().objectNode();
 		ObjectNode modifications = mapper.getNodeFactory().objectNode();
 
@@ -558,7 +568,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 				variablePost.put("type", "json");
 				try {
 					variablePost.put("value", mapper.writeValueAsString(variable.getValue()));
-				} catch (IOException e) {
+				} catch (JacksonException e) {
 					SystemException se = new SystemException(e);
 					log.info("Exception in submitVariables(...):", se);
 					throw se;
@@ -570,7 +580,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 				variablePost.put("type", "Object");
 				try {
 					variablePost.put("value", mapper.writeValueAsString(variable.getValue()));
-				} catch (IOException e) {
+				} catch (JacksonException e) {
 					SystemException se = new SystemException(e);
 					log.info("Exception in submitVariables(...):", se);
 					throw se;
@@ -593,6 +603,12 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	public void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/execution/" + executionId + "/localVariables/" + varName;
 		doPut(url, data, user);
+	}
+
+	@Override
+	public void putProcessInstanceVariable(String processInstanceId, String variableName, Map<String, Object> variable, CIBUser user) {
+		String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId + "/variables/" + variableName;
+		doPut(url, variable, user);
 	}
 
 	protected ResponseEntity<byte[]> generateFileResponse(byte[] content) throws IOException {

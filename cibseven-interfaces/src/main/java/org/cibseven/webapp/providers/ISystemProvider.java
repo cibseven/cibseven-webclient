@@ -31,22 +31,22 @@ import java.util.Optional;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.rest.model.Metric;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 public interface ISystemProvider {
 
 	public JsonNode getTelemetryData(CIBUser user);
 	public Collection<Metric> getMetrics(Map<String, Object> queryParams, CIBUser user);
 
-	int getSum(String metricsName, Map<String, Object> queryParams, CIBUser user);
+	public int getSum(String metricsName, Map<String, Object> queryParams, CIBUser user);
 
 	default Map<String, Object> createSumParamsMap(String metric, String startDate, String endDate) {
-	Map<String, Object> params = new HashMap<>();
-	params.put("metric", metric);
-	params.put("startDate", startDate);
-	params.put("endDate", endDate);
-	return params;
-  }
+		Map<String, Object> params = new HashMap<>();
+		params.put("metric", metric);
+		params.put("startDate", startDate);
+		params.put("endDate", endDate);
+		return params;
+	}
 
 	default Collection<Metric> getAnnualMetrics(Map<String, Object> queryParams, CIBUser user) {
 		Collection<Metric> metrics = new ArrayList<>();

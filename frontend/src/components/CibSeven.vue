@@ -22,19 +22,20 @@
       :nav-clusters="navClusters" :utility-clusters="utilityClusters" :user-items="userMenuItems"
       @logout="logout" @select="onHeaderSelect">
       <div class="me-auto d-flex flex-row overflow-hidden" style="min-height: 38px;">
-        <!-- Product name on the home page, the user's own account page and the pages before sign-in; elsewhere the icon and the page title -->
-        <b-navbar-brand ref="brandHome" class="py-0 flex-shrink-0" :aria-label="brandLabel" :title="brandLabel" to="/seven/auth/start">
-          <img v-if="showFullLogo" height="38px" alt="" :src="$root.logoPath"/>
-          <!-- The mark at the size and place it has in the full logo, so it does not change when leaving
-               the start page: the icon file draws it about 1/0.62 times larger (matched by eye at 23.75px;
-               whole pixels look visibly too small or too big). Set on the element: EE renders this template
-               from its own component, where this component's scoped styles do not apply. -->
-          <img v-else style="height: 23.75px; margin: 7px 0 7.25px 9px" alt="" :src="$root.logoIconPath"/>
+        <!-- Always the theme's logo.svg, the one file a theme replaces, so a customer's logo is never replaced by CIB seven's
+             (it is the mark alone, shown as an icon). On the home page, the
+             user's own account page and the pages before sign-in it comes with a text (logoText);
+             elsewhere it stands alone beside the page title. A name too long for the header ends in an ellipsis (the
+             link's tooltip has it in full); the icon never shrinks. Styled by the cib-brand classes below. -->
+        <b-navbar-brand ref="brandHome" class="cib-brand py-0 d-flex align-items-center" :class="{ 'cib-brand-with-name': showLogoText }"
+          :aria-label="brandLabel" :title="brandLabel" to="/seven/auth/start">
+          <img class="cib-brand-icon" alt="" :src="$root.logoPath"/>
+          <span v-if="showLogoText" class="cib-brand-name text-truncate" aria-hidden="true">{{ logoText }}</span>
         </b-navbar-brand>
         <div v-if="pageTitle" style="max-height: 38px; min-width: 0;" class="d-flex align-items-center overflow-hidden flex-shrink-1">
-          <span class="border-start border-secondary py-3 me-2 me-md-3"></span>
+          <span class="border-start border-secondary py-3 me-3"></span>
           <h1 style="line-height: normal"
-          class="h3 m-0 text-secondary text-truncate">{{ pageTitle }}</h1>
+          class="cib-page-title h4 m-0 text-secondary text-truncate">{{ pageTitle }}</h1>
         </div>
         <h1 v-else-if="isStartPage" class="visually-hidden">{{ $t('navigation.home') + ' - ' + $t('navigation.menu') }}</h1>
       </div>
@@ -143,9 +144,16 @@ export default {
     isStartPage: function() {
       return this.$route.name === 'start'
     },
-    // The account page and the pages before sign-in have no page title next to the logo, so they
-    // keep the full one like the start page
-    showFullLogo: function() {
+    // The text beside the logo, the translation key navigation.logoText. A theme whose logo already shows the name
+    // sets it to an empty string. A language without the key shows no text: there is no fallback language, so $t
+    // would return the key itself.
+    logoText: function() {
+      return this.$te('navigation.logoText') ? this.$t('navigation.logoText') : ''
+    },
+    // The account page and the pages before sign-in have no page title next to the icon, so they
+    // show the logo text beside it like the start page
+    showLogoText: function() {
+      if (!this.logoText) return false
       return this.isStartPage || routeNames(this.$route).some(name => ['account', 'login', 'loggedOut', 'setup'].includes(name))
     },
     // The catalog as header clusters: the icon leads to the section, the menu title to its overview page
@@ -156,6 +164,7 @@ export default {
           id: tool.id,
           label: this.$t(tool.title),
           icon: tool.icon,
+          iconImage: tool.iconImage,
           to: single ?? this.getToolDefaultTo(tool),
           // The menu title always opens the overview page, even when it has a single tile
           titleTo: tool.startTo ?? single ?? null,
@@ -386,3 +395,40 @@ export default {
   }
 }
 </script>
+
+<!-- Not scoped: EE renders this template from its own component (CibSevenEE extends CibSeven), where scoped styles
+     do not apply. The cib-brand prefix keeps the global classes to the brand. -->
+<style>
+/* The brand keeps its size beside the page title; with the product name it may shrink, and the name gives way */
+.cib-brand {
+  flex-shrink: 0;
+}
+.cib-brand.cib-brand-with-name {
+  flex-shrink: 1;
+  min-width: 0;
+}
+/* The icon file pads the mark, so 23.75px draws it at the intended size (matched by eye; whole pixels look visibly
+   too small or too big). No left margin: the navbar's own 1rem padding is the space to the edge. */
+.cib-brand-icon {
+  flex-shrink: 0;
+  height: 23.75px;
+  margin: 7px 0 7.25px 0;
+}
+/* 0.75rem (12px) from the icon. The name and the page title sit 1px higher than the flex centre puts them, where
+   their letters line up with the icon by eye; shifted by position, so the header's height and layout stay the same */
+.cib-brand-name {
+  position: relative;
+  top: -1px;
+  margin-left: 0.75rem;
+  min-width: 0;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
+  font-size: 22px;
+  font-weight: 400;
+  line-height: normal;
+  color: var(--bs-dark);
+}
+.cib-page-title {
+  position: relative;
+  top: -1px;
+}
+</style>

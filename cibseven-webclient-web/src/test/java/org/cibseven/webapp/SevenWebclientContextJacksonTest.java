@@ -17,93 +17,136 @@
 package org.cibseven.webapp;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.lang.reflect.Method;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 import java.util.stream.StreamSupport;
 
 import org.cibseven.webapp.config.SevenWebclientProperties;
+import org.cibseven.webapp.rest.CustomRestTemplate;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.converter.HttpMessageConverters;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.exc.StreamConstraintsException;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
- * Guards the date serialization of the ObjectMapper bean (CIB7-1789).
+ * Guards the JSON mapper of the webclient's REST services and of its engine REST client: the date
+ * serialization (CIB7-1789), the parser limit, and that it stays the webclient's own (CIB7-1535).
  */
 class SevenWebclientContextJacksonTest {
 
 	private static final int PARSER_MAX_SIZE = 20000000;
 
 	@Test
-	void writesDatesAsIso8601ByDefault() throws JsonProcessingException {
+	void writesDatesAsIso8601() {
 		// A quoted, parseable ISO-8601 instant; a bare number would mean epoch millis.
 		// Asserted semantically so a future setTimeZone(...) cannot break this test.
-		String json = objectMapper(false).writeValueAsString(new Date(0));
+		String json = jsonMapper(PARSER_MAX_SIZE).writeValueAsString(new Date(0));
 		assertThat(json).startsWith("\"").endsWith("\"");
 		assertThat(OffsetDateTime.parse(json.replace("\"", "")).toInstant()).isEqualTo(Instant.EPOCH);
 	}
 
 	@Test
-	void writesDatesAsEpochMillisWhenConfigured() throws JsonProcessingException {
-		// Opt-out for consumers that adapted to the previous output.
-		assertThat(objectMapper(true).writeValueAsString(new Date(0))).isEqualTo("0");
+	void writesDurationsAsIso8601() {
+		assertThat(jsonMapper(PARSER_MAX_SIZE).writeValueAsString(Duration.ofHours(1))).isEqualTo("\"PT1H\"");
 	}
 
+	/**
+	 * {@code cibseven.webclient.custom.spring.jackson.serialization.write-dates-as-timestamps} was the
+	 * interim opt-out of the ISO-8601 dates; it is gone with Jackson 3, and a leftover setting must
+	 * neither fail the start nor bring the timestamps back.
+	 */
 	@Test
-	void appliesConfiguredParserStringLimit() {
-		// The parser limit must keep working next to the date setting.
-		assertThat(objectMapper(false).getFactory().streamReadConstraints().getMaxStringLength())
-				.isEqualTo(PARSER_MAX_SIZE);
-	}
-
-	@Test
-	void bindsTheDocumentedPropertyKey() throws JsonProcessingException {
-		// Fails if the key is misspelled or no longer bound into SevenWebclientProperties, which
-		// the direct tests above cannot detect.
+	void ignoresTheRemovedWriteDatesAsTimestampsKey() {
 		SevenWebclientProperties properties = new Binder(new MapConfigurationPropertySource(Map.of(
 				"cibseven.webclient.custom.spring.jackson.serialization.write-dates-as-timestamps", "true")))
 				.bindOrCreate("cibseven.webclient", SevenWebclientProperties.class);
-		assertThat(new SevenWebclientContext(properties).objectMapper().writeValueAsString(new Date(0))).isEqualTo("0");
-	}
 
-	@Test
-	void writesDurationsAsIso8601ByDefault() throws JsonProcessingException {
-		// Spring Boot disables WRITE_DURATIONS_AS_TIMESTAMPS alongside the date feature.
-		assertThat(objectMapper(false).writeValueAsString(Duration.ofHours(1))).isEqualTo("\"PT1H\"");
-	}
-
-	@Test
-	@SuppressWarnings("removal")
-	void wiresTheConfiguredMapperIntoTheJsonConverter() throws JsonProcessingException {
-		// The defect was only user-visible through this wiring, so guard it explicitly.
-		SevenWebclientContext context = newContext(false);
-		HttpMessageConverters.ServerBuilder builder = HttpMessageConverters.forServer();
-		context.configureMessageConverters(builder);
-		MappingJackson2HttpMessageConverter json = StreamSupport.stream(builder.build().spliterator(), false)
-				.filter(MappingJackson2HttpMessageConverter.class::isInstance)
-				.map(MappingJackson2HttpMessageConverter.class::cast)
-				.findFirst().orElseThrow();
-		assertThat(json.getObjectMapper().writeValueAsString(new Date(0)))
+		assertThat(new SevenWebclientContext(properties).jsonMapper().writeValueAsString(new Date(0)))
 				.startsWith("\"1970-01-01T00:00:00.000");
 	}
 
-	private ObjectMapper objectMapper(boolean writeDatesAsTimestamps) {
-		return newContext(writeDatesAsTimestamps).objectMapper();
+	@Test
+	void appliesTheConfiguredParserStringLimit() {
+		assertThat(jsonMapper(PARSER_MAX_SIZE).tokenStreamFactory().streamReadConstraints().getMaxStringLength())
+				.isEqualTo(PARSER_MAX_SIZE);
+
+		JsonMapper limited = jsonMapper(10);
+		assertThat(limited.readValue("\"0123456789\"", String.class)).isEqualTo("0123456789");
+		assertThatThrownBy(() -> limited.readValue("\"0123456789A\"", String.class))
+				.isInstanceOf(StreamConstraintsException.class);
 	}
 
-	private SevenWebclientContext newContext(boolean writeDatesAsTimestamps) {
+	@Test
+	void bindsTheParserLimitKey() {
+		SevenWebclientProperties properties = new Binder(new MapConfigurationPropertySource(Map.of(
+				"cibseven.webclient.custom.spring.jackson.parser.max-size", "42")))
+				.bindOrCreate("cibseven.webclient", SevenWebclientProperties.class);
+
+		assertThat(new SevenWebclientContext(properties).jsonMapper().tokenStreamFactory().streamReadConstraints()
+				.getMaxStringLength()).isEqualTo(42);
+	}
+
+	@Test
+	void wiresTheMapperIntoTheJsonConverterOfTheServices() {
+		// The date defect of CIB7-1789 was only user-visible through this wiring, so guard it explicitly.
+		SevenWebclientContext context = newContext(PARSER_MAX_SIZE);
+		HttpMessageConverters.ServerBuilder builder = HttpMessageConverters.forServer();
+		context.configureMessageConverters(builder);
+		JacksonJsonHttpMessageConverter json = StreamSupport.stream(builder.build().spliterator(), false)
+				.filter(JacksonJsonHttpMessageConverter.class::isInstance)
+				.map(JacksonJsonHttpMessageConverter.class::cast)
+				.findFirst().orElseThrow();
+
+		assertThat(json.getMapper()).isSameAs(context.jsonMapper());
+	}
+
+	@Test
+	void wiresTheMapperIntoTheEngineRestClient() {
+		SevenWebclientContext context = newContext(PARSER_MAX_SIZE);
+		CustomRestTemplate template = context.customRestTemplate();
+
+		assertThat(template.getMessageConverters())
+				.filteredOn(JacksonJsonHttpMessageConverter.class::isInstance)
+				.singleElement()
+				.extracting(converter -> ((JacksonJsonHttpMessageConverter) converter).getMapper())
+				.isSameAs(context.jsonMapper());
+	}
+
+	/**
+	 * A {@code JsonMapper} (or Jackson 2 {@code ObjectMapper}) bean would make Spring Boot's own mapper
+	 * back off in an application that embeds the webclient, and with it the application's
+	 * {@code spring.jackson.*} settings.
+	 */
+	@Test
+	void doesNotDeclareAMapperBean() {
+		Method[] beans = Arrays.stream(SevenWebclientContext.class.getDeclaredMethods())
+				.filter(method -> method.isAnnotationPresent(Bean.class))
+				.toArray(Method[]::new);
+
+		assertThat(beans).isNotEmpty();
+		assertThat(beans).noneMatch(method -> method.getReturnType().getName().startsWith("tools.jackson.")
+				|| method.getReturnType().getName().startsWith("com.fasterxml.jackson."));
+	}
+
+	private JsonMapper jsonMapper(int parserMaxSize) {
+		return newContext(parserMaxSize).jsonMapper();
+	}
+
+	private SevenWebclientContext newContext(int parserMaxSize) {
 		SevenWebclientProperties properties = new SevenWebclientProperties();
-		SevenWebclientProperties.Custom.Spring.Jackson jackson = properties.getCustom().getSpring().getJackson();
-		jackson.getParser().setMaxSize(PARSER_MAX_SIZE);
-		jackson.getSerialization().setWriteDatesAsTimestamps(writeDatesAsTimestamps);
+		properties.getCustom().getSpring().getJackson().getParser().setMaxSize(parserMaxSize);
 		return new SevenWebclientContext(properties);
 	}
 }

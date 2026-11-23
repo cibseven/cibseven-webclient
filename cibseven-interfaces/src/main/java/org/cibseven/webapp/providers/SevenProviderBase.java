@@ -18,6 +18,7 @@ package org.cibseven.webapp.providers;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,14 +28,18 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.rest.StandardLogin;
+import org.cibseven.webapp.config.EngineRestSource;
 import org.cibseven.webapp.config.SevenWebclientProperties;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.exception.BatchOperationException;
 import org.cibseven.webapp.exception.DmnTransformationException;
+import org.cibseven.webapp.exception.EngineNotReachableException;
 import org.cibseven.webapp.exception.ExistingGroupRequestException;
 import org.cibseven.webapp.exception.ExistingUserRequestException;
 import org.cibseven.webapp.exception.ExpressionEvaluationException;
@@ -48,6 +53,7 @@ import org.cibseven.webapp.exception.OptimisticLockingException;
 import org.cibseven.webapp.exception.PasswordPolicyException;
 import org.cibseven.webapp.exception.SubmitDeniedException;
 import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.webapp.exception.UnknownEngineException;
 import org.cibseven.webapp.exception.UnsupportedTypeException;
 import org.cibseven.webapp.exception.VariableModificationException;
 import org.cibseven.webapp.exception.WrongDeploymenIdException;
@@ -60,15 +66,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.MultiValueMap;
 
-import com.fasterxml.jackson.core.StreamReadConstraints;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.cibseven.webapp.rest.CustomRestTemplate;
 import lombok.extern.slf4j.Slf4j;
 
@@ -102,7 +107,7 @@ public abstract class SevenProviderBase {
 			// Parse the engine ID format: "url|path|engineName"
 			String[] parts = engineId.split("\\|", 3);
 			if (parts.length == 3) {
-				String restUrl = buildEngineRestUrl(parts[0], parts[1]);
+				String restUrl = getConfiguredEngineRestUrl(parts[0], parts[1]);
 				String engineName = parts[2];
 
 				// Always use base engine REST URL for "default" engine (without /engine/default suffix)
@@ -131,6 +136,22 @@ public abstract class SevenProviderBase {
 	 */
 	protected String getEngineRestUrl() {
 		return buildEngineRestUrl(properties.getEngineRest().getUrl(), properties.getEngineRest().getPath());
+	}
+
+	/**
+	 * The engine REST base URL of the server named by the url and path of an engine id
+	 * {@code url|path|engineName}. Only a server configured in {@code cibseven.webclient.engineRest}
+	 * (the default one or an {@code additionalEngineRest}) is used, with the URL from the configuration.
+	 *
+	 * @throws UnknownEngineException if no configured engine REST server has this url and path
+	 */
+	protected String getConfiguredEngineRestUrl(String url, String path) {
+		EngineRestSource source = properties.getEngineRest().findEngineRestSource(url, path)
+			.orElseThrow(() -> {
+				log.warn("Rejected an engine id whose engine REST server is not configured: {}|{}", url, path);
+				return new UnknownEngineException();
+			});
+		return buildEngineRestUrl(source.getUrl(), source.effectivePath());
 	}
 
 	/**
@@ -178,6 +199,8 @@ public abstract class SevenProviderBase {
 					neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		}
 	}
 
@@ -202,6 +225,8 @@ public abstract class SevenProviderBase {
 					neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		}        
 	}
 
@@ -216,6 +241,8 @@ public abstract class SevenProviderBase {
 			return rest.exchange(builder.build(true).toUri(), HttpMethod.GET, httpEntity(headers), neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		}
 	}
 
@@ -229,6 +256,8 @@ public abstract class SevenProviderBase {
 			return rest.exchange(builder.build().toUri(), HttpMethod.GET, httpEntity(headers), neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		}
 	}
 
@@ -243,6 +272,8 @@ public abstract class SevenProviderBase {
 			return customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		}
 	}
 
@@ -257,6 +288,8 @@ public abstract class SevenProviderBase {
 			return customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		}
 	}
 
@@ -271,6 +304,8 @@ public abstract class SevenProviderBase {
 			return customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		}
 	}
 
@@ -285,6 +320,8 @@ public abstract class SevenProviderBase {
 			return response;
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		}
 	}
 
@@ -306,6 +343,8 @@ public abstract class SevenProviderBase {
 			return customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		}
 	}
 
@@ -318,6 +357,8 @@ public abstract class SevenProviderBase {
 			customRestTemplate.put(builder.build().toUri(), request);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		}
 	}
 
@@ -330,6 +371,8 @@ public abstract class SevenProviderBase {
 			customRestTemplate.put(builder.build().toUri(), request);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		}
 	}
 
@@ -342,6 +385,8 @@ public abstract class SevenProviderBase {
 			customRestTemplate.exchange(builder.build().toUri(), HttpMethod.DELETE, request, String.class);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		}
 	}
 
@@ -356,6 +401,8 @@ public abstract class SevenProviderBase {
 			return customRestTemplate.exchange(builder.build().toUri(), HttpMethod.PATCH, request, neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		}
 	}
 
@@ -370,6 +417,8 @@ public abstract class SevenProviderBase {
 			return customRestTemplate.exchange(builder.build().toUri(), HttpMethod.PATCH, request, neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		}
 	}
 
@@ -387,24 +436,24 @@ public abstract class SevenProviderBase {
 	 *    when the RestTemplate tries to iterate through its converters while another thread is modifying them
 	 * 
 	 * By creating a new RestTemplate instance for each call, we avoid shared state modification
-	 * while still benefiting from the configuration of the customRestTemplate by copying its converters.
+	 * while still benefiting from the configuration of the customRestTemplate by copying its converters
+	 * and its request factory.
 	 * 
 	 * @return A newly configured RestTemplate instance
 	 */
-	// MappingJackson2HttpMessageConverter is Jackson 2; it goes with the Jackson 3 migration
-	@SuppressWarnings("removal")
 	protected RestTemplate createPatchRestTemplate() {
         // Create a new RestTemplate instance instead of modifying the shared one
         RestTemplate restTemplate = new RestTemplate();
 
-        // Configure the ObjectMapper for this specific use case
-        ObjectMapper objectMapper = new ObjectMapper();
+        // Share the request factory, so these calls run on the pooled HTTP client with the configured
+        // timeouts instead of a plain HttpURLConnection, whose read timeout is infinite (CIB7-2206).
+        // When the customRestTemplate has interceptors, its getRequestFactory() already wraps them,
+        // so they apply here too; setting them again on this template would run them twice.
+        restTemplate.setRequestFactory(customRestTemplate.getRequestFactory());
 
-        StreamReadConstraints streamReadConstraints = StreamReadConstraints
-                .builder()
-                .maxStringLength(properties.getCustom().getSpring().getJackson().getParser().getMaxSize())
-                .build();
-        objectMapper.getFactory().setStreamReadConstraints(streamReadConstraints);
+        // A mapper with Jackson 2's defaults, as before, only limited to the configured string length
+        JsonMapper jsonMapper = WebclientJsonMapper.builderWithJackson2Defaults(
+                properties.getCustom().getSpring().getJackson().getParser().getMaxSize()).build();
 
         // Add all converters from the customRestTemplate to the new instance
         // Create a copy of the converters list to avoid concurrent modification issues
@@ -414,9 +463,22 @@ public abstract class SevenProviderBase {
         restTemplate.setMessageConverters(new ArrayList<>(customRestTemplate.getMessageConverters()));
 
         // Add the custom message converter to the new RestTemplate instance
-        restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter(objectMapper));
+        restTemplate.getMessageConverters().add(new JacksonJsonHttpMessageConverter(jsonMapper));
 
         return restTemplate;
+	}
+
+	/**
+	 * Answers a rendered form fetched from engine-rest as {@code text/html;charset=UTF-8}, the way the
+	 * direct provider does. engine-rest sends {@code application/xhtml+xml} without a charset, so a client
+	 * reading this endpoint into a String would fall back to ISO-8859-1. Its headers are not forwarded:
+	 * the body is a decoded String by now, so the engine's Content-Length no longer has to match the bytes
+	 * Spring writes, and Spring computes the length itself when it is absent (CIB7-2206).
+	 */
+	protected static ResponseEntity<String> renderedFormResponse(ResponseEntity<String> engineResponse) {
+		return ResponseEntity.status(engineResponse.getStatusCode())
+				.contentType(new MediaType(MediaType.TEXT_HTML, StandardCharsets.UTF_8))
+				.body(engineResponse.getBody());
 	}
 
 

@@ -16,7 +16,6 @@
  */
 package org.cibseven.webapp.auth;
 
-import java.io.IOException;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Map;
@@ -39,12 +38,13 @@ import org.cibseven.webapp.auth.sso.SsoHelper;
 import org.cibseven.webapp.auth.sso.TokenCache;
 import org.cibseven.webapp.auth.sso.TokenResponse;
 import org.cibseven.webapp.config.SevenWebclientProperties;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.exception.SystemException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -231,14 +231,15 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> implements Lo
 	@Override
 	public User deserialize(String json, String token) {
 		try {
-			ObjectMapper mapper = new ObjectMapper();
-			mapper.addMixIn(SSOUser.class, org.cibseven.webapp.auth.BaseUserProvider.UserSerialization.class);
+			ObjectMapper mapper = WebclientJsonMapper.plain().rebuild()
+				.addMixIn(SSOUser.class, org.cibseven.webapp.auth.BaseUserProvider.UserSerialization.class)
+				.build();
 			SSOUser user = mapper.readValue(json, SSOUser.class);
 			user.setAuthToken(token);
 			return user;
 		} catch (IllegalArgumentException x) { // for example doXigate token used with doXisafe
 			throw new AuthenticationException(json);
-		} catch (IOException x) {
+		} catch (JacksonException x) {
 			throw new SystemException(x);
 		}
 	}
@@ -246,10 +247,11 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> implements Lo
 	@Override
 	public String serialize(User user) {
 		try {
-			ObjectMapper mapper = new ObjectMapper();
-			mapper.addMixIn(SSOUser.class, UserSerialization.class);
+			ObjectMapper mapper = WebclientJsonMapper.plain().rebuild()
+				.addMixIn(SSOUser.class, UserSerialization.class)
+				.build();
 			return mapper.writeValueAsString(user);
-		} catch (JsonProcessingException x) {
+		} catch (JacksonException x) {
 			throw new SystemException(x);
 		}
 	}
@@ -329,9 +331,7 @@ public class OAuth2UserProvider extends BaseUserProvider<SSOLogin> implements Lo
 			}
 			throw new TokenExpiredException();			
 		} catch (IllegalArgumentException | InvalidKeyException | MalformedJwtException e) { //token received from third-party isn't ours, get the userInfo from the defined endpoint on the config file
-			User user = getUserFromAccessToken(token);
-	        
-			return user;
+			return getUserFromAccessToken(token);
 		} catch (JwtException x) {
 			throw new AuthenticationException(token);
 		}

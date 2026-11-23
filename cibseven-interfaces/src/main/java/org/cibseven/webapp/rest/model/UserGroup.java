@@ -17,12 +17,12 @@
 package org.cibseven.webapp.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import org.cibseven.webapp.config.WebclientJsonMapper;
 
 @Data @NoArgsConstructor @AllArgsConstructor @JsonIgnoreProperties(ignoreUnknown = true)
 public class UserGroup {
@@ -30,7 +30,7 @@ public class UserGroup {
 	private String name;
 	private String type;
 	
-	public String json() throws JsonProcessingException {
-		return new ObjectMapper().writeValueAsString(this);
+	public String json() {
+		return WebclientJsonMapper.plain().writeValueAsString(this);
 	}
 }

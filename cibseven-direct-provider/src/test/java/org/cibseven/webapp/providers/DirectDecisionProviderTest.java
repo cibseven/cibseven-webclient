@@ -47,9 +47,10 @@ import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Decision;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
 import org.mockito.Mockito;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 public class DirectDecisionProviderTest {
 
@@ -73,8 +74,7 @@ public class DirectDecisionProviderTest {
 		definitionQuery = mock(DecisionDefinitionQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
 		when(repositoryService.createDecisionDefinitionQuery()).thenReturn(definitionQuery);
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		JacksonConfigurator.configureObjectMapper(objectMapper);
+		ObjectMapper objectMapper = JacksonConfigurator.configureObjectMapper();
 
 		directProviderUtil = Mockito.spy(new DirectProviderUtil());
 		doReturn(processEngine).when(directProviderUtil).getProcessEngine(any(CIBUser.class));
@@ -226,6 +226,85 @@ public class DirectDecisionProviderTest {
 		decisionProvider.updateHistoryTTLByKey(data, "risk", user);
 
 		verify(repositoryService).updateDecisionDefinitionHistoryTimeToLive("dec-1", 30);
+	}
+
+	@Test
+	void getDecisionVersionsByKey_listsTheNewestVersionFirst() {
+		DecisionDefinition definition = mockDefinition("dec-2", "risk", "Risk rating");
+		when(definitionQuery.unlimitedList()).thenReturn(List.of(definition));
+
+		decisionProvider.getDecisionVersionsByKey("risk", Optional.of(true), user);
+
+		InOrder inOrder = Mockito.inOrder(definitionQuery);
+		inOrder.verify(definitionQuery).orderByDecisionDefinitionVersion();
+		inOrder.verify(definitionQuery).desc();
+		inOrder.verify(definitionQuery).unlimitedList();
+	}
+
+	@Test
+	void getDecisionVersionsByKey_countsTheInstancesOfEveryVersionUnlessLazy() {
+		DecisionDefinition version2 = mockDefinition("dec-2", "risk", "Risk rating");
+		DecisionDefinition version1 = mockDefinition("dec-1", "risk", "Risk rating");
+		when(definitionQuery.unlimitedList()).thenReturn(List.of(version2, version1));
+		HistoricDecisionInstanceQuery historyQuery =
+			mock(HistoricDecisionInstanceQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
+		when(historyService.createHistoricDecisionInstanceQuery()).thenReturn(historyQuery);
+		when(historyQuery.count()).thenReturn(5L, 3L);
+
+		Collection<Decision> decisions = decisionProvider.getDecisionVersionsByKey("risk", Optional.empty(), user);
+
+		assertThat(decisions).extracting(Decision::getAllInstances).containsExactly(5L, 3L);
+		verify(historyQuery).decisionDefinitionId("dec-2");
+		verify(historyQuery).decisionDefinitionId("dec-1");
+	}
+
+	@Test
+	void getDecisionVersionsByKey_listsTheVersionsOfATenantsDecision() {
+		// CIB7-2425: the key alone must find a decision that is deployed only for a tenant
+		DecisionDefinition definition = mockDefinition("dec-1", "risk", "Risk rating");
+		when(definition.getTenantId()).thenReturn("tenant-a");
+		when(definitionQuery.unlimitedList()).thenReturn(List.of(definition));
+
+		Collection<Decision> decisions = decisionProvider.getDecisionVersionsByKey("risk", Optional.of(true), user);
+
+		assertThat(decisions).extracting(Decision::getTenantId).containsExactly("tenant-a");
+		verify(definitionQuery).decisionDefinitionKey("risk");
+		verify(definitionQuery, Mockito.never()).withoutTenantId();
+		verify(definitionQuery, Mockito.never()).tenantIdIn(any());
+	}
+
+	@Test
+	void getDecisionVersionsByKey_returnsAnEmptyListWhenNothingMatches() {
+		when(definitionQuery.unlimitedList()).thenReturn(List.of());
+
+		assertThat(decisionProvider.getDecisionVersionsByKey("missing", Optional.of(true), user)).isEmpty();
+	}
+
+	@Test
+	void getDecisionVersionsByKey_skipsTheInstanceCountWhenLazy() {
+		DecisionDefinition definition = mockDefinition("dec-1", "risk", "Risk rating");
+		when(definitionQuery.unlimitedList()).thenReturn(List.of(definition));
+
+		decisionProvider.getDecisionVersionsByKey("risk", Optional.of(true), user);
+
+		verify(historyService, Mockito.never()).createHistoricDecisionInstanceQuery();
+	}
+
+	@Test
+	void getHistoricDecisionInstances_passesFirstResultAndMaxResultsToTheQuery() {
+		HistoricDecisionInstanceQuery historyQuery =
+			mock(HistoricDecisionInstanceQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
+		when(historyService.createHistoricDecisionInstanceQuery()).thenReturn(historyQuery);
+		Map<String, Object> params = new HashMap<>();
+		params.put("decisionDefinitionKey", "risk");
+		// paging values arrive as strings from @RequestParam
+		params.put("firstResult", "2");
+		params.put("maxResults", "2");
+
+		decisionProvider.getHistoricDecisionInstances(params, user);
+
+		verify(historyQuery).listPage(2, 2);
+		verify(historyQuery, Mockito.never()).list();
 	}
 
 	@Test

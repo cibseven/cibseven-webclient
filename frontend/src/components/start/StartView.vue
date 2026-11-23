@@ -149,6 +149,10 @@ export default {
         if (settled) this.redirectIfTasksOnly()
       },
       immediate: true
+    },
+    // A redirect to the start page while it is open reuses it, so mounted() does not show that redirect's error
+    '$route.query'() {
+      this.showRouteError()
     }
   },
   methods: {
@@ -163,6 +167,16 @@ export default {
       if (this.$route.query.errorType) return
       const target = tasksOnlyRedirectTarget(this.tiles, this.groupById.tasks?.defaultTo)
       if (target) this.$router.replace(target)
+    },
+    // Explains the redirect that led here, e.g. a missing permission or an unknown address
+    showRouteError() {
+      if (!this.$route.query.errorType) return
+      this.$nextTick(() => {
+        this.$refs.errorPopup.show({
+          type: this.$route.query.errorType,
+          params: this.$route.query,
+        })
+      })
     }
   },
   mounted() {
@@ -176,14 +190,7 @@ export default {
         subtree: false
       })
     }
-    if (this.$route.query.errorType) {
-      this.$nextTick(() => {
-        this.$refs.errorPopup.show({
-          type: this.$route.query?.errorType,
-          params: this.$route.query,
-        })
-      })
-    }
+    this.showRouteError()
   },
   beforeUnmount() {
     if (this.mutationObserver) {

@@ -538,4 +538,21 @@ public class OAuth2UserProviderTest {
 		assertThat(second).isEqualTo("Bearer provider-access");
 		assertThat(server.getRequestCount()).isEqualTo(afterFirst);
 	}
+
+	/**
+	 * Minted by the 2.2 webclient with {@link #SECRET}: jjwt-jackson wrote the claims and Jackson 2 the
+	 * SSO user JSON. Valid until 2126.
+	 */
+	private static final String SSO_TOKEN_FROM_2_2 =
+		"eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJzc28tZGVtbyIsImV4cCI6NDk0Nzc1NzI2OCwiaWF0IjoxNzk0MTU3MjY4LCJwcm9sb25nYWJsZSI6dHJ1ZSwidmVyaWZ5IjpmYWxzZSwidXNlciI6IntcInR5cGVcIjpcIm9yZy5jaWJzZXZlbi53ZWJhcHAuYXV0aC5zc28uU1NPVXNlclwiLFwidXNlcklEXCI6XCJzc28tZGVtb1wiLFwiZGlzcGxheU5hbWVcIjpcIlNTTyBEw6ttb1wiLFwiZW5naW5lXCI6bnVsbCxcInJlZnJlc2hUb2tlblwiOlwicmVmcmVzaC0xXCJ9In0.7ve_lciAHuCFKtOG_qKIRtQUJ0oyV6ZEQEwDhWz-UgFBD8mfUv8am6AZoSOJF6QoIPMhrNSMCJukR-oQ4TUeww";
+
+	@Test
+	void parse_readsATokenMintedByThe22Webclient() {
+		SSOUser parsed = (SSOUser) provider.parse(SSO_TOKEN_FROM_2_2, provider.getSettings());
+
+		assertThat(parsed.getUserID()).isEqualTo("sso-demo");
+		assertThat(parsed.getDisplayName()).isEqualTo("SSO D\u00ebmo");
+		assertThat(parsed.getRefreshToken()).isEqualTo("refresh-1");
+		assertThat(parsed.getEngine()).isNull();
+	}
 }

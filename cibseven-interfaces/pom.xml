@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.cibseven.webapp</groupId>
 		<artifactId>cibseven-webclient</artifactId>
-		<version>3.0.0-SNAPSHOT</version>
+		<version>3.1.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>cibseven-interfaces</artifactId>
 	<name>CIB seven webclient interfaces</name>
@@ -11,8 +11,8 @@
 
 	<properties>
 		<!-- jacoco:check floors; measured 44.9% line / 27.6% branch. See the root pom for the rules. -->
-		<jacoco.line.coverage.floor>0.42</jacoco.line.coverage.floor>
-		<jacoco.branch.coverage.floor>0.25</jacoco.branch.coverage.floor>
+		<jacoco.line.coverage.floor>0.56</jacoco.line.coverage.floor>
+		<jacoco.branch.coverage.floor>0.45</jacoco.branch.coverage.floor>
 	</properties>
 
 	<dependencies>
@@ -52,6 +52,20 @@
 					<artifactId>swagger-annotations-jakarta</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+
+		<!-- The JSON implementation of jjwt (found through the ServiceLoader). jjwt has no Jackson 3
+		     module, and jjwt-jackson would put Jackson 2 back on the classpath. -->
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-gson</artifactId>
+			<version>${jjwt.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>tools.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
 		</dependency>
 
 		<dependency>

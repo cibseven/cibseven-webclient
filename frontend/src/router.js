@@ -72,6 +72,7 @@ import SystemDiagnostics from '@/components/system/SystemDiagnostics.vue'
 import ExecutionMetrics from '@/components/system/ExecutionMetrics.vue'
 import ModelerView from '@/components/modeler/ModelerView.vue'
 import { redirectToProcessInstance, redirectToProcessDefinition, redirectToTask } from '@/utils/redirects.js'
+import { isModelerEnabled } from '@/utils/config.js'
 
 // The tabs of the user and the group page, by the path of their child route
 const USER_TABS = {
@@ -98,6 +99,8 @@ const appRoutes = [
   },
   {
     path: '/seven', name: 'seven', component: CibSeven, children: [
+      // /seven alone has no page of its own and would show only the header
+      { path: '', name: 'seven-index', redirect: { name: 'start-configurable' } },
       {
         path: 'login', name: 'login', beforeEnter: async function (to) {
           // Back from an external system's logout: wait for the user instead of logging in again
@@ -143,6 +146,8 @@ const appRoutes = [
             })
           },
         }, children: [
+          // /seven/auth alone has no page of its own and would show only the header
+          { path: '', name: 'auth-index', redirect: { name: 'start-configurable' } },
           {
             path: 'no-permission', name: 'no-permission',
             beforeEnter: (to) => ({
@@ -278,7 +283,11 @@ const appRoutes = [
             name: 'decision',
             beforeEnter: permissionsGuard('cockpit'),
             component: DecisionView,
-            props: true,
+            props: route => ({
+              decisionKey: route.params.decisionKey,
+              versionIndex: route.params.versionIndex,
+              tenantId: route.query.tenantId
+            }),
             children: [
               {
                 path: ':versionIndex', name: 'decision-version', component: DecisionDefinitionVersion, props: true
@@ -365,9 +374,30 @@ const appRoutes = [
     props: true,
     component: StartDeployedForm
   },
+  // An address no other route matches: the start page says so, with the navigation, instead of a blank page.
+  // vue-router ranks this below every other route, so routes that library consumers add still match first.
+  {
+    path: '/:pathMatch(.*)*', name: 'not-found',
+    beforeEnter: (to) => ({
+      name: 'start',
+      query: {
+        errorType: 'notFoundPage',
+        path: readablePath(to.fullPath),
+      }
+    })
+  },
 ];
 
 let router = null
+
+// The address as typed, e.g. "my page" rather than "my%20page". The error dialog shows it as text, never as HTML
+function readablePath(fullPath) {
+  try {
+    return decodeURI(fullPath)
+  } catch {
+    return fullPath // A malformed % sequence, e.g. "100%"
+  }
+}
 
 // The child routes of a page's tabs, e.g. 'account/:userId/preferences' named 'accountPreferences'
 function profileTabRoutes(page, tabs) {
@@ -458,7 +488,7 @@ async function setupGuard() {
 }
 
 function modelerGuard(to, from) {
-  if (!router.root?.config?.modelerEnabled) return { name: 'start-configurable' }
+  if (!isModelerEnabled(router.root?.config)) return { name: 'start-configurable' }
   return permissionsGuard('modeler')(to, from)
 }
 

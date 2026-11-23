@@ -78,9 +78,19 @@ They have the lowest precedence, so any configured value overrides them.
 | `springdoc.swagger-ui.operationsSorter`, `tagsSorter` | `alpha` | unsorted |
 | `springdoc.swagger-ui.doc-expansion` | `none` | `list` |
 
-When the webclient is embedded into another Spring Boot application, none of these defaults are set. The webclient
-does define the `objectMapper` bean, though, so Spring Boot does not create its own and the application's
-`spring.jackson.*` settings do not apply to it.
+When the webclient is embedded into another Spring Boot application, none of these defaults are set.
+
+#### JSON
+
+The webclient's REST services and its engine REST client read and write JSON with Jackson 3 and a mapper of their
+own, configured with Jackson 2's defaults so the JSON stays what it was before 3.0 (ISO-8601 dates, unknown
+properties ignored, properties in declaration order). It is not a bean: an application that embeds the webclient
+keeps Spring Boot's own `JsonMapper`, and its `spring.jackson.*` settings apply to that one, not to the webclient's
+services. The only setting of the webclient's mapper is
+`cibseven.webclient.custom.spring.jackson.parser.max-size`, the maximum length of a JSON string value.
+`cibseven.webclient.custom.spring.jackson.serialization.write-dates-as-timestamps`, the interim opt-out that came with
+the ISO-8601 dates, is gone; dates are always written as ISO-8601 strings, and a leftover setting is ignored with a
+warning at startup.
 
 #### Engine REST API Configuration
 

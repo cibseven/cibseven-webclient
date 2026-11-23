@@ -20,7 +20,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Supplier;
+import java.util.function.Function;
 
 import org.cibseven.bpm.BpmPlatform;
 import org.cibseven.bpm.engine.AuthorizationException;
@@ -30,25 +32,31 @@ import org.cibseven.bpm.engine.ProcessEngineException;
 import org.cibseven.bpm.engine.identity.Group;
 import org.cibseven.bpm.engine.identity.Tenant;
 import org.cibseven.bpm.engine.impl.identity.Authentication;
+import org.cibseven.bpm.engine.rest.dto.PatchVariablesDto;
 import org.cibseven.bpm.engine.rest.dto.VariableValueDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.VariableInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.VariableInstanceQueryDto;
 import org.cibseven.bpm.engine.rest.exception.RestException;
 import org.cibseven.bpm.engine.rest.mapper.JacksonConfigurator;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
-import org.cibseven.bpm.engine.runtime.VariableInstance;
 import org.cibseven.bpm.engine.runtime.VariableInstanceQuery;
+import org.cibseven.bpm.engine.variable.VariableMap;
 import org.cibseven.bpm.engine.variable.value.TypedValue;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
 import org.cibseven.bpm.engine.rest.util.EngineUtil;
+import org.cibseven.bpm.engine.rest.dto.AbstractQueryDto;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.cibseven.bpm.engine.query.Query;
 
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
+
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 import lombok.Setter;
 
 public class DirectProviderUtil {
@@ -62,6 +70,7 @@ public class DirectProviderUtil {
 	protected IEngineProvider engineProvider;
 
 	protected ProcessEngine getProcessEngine(String engineId) {
+		engineId = resolveEngineId(engineId);
 		ProcessEngine processEngine = null;
 		if (processEngines.containsKey(engineId))
 			processEngine = processEngines.get(engineId);
@@ -76,9 +85,7 @@ public class DirectProviderUtil {
 					throw new SystemException("No process engine found with name " + engineId);
 			}
 			processEngines.put(engineId, processEngine);
-			ObjectMapper objectMapper = new ObjectMapper();
-			JacksonConfigurator.configureObjectMapper(objectMapper);
-			objectMappers.put(engineId, objectMapper);
+			objectMappers.put(engineId, JacksonConfigurator.configureObjectMapper());
 		}
 		return processEngine;
 	}
@@ -94,15 +101,25 @@ public class DirectProviderUtil {
 	}
 
 	protected ObjectMapper getObjectMapper(String engineId) {
+		engineId = resolveEngineId(engineId);
 		getProcessEngine(engineId);
 		return objectMappers.get(engineId);
 	}
 
 	protected String getEngineId(CIBUser user) {
-		String engineId = user != null ? user.getEngine() : null;
-		// If engine name is provided and not "default", add it to the path
-		if (engineId == null || engineId.isEmpty())
-			engineId = engineProvider.getEffectiveDefaultEngineId();
+		return resolveEngineId(user != null ? user.getEngine() : null);
+	}
+
+	/**
+	 * An unspecified engine (a call without a user and without an X-Process-Engine header, such as
+	 * the setup status asked before the login) resolves to the effective default engine. It must not
+	 * be looked up by the name null: EngineUtil only maps null to the default engine through the
+	 * ProcessEngineProvider SPI, which the webclient on Tomcat and WildFly does not have, and the
+	 * BpmPlatform fallback finds no engine named null (CIB7-2554).
+	 */
+	protected String resolveEngineId(String engineId) {
+		if (IEngineProvider.isEngineUnspecified(engineId) && engineProvider != null)
+			return engineProvider.getEffectiveDefaultEngineId();
 		return engineId;
 	}
 
@@ -135,7 +152,7 @@ public class DirectProviderUtil {
 		if (value != null && !(value instanceof String) && ("json".equalsIgnoreCase(type) || "Object".equalsIgnoreCase(type))) {
 			try {
 				value = getObjectMapper(user).writeValueAsString(value);
-			} catch (JsonProcessingException e) {
+			} catch (JacksonException e) {
 				throw new SystemException("Cannot serialize value of variable " + variable.getName(), e);
 			}
 		}
@@ -151,6 +168,45 @@ public class DirectProviderUtil {
 		if (valueInfo != null)
 			variableValueDto.setValueInfo(valueInfo);
 		return variableValueDto;
+	}
+
+	/** An engine-rest variable value (value, type, valueInfo) as a typed value, converted the way engine-rest converts it. */
+	protected TypedValue toTypedValue(Map<String, Object> variable, String variableName, CIBUser user) {
+		return converting("Cannot convert variable " + variableName, () -> getObjectMapper(user)
+			.convertValue(variable, VariableValueDto.class)
+			.toTypedValue(getProcessEngine(user), getObjectMapper(user)));
+	}
+
+	/** Engine-rest variable values by name as a variable map, converted the way engine-rest converts them. */
+	protected VariableMap toVariableMap(Map<String, VariableValueDto> variables, String what, CIBUser user) {
+		return converting("Cannot modify variables for " + what,
+			() -> VariableValueDto.toMap(variables, getProcessEngine(user), getObjectMapper(user)));
+	}
+
+	/** An engine-rest variable patch body (modifications, deletions) as its DTO. */
+	protected PatchVariablesDto toPatchVariables(Map<String, Object> patch, String what, CIBUser user) {
+		return converting("Cannot modify variables for " + what,
+			() -> getObjectMapper(user).convertValue(patch, PatchVariablesDto.class));
+	}
+
+	/** Every way the engine-rest conversions fail, reported as a SystemException. */
+	private static <T> T converting(String failure, Supplier<T> conversion) {
+		try {
+			return conversion.get();
+		} catch (RestException | IllegalArgumentException | JacksonException | ProcessEngineException e) {
+			throw new SystemException(String.format("%s: %s", failure, e.getMessage()), e);
+		}
+	}
+
+	/** Runs a variable write against the engine like the other variable writes: a missing permission is passed on, any other failure becomes a SystemException. */
+	protected void writeVariables(String what, Runnable write) {
+		try {
+			write.run();
+		} catch (AuthorizationException e) {
+			throw e;
+		} catch (ProcessEngineException e) {
+			throw new SystemException(String.format("Cannot %s: %s", what, e.getMessage()), e);
+		}
 	}
 
 	protected <V extends Object> V runWithoutAuthorization(Supplier<V> action, CIBUser user) {
@@ -233,16 +289,10 @@ public class DirectProviderUtil {
 			query.disableCustomObjectDeserialization();
 		}
 
-		List<VariableInstance> matchingInstances = QueryUtil.list(query, firstResult,
-				maxResults);
-
-		List<Variable> instanceResults = new ArrayList<>();
-		for (VariableInstance instance : matchingInstances) {
-			VariableInstanceDto resultInstanceDto = VariableInstanceDto.fromVariableInstance(instance);
-			VariableHistory resultInstance = convertValue(resultInstanceDto, VariableHistory.class, user);
-			instanceResults.add(resultInstance);
-		}
-		return instanceResults;
+		// VariableHistory, not Variable: the ids (id, processInstanceId, executionId, taskId, ...) are only
+		// mapped by the subclass and would otherwise be dropped from the response
+		return new ArrayList<>(listAndConvert(query, firstResult, maxResults,
+				VariableInstanceDto::fromVariableInstance, VariableHistory.class, user));
 	}
 
 	public TypedValue getTypedValueForTaskVariable(String taskId, String variableName, boolean deserializeValue, CIBUser user) {
@@ -261,6 +311,21 @@ public class DirectProviderUtil {
 			throw new SystemException(errorMessage);
 		}
 		return value;
+	}
+
+	protected <E, D, R> List<R> listAndConvert(Query<?, E> query, Integer firstResult, Integer maxResults,
+			Function<E, D> toIntermediateDto, Class<R> targetClass, CIBUser user) {
+
+		List<E> rawList = QueryUtil.list(query, firstResult, maxResults);
+		List<R> result = new ArrayList<>(rawList.size());
+		for (E item : rawList) {
+			result.add(convertValue(toIntermediateDto.apply(item), targetClass, user));
+		}
+		return result;
+	}
+
+	protected <Q extends AbstractQueryDto<?>> Q parseQueryDto(Object params, Class<Q> queryDtoClass, CIBUser user) {
+		return getObjectMapper(user).convertValue(params, queryDtoClass);
 	}
 
 	protected Integer getFirstResult(Map<String, Object> params) {
@@ -294,5 +359,57 @@ public class DirectProviderUtil {
 			return ((Number) value).intValue();
 		String text = value.toString().trim();
 		return text.isEmpty() ? null : Integer.valueOf(text);
+	}
+
+	/**
+	 * Holds the pagination parameters ({@code firstResult}/{@code maxResults}) extracted
+	 * from a request parameter map, together with the remaining parameters as a
+	 * {@link MultivaluedMap} suitable for building a query DTO.
+	 */
+	public static class PagedParams {
+		private final Integer firstResult;
+		private final Integer maxResults;
+		private final MultivaluedMap<String, String> queryParams;
+
+		PagedParams(Integer firstResult, Integer maxResults, MultivaluedMap<String, String> queryParams) {
+			this.firstResult = firstResult;
+			this.maxResults = maxResults;
+			this.queryParams = queryParams;
+		}
+
+		public Integer getFirstResult() {
+			return firstResult;
+		}
+
+		public Integer getMaxResults() {
+			return maxResults;
+		}
+
+		public MultivaluedMap<String, String> getQueryParams() {
+			return queryParams;
+		}
+	}
+
+	/**
+	 * Extracts {@code firstResult}/{@code maxResults} from the given params and collects
+	 * the remaining entries into a {@link MultivaluedMap}.
+	 */
+	protected PagedParams extractPagedParams(Map<String, Object> params) {
+		return new PagedParams(getFirstResult(params), getMaxResults(params),
+				toMultivaluedMap(withoutPagingParams(params)));
+	}
+
+	/**
+	 * Builds a {@link MultivaluedMap} containing all non-null entries of the given params.
+	 * Null values are left out, as engine-rest never receives them; otherwise they would
+	 * reach the query DTO as the filter value "null".
+	 */
+	protected MultivaluedMap<String, String> toMultivaluedMap(Map<String, Object> params) {
+		MultivaluedMap<String, String> multiValueMap = new MultivaluedHashMap<>();
+		for (Entry<String, Object> entry : params.entrySet()) {
+			if (entry.getValue() != null)
+				multiValueMap.putSingle(entry.getKey(), String.valueOf(entry.getValue()));
+		}
+		return multiValueMap;
 	}
 }

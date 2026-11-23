@@ -21,9 +21,10 @@ import DecisionDefinitionVersion from '@/components/decision/DecisionDefinitionV
 // Both views load the diagram behind a short timeout. Leaving the view before it fires unmounts
 // the viewer, and the delayed call used to throw on the missing ref.
 describe.each([
-  ['DecisionInstance', DecisionInstance, { instance: { decisionDefinitionId: 'd1' } }],
-  ['DecisionDefinitionVersion', DecisionDefinitionVersion, { decision: { id: 'd1' } }]
-])('%s loadDiagram', (_, component, props) => {
+  // the instance opens the decision it evaluated, which need not be the first of its DRD
+  ['DecisionInstance', DecisionInstance, { instance: { decisionDefinitionId: 'd1', decisionDefinitionKey: 'dish' } }, ['<xml/>', 'dish']],
+  ['DecisionDefinitionVersion', DecisionDefinitionVersion, { decision: { id: 'd1' } }, ['<xml/>']]
+])('%s loadDiagram', (_, component, props, shownWith) => {
   const context = diagram => ({
     ...props,
     $refs: { diagram },
@@ -41,7 +42,7 @@ describe.each([
     component.methods.loadDiagram.call(vm)
     await vi.runAllTimersAsync()
 
-    expect(diagram.showDiagram).toHaveBeenCalledWith('<xml/>')
+    expect(diagram.showDiagram).toHaveBeenCalledWith(...shownWith)
     expect(vm.restoreViewboxIfSaved).toHaveBeenCalled()
   })
 

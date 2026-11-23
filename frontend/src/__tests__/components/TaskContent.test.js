@@ -58,8 +58,9 @@ const stubs = {
   }
 }
 
-function mountTaskContent({ task = { id: 't1', name: 'Prepare bank transfer', assignee: null }, mobile = true, props = {}, authorizationEnabled = false, permissions = {}, configPermissions = {} } = {}) {
+function mountTaskContent({ task = { id: 't1', name: 'Prepare bank transfer', assignee: null }, mobile = true, props = {}, authorizationEnabled = false, permissions = {}, configPermissions = {}, attachTo } = {}) {
   return mountWithDefaults(TaskContent, {
+    attachTo,
     props: { task, ...props },
     global: {
       stubs,
@@ -84,7 +85,7 @@ function createTestStore() {
         getters: { getAssigneeByTaskId: () => () => undefined },
         actions: { setSelectedAssignee: () => {} }
       },
-      user: { state: { searchUsers: [], listCandidates: [] } }
+      user: { state: { searchUsers: [], listCandidates: [], userIdMap: {} } }
     },
     mutations: { setCandidateUsers: () => {}, setSearchUsers: () => {} }
   })
@@ -366,6 +367,37 @@ describe('TaskContent - assigning needs permission', () => {
     wrapper.vm.claimCurrentTask()
 
     expect(setSelectedAssignee).toHaveBeenCalledWith({ taskId: 't1', assignee: 'demo' })
+  })
+})
+
+// CIB7-2779: Alt+3 calls focus() on the task title. A heading only takes the focus with a tabindex;
+// -1 lets it be focused from code while keeping it out of the Tab order.
+describe('TaskContent - task title focus', () => {
+  let wrapper
+
+  afterEach(() => {
+    wrapper?.unmount()
+  })
+
+  it.each([
+    ['mobile', true],
+    ['desktop', false],
+  ])('should move the focus to the task title on %s', (_, mobile) => {
+    wrapper = mountTaskContent({ mobile, attachTo: document.body })
+    const title = wrapper.find('h3')
+
+    title.element.focus()
+
+    expect(document.activeElement).toBe(title.element)
+    expect(title.attributes('tabindex')).toBe('-1')
+  })
+
+  it('should focus the title of the newly opened task on desktop', async () => {
+    wrapper = mountTaskContent({ mobile: false, attachTo: document.body })
+
+    await wrapper.setProps({ task: { id: 't2', name: 'Approve invoice', assignee: null } })
+
+    expect(document.activeElement).toBe(wrapper.find('h3').element)
   })
 })
 

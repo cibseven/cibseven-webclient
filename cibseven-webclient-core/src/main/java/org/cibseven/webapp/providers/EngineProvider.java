@@ -35,9 +35,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 import lombok.extern.slf4j.Slf4j;
+
+import tools.jackson.core.JacksonException;
 
 @Slf4j
 @Component
@@ -54,7 +54,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 			if (IEngineProvider.isExternalEngine(engine)) {
 				String[] parts = engine.split("\\|", 3);
 				if (parts.length == 3) {
-					url = buildEngineRestUrl(parts[0], parts[1]);
+					url = getConfiguredEngineRestUrl(parts[0], parts[1]);
 				} else {
 					log.warn("Invalid engine ID format: {}, expected 'url|path|engineName'", engine);
 				}
@@ -99,9 +99,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 		if (engineRestProperties.getAdditionalEngineRest() != null) {
 			for (EngineRestSource additional : engineRestProperties.getAdditionalEngineRest()) {
 				try {
-					String additionalPath = additional.getPath() != null && !additional.getPath().isEmpty() 
-						? additional.getPath() 
-						: "/engine-rest";
+					String additionalPath = additional.effectivePath();
 					String additionalUrl = buildEngineRestUrl(additional.getUrl(), additionalPath) + ENGINE_SUB_PATH;
 					Engine[] additionalEngines = ((ResponseEntity<Engine[]>) doGet(additionalUrl, Engine[].class, null, false)).getBody();
 					
@@ -246,7 +244,7 @@ public class EngineProvider extends SevenProviderBase implements IEngineProvider
 
 			doPost(url, body , null, null);
 
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			SystemException se = new SystemException(e);
 			log.info("Exception in createUser(...):", se);
 			throw se;

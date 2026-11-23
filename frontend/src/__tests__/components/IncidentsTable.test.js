@@ -28,22 +28,34 @@ vi.mock('@/services.js', () => ({
 }))
 
 describe('IncidentsTable - filtering by the selected activity', () => {
-  const context = (overrides = {}) => ({
-    firstResult: 0,
-    maxResults: 50,
-    currentSortBy: 'incidentType',
-    currentSortDesc: false,
-    freeText: '',
-    selectedActivityId: '',
-    externalTaskActivityIds: [],
-    isInstanceView: true,
-    incidents: [],
-    setIncidents: vi.fn(),
-    fetchCount: vi.fn(async () => 1),
-    fetch: vi.fn(async () => []),
-    ...overrides
-  })
+  // The table's own data and methods, with the store, the props and the requests replaced
+  const context = (overrides = {}) => {
+    const vm = {
+      ...IncidentsTable.data.call({ $root: { config: {} } }),
+      selectedActivityId: '',
+      externalTaskActivityIds: [],
+      isInstanceView: true,
+      fetchCount: vi.fn(async () => 1),
+      fetch: vi.fn(async () => []),
+      ...overrides
+    }
+    for (const [name, method] of Object.entries(IncidentsTable.methods)) {
+      if (!(name in vm)) vm[name] = method.bind(vm)
+    }
+    return vm
+  }
   const sentParams = (vm) => vm.fetch.mock.calls[0][0]
+
+  // A subclass or caller that leaves `firstResult` unset loads a first page all the same
+  it('replaces the rows and loads the count when firstResult is not set', async () => {
+    const vm = context({ firstResult: undefined, fetch: vi.fn(async () => [{ id: 'new' }]) })
+    vm.incidents = [{ id: 'old' }]
+
+    await IncidentsTable.methods.loadIncidentsData.call(vm, 'pi1', true)
+
+    expect(vm.incidents).toEqual([{ id: 'new' }])
+    expect(vm.fetchCount).toHaveBeenCalled()
+  })
 
   describe('loadIncidentsData', () => {
     it('sends no activity filter when no activity is selected', async () => {
@@ -77,6 +89,7 @@ describe('IncidentsTable - filtering by the selected activity', () => {
 
       await IncidentsTable.methods.loadIncidentsData.call(vm, 'def1', false)
 
+      expect(vm.loadFailed).toBe(false)
       expect(sentParams(vm)).toMatchObject({ failedActivityId: 'approve', processDefinitionId: 'def1' })
       expect(sentParams(vm)).not.toHaveProperty('activityId')
       expect(vm.fetchCount.mock.calls[0][0]).toMatchObject({ failedActivityId: 'approve' })

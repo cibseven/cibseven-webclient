@@ -29,15 +29,17 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.cibseven.webapp.config.SevenWebclientProperties;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.JsonNodeFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
@@ -68,7 +70,7 @@ public class PluginRegistry {
 	private static final List<String> OPTIONAL_FIELDS = List.of("slots", "styles", "translations");
 
 	private final ResourcePatternResolver resolver;
-	private final ObjectMapper mapper = new ObjectMapper();
+	private final ObjectMapper mapper = WebclientJsonMapper.plain();
 
 	private final Set<String> disabled;
 	private List<ObjectNode> manifests;
@@ -131,7 +133,7 @@ public class PluginRegistry {
 				}
 				ObjectNode manifest = read(resource, folderName);
 				if (manifest == null) continue;
-				String id = manifest.get("id").asText();
+				String id = manifest.get("id").asString();
 				// Only one folder per id can be served, so a second one would get the first one's files
 				if (!ids.add(id)) {
 					log.warn("Ignoring a second plugin with id \"{}\" found at {}", id, resource);
@@ -186,7 +188,7 @@ public class PluginRegistry {
 		}
 		try (InputStream in = resource.getInputStream()) {
 			JsonNode json = mapper.readTree(in);
-			String entry = json.path("entry").asText(null);
+			String entry = json.path("entry").asString(null);
 			if (entry == null || entry.isBlank()) {
 				log.warn("Ignoring plugin \"{}\": its manifest declares no entry", id);
 				return null;
@@ -203,7 +205,7 @@ public class PluginRegistry {
 				if (json.has(field)) manifest.set(field, json.get(field));
 			}
 			return manifest;
-		} catch (IOException e) {
+		} catch (IOException | JacksonException e) {
 			log.warn("Ignoring plugin \"{}\": its manifest could not be read", id, e);
 			return null;
 		}

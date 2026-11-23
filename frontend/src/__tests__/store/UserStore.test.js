@@ -34,7 +34,7 @@ beforeEach(() => {
 createStoreTestSuite('UserStore', UserStore, {
   initialState: (getState) => {
     it('should start with empty candidate and search lists', () => {
-      expect(getState()).toEqual({ listCandidates: [], searchUsers: [] })
+      expect(getState()).toEqual({ listCandidates: [], searchUsers: [], userIdMap: {}, pendingUsersMap: {} })
     })
   },
 
@@ -80,6 +80,59 @@ createStoreTestSuite('UserStore', UserStore, {
         mutation(state, [user({ id: 'b' })])
 
         expect(state.searchUsers.map(u => u.id)).toEqual(['a', 'b'])
+      })
+    },
+
+    addDisplayNames: (mutation, getState) => {
+      it('should cache the loaded users and clear their pending flag', () => {
+        const state = getState()
+        state.pendingUsersMap = { a: true, other: true }
+
+        mutation(state, { userIds: ['a'], userMap: { a: user({ id: 'a' }) } })
+
+        expect(state.userIdMap).toEqual({ a: user({ id: 'a' }) })
+        expect(state.pendingUsersMap).toEqual({ other: true })
+      })
+
+      // Unknown users are cached as null so that the next poll does not ask for them again.
+      it('should cache ids missing from the response as null', () => {
+        const state = getState()
+        state.pendingUsersMap = { ghost: true }
+
+        mutation(state, { userIds: ['ghost'], userMap: {} })
+
+        expect(state.userIdMap).toEqual({ ghost: null })
+        expect(state.pendingUsersMap).toEqual({})
+      })
+
+      it('should keep users cached earlier', () => {
+        const state = getState()
+        state.userIdMap = { old: user({ id: 'old' }) }
+
+        mutation(state, { userIds: ['a'], userMap: { a: user({ id: 'a' }) } })
+
+        expect(Object.keys(state.userIdMap)).toEqual(['old', 'a'])
+      })
+    },
+
+    markPendingUsers: (mutation, getState) => {
+      it('should flag the given ids as pending', () => {
+        const state = getState()
+
+        mutation(state, ['a', 'b'])
+
+        expect(state.pendingUsersMap).toEqual({ a: true, b: true })
+      })
+    },
+
+    clearPendingUsers: (mutation, getState) => {
+      it('should remove only the given ids from the pending flags', () => {
+        const state = getState()
+        state.pendingUsersMap = { a: true, b: true }
+
+        mutation(state, ['a'])
+
+        expect(state.pendingUsersMap).toEqual({ b: true })
       })
     }
   },
@@ -194,6 +247,89 @@ createStoreTestSuite('UserStore', UserStore, {
 
         expect(result).toEqual({})
         expect(AdminService.findUsers).not.toHaveBeenCalled()
+      })
+    },
+    
+    addUsersByIds: (action, getContext) => {
+      const contextReturning = (userMap) => {
+        const context = getContext()
+        context.dispatch = vi.fn(() => Promise.resolve(userMap))
+        return context
+      }
+
+      it('should fetch the missing ids once each, skipping unassigned tasks', async () => {
+        const userMap = { a: user({ id: 'a' }) }
+        const context = contextReturning(userMap)
+
+        await action(context, ['a', null, 'a', undefined])
+
+        expect(context.dispatch).toHaveBeenCalledWith('fetchUsersByIds', ['a'])
+        expect(context.commit).toHaveBeenCalledWith('addDisplayNames', { userIds: ['a'], userMap })
+      })
+
+      // Marking before the request keeps a second call (e.g. the next poll) from asking again.
+      it('should mark the ids as pending before fetching them', async () => {
+        const context = contextReturning({})
+        context.dispatch = vi.fn(() => {
+          expect(context.commit).toHaveBeenCalledWith('markPendingUsers', ['a', 'b'])
+          return Promise.resolve({})
+        })
+
+        await action(context, ['a', 'b'])
+
+        expect(context.dispatch).toHaveBeenCalledOnce()
+      })
+
+      it('should not fetch ids that are already cached, including unknown ones', async () => {
+        const context = contextReturning({})
+        context.state.userIdMap = { a: user({ id: 'a' }), ghost: null }
+
+        await action(context, ['a', 'ghost'])
+
+        expect(context.dispatch).not.toHaveBeenCalled()
+        expect(context.commit).not.toHaveBeenCalled()
+      })
+
+      it('should not fetch ids whose request is still pending', async () => {
+        const context = contextReturning({})
+        context.state.pendingUsersMap = { a: true }
+
+        await action(context, ['a', 'b'])
+
+        expect(context.dispatch).toHaveBeenCalledWith('fetchUsersByIds', ['b'])
+      })
+
+      it('should do nothing for an empty list', async () => {
+        const context = contextReturning({})
+
+        await action(context, [])
+
+        expect(context.dispatch).not.toHaveBeenCalled()
+        expect(context.commit).not.toHaveBeenCalled()
+      })
+
+      // User ids are case-sensitive (CIB7-136): "Demo" in the cache says nothing about "demo".
+      it('should treat ids differing only in case as different users', async () => {
+        const context = contextReturning({ demo: user({ id: 'demo' }) })
+        context.state.userIdMap = { Demo: user({ id: 'Demo' }) }
+
+        await action(context, ['demo'])
+
+        expect(context.dispatch).toHaveBeenCalledWith('fetchUsersByIds', ['demo'])
+      })
+
+      // A failed request must not leave the ids pending forever, so the next poll retries them.
+      it('should clear the pending flags and not cache anything when the request fails', async () => {
+        const context = getContext()
+        context.dispatch = vi.fn(() => Promise.reject(new Error('boom')))
+        const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+        await action(context, ['a'])
+
+        expect(context.commit).toHaveBeenCalledWith('clearPendingUsers', ['a'])
+        expect(context.commit).not.toHaveBeenCalledWith('addDisplayNames', expect.anything())
+        expect(consoleError).toHaveBeenCalled()
+        consoleError.mockRestore()
       })
     }
   }

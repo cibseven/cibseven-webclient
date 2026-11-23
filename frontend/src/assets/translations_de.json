@@ -187,7 +187,8 @@
 		"activateInstance": "Prozessausführung aktivieren",
 		"copySuccess": "Ausgewählter Wert kopiert",
 		"refreshVersions": "Historische Versionen aktualisieren",
-		"loadVersions": "Alle Versionen der Historie laden",
+		"loadAllStatistics": "Alle Instanzstatistiken laden",
+		"loadData": "Daten laden",
 		"externalProcessStarted": "Prozess erfolgreich gestarted",
 		"exportInstances": "Instanzen exportieren",
 		"deleteProcessDefinition": {
@@ -249,7 +250,8 @@
 			"referenced": "Referenziert",
 			"running": "Laufend",
 			"runningAndReferenced": "Laufend und referenziert",
-			"unknown": "Unbekannt"
+			"unknown": "Unbekannt",
+			"loadFailed": "Die aufgerufenen Prozessdefinitionen konnten nicht geladen werden"
 		},
 		"details": {
 			"instancesChain": "Hauptprozess",
@@ -343,6 +345,7 @@
 			"dueDate": "Fälligkeitsdatum",
 			"scheduleAt": "Planen um",
 			"invalidDateError": "Sie müssen ein gültiges Datum eingeben",
+			"loadFailed": "Die Vorfälle konnten nicht geladen werden",
 			"retry": "Wiederholen",
 			"editAnnotation": "Anmerkung bearbeiten",
 			"causeIncidentProcessInstanceId": "Ursächliche Prozessinstanz-ID",
@@ -475,7 +478,10 @@
 			"activitiesHistory": "Ausgeführte Aktivitätsinstanzen",
 			"canceledInstances": "Abgebrochene Aktivitätsinstanzen",
 			"openSubprocess": "Aufgerufene Prozessdefinition anzeigen",
-			"disabledSubprocess": "Die Prozessdefinition wird zur Laufzeit ermittelt"
+			"disabledSubprocess": "Die Prozessdefinition wird zur Laufzeit ermittelt",
+			"notFoundSubprocess": "Keine aufgerufene Prozessdefinition gefunden: Sie ist nicht deployt, oder Sie dürfen sie nicht sehen",
+			"currentSubprocess": "Die aufgerufene Prozessdefinition wird bereits angezeigt",
+			"unknownSubprocess": "Die aufgerufene Prozessdefinition konnte nicht ermittelt werden"
 		}
 	},
 	"task": {
@@ -1144,7 +1150,9 @@
 		"ExistingGroupRequestException": "Die Gruppe existiert bereits",
 		"VariableModificationException": "Die Variable konnte nicht erfolgreich geändert werden. Bitte aktualisieren Sie die Seite und versuchen Sie es erneut.",
 		"processNotFound": "Prozess mit Schlüssel \"{0}\" nicht gefunden",
+		"tenantNotFound": "Mandant mit der ID \"{0}\" existiert nicht",
 		"notFoundInstanceId": "Die Prozessinstanz mit der ID \"{instanceId}\" konnte nicht gefunden werden.\nReferenziert von: {refPath}",
+		"notFoundPage": "Die Seite \"{path}\" konnte nicht gefunden werden.",
 		"filterSaveError": "Beim Speichern des Filters ist ein Fehler aufgetreten, bitte überprüfen Sie die eingegebenen Daten.",
 		"passwordDoNotMatch": "Passwörter stimmen nicht überein",
 		"PasswordPolicyException": "Passwort stimmt nicht mit Richtlinie überein",
@@ -1153,6 +1161,8 @@
 		"InvalidValueHistoryTimeToLive": "Eine Lebensdauer des Verlaufs (History Time To Live) ist erforderlich. Legen Sie sie im Modell fest oder konfigurieren Sie einen Standardwert in der Engine.",
 		"DmnTransformationException": "Die Ressource konnte nicht aktualisiert werden. DMN-Ressource kann nicht transformiert werden.",
 		"InvalidGroupIdException": "Die Gruppen-ID ist ungültig. Sie darf nur alphanumerische Zeichen (a-z, A-Z, 0-9) enthalten oder camunda-admin sein. Bitte korrigieren Sie Ihre Eingabe.",
+		"UnknownEngineException": "Die ausgewählte Process Engine ist nicht konfiguriert. Bitte wählen Sie eine andere Engine aus.",
+		"EngineNotReachableException": "Die Process Engine ist nicht erreichbar. Bitte versuchen Sie es später erneut.",
 		"unknown": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
 	},
 	"searches": {
@@ -1204,6 +1214,7 @@
 	},
 	"navigation": {
 		"home": "Startseite",
+		"logoText": "@:login.productName",
 		"menu": "Navigationsmenü",
 		"infoAndHelp": "Infos & Hilfe"
 	},
@@ -1362,7 +1373,9 @@
 		"value": "Wert",
 		"inputs": "Eingaben",
 		"outputs": "Ausgaben",
-		"decisionInstanceId": "Entscheidungsinstanz-ID"
+		"decisionInstanceId": "Entscheidungsinstanz-ID",
+		"notAvailableForTenant": "Diese Entscheidung ist für den Mandanten \"{tenantId}\" nicht verfügbar.",
+		"notAvailable": "Diese Entscheidung ist nicht verfügbar."
 	},
 	"decision-instance": {
 		"edit": "@:commons.edit"

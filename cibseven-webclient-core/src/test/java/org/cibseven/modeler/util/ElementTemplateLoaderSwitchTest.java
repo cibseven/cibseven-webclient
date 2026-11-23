@@ -36,8 +36,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.transaction.PlatformTransactionManager;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  * The engine creates the element templates table, unless it has no webclient tables: then the
  * webclient does not wait for the table, nor logs an error for it (CIB7-2464). Loading runs after
@@ -56,7 +54,7 @@ class ElementTemplateLoaderSwitchTest {
 		properties.getModeler().getTemplates().setPaths(List.of("classpath:templates/*.json"));
 		properties.getModeler().getTemplates().setSchemaReadyMaxAttempts(30);
 		properties.getModeler().getTemplates().setSchemaReadyRetryDelayMs(0);
-		loader = new ElementTemplateLoader(repository, new ObjectMapper(), properties,
+		loader = new ElementTemplateLoader(repository, properties,
 			mock(PlatformTransactionManager.class), resources, extensions);
 	}
 

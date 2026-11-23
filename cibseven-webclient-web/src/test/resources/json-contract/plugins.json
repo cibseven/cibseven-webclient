@@ -1,0 +1,1 @@
+{"plugins":[{"id":"contract-demo","entry":"main.js","apiVersion":["2.2","3.0"],"slots":["process-instance-tab","task-sidebar"],"styles":["styles.css"],"translations":{"en":"translations_en.json","de":"translations_de.json"}}]}

@@ -17,17 +17,24 @@
 package org.cibseven.webapp.providers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.nio.charset.StandardCharsets;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.config.EngineRestSource;
 import org.cibseven.webapp.exception.InvalidValueHistoryTimeToLive;
 import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.webapp.exception.UnknownEngineException;
+import org.cibseven.webapp.rest.CustomRestTemplate;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.HttpServerErrorException;
 
@@ -82,6 +89,22 @@ public class SevenProviderBaseTest {
         return HttpServerErrorException.create(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error",
             HttpHeaders.EMPTY, body.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
     }
+
+    // ---------- per-call RestTemplate (CIB7-2206) ----------
+
+    @Test
+    public void createPatchRestTemplate_sharesTheRequestFactoryOfTheCustomRestTemplate() {
+        HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
+        TestProvider provider = new TestProvider();
+        ReflectionTestUtils.setField(provider, "customRestTemplate", new CustomRestTemplate(factory));
+
+        assertSame(factory, provider.createPatchRestTemplate().getRequestFactory());
+    }
+
+    // the request going out through the configured client is tested against a mock engine in
+    // cibseven-webclient-core: SevenProviderBaseHttpClientTest
+
+    // ---------- engine REST URL ----------
 
     @Test
     public void testGetEngineRestUrl_DefaultPath() {
@@ -150,6 +173,7 @@ public class SevenProviderBaseTest {
         TestProvider provider = new TestProvider();
         provider.properties.getEngineRest().setUrl("http://localhost:8080");
         provider.properties.getEngineRest().setPath("/engine-rest");
+        addEngineRestSource(provider, "http://remote:9090", "/custom-path");
 
         CIBUser user = mock(CIBUser.class);
         when(user.getEngine()).thenReturn("http://remote:9090|/custom-path|myengine");
@@ -163,6 +187,7 @@ public class SevenProviderBaseTest {
         TestProvider provider = new TestProvider();
         provider.properties.getEngineRest().setUrl("http://localhost:8080");
         provider.properties.getEngineRest().setPath("/engine-rest");
+        addEngineRestSource(provider, "http://remote:9090", "/custom-path");
 
         CIBUser user = mock(CIBUser.class);
         when(user.getEngine()).thenReturn("http://remote:9090/|custom-path|myengine");
@@ -253,6 +278,7 @@ public class SevenProviderBaseTest {
         TestProvider provider = new TestProvider();
         provider.properties.getEngineRest().setUrl("http://localhost:8080");
         provider.properties.getEngineRest().setPath("/engine-rest");
+        addEngineRestSource(provider, "http://remote:9090", "/custom-path");
 
         CIBUser user = mock(CIBUser.class);
         // Pipe format with "default" as engine name
@@ -261,5 +287,72 @@ public class SevenProviderBaseTest {
         String result = provider.getEngineRestUrl(user);
         // Should use base engine REST URL for "default" engine (without /engine/default suffix)
         assertEquals("http://remote:9090/custom-path", result);
+    }
+
+    @Test
+    public void testGetEngineRestUrl_WithUser_PipeFormatUnconfiguredServer_IsRejected() {
+        TestProvider provider = new TestProvider();
+        provider.properties.getEngineRest().setUrl("http://localhost:8080");
+        provider.properties.getEngineRest().setPath("/engine-rest");
+        addEngineRestSource(provider, "http://remote:9090", "/custom-path");
+
+        CIBUser user = mock(CIBUser.class);
+        when(user.getEngine()).thenReturn("http://unknown.example:8080|/engine-rest|default");
+
+        UnknownEngineException e = assertThrows(UnknownEngineException.class, () -> provider.getEngineRestUrl(user));
+        assertFalse(e.getMessage().contains("unknown.example"), "the message must not repeat the requested url");
+    }
+
+    @Test
+    public void testGetEngineRestUrl_WithUser_PipeFormatConfiguredUrlOtherPath_IsRejected() {
+        TestProvider provider = new TestProvider();
+        provider.properties.getEngineRest().setUrl("http://localhost:8080");
+        provider.properties.getEngineRest().setPath("/engine-rest");
+        addEngineRestSource(provider, "http://remote:9090", "/custom-path");
+
+        CIBUser user = mock(CIBUser.class);
+        when(user.getEngine()).thenReturn("http://remote:9090|/other-path|myengine");
+
+        assertThrows(UnknownEngineException.class, () -> provider.getEngineRestUrl(user));
+    }
+
+    @Test
+    public void testGetEngineRestUrl_WithUser_PipeFormatWithoutAdditionalSources_IsRejected() {
+        TestProvider provider = new TestProvider();
+        provider.properties.getEngineRest().setUrl("http://localhost:8080");
+        provider.properties.getEngineRest().setPath("/engine-rest");
+
+        CIBUser user = mock(CIBUser.class);
+        when(user.getEngine()).thenReturn("http://other.example:8080|/engine-rest|default");
+
+        assertThrows(UnknownEngineException.class, () -> provider.getEngineRestUrl(user));
+    }
+
+    @Test
+    public void testGetEngineRestUrl_WithUser_PipeFormatNamingDefaultServer() {
+        TestProvider provider = new TestProvider();
+        provider.properties.getEngineRest().setUrl("http://localhost:8080/");
+        provider.properties.getEngineRest().setPath("/engine-rest");
+
+        CIBUser user = mock(CIBUser.class);
+        when(user.getEngine()).thenReturn("http://localhost:8080|engine-rest|myengine");
+
+        assertEquals("http://localhost:8080/engine-rest/engine/myengine", provider.getEngineRestUrl(user));
+    }
+
+    @Test
+    public void testGetConfiguredEngineRestUrl_BuildsUrlFromConfiguration() {
+        TestProvider provider = new TestProvider();
+        // A configured source without a path serves /engine-rest
+        addEngineRestSource(provider, "http://remote:9090/", null);
+
+        assertEquals("http://remote:9090/engine-rest", provider.getConfiguredEngineRestUrl("http://remote:9090", ""));
+    }
+
+    private static void addEngineRestSource(TestProvider provider, String url, String path) {
+        EngineRestSource source = new EngineRestSource();
+        source.setUrl(url);
+        source.setPath(path);
+        provider.properties.getEngineRest().getAdditionalEngineRest().add(source);
     }
 }

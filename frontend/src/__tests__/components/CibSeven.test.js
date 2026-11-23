@@ -17,6 +17,8 @@
 import { describe, it, expect, vi } from 'vitest'
 import { shallowMount } from '@vue/test-utils'
 import CibSeven from '@/components/CibSeven.vue'
+import { createI18n } from 'vue-i18n'
+import enMessages from '@/assets/translations_en.json'
 
 // Mock services
 vi.mock('@/services.js', () => ({
@@ -55,6 +57,147 @@ describe('CibSeven.vue', () => {
 
     it('offers no banner without a logged-in user', () => {
       expect(mountShell(null).findComponent({ name: 'PluginSlot' }).exists()).toBe(false)
+    })
+  })
+
+  // The theme's icon is always used. On the start, account and sign-in pages it comes with the logo text
+  // (navigation.logoText); elsewhere it stands alone beside the page title
+  describe('brand', () => {
+    const mountBrand = (routeName, { matched = [], productNamePageTitle, messages = { 'navigation.logoText': 'ACME Flow' } } = {}) => shallowMount(CibSeven, {
+      global: {
+        mocks: {
+          user: { id: 'demo' }, header: 'true', logoPath: 'themes/acme/logo.svg',
+          $t: key => messages[key] ?? key, $te: key => key in messages,
+          $route: { path: '/seven/auth/x', name: routeName, meta: { title: 'page.title' }, matched },
+          config: { permissions: {}, layout: {}, supportedLanguages: [], productNamePageTitle },
+          $store: { state: { process: { list: [] } }, getters: {}, dispatch: vi.fn(() => Promise.resolve()) }
+        },
+        provide: { isMobile: false },
+        stubs: {
+          'router-view': true, 'b-modal': true, PluginSlot: true,
+          CIBHeaderFlow: { template: '<header><slot></slot></header>' },
+          'b-navbar-brand': { template: '<a class="brand"><slot></slot></a>' }
+        }
+      }
+    })
+
+    it.each(['start', 'account', 'login', 'loggedOut', 'setup'])('shows the icon with the logo text on the %s page', (routeName) => {
+      const wrapper = mountBrand(routeName)
+
+      const brand = wrapper.find('.brand')
+      expect(brand.findAll('img')).toHaveLength(1)
+      expect(brand.find('img').attributes('src')).toBe('themes/acme/logo.svg')
+      expect(brand.text()).toBe('ACME Flow')
+    })
+
+    it('shows the icon with the logo text on every tab of the account page', () => {
+      const matched = [{ name: 'seven' }, { name: 'auth' }, { name: 'account' }, { name: 'accountPreferences' }]
+      expect(mountBrand('accountPreferences', { matched }).find('.brand').text()).toBe('ACME Flow')
+    })
+
+    it.each(['tasklist', 'adminUser'])('shows just the icon, without the logo text, on the %s page', (routeName) => {
+      const brand = mountBrand(routeName).find('.brand')
+
+      expect(brand.find('img').attributes('src')).toBe('themes/acme/logo.svg')
+      expect(brand.find('span').exists()).toBe(false)
+      expect(brand.text()).toBe('')
+    })
+
+    // The global cib-brand classes carry the design (Segoe UI, 22px, regular, dark name; 23.75px icon), as EE renders
+    // this template from its own component, where scoped styles would not apply
+    it('styles the brand through its global classes, not inline', () => {
+      const brand = mountBrand('start').find('.brand')
+
+      expect(brand.classes()).toContain('cib-brand')
+      expect(brand.find('img').classes()).toEqual(['cib-brand-icon'])
+      expect(brand.find('span').classes()).toContain('cib-brand-name')
+      expect(brand.find('img').attributes('style')).toBeUndefined()
+      expect(brand.find('span').attributes('style')).toBeUndefined()
+    })
+
+    // .cib-brand-with-name lets the brand shrink; text-truncate ends the name in an ellipsis
+    it('ends a logo text too long for the header in an ellipsis', () => {
+      const brand = mountBrand('start', { messages: { 'navigation.logoText': 'Acme Process Automation Platform' } }).find('.brand')
+
+      expect(brand.classes()).toContain('cib-brand-with-name')
+      expect(brand.find('span').classes()).toContain('text-truncate')
+    })
+
+    // The gap to the icon (0.75rem) and the 1px lift are global CSS of these classes, so a utility margin must not
+    // add to the gap, and EE, which renders this template, gets both
+    it('sets the name apart from the icon and lifts it through its class, not a spacing utility', () => {
+      const name = mountBrand('start').find('.brand span')
+      expect(name.classes()).toContain('cib-brand-name')
+      expect(name.classes().filter(c => /^m[se]?-\d$/.test(c))).toEqual([])
+    })
+
+    it('lifts the page title through its class', () => {
+      const title = mountBrand('tasklist').find('h1')
+      expect(title.text()).toBe('page.title')
+      expect(title.classes()).toContain('cib-page-title')
+    })
+
+    it('keeps the icon-only brand from shrinking beside the page title', () => {
+      expect(mountBrand('tasklist').find('.brand').classes()).not.toContain('cib-brand-with-name')
+    })
+
+    it('takes the text from navigation.logoText, not from productNamePageTitle', () => {
+      const brand = mountBrand('start', { productNamePageTitle: 'Configured Name', messages: { 'navigation.logoText': 'ACME' } }).find('.brand')
+      expect(brand.text()).toBe('ACME')
+    })
+
+    // A theme whose logo already shows the name switches the text off, so the name does not appear twice
+    it.each(['start', 'account', 'login'])('shows just the icon on the %s page when navigation.logoText is empty', (routeName) => {
+      const brand = mountBrand(routeName, { productNamePageTitle: 'ACME Flow', messages: { 'navigation.logoText': '' } }).find('.brand')
+
+      expect(brand.find('img').attributes('src')).toBe('themes/acme/logo.svg')
+      expect(brand.find('span').exists()).toBe(false)
+      expect(brand.classes()).not.toContain('cib-brand-with-name')
+    })
+
+    // vue-i18n has no fallback language here and returns a missing key as it is: "navigation.logoText" must
+    // not end up beside the logo in a language without the key, which shows the icon alone
+    it.each(['start', 'login'])('shows just the icon on the %s page in a language without navigation.logoText', (routeName) => {
+      const brand = mountBrand(routeName, { productNamePageTitle: 'ACME Flow', messages: { 'login.productName': 'ACME' } }).find('.brand')
+
+      expect(brand.find('span').exists()).toBe(false)
+      expect(brand.text()).toBe('')
+    })
+
+    it('still names the product in the label of the link when the text is switched off', () => {
+      const wrapper = mountBrand('start', { productNamePageTitle: 'ACME Flow', messages: { 'navigation.logoText': '' } })
+
+      expect(wrapper.vm.brandLabel).toBe('ACME Flow - navigation.home')
+    })
+
+    // With the real translations: the key follows login.productName (a theme's own product name included),
+    // and an empty string from a theme's translations really is empty, not the key
+    describe('navigation.logoText in the translations', () => {
+      const translate = (themeMessages = {}) => {
+        const i18n = createI18n({ legacy: false, locale: 'en', missingWarn: false, fallbackWarn: false, messages: { en: enMessages } })
+        i18n.global.mergeLocaleMessage('en', themeMessages)
+        return i18n.global.t('navigation.logoText')
+      }
+
+      it('is the product name by default', () => {
+        expect(translate()).toBe('CIB seven')
+      })
+
+      it("follows a theme's own product name", () => {
+        expect(translate({ login: { productName: 'ACME Flow' } })).toBe('ACME Flow')
+      })
+
+      it('is empty when a theme sets it to an empty string', () => {
+        expect(translate({ navigation: { logoText: '' } })).toBe('')
+      })
+    })
+
+    it('sets the page title as an h4 beside the icon', () => {
+      const title = mountBrand('tasklist').find('h1')
+
+      expect(title.text()).toBe('page.title')
+      expect(title.classes()).toContain('h4')
+      expect(title.classes()).not.toContain('h3')
     })
   })
 
@@ -318,22 +461,6 @@ describe('CibSeven.vue', () => {
     // Used as the logo's aria-label and tooltip
     it('labels the logo with the product name and where it leads', () => {
       expect(CibSeven.computed.brandLabel.call({ productName: 'CIB seven', $t: key => key })).toBe('CIB seven - navigation.home')
-    })
-
-    it('shows the full logo on the start page, the account page and the pages before sign-in, the icon elsewhere', () => {
-      const full = (name) => CibSeven.computed.showFullLogo.call({ $route: { name }, isStartPage: name === 'start' })
-      expect(full('start')).toBe(true)
-      expect(full('account')).toBe(true)
-      expect(full('login')).toBe(true)
-      expect(full('loggedOut')).toBe(true)
-      expect(full('setup')).toBe(true)
-      expect(full('tasklist')).toBe(false)
-      expect(full('adminUser')).toBe(false)
-    })
-
-    it('shows the full logo on every tab of the account page', () => {
-      const $route = { name: 'accountPreferences', matched: [{ name: 'seven' }, { name: 'auth' }, { name: 'account' }, { name: 'accountPreferences' }] }
-      expect(CibSeven.computed.showFullLogo.call({ $route, isStartPage: false })).toBe(true)
     })
 
     it('should generate helpMenuItems with configured links', () => {

@@ -14,8 +14,8 @@ import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.PasswordPolicyRequest;
 import org.cibseven.webapp.rest.model.PasswordPolicyResponse;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 

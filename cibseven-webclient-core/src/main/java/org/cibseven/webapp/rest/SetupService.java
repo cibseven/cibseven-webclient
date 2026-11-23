@@ -18,6 +18,7 @@ package org.cibseven.webapp.rest;
 
 import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.providers.BpmProvider;
+import org.cibseven.webapp.providers.IEngineProvider;
 import org.cibseven.webapp.rest.model.NewUser;
 import org.cibseven.webapp.rest.model.PasswordPolicyRequest;
 import org.cibseven.webapp.rest.model.PasswordPolicyResponse;
@@ -38,7 +39,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * Setup service for initial system configuration.
- * These endpoints do NOT require authentication and are only accessible when no users exist in the system.
+ * These endpoints do NOT require authentication. The setup is only open while the engine is not
+ * configured yet: its identity service is writable, it holds no users, groups or authorizations,
+ * and no administrators are configured (adminUsers / adminGroups besides camunda-admin). The direct
+ * provider decides this with the engine's InitialSetupUtil (CIB7-2885). The default provider asks
+ * engine-rest's setup endpoint and follows what the connected engine decides; engines that contain
+ * InitialSetupUtil apply this rule, older ones their own.
  */
 @ApiResponses({
 	@ApiResponse(responseCode = "500", description = "An unexpected system error occurred")
@@ -49,6 +55,9 @@ public class SetupService extends BaseService implements InitializingBean {
 
 	@Autowired BpmProvider bpmProvider;
 
+	@Autowired(required = false)
+	protected SevenWebclientProperties properties = new SevenWebclientProperties();
+
 	// Initial setup is only available for internal providers, not for external identity
 	// providers like LDAP, ADFS, or SSO where users are managed externally.
 	private static final String SEVEN_USER_PROVIDER = "org.cibseven.webapp.auth.SevenUserProvider";
@@ -58,7 +67,7 @@ public class SetupService extends BaseService implements InitializingBean {
 	}
 
 	/**
-	 * Check if initial setup is required (no users exist in the system).
+	 * Check if initial setup is required (the engine is not configured yet, see the class comment).
 	 * This endpoint does NOT require authentication.
 	 * 
 	 * Setup is only required when using the internal SevenUserProvider.
@@ -69,7 +78,7 @@ public class SetupService extends BaseService implements InitializingBean {
 	 */
 	@Operation(
 		summary = "Check if initial setup is required",
-		description = "Returns whether the system needs initial setup (no users exist)")
+		description = "Returns whether the engine needs initial setup (no users, groups or authorizations exist and no administrators are configured)")
 	@ApiResponse(responseCode = "200", description = "Setup status returned successfully")
 	@GetMapping("/status")
 	public boolean requiresSetup(
@@ -79,26 +88,26 @@ public class SetupService extends BaseService implements InitializingBean {
 		if (!SEVEN_USER_PROVIDER.equals(properties.getUser().getProvider())) {
 			return false;
 		}
-		return bpmProvider.requiresSetup(engineId);
+		return bpmProvider.requiresSetup(setupEngine(engineId));
 	}
 
 	/**
-	 * Create the initial admin user. This endpoint only works when no users exist
-	 * and when using the internal SevenUserProvider.
+	 * Create the initial admin user. This endpoint only works while the engine is not configured
+	 * yet (see the class comment) and when using the internal SevenUserProvider.
 	 * This endpoint does NOT require authentication.
 	 * 
 	 * The backend will handle group creation, authorization setup, and group membership.
 	 * 
 	 * @param newUser The user to create with profile and credentials
 	 * @param engineId The process engine to use (from X-Process-Engine header)
-	 * @return Success response or error if users already exist or external provider is used
+	 * @return Success response or error if the engine is configured already or external provider is used
 	 */
 	@Operation(
 		summary = "Create initial admin user",
-		description = "Creates the first admin user. Only works when no users exist in the system. The backend handles group and authorization setup.")
+		description = "Creates the first admin user. Only works while the engine is not configured yet (no users, groups or authorizations exist and no administrators are configured). The backend handles group and authorization setup.")
 	@ApiResponses({
 		@ApiResponse(responseCode = "201", description = "User created successfully"),
-		@ApiResponse(responseCode = "403", description = "Setup not allowed - users already exist or external identity provider is used")
+		@ApiResponse(responseCode = "403", description = "Setup not allowed - the engine is configured already or external identity provider is used")
 	})
 	@PostMapping("/user")
 	public ResponseEntity<Void> createInitialUser(
@@ -108,14 +117,26 @@ public class SetupService extends BaseService implements InitializingBean {
 		if (!SEVEN_USER_PROVIDER.equals(properties.getUser().getProvider())) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
-		if (!bpmProvider.requiresSetup(engineId)) {
+		String setupEngine = setupEngine(engineId);
+		if (!bpmProvider.requiresSetup(setupEngine)) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
 
 		// Create the admin user - backend handles group and authorization setup
-		bpmProvider.createSetupUser(newUser, engineId);
-		
+		bpmProvider.createSetupUser(newUser, setupEngine);
+
 		return ResponseEntity.status(HttpStatus.CREATED).build();
+	}
+
+	/**
+	 * The engine to set up, the same for every provider (CIB7-2554): the engine named in
+	 * X-Process-Engine, otherwise the effective default engine (the engine named "default",
+	 * otherwise the first one by name). Each engine that is not configured yet can be set up.
+	 */
+	private String setupEngine(String requestedEngine) {
+		return IEngineProvider.isEngineUnspecified(requestedEngine)
+			? bpmProvider.getEngineProvider().getEffectiveDefaultEngineId()
+			: requestedEngine;
 	}
 
 	@PostMapping("/validate-password")

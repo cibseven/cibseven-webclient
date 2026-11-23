@@ -16,7 +16,6 @@
  */
 package org.cibseven.webapp.auth;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Base64;
 import javax.crypto.SecretKey;
@@ -29,6 +28,7 @@ import org.cibseven.webapp.auth.exception.TokenExpiredException;
 import org.cibseven.webapp.auth.providers.JwtUserProvider;
 import org.cibseven.webapp.auth.utils.EngineTokenUtils;
 import org.cibseven.webapp.auth.rest.StandardLogin;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.exception.ErrorMessage;
 import org.cibseven.webapp.exception.SystemException;
 import org.springframework.http.HttpEntity;
@@ -40,9 +40,9 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -97,14 +97,15 @@ public class GenericUserProvider extends BaseUserProvider<StandardLogin> {
 	@Override
 	public User deserialize(String json, String token) {
 		try {
-			ObjectMapper mapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
-					false);
+			ObjectMapper mapper = WebclientJsonMapper.plain().rebuild()
+				.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+				.build();
 			CIBUser user = mapper.readValue(json, CIBUser.class);
 			user.setAuthToken(token);
 			return user;
 		} catch (IllegalArgumentException x) {
 			throw new AuthenticationException(json);
-		} catch (IOException x) {
+		} catch (JacksonException x) {
 			throw new SystemException(x);
 		}
 	}
@@ -112,10 +113,11 @@ public class GenericUserProvider extends BaseUserProvider<StandardLogin> {
 	@Override
 	public String serialize(User user) {
 		try {
-			ObjectMapper mapper = new ObjectMapper();
-			mapper.addMixIn(CIBUser.class, UserSerialization.class);
+			ObjectMapper mapper = WebclientJsonMapper.plain().rebuild()
+				.addMixIn(CIBUser.class, UserSerialization.class)
+				.build();
 			return mapper.writeValueAsString(user);
-		} catch (JsonProcessingException x) {
+		} catch (JacksonException x) {
 			throw new SystemException(x);
 		}
 	}
@@ -139,14 +141,14 @@ public class GenericUserProvider extends BaseUserProvider<StandardLogin> {
 					throw new NullPointerException();
 				return body.getAuthToken();
 			} catch (HttpClientErrorException e) {
-				ObjectMapper mapper = new ObjectMapper();
+				ObjectMapper mapper = WebclientJsonMapper.plain();
 				try {
 					ErrorMessage message = mapper.readValue(e.getResponseBodyAsString(), ErrorMessage.class);
 					if (message.getType().equals("TokenExpiredException") && message.getParams().length > 0)
 						return message.getParams()[0].toString();
 					else
 						return null;
-				} catch (IOException ex) {
+				} catch (JacksonException ex) {
 					log.debug("Webclient getSelfInfo response couldn't be parsed", ex);
 					return null;
 				}

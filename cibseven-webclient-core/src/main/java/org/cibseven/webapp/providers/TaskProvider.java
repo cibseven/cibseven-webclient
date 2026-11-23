@@ -30,6 +30,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.IdentityLink;
@@ -45,10 +46,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -58,7 +60,7 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 
 	@Autowired private IVariableProvider variableProvider;
 
-	private final ObjectMapper objectMapper = new ObjectMapper();
+	private final ObjectMapper objectMapper = WebclientJsonMapper.plain();
 
 	@Override
 	public Collection<Task> findTasks(String filter, CIBUser user) {
@@ -124,7 +126,7 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 		try {
 			String filteredTask = objectMapper.writeValueAsString(taskUpdate);
 			doPut(url, filteredTask, user);
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			throw new SystemException(e);
 		}
 	}
@@ -147,6 +149,24 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	public Map<String, Object> findLocalVariables(String taskId, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/task/" + taskId + "/localVariables";
 		return ((ResponseEntity<Map>) doGet(url, Map.class, user, false)).getBody();
+	}
+
+	@Override
+	public void modifyLocalVariables(String taskId, Map<String, Object> patch, CIBUser user) {
+		String url = getEngineRestUrl(user) + "/task/" + taskId + "/localVariables";
+		doPost(url, patch, String.class, user);
+	}
+
+	@Override
+	public void putLocalVariable(String taskId, String variableName, Map<String, Object> variable, CIBUser user) {
+		String url = getEngineRestUrl(user) + "/task/" + taskId + "/localVariables/" + variableName;
+		doPut(url, variable, user);
+	}
+
+	@Override
+	public void deleteLocalVariable(String taskId, String variableName, CIBUser user) {
+		String url = getEngineRestUrl(user) + "/task/" + taskId + "/localVariables/" + variableName;
+		doDelete(url, user);
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -222,7 +242,7 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 				enrichTasksWithVariables(tasks, variableNames, user);
 			}
 			return tasks;
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			SystemException se = new SystemException(e);
 			log.info("Exception in getTasksFiltered(...):", se);
 			throw se;
@@ -286,7 +306,7 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 				throw new NullPointerException();
 			}
 			return body.get("count").asInt();
-		} catch (JsonProcessingException e) {
+		} catch (JacksonException e) {
 			SystemException se = new SystemException(e);
 			log.info("Exception in findTasksCountByFilter(...):", se);
 			throw se;
@@ -363,7 +383,7 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 	@Override
 	public ResponseEntity<String> getRenderedForm(String taskId, Map<String, Object> params, CIBUser user) {
 		String url = URLUtils.buildUrlWithParams(getEngineRestUrl(user) + "/task/" + taskId + "/rendered-form", params);
-		return doGetWithHeader(url, String.class, user, true, MediaType.ALL);
+		return renderedFormResponse(doGetWithHeader(url, String.class, user, true, MediaType.ALL));
 	}
 
 	@Override

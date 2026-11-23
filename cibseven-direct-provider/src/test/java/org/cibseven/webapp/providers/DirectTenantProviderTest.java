@@ -43,7 +43,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 public class DirectTenantProviderTest {
 
@@ -64,8 +64,7 @@ public class DirectTenantProviderTest {
 		tenantQuery = mock(TenantQuery.class, withSettings().defaultAnswer(RETURNS_SELF));
 		when(identityService.createTenantQuery()).thenReturn(tenantQuery);
 
-		ObjectMapper objectMapper = new ObjectMapper();
-		JacksonConfigurator.configureObjectMapper(objectMapper);
+		ObjectMapper objectMapper = JacksonConfigurator.configureObjectMapper();
 
 		directProviderUtil = Mockito.spy(new DirectProviderUtil());
 		doReturn(processEngine).when(directProviderUtil).getProcessEngine(any(CIBUser.class));
@@ -101,6 +100,15 @@ public class DirectTenantProviderTest {
 
 		assertThat(tenant.getId()).isEqualTo("tenant-a");
 		verify(tenantQuery).tenantId("tenant-a");
+	}
+
+	@Test
+	void fetchTenant_throwsWhenTheTenantDoesNotExist() {
+		when(tenantQuery.singleResult()).thenReturn(null);
+
+		// answered as 404 by the ExceptionConverter, like engine-rest does for the same id
+		assertThatThrownBy(() -> tenantProvider.fetchTenant("missing", user))
+			.isInstanceOf(NoObjectFoundException.class);
 	}
 
 	@Test

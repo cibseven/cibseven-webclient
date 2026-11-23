@@ -16,6 +16,7 @@
  */
 package org.cibseven.webapp.auth.utils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 import org.cibseven.webapp.auth.CIBUser;
@@ -24,8 +25,9 @@ import org.cibseven.webapp.auth.User;
 import org.cibseven.webapp.auth.providers.JwtUserProvider.TokenSettings;
 import org.cibseven.webapp.config.EngineRestProperties;
 import org.cibseven.webapp.config.EngineRestSource;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -80,61 +82,16 @@ public class EngineTokenUtils {
 			return defaultSettings;
 		}
 		
-		String engineUrl = parts[0];
-		String enginePath = parts[1];
-		
-		// Look for matching additional engine configuration
-		if (engineRestProperties != null && engineRestProperties.getAdditionalEngineRest() != null) {
-			for (EngineRestSource source : engineRestProperties.getAdditionalEngineRest()) {
-				if (matchesEngineSource(source, engineUrl, enginePath)) {
-					if (source.getJwtSecret() != null && !source.getJwtSecret().isEmpty()) {
-						// Use engine-specific JWT secret
-						return new JwtTokenSettings(source.getJwtSecret(), validMinutes, prolongMinutes);
-					}
-					break;
-				}
-			}
+		if (engineRestProperties == null) {
+			return defaultSettings;
 		}
-		
-		// No custom secret found, use default
-		return defaultSettings;
-	}
-	
-	/**
-	 * Checks if an EngineRestSource matches the given URL and path.
-	 * 
-	 * @param source The EngineRestSource to check
-	 * @param url The URL to match against
-	 * @param path The path to match against
-	 * @return true if the source matches the URL and path, false otherwise
-	 */
-	private static boolean matchesEngineSource(EngineRestSource source, String url, String path) {
-		if (source.getUrl() == null) {
-			return false;
-		}
-		
-		// Normalize URLs for comparison (remove trailing slashes)
-		String sourceUrl = source.getUrl().endsWith("/") 
-			? source.getUrl().substring(0, source.getUrl().length() - 1) 
-			: source.getUrl();
-		String compareUrl = url.endsWith("/") 
-			? url.substring(0, url.length() - 1) 
-			: url;
-		
-		if (!sourceUrl.equals(compareUrl)) {
-			return false;
-		}
-		
-		// Normalize paths for comparison
-		String sourcePath = source.getPath() != null && !source.getPath().isEmpty() 
-			? source.getPath() 
-			: "/engine-rest";
-		if (!sourcePath.startsWith("/")) {
-			sourcePath = "/" + sourcePath;
-		}
-		String comparePath = path.startsWith("/") ? path : "/" + path;
-		
-		return sourcePath.equals(comparePath);
+
+		// Use the engine-specific JWT secret of the matching engine REST source, if it has one
+		return engineRestProperties.findEngineRestSource(parts[0], parts[1])
+			.map(EngineRestSource::getJwtSecret)
+			.filter(secret -> !secret.isEmpty())
+			.<TokenSettings>map(secret -> new JwtTokenSettings(secret, validMinutes, prolongMinutes))
+			.orElse(defaultSettings);
 	}
 	
 	/**
@@ -156,17 +113,17 @@ public class EngineTokenUtils {
 			}
 			
 			// Decode the payload (middle part)
-			String payload = new String(Base64.getUrlDecoder().decode(parts[1]));
-			ObjectMapper mapper = new ObjectMapper();
+			String payload = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
+			ObjectMapper mapper = WebclientJsonMapper.plain();
 			var claims = mapper.readTree(payload);
 			
 			// Extract user JSON and parse engine from it
 			var userNode = claims.get("user");
-			if (userNode != null && userNode.isTextual()) {
-				var userData = mapper.readTree(userNode.asText());
+			if (userNode != null && userNode.isString()) {
+				var userData = mapper.readTree(userNode.asString());
 				var engineNode = userData.get("engine");
-				if (engineNode != null && engineNode.isTextual()) {
-					return engineNode.asText();
+				if (engineNode != null && engineNode.isString()) {
+					return engineNode.asString();
 				}
 			}
 		} catch (Exception e) {

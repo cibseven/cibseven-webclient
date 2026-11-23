@@ -24,13 +24,18 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.util.List;
 
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import okhttp3.mockwebserver.RecordedRequest;
 
+import org.cibseven.webapp.config.EngineRestSource;
+import org.cibseven.webapp.exception.UnknownEngineException;
 import org.cibseven.webapp.rest.TestRestTemplateConfiguration;
+import org.cibseven.webapp.rest.model.Engine;
 import org.cibseven.webapp.rest.model.EngineConfiguration;
+import org.cibseven.webapp.rest.model.NewUser;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,7 +55,7 @@ public class EngineProviderTest {
 		mockWebServer.start();
 
 		provider = new EngineProvider();
-		ReflectionTestUtils.setField(provider, "customRestTemplate", TestRestTemplateConfiguration.jackson2CustomRestTemplate());
+		ReflectionTestUtils.setField(provider, "customRestTemplate", TestRestTemplateConfiguration.webclientCustomRestTemplate());
 		provider.properties.getEngineRest().setUrl("http://localhost:" + mockWebServer.getPort());
 		provider.properties.getEngineRest().setPath("/engine-rest");
 		provider.properties.getCustom().getSpring().getJackson().getParser().setMaxSize(20_000_000);
@@ -317,5 +322,62 @@ public class EngineProviderTest {
 		RecordedRequest request = mockWebServer.takeRequest();
 		assertEquals("/engine-rest/engine/myEngine/setup/status", request.getPath());
 		assertTrue(result);
+	}
+
+	@Test
+	public void testRequiresSetup_withUnconfiguredEngineRestServer_isRejectedWithoutARequest() {
+		// The mock server itself, but under a url that is not configured
+		String engineId = "http://127.0.0.1:" + mockWebServer.getPort() + "|/engine-rest|default";
+
+		assertThrows(UnknownEngineException.class, () -> provider.requiresSetup(engineId));
+		assertEquals(0, mockWebServer.getRequestCount());
+	}
+
+	@Test
+	public void testCreateSetupUser_withUnconfiguredEngineRestServer_isRejectedWithoutARequest() {
+		String engineId = "http://127.0.0.1:" + mockWebServer.getPort() + "|/engine-rest|default";
+
+		assertThrows(UnknownEngineException.class, () -> provider.createSetupUser(new NewUser(), engineId));
+		assertEquals(0, mockWebServer.getRequestCount());
+	}
+
+	@Test
+	public void testRequiresSetup_withConfiguredAdditionalEngineRestServer_callsIt() throws InterruptedException {
+		EngineRestSource additional = new EngineRestSource();
+		additional.setUrl("http://127.0.0.1:" + mockWebServer.getPort() + "/");
+		additional.setPath("other-rest");
+		provider.properties.getEngineRest().getAdditionalEngineRest().add(additional);
+		mockWebServer.enqueue(new MockResponse()
+				.setBody("true")
+				.addHeader("Content-Type", "application/json"));
+
+		Boolean result = provider.requiresSetup("http://127.0.0.1:" + mockWebServer.getPort() + "|/other-rest|default");
+
+		RecordedRequest request = mockWebServer.takeRequest();
+		assertEquals("/other-rest/setup/status", request.getPath());
+		assertTrue(result);
+	}
+
+	@Test
+	public void testGetProcessEngineDefinitions_additionalPathWithoutLeadingSlash_isNormalizedInTheEngineId() throws InterruptedException {
+		String additionalUrl = "http://127.0.0.1:" + mockWebServer.getPort();
+		EngineRestSource additional = new EngineRestSource();
+		additional.setUrl(additionalUrl);
+		additional.setPath("other-rest");
+		provider.properties.getEngineRest().getAdditionalEngineRest().add(additional);
+		String engines = "[{\"name\":\"default\"}]";
+		mockWebServer.enqueue(new MockResponse().setBody(engines).addHeader("Content-Type", "application/json"));
+		mockWebServer.enqueue(new MockResponse().setBody(engines).addHeader("Content-Type", "application/json"));
+
+		List<Engine> result = List.copyOf(provider.getProcessEngineDefinitions());
+
+		assertEquals("/engine-rest/engine", mockWebServer.takeRequest().getPath());
+		assertEquals("/other-rest/engine", mockWebServer.takeRequest().getPath());
+		assertEquals(2, result.size());
+		Engine additionalEngine = result.get(1);
+		assertEquals("/other-rest", additionalEngine.getPath());
+		assertEquals(additionalUrl + "|/other-rest|default", additionalEngine.getId());
+		// the id the client sends back names the configured server
+		assertTrue(provider.properties.getEngineRest().findEngineRestSource(additionalUrl, additionalEngine.getPath()).isPresent());
 	}
 }
