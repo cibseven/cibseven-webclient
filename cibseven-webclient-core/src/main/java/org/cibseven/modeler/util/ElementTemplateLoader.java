@@ -269,7 +269,7 @@ public class ElementTemplateLoader implements DisposableBean {
 			return Upsert.INSERTED;
 		}
 		if (stored.getOrigin() != ElementTemplateOrigin.DEFAULT_JSON || isSet(stored.getCreatedBy()) || isSet(stored.getUpdatedBy())) {
-			log.info("Element template '{}' is kept as stored: a user has created or changed it", source.getTemplateId());
+			log.debug("Element template '{}' is kept as stored: a user has created or changed it", source.getTemplateId());
 			return Upsert.SKIPPED;
 		}
 		// Only what the source declares; visibility and the audit fields stay
