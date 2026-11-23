@@ -19,9 +19,12 @@ package org.cibseven.webapp.rest;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.exception.ErrorMessage;
 import org.cibseven.webapp.providers.BpmProvider;
 
 public class BaseService {
@@ -35,5 +38,16 @@ public class BaseService {
 
 	protected CIBUser checkAuthorization(HttpServletRequest rq, boolean basicAuthAllowed) {
 		return baseUserProvider.checkAuthorization(rq, basicAuthAllowed);
+	}
+
+	/**
+	 * An error answer in the shape the frontend reads (see {@code utils/error.js}): an {@link ErrorMessage}
+	 * typed after the cause, whose only param is the given text. Pass a text you chose, never
+	 * {@code cause.getMessage()}: engine exceptions carry technical details that are not for the user.
+	 */
+	@SuppressWarnings("unchecked")
+	protected <T> ResponseEntity<T> errorResponse(Exception cause, String message, HttpStatus status) {
+		ErrorMessage body = new ErrorMessage(cause.getClass().getSimpleName(), new Object[] { message });
+		return (ResponseEntity<T>) ResponseEntity.status(status).body(body);
 	}
 }

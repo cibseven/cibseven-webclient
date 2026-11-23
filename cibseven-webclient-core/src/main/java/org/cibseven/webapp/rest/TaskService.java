@@ -404,7 +404,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	      CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
 	      logger.info("[INFO] Submit variables in task with name=" + taskName + " and ID=" + taskId + " (" + getClass().getSimpleName() + ")");
 	      Task task = bpmProvider.findTaskById(taskId, userAuth);
-	      if (!task.getAssignee().equals(userAuth.getUserID())) {
+	      if (task.getAssignee() == null || !task.getAssignee().equals(userAuth.getUserID())) {
 	        throw new AccessDeniedException("The user submiting the task is not the one assigned");
 	      }
 	      
@@ -418,12 +418,21 @@ public class TaskService extends BaseService implements InitializingBean {
 	      return ResponseEntity.ok("ok");
 	    } catch (Exception e) {
 	      logger.info("[INFO] Exception when submiting variables in task with name=" + taskName + " and ID=" + taskId + " (" + getClass().getSimpleName() + ")", e);
-	      if (e instanceof NoObjectFoundException) return generateErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
 	      if (e instanceof TokenExpiredException) throw e;
-	      else return generateErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+	      // Controlled texts only: the catch-all also catches engine exceptions with technical messages
+	      if (e instanceof NoObjectFoundException)
+	        return errorResponse(e, "The task or its process instance no longer exists.", HttpStatus.NOT_FOUND);
+	      if (e instanceof AccessDeniedException)
+	        return errorResponse(e, "The task is not assigned to the user who submits it.", HttpStatus.BAD_REQUEST);
+	      return errorResponse(e, "The form could not be submitted.", HttpStatus.BAD_REQUEST);
 	    }
 	  }
-	  
+
+	  /**
+	   * @deprecated answers with a plain-string body the frontend cannot read; use
+	   * {@link #errorResponse(Exception, String, HttpStatus)} with a controlled text.
+	   */
+	  @Deprecated
 	  @SuppressWarnings("unchecked")
 	  protected <T> ResponseEntity<T> generateErrorResponse(String message, HttpStatus status) {
 	    ResponseEntity<?> response = ResponseEntity.status(status).body(message);

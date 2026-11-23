@@ -890,8 +890,10 @@ public class ProcessService extends BaseService implements InitializingBean {
 			bpmProvider.saveVariableInProcessInstanceId(processInstanceId, variables, userAuth);    
 			return ResponseEntity.ok("ok");
 		} catch (Exception e) {
-			if (e instanceof NoObjectFoundException) return generateErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
-			else return generateErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+			// Controlled texts only: the catch-all also catches engine exceptions with technical messages
+			if (e instanceof NoObjectFoundException)
+				return errorResponse(e, "The process instance no longer exists.", HttpStatus.NOT_FOUND);
+			return errorResponse(e, "The variables could not be saved.", HttpStatus.BAD_REQUEST);
 		}
 	}
  
@@ -903,11 +905,17 @@ public class ProcessService extends BaseService implements InitializingBean {
 			Variable variable = bpmProvider.fetchVariableByProcessInstanceId(processInstanceId, variableName, userAuth);    
 			return ResponseEntity.ok(variable);
 		} catch (Exception e) {
-			if (e instanceof NoObjectFoundException) return generateErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
-			else return generateErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+			if (e instanceof NoObjectFoundException)
+				return errorResponse(e, "The process instance or the variable does not exist.", HttpStatus.NOT_FOUND);
+			return errorResponse(e, "The variable could not be read.", HttpStatus.BAD_REQUEST);
 		}
-		}
+	}
 
+	/**
+	 * @deprecated answers with a plain-string body the frontend cannot read; use
+	 * {@link #errorResponse(Exception, String, HttpStatus)} with a controlled text.
+	 */
+	@Deprecated
 	@SuppressWarnings("unchecked")
 	protected <T> ResponseEntity<T> generateErrorResponse(String message, HttpStatus status) {
 		ResponseEntity<?> response = ResponseEntity.status(status).body(message);
