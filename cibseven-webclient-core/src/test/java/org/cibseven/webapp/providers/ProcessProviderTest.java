@@ -27,20 +27,25 @@ import java.util.Optional;
 
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.cibseven.webapp.rest.model.ProcessInstance;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+
 public class ProcessProviderTest {
+
+	private static final ObjectMapper JSON = WebclientJsonMapper.plain();
 
 	private MockEngineRest engine;
 	private ProcessProvider processProvider;
@@ -346,27 +351,39 @@ public class ProcessProviderTest {
 
 		processProvider.suspendProcessDefinition("id-1", Boolean.TRUE, Boolean.FALSE, null, user);
 
-		String body = engine.take().getBody().readUtf8();
-		assertThat(body).isEqualTo(
-			"{ \"suspended\": true,\"includeProcessInstances\": false,\"executionDate\": null }");
+		var request = engine.take();
+		assertThat(request.getMethod()).isEqualTo("PUT");
+		assertThat(request.getPath()).endsWith("/process-definition/id-1/suspended");
+		JsonNode body = JSON.readTree(request.getBody().readUtf8());
+		assertThat(body.get("suspended").asBoolean()).isTrue();
+		assertThat(body.get("includeProcessInstances").asBoolean()).isFalse();
+		// absent or JSON null: both mean "suspend now" to the engine
+		assertThat(body.hasNonNull("executionDate")).isFalse();
 	}
 
-	/**
-	 * TODO KNOWN BUG (not fixed): the body is assembled by string concatenation and the
-	 * executionDate is interpolated unquoted, so a non-null date produces malformed JSON
-	 * ({@code "executionDate": 2026-01-01T10:00:00}) that the engine rejects. Scheduling a delayed
-	 * suspension through this method cannot work; only the null case happens to be valid JSON.
-	 * This test asserts the body the engine expects; it fails until the date is quoted.
-	 */
 	@Test
-	@Disabled("KNOWN BUG: suspendProcessDefinition interpolates the execution date into JSON unquoted")
-	void suspendProcessDefinition_quotesTheExecutionDate() throws Exception {
+	void suspendProcessDefinition_sendsTheExecutionDateAsAJsonString() throws Exception {
 		engine.enqueueEmpty(204);
 
 		processProvider.suspendProcessDefinition("id-1", Boolean.TRUE, Boolean.FALSE, "2026-01-01T10:00:00", user);
 
-		String body = engine.take().getBody().readUtf8();
-		assertThat(body).contains("\"executionDate\": \"2026-01-01T10:00:00\"");
+		JsonNode body = JSON.readTree(engine.take().getBody().readUtf8());
+		assertThat(body.get("executionDate").isString()).isTrue();
+		assertThat(body.get("executionDate").asString()).isEqualTo("2026-01-01T10:00:00");
+	}
+
+	/** A date with a quote cannot break out of its JSON string any more (CIB7-2806). */
+	@Test
+	void suspendProcessDefinition_escapesTheExecutionDate() throws Exception {
+		engine.enqueueEmpty(204);
+
+		processProvider.suspendProcessDefinition("id-1", Boolean.TRUE, Boolean.FALSE,
+			"2026\",\"suspended\":false,\"x\":\"", user);
+
+		JsonNode body = JSON.readTree(engine.take().getBody().readUtf8());
+		assertThat(body.get("suspended").asBoolean()).isTrue();
+		assertThat(body.get("executionDate").asString()).isEqualTo("2026\",\"suspended\":false,\"x\":\"");
+		assertThat(body.has("x")).isFalse();
 	}
 
 	// ---------- counts and history ----------

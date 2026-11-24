@@ -143,8 +143,9 @@ public class DirectJobProvider implements IJobProvider {
 	@Override
 	public void recalculateDueDate(String jobId, Map<String, Object> params, CIBUser user) {
 		try {
-			boolean creationDateBased = params.containsKey("creationDateBased") ? 
-					Boolean.parseBoolean((String)params.get("creationDateBased")) : false;
+			// REST hands over the string "true", a caller from code may pass a real Boolean
+			Object flag = params.get("creationDateBased");
+			boolean creationDateBased = flag instanceof Boolean b ? b : flag != null && Boolean.parseBoolean(flag.toString());
 			directProviderUtil.getProcessEngine(user).getManagementService().recalculateJobDuedate(jobId, creationDateBased);
 		} catch (AuthorizationException e) {
 		  throw e;

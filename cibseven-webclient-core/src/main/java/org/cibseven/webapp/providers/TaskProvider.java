@@ -178,16 +178,15 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 
 	public void setAssignee(String taskId, String assignee, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/task/" + taskId;
-		String variables = "{}";
 
-		if(!assignee.equals("null")) {
-			url += "/assignee";
-			variables = "{ \"userId\": \"" + assignee + "\" }";
-		} else {
-			url += "/unclaim";
+		// the webclient signals "no assignee" with the string "null"; a null reference means the same
+		if (assignee == null || assignee.equals("null")) {
+			doPost(url + "/unclaim", "{}", String.class, user);
+			return;
 		}
-
-		doPost(url, variables, String.class, user);
+		// A map, so the user id is escaped by the serializer
+		Map<String, Object> body = Map.of("userId", assignee);
+		doPost(url + "/assignee", body, String.class, user);
 	}
 
 	@Override
