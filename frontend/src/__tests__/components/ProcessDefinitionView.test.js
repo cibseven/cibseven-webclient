@@ -38,7 +38,7 @@ vi.mock('@/services.js', async (importOriginal) => {
   }
 })
 
-function createWrapper(props = {}) {
+function createWrapper(props = {}, stubs = {}) {
   const store = createStore({
     actions: { clearActivitySelection: vi.fn(), getProcessById: vi.fn(), loadStatistics: vi.fn() },
     modules: {
@@ -51,6 +51,7 @@ function createWrapper(props = {}) {
     props: { processKey: 'invoice', versionIndex: '2', ...props },
     global: {
       plugins: [store],
+      stubs,
       // the component is the root here, so `$root.config` falls through to this global property
       mocks: { config: { camundaHistoryLevel: 'full', lazyLoadHistory: false }, $route: { query: {} }, $router: { replace: vi.fn() } }
     }
@@ -94,6 +95,22 @@ describe('ProcessDefinitionView - mounted', () => {
     expect(HistoryService.findProcessInstance).toHaveBeenCalledOnce()
     expect(ProcessService.findActivityInstance).toHaveBeenCalledOnce()
     expect(ProcessService.findProcessVersionsByDefinitionKey).not.toHaveBeenCalled()
+  })
+
+  it('passes the loading flag to the instances view', async () => {
+    // the shallow SidebarsFlow stub would drop the instances view it holds in its default slot
+    const wrapper = createWrapper({}, { SidebarsFlow: { template: '<div><slot name="left"></slot><slot></slot></div>' } })
+    await flushPromises()
+    expect(wrapper.findComponent({ name: 'ProcessInstancesView' }).props('loading')).toBe(false)
+
+    let resolveVersions
+    ProcessService.findProcessVersionsByDefinitionKey.mockReturnValueOnce(new Promise(r => { resolveVersions = r }))
+    await wrapper.setProps({ processKey: 'order' })
+    expect(wrapper.vm.loading).toBe(true)
+
+    resolveVersions(['2', '1'].map(v => ({ id: `order:${v}:id`, key: 'order', version: v })))
+    await flushPromises()
+    expect(wrapper.findComponent({ name: 'ProcessInstancesView' }).props('loading')).toBe(false)
   })
 
   it('does not load anything again on a re-render', async () => {

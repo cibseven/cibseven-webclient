@@ -43,36 +43,30 @@
           :process-definition="process"
         ></ProcessInstanceDetailsSidebar>
       </template>
-      <transition name="slide-in" mode="out-in">
-        <ProcessInstancesView ref="process" v-if="process && !selectedInstance && !instanceId"
-          :process="process"
-          :process-key="processKey"
-          :version-index="computedVersionIndex"
-          :activity-instance="activityInstance"
-          :activity-instance-history="activityInstanceHistory"
-          :tenant-id="tenantId"
-          :filter="filter"
-          :parent-process="parentProcess"
-          @instance-deleted="onInstanceDeleted()"
-          @task-selected="setSelectedTask($event)"
-          @filter-instances="filterInstances($event)"
-        ></ProcessInstancesView>
-      </transition>
-      <transition name="slide-in" mode="out-in">
-        <ProcessInstanceView ref="navbar-variables" v-if="process && selectedInstance && instanceId"
-          :process="process"
-          :activity-instance="activityInstance"
-          :activity-instance-history="activityInstanceHistory"
-          :selected-instance="selectedInstance"
-          :tenant-id="tenantId"
-          @task-selected="setSelectedTask($event)"></ProcessInstanceView>
-      </transition>
-      <transition name="slide-in" mode="out-in">
-        <WarningBox v-if="errorVersionNotFound !== null && processDefinitions.length === 0" :message="$t('process.definitionNotFound', { processKey: processKey, tenantId: tenantId })"/>
-      </transition>
-      <transition name="slide-in" mode="out-in">
-        <WarningBox v-if="errorLoadingInstanceId !== null" :message="$t('process.instanceNotFound', { instanceId: instanceId, error: errorLoadingInstanceId })"/>
-      </transition>
+      <ProcessInstancesView ref="process" v-if="process && !selectedInstance && !instanceId"
+        :loading="loading"
+        :process="process"
+        :process-key="processKey"
+        :version-index="computedVersionIndex"
+        :activity-instance="activityInstance"
+        :activity-instance-history="activityInstanceHistory"
+        :tenant-id="tenantId"
+        :filter="filter"
+        :parent-process="parentProcess"
+        @instance-deleted="onInstanceDeleted()"
+        @task-selected="setSelectedTask($event)"
+        @filter-instances="filterInstances($event)"
+      />
+      <ProcessInstanceView ref="navbar-variables" v-else-if="process && selectedInstance && instanceId"
+        :process="process"
+        :activity-instance="activityInstance"
+        :activity-instance-history="activityInstanceHistory"
+        :selected-instance="selectedInstance"
+        :tenant-id="tenantId"
+        @task-selected="setSelectedTask($event)"
+      />
+      <WarningBox v-else-if="errorVersionNotFound !== null && processDefinitions.length === 0" :message="$t('process.definitionNotFound', { processKey: processKey, tenantId: tenantId })"/>
+      <WarningBox v-else-if="errorLoadingInstanceId !== null" :message="$t('process.instanceNotFound', { instanceId: instanceId, error: errorLoadingInstanceId })"/>
     </SidebarsFlow>
     <TaskPopper ref="importPopper"></TaskPopper>
   </div>
@@ -130,6 +124,7 @@ export default {
       activityInstance: null,
       activityInstanceHistory: null,
       filter: localStorage.getItem(UNFINISHED_FILTER_PREFERENCE_KEY) === 'false' ? {} : { unfinished: true },
+      loading: false, // the route's definition and instance are being loaded
       parentProcess: null
     }
   },
@@ -183,7 +178,7 @@ export default {
     /**
      * Brings the view in line with the route props. Each step only runs when its input changed:
      * 1) the versions of the key, 2) the definition version the URL asks for, 3) the instance.
-     * A newer navigation makes an older run drop its results.
+     * A newer navigation makes an older run drop its results. `loading` is set while the newest run works.
      */
     async syncWithRoute() {
       const run = this.syncRun = (this.syncRun ?? 0) + 1 // non-reactive
@@ -191,7 +186,15 @@ export default {
       // instances and definitions fetched in this navigation, by id; a redirect hands them on to the next run
       const fetched = this.handover ?? new Map()
       this.handover = null
-
+      this.loading = true
+      try {
+        await this.loadRoute(isStale, fetched)
+      } finally {
+        // a newer run, or the one the redirect starts, clears the flag itself
+        if (!isStale() && !this.handover) this.loading = false
+      }
+    },
+    async loadRoute(isStale, fetched) {
       const versionsScope = `${this.processKey}\n${this.tenantId ?? ''}`
       if (versionsScope !== this.versionsScope) this.clearDefinitions()
       if (this.selectedInstance && this.selectedInstance.id !== this.instanceId) this.clearInstance()

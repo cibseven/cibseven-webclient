@@ -545,6 +545,59 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.selectedInstance.id).toBe('pi2')
   })
 
+  it('should flag loading while the route is loaded', async () => {
+    engine()
+    const slowVersions = deferred()
+    ProcessService.findProcessVersionsByDefinitionKey.mockReturnValueOnce(slowVersions.promise)
+    const vm = context({ loading: false })
+
+    const run = open(vm)
+    expect(vm.loading).toBe(true)
+    slowVersions.resolve([{ id: 'invoice:2:id', key: 'invoice', version: '2' }])
+    await run
+
+    expect(vm.loading).toBe(false)
+  })
+
+  it('should keep loading while a newer navigation is still loading', async () => {
+    engine()
+    const slowOrder = deferred()
+    ProcessService.findProcessVersionsByDefinitionKey.mockImplementation(async (key) =>
+      key === 'order' ? slowOrder.promise : [{ id: 'invoice:2:id', key, version: '2' }])
+    const vm = context()
+
+    const first = open(vm)
+    const second = navigate(vm, { processKey: 'order' })
+    await first
+
+    expect(vm.loading).toBe(true)
+    slowOrder.resolve([{ id: 'order:2:id', key: 'order', version: '2' }])
+    await second
+    expect(vm.loading).toBe(false)
+  })
+
+  it('should keep loading through a redirect until the redirected route is loaded', async () => {
+    engine()
+    const vm = context({ versionIndex: '1', instanceId: 'pi1' })
+
+    await open(vm)
+    expect(vm.$router.replace).toHaveBeenCalledOnce()
+    expect(vm.loading).toBe(true)
+
+    await navigate(vm, { versionIndex: '2' })
+    expect(vm.loading).toBe(false)
+  })
+
+  it('should stop loading when a request fails', async () => {
+    engine()
+    ProcessService.findProcessVersionsByDefinitionKey.mockRejectedValue(new Error('500'))
+    const vm = context()
+
+    await expect(open(vm)).rejects.toThrow('500')
+
+    expect(vm.loading).toBe(false)
+  })
+
   it('should record the failure message when the instance lookup throws', async () => {
     engine()
     HistoryService.findProcessInstance.mockRejectedValue(new Error('404 not found'))
