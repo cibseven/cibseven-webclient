@@ -1009,15 +1009,6 @@ describe('ProcessDefinitionView - misc', () => {
 
     expect(vm.filter).toEqual({ unfinished: false, finished: true })
   })
-
-  it.each([
-    ['ACTIVE', 'mdi-chevron-triple-right text-success'],
-    ['SUSPENDED', 'mdi-close-circle-outline'],
-    ['COMPLETED', 'mdi-flag-triangle'],
-    [undefined, 'mdi-flag-triangle']
-  ])('getIconState should map %s to its icon', (state, expected) => {
-    expect(m.getIconState.call(context(), state)).toBe(expected)
-  })
 })
 
 describe('ProcessDefinitionView - exportCSV', () => {

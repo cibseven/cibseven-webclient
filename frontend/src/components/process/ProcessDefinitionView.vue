@@ -409,15 +409,6 @@ export default {
       localStorage.setItem(UNFINISHED_FILTER_PREFERENCE_KEY, filter.unfinished === true)
       // InstancesTable will automatically reload when filter changes
     },
-    getIconState(state) {
-      switch(state) {
-        case 'ACTIVE':
-          return 'mdi-chevron-triple-right text-success'
-        case 'SUSPENDED':
-          return 'mdi-close-circle-outline'
-      }
-      return 'mdi-flag-triangle'
-    },
     exportCSV() {
       const headers = [
         { text: 'state', key: 'state' },
