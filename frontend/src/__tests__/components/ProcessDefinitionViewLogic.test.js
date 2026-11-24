@@ -306,13 +306,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
 
   // CIB7-1895: a deep link (or F5 on the instance view) fetched all of this twice
   it('should open an instance link with one request per resource', async () => {
-    engine({ tenantId: 't1' })
-    const vm = context({ instanceId: 'pi1' })
+    engine()
+    const vm = context({ instanceId: 'pi1', tenantId: 't1' })
 
     await open(vm)
 
     expect(HistoryService.findProcessInstance).toHaveBeenCalledOnce()
-    // fetched once to learn the tenant, then reused for the version entry
     expect(ProcessService.findProcessById).toHaveBeenCalledOnce()
     expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledWith('invoice', 't1', false)
     expect(vm.$store.dispatch).toHaveBeenCalledOnce()
@@ -334,17 +333,6 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     await open(vm)
 
     expect(vm.process).toMatchObject({ incidents: 7, deploymentTime: 'deployed' })
-  })
-
-  // Runtime instances carry `definitionId` rather than `processDefinitionId`.
-  it('should accept the runtime definitionId spelling', async () => {
-    engine({ instances: { pi1: { id: 'pi1', definitionId: definitionId('invoice', '2'), ended: false } } })
-    const vm = context({ instanceId: 'pi1' })
-
-    await open(vm)
-
-    expect(ProcessService.findProcessById).toHaveBeenCalledWith('invoice:2:id', true)
-    expect(vm.selectedInstance.id).toBe('pi1')
   })
 
   it('should reset the lazy statistics placeholders of the versions', async () => {
@@ -464,56 +452,6 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(ProcessService.findActivityInstance).not.toHaveBeenCalled()
   })
 
-  // `/1/` with an instance of version 2 used to show the instance against version 1's diagram
-  it('should redirect to the version the instance belongs to', async () => {
-    engine()
-    const vm = context({ versionIndex: '1', instanceId: 'pi1', $route: { query: { tab: 'variables' } } })
-
-    await open(vm)
-
-    expect(vm.$router.replace).toHaveBeenCalledWith({
-      name: 'process',
-      params: { processKey: 'invoice', versionIndex: '2', instanceId: 'pi1' },
-      query: { tab: 'variables' }
-    })
-    expect(ProcessService.findProcessVersionsByDefinitionKey).not.toHaveBeenCalled()
-    expect(ProcessService.findActivityInstance).not.toHaveBeenCalled()
-  })
-
-  it('should redirect to the key the instance belongs to', async () => {
-    engine({ instances: { pi1: activeInstance({ processDefinitionId: definitionId('order', '2') }) } })
-    const vm = context({ instanceId: 'pi1' })
-
-    await open(vm)
-
-    expect(vm.$router.replace).toHaveBeenCalledWith(expect.objectContaining({
-      params: { processKey: 'order', versionIndex: '2', instanceId: 'pi1' }
-    }))
-  })
-
-  it('should reuse what it fetched before the redirect', async () => {
-    engine()
-    const vm = context({ versionIndex: '1', instanceId: 'pi1' })
-    await open(vm)
-
-    await navigate(vm, { versionIndex: '2' })
-
-    expect(HistoryService.findProcessInstance).toHaveBeenCalledOnce()
-    expect(ProcessService.findProcessById).toHaveBeenCalledOnce()
-    expect(vm.process.version).toBe('2')
-    expect(vm.selectedInstance.id).toBe('pi1')
-  })
-
-  it('should not redirect when the definition does not tell its key and version', async () => {
-    engine()
-    ProcessService.findProcessById.mockResolvedValue({ id: 'invoice:2:id' })
-    const vm = context({ versionIndex: '1', instanceId: 'pi1' })
-
-    await open(vm)
-
-    expect(vm.$router.replace).not.toHaveBeenCalled()
-  })
-
   // A slow response of the previous navigation used to overwrite the newer one.
   it('should drop the results of an older navigation', async () => {
     engine()
@@ -573,18 +511,6 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.loading).toBe(true)
     slowOrder.resolve([{ id: 'order:2:id', key: 'order', version: '2' }])
     await second
-    expect(vm.loading).toBe(false)
-  })
-
-  it('should keep loading through a redirect until the redirected route is loaded', async () => {
-    engine()
-    const vm = context({ versionIndex: '1', instanceId: 'pi1' })
-
-    await open(vm)
-    expect(vm.$router.replace).toHaveBeenCalledOnce()
-    expect(vm.loading).toBe(true)
-
-    await navigate(vm, { versionIndex: '2' })
     expect(vm.loading).toBe(false)
   })
 

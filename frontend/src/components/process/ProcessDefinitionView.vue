@@ -183,40 +183,32 @@ export default {
     async syncWithRoute() {
       const run = this.syncRun = (this.syncRun ?? 0) + 1 // non-reactive
       const isStale = () => run !== this.syncRun
-      // instances and definitions fetched in this navigation, by id; a redirect hands them on to the next run
-      const fetched = this.handover ?? new Map()
-      this.handover = null
       this.loading = true
       try {
-        await this.loadRoute(isStale, fetched)
+        await this.loadRoute(isStale)
       } finally {
-        // a newer run, or the one the redirect starts, clears the flag itself
-        if (!isStale() && !this.handover) this.loading = false
+        // a newer run clears the flag itself
+        if (!isStale()) this.loading = false
       }
     },
-    async loadRoute(isStale, fetched) {
+    async loadRoute(isStale) {
       const versionsScope = `${this.processKey}\n${this.tenantId ?? ''}`
       if (versionsScope !== this.versionsScope) this.clearDefinitions()
       if (this.selectedInstance && this.selectedInstance.id !== this.instanceId) this.clearInstance()
 
-      const instance = await this.lookUpInstance(this.instanceId, fetched)
+      const instance = await this.lookUpInstance(this.instanceId)
       if (isStale()) return
-      // the instance's definition tells the version it belongs to and the tenant of the versions
-      const instanceDefinition = instance && await this.findInstanceDefinition(instance, fetched)
-      if (isStale()) return
-      if (instanceDefinition && this.redirectToInstanceDefinition(instanceDefinition, fetched)) return
 
       if (versionsScope !== this.versionsScope) {
         const lazyLoad = this.$root.config.lazyLoadHistory
-        const tenantId = instanceDefinition ? instanceDefinition.tenantId : this.tenantId
-        const versions = await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, tenantId, lazyLoad)
+        const versions = await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, lazyLoad)
         if (isStale()) return
         this.processDefinitions = versions
         this.resetStatsLazyLoad(lazyLoad)
         this.versionsScope = versionsScope // non-reactive
       }
 
-      await this.syncDefinition(fetched)
+      await this.syncDefinition()
       if (isStale()) return
 
       if (instance) await this.selectInstance(instance)
@@ -226,11 +218,10 @@ export default {
         HistoryService.findProcessInstance(instanceId) :
         ProcessService.findProcessInstance(instanceId)
     },
-    async lookUpInstance(instanceId, fetched = new Map()) {
+    async lookUpInstance(instanceId) {
       this.errorLoadingInstanceId = null
       if (!instanceId) return null
       if (this.selectedInstance?.id === instanceId) return this.selectedInstance
-      if (fetched.has(instanceId)) return fetched.get(instanceId)
 
       let instance = null
       try {
@@ -239,52 +230,27 @@ export default {
         this.errorLoadingInstanceId = error.message
       }
       // an instance listed in the table can still be shown when history has purged it
-      instance ??= this.instances?.find(i => i.id === instanceId) ?? null
-      if (instance) fetched.set(instanceId, instance)
-      return instance
-    },
-    async findInstanceDefinition(instance, fetched) {
-      // runtime instances carry `definitionId` rather than `processDefinitionId`
-      const definitionId = instance.processDefinitionId ?? instance.definitionId
-      return this.processDefinitions.find(definition => definition.id === definitionId) ??
-        this.fetchDefinition(definitionId, fetched)
-    },
-    // The URL names a version (or key) the instance does not belong to: show it with its own definition
-    redirectToInstanceDefinition(definition, fetched) {
-      if (!definition.key || definition.version == null) return false
-      const versionIndex = String(definition.version)
-      if (definition.key === this.processKey && versionIndex === this.versionIndex) return false
-      this.handover = fetched // non-reactive
-      this.$router.replace({
-        name: 'process',
-        params: { processKey: definition.key, versionIndex, instanceId: this.instanceId },
-        query: this.$route.query
-      })
-      return true
+      return instance ?? this.instances?.find(i => i.id === instanceId) ?? null
     },
     // Selects the version the URL asks for, or the latest one (flagged) when there is no such version
-    async syncDefinition(fetched) {
+    async syncDefinition() {
       const requested = this.processDefinitions.find(definition => definition.version === this.versionIndex)
       this.errorVersionNotFound = requested ? null : this.versionIndex
       const definition = requested ?? this.processDefinitions[0]
-      if (definition && definition !== this.process) await this.selectDefinition(definition, fetched)
+      if (definition && definition !== this.process) await this.selectDefinition(definition)
     },
-    async selectDefinition(definition, fetched = new Map()) {
+    async selectDefinition(definition) {
       const previous = this.process
       this.process = definition
       // the entries of a reloaded versions list are new: the open version keeps the statistics its diagram shows
       if (previous?.id === definition.id) definition.statistics ??= previous.statistics
-      this.assignDefinitionData(definition, await this.fetchDefinition(definition.id, fetched))
+      this.assignDefinitionData(definition, await ProcessService.findProcessById(definition.id, true))
       // ProcessInstancesView loads the statistics together with its instances, the instance view does not
       if (this.instanceId && !definition.statistics) await this.loadStatistics(definition)
 
       // arriving from a call activity, the parent is shown as a breadcrumb
       const parentProcessDefinitionId = this.$route.query.parentProcessDefinitionId
       this.parentProcess = parentProcessDefinitionId ? await this.getProcessById({ id: parentProcessDefinitionId }) : null
-    },
-    async fetchDefinition(id, fetched = new Map()) {
-      if (!fetched.has(id)) fetched.set(id, await ProcessService.findProcessById(id, true))
-      return fetched.get(id)
     },
     // the definition never fills in the incidents and the deployment time: the version entry keeps its own
     assignDefinitionData(entry, definition) {
@@ -386,7 +352,7 @@ export default {
     },
     async onInstanceDeleted() {
       await this.loadStatistics()
-      this.assignDefinitionData(this.process, await this.fetchDefinition(this.process.id))
+      this.assignDefinitionData(this.process, await ProcessService.findProcessById(this.process.id, true))
       this.$refs.process.refreshDiagram()
     },
     async setSelectedTask(selectedTask) {
