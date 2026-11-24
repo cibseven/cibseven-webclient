@@ -376,6 +376,8 @@ public class DirectDecisionProvider implements IDecisionProvider {
 			byte[] decisionModel = IoUtil.readInputStream(decisionModelInputStream, "decisionModelDmnXml");
 			return DecisionDefinitionDiagramDto.create(definitionId, new String(decisionModel, "UTF-8"));
 
+		} catch (AuthorizationException e) {
+			throw e;
 		} catch (ProcessEngineException | UnsupportedEncodingException e) {
 			throw new SystemException(e.getMessage(), e);
 
@@ -405,6 +407,8 @@ public class DirectDecisionProvider implements IDecisionProvider {
 		DecisionDefinition definition = null;
 		try {
 			definition = directProviderUtil.getProcessEngine(user).getRepositoryService().getDecisionDefinition(id);
+		} catch (AuthorizationException e) {
+			throw e;
 		} catch (ProcessEngineException e) {
 			throw new SystemException(e.getMessage(), e);
 		}

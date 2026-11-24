@@ -354,6 +354,8 @@ public class DirectProcessProvider implements IProcessProvider {
 		ProcessDefinition definition;
 		try {
 			definition = directProviderUtil.getProcessEngine(user).getRepositoryService().getProcessDefinition(id);
+		} catch (AuthorizationException e) {
+			throw e;
 		} catch (ProcessEngineException e) {
 			throw new SystemException("No matching definition with id " + id, e);
 		}
@@ -741,8 +743,10 @@ public class DirectProcessProvider implements IProcessProvider {
 		TypedValue value;
 		try {
 			value = directProviderUtil.getProcessEngine(user).getRuntimeService().getVariableTyped(processInstanceId, variableName, deserializeValue);
+		} catch (AuthorizationException e) {
+			// AuthorizingProviderProxy turns it into the 403 the default provider answers as well
+			throw e;
 		} catch (ProcessEngineException e) {
-			// AuthorizationException included: the default provider answers a denied read with a SystemException too
 			throw new SystemException(String.format("Cannot get processInstance variable %s: %s", variableName, e.getMessage()), e);
 		}
 		if (value == null)
@@ -795,7 +799,7 @@ public class DirectProcessProvider implements IProcessProvider {
 		} catch (NullValueException e) {
 			throw new SystemException(e.getMessage());
 		} catch (AuthorizationException e) {
-			throw new SystemException(e.getMessage());
+			throw e;
 		} catch (IOException e) {
 			throw new SystemException(e.getMessage());
 		}

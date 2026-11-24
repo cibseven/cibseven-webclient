@@ -84,14 +84,6 @@ describe('handleAxiosError', () => {
     expect(root.$refs.error.show).toHaveBeenCalledWith(data)
   })
 
-  it('opens the error dialog for a request the engine rejected', async () => {
-    const root = rootWithErrorDialog()
-
-    await expect(handleAxiosError(router, root, badRequest('InvalidRequestException'))).rejects.toBeDefined()
-
-    expect(root.$refs.error.show).toHaveBeenCalledWith({ type: 'InvalidRequestException' })
-  })
-
   it('leaves the other refusals to the caller', async () => {
     const root = rootWithErrorDialog()
 

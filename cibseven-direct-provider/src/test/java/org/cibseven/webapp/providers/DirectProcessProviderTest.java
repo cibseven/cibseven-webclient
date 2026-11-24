@@ -47,6 +47,7 @@ import org.cibseven.bpm.engine.AuthorizationException;
 import org.cibseven.bpm.engine.FormService;
 import org.cibseven.bpm.engine.HistoryService;
 import org.cibseven.bpm.engine.ProcessEngine;
+import org.cibseven.bpm.engine.ProcessEngineException;
 import org.cibseven.bpm.engine.RuntimeService;
 import org.cibseven.bpm.engine.history.HistoricProcessInstance;
 import org.cibseven.bpm.engine.impl.HistoricProcessInstanceQueryImpl;
@@ -322,6 +323,16 @@ public class DirectProcessProviderTest {
 			.isInstanceOf(SystemException.class);
 	}
 
+	@Test
+	void getDeployedStartForm_passesAMissingPermissionOn() {
+		FormService formService = mock(FormService.class);
+		when(directProviderUtil.getProcessEngine(user).getFormService()).thenReturn(formService);
+		AuthorizationException denied = new AuthorizationException("denied");
+		when(formService.getDeployedStartForm("def-1")).thenThrow(denied);
+
+		assertThatThrownBy(() -> processProvider.getDeployedStartForm("def-1", user)).isSameAs(denied);
+	}
+
 	// scope and authorization of fetchProcessInstanceVariable run against a real engine in
 	// DirectProcessProviderVariableTest; these pin the mapping around the engine call
 
@@ -336,14 +347,24 @@ public class DirectProcessProviderTest {
 	}
 
 	@Test
-	void fetchProcessInstanceVariable_turnsADeniedReadIntoASystemException() {
+	void fetchProcessInstanceVariable_passesADeniedReadOn() {
+		AuthorizationException denied = new AuthorizationException("denied");
+		when(runtimeService.getVariableTyped(eq(INSTANCE_ID_1), eq("_statusDataset"), anyBoolean())).thenThrow(denied);
+
+		// AuthorizingProviderProxy turns it into the 403
+		assertThatThrownBy(() -> processProvider.fetchProcessInstanceVariable(INSTANCE_ID_1, "_statusDataset", true, user))
+			.isSameAs(denied);
+	}
+
+	@Test
+	void fetchProcessInstanceVariable_wrapsAnyOtherEngineFailureInSystemException() {
 		when(runtimeService.getVariableTyped(eq(INSTANCE_ID_1), eq("_statusDataset"), anyBoolean()))
-			.thenThrow(new AuthorizationException("denied"));
+			.thenThrow(new ProcessEngineException("engine failure"));
 
 		assertThatThrownBy(() -> processProvider.fetchProcessInstanceVariable(INSTANCE_ID_1, "_statusDataset", true, user))
 			.isInstanceOf(SystemException.class)
 			.isNotInstanceOf(NoObjectFoundException.class)
-			.hasCauseInstanceOf(AuthorizationException.class);
+			.hasMessageContaining("engine failure");
 	}
 
 	@Test

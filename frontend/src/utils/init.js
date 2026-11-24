@@ -160,9 +160,9 @@ export function handleAxiosError(router, root, error) {
       return Promise.reject(error)
     } else {
       // A 400 or 403 is left to the component that sent the request, except an engine id that names no configured
-      // engine, and a permission or request the engine refused: any request can meet these, so no component expects them
+      // engine, and a permission the engine refused: any request can meet these, so no component expects them
       const type = res.data?.type
-      const shown = (res.status === 400 && (type === 'UnknownEngineException' || type === 'InvalidRequestException'))
+      const shown = (res.status === 400 && type === 'UnknownEngineException')
         || (res.status === 403 && type === 'PermissionDeniedException')
       if (showsDialog && shown) root.$refs.error.show(res.data)
       //root.$refs.error.show(res.data || res.statusText)

@@ -21,7 +21,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.lang.reflect.Method;
 
 import org.cibseven.webapp.exception.ErrorMessage;
-import org.cibseven.webapp.exception.InvalidRequestException;
 import org.cibseven.webapp.exception.PermissionDeniedException;
 import org.cibseven.webapp.exception.SystemException;
 import org.junit.jupiter.api.Test;
@@ -31,8 +30,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.method.annotation.ExceptionHandlerMethodResolver;
 
 /**
- * A permission or a request the engine refuses is the caller's problem: answered with 403 and 400, as
- * engine-rest answers it, although both are SystemExceptions, which are answered with 500.
+ * A permission the engine refuses is the caller's problem: answered with 403, as engine-rest answers it,
+ * although it is a SystemException, which is answered with 500.
  */
 class ExceptionConverterClientErrorTest {
 
@@ -44,11 +43,6 @@ class ExceptionConverterClientErrorTest {
 	}
 
 	@Test
-	void aRejectedRequestIsAnsweredWith400() {
-		assertThat(statusFor(new InvalidRequestException("bad value", new RuntimeException()))).isEqualTo(HttpStatus.BAD_REQUEST);
-	}
-
-	@Test
 	void anyOtherSystemExceptionIsStillAnsweredWith500() {
 		assertThat(statusFor(new SystemException("boom"))).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
 	}
@@ -57,13 +51,9 @@ class ExceptionConverterClientErrorTest {
 	void theEngineReasonIsPassedOnWithoutPrefix() {
 		ErrorMessage denied = new ExceptionConverter().permissionDenied(
 			new PermissionDeniedException("demo may not update task-1", new RuntimeException()));
-		ErrorMessage invalid = new ExceptionConverter().invalidRequest(
-			new InvalidRequestException("Cannot convert variable amount: abc", new RuntimeException()));
 
 		assertThat(denied.getType()).isEqualTo("PermissionDeniedException");
 		assertThat(denied.getParams()).containsExactly("demo may not update task-1");
-		assertThat(invalid.getType()).isEqualTo("InvalidRequestException");
-		assertThat(invalid.getParams()).containsExactly("Cannot convert variable amount: abc");
 	}
 
 	private HttpStatus statusFor(Exception exception) {

@@ -372,6 +372,14 @@ public class DirectProcessProviderDefinitionsTest {
 	}
 
 	@Test
+	void findProcessById_passesAMissingPermissionOn() {
+		AuthorizationException denied = new AuthorizationException("denied");
+		when(repositoryService.getProcessDefinition("id-1")).thenThrow(denied);
+
+		assertThatThrownBy(() -> processProvider.findProcessById("id-1", Optional.empty(), user)).isSameAs(denied);
+	}
+
+	@Test
 	void countProcessesInstancesHistory_passesTheFilterToTheEngineQuery() {
 		HistoricProcessInstanceQuery historyQuery =
 			mock(HistoricProcessInstanceQuery.class, withSettings().defaultAnswer(RETURNS_SELF));

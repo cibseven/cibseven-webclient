@@ -43,7 +43,6 @@ import org.cibseven.bpm.engine.runtime.VariableInstanceQuery;
 import org.cibseven.bpm.engine.variable.VariableMap;
 import org.cibseven.bpm.engine.variable.value.TypedValue;
 import org.cibseven.webapp.auth.CIBUser;
-import org.cibseven.webapp.exception.InvalidRequestException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
@@ -58,7 +57,6 @@ import tools.jackson.databind.ObjectMapper;
 
 import jakarta.ws.rs.core.MultivaluedHashMap;
 import jakarta.ws.rs.core.MultivaluedMap;
-import jakarta.ws.rs.core.Response;
 import lombok.Setter;
 
 public class DirectProviderUtil {
@@ -191,20 +189,11 @@ public class DirectProviderUtil {
 			() -> getObjectMapper(user).convertValue(patch, PatchVariablesDto.class));
 	}
 
-	/**
-	 * Every way the engine-rest conversions fail, with the status engine-rest answers it with: a value or body it
-	 * cannot read is a rejected request (400), a failure of the engine itself a SystemException (500).
-	 */
+	/** Every way the engine-rest conversions fail, reported as a SystemException. */
 	private static <T> T converting(String failure, Supplier<T> conversion) {
 		try {
 			return conversion.get();
-		} catch (RestException e) {
-			String message = String.format("%s: %s", failure, e.getMessage());
-			if (e.getStatus() == Response.Status.BAD_REQUEST) throw new InvalidRequestException(message, e);
-			throw new SystemException(message, e);
-		} catch (IllegalArgumentException | JacksonException e) {
-			throw new InvalidRequestException(String.format("%s: %s", failure, e.getMessage()), e);
-		} catch (ProcessEngineException e) {
+		} catch (RestException | IllegalArgumentException | JacksonException | ProcessEngineException e) {
 			throw new SystemException(String.format("%s: %s", failure, e.getMessage()), e);
 		}
 	}

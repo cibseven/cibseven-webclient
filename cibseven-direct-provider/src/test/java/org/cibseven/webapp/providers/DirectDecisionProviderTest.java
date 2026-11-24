@@ -206,6 +206,22 @@ public class DirectDecisionProviderTest {
 	}
 
 	@Test
+	void getXmlById_passesAMissingPermissionOn() {
+		org.cibseven.bpm.engine.AuthorizationException denied = new org.cibseven.bpm.engine.AuthorizationException("denied");
+		when(repositoryService.getDecisionModel("dec-1")).thenThrow(denied);
+
+		assertThatThrownBy(() -> decisionProvider.getXmlById("dec-1", user)).isSameAs(denied);
+	}
+
+	@Test
+	void getDiagramById_passesAMissingPermissionOnTheDefinition() {
+		org.cibseven.bpm.engine.AuthorizationException denied = new org.cibseven.bpm.engine.AuthorizationException("denied");
+		when(repositoryService.getDecisionDefinition("dec-1")).thenThrow(denied);
+
+		assertThatThrownBy(() -> decisionProvider.getDiagramById("dec-1", user)).isSameAs(denied);
+	}
+
+	@Test
 	void getDiagramById_throwsWhenTheDecisionHasNoDiagram() {
 		DecisionDefinition definition = mockDefinition("dec-1", "risk", "Risk rating");
 		when(repositoryService.getDecisionDefinition("dec-1")).thenReturn(definition);

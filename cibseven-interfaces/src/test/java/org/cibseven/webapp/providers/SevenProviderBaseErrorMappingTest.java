@@ -30,7 +30,6 @@ import org.cibseven.webapp.exception.ExistingUserRequestException;
 import org.cibseven.webapp.exception.ExpressionEvaluationException;
 import org.cibseven.webapp.exception.InvalidAttributeValueException;
 import org.cibseven.webapp.exception.InvalidGroupIdException;
-import org.cibseven.webapp.exception.InvalidRequestException;
 import org.cibseven.webapp.exception.InvalidUserIdException;
 import org.cibseven.webapp.exception.MissingVariableException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
@@ -124,28 +123,29 @@ public class SevenProviderBaseErrorMappingTest {
 	}
 
 	@Test
-	public void passesOnABodyThatIsNoEngineRestErrorAsItIs() {
-		RuntimeException wrapped = SevenProviderBase.wrapException(engineError(HttpStatus.FORBIDDEN, "Forbidden by the proxy"), null);
+	public void showsTheReasonPhraseInsteadOfABodyThatIsNoEngineRestError() {
+		String proxyPage = "<html><head><title>403 Forbidden</title></head><body>nginx</body></html>";
+
+		RuntimeException wrapped = SevenProviderBase.wrapException(engineError(HttpStatus.FORBIDDEN, proxyPage), null);
 
 		assertEquals(PermissionDeniedException.class, wrapped.getClass());
-		assertEquals("Forbidden by the proxy", wrapped.getMessage());
+		assertEquals("Forbidden", wrapped.getMessage());
 	}
 
 	@Test
-	public void keepsTheStatusOfARequestTheEngineRejects() {
+	public void leavesAnUnmatchedBadRequestASystemException() {
+		// a 400 can as well be a request the webclient built wrongly, so it gets no meaning of its own
 		String body = "{\"type\":\"InvalidRequestException\",\"message\":\"Cannot convert value 'abc' of type 'Integer' to java type java.lang.Integer\"}";
 
 		RuntimeException wrapped = SevenProviderBase.wrapException(engineError(HttpStatus.BAD_REQUEST, body), null);
 
-		assertEquals(InvalidRequestException.class, wrapped.getClass());
-		assertInstanceOf(SystemException.class, wrapped);
-		assertEquals("Cannot convert value 'abc' of type 'Integer' to java type java.lang.Integer", wrapped.getMessage());
+		assertEquals(SystemException.class, wrapped.getClass());
 	}
 
 	@ParameterizedTest
 	@MethodSource("bodiesWithoutAMessage")
-	public void engineMessageFallsBackToTheBodyWithoutAUsableMessage(String body) {
-		assertEquals(body, SevenProviderBase.engineMessage(body));
+	public void engineMessageFallsBackToTheReasonPhraseWithoutAUsableMessage(String body) {
+		assertEquals("Forbidden", SevenProviderBase.engineMessage(body));
 	}
 
 	static Stream<String> bodiesWithoutAMessage() {

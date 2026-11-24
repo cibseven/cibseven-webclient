@@ -41,6 +41,7 @@ import java.util.Optional;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.config.EngineRestSource;
 import org.cibseven.webapp.exception.EngineNotReachableException;
+import org.cibseven.webapp.exception.PermissionDeniedException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnknownEngineException;
 import org.cibseven.webapp.providers.BpmProvider;
@@ -59,6 +60,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -245,6 +248,25 @@ public class TaskServiceTest {
 		when(bpmProvider.getDeployedForm("task-2", user)).thenThrow(unknown);
 
 		assertThatThrownBy(() -> taskService.getDeployedForm("task-2", Locale.ENGLISH, user)).isSameAs(unknown);
+	}
+
+	@Test
+	void getDeployedForm_passesARefusedPermissionOnForItsStatus() {
+		PermissionDeniedException denied = new PermissionDeniedException("no READ on the task", new RuntimeException());
+		when(bpmProvider.getDeployedForm("task-1", user)).thenThrow(denied);
+
+		assertThatThrownBy(() -> taskService.getDeployedForm("task-1", Locale.ENGLISH, user)).isSameAs(denied);
+	}
+
+	@Test
+	void uploadVariableFileData_passesARefusedPermissionOnForItsStatus() {
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		when(baseUserProvider.authenticateUser(request)).thenReturn(user);
+		MultipartFile file = new MockMultipartFile("data", "a.txt", "text/plain", "x".getBytes(StandardCharsets.UTF_8));
+		PermissionDeniedException denied = new PermissionDeniedException("no UPDATE on the task", new RuntimeException());
+		org.mockito.Mockito.doThrow(denied).when(bpmProvider).uploadVariableFileData("task-1", "doc", file, "File", user);
+
+		assertThatThrownBy(() -> taskService.uploadVariableFileData("task-1", "doc", file, "File", request)).isSameAs(denied);
 	}
 
 	@Test
