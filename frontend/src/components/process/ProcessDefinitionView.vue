@@ -177,7 +177,7 @@ export default {
     },
     /**
      * Brings the view in line with the route props. Each step only runs when its input changed:
-     * 1) the versions of the key, 2) the definition version the URL asks for, 3) the instance.
+     * 1) the versions of the key and the instance lookup, in parallel, 2) the definition version the URL asks for, 3) the instance.
      * A newer navigation makes an older run drop its results. `loading` is set while the newest run works.
      */
     async syncWithRoute() {
@@ -193,25 +193,43 @@ export default {
     },
     async loadRoute(isStale) {
       const versionsScope = `${this.processKey}\n${this.tenantId ?? ''}`
-      if (versionsScope !== this.versionsScope) this.clearDefinitions()
+      const reloadVersions = versionsScope !== this.versionsScope
+      if (reloadVersions) this.clearDefinitions()
       if (this.selectedInstance && this.selectedInstance.id !== this.instanceId) this.clearInstance()
 
-      const instance = await this.lookUpInstance(this.instanceId)
+      const [instance] = await Promise.all([
+        this.lookUpInstance(this.instanceId),
+        reloadVersions && this.loadVersions(versionsScope, isStale)
+      ])
       if (isStale()) return
-
-      if (versionsScope !== this.versionsScope) {
-        const lazyLoad = this.$root.config.lazyLoadHistory
-        const versions = await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, lazyLoad)
-        if (isStale()) return
-        this.processDefinitions = versions
-        this.resetStatsLazyLoad(lazyLoad)
-        this.versionsScope = versionsScope // non-reactive
-      }
 
       await this.syncDefinition()
       if (isStale()) return
 
-      if (instance) await this.selectInstance(instance)
+      if (!instance || this.selectedInstance?.id === instance.id) return
+      this.clearInstance()
+      this.selectedInstance = instance
+
+      // the responses for an instance that is no longer selected are dropped
+      const isActive = 'state' in instance ? instance.state === 'ACTIVE' : instance.ended === false
+      if (isActive) {
+        const activityInstance = await ProcessService.findActivityInstance(instance.id)
+        if (this.selectedInstance?.id !== instance.id) return
+        this.activityInstance = activityInstance
+      }
+      if (isActive || this.$root.config.camundaHistoryLevel !== 'none') {
+        const activityInstanceHistory = await HistoryService.findActivitiesInstancesHistory(instance.id)
+        if (this.selectedInstance?.id !== instance.id) return
+        this.activityInstanceHistory = activityInstanceHistory
+      }
+    },
+    async loadVersions(versionsScope, isStale) {
+      const lazyLoad = this.$root.config.lazyLoadHistory
+      const versions = await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, lazyLoad)
+      if (isStale()) return
+      this.processDefinitions = versions
+      this.resetStatsLazyLoad(lazyLoad)
+      this.versionsScope = versionsScope // non-reactive
     },
     async findProcessInstance(instanceId) {
       return (this.$root.config.camundaHistoryLevel !== 'none') ?
@@ -268,24 +286,6 @@ export default {
       this.activityInstance = null
       this.activityInstanceHistory = null
       this.task = null
-    },
-    async selectInstance(instance) {
-      if (this.selectedInstance?.id === instance.id) return
-      this.clearInstance()
-      this.selectedInstance = instance
-
-      // the responses for an instance that is no longer selected are dropped
-      const isActive = 'state' in instance ? instance.state === 'ACTIVE' : instance.ended === false
-      if (isActive) {
-        const activityInstance = await ProcessService.findActivityInstance(instance.id)
-        if (this.selectedInstance?.id !== instance.id) return
-        this.activityInstance = activityInstance
-      }
-      if (isActive || this.$root.config.camundaHistoryLevel !== 'none') {
-        const activityInstanceHistory = await HistoryService.findActivitiesInstancesHistory(instance.id)
-        if (this.selectedInstance?.id !== instance.id) return
-        this.activityInstanceHistory = activityInstanceHistory
-      }
     },
     async onDeleteProcessDefinition({ processDefinition }) {
       await ProcessService.deleteProcessDefinition(processDefinition.id, true)

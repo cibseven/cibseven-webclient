@@ -325,6 +325,21 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.activityInstanceHistory).toEqual([{ id: 'history' }])
   })
 
+  it('should look the instance up while the versions load', async () => {
+    engine()
+    const lookup = deferred()
+    HistoryService.findProcessInstance.mockReturnValueOnce(lookup.promise)
+    const vm = context({ instanceId: 'pi1' })
+
+    const run = open(vm)
+    await vi.waitFor(() => expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalled())
+    expect(HistoryService.findProcessInstance).toHaveBeenCalledWith('pi1')
+
+    lookup.resolve(activeInstance())
+    await run
+    expect(vm.selectedInstance.id).toBe('pi1')
+  })
+
   // the backend does not fill them in on the definition: incidents always come as 0, the deployment time as null
   it('should keep the incidents and deployment time of the version entry', async () => {
     engine()
@@ -624,13 +639,24 @@ describe('ProcessDefinitionView - selectDefinition', () => {
   })
 })
 
-describe('ProcessDefinitionView - selectInstance', () => {
+describe('ProcessDefinitionView - loadRoute instance selection', () => {
+  // runs loadRoute with the versions loaded and the definition in sync, so only its instance step works
+  function select(vm, instance) {
+    Object.assign(vm, {
+      instanceId: instance.id,
+      versionsScope: 'invoice\n',
+      lookUpInstance: vi.fn(async () => instance),
+      syncDefinition: vi.fn()
+    })
+    return m.loadRoute.call(vm, () => false)
+  }
+
   it('should load the runtime activity tree and history for an active instance', async () => {
     const vm = context()
     ProcessService.findActivityInstance.mockResolvedValue({ id: 'ai1' })
     HistoryService.findActivitiesInstancesHistory.mockResolvedValue([{ id: 'h1' }])
 
-    await m.selectInstance.call(vm, { id: 'pi1', state: 'ACTIVE' })
+    await select(vm, { id: 'pi1', state: 'ACTIVE' })
 
     expect(ProcessService.findActivityInstance).toHaveBeenCalledWith('pi1')
     expect(vm.activityInstance).toEqual({ id: 'ai1' })
@@ -641,7 +667,7 @@ describe('ProcessDefinitionView - selectInstance', () => {
   it('should treat a not-ended runtime instance as active', async () => {
     const vm = context()
 
-    await m.selectInstance.call(vm, { id: 'pi1', ended: false })
+    await select(vm, { id: 'pi1', ended: false })
 
     expect(ProcessService.findActivityInstance).toHaveBeenCalled()
   })
@@ -650,7 +676,7 @@ describe('ProcessDefinitionView - selectInstance', () => {
     const vm = context()
     HistoryService.findActivitiesInstancesHistory.mockResolvedValue([{ id: 'h1' }])
 
-    await m.selectInstance.call(vm, { id: 'pi1', state: 'COMPLETED' })
+    await select(vm, { id: 'pi1', state: 'COMPLETED' })
 
     expect(ProcessService.findActivityInstance).not.toHaveBeenCalled()
     expect(vm.activityInstanceHistory).toEqual([{ id: 'h1' }])
@@ -660,7 +686,7 @@ describe('ProcessDefinitionView - selectInstance', () => {
     const vm = context()
     vm.$root.config.camundaHistoryLevel = 'none'
 
-    await m.selectInstance.call(vm, { id: 'pi1', state: 'COMPLETED' })
+    await select(vm, { id: 'pi1', state: 'COMPLETED' })
 
     expect(HistoryService.findActivitiesInstancesHistory).not.toHaveBeenCalled()
   })
@@ -669,7 +695,7 @@ describe('ProcessDefinitionView - selectInstance', () => {
   it('should skip reloading the instance that is already selected', async () => {
     const vm = context({ selectedInstance: { id: 'pi1', state: 'ACTIVE' } })
 
-    await m.selectInstance.call(vm, { id: 'pi1', state: 'ACTIVE' })
+    await select(vm, { id: 'pi1', state: 'ACTIVE' })
 
     expect(ProcessService.findActivityInstance).not.toHaveBeenCalled()
   })
@@ -678,7 +704,7 @@ describe('ProcessDefinitionView - selectInstance', () => {
     const vm = context({ selectedInstance: { id: 'old' }, activityInstance: { id: 'ai-old' }, task: { id: 't1' } })
     vm.$root.config.camundaHistoryLevel = 'none'
 
-    await m.selectInstance.call(vm, { id: 'pi1', state: 'COMPLETED' })
+    await select(vm, { id: 'pi1', state: 'COMPLETED' })
 
     expect(vm.selectedInstance.id).toBe('pi1')
     expect(vm.activityInstance).toBeNull()
@@ -692,7 +718,7 @@ describe('ProcessDefinitionView - selectInstance', () => {
       return { id: 'ai1' }
     })
 
-    await m.selectInstance.call(vm, { id: 'pi1', state: 'ACTIVE' })
+    await select(vm, { id: 'pi1', state: 'ACTIVE' })
 
     expect(vm.activityInstance).toBeNull()
     expect(HistoryService.findActivitiesInstancesHistory).not.toHaveBeenCalled()
@@ -705,7 +731,7 @@ describe('ProcessDefinitionView - selectInstance', () => {
       return [{ id: 'h1' }]
     })
 
-    await m.selectInstance.call(vm, { id: 'pi1', state: 'COMPLETED' })
+    await select(vm, { id: 'pi1', state: 'COMPLETED' })
 
     expect(vm.activityInstanceHistory).toBeNull()
   })
