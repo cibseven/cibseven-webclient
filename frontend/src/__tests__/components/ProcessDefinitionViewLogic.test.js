@@ -77,7 +77,6 @@ function context(overrides = {}) {
     activityInstance: null,
     activityInstanceHistory: null,
     filter: { unfinished: true },
-    loading: false,
     parentProcess: null,
     instances: [],
     ...overrides
@@ -95,7 +94,7 @@ function context(overrides = {}) {
 }
 
 beforeEach(() => {
-  vi.clearAllMocks()
+  vi.resetAllMocks()
   localStorage.clear()
 })
 
@@ -216,158 +215,520 @@ describe('ProcessDefinitionView - findProcessInstance', () => {
   })
 })
 
-describe('ProcessDefinitionView - loadInstanceById', () => {
-  it('should select the instance it finds', async () => {
-    const vm = context({ setSelectedInstance: vi.fn() })
-    HistoryService.findProcessInstance.mockResolvedValue({ id: 'pi1' })
+describe('ProcessDefinitionView - onRouteChanged', () => {
+  const route = (overrides = {}) => ({ processKey: 'invoice', tenantId: undefined, versionIndex: '2', instanceId: undefined, ...overrides })
 
-    await m.loadInstanceById.call(vm, 'pi1')
+  it.each([
+    ['the first sync', undefined, route()],
+    ['a different key', route(), route({ processKey: 'order' })],
+    ['a different instance', route(), route({ instanceId: 'pi1' })],
+    ['leaving the instance', route({ instanceId: 'pi1' }), route()]
+  ])('should clear the activity selection on %s', async (_, previous, next) => {
+    const vm = context({ syncWithRoute: vi.fn() })
 
-    expect(vm.setSelectedInstance).toHaveBeenCalledWith({ selectedInstance: { id: 'pi1' } })
-    expect(vm.errorLoadingInstanceId).toBeNull()
+    await m.onRouteChanged.call(vm, next, previous)
+
+    expect(vm.clearActivitySelection).toHaveBeenCalled()
+    expect(vm.syncWithRoute).toHaveBeenCalled()
   })
 
-  it('should clear the previous selection first', async () => {
-    const vm = context({
-      selectedInstance: { id: 'old' },
-      activityInstanceHistory: [{}],
-      task: { id: 't1' },
-      setSelectedInstance: vi.fn()
-    })
+  // the activity picked in the instances view filters its table, also across versions
+  it('should keep the activity selection when only the version changes', async () => {
+    const vm = context({ syncWithRoute: vi.fn() })
 
-    await m.loadInstanceById.call(vm, 'pi1')
+    await m.onRouteChanged.call(vm, route({ versionIndex: '1' }), route())
 
-    expect(vm.activityInstanceHistory).toBeNull()
-    expect(vm.task).toBeNull()
-  })
-
-  it('should record the failure message when the lookup throws', async () => {
-    const vm = context({ setSelectedInstance: vi.fn() })
-    HistoryService.findProcessInstance.mockRejectedValue(new Error('404 not found'))
-
-    await m.loadInstanceById.call(vm, 'pi1')
-
-    expect(vm.errorLoadingInstanceId).toBe('404 not found')
-  })
-
-  // An instance already listed in the table can be used even if history has purged it.
-  it('should fall back to an instance already in the store', async () => {
-    const vm = context({ instances: [{ id: 'pi1', state: 'ACTIVE' }], setSelectedInstance: vi.fn() })
-    HistoryService.findProcessInstance.mockResolvedValue(null)
-
-    await m.loadInstanceById.call(vm, 'pi1')
-
-    expect(vm.setSelectedInstance).toHaveBeenCalledWith({ selectedInstance: { id: 'pi1', state: 'ACTIVE' } })
-  })
-
-  it('should select nothing when the instance is nowhere to be found', async () => {
-    const vm = context({ instances: [], setSelectedInstance: vi.fn() })
-    HistoryService.findProcessInstance.mockResolvedValue(null)
-
-    await m.loadInstanceById.call(vm, 'pi-gone')
-
-    expect(vm.setSelectedInstance).not.toHaveBeenCalled()
+    expect(vm.clearActivitySelection).not.toHaveBeenCalled()
+    expect(vm.syncWithRoute).toHaveBeenCalled()
   })
 })
 
-describe('ProcessDefinitionView - switchToDefinitionVersion', () => {
-  it('should load the version the URL asks for', async () => {
-    const requested = version({ version: '2' })
-    const vm = context({ processDefinitions: [version({ version: '3' }), requested], loadProcessVersion: vi.fn() })
+/**
+ * Navigation scenarios run through the component's real loading methods against a fake engine.
+ * The request counts are the point: CIB7-1895 was about every request of the instance view going out twice.
+ */
+describe('ProcessDefinitionView - syncWithRoute', () => {
+  const definitionId = (key, v) => `${key}:${v}:id`
+  const activeInstance = (overrides = {}) => ({ id: 'pi1', processDefinitionId: definitionId('invoice', '2'), state: 'ACTIVE', ...overrides })
 
-    await m.switchToDefinitionVersion.call(vm)
+  // Every call answers with new objects, like the backend does.
+  function engine({ versions = ['2', '1'], instances = { pi1: activeInstance() }, tenantId = null } = {}) {
+    ProcessService.findProcessVersionsByDefinitionKey.mockImplementation(async (key) =>
+      versions.map(v => ({ id: definitionId(key, v), key, version: v, incidents: 7, deploymentTime: 'deployed' })))
+    ProcessService.findProcessById.mockImplementation(async (id) => {
+      const [key, v] = id.split(':')
+      return { id, key, version: v, name: `${key} v${v}`, tenantId, incidents: 0, deploymentTime: null }
+    })
+    HistoryService.findProcessInstance.mockImplementation(async (id) => instances[id] ?? null)
+    ProcessService.findActivityInstance.mockResolvedValue({ id: 'ai' })
+    HistoryService.findActivitiesInstancesHistory.mockResolvedValue([{ id: 'history' }])
+  }
 
-    expect(vm.loadProcessVersion).toHaveBeenCalledWith(requested)
+  const open = (vm) => vm.onRouteChanged(vm.routeState, undefined)
+
+  async function navigate(vm, props) {
+    const previous = vm.routeState
+    Object.assign(vm, props)
+    await vm.onRouteChanged(vm.routeState, previous)
+  }
+
+  function deferred() {
+    let resolve
+    const promise = new Promise(r => { resolve = r })
+    return { promise, resolve }
+  }
+
+  it('should open a definition with one request per resource', async () => {
+    engine()
+    const vm = context({ tenantId: 't1' })
+
+    await open(vm)
+
+    expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledOnce()
+    expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledWith('invoice', 't1', false)
+    expect(ProcessService.findProcessById).toHaveBeenCalledOnce()
+    expect(ProcessService.findProcessById).toHaveBeenCalledWith('invoice:2:id', true)
+    expect(HistoryService.findProcessInstance).not.toHaveBeenCalled()
+    expect(vm.process).toBe(vm.processDefinitions[0])
+    expect(vm.process.name).toBe('invoice v2')
     expect(vm.errorVersionNotFound).toBeNull()
   })
 
-  // A stale link to a deleted version should still show something useful, flagged.
-  it('should fall back to the latest version and flag the missing one', async () => {
-    const latest = version({ version: '9' })
-    const vm = context({ versionIndex: '42', processDefinitions: [latest], loadProcessVersion: vi.fn() })
+  // ProcessInstancesView loads them together with its instances; loading here too doubled the request
+  it('should leave the statistics to the instances view', async () => {
+    engine()
+    const vm = context()
 
-    await m.switchToDefinitionVersion.call(vm)
+    await open(vm)
 
-    expect(vm.errorVersionNotFound).toBe('42')
-    expect(vm.loadProcessVersion).toHaveBeenCalledWith(latest)
+    expect(vm.$store.dispatch).not.toHaveBeenCalledWith('loadStatistics', expect.anything())
   })
 
-  it('should only flag the error when the key has no versions at all', async () => {
-    const vm = context({ processDefinitions: [], loadProcessVersion: vi.fn() })
+  // CIB7-1895: a deep link (or F5 on the instance view) fetched all of this twice
+  it('should open an instance link with one request per resource', async () => {
+    engine({ tenantId: 't1' })
+    const vm = context({ instanceId: 'pi1' })
 
-    await m.switchToDefinitionVersion.call(vm)
+    await open(vm)
 
-    expect(vm.errorVersionNotFound).toBe('2')
-    expect(vm.loadProcessVersion).not.toHaveBeenCalled()
-  })
-
-  it('should reload the addressed instance after switching', async () => {
-    const vm = context({
-      instanceId: 'pi1',
-      processDefinitions: [version()],
-      loadProcessVersion: vi.fn(),
-      loadInstanceById: vi.fn()
-    })
-
-    await m.switchToDefinitionVersion.call(vm)
-
-    expect(vm.loadInstanceById).toHaveBeenCalledWith('pi1')
-  })
-})
-
-describe('ProcessDefinitionView - loadProcessDefinitionFromRoute', () => {
-  it('should load the versions for the route key', async () => {
-    const vm = context({ switchToDefinitionVersion: vi.fn(), resetStatsLazyLoad: vi.fn() })
-    ProcessService.findProcessVersionsByDefinitionKey.mockResolvedValue([version()])
-
-    await m.loadProcessDefinitionFromRoute.call(vm)
-
-    expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledWith('invoice', undefined, false)
-    expect(vm.processDefinitions).toEqual([version()])
-    expect(vm.switchToDefinitionVersion).toHaveBeenCalled()
-  })
-
-  // Arriving by instance link, the definition is discovered from the instance and its
-  // tenant then scopes the version lookup.
-  it('should resolve the definition and tenant from an addressed instance', async () => {
-    const vm = context({
-      instanceId: 'pi1',
-      loadInstanceById: vi.fn(function () { this.selectedInstance = { id: 'pi1', processDefinitionId: 'pd:2:abc' } }),
-      loadStatistics: vi.fn(),
-      switchToDefinitionVersion: vi.fn(),
-      resetStatsLazyLoad: vi.fn()
-    })
-    ProcessService.findProcessById.mockResolvedValue({ id: 'pd:2:abc', tenantId: 't1' })
-
-    await m.loadProcessDefinitionFromRoute.call(vm)
-
-    expect(ProcessService.findProcessById).toHaveBeenCalledWith('pd:2:abc', true)
-    expect(vm.loadStatistics).toHaveBeenCalled()
+    expect(HistoryService.findProcessInstance).toHaveBeenCalledOnce()
+    // fetched once to learn the tenant, then reused for the version entry
+    expect(ProcessService.findProcessById).toHaveBeenCalledOnce()
     expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledWith('invoice', 't1', false)
+    expect(vm.$store.dispatch).toHaveBeenCalledOnce()
+    expect(vm.$store.dispatch).toHaveBeenCalledWith('loadStatistics', vm.process)
+    expect(ProcessService.findActivityInstance).toHaveBeenCalledOnce()
+    expect(HistoryService.findActivitiesInstancesHistory).toHaveBeenCalledOnce()
+    expect(vm.process).toBe(vm.processDefinitions[0])
+    expect(vm.process.name).toBe('invoice v2')
+    expect(vm.selectedInstance).toEqual(activeInstance())
+    expect(vm.activityInstance).toEqual({ id: 'ai' })
+    expect(vm.activityInstanceHistory).toEqual([{ id: 'history' }])
+  })
+
+  // the backend does not fill them in on the definition: incidents always come as 0, the deployment time as null
+  it('should keep the incidents and deployment time of the version entry', async () => {
+    engine()
+    const vm = context({ instanceId: 'pi1' })
+
+    await open(vm)
+
+    expect(vm.process).toMatchObject({ incidents: 7, deploymentTime: 'deployed' })
   })
 
   // Runtime instances carry `definitionId` rather than `processDefinitionId`.
   it('should accept the runtime definitionId spelling', async () => {
-    const vm = context({
-      instanceId: 'pi1',
-      loadInstanceById: vi.fn(function () { this.selectedInstance = { id: 'pi1', definitionId: 'pd:2:abc' } }),
-      loadStatistics: vi.fn(),
-      switchToDefinitionVersion: vi.fn(),
-      resetStatsLazyLoad: vi.fn()
-    })
+    engine({ instances: { pi1: { id: 'pi1', definitionId: definitionId('invoice', '2'), ended: false } } })
+    const vm = context({ instanceId: 'pi1' })
 
-    await m.loadProcessDefinitionFromRoute.call(vm)
+    await open(vm)
 
-    expect(ProcessService.findProcessById).toHaveBeenCalledWith('pd:2:abc', true)
+    expect(ProcessService.findProcessById).toHaveBeenCalledWith('invoice:2:id', true)
+    expect(vm.selectedInstance.id).toBe('pi1')
   })
 
-  it('should reset the lazy statistics placeholders when no definition is loaded yet', async () => {
-    const vm = context({ switchToDefinitionVersion: vi.fn(), resetStatsLazyLoad: vi.fn() })
+  it('should reset the lazy statistics placeholders of the versions', async () => {
+    engine()
+    const vm = context({ instanceId: 'pi1' })
     vm.$root.config.lazyLoadHistory = true
 
-    await m.loadProcessDefinitionFromRoute.call(vm)
+    await open(vm)
 
-    expect(vm.resetStatsLazyLoad).toHaveBeenCalledWith(true)
+    expect(vm.processDefinitions[1]).toMatchObject({ runningInstances: '-', incidents: '-' })
+  })
+
+  it('should switch the version without loading the versions again', async () => {
+    engine()
+    const vm = context()
+    await open(vm)
+    vi.clearAllMocks()
+
+    await navigate(vm, { versionIndex: '1' })
+
+    expect(ProcessService.findProcessVersionsByDefinitionKey).not.toHaveBeenCalled()
+    expect(ProcessService.findProcessById).toHaveBeenCalledWith('invoice:1:id', true)
+    expect(vm.process).toBe(vm.processDefinitions[1])
+  })
+
+  // A stale link to a deleted version should still show something useful, flagged.
+  it('should fall back to the latest version and flag the missing one', async () => {
+    engine()
+    const vm = context({ versionIndex: '42' })
+
+    await open(vm)
+
+    expect(vm.errorVersionNotFound).toBe('42')
+    expect(vm.process).toBe(vm.processDefinitions[0])
+  })
+
+  it('should only flag the error when the key has no versions at all', async () => {
+    engine({ versions: [] })
+    const vm = context()
+
+    await open(vm)
+
+    expect(vm.errorVersionNotFound).toBe('2')
+    expect(vm.process).toBeNull()
+    expect(ProcessService.findProcessById).not.toHaveBeenCalled()
+  })
+
+  it('should start over when the key changes', async () => {
+    engine()
+    const vm = context({ parentProcess: { id: 'parent' } })
+    await open(vm)
+    vi.clearAllMocks()
+
+    await navigate(vm, { processKey: 'order' })
+
+    expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledWith('order', undefined, false)
+    expect(vm.process.key).toBe('order')
+    expect(vm.parentProcess).toBeNull()
+  })
+
+  it('should select an instance from the list without reloading the definition', async () => {
+    engine()
+    const vm = context()
+    await open(vm)
+    vi.clearAllMocks()
+
+    await navigate(vm, { instanceId: 'pi1' })
+
+    expect(HistoryService.findProcessInstance).toHaveBeenCalledOnce()
+    expect(ProcessService.findProcessVersionsByDefinitionKey).not.toHaveBeenCalled()
+    expect(ProcessService.findProcessById).not.toHaveBeenCalled()
+    expect(vm.selectedInstance.id).toBe('pi1')
+  })
+
+  it('should go back to the definition without any request', async () => {
+    engine()
+    const vm = context({ instanceId: 'pi1' })
+    await open(vm)
+    vi.clearAllMocks()
+
+    await navigate(vm, { instanceId: undefined })
+
+    expect(vm.selectedInstance).toBeNull()
+    expect(vm.activityInstance).toBeNull()
+    expect(vm.activityInstanceHistory).toBeNull()
+    expect(ProcessService.findProcessVersionsByDefinitionKey).not.toHaveBeenCalled()
+    expect(ProcessService.findProcessById).not.toHaveBeenCalled()
+    expect(HistoryService.findProcessInstance).not.toHaveBeenCalled()
+  })
+
+  // the instance view of the previous instance must not stay on screen while the next one loads
+  it('should drop the previous instance as soon as another one is asked for', async () => {
+    engine({ instances: { pi1: activeInstance(), pi2: activeInstance({ id: 'pi2' }) } })
+    const vm = context({ instanceId: 'pi1' })
+    await open(vm)
+    const lookup = deferred()
+    HistoryService.findProcessInstance.mockReturnValueOnce(lookup.promise)
+
+    const navigation = navigate(vm, { instanceId: 'pi2' })
+    await Promise.resolve()
+    expect(vm.selectedInstance).toBeNull()
+
+    lookup.resolve(activeInstance({ id: 'pi2' }))
+    await navigation
+    expect(vm.selectedInstance.id).toBe('pi2')
+  })
+
+  it('should not look the selected instance up again', async () => {
+    engine()
+    const vm = context({ instanceId: 'pi1' })
+    await open(vm)
+    vi.clearAllMocks()
+
+    await vm.syncWithRoute()
+
+    expect(HistoryService.findProcessInstance).not.toHaveBeenCalled()
+    expect(ProcessService.findActivityInstance).not.toHaveBeenCalled()
+  })
+
+  // `/1/` with an instance of version 2 used to show the instance against version 1's diagram
+  it('should redirect to the version the instance belongs to', async () => {
+    engine()
+    const vm = context({ versionIndex: '1', instanceId: 'pi1', $route: { query: { tab: 'variables' } } })
+
+    await open(vm)
+
+    expect(vm.$router.replace).toHaveBeenCalledWith({
+      name: 'process',
+      params: { processKey: 'invoice', versionIndex: '2', instanceId: 'pi1' },
+      query: { tab: 'variables' }
+    })
+    expect(ProcessService.findProcessVersionsByDefinitionKey).not.toHaveBeenCalled()
+    expect(ProcessService.findActivityInstance).not.toHaveBeenCalled()
+  })
+
+  it('should redirect to the key the instance belongs to', async () => {
+    engine({ instances: { pi1: activeInstance({ processDefinitionId: definitionId('order', '2') }) } })
+    const vm = context({ instanceId: 'pi1' })
+
+    await open(vm)
+
+    expect(vm.$router.replace).toHaveBeenCalledWith(expect.objectContaining({
+      params: { processKey: 'order', versionIndex: '2', instanceId: 'pi1' }
+    }))
+  })
+
+  it('should reuse what it fetched before the redirect', async () => {
+    engine()
+    const vm = context({ versionIndex: '1', instanceId: 'pi1' })
+    await open(vm)
+
+    await navigate(vm, { versionIndex: '2' })
+
+    expect(HistoryService.findProcessInstance).toHaveBeenCalledOnce()
+    expect(ProcessService.findProcessById).toHaveBeenCalledOnce()
+    expect(vm.process.version).toBe('2')
+    expect(vm.selectedInstance.id).toBe('pi1')
+  })
+
+  it('should not redirect when the definition does not tell its key and version', async () => {
+    engine()
+    ProcessService.findProcessById.mockResolvedValue({ id: 'invoice:2:id' })
+    const vm = context({ versionIndex: '1', instanceId: 'pi1' })
+
+    await open(vm)
+
+    expect(vm.$router.replace).not.toHaveBeenCalled()
+  })
+
+  // A slow response of the previous navigation used to overwrite the newer one.
+  it('should drop the results of an older navigation', async () => {
+    engine()
+    const slowVersions = deferred()
+    ProcessService.findProcessVersionsByDefinitionKey.mockReturnValueOnce(slowVersions.promise)
+    const vm = context()
+
+    const first = open(vm)
+    await vi.waitFor(() => expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalled())
+    await navigate(vm, { processKey: 'order' })
+    slowVersions.resolve([{ id: 'invoice:2:id', key: 'invoice', version: '2' }])
+    await first
+
+    expect(vm.processDefinitions[0].key).toBe('order')
+    expect(vm.process.key).toBe('order')
+  })
+
+  it('should drop the instance of an older navigation', async () => {
+    engine({ instances: { pi1: activeInstance(), pi2: activeInstance({ id: 'pi2' }) } })
+    const slowLookup = deferred()
+    HistoryService.findProcessInstance.mockReturnValueOnce(slowLookup.promise)
+    const vm = context({ instanceId: 'pi1' })
+
+    const first = open(vm)
+    await navigate(vm, { instanceId: 'pi2' })
+    slowLookup.resolve(activeInstance())
+    await first
+
+    expect(vm.selectedInstance.id).toBe('pi2')
+  })
+
+  it('should record the failure message when the instance lookup throws', async () => {
+    engine()
+    HistoryService.findProcessInstance.mockRejectedValue(new Error('404 not found'))
+    const vm = context({ instanceId: 'pi1' })
+
+    await open(vm)
+
+    expect(vm.errorLoadingInstanceId).toBe('404 not found')
+    expect(vm.selectedInstance).toBeNull()
+    expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledWith('invoice', undefined, false)
+  })
+
+  it('should forget the failure when leaving the instance', async () => {
+    engine()
+    HistoryService.findProcessInstance.mockRejectedValue(new Error('404 not found'))
+    const vm = context({ instanceId: 'pi1' })
+    await open(vm)
+
+    await navigate(vm, { instanceId: undefined })
+
+    expect(vm.errorLoadingInstanceId).toBeNull()
+  })
+
+  // An instance already listed in the table can be shown even if history has purged it.
+  it('should fall back to an instance already in the store', async () => {
+    engine({ instances: {} })
+    const vm = context({ instanceId: 'pi1', instances: [activeInstance()] })
+
+    await open(vm)
+
+    expect(vm.selectedInstance.id).toBe('pi1')
+  })
+
+  it('should look the instance up in the runtime API when history is off', async () => {
+    engine()
+    ProcessService.findProcessInstance.mockResolvedValue(activeInstance())
+    const vm = context({ instanceId: 'pi1' })
+    vm.$root.config.camundaHistoryLevel = 'none'
+
+    await open(vm)
+
+    expect(ProcessService.findProcessInstance).toHaveBeenCalledWith('pi1')
+    expect(HistoryService.findProcessInstance).not.toHaveBeenCalled()
+  })
+
+  // Arriving from a call activity, the parent is shown as a breadcrumb.
+  it('should load the parent process named in the query', async () => {
+    engine()
+    const getProcessById = vi.fn(() => Promise.resolve({ id: 'pd-parent', name: 'Parent' }))
+    const vm = context({ getProcessById, $route: { query: { parentProcessDefinitionId: 'pd-parent' } } })
+
+    await open(vm)
+
+    expect(getProcessById).toHaveBeenCalledWith({ id: 'pd-parent' })
+    expect(vm.parentProcess).toEqual({ id: 'pd-parent', name: 'Parent' })
+  })
+
+  it('should clear the parent process when the query does not name one', async () => {
+    engine()
+    const vm = context()
+    await open(vm)
+    vm.parentProcess = { id: 'stale' }
+
+    await navigate(vm, { versionIndex: '1' })
+
+    expect(vm.parentProcess).toBeNull()
+  })
+})
+
+describe('ProcessDefinitionView - selectDefinition', () => {
+  // ProcessInstancesView only reloads them when the definition id changes
+  it('should keep the statistics when the same version is selected from a reloaded list', async () => {
+    const statistics = [{ id: 'task' }]
+    const fresh = version()
+    const vm = context({ process: version({ statistics }) })
+
+    await m.selectDefinition.call(vm, fresh)
+
+    expect(vm.process).toBe(fresh)
+    expect(fresh.statistics).toBe(statistics)
+  })
+
+  it('should not carry statistics over to another version', async () => {
+    const fresh = version({ id: 'pd:1:abc', version: '1' })
+    const vm = context({ process: version({ statistics: [{ id: 'task' }] }) })
+
+    await m.selectDefinition.call(vm, fresh)
+
+    expect(fresh.statistics).toBeUndefined()
+  })
+
+  it('should not load statistics the instance view already has', async () => {
+    const vm = context({ instanceId: 'pi1' })
+
+    await m.selectDefinition.call(vm, version({ statistics: [] }))
+
+    expect(vm.$store.dispatch).not.toHaveBeenCalled()
+  })
+})
+
+describe('ProcessDefinitionView - selectInstance', () => {
+  it('should load the runtime activity tree and history for an active instance', async () => {
+    const vm = context()
+    ProcessService.findActivityInstance.mockResolvedValue({ id: 'ai1' })
+    HistoryService.findActivitiesInstancesHistory.mockResolvedValue([{ id: 'h1' }])
+
+    await m.selectInstance.call(vm, { id: 'pi1', state: 'ACTIVE' })
+
+    expect(ProcessService.findActivityInstance).toHaveBeenCalledWith('pi1')
+    expect(vm.activityInstance).toEqual({ id: 'ai1' })
+    expect(vm.activityInstanceHistory).toEqual([{ id: 'h1' }])
+  })
+
+  // Runtime instances report `ended` rather than a `state`.
+  it('should treat a not-ended runtime instance as active', async () => {
+    const vm = context()
+
+    await m.selectInstance.call(vm, { id: 'pi1', ended: false })
+
+    expect(ProcessService.findActivityInstance).toHaveBeenCalled()
+  })
+
+  it('should load only the history for a finished instance', async () => {
+    const vm = context()
+    HistoryService.findActivitiesInstancesHistory.mockResolvedValue([{ id: 'h1' }])
+
+    await m.selectInstance.call(vm, { id: 'pi1', state: 'COMPLETED' })
+
+    expect(ProcessService.findActivityInstance).not.toHaveBeenCalled()
+    expect(vm.activityInstanceHistory).toEqual([{ id: 'h1' }])
+  })
+
+  it('should load nothing for a finished instance when history is off', async () => {
+    const vm = context()
+    vm.$root.config.camundaHistoryLevel = 'none'
+
+    await m.selectInstance.call(vm, { id: 'pi1', state: 'COMPLETED' })
+
+    expect(HistoryService.findActivitiesInstancesHistory).not.toHaveBeenCalled()
+  })
+
+  // Re-selecting the open instance would re-fetch everything for no reason.
+  it('should skip reloading the instance that is already selected', async () => {
+    const vm = context({ selectedInstance: { id: 'pi1', state: 'ACTIVE' } })
+
+    await m.selectInstance.call(vm, { id: 'pi1', state: 'ACTIVE' })
+
+    expect(ProcessService.findActivityInstance).not.toHaveBeenCalled()
+  })
+
+  it('should drop the previous instance data before selecting another one', async () => {
+    const vm = context({ selectedInstance: { id: 'old' }, activityInstance: { id: 'ai-old' }, task: { id: 't1' } })
+    vm.$root.config.camundaHistoryLevel = 'none'
+
+    await m.selectInstance.call(vm, { id: 'pi1', state: 'COMPLETED' })
+
+    expect(vm.selectedInstance.id).toBe('pi1')
+    expect(vm.activityInstance).toBeNull()
+    expect(vm.task).toBeNull()
+  })
+
+  it('should drop the activity data of an instance that is no longer selected', async () => {
+    const vm = context()
+    ProcessService.findActivityInstance.mockImplementation(async () => {
+      vm.selectedInstance = { id: 'pi2' }
+      return { id: 'ai1' }
+    })
+
+    await m.selectInstance.call(vm, { id: 'pi1', state: 'ACTIVE' })
+
+    expect(vm.activityInstance).toBeNull()
+    expect(HistoryService.findActivitiesInstancesHistory).not.toHaveBeenCalled()
+  })
+
+  it('should drop the history of an instance that is no longer selected', async () => {
+    const vm = context()
+    HistoryService.findActivitiesInstancesHistory.mockImplementation(async () => {
+      vm.selectedInstance = { id: 'pi2' }
+      return [{ id: 'h1' }]
+    })
+
+    await m.selectInstance.call(vm, { id: 'pi1', state: 'COMPLETED' })
+
+    expect(vm.activityInstanceHistory).toBeNull()
   })
 })
 
@@ -406,166 +767,6 @@ describe('ProcessDefinitionView - statistics placeholders', () => {
     await m.loadStatistics.call(vm)
 
     expect(vm.$store.dispatch).toHaveBeenCalledWith('loadStatistics', vm.process)
-  })
-})
-
-describe('ProcessDefinitionView - loadProcessVersion', () => {
-  it('should adopt the version and enrich it', async () => {
-    const vm = context({ findProcessAndAssignData: vi.fn(), loadStatistics: vi.fn() })
-    const v = version({ statistics: [] })
-
-    await m.loadProcessVersion.call(vm, v)
-
-    expect(vm.process).toBe(v)
-    expect(vm.findProcessAndAssignData).toHaveBeenCalledWith(v)
-    expect(vm.loadStatistics).not.toHaveBeenCalled()
-  })
-
-  it('should load statistics when the version has none yet and an instance is shown', async () => {
-    const vm = context({ instanceId: 'pi-1', findProcessAndAssignData: vi.fn(), loadStatistics: vi.fn() })
-
-    await m.loadProcessVersion.call(vm, version())
-
-    expect(vm.loadStatistics).toHaveBeenCalled()
-  })
-
-  // ProcessInstancesView loads them with its instances; loading here too doubled the request
-  it('should leave statistics to the instances view when no instance is shown', async () => {
-    const vm = context({ findProcessAndAssignData: vi.fn(), loadStatistics: vi.fn() })
-
-    await m.loadProcessVersion.call(vm, version())
-
-    expect(vm.loadStatistics).not.toHaveBeenCalled()
-  })
-
-  // Arriving from a call activity, the parent is shown as a breadcrumb.
-  it('should load the parent process named in the query', async () => {
-    const getProcessById = vi.fn(() => Promise.resolve({ id: 'pd-parent', name: 'Parent' }))
-    const vm = context({ findProcessAndAssignData: vi.fn(), loadStatistics: vi.fn(), getProcessById })
-    vm.$route.query.parentProcessDefinitionId = 'pd-parent'
-
-    await m.loadProcessVersion.call(vm, version())
-
-    expect(getProcessById).toHaveBeenCalledWith({ id: 'pd-parent' })
-    expect(vm.parentProcess).toEqual({ id: 'pd-parent', name: 'Parent' })
-  })
-
-  it('should clear the parent process when the query does not name one', async () => {
-    const vm = context({
-      parentProcess: { id: 'stale' },
-      findProcessAndAssignData: vi.fn(),
-      loadStatistics: vi.fn()
-    })
-
-    await m.loadProcessVersion.call(vm, version())
-
-    expect(vm.parentProcess).toBeNull()
-  })
-})
-
-describe('ProcessDefinitionView - findProcessAndAssignData', () => {
-  it('should merge the enriched definition into the matching version entry', async () => {
-    const entry = version({ id: 'pd:2:abc' })
-    const vm = context({ processDefinitions: [entry] })
-    ProcessService.findProcessById.mockResolvedValue({ id: 'pd:2:abc', name: 'Invoice', runningInstances: 3 })
-
-    await m.findProcessAndAssignData.call(vm, entry)
-
-    expect(entry).toMatchObject({ name: 'Invoice', runningInstances: 3 })
-  })
-
-  // the backend does not fill them in there: incidents always come as 0, the deployment time as null
-  it('should keep the incidents and deployment time of the version entry', async () => {
-    const entry = version({ id: 'pd:2:abc', incidents: 3, deploymentTime: '2025-05-16T12:44:00.000+0200' })
-    const vm = context({ processDefinitions: [entry] })
-    ProcessService.findProcessById.mockResolvedValue({ id: 'pd:2:abc', runningInstances: 3, incidents: 0, deploymentTime: null })
-
-    await m.findProcessAndAssignData.call(vm, entry)
-
-    expect(entry).toMatchObject({ runningInstances: 3, incidents: 3, deploymentTime: '2025-05-16T12:44:00.000+0200' })
-  })
-
-  it('should leave other version entries untouched', async () => {
-    const other = version({ id: 'pd:1:abc' })
-    const vm = context({ processDefinitions: [other] })
-    ProcessService.findProcessById.mockResolvedValue({ id: 'pd:2:abc', name: 'Invoice' })
-
-    await m.findProcessAndAssignData.call(vm, version())
-
-    expect(other.name).toBeUndefined()
-  })
-
-  it('should do nothing without a selected process', async () => {
-    await m.findProcessAndAssignData.call(context(), null)
-
-    expect(ProcessService.findProcessById).not.toHaveBeenCalled()
-  })
-})
-
-describe('ProcessDefinitionView - setSelectedInstance', () => {
-  it('should load the runtime activity tree and history for an active instance', async () => {
-    const vm = context()
-    ProcessService.findActivityInstance.mockResolvedValue({ id: 'ai1' })
-    HistoryService.findActivitiesInstancesHistory.mockResolvedValue([{ id: 'h1' }])
-
-    await m.setSelectedInstance.call(vm, { selectedInstance: { id: 'pi1', state: 'ACTIVE' } })
-
-    expect(ProcessService.findActivityInstance).toHaveBeenCalledWith('pi1')
-    expect(vm.activityInstance).toEqual({ id: 'ai1' })
-    expect(vm.activityInstanceHistory).toEqual([{ id: 'h1' }])
-  })
-
-  // Runtime instances report `ended` rather than a `state`.
-  it('should treat a not-ended runtime instance as active', async () => {
-    const vm = context()
-
-    await m.setSelectedInstance.call(vm, { selectedInstance: { id: 'pi1', ended: false } })
-
-    expect(ProcessService.findActivityInstance).toHaveBeenCalled()
-  })
-
-  it('should load only the history for a finished instance', async () => {
-    const vm = context()
-    HistoryService.findActivitiesInstancesHistory.mockResolvedValue([{ id: 'h1' }])
-
-    await m.setSelectedInstance.call(vm, { selectedInstance: { id: 'pi1', state: 'COMPLETED' } })
-
-    expect(ProcessService.findActivityInstance).not.toHaveBeenCalled()
-    expect(vm.activityInstanceHistory).toEqual([{ id: 'h1' }])
-  })
-
-  it('should load nothing for a finished instance when history is off', async () => {
-    const vm = context()
-    vm.$root.config.camundaHistoryLevel = 'none'
-
-    await m.setSelectedInstance.call(vm, { selectedInstance: { id: 'pi1', state: 'COMPLETED' } })
-
-    expect(HistoryService.findActivitiesInstancesHistory).not.toHaveBeenCalled()
-  })
-
-  // Re-selecting the open instance would re-fetch everything for no reason.
-  it('should skip reloading the instance that is already selected', async () => {
-    const vm = context({ selectedInstance: { id: 'pi1', state: 'ACTIVE' } })
-
-    await m.setSelectedInstance.call(vm, { selectedInstance: { id: 'pi1', state: 'ACTIVE' } })
-
-    expect(ProcessService.findActivityInstance).not.toHaveBeenCalled()
-  })
-
-  it('should clear everything when the selection is cleared', async () => {
-    const vm = context({
-      selectedInstance: { id: 'pi1' },
-      activityInstance: { id: 'ai1' },
-      activityInstanceHistory: [{}],
-      task: { id: 't1' }
-    })
-
-    await m.setSelectedInstance.call(vm, { selectedInstance: null })
-
-    expect(vm.selectedInstance).toBeNull()
-    expect(vm.activityInstance).toBeNull()
-    expect(vm.activityInstanceHistory).toBeNull()
-    expect(vm.task).toBeNull()
   })
 })
 
@@ -644,21 +845,23 @@ describe('ProcessDefinitionView - onDeleteProcessDefinition', () => {
 
   // Deleting a version other than the open one just refreshes the list.
   it('should stay put when a non-selected version is deleted', async () => {
-    const vm = context({ process: version({ version: '3' }), resetStatsLazyLoad: vi.fn(), loadProcessVersion: vi.fn() })
-    ProcessService.findProcessVersionsByDefinitionKey.mockResolvedValue([version({ version: '3' })])
+    const remaining = version({ id: 'pd:3:abc', version: '3' })
+    const vm = context({ versionIndex: '3', process: version({ id: 'pd:3:abc', version: '3' }) })
+    ProcessService.findProcessVersionsByDefinitionKey.mockResolvedValue([remaining])
 
     await m.onDeleteProcessDefinition.call(vm, params)
 
     expect(vm.$router.replace).not.toHaveBeenCalled()
-    expect(vm.loadProcessVersion).toHaveBeenCalledWith(vm.process)
+    expect(vm.processDefinitions).toEqual([remaining])
+    expect(vm.process).toBe(remaining)
+    expect(ProcessService.findProcessById).toHaveBeenCalledWith('pd:3:abc', true)
   })
 
   // Deleting the open version navigates to whichever remaining version is nearest.
   it('should navigate to the nearest remaining version', async () => {
-    const vm = context({ process: version({ version: '2' }), resetStatsLazyLoad: vi.fn() })
-    ProcessService.findProcessVersionsByDefinitionKey.mockResolvedValue([
-      version({ version: '5' }), version({ version: '3' }), version({ version: '1' })
-    ])
+    const vm = context({ process: version({ version: '2' }) })
+    const versions = [version({ version: '5' }), version({ version: '3' }), version({ version: '1' })]
+    ProcessService.findProcessVersionsByDefinitionKey.mockResolvedValue(versions)
 
     await m.onDeleteProcessDefinition.call(vm, params)
 
@@ -667,14 +870,16 @@ describe('ProcessDefinitionView - onDeleteProcessDefinition', () => {
       params: { processKey: 'invoice', versionIndex: '3' },
       query: {}
     })
+    expect(vm.processDefinitions).toBe(versions)
   })
 
   it('should keep the tenant in the query when navigating', async () => {
-    const vm = context({ process: version({ version: '2' }), tenantId: 't1', resetStatsLazyLoad: vi.fn() })
+    const vm = context({ process: version({ version: '2' }), tenantId: 't1' })
     ProcessService.findProcessVersionsByDefinitionKey.mockResolvedValue([version({ version: '1' })])
 
     await m.onDeleteProcessDefinition.call(vm, params)
 
+    expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledWith('invoice', 't1', false)
     expect(vm.$router.replace).toHaveBeenCalledWith(expect.objectContaining({
       query: { tenantId: 't1' }
     }))
@@ -683,28 +888,32 @@ describe('ProcessDefinitionView - onDeleteProcessDefinition', () => {
 
 describe('ProcessDefinitionView - onRefreshProcessDefinitions', () => {
   it('should reload the versions and re-select the open one', async () => {
-    const vm = context({ process: version(), resetStatsLazyLoad: vi.fn(), loadProcessVersion: vi.fn() })
-    ProcessService.findProcessVersionsByDefinitionKey.mockResolvedValue([version()])
+    const statistics = [{ id: 'task' }]
+    const fresh = version()
+    const vm = context({ process: version({ statistics }), resetStatsLazyLoad: vi.fn() })
+    ProcessService.findProcessVersionsByDefinitionKey.mockResolvedValue([fresh, version({ id: 'pd:1:abc', version: '1' })])
 
     const result = await m.onRefreshProcessDefinitions.call(vm, true)
 
     expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledWith('invoice', undefined, true)
     expect(vm.resetStatsLazyLoad).toHaveBeenCalledWith(true)
-    expect(vm.loadProcessVersion).toHaveBeenCalledWith(vm.process)
-    expect(result).toEqual([version()])
+    expect(vm.process).toBe(fresh)
+    expect(fresh.statistics).toBe(statistics)
+    expect(result).toHaveLength(2)
   })
 
-  it('should not try to select anything when no versions remain', async () => {
-    const vm = context({ resetStatsLazyLoad: vi.fn(), loadProcessVersion: vi.fn() })
+  it('should flag the open version when no versions remain', async () => {
+    const vm = context({ process: version() })
     ProcessService.findProcessVersionsByDefinitionKey.mockResolvedValue([])
 
     await m.onRefreshProcessDefinitions.call(vm, false)
 
-    expect(vm.loadProcessVersion).not.toHaveBeenCalled()
+    expect(vm.errorVersionNotFound).toBe('2')
+    expect(ProcessService.findProcessById).not.toHaveBeenCalled()
   })
 
   it('should tell which reload is running while it runs', async () => {
-    const vm = context({ process: version(), resetStatsLazyLoad: vi.fn(), loadProcessVersion: vi.fn() })
+    const vm = context({ process: version(), syncDefinition: vi.fn() })
     let seen
     ProcessService.findProcessVersionsByDefinitionKey.mockImplementation(async () => { seen = vm.refreshingVersions; return [version()] })
 
@@ -718,7 +927,7 @@ describe('ProcessDefinitionView - onRefreshProcessDefinitions', () => {
   })
 
   it('should end the reload state when the versions cannot be loaded', async () => {
-    const vm = context({ resetStatsLazyLoad: vi.fn(), loadProcessVersion: vi.fn() })
+    const vm = context()
     ProcessService.findProcessVersionsByDefinitionKey.mockRejectedValue(new Error('down'))
 
     await expect(m.onRefreshProcessDefinitions.call(vm, false)).rejects.toThrow('down')
@@ -728,19 +937,15 @@ describe('ProcessDefinitionView - onRefreshProcessDefinitions', () => {
 })
 
 describe('ProcessDefinitionView - misc', () => {
-  it('onInstanceDeleted should clear the selection, refresh statistics and redraw', async () => {
-    const vm = context({
-      process: version(),
-      setSelectedInstance: vi.fn(),
-      loadStatistics: vi.fn(),
-      findProcessAndAssignData: vi.fn()
-    })
+  it('onInstanceDeleted should refresh the statistics and counts and redraw', async () => {
+    const entry = version({ incidents: 3 })
+    const vm = context({ process: entry })
+    ProcessService.findProcessById.mockResolvedValue({ id: 'pd:2:abc', runningInstances: 4, incidents: 0 })
 
     await m.onInstanceDeleted.call(vm)
 
-    expect(vm.setSelectedInstance).toHaveBeenCalledWith({ selectedInstance: null })
-    expect(vm.loadStatistics).toHaveBeenCalled()
-    expect(vm.findProcessAndAssignData).toHaveBeenCalledWith(vm.process)
+    expect(vm.$store.dispatch).toHaveBeenCalledWith('loadStatistics', entry)
+    expect(entry).toMatchObject({ runningInstances: 4, incidents: 3 })
     expect(vm.$refs.process.refreshDiagram).toHaveBeenCalled()
   })
 

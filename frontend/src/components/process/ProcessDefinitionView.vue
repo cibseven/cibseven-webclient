@@ -45,7 +45,6 @@
       </template>
       <transition name="slide-in" mode="out-in">
         <ProcessInstancesView ref="process" v-if="process && !selectedInstance && !instanceId"
-          :loading="loading"
           :process="process"
           :process-key="processKey"
           :version-index="computedVersionIndex"
@@ -113,32 +112,7 @@ export default {
     tenantId: { type: String }
   },
   watch: {
-    processKey: {
-      async handler() {
-        // Reset process state when processKey changes
-        this.process = null
-        this.selectedInstance = null
-        this.activityInstance = null
-        this.activityInstanceHistory = null
-        this.parentProcess = null
-        this.errorVersionNotFound = null
-        this.clearActivitySelection()
-
-        await this.loadProcessDefinitionFromRoute()
-      },
-      immediate: true      
-    },
-    async versionIndex() {
-      if (this.process && this.process.key === this.processKey) {
-        await this.switchToDefinitionVersion()
-      }
-    },
-    async instanceId() {
-      this.clearActivitySelection()
-      if (this.process && this.process.key === this.processKey && this.instanceId) {
-        await this.loadInstanceById(this.instanceId)
-      }
-    },
+    routeState: { handler: 'onRouteChanged', immediate: true },
     sidebarScope(newScope) {
       this.leftOpen = this.getSavedLeftOpen(newScope)
     }
@@ -146,7 +120,7 @@ export default {
   data() {
     return {
       leftOpen: this.getSavedLeftOpen(this.instanceId ? 'process-instance' : 'process-definition'),
-      process: null, // selected process definition
+      process: null, // selected process definition: always an entry of processDefinitions
       processDefinitions: [],
       refreshingVersions: null,
       errorVersionNotFound: null,
@@ -156,12 +130,20 @@ export default {
       activityInstance: null,
       activityInstanceHistory: null,
       filter: localStorage.getItem(UNFINISHED_FILTER_PREFERENCE_KEY) === 'false' ? {} : { unfinished: true },
-      loading: false,
       parentProcess: null
     }
   },
   computed: {
     ...mapGetters('instances', ['instances']),
+    // One watcher for all route props: a navigation that changes several of them is handled once
+    routeState() {
+      return {
+        processKey: this.processKey,
+        tenantId: this.tenantId,
+        versionIndex: this.versionIndex,
+        instanceId: this.instanceId,
+      }
+    },
     sidebarScope() {
       return (this.selectedInstance || this.instanceId) ? 'process-instance' : 'process-definition'
     },
@@ -179,27 +161,6 @@ export default {
       return this.process?.version || this.versionIndex
     },
   },
-  async beforeUpdate() {
-    if (this.process != null && this.process.version !== this.versionIndex) {
-      // different process-definition was selected
-      this.selectedInstance = null
-      this.activityInstance = null
-      this.activityInstanceHistory = null
-      this.task = null
-    }
-    else if (this.selectedInstance == null && this.instanceId) {
-      await this.loadInstanceById(this.instanceId)
-    }
-    else if (!this.instanceId) {
-      this.selectedInstance = null
-      // Don't clear activityInstance if it's set for filtering purposes (has only an id)
-      if (this.activityInstance && Object.keys(this.activityInstance).length > 1) {
-        this.activityInstance = null
-      }
-      this.activityInstanceHistory = null
-      this.task = null
-    }
-  },
   // Leaving the process pages: the next visit loads the called process definitions again, so a newer deployment is seen
   beforeUnmount: function() {
     this.clearStaticCalledProcessDefinitions()
@@ -212,139 +173,196 @@ export default {
       this.leftOpen = isOpen
       this.saveLeftOpen(this.sidebarScope, isOpen)
     },
+    onRouteChanged(route, previous) {
+      // a different process or instance starts without the activity picked in the previous diagram
+      if (route.processKey !== previous?.processKey || route.instanceId !== previous?.instanceId) {
+        this.clearActivitySelection()
+      }
+      return this.syncWithRoute()
+    },
+    /**
+     * Brings the view in line with the route props. Each step only runs when its input changed:
+     * 1) the versions of the key, 2) the definition version the URL asks for, 3) the instance.
+     * A newer navigation makes an older run drop its results.
+     */
+    async syncWithRoute() {
+      const run = this.syncRun = (this.syncRun ?? 0) + 1 // non-reactive
+      const isStale = () => run !== this.syncRun
+      // instances and definitions fetched in this navigation, by id; a redirect hands them on to the next run
+      const fetched = this.handover ?? new Map()
+      this.handover = null
+
+      const versionsScope = `${this.processKey}\n${this.tenantId ?? ''}`
+      if (versionsScope !== this.versionsScope) this.clearDefinitions()
+      if (this.selectedInstance && this.selectedInstance.id !== this.instanceId) this.clearInstance()
+
+      const instance = await this.lookUpInstance(this.instanceId, fetched)
+      if (isStale()) return
+      // the instance's definition tells the version it belongs to and the tenant of the versions
+      const instanceDefinition = instance && await this.findInstanceDefinition(instance, fetched)
+      if (isStale()) return
+      if (instanceDefinition && this.redirectToInstanceDefinition(instanceDefinition, fetched)) return
+
+      if (versionsScope !== this.versionsScope) {
+        const lazyLoad = this.$root.config.lazyLoadHistory
+        const tenantId = instanceDefinition ? instanceDefinition.tenantId : this.tenantId
+        const versions = await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, tenantId, lazyLoad)
+        if (isStale()) return
+        this.processDefinitions = versions
+        this.resetStatsLazyLoad(lazyLoad)
+        this.versionsScope = versionsScope // non-reactive
+      }
+
+      await this.syncDefinition(fetched)
+      if (isStale()) return
+
+      if (instance) await this.selectInstance(instance)
+    },
     async findProcessInstance(instanceId) {
       return (this.$root.config.camundaHistoryLevel !== 'none') ?
         HistoryService.findProcessInstance(instanceId) :
         ProcessService.findProcessInstance(instanceId)
     },
-    async loadInstanceById(instanceId) {
-      this.selectedInstance = null
-      this.activityInstanceHistory = null
-      this.task = null
+    async lookUpInstance(instanceId, fetched = new Map()) {
+      this.errorLoadingInstanceId = null
+      if (!instanceId) return null
+      if (this.selectedInstance?.id === instanceId) return this.selectedInstance
+      if (fetched.has(instanceId)) return fetched.get(instanceId)
 
       let instance = null
       try {
-        this.errorLoadingInstanceId = null
         instance = await this.findProcessInstance(instanceId)
       } catch (error) {
-        // ignore error, fallback below
         this.errorLoadingInstanceId = error.message
       }
-      if (!instance && this.instances) {
-        // Fallback to checking store instances
-        instance = this.instances.find(i => i.id == instanceId)
+      // an instance listed in the table can still be shown when history has purged it
+      instance ??= this.instances?.find(i => i.id === instanceId) ?? null
+      if (instance) fetched.set(instanceId, instance)
+      return instance
+    },
+    async findInstanceDefinition(instance, fetched) {
+      // runtime instances carry `definitionId` rather than `processDefinitionId`
+      const definitionId = instance.processDefinitionId ?? instance.definitionId
+      return this.processDefinitions.find(definition => definition.id === definitionId) ??
+        this.fetchDefinition(definitionId, fetched)
+    },
+    // The URL names a version (or key) the instance does not belong to: show it with its own definition
+    redirectToInstanceDefinition(definition, fetched) {
+      if (!definition.key || definition.version == null) return false
+      const versionIndex = String(definition.version)
+      if (definition.key === this.processKey && versionIndex === this.versionIndex) return false
+      this.handover = fetched // non-reactive
+      this.$router.replace({
+        name: 'process',
+        params: { processKey: definition.key, versionIndex, instanceId: this.instanceId },
+        query: this.$route.query
+      })
+      return true
+    },
+    // Selects the version the URL asks for, or the latest one (flagged) when there is no such version
+    async syncDefinition(fetched) {
+      const requested = this.processDefinitions.find(definition => definition.version === this.versionIndex)
+      this.errorVersionNotFound = requested ? null : this.versionIndex
+      const definition = requested ?? this.processDefinitions[0]
+      if (definition && definition !== this.process) await this.selectDefinition(definition, fetched)
+    },
+    async selectDefinition(definition, fetched = new Map()) {
+      const previous = this.process
+      this.process = definition
+      // the entries of a reloaded versions list are new: the open version keeps the statistics its diagram shows
+      if (previous?.id === definition.id) definition.statistics ??= previous.statistics
+      this.assignDefinitionData(definition, await this.fetchDefinition(definition.id, fetched))
+      // ProcessInstancesView loads the statistics together with its instances, the instance view does not
+      if (this.instanceId && !definition.statistics) await this.loadStatistics(definition)
+
+      // arriving from a call activity, the parent is shown as a breadcrumb
+      const parentProcessDefinitionId = this.$route.query.parentProcessDefinitionId
+      this.parentProcess = parentProcessDefinitionId ? await this.getProcessById({ id: parentProcessDefinitionId }) : null
+    },
+    async fetchDefinition(id, fetched = new Map()) {
+      if (!fetched.has(id)) fetched.set(id, await ProcessService.findProcessById(id, true))
+      return fetched.get(id)
+    },
+    // the definition never fills in the incidents and the deployment time: the version entry keeps its own
+    assignDefinitionData(entry, definition) {
+      Object.assign(entry, { ...definition, incidents: entry.incidents, deploymentTime: entry.deploymentTime })
+    },
+    clearDefinitions() {
+      this.versionsScope = null // non-reactive
+      this.processDefinitions = []
+      this.process = null
+      this.parentProcess = null
+      this.errorVersionNotFound = null
+    },
+    clearInstance() {
+      this.selectedInstance = null
+      this.activityInstance = null
+      this.activityInstanceHistory = null
+      this.task = null
+    },
+    async selectInstance(instance) {
+      if (this.selectedInstance?.id === instance.id) return
+      this.clearInstance()
+      this.selectedInstance = instance
+
+      // the responses for an instance that is no longer selected are dropped
+      const isActive = 'state' in instance ? instance.state === 'ACTIVE' : instance.ended === false
+      if (isActive) {
+        const activityInstance = await ProcessService.findActivityInstance(instance.id)
+        if (this.selectedInstance?.id !== instance.id) return
+        this.activityInstance = activityInstance
       }
-      if (instance) {
-        await this.setSelectedInstance({ selectedInstance: instance })
+      if (isActive || this.$root.config.camundaHistoryLevel !== 'none') {
+        const activityInstanceHistory = await HistoryService.findActivitiesInstancesHistory(instance.id)
+        if (this.selectedInstance?.id !== instance.id) return
+        this.activityInstanceHistory = activityInstanceHistory
       }
     },
-    async loadProcessDefinitionFromRoute() {
-
-      let tenantId = this.tenantId
-      
-      if (this.instanceId) {
-        await this.loadInstanceById(this.instanceId)
-        if (this.selectedInstance) {
-          // instance found, load its process definition
-          const definitionId = this.selectedInstance.processDefinitionId ?? this.selectedInstance.definitionId
-          await ProcessService.findProcessById(definitionId, true).then(process => {
-            this.process = process
-          })
-          if (this.process) {
-            await this.loadStatistics()
-            tenantId = this.process.tenantId
-          }
-        }
+    async onDeleteProcessDefinition({ processDefinition }) {
+      await ProcessService.deleteProcessDefinition(processDefinition.id, true)
+      const lazyLoad = this.$root.config.lazyLoadHistory
+      const versions = await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, lazyLoad)
+      if (versions.length === 0) {
+        // no more process-definitions with such key
+        this.$router.replace('/seven/auth/processes')
+        return
       }
-
-      await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, tenantId, this.$root.config.lazyLoadHistory).then(async versions => {
-        this.processDefinitions = versions
-        const needCalcStats = this.process == null
-        if (needCalcStats) {
-          this.resetStatsLazyLoad(this.$root.config.lazyLoadHistory)
+      this.processDefinitions = versions
+      this.resetStatsLazyLoad(lazyLoad)
+      if (processDefinition.version !== this.computedVersionIndex) {
+        // a version other than the open one was deleted: the open one is selected from the new list
+        await this.syncDefinition()
+        return
+      }
+      // The open version was deleted: navigate to the nearest remaining one.
+      //
+      // 5 4 3 2 1
+      //     ^      - deleted
+      //   ^   ^    - one of final nextVersionIndex
+      //
+      const deleted = Number(processDefinition.version)
+      const distance = version => Math.abs(Number(version.version) - deleted)
+      const nearest = versions.reduce((best, version) => distance(version) < distance(best) ? version : best)
+      this.$router.replace({
+        name: 'process',
+        params: {
+          processKey: processDefinition.key,
+          versionIndex: nearest.version,
+        },
+        query: {
+          ...this.$route.query,
+          ...(this.tenantId ? { tenantId: this.tenantId } : {}),
         }
-
-        await this.switchToDefinitionVersion()
       })
     },
-    async switchToDefinitionVersion() {
-      const requestedDefinition = this.processDefinitions.find(processDefinition => processDefinition.version === this.versionIndex)
-      if (requestedDefinition) {
-        await this.loadProcessVersion(requestedDefinition)
-        this.errorVersionNotFound = null
-      }
-      else if (this.processDefinitions.length > 0) {
-        // version from URL not found, load latest version
-        this.errorVersionNotFound = this.versionIndex
-        await this.loadProcessVersion(this.processDefinitions[0])
-      }
-      else {
-        // no process definitions with such key
-        this.errorVersionNotFound = this.versionIndex
-      }
-
-      if (this.instanceId) {
-        await this.loadInstanceById(this.instanceId)
-      }
-    },
-    async onDeleteProcessDefinition(params) {
-      await ProcessService.deleteProcessDefinition(params.processDefinition.id, true).then(async () => {
-        // reload versions
-        await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, this.$root.config.lazyLoadHistory)
-        .then(versions => {
-          if (versions.length === 0) {
-            // no more process-definitions with such key
-            this.$router.replace('/seven/auth/processes')
-          } else if (params.processDefinition.version !== this.computedVersionIndex) {
-            // remove deleted process-definition from the list
-            this.processDefinitions = versions
-            this.resetStatsLazyLoad(this.$root.config.lazyLoadHistory)
-            this.loadProcessVersion(this.process)
-          }  else {
-            // Find nearest process-definition to deleted one and select it.
-            //
-            // 5 4 3 2 1
-            //     ^      - deleted
-            //   ^   ^    - one of final nextVersionIndex
-            //
-            let nextVersionIndex = versions[0].version
-            versions.forEach((version) => {
-              const currentDistance = Math.abs(Number(nextVersionIndex) - Number(params.processDefinition.version))
-              const thisDistance = Math.abs(Number(nextVersionIndex) - Number(version.version))
-              if (currentDistance > thisDistance) {
-                nextVersionIndex = version.version
-              }
-            })
-            this.$router.replace({
-              name: 'process',
-              params: {
-                processKey: params.processDefinition.key,
-                versionIndex: nextVersionIndex,
-              },
-              query: {
-                ...this.$route.query,
-                ...(this.tenantId ? { tenantId: this.tenantId } : {}),
-              }
-            })
-            this.processDefinitions = versions
-            this.resetStatsLazyLoad(this.$root.config.lazyLoadHistory)
-          }
-        })
-      })
-    },
-    // call from:
-    // - user have deleted a non-selected process definition (this.process is still valid)
-    // - user clicked "refresh process definitions" button
+    // "refresh process definitions" button: 'all' when every version's data is loaded, shown on the sidebar's load button
     async onRefreshProcessDefinitions(lazyLoad) {
-      // 'all' when every version's data is loaded, shown on the sidebar's load button
       this.refreshingVersions = lazyLoad ? 'refresh' : 'all'
       try {
         const versions = await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, lazyLoad)
         this.processDefinitions = versions
-        if (this.processDefinitions.length > 0) {
-          this.resetStatsLazyLoad(lazyLoad)
-          await this.loadProcessVersion(this.process)
-        }
+        this.resetStatsLazyLoad(lazyLoad)
+        await this.syncDefinition()
         return versions
       } finally {
         this.refreshingVersions = null
@@ -360,94 +378,28 @@ export default {
         })
       }
     },
-    async findProcessAndAssignData(selectedProcess) {
-      if (selectedProcess) {
-          const process = await ProcessService.findProcessById(selectedProcess.id, true)
-          const version = this.processDefinitions.find(v => v.id === process.id)
-          // without its incidents and deployment time, which the definition never fills in
-          if (version) Object.assign(version, { ...process, incidents: version.incidents, deploymentTime: version.deploymentTime })
-        }
-    },
-    async loadProcessVersion(process) {
-      this.process = process
-      await this.findProcessAndAssignData(process)
-      // ProcessInstancesView reloads runtime statistics with its instances on every tab
-      const showsInstancesView = !this.selectedInstance && !this.instanceId
-      if (!this.process.statistics && !showsInstancesView) await this.loadStatistics()
-
-      // Load parent process if parentProcessDefinitionId exists in route query
-      if (this.$route.query.parentProcessDefinitionId) {
-        await this.getProcessById({ id: this.$route.query.parentProcessDefinitionId }).then(response => {
-          this.parentProcess = response
-        })
-      } else {
-        this.parentProcess = null
-      }
-    },
-    async loadStatistics() {
-      await this.$store.dispatch('loadStatistics', this.process)
+    async loadStatistics(definition = this.process) {
+      await this.$store.dispatch('loadStatistics', definition)
     },
     async onInstanceDeleted() {
-      await this.setSelectedInstance({ selectedInstance: null })
       await this.loadStatistics()
-      await this.findProcessAndAssignData(this.process)
+      this.assignDefinitionData(this.process, await this.fetchDefinition(this.process.id))
       this.$refs.process.refreshDiagram()
     },
-    async setSelectedInstance(evt) {
-      const selectedInstance = evt.selectedInstance
-      if (!selectedInstance) {
-        this.selectedInstance = null
-      }
-      this.task = null
-      if (selectedInstance) {
-        // do not load the same data once again
-        if (this.selectedInstance && this.selectedInstance.id === selectedInstance.id) return
-        this.activityInstance = null
-        this.activityInstanceHistory = selectedInstance ? this.activityInstanceHistory : null
-        this.selectedInstance = selectedInstance
-        const isActiveInstance = 'state' in this.selectedInstance
-          ? this.selectedInstance.state === 'ACTIVE'
-          : this.selectedInstance.ended === false
-        if (isActiveInstance) {
-          //Management
-          await ProcessService.findActivityInstance(selectedInstance.id).then(async activityInstance => {
-            this.activityInstance = activityInstance
-            await HistoryService.findActivitiesInstancesHistory(selectedInstance.id).then(activityInstanceHistory => {
-              this.activityInstanceHistory = activityInstanceHistory
-            })
-          })
-        } else {
-          //History
-          if (this.$root.config.camundaHistoryLevel !== 'none') {
-            await HistoryService.findActivitiesInstancesHistory(selectedInstance.id).then(activityInstanceHistory => {
-              this.activityInstanceHistory = activityInstanceHistory
-            })
-          }
-        }
-      }
-      else {
-        this.activityInstance = null
-        this.activityInstanceHistory = null
-      }
-    },
     async setSelectedTask(selectedTask) {
-      if (this.selectedInstance && selectedTask) {
-        await HistoryService.findTasksByDefinitionKeyHistory(selectedTask.id, this.selectedInstance.id).then(async function(task) {
-          if (task.length === 0) {
-            this.task = null
-            return
-          }
-          this.task = task[0]
-          const serviceCall = !this.task.endTime ? TaskService.fetchActivityVariables :
-            HistoryService.fetchActivityVariablesHistory
-          await serviceCall(this.task.activityInstanceId).then(variables => {
-            variables.forEach(variable => {
-              variable.value = variable.type === 'Object' ? JSON.stringify(variable.value) : variable.value
-            })
-            this.task.variables = variables
-          })
-        }.bind(this))
+      if (!this.selectedInstance || !selectedTask) return
+      const [task] = await HistoryService.findTasksByDefinitionKeyHistory(selectedTask.id, this.selectedInstance.id)
+      if (!task) {
+        this.task = null
+        return
       }
+      this.task = task
+      const fetchVariables = task.endTime ? HistoryService.fetchActivityVariablesHistory : TaskService.fetchActivityVariables
+      const variables = await fetchVariables(task.activityInstanceId)
+      variables.forEach(variable => {
+        variable.value = variable.type === 'Object' ? JSON.stringify(variable.value) : variable.value
+      })
+      this.task.variables = variables
     },
     filterInstances(filter) {
       this.filter = filter
