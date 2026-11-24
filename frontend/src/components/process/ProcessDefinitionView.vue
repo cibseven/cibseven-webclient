@@ -65,8 +65,8 @@
         :tenant-id="tenantId"
         @task-selected="setSelectedTask($event)"
       />
-      <WarningBox v-else-if="errorVersionNotFound !== null && processDefinitions.length === 0" :message="$t('process.definitionNotFound', { processKey: processKey, tenantId: tenantId })"/>
       <WarningBox v-else-if="errorLoadingInstanceId !== null" :message="$t('process.instanceNotFound', { instanceId: instanceId, error: errorLoadingInstanceId })"/>
+      <WarningBox v-else-if="errorVersionNotFound !== null && processDefinitions.length === 0" :message="$t('process.definitionNotFound', { processKey: processKey, tenantId: tenantId })"/>
     </SidebarsFlow>
     <TaskPopper ref="importPopper"></TaskPopper>
   </div>
