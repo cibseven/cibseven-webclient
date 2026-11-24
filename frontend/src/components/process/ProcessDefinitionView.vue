@@ -197,6 +197,7 @@ export default {
       if (reloadVersions) this.clearDefinitions()
       if (this.selectedInstance && this.selectedInstance.id !== this.instanceId) this.clearInstance()
 
+      // load the instance and the versions in parallel, if needed
       const [instance] = await Promise.all([
         this.lookUpInstance(this.instanceId),
         reloadVersions && this.loadVersions(versionsScope, isStale)
