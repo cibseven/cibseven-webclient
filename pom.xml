@@ -51,8 +51,8 @@
 		     where others bring it: springdoc's swagger-core (YAML), and jackson-annotations, which
 		     Jackson 3 uses too. Spring Boot's own Jackson 2 BOM version is overridden explicitly to this
 		     patched release. -->
-		<version.jackson2>2.21.7</version.jackson2>
-		<version.jackson3>3.1.7</version.jackson3>
+		<version.jackson2>2.21.8</version.jackson2>
+		<version.jackson3>3.1.8</version.jackson3>
 
 		<!-- ============================================================================
 		     CVE overrides. This project imports spring-boot-dependencies as a BOM (not as the
