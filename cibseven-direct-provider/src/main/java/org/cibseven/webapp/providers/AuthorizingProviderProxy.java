@@ -20,8 +20,11 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Objects;
 
+import org.cibseven.bpm.engine.AuthorizationException;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.exception.PermissionDeniedException;
 
 /**
  * Dynamic proxy that wraps a {@code Direct*Provider} so every call carrying a {@link CIBUser} argument
@@ -55,8 +58,20 @@ public class AuthorizingProviderProxy implements InvocationHandler {
 				new AuthorizingProviderProxy(target, directProviderUtil));
 	}
 
+	/**
+	 * A permission the engine refuses becomes a {@link PermissionDeniedException}, answered with 403 as the
+	 * REST provider answers it: the engine classes are not on the REST layer's classpath.
+	 */
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+		try {
+			return invokeAsUser(method, args);
+		} catch (AuthorizationException e) {
+			throw new PermissionDeniedException(Objects.toString(e.getMessage(), "Permission denied"), e);
+		}
+	}
+
+	private Object invokeAsUser(Method method, Object[] args) throws Throwable {
 		CIBUser user = findUser(args);
 		if (user == null) {
 			return invokeTarget(method, args);

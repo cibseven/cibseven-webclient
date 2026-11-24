@@ -24,7 +24,9 @@ import org.cibseven.webapp.exception.ApplicationException;
 import org.cibseven.webapp.exception.EngineNotReachableException;
 import org.cibseven.webapp.exception.ErrorMessage;
 import org.cibseven.webapp.exception.FeatureDisabledException;
+import org.cibseven.webapp.exception.InvalidRequestException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
+import org.cibseven.webapp.exception.PermissionDeniedException;
 import org.cibseven.webapp.rest.BaseService;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -52,7 +54,21 @@ public class ExceptionConverter {
 		log.error("Access denied", x);
 		return new ErrorMessage(x.getClass().getSimpleName(), new Object[] { x.getMessage() });
 	}
-	
+
+	// The engine refused a permission or the request: the caller's problem, not a server failure
+
+	@ExceptionHandler @ResponseStatus(HttpStatus.FORBIDDEN)
+	public ErrorMessage permissionDenied(PermissionDeniedException x) {
+		log.info("The engine denied a permission: {}", x.getMessage());
+		return new ErrorMessage(x.getClass().getSimpleName(), new Object[] { x.getMessage() });
+	}
+
+	@ExceptionHandler @ResponseStatus(HttpStatus.BAD_REQUEST)
+	public ErrorMessage invalidRequest(InvalidRequestException x) {
+		log.info("The engine rejected the request: {}", x.getMessage());
+		return new ErrorMessage(x.getClass().getSimpleName(), new Object[] { x.getMessage() });
+	}
+
 	@ExceptionHandler @ResponseStatus(HttpStatus.BAD_REQUEST) 
 	public ErrorMessage application(ApplicationException x) {
 		log.info("Application error occured " + Arrays.toString(x.getData()), x);
