@@ -22,7 +22,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -42,9 +47,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
@@ -183,6 +191,43 @@ public class VariableErrorResponseTest {
 		mvc.perform(get(BASE + "/process/pi-1/variable/amount"))
 				.andExpect(status().isNotFound())
 				.andExpect(jsonPath("$.params[0]").value("The process instance or the variable does not exist."));
+	}
+
+	// ---------- server log: the cause is kept there, not in the response ----------
+
+	@Test
+	void anEngineFailureIsLoggedWithItsMessageAndStackTrace() throws Exception {
+		Logger log = mock(Logger.class);
+		SystemException cause = new SystemException(TECHNICAL);
+		doThrow(cause).when(bpmProvider).saveVariableInProcessInstanceId(eq("pi-1"), anyList(), eq(user));
+
+		try (MockedStatic<LoggerFactory> factory = mockStatic(LoggerFactory.class, CALLS_REAL_METHODS)) {
+			factory.when(() -> LoggerFactory.getLogger(ProcessService.class)).thenReturn(log);
+
+			mvc.perform(post(BASE + "/process/pi-1/variables").contentType(MediaType.APPLICATION_JSON).content("[]"))
+					.andExpect(status().isBadRequest())
+					.andExpect(content().string(not(containsString("ENGINE-03005"))));
+		}
+
+		verify(log).warn(eq("{} ({}: {})"), eq("The variables could not be saved."), eq("SystemException"),
+				contains("ENGINE-03005"), same(cause));
+	}
+
+	@Test
+	void anExpectedSituationIsLoggedWithItsMessageAndTheStackTraceOnlyAtDebug() throws Exception {
+		Logger log = mock(Logger.class);
+		NoObjectFoundException cause = new NoObjectFoundException(TECHNICAL);
+		when(bpmProvider.findTaskById("task-1", user)).thenThrow(cause);
+
+		try (MockedStatic<LoggerFactory> factory = mockStatic(LoggerFactory.class, CALLS_REAL_METHODS)) {
+			factory.when(() -> LoggerFactory.getLogger(TaskService.class)).thenReturn(log);
+
+			mvc.perform(post(SUBMIT).contentType(MediaType.APPLICATION_JSON).content("[]"))
+					.andExpect(status().isNotFound());
+		}
+
+		verify(log).warn("{} ({}: {})", "The task or its process instance no longer exists.", "NoObjectFoundException", TECHNICAL);
+		verify(log).debug("Stack trace of the cause", cause);
 	}
 
 	@Test
