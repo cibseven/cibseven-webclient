@@ -1062,6 +1062,24 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
   })
 
   /**
+   * Scenario: an instance link whose lookup answers without an error but finds nothing, and the instance is not in
+   *   the instances table either.
+   * Link: #/seven/auth/process/invoice/2/missing
+   * Expected: errorLoadingInstanceId is set to an empty server response, so the middle pane says the instance was
+   *   not found; no instance is selected.
+   * Guards against: a blank middle pane, as neither the instance view nor a warning had anything to show.
+   */
+  it('should tell the instance was not found when its lookup finds nothing', async () => {
+    engine()
+    const vm = context({ instanceId: 'missing' })
+
+    await open(vm)
+
+    expect(vm.errorLoadingInstanceId).toBe('')
+    expect(vm.selectedInstance).toBeNull()
+  })
+
+  /**
    * Scenario: an instance link to an instance that cannot be loaded (404: deleted, or its history cleaned up).
    * Link: #/seven/auth/process/invoice/2/pi1
    * Expected: errorLoadingInstanceId holds the server's message, no instance is selected, the versions still load.

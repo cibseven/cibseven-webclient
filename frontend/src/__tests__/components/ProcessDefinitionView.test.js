@@ -184,6 +184,24 @@ describe('ProcessDefinitionView - mounted', () => {
   })
 
   /**
+   * Scenario: an instance link whose lookup answers without an error but finds nothing; the key's versions exist.
+   * Link: #/seven/auth/process/invoice/2/pi9
+   * Expected: the middle pane shows only "instance not found".
+   * Guards against: a blank middle pane, as neither the instance view nor a warning had anything to show.
+   */
+  it('shows the instance-not-found warning when the lookup finds nothing', async () => {
+    HistoryService.findProcessInstance.mockResolvedValueOnce(null)
+    const wrapper = createWrapper({ instanceId: 'pi9' }, {
+      SidebarsFlow: { template: '<div><div class="left"><slot name="left"></slot></div><div class="main"><slot></slot></div></div>' }
+    })
+    await flushPromises()
+
+    const warnings = wrapper.find('.main').findAllComponents({ name: 'WarningBox' })
+    expect(warnings).toHaveLength(1)
+    expect(warnings[0].props('message')).toBe('process.instanceNotFound')
+  })
+
+  /**
    * Scenario: the view re-renders without a route change, e.g. when the instances filter changes.
    * Link: #/seven/auth/process/invoice/2/pi2, unchanged
    * Expected: no request.

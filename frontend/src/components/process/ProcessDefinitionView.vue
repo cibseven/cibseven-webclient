@@ -339,7 +339,10 @@ export default {
         if (!isStale()) this.errorLoadingInstanceId = error.message
       }
       // an instance listed in the table can still be shown when history has purged it
-      return instance ?? this.instances?.find(i => i.id === instanceId) ?? null
+      instance ??= this.instances?.find(i => i.id === instanceId) ?? null
+      // found nowhere without a failure: the middle pane still tells it was not found, with an empty server response
+      if (!instance && this.errorLoadingInstanceId === null && !isStale()) this.errorLoadingInstanceId = ''
+      return instance
     },
     /**
      * The definition of the instance could not be loaded, e.g. without permission to read it, or the URL names
