@@ -385,20 +385,23 @@ export default {
       const requested = instanceDefinition ?? this.processDefinitions.find(definition => definition.version === this.versionIndex)
       this.errorVersionNotFound = requested ? null : this.versionIndex
       const definition = requested ?? this.processDefinitions[0]
-      if (!definition || definition === this.process) return
+      if (!definition) return
 
-      const previous = this.process
-      this.process = definition
-      // the entries of a reloaded versions list are new: the open version keeps the statistics its diagram shows
-      if (previous?.id === definition.id) definition.statistics ??= previous.statistics
+      if (definition !== this.process) {
+        const previous = this.process
+        this.process = definition
+        // the entries of a reloaded versions list are new: the open version keeps the statistics its diagram shows
+        if (previous?.id === definition.id) definition.statistics ??= previous.statistics
 
-      // The responses for a definition that is no longer selected are dropped. Without its details the
-      // version entry is shown as listed, so that the route goes on loading; the error dialog tells what failed
-      const details = fetched?.id === definition.id ? fetched : await ProcessService.findProcessById(definition.id, true).catch(() => null)
-      if (this.process !== definition) return
-      if (details) this.assignDefinitionData(definition, details)
+        // The responses for a definition that is no longer selected are dropped. Without its details the
+        // version entry is shown as listed, so that the route goes on loading; the error dialog tells what failed
+        const details = fetched?.id === definition.id ? fetched : await ProcessService.findProcessById(definition.id, true).catch(() => null)
+        if (this.process !== definition) return
+        if (details) this.assignDefinitionData(definition, details)
+      }
       // ProcessInstancesView loads the statistics together with its instances, the instance view does not;
-      // an instance that was not found is not shown, so its diagram needs none
+      // an instance that was not found is not shown, so its diagram needs none. The open version can lack them
+      // too, e.g. when it was opened for a link to an instance that was not found
       if (instance && !definition.statistics) await this.loadStatistics(definition)
     },
     /**

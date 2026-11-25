@@ -1110,6 +1110,30 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
   })
 
   /**
+   * Scenario: the user opens a link to an instance that cannot be loaded (e.g. a mistyped id), then corrects it to an
+   *   instance of the same version.
+   * Link: #/seven/auth/process/invoice/2/typo, then #/seven/auth/process/invoice/2/pi1
+   * Expected: v2 stays open without loading its details again, and its statistics are loaded for pi1's diagram.
+   * Guards against: P39, pi1 drawn without the statistics overlay, as the first link loaded none (P34) and the open
+   *   version was kept as it was.
+   */
+  it('should load the statistics of the open version for an instance found after one that was not', async () => {
+    engine()
+    const vm = context({ instanceId: 'typo' })
+    await open(vm)
+    expect(vm.process.id).toBe('invoice:2:id')
+    expect(vm.$store.dispatch).not.toHaveBeenCalledWith('loadStatistics', expect.anything())
+    vi.clearAllMocks()
+
+    await navigate(vm, { instanceId: 'pi1' })
+
+    expect(vm.process.id).toBe('invoice:2:id')
+    expect(ProcessService.findProcessById).not.toHaveBeenCalled()
+    expect(vm.$store.dispatch).toHaveBeenCalledWith('loadStatistics', vm.process)
+    expect(vm.selectedInstance.id).toBe('pi1')
+  })
+
+  /**
    * Scenario: an instance link whose lookup answers without an error but finds nothing, and the instance is not in
    *   the instances table either.
    * Link: #/seven/auth/process/invoice/2/missing
