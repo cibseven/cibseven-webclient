@@ -103,6 +103,21 @@ afterEach(() => {
 })
 
 describe('ProcessDefinitionView - computed', () => {
+  it('instanceTenantId should be the tenant of the URL only when an instance is open', () => {
+    expect(c.instanceTenantId.call(context({ instanceId: 'pi1', tenantId: 't1' }))).toBe('t1')
+    expect(c.instanceTenantId.call(context({ tenantId: 't1' }))).toBeNull()
+  })
+
+  // the URL of an instance names its tenant, the definition it was started from may be shared
+  it('definitionTenantId should be the tenant of the open definition', () => {
+    expect(c.definitionTenantId.call(context({ instanceId: 'pi1', tenantId: 't1', process: version({ tenantId: null }) }))).toBeNull()
+    expect(c.definitionTenantId.call(context({ tenantId: 't1', process: version({ tenantId: 't1' }) }))).toBe('t1')
+  })
+
+  it('definitionTenantId should assume the tenant of the URL until a definition is open', () => {
+    expect(c.definitionTenantId.call(context({ tenantId: 't1' }))).toBe('t1')
+  })
+
   it('sidebarScope should switch to the instance scope once one is selected', () => {
     expect(c.sidebarScope.call(context())).toBe('process-definition')
     expect(c.sidebarScope.call(context({ selectedInstance: { id: 'pi1' } }))).toBe('process-instance')
@@ -974,7 +989,7 @@ describe('ProcessDefinitionView - onDeleteProcessDefinition', () => {
   })
 
   it('should keep the tenant in the query when navigating', async () => {
-    const vm = context({ process: version({ version: '2' }), tenantId: 't1' })
+    const vm = context({ process: version({ version: '2', tenantId: 't1' }), tenantId: 't1' })
     ProcessService.findProcessVersionsByDefinitionKey.mockResolvedValue([version({ version: '1' })])
 
     await m.onDeleteProcessDefinition.call(vm, params)
@@ -982,6 +997,24 @@ describe('ProcessDefinitionView - onDeleteProcessDefinition', () => {
     expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledWith('invoice', 't1', false)
     expect(vm.$router.replace).toHaveBeenCalledWith(expect.objectContaining({
       query: { tenantId: 't1' }
+    }))
+  })
+
+  // the URL of an instance names its tenant, the open definition may be shared
+  it('should use the tenant of the open definition rather than the one of the instance', async () => {
+    const vm = context({
+      process: version({ version: '2', tenantId: null }),
+      instanceId: 'pi1',
+      tenantId: 't1',
+      $route: { query: { tenantId: 't1', tab: 'variables' } }
+    })
+    ProcessService.findProcessVersionsByDefinitionKey.mockResolvedValue([version({ version: '1', tenantId: null })])
+
+    await m.onDeleteProcessDefinition.call(vm, params)
+
+    expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledWith('invoice', null, false)
+    expect(vm.$router.replace).toHaveBeenCalledWith(expect.objectContaining({
+      query: { tab: 'variables' }
     }))
   })
 
@@ -1016,6 +1049,18 @@ describe('ProcessDefinitionView - onRefreshProcessDefinitions', () => {
     expect(vm.process).toBe(fresh)
     expect(fresh.statistics).toBe(statistics)
     expect(result).toHaveLength(2)
+  })
+
+  // the URL of an instance names its tenant, the open definition may be shared
+  it('should reload the versions with the tenant of the open definition', async () => {
+    const shared = version({ tenantId: null })
+    const vm = context({ process: shared, instanceId: 'pi1', tenantId: 't1' })
+    ProcessService.findProcessVersionsByDefinitionKey.mockResolvedValue([version({ tenantId: null })])
+
+    await m.onRefreshProcessDefinitions.call(vm, false)
+
+    expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledWith('invoice', null, false)
+    expect(vm.errorVersionNotFound).toBeNull()
   })
 
   it('should flag the open version when no versions remain', async () => {

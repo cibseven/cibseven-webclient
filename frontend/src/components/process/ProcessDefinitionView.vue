@@ -26,7 +26,7 @@
       <template v-slot:left>
         <template v-if="errorVersionNotFound !== null">
           <WarningBox :message="$t('process.definitionVersionNotFound', [errorVersionNotFound])"/>
-          <WarningBox v-if="processDefinitions.length === 0" :message="$t('process.definitionNotFound', { processKey: processKey, tenantId: tenantId })"/>
+          <WarningBox v-if="processDefinitions.length === 0" :message="$t('process.definitionNotFound', { processKey: processKey, tenantId: definitionTenantId })"/>
         </template>
         <ProcessDetailsSidebar ref="navbar" v-if="process && (!selectedInstance && !instanceId)"
           :process-key="processKey"
@@ -50,7 +50,7 @@
         :version-index="computedVersionIndex"
         :activity-instance="activityInstance"
         :activity-instance-history="activityInstanceHistory"
-        :tenant-id="tenantId"
+        :tenant-id="definitionTenantId"
         :filter="filter"
         :parent-process="parentProcess"
         @instance-deleted="onInstanceDeleted()"
@@ -62,11 +62,11 @@
         :activity-instance="activityInstance"
         :activity-instance-history="activityInstanceHistory"
         :selected-instance="selectedInstance"
-        :tenant-id="tenantId"
+        :tenant-id="instanceTenantId"
         @task-selected="setSelectedTask($event)"
       />
       <WarningBox v-else-if="errorLoadingInstanceId !== null" :message="$t('process.instanceNotFound', { instanceId: instanceId, error: errorLoadingInstanceId })"/>
-      <WarningBox v-else-if="errorVersionNotFound !== null && processDefinitions.length === 0" :message="$t('process.definitionNotFound', { processKey: processKey, tenantId: tenantId })"/>
+      <WarningBox v-else-if="errorVersionNotFound !== null && processDefinitions.length === 0" :message="$t('process.definitionNotFound', { processKey: processKey, tenantId: definitionTenantId })"/>
     </SidebarsFlow>
     <TaskPopper ref="importPopper"></TaskPopper>
   </div>
@@ -156,6 +156,15 @@ export default {
     },
     computedVersionIndex() {
       return this.process?.version || this.versionIndex
+    },
+    // The tenant of the open instance: with an instance, the `tenantId` of the URL is the instance's
+    instanceTenantId() {
+      return this.instanceId ? this.tenantId : null
+    },
+    // The tenant of the open definition and its versions. It differs from the instance's for a shared
+    // definition started for a tenant; until the definition is open, the URL's tenant is assumed
+    definitionTenantId() {
+      return this.process ? this.process.tenantId : this.tenantId
     },
   },
   // Leaving the process pages: the next visit loads the called process definitions again, so a newer deployment is seen
@@ -315,9 +324,10 @@ export default {
     async onDeleteProcessDefinition({ processDefinition }) {
       // the key and tenant whose versions are shown when the deletion starts
       const versionsScope = this.versionsScope
+      const tenantId = this.definitionTenantId
       await ProcessService.deleteProcessDefinition(processDefinition.id, true)
       const lazyLoad = this.$root.config.lazyLoadHistory
-      const versions = await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, lazyLoad)
+      const versions = await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, tenantId, lazyLoad)
       // The user opened another key or tenant while the requests ran, e.g. deleted a version of `invoice`
       // and went to `order`: that navigation loads its own versions, so this reply must neither replace
       // them nor redirect away from the newly opened process
@@ -350,8 +360,9 @@ export default {
           versionIndex: nearest.version,
         },
         query: {
-          ...this.$route.query,
-          ...(this.tenantId ? { tenantId: this.tenantId } : {}),
+          // the definition view names the tenant of the definition, not the one of an instance the URL showed
+          ...Object.fromEntries(Object.entries(this.$route.query).filter(([key]) => key !== 'tenantId')),
+          ...(tenantId ? { tenantId } : {}),
         }
       })
     },
@@ -361,7 +372,7 @@ export default {
       // the key and tenant whose versions are shown when the refresh starts
       const versionsScope = this.versionsScope
       try {
-        const versions = await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, lazyLoad)
+        const versions = await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.definitionTenantId, lazyLoad)
         // The user opened another key or tenant while the request ran, e.g. refreshed the versions of `invoice`
         // and went to `order`: that navigation loads its own versions, so this reply must not replace them
         if (this.versionsScope !== versionsScope) return
