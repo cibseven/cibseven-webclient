@@ -546,6 +546,29 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
   })
 
   /**
+   * Scenario: the user views instance pi1 of invoice and edits only the key of its link to order.
+   * Link: #/seven/auth/process/invoice/2/pi1, then #/seven/auth/process/order/2/pi1
+   * Expected: pi1's definition (invoice v2) is not among order's versions and is flagged missing; pi1 and its activity
+   *   data are cleared along with the definition, so neither pane shows pi1.
+   * Guards against: P36, pi1's details and stale activities staying in the sidebar while the middle pane says the
+   *   definition was not found.
+   */
+  it('should clear an already selected instance when its definition is flagged missing', async () => {
+    engine()
+    const vm = context({ instanceId: 'pi1' })
+    await open(vm)
+    expect(vm.selectedInstance.id).toBe('pi1')
+
+    await navigate(vm, { processKey: 'order' })
+
+    expect(vm.errorInstanceDefinitionId).toBe('invoice:2:id')
+    expect(vm.process).toBeNull()
+    expect(vm.selectedInstance).toBeNull()
+    expect(vm.activityInstance).toBeNull()
+    expect(vm.activityInstanceHistory).toBeNull()
+  })
+
+  /**
    * Scenario: a stale bookmark or a hand-edited link names version 2, but the instance runs on version 1.
    * Link: #/seven/auth/process/invoice/2/pi1 for an instance of v1
    * Expected: v1 opens and the view shows version 1, nothing is flagged, no extra request; the URL keeps /2/.

@@ -352,6 +352,8 @@ export default {
       if (missing) {
         this.process = null
         this.errorVersionNotFound = null
+        // an instance already selected, e.g. when only the key of its link was edited, is not shown either
+        this.clearInstance()
       }
       return missing
     },
