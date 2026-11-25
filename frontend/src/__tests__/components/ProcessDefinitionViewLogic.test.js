@@ -463,6 +463,36 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.selectedInstance.id).toBe('pi1')
   })
 
+  // a failed versions request used to abort the run before the instance was selected, leaving both panes blank
+  it('should show the instance on its own definition when no versions of the key can be loaded', async () => {
+    engine()
+    ProcessService.findProcessVersionsByDefinitionKey.mockRejectedValue(new Error('403 forbidden'))
+    const vm = context({ instanceId: 'pi1' })
+
+    await open(vm)
+
+    expect(vm.processDefinitions).toHaveLength(1)
+    expect(vm.process.id).toBe('invoice:2:id')
+    expect(vm.errorInstanceDefinitionId).toBeNull()
+    expect(vm.selectedInstance.id).toBe('pi1')
+    expect(vm.loading).toBe(false)
+  })
+
+  it('should load the versions with the tenant of the definition when the first versions request fails', async () => {
+    engine({ tenantId: 't1' })
+    const versions = ProcessService.findProcessVersionsByDefinitionKey.getMockImplementation()
+    ProcessService.findProcessVersionsByDefinitionKey.mockRejectedValueOnce(new Error('500'))
+    ProcessService.findProcessVersionsByDefinitionKey.mockImplementation(versions)
+    const vm = context({ instanceId: 'pi1' })
+
+    await open(vm)
+
+    expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenNthCalledWith(2, 'invoice', 't1', false)
+    expect(vm.processDefinitions).toHaveLength(2)
+    expect(vm.process.id).toBe('invoice:2:id')
+    expect(vm.selectedInstance.id).toBe('pi1')
+  })
+
   it('should look the instance up while the versions load', async () => {
     engine()
     const lookup = deferred()

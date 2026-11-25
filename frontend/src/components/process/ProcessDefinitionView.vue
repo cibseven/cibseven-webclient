@@ -225,7 +225,7 @@ export default {
       // load the instance, the versions (if needed) and the parent breadcrumb in parallel
       const [instance, , parentProcess] = await Promise.all([
         this.lookUpInstance(this.instanceId, isStale),
-        reloadVersions && this.loadVersions(isStale),
+        reloadVersions && this.loadVersionsOfRoute(isStale),
         this.lookUpParentProcess()
       ])
       if (isStale()) return
@@ -284,6 +284,20 @@ export default {
       if (isStale() || definition.key !== this.processKey) return
       // a failure keeps the versions the run already has; syncDefinition flags the missing definition
       await this.loadVersions(isStale, definition.tenantId).catch(() => {})
+      // no versions of the key could be loaded at all: the instance is shown on its own definition, the only entry
+      if (!isStale() && this.processDefinitions.length === 0) this.processDefinitions = [definition]
+    },
+    /**
+     * The versions of the route's key. An instance can still be shown when they cannot be loaded, as
+     * loadVersionsOfInstance falls back to its own definition, so the failure does not abort the run;
+     * without an instance there is nothing to show, and the failure does.
+     */
+    async loadVersionsOfRoute(isStale) {
+      try {
+        await this.loadVersions(isStale)
+      } catch (error) {
+        if (!this.instanceId) throw error
+      }
     },
     async loadVersions(isStale, tenantId = this.tenantId) {
       const processKey = this.processKey
