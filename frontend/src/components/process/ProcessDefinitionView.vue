@@ -207,6 +207,12 @@ export default {
     // the replies of a refresh or delete still running are dropped, so a late one does not redirect away from the page
     // the user went to, e.g. after deleting the open version and opening Tasks while the cascade delete ran
     this.versionsScope = null // non-reactive
+    // A route run still in progress counts as stale, so it drops its results and its failures. Its last steps check
+    // the open definition and instance instead, so these go too: no statistics or activity history is requested for
+    // a page that is gone, and a failure of it shows no error dialog on the page the user went to
+    this.syncRun = (this.syncRun ?? 0) + 1 // non-reactive
+    this.process = null
+    this.selectedInstance = null
   },
   methods: {
     ...mapActions(['clearActivitySelection', 'getProcessById']),

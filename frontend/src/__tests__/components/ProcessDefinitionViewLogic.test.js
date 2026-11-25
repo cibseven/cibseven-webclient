@@ -1489,6 +1489,92 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.selectedInstance.id).toBe('pi1')
     expect(vm.versionsScope).toBeNull()
   })
+
+  /**
+   * Scenario: the user opens an instance link and goes to Tasks while the versions and the instance load.
+   * Link: #/seven/auth/process/invoice/2/pi1, then #/seven/auth/tasks
+   * Expected: the run stops: no details, statistics, activity tree or history request, and nothing is selected.
+   * Guards against: P43, requests for a page that is gone, whose failures show the error dialog on Tasks.
+   */
+  it('should stop loading the route when the page is left meanwhile', async () => {
+    engine()
+    const versions = ProcessService.findProcessVersionsByDefinitionKey.getMockImplementation()
+    const vm = context({ instanceId: 'pi1', clearStaticCalledProcessDefinitions: vi.fn() })
+    ProcessService.findProcessVersionsByDefinitionKey.mockImplementation(async (...args) => {
+      ProcessDefinitionView.beforeUnmount.call(vm)
+      return versions(...args)
+    })
+
+    await open(vm)
+
+    expect(ProcessService.findProcessById).not.toHaveBeenCalled()
+    expect(vm.$store.dispatch).not.toHaveBeenCalled()
+    expect(ProcessService.findActivityInstance).not.toHaveBeenCalled()
+    expect(HistoryService.findActivitiesInstancesHistory).not.toHaveBeenCalled()
+    expect(vm.process).toBeNull()
+    expect(vm.selectedInstance).toBeNull()
+  })
+
+  /**
+   * Scenario: the user opens an instance link and leaves the page while the details of its definition load.
+   * Link: #/seven/auth/process/invoice/2/pi1, then #/seven/auth/tasks
+   * Expected: no statistics, activity tree or history request follows.
+   * Guards against: P43, the run going on after unmount, as these steps only check the open definition and instance.
+   */
+  it('should request no statistics or activities when the page is left while the details load', async () => {
+    engine()
+    const details = ProcessService.findProcessById.getMockImplementation()
+    const vm = context({ instanceId: 'pi1', clearStaticCalledProcessDefinitions: vi.fn() })
+    ProcessService.findProcessById.mockImplementation(async (...args) => {
+      ProcessDefinitionView.beforeUnmount.call(vm)
+      return details(...args)
+    })
+
+    await open(vm)
+
+    expect(ProcessService.findProcessById).toHaveBeenCalledOnce()
+    expect(vm.$store.dispatch).not.toHaveBeenCalled()
+    expect(ProcessService.findActivityInstance).not.toHaveBeenCalled()
+    expect(HistoryService.findActivitiesInstancesHistory).not.toHaveBeenCalled()
+  })
+
+  /**
+   * Scenario: the user leaves the page while the activity tree of the open instance loads.
+   * Link: #/seven/auth/process/invoice/2/pi1, then #/seven/auth/tasks
+   * Expected: the activity history is not requested.
+   * Guards against: P43, a history request for an instance that is no longer shown.
+   */
+  it('should request no activity history when the page is left while the activity tree loads', async () => {
+    engine()
+    const vm = context({ instanceId: 'pi1', clearStaticCalledProcessDefinitions: vi.fn() })
+    ProcessService.findActivityInstance.mockImplementation(async () => {
+      ProcessDefinitionView.beforeUnmount.call(vm)
+      return { id: 'ai' }
+    })
+
+    await open(vm)
+
+    expect(ProcessService.findActivityInstance).toHaveBeenCalledOnce()
+    expect(HistoryService.findActivitiesInstancesHistory).not.toHaveBeenCalled()
+    expect(vm.activityInstance).toBeNull()
+  })
+
+  /**
+   * Scenario: the user leaves the page while the statistics of the open definition load, and that request fails (403).
+   * Link: #/seven/auth/process/invoice/2/pi1, then #/seven/auth/tasks
+   * Expected: the failure is dropped with the run: syncWithRoute resolves.
+   * Guards against: P43, the failure of a page that is gone rethrown from syncWithRoute.
+   */
+  it('should drop the failure of a run whose page was left', async () => {
+    engine()
+    const vm = context({ instanceId: 'pi1', clearStaticCalledProcessDefinitions: vi.fn() })
+    vm.$store.dispatch.mockImplementation(async () => {
+      ProcessDefinitionView.beforeUnmount.call(vm)
+      throw new Error('403 forbidden')
+    })
+
+    await expect(open(vm)).resolves.toBeUndefined()
+  })
 })
 
 describe('ProcessDefinitionView - syncDefinition', () => {
