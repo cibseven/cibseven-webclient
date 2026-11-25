@@ -231,7 +231,8 @@ export default {
         if (this.selectedInstance?.id !== instance.id) return
         this.activityInstance = activityInstance
       }
-      if (isActive || this.$root.config.camundaHistoryLevel !== 'none') {
+      // without history the engine keeps no activity history, also not for an active instance
+      if (this.$root.config.camundaHistoryLevel !== 'none') {
         const activityInstanceHistory = await HistoryService.findActivitiesInstancesHistory(instance.id)
         if (this.selectedInstance?.id !== instance.id) return
         this.activityInstanceHistory = activityInstanceHistory

@@ -801,6 +801,19 @@ describe('ProcessDefinitionView - loadRoute instance selection', () => {
     expect(HistoryService.findActivitiesInstancesHistory).not.toHaveBeenCalled()
   })
 
+  // the history endpoint used to be called (and fail) for every active instance
+  it('should load only the runtime activity tree for an active instance when history is off', async () => {
+    const vm = context()
+    vm.$root.config.camundaHistoryLevel = 'none'
+    ProcessService.findActivityInstance.mockResolvedValue({ id: 'ai1' })
+
+    await select(vm, { id: 'pi1', ended: false })
+
+    expect(vm.activityInstance).toEqual({ id: 'ai1' })
+    expect(HistoryService.findActivitiesInstancesHistory).not.toHaveBeenCalled()
+    expect(vm.activityInstanceHistory).toBeNull()
+  })
+
   // Re-selecting the open instance would re-fetch everything for no reason.
   it('should skip reloading the instance that is already selected', async () => {
     const vm = context({ selectedInstance: { id: 'pi1', state: 'ACTIVE' } })
