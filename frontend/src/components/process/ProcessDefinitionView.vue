@@ -273,20 +273,26 @@ export default {
       const requested = this.processDefinitions.find(definition => definition.version === this.versionIndex)
       this.errorVersionNotFound = requested ? null : this.versionIndex
       const definition = requested ?? this.processDefinitions[0]
-      if (definition && definition !== this.process) await this.selectDefinition(definition)
-    },
-    async selectDefinition(definition) {
+      if (!definition || definition === this.process) return
+
       const previous = this.process
       this.process = definition
       // the entries of a reloaded versions list are new: the open version keeps the statistics its diagram shows
       if (previous?.id === definition.id) definition.statistics ??= previous.statistics
-      this.assignDefinitionData(definition, await ProcessService.findProcessById(definition.id, true))
+
+      // the responses for a definition that is no longer selected are dropped
+      const details = await ProcessService.findProcessById(definition.id, true)
+      if (this.process !== definition) return
+      this.assignDefinitionData(definition, details)
       // ProcessInstancesView loads the statistics together with its instances, the instance view does not
       if (this.instanceId && !definition.statistics) await this.loadStatistics(definition)
+      if (this.process !== definition) return
 
       // arriving from a call activity, the parent is shown as a breadcrumb
       const parentProcessDefinitionId = this.$route.query.parentProcessDefinitionId
-      this.parentProcess = parentProcessDefinitionId ? await this.getProcessById({ id: parentProcessDefinitionId }) : null
+      const parentProcess = parentProcessDefinitionId ? await this.getProcessById({ id: parentProcessDefinitionId }) : null
+      if (this.process !== definition) return
+      this.parentProcess = parentProcess
     },
     // the definition never fills in the incidents and the deployment time: the version entry keeps its own
     assignDefinitionData(entry, definition) {

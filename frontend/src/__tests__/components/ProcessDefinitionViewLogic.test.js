@@ -647,14 +647,20 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
   })
 })
 
-describe('ProcessDefinitionView - selectDefinition', () => {
+describe('ProcessDefinitionView - syncDefinition', () => {
+  // syncs to the given definition as the only version, the one the URL asks for
+  function syncTo(vm, definition) {
+    Object.assign(vm, { processDefinitions: [definition], versionIndex: definition.version })
+    return m.syncDefinition.call(vm)
+  }
+
   // ProcessInstancesView only reloads them when the definition id changes
   it('should keep the statistics when the same version is selected from a reloaded list', async () => {
     const statistics = [{ id: 'task' }]
     const fresh = version()
     const vm = context({ process: version({ statistics }) })
 
-    await m.selectDefinition.call(vm, fresh)
+    await syncTo(vm, fresh)
 
     expect(vm.process).toBe(fresh)
     expect(fresh.statistics).toBe(statistics)
@@ -664,7 +670,7 @@ describe('ProcessDefinitionView - selectDefinition', () => {
     const fresh = version({ id: 'pd:1:abc', version: '1' })
     const vm = context({ process: version({ statistics: [{ id: 'task' }] }) })
 
-    await m.selectDefinition.call(vm, fresh)
+    await syncTo(vm, fresh)
 
     expect(fresh.statistics).toBeUndefined()
   })
@@ -672,9 +678,43 @@ describe('ProcessDefinitionView - selectDefinition', () => {
   it('should not load statistics the instance view already has', async () => {
     const vm = context({ instanceId: 'pi1' })
 
-    await m.selectDefinition.call(vm, version({ statistics: [] }))
+    await syncTo(vm, version({ statistics: [] }))
 
     expect(vm.$store.dispatch).not.toHaveBeenCalled()
+  })
+
+  // a slow parent of the previous navigation used to show up as the breadcrumb of the next definition
+  it('should drop the parent of a definition that is no longer selected', async () => {
+    const parent = { promise: null, resolve: null }
+    parent.promise = new Promise(resolve => { parent.resolve = resolve })
+    const vm = context({
+      getProcessById: vi.fn(() => parent.promise),
+      $route: { query: { parentProcessDefinitionId: 'pd-parent' } }
+    })
+    const first = version()
+
+    const selection = syncTo(vm, first)
+    await vi.waitFor(() => expect(vm.getProcessById).toHaveBeenCalled())
+    vm.process = version({ id: 'order:2:id', key: 'order' })
+    parent.resolve({ id: 'pd-parent' })
+    await selection
+
+    expect(vm.parentProcess).toBeNull()
+  })
+
+  it('should drop the details of a definition that is no longer selected', async () => {
+    ProcessService.findProcessById.mockImplementation(async (id) => {
+      vm.process = version({ id: 'order:2:id', key: 'order' })
+      return { id, name: 'Invoice' }
+    })
+    const vm = context({ instanceId: 'pi1', $route: { query: { parentProcessDefinitionId: 'pd-parent' } } })
+    const first = version()
+
+    await syncTo(vm, first)
+
+    expect(first.name).toBeUndefined()
+    expect(vm.$store.dispatch).not.toHaveBeenCalled()
+    expect(vm.getProcessById).not.toHaveBeenCalled()
   })
 })
 
