@@ -301,8 +301,12 @@ export default {
       if (isStale() || definition.key !== this.processKey) return definition
       // a failure keeps the versions the run already has; syncDefinition flags the missing definition
       await this.loadVersions(isStale, definition.tenantId).catch(() => {})
-      // no versions of the key could be loaded at all: the instance is shown on its own definition, the only entry
-      if (!isStale() && this.processDefinitions.length === 0) this.processDefinitions = [definition]
+      // No versions of the key could be loaded at all: the instance is shown on its own definition, the only entry.
+      // That entry is no tenant's versions list, so the next route loads the versions again
+      if (!isStale() && this.processDefinitions.length === 0) {
+        this.processDefinitions = [definition]
+        this.versionsScope = null // non-reactive
+      }
       return definition
     },
     /**

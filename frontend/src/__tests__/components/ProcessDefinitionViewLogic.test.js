@@ -595,6 +595,35 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
    * Expected: the reload with the definition's tenant t1 brings the full list; v2 and pi1 are shown.
    * Guards against: P22, one failed request costing the whole instance view.
    */
+  /**
+   * Scenario: an instance link without a tenant for an instance of tenant t1; the versions without a tenant are empty
+   *   and the reload with t1 fails, so the instance is shown on its own definition as the only entry. Then the user
+   *   opens a definition link without a tenant.
+   * Link: #/seven/auth/process/invoice/2/pi1, then #/seven/auth/process/invoice/1
+   * Expected: the definition view loads the versions without a tenant again; there are none, so it says the
+   *   definition was not found.
+   * Guards against: P31, t1's definition kept as the versions of a page without a tenant, as if they were its own.
+   */
+  it('should load the versions again after an instance was shown on its own definition alone', async () => {
+    engine({ tenantId: 't1' })
+    ProcessService.findProcessVersionsByDefinitionKey.mockImplementation(async (key, tenantId) => {
+      if (tenantId === 't1') throw new Error('500')
+      return []
+    })
+    const vm = context({ instanceId: 'pi1' })
+    await open(vm)
+    expect(vm.processDefinitions).toHaveLength(1)
+    expect(vm.process.id).toBe('invoice:2:id')
+    vi.clearAllMocks()
+
+    await navigate(vm, { instanceId: undefined, versionIndex: '1' })
+
+    expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledOnce()
+    expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledWith('invoice', undefined, false)
+    expect(vm.process).toBeNull()
+    expect(vm.errorVersionNotFound).toBe('1')
+  })
+
   it('should load the versions with the tenant of the definition when the first versions request fails', async () => {
     engine({ tenantId: 't1' })
     const versions = ProcessService.findProcessVersionsByDefinitionKey.getMockImplementation()
