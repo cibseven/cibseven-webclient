@@ -375,6 +375,46 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.selectedInstance.id).toBe('pi2')
   })
 
+  // the shared versions loaded for the instance used to stay for the definition view of the instance's tenant
+  it('should load the versions of the URL tenant when leaving an instance of a shared definition', async () => {
+    engine()
+    // t1 has its own invoice v1, the shared invoice is v2
+    ProcessService.findProcessVersionsByDefinitionKey.mockImplementation(async (key, tenantId) => tenantId === 't1' ?
+      [{ id: definitionId(key, '1'), key, version: '1', tenantId }] :
+      [{ id: definitionId(key, '2'), key, version: '2', tenantId: null }])
+    const vm = context({ instanceId: 'pi1', tenantId: 't1' })
+    await open(vm)
+    expect(vm.process.id).toBe('invoice:2:id')
+    vi.clearAllMocks()
+
+    await navigate(vm, { instanceId: undefined, versionIndex: '1' })
+
+    expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledOnce()
+    expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledWith('invoice', 't1', false)
+    expect(vm.process.id).toBe('invoice:1:id')
+    expect(vm.errorVersionNotFound).toBeNull()
+  })
+
+  // the t1 versions loaded for a link without a tenant used to stay for a later definition view without one
+  it('should load the versions without a tenant when leaving an instance link without one', async () => {
+    engine({ tenantId: 't1' })
+    // t1 has its own invoice v2, the shared invoice is v3
+    ProcessService.findProcessVersionsByDefinitionKey.mockImplementation(async (key, tenantId) => tenantId === 't1' ?
+      [{ id: definitionId(key, '2'), key, version: '2', tenantId }] :
+      [{ id: definitionId(key, '3'), key, version: '3', tenantId: null }])
+    const vm = context({ instanceId: 'pi1' })
+    await open(vm)
+    expect(vm.process.id).toBe('invoice:2:id')
+    vi.clearAllMocks()
+
+    await navigate(vm, { instanceId: undefined, versionIndex: '3' })
+
+    expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledOnce()
+    expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledWith('invoice', undefined, false)
+    expect(vm.process.id).toBe('invoice:3:id')
+    expect(vm.errorVersionNotFound).toBeNull()
+  })
+
   it('should look the instance up while the versions load', async () => {
     engine()
     const lookup = deferred()
@@ -750,7 +790,7 @@ describe('ProcessDefinitionView - loadRoute instance selection', () => {
   function select(vm, instance) {
     Object.assign(vm, {
       instanceId: instance.id,
-      versionsScope: 'invoice\n',
+      versionsScope: { processKey: 'invoice', tenantId: null },
       lookUpInstance: vi.fn(async () => instance),
       syncDefinition: vi.fn()
     })
@@ -968,10 +1008,10 @@ describe('ProcessDefinitionView - onDeleteProcessDefinition', () => {
 
   // the versions of the key left meanwhile used to replace the ones of the new key
   it('should drop the versions when another key is opened meanwhile', async () => {
-    const vm = context({ process: version(), versionsScope: 'invoice\n' })
+    const vm = context({ process: version(), versionsScope: { processKey: 'invoice', tenantId: null } })
     const order = [version({ id: 'order:2:id', key: 'order' })]
     ProcessService.findProcessVersionsByDefinitionKey.mockImplementation(async () => {
-      Object.assign(vm, { processKey: 'order', versionsScope: 'order\n', processDefinitions: order, process: order[0] })
+      Object.assign(vm, { processKey: 'order', versionsScope: { processKey: 'order', tenantId: null }, processDefinitions: order, process: order[0] })
       return []
     })
 
@@ -1050,10 +1090,10 @@ describe('ProcessDefinitionView - onRefreshProcessDefinitions', () => {
 
   // the versions of the key left meanwhile used to replace the ones of the new key
   it('should drop the versions when another key is opened meanwhile', async () => {
-    const vm = context({ process: version(), versionsScope: 'invoice\n' })
+    const vm = context({ process: version(), versionsScope: { processKey: 'invoice', tenantId: null } })
     const order = [version({ id: 'order:2:id', key: 'order' })]
     ProcessService.findProcessVersionsByDefinitionKey.mockImplementation(async () => {
-      Object.assign(vm, { processKey: 'order', versionsScope: 'order\n', processDefinitions: order, process: order[0] })
+      Object.assign(vm, { processKey: 'order', versionsScope: { processKey: 'order', tenantId: null }, processDefinitions: order, process: order[0] })
       return [version()]
     })
 

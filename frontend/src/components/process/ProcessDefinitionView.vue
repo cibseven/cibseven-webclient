@@ -203,18 +203,17 @@ export default {
       }
     },
     async loadRoute(isStale) {
-      const versionsScope = `${this.processKey}\n${this.tenantId ?? ''}`
-      const reloadVersions = versionsScope !== this.versionsScope
+      const reloadVersions = !this.keepsVersions()
       if (reloadVersions) this.clearDefinitions()
       if (this.selectedInstance && this.selectedInstance.id !== this.instanceId) this.clearInstance()
 
       // load the instance and the versions in parallel, if needed
       const [instance] = await Promise.all([
         this.lookUpInstance(this.instanceId, isStale),
-        reloadVersions && this.loadVersions(versionsScope, isStale)
+        reloadVersions && this.loadVersions(isStale)
       ])
       if (isStale()) return
-      await this.loadVersionsOfInstance(instance, versionsScope, isStale)
+      await this.loadVersionsOfInstance(instance, isStale)
       if (isStale()) return
 
       await this.syncDefinition()
@@ -239,25 +238,36 @@ export default {
       }
     },
     /**
+     * Whether the shown versions can stay for the route. With an instance, any versions of the key will do:
+     * loadVersionsOfInstance reloads them when they miss the instance's definition. Without one, they must be
+     * the versions of the URL's tenant, which may not be the tenant an instance had them loaded with.
+     */
+    keepsVersions() {
+      const shown = this.versionsScope
+      return shown?.processKey === this.processKey && (!!this.instanceId || shown.tenantId === (this.tenantId ?? null))
+    },
+    /**
      * With an instance, the URL names the tenant of the instance, not the one of its definition: they differ
      * for a shared definition started for a tenant, and a link may name no tenant at all. When the versions
      * loaded with the URL's tenant miss the instance's definition, they are loaded with the definition's tenant.
      */
-    async loadVersionsOfInstance(instance, versionsScope, isStale) {
+    async loadVersionsOfInstance(instance, isStale) {
       // runtime instances carry `definitionId` rather than `processDefinitionId`
       const definitionId = instance?.processDefinitionId ?? instance?.definitionId
       if (!definitionId || this.processDefinitions.some(definition => definition.id === definitionId)) return
       const definition = await ProcessService.findProcessById(definitionId)
       if (isStale() || definition.key !== this.processKey) return
-      await this.loadVersions(versionsScope, isStale, definition.tenantId)
+      await this.loadVersions(isStale, definition.tenantId)
     },
-    async loadVersions(versionsScope, isStale, tenantId = this.tenantId) {
+    async loadVersions(isStale, tenantId = this.tenantId) {
+      const processKey = this.processKey
       const lazyLoad = this.$root.config.lazyLoadHistory
-      const versions = await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, tenantId, lazyLoad)
+      const versions = await ProcessService.findProcessVersionsByDefinitionKey(processKey, tenantId, lazyLoad)
       if (isStale()) return
       this.processDefinitions = versions
       this.resetStatsLazyLoad(lazyLoad)
-      this.versionsScope = versionsScope // non-reactive
+      // the key and tenant the shown versions were loaded with, which can differ from the URL's tenant
+      this.versionsScope = { processKey, tenantId: tenantId ?? null } // non-reactive
     },
     async findProcessInstance(instanceId) {
       return (this.$root.config.camundaHistoryLevel !== 'none') ?
