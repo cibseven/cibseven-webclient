@@ -168,6 +168,53 @@ describe('ProcessDefinitionView - computed', () => {
     expect(c.computedVersionIndex.call(context())).toBe('2')
     expect(c.computedVersionIndex.call(context({ process: { version: '5' } }))).toBe('5')
   })
+
+  it('middlePaneError should be null without an error', () => {
+    expect(c.middlePaneError.call(context())).toBeNull()
+  })
+
+  /**
+   * Scenario: the URL asks for a version that does not exist, but the key has other versions.
+   * Link: #/seven/auth/process/invoice/99
+   * Expected: no middle-pane error; the latest version is open and only the sidebar warns.
+   * Guards against: hiding a definition that can be shown behind a "not found" box.
+   */
+  it('middlePaneError should be null for a missing version when other versions are shown', () => {
+    expect(c.middlePaneError.call(context({ errorVersionNotFound: '99', processDefinitions: [version()] }))).toBeNull()
+  })
+
+  it('middlePaneError should tell the definition was not found when the key has no versions', () => {
+    expect(c.middlePaneError.call(context({ errorVersionNotFound: '99', tenantId: 't1' }))).toEqual({
+      key: 'process.definitionNotFound',
+      params: { processKey: 'invoice', tenantId: 't1' }
+    })
+  })
+
+  // '' stands for an instance found nowhere with an empty server response
+  it('middlePaneError should tell the instance was not found, also with an empty error message', () => {
+    expect(c.middlePaneError.call(context({ instanceId: 'pi1', errorLoadingInstanceId: '' }))).toEqual({
+      key: 'process.instanceNotFound',
+      params: { instanceId: 'pi1', error: '' }
+    })
+  })
+
+  /**
+   * Scenario: the instance failed to load but was taken from the instances table, and its definition cannot be read.
+   * Expected: the missing definition is told, as the instance is known.
+   */
+  it('middlePaneError should prefer the missing definition of the instance over the instance error', () => {
+    const vm = context({ instanceId: 'pi1', errorLoadingInstanceId: 'boom', errorInstanceDefinitionId: 'invoice:5:id' })
+    expect(c.middlePaneError.call(vm)).toEqual({
+      key: 'process.instanceDefinitionNotFound',
+      params: { instanceId: 'pi1', definitionId: 'invoice:5:id' }
+    })
+  })
+
+  // #/seven/auth/process/invoice/99/pi-gone: the sidebar tells the missing version, the middle pane the missing instance
+  it('middlePaneError should prefer the instance error over a missing version', () => {
+    const vm = context({ instanceId: 'pi-gone', errorLoadingInstanceId: 'gone', errorVersionNotFound: '99' })
+    expect(c.middlePaneError.call(vm).key).toBe('process.instanceNotFound')
+  })
 })
 
 describe('ProcessDefinitionView - sidebar persistence', () => {

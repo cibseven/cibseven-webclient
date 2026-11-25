@@ -66,9 +66,7 @@
       <div v-else-if="loading" class="h-100 d-flex justify-content-center align-items-center">
         <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
       </div>
-      <WarningBox v-else-if="errorInstanceDefinitionId !== null" :message="$t('process.instanceDefinitionNotFound', { instanceId: instanceId, definitionId: errorInstanceDefinitionId })"/>
-      <WarningBox v-else-if="errorLoadingInstanceId !== null" :message="$t('process.instanceNotFound', { instanceId: instanceId, error: errorLoadingInstanceId })"/>
-      <WarningBox v-else-if="errorVersionNotFound !== null && processDefinitions.length === 0" :message="$t('process.definitionNotFound', { processKey: processKey, tenantId: definitionTenantId })"/>
+      <WarningBox v-else-if="middlePaneError" :message="$t(middlePaneError.key, middlePaneError.params)"/>
     </SidebarsFlow>
     <TaskPopper ref="importPopper"></TaskPopper>
   </div>
@@ -176,6 +174,22 @@ export default {
     // definition started for a tenant; until the definition is open, the URL's tenant is assumed
     definitionTenantId() {
       return this.process ? this.process.tenantId : this.tenantId
+    },
+    // The one error the middle pane shows when neither the definition nor the instance can be: the missing definition of
+    // the instance comes first, then the instance itself. A missing version only counts when no version could be shown
+    // instead; otherwise the latest one is open and only the sidebar tells the asked one was not found
+    middlePaneError() {
+      if (this.errorInstanceDefinitionId !== null) {
+        return { key: 'process.instanceDefinitionNotFound', params: { instanceId: this.instanceId, definitionId: this.errorInstanceDefinitionId } }
+      }
+      // '' is an instance found nowhere with an empty server response: still an error
+      if (this.errorLoadingInstanceId !== null) {
+        return { key: 'process.instanceNotFound', params: { instanceId: this.instanceId, error: this.errorLoadingInstanceId } }
+      }
+      if (this.errorVersionNotFound !== null && this.processDefinitions.length === 0) {
+        return { key: 'process.definitionNotFound', params: { processKey: this.processKey, tenantId: this.definitionTenantId } }
+      }
+      return null
     },
   },
   beforeUnmount() {
