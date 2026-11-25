@@ -709,6 +709,7 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.selectedInstance.id).toBe('pi1')
   })
 
+
   /**
    * Scenario: t1 has its own invoice v2, the shared invoice is v1. The user opens a t1 instance of the shared v1, then a
    *   link to an instance that does not exist (deleted, cleaned up, mistyped).
@@ -1382,12 +1383,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
    * Scenario: the instance runs on invoice v5 of tenant t1; the link names no tenant, so the loaded versions (v2, v1)
    *   miss it, and the reload with t1 fails (500).
    * Link: #/seven/auth/process/invoice/2/pi1
-   * Expected: the loaded versions stay and v5 is flagged missing; no definition is open, the instance and its
-   *   activities are not loaded.
-   * Guards against: P17, a blank page after the failed reload; P18, pi1 drawn on v2's diagram; P25, unused activity
-   *   requests.
+   * Expected: the instance's own definition, read once, replaces the loaded versions as the only entry; v5 and pi1 are
+   *   shown, nothing is flagged, and the next route loads the versions again.
+   * Guards against: P17, a blank page after the failed reload; P18, pi1 drawn on v2's diagram; P38, the read
+   *   definition flagged as "could not be loaded" because the versions of the URL's tenant were kept.
    */
-  it('should flag the definition of the instance when its versions cannot be loaded', async () => {
+  it('should show the instance on its own definition when the versions of its tenant cannot be loaded', async () => {
     engine({ instances: { pi1: activeInstance({ processDefinitionId: definitionId('invoice', '5') }) }, tenantId: 't1' })
     const versions = ProcessService.findProcessVersionsByDefinitionKey.getMockImplementation()
     ProcessService.findProcessVersionsByDefinitionKey.mockImplementation(async (key, tenantId, lazyLoad) => {
@@ -1399,11 +1400,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     await open(vm)
 
     expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledWith('invoice', 't1', false)
-    expect(vm.processDefinitions).toHaveLength(2)
-    expect(vm.errorInstanceDefinitionId).toBe('invoice:5:id')
-    expect(vm.process).toBeNull()
-    expect(vm.selectedInstance).toBeNull()
-    expect(ProcessService.findActivityInstance).not.toHaveBeenCalled()
+    expect(ProcessService.findProcessById).toHaveBeenCalledOnce()
+    expect(vm.processDefinitions.map(definition => definition.id)).toEqual(['invoice:5:id'])
+    expect(vm.process.id).toBe('invoice:5:id')
+    expect(vm.errorInstanceDefinitionId).toBeNull()
+    expect(vm.selectedInstance.id).toBe('pi1')
+    expect(vm.versionsScope).toBeNull()
   })
 })
 
