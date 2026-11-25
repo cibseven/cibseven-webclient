@@ -264,8 +264,12 @@ export default {
      * the versions of the URL's tenant, which may not be the tenant an instance had them loaded with.
      */
     keepsVersions() {
+      return this.instanceId ? this.versionsScope?.processKey === this.processKey : this.showsVersionsOfUrlTenant()
+    },
+    // whether the shown versions are the ones of the URL's key and tenant
+    showsVersionsOfUrlTenant() {
       const shown = this.versionsScope
-      return shown?.processKey === this.processKey && (!!this.instanceId || shown.tenantId === (this.tenantId ?? null))
+      return shown?.processKey === this.processKey && shown.tenantId === (this.tenantId ?? null)
     },
     /**
      * With an instance, the URL names the tenant of the instance, not the one of its definition: they differ
@@ -274,6 +278,12 @@ export default {
      * Returns the definition when it had to be fetched, with its details, so that syncDefinition does not fetch it again.
      */
     async loadVersionsOfInstance(instance, isStale) {
+      if (!instance) {
+        // The instance was not found: versions of another tenant, kept for an earlier instance of the key, give way
+        // to the URL tenant's. A failed first load is not repeated; a failure keeps the versions the run has
+        if (this.instanceId && this.versionsScope && !this.showsVersionsOfUrlTenant()) await this.loadVersions(isStale).catch(() => {})
+        return
+      }
       const definitionId = definitionIdOf(instance)
       if (!definitionId || this.processDefinitions.some(definition => definition.id === definitionId)) return
       let definition

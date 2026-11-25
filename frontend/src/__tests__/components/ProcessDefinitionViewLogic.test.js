@@ -499,6 +499,38 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.selectedInstance.id).toBe('pi1')
   })
 
+  // the shared versions kept for the previous instance used to stay under t1 when the next lookup failed
+  it('should load the versions of the URL tenant again when an instance of the key is not found', async () => {
+    engine({ instances: { a: activeInstance({ id: 'a', processDefinitionId: definitionId('invoice', '1') }) } })
+    // t1 has its own invoice v2, the shared invoice is v1
+    ProcessService.findProcessVersionsByDefinitionKey.mockImplementation(async (key, tenantId) => tenantId === 't1' ?
+      [{ id: 'invoice:2:t1', key, version: '2', tenantId }] :
+      [{ id: definitionId(key, '1'), key, version: '1', tenantId: null }])
+    const vm = context({ instanceId: 'a', versionIndex: '1', tenantId: 't1' })
+    await open(vm)
+    expect(vm.process.id).toBe('invoice:1:id')
+    vi.clearAllMocks()
+
+    await navigate(vm, { instanceId: 'missing', versionIndex: '2' })
+
+    expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledOnce()
+    expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledWith('invoice', 't1', false)
+    expect(vm.process.id).toBe('invoice:2:t1')
+    expect(vm.errorVersionNotFound).toBeNull()
+    expect(vm.selectedInstance).toBeNull()
+  })
+
+  it('should not load the versions again when an instance of the key is not found', async () => {
+    engine({ instances: { pi1: activeInstance() } })
+    const vm = context({ instanceId: 'pi1' })
+    await open(vm)
+    vi.clearAllMocks()
+
+    await navigate(vm, { instanceId: 'missing' })
+
+    expect(ProcessService.findProcessVersionsByDefinitionKey).not.toHaveBeenCalled()
+  })
+
   it('should look the instance up while the versions load', async () => {
     engine()
     const lookup = deferred()
