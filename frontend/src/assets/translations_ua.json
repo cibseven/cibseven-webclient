@@ -163,6 +163,7 @@
 		"definitionNotFound": "Визначення процесу з ключем \"{processKey}\" та ID клієнта \"{tenantId}\" не знайдено.",
 		"instanceNotFound": "Екземпляр процесу з ID \"{instanceId}\" не знайдено.\nВідповідь сервера:\n{error}",
 		"instanceDefinitionNotFound": "Не вдалося завантажити визначення \"{definitionId}\" екземпляра процесу \"{instanceId}\".",
+		"instanceOfOtherProcess": "Екземпляр процесу \"{instanceId}\" належить до процесу \"{definitionKey}\" (визначення \"{definitionId}\"), а не до \"{processKey}\".",
 		"back": "Назад",
 		"incidentsCounter": "Інциденти: {0}",
 		"incidents": "Інциденти",

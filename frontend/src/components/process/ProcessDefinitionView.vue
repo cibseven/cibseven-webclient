@@ -127,6 +127,7 @@ export default {
       errorVersionNotFound: null,
       errorLoadingInstanceId: null,
       errorInstanceDefinitionId: null, // the definition of the instance, when it could not be loaded
+      errorInstanceDefinitionKey: null, // its key, when it was loaded but is not the URL's
       selectedInstance: null,
       activityInstance: null,
       activityInstanceHistory: null,
@@ -180,7 +181,12 @@ export default {
     // instead; otherwise the latest one is open and only the sidebar tells the asked one was not found
     middlePaneError() {
       if (this.errorInstanceDefinitionId !== null) {
-        return { key: 'process.instanceDefinitionNotFound', params: { instanceId: this.instanceId, definitionId: this.errorInstanceDefinitionId } }
+        const params = { instanceId: this.instanceId, definitionId: this.errorInstanceDefinitionId }
+        // the definition was loaded, but the URL names another key: the warning points at the instance's own
+        if (this.errorInstanceDefinitionKey !== null) {
+          return { key: 'process.instanceOfOtherProcess', params: { ...params, definitionKey: this.errorInstanceDefinitionKey, processKey: this.processKey } }
+        }
+        return { key: 'process.instanceDefinitionNotFound', params }
       }
       // '' is an instance found nowhere with an empty server response: still an error
       if (this.errorLoadingInstanceId !== null) {
@@ -362,11 +368,14 @@ export default {
     /**
      * The definition of the instance could not be loaded, e.g. without permission to read it, or the URL names
      * another key: rather than drawing the instance on another definition's diagram, no definition is selected
-     * and the middle pane tells which definition is missing. Returns whether it is missing.
+     * and the middle pane tells which definition is missing, or, when `fetched` is that definition of another key,
+     * which key the instance belongs to. Returns whether it is missing.
      */
-    flagMissingInstanceDefinition(instanceDefinitionId, instanceDefinition) {
+    flagMissingInstanceDefinition(instanceDefinitionId, instanceDefinition, fetched) {
       const missing = !!instanceDefinitionId && !instanceDefinition
       this.errorInstanceDefinitionId = missing ? instanceDefinitionId : null
+      const otherKey = missing && fetched?.id === instanceDefinitionId && fetched.key !== this.processKey
+      this.errorInstanceDefinitionKey = otherKey ? fetched.key : null
       if (missing) {
         this.process = null
         this.errorVersionNotFound = null
@@ -381,7 +390,7 @@ export default {
       // an instance is shown on its own definition, even when the URL names another version of it
       const instanceDefinitionId = definitionIdOf(instance)
       const instanceDefinition = this.processDefinitions.find(definition => definition.id === instanceDefinitionId)
-      if (this.flagMissingInstanceDefinition(instanceDefinitionId, instanceDefinition)) return
+      if (this.flagMissingInstanceDefinition(instanceDefinitionId, instanceDefinition, fetched)) return
       const requested = instanceDefinition ?? this.processDefinitions.find(definition => definition.version === this.versionIndex)
       this.errorVersionNotFound = requested ? null : this.versionIndex
       const definition = requested ?? this.processDefinitions[0]
@@ -424,6 +433,7 @@ export default {
       this.parentProcess = null
       this.errorVersionNotFound = null
       this.errorInstanceDefinitionId = null
+      this.errorInstanceDefinitionKey = null
     },
     clearInstance() {
       this.selectedInstance = null

@@ -70,6 +70,7 @@ function context(overrides = {}) {
     errorVersionNotFound: null,
     errorLoadingInstanceId: null,
     errorInstanceDefinitionId: null,
+    errorInstanceDefinitionKey: null,
     selectedInstance: null,
     activityInstance: null,
     activityInstanceHistory: null,
@@ -207,6 +208,18 @@ describe('ProcessDefinitionView - computed', () => {
     expect(c.middlePaneError.call(vm)).toEqual({
       key: 'process.instanceDefinitionNotFound',
       params: { instanceId: 'pi1', definitionId: 'invoice:5:id' }
+    })
+  })
+
+  /**
+   * Scenario: the link names invoice, but the instance belongs to order, whose definition was read.
+   * Expected: the warning names the instance's key and definition and the URL's key, rather than "could not be loaded".
+   */
+  it('middlePaneError should tell the instance belongs to another process when its definition was read', () => {
+    const vm = context({ instanceId: 'pi1', errorInstanceDefinitionId: 'order:1:id', errorInstanceDefinitionKey: 'order' })
+    expect(c.middlePaneError.call(vm)).toEqual({
+      key: 'process.instanceOfOtherProcess',
+      params: { instanceId: 'pi1', definitionId: 'order:1:id', definitionKey: 'order', processKey: 'invoice' }
     })
   })
 
@@ -578,6 +591,9 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledOnce()
     expect(vm.process).toBeNull()
     expect(vm.errorInstanceDefinitionId).toBe('invoice:5:id')
+    // it was not read, so its key is unknown and the warning says it could not be loaded
+    expect(vm.errorInstanceDefinitionKey).toBeNull()
+    expect(vm.middlePaneError.key).toBe('process.instanceDefinitionNotFound')
     expect(vm.errorVersionNotFound).toBeNull()
     // nothing shows the instance, so neither it nor its activities are loaded
     expect(vm.selectedInstance).toBeNull()
@@ -613,6 +629,37 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.selectedInstance).toBeNull()
     expect(vm.activityInstance).toBeNull()
     expect(vm.activityInstanceHistory).toBeNull()
+  })
+
+  /**
+   * Scenario: a hand-edited or wrong link names order, but the instance belongs to invoice; its definition can be read.
+   *   Then the user corrects the key in the link.
+   * Link: #/seven/auth/process/order/1/pi1, then #/seven/auth/process/invoice/2/pi1
+   * Expected: the definition is read once and flagged with its key, so the middle pane says pi1 belongs to invoice
+   *   (definition invoice:2:id), not to order. With the key corrected, the flag is gone and pi1 is shown on v2.
+   * Guards against: P41, the warning saying the definition "could not be loaded" although it was read.
+   */
+  it('should tell the instance belongs to another process when the URL names another key', async () => {
+    engine()
+    const vm = context({ processKey: 'order', versionIndex: '1', instanceId: 'pi1' })
+
+    await open(vm)
+
+    expect(ProcessService.findProcessById).toHaveBeenCalledOnce()
+    expect(vm.process).toBeNull()
+    expect(vm.selectedInstance).toBeNull()
+    expect(vm.middlePaneError).toEqual({
+      key: 'process.instanceOfOtherProcess',
+      params: { instanceId: 'pi1', definitionId: 'invoice:2:id', definitionKey: 'invoice', processKey: 'order' }
+    })
+
+    await navigate(vm, { processKey: 'invoice', versionIndex: '2' })
+
+    expect(vm.errorInstanceDefinitionId).toBeNull()
+    expect(vm.errorInstanceDefinitionKey).toBeNull()
+    expect(vm.middlePaneError).toBeNull()
+    expect(vm.process.id).toBe('invoice:2:id')
+    expect(vm.selectedInstance.id).toBe('pi1')
   })
 
   /**
