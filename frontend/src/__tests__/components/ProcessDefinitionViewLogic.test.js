@@ -1011,12 +1011,16 @@ describe('ProcessDefinitionView - onRefreshProcessDefinitions', () => {
     expect(vm.errorVersionNotFound).toBeNull()
   })
 
-  it('should flag the open version when no versions remain', async () => {
-    const vm = context({ process: version() })
+  // the deleted definition used to stay open next to the empty versions list
+  it('should drop the open definition and flag it when no versions remain', async () => {
+    const vm = context({ process: version(), processDefinitions: [version()], parentProcess: { id: 'parent' } })
     ProcessService.findProcessVersionsByDefinitionKey.mockResolvedValue([])
 
     await m.onRefreshProcessDefinitions.call(vm, false)
 
+    expect(vm.process).toBeNull()
+    expect(vm.processDefinitions).toEqual([])
+    expect(vm.parentProcess).toBeNull()
     expect(vm.errorVersionNotFound).toBe('2')
     expect(ProcessService.findProcessById).not.toHaveBeenCalled()
   })

@@ -373,6 +373,9 @@ export default {
         // The user opened another key or tenant while the request ran, e.g. refreshed the versions of `invoice`
         // and went to `order`: that navigation loads its own versions, so this reply must not replace them
         if (this.versionsScope !== versionsScope) return
+        // Every version was deleted meanwhile, e.g. by another user: the deleted definition is not shown
+        // any more, and syncDefinition flags it so that both panes tell the definition was not found
+        if (versions.length === 0) this.clearDefinitions()
         this.processDefinitions = versions
         this.resetStatsLazyLoad(lazyLoad)
         await this.syncDefinition()
