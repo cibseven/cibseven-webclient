@@ -379,8 +379,9 @@ export default {
       const details = fetched?.id === definition.id ? fetched : await ProcessService.findProcessById(definition.id, true).catch(() => null)
       if (this.process !== definition) return
       if (details) this.assignDefinitionData(definition, details)
-      // ProcessInstancesView loads the statistics together with its instances, the instance view does not
-      if (this.instanceId && !definition.statistics) await this.loadStatistics(definition)
+      // ProcessInstancesView loads the statistics together with its instances, the instance view does not;
+      // an instance that was not found is not shown, so its diagram needs none
+      if (instance && !definition.statistics) await this.loadStatistics(definition)
     },
     /**
      * Arriving from a call activity, the definition view shows the parent as a breadcrumb; the instance view

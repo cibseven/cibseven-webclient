@@ -1043,6 +1043,25 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
   })
 
   /**
+   * Scenario: an instance link to an instance that cannot be loaded (404); the middle pane shows "instance not found",
+   *   not the instance view, so no diagram of the definition is shown.
+   * Link: #/seven/auth/process/invoice/2/unknown
+   * Expected: the definition's statistics are not requested.
+   * Guards against: P34, a statistics request whose result is never shown.
+   */
+  it('should load no statistics for an instance that cannot be loaded', async () => {
+    engine()
+    HistoryService.findProcessInstance.mockRejectedValue(new Error('404 not found'))
+    const vm = context({ instanceId: 'unknown' })
+
+    await open(vm)
+
+    expect(vm.errorLoadingInstanceId).toBe('404 not found')
+    expect(vm.process.id).toBe('invoice:2:id')
+    expect(vm.$store.dispatch).not.toHaveBeenCalledWith('loadStatistics', expect.anything())
+  })
+
+  /**
    * Scenario: an instance link to an instance that cannot be loaded (404: deleted, or its history cleaned up).
    * Link: #/seven/auth/process/invoice/2/pi1
    * Expected: errorLoadingInstanceId holds the server's message, no instance is selected, the versions still load.
@@ -1370,7 +1389,7 @@ describe('ProcessDefinitionView - syncDefinition', () => {
    * Guards against: a duplicate statistics request.
    */
   it('should not load statistics the instance view already has', async () => {
-    const vm = context({ instanceId: 'pi1' })
+    const vm = context({ instanceId: 'pi1', selectedInstance: { id: 'pi1' } })
 
     await syncTo(vm, version({ statistics: [] }))
 
