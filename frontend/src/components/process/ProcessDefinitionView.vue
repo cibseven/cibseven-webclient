@@ -236,8 +236,9 @@ export default {
 
       // The responses for an instance that is no longer selected are dropped. A failed load leaves its field
       // `null`, e.g. when the instance ended meanwhile: the instance stays shown and the error dialog tells what failed
-      const isActive = 'state' in instance ? instance.state === 'ACTIVE' : instance.ended === false
-      if (isActive) {
+      // a suspended instance is still running and has a runtime activity tree, like an active one
+      const isRunning = 'state' in instance ? ['ACTIVE', 'SUSPENDED'].includes(instance.state) : instance.ended === false
+      if (isRunning) {
         const activityInstance = await ProcessService.findActivityInstance(instance.id).catch(() => null)
         if (this.selectedInstance?.id !== instance.id) return
         this.activityInstance = activityInstance

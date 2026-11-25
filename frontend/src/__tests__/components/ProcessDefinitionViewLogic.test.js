@@ -909,6 +909,25 @@ describe('ProcessDefinitionView - loadRoute instance selection', () => {
     expect(vm.activityInstanceHistory).toEqual([{ id: 'h1' }])
   })
 
+  // a suspended instance opened through the history API used to show no current activities
+  it('should load the runtime activity tree for a suspended instance', async () => {
+    const vm = context()
+    ProcessService.findActivityInstance.mockResolvedValue({ id: 'ai1' })
+
+    await select(vm, { id: 'pi1', state: 'SUSPENDED' })
+
+    expect(ProcessService.findActivityInstance).toHaveBeenCalledWith('pi1')
+    expect(vm.activityInstance).toEqual({ id: 'ai1' })
+  })
+
+  it.each(['COMPLETED', 'EXTERNALLY_TERMINATED', 'INTERNALLY_TERMINATED'])('should load no runtime activity tree for a %s instance', async (state) => {
+    const vm = context()
+
+    await select(vm, { id: 'pi1', state })
+
+    expect(ProcessService.findActivityInstance).not.toHaveBeenCalled()
+  })
+
   // Runtime instances report `ended` rather than a `state`.
   it('should treat a not-ended runtime instance as active', async () => {
     const vm = context()
