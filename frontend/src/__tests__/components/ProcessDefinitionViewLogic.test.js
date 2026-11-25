@@ -887,6 +887,29 @@ describe('ProcessDefinitionView - loadRoute instance selection', () => {
     expect(vm.activityInstance).toBeNull()
   })
 
+  // a failed load used to abort the run, so the history was not loaded after a failed activity tree
+  it('should still load the history when the activity tree cannot be loaded', async () => {
+    const vm = context()
+    ProcessService.findActivityInstance.mockRejectedValue(new Error('404 not found'))
+    HistoryService.findActivitiesInstancesHistory.mockResolvedValue([{ id: 'h1' }])
+
+    await select(vm, { id: 'pi1', state: 'ACTIVE' })
+
+    expect(vm.selectedInstance.id).toBe('pi1')
+    expect(vm.activityInstance).toBeNull()
+    expect(vm.activityInstanceHistory).toEqual([{ id: 'h1' }])
+  })
+
+  it('should keep the instance when the history cannot be loaded', async () => {
+    const vm = context()
+    HistoryService.findActivitiesInstancesHistory.mockRejectedValue(new Error('500'))
+
+    await select(vm, { id: 'pi1', state: 'COMPLETED' })
+
+    expect(vm.selectedInstance.id).toBe('pi1')
+    expect(vm.activityInstanceHistory).toBeNull()
+  })
+
   it('should drop the activity data of an instance that is no longer selected', async () => {
     const vm = context()
     ProcessService.findActivityInstance.mockImplementation(async () => {

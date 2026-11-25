@@ -223,16 +223,17 @@ export default {
       this.clearInstance()
       this.selectedInstance = instance
 
-      // the responses for an instance that is no longer selected are dropped
+      // The responses for an instance that is no longer selected are dropped. A failed load leaves its field
+      // `null`, e.g. when the instance ended meanwhile: the instance stays shown and the error dialog tells what failed
       const isActive = 'state' in instance ? instance.state === 'ACTIVE' : instance.ended === false
       if (isActive) {
-        const activityInstance = await ProcessService.findActivityInstance(instance.id)
+        const activityInstance = await ProcessService.findActivityInstance(instance.id).catch(() => null)
         if (this.selectedInstance?.id !== instance.id) return
         this.activityInstance = activityInstance
       }
       // without history the engine keeps no activity history, also not for an active instance
       if (this.$root.config.camundaHistoryLevel !== 'none') {
-        const activityInstanceHistory = await HistoryService.findActivitiesInstancesHistory(instance.id)
+        const activityInstanceHistory = await HistoryService.findActivitiesInstancesHistory(instance.id).catch(() => null)
         if (this.selectedInstance?.id !== instance.id) return
         this.activityInstanceHistory = activityInstanceHistory
       }
