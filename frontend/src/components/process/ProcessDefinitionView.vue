@@ -194,6 +194,9 @@ export default {
       this.saveLeftOpen(this.sidebarScope, isOpen)
     },
     onRouteChanged(route, previous) {
+      // `routeState` reads the query, so every navigation re-evaluates it, e.g. a ?tab= switch: nothing to load
+      // when none of its fields changed
+      if (previous && Object.keys(route).every(key => route[key] === previous[key])) return
       // a different process or instance starts without the activity picked in the previous diagram
       if (route.processKey !== previous?.processKey || route.instanceId !== previous?.instanceId) {
         this.clearActivitySelection()

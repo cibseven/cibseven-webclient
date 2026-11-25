@@ -1139,6 +1139,30 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
   })
 
   /**
+   * Scenario: on a definition opened from a call activity, the user switches tabs: each switch pushes ?tab=, and as
+   *   routeState reads the query, it is re-evaluated with the same values.
+   * Link: from #/seven/auth/process/invoice/2?parentProcessDefinitionId=pd-parent to the same link with &tab=variables
+   * Expected: nothing is loaded: no run, no parent lookup, no versions or definition request, loading stays false.
+   * Guards against: P30, every tab switch reloading the route, and restarting a load still in progress.
+   */
+  it('should load nothing when a navigation changes only other parts of the query', async () => {
+    engine()
+    const vm = context({ $route: { query: { parentProcessDefinitionId: 'pd-parent' } } })
+    await open(vm)
+    vi.clearAllMocks()
+
+    const previous = vm.routeState
+    vm.$route = { query: { parentProcessDefinitionId: 'pd-parent', tab: 'variables' } }
+    await vm.onRouteChanged(vm.routeState, previous)
+
+    expect(vm.getProcessById).not.toHaveBeenCalled()
+    expect(ProcessService.findProcessVersionsByDefinitionKey).not.toHaveBeenCalled()
+    expect(ProcessService.findProcessById).not.toHaveBeenCalled()
+    expect(vm.clearActivitySelection).not.toHaveBeenCalled()
+    expect(vm.loading).toBe(false)
+  })
+
+  /**
    * Scenario: the user arrives at invoice from a call activity, its parent breadcrumb still loading, then opens order.
    * Link: #/seven/auth/process/invoice/2?parentProcessDefinitionId=pd-parent, then #/seven/auth/process/order/2
    * Expected: no breadcrumb on order when the parent arrives late.
