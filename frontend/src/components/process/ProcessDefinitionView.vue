@@ -453,9 +453,15 @@ export default {
       await this.$store.dispatch('loadStatistics', definition)
     },
     async onInstanceDeleted() {
-      await this.loadStatistics()
-      this.assignDefinitionData(this.process, await ProcessService.findProcessById(this.process.id, true))
-      this.$refs.process.refreshDiagram()
+      // the definition whose instance was deleted: once another one is open, e.g. after navigating to another
+      // key while the requests ran, its details are dropped and the instances view may be gone
+      const definition = this.process
+      if (!definition) return
+      await this.loadStatistics(definition)
+      const details = await ProcessService.findProcessById(definition.id, true)
+      if (this.process !== definition) return
+      this.assignDefinitionData(definition, details)
+      this.$refs.process?.refreshDiagram()
     },
     filterInstances(filter) {
       this.filter = filter

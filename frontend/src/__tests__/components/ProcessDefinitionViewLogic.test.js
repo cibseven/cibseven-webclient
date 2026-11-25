@@ -1261,6 +1261,27 @@ describe('ProcessDefinitionView - misc', () => {
     expect(vm.$refs.process.refreshDiagram).toHaveBeenCalled()
   })
 
+  // navigating to another key while the requests ran used to throw on the cleared definition
+  it('onInstanceDeleted should drop the details once another definition is open', async () => {
+    const entry = version()
+    const vm = context({ process: entry })
+    ProcessService.findProcessById.mockImplementation(async () => {
+      Object.assign(vm, { process: null, $refs: {} })
+      return { id: 'pd:2:abc', runningInstances: 4 }
+    })
+
+    await m.onInstanceDeleted.call(vm)
+
+    expect(entry.runningInstances).toBeUndefined()
+  })
+
+  it('onInstanceDeleted should not redraw an instances view that is gone', async () => {
+    const vm = context({ process: version(), $refs: {} })
+    ProcessService.findProcessById.mockResolvedValue({ id: 'pd:2:abc' })
+
+    await expect(m.onInstanceDeleted.call(vm)).resolves.toBeUndefined()
+  })
+
   it('filterInstances should adopt the new filter', () => {
     const vm = context()
 
