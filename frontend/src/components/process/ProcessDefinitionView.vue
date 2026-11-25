@@ -313,9 +313,15 @@ export default {
       this.task = null
     },
     async onDeleteProcessDefinition({ processDefinition }) {
+      // the key and tenant whose versions are shown when the deletion starts
+      const versionsScope = this.versionsScope
       await ProcessService.deleteProcessDefinition(processDefinition.id, true)
       const lazyLoad = this.$root.config.lazyLoadHistory
       const versions = await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, lazyLoad)
+      // The user opened another key or tenant while the requests ran, e.g. deleted a version of `invoice`
+      // and went to `order`: that navigation loads its own versions, so this reply must neither replace
+      // them nor redirect away from the newly opened process
+      if (this.versionsScope !== versionsScope) return
       if (versions.length === 0) {
         // no more process-definitions with such key
         this.$router.replace('/seven/auth/processes')
@@ -352,8 +358,13 @@ export default {
     // "refresh process definitions" button: 'all' when every version's data is loaded, shown on the sidebar's load button
     async onRefreshProcessDefinitions(lazyLoad) {
       this.refreshingVersions = lazyLoad ? 'refresh' : 'all'
+      // the key and tenant whose versions are shown when the refresh starts
+      const versionsScope = this.versionsScope
       try {
         const versions = await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, lazyLoad)
+        // The user opened another key or tenant while the request ran, e.g. refreshed the versions of `invoice`
+        // and went to `order`: that navigation loads its own versions, so this reply must not replace them
+        if (this.versionsScope !== versionsScope) return
         this.processDefinitions = versions
         this.resetStatsLazyLoad(lazyLoad)
         await this.syncDefinition()

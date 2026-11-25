@@ -984,6 +984,22 @@ describe('ProcessDefinitionView - onDeleteProcessDefinition', () => {
       query: { tenantId: 't1' }
     }))
   })
+
+  // the versions of the key left meanwhile used to replace the ones of the new key
+  it('should drop the versions when another key is opened meanwhile', async () => {
+    const vm = context({ process: version(), versionsScope: 'invoice\n' })
+    const order = [version({ id: 'order:2:id', key: 'order' })]
+    ProcessService.findProcessVersionsByDefinitionKey.mockImplementation(async () => {
+      Object.assign(vm, { processKey: 'order', versionsScope: 'order\n', processDefinitions: order, process: order[0] })
+      return []
+    })
+
+    await m.onDeleteProcessDefinition.call(vm, params)
+
+    expect(vm.processDefinitions).toBe(order)
+    expect(vm.process).toBe(order[0])
+    expect(vm.$router.replace).not.toHaveBeenCalled()
+  })
 })
 
 describe('ProcessDefinitionView - onRefreshProcessDefinitions', () => {
@@ -1032,6 +1048,23 @@ describe('ProcessDefinitionView - onRefreshProcessDefinitions', () => {
 
     await expect(m.onRefreshProcessDefinitions.call(vm, false)).rejects.toThrow('down')
 
+    expect(vm.refreshingVersions).toBeNull()
+  })
+
+  // the versions of the key left meanwhile used to replace the ones of the new key
+  it('should drop the versions when another key is opened meanwhile', async () => {
+    const vm = context({ process: version(), versionsScope: 'invoice\n' })
+    const order = [version({ id: 'order:2:id', key: 'order' })]
+    ProcessService.findProcessVersionsByDefinitionKey.mockImplementation(async () => {
+      Object.assign(vm, { processKey: 'order', versionsScope: 'order\n', processDefinitions: order, process: order[0] })
+      return [version()]
+    })
+
+    await m.onRefreshProcessDefinitions.call(vm, false)
+
+    expect(vm.processDefinitions).toBe(order)
+    expect(vm.process).toBe(order[0])
+    expect(ProcessService.findProcessById).not.toHaveBeenCalled()
     expect(vm.refreshingVersions).toBeNull()
   })
 })
