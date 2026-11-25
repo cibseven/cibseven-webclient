@@ -421,8 +421,8 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.errorVersionNotFound).toBeNull()
   })
 
-  // a failed lookup of the instance's definition used to abort the run and leave the middle pane blank
-  it('should go on with the loaded versions when the definition of the instance cannot be read', async () => {
+  // a failed lookup of the instance's definition used to abort the run, then to show the instance on the URL's version
+  it('should flag the definition of the instance when it cannot be read', async () => {
     engine({ instances: { pi1: activeInstance({ processDefinitionId: definitionId('invoice', '5') }) } })
     const findProcessById = ProcessService.findProcessById.getMockImplementation()
     ProcessService.findProcessById.mockImplementation(async (id, extraInfo) => {
@@ -434,9 +434,17 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     await open(vm)
 
     expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledOnce()
-    expect(vm.process.id).toBe('invoice:2:id')
+    expect(vm.process).toBeNull()
+    expect(vm.errorInstanceDefinitionId).toBe('invoice:5:id')
+    expect(vm.errorVersionNotFound).toBeNull()
     expect(vm.selectedInstance.id).toBe('pi1')
     expect(vm.loading).toBe(false)
+
+    // the definition view of the key opens as usual
+    await navigate(vm, { instanceId: undefined })
+
+    expect(vm.errorInstanceDefinitionId).toBeNull()
+    expect(vm.process.id).toBe('invoice:2:id')
   })
 
   // `/2/` with an instance of version 1 used to show the instance against version 2's diagram
@@ -820,6 +828,8 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
 
     expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledWith('invoice', 't1', false)
     expect(vm.processDefinitions).toHaveLength(2)
+    expect(vm.errorInstanceDefinitionId).toBe('invoice:5:id')
+    expect(vm.process).toBeNull()
     expect(vm.selectedInstance.id).toBe('pi1')
   })
 })

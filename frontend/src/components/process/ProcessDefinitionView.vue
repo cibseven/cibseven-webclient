@@ -66,6 +66,7 @@
       <div v-else-if="loading" class="h-100 d-flex justify-content-center align-items-center">
         <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
       </div>
+      <WarningBox v-else-if="errorInstanceDefinitionId !== null" :message="$t('process.definitionNotFound', { processKey: processKey, tenantId: definitionTenantId })"/>
       <WarningBox v-else-if="errorLoadingInstanceId !== null" :message="$t('process.instanceNotFound', { instanceId: instanceId, error: errorLoadingInstanceId })"/>
       <WarningBox v-else-if="errorVersionNotFound !== null && processDefinitions.length === 0" :message="$t('process.definitionNotFound', { processKey: processKey, tenantId: definitionTenantId })"/>
     </SidebarsFlow>
@@ -127,6 +128,7 @@ export default {
       refreshingVersions: null,
       errorVersionNotFound: null,
       errorLoadingInstanceId: null,
+      errorInstanceDefinitionId: null, // the definition of the instance, when it could not be loaded
       selectedInstance: null,
       activityInstance: null,
       activityInstanceHistory: null,
@@ -268,12 +270,12 @@ export default {
       try {
         definition = await ProcessService.findProcessById(definitionId)
       } catch {
-        // e.g. no permission to read it: the versions loaded with the URL's tenant are kept
-        // and the route goes on loading; the error dialog tells what failed
+        // e.g. no permission to read it: the versions the run has are kept and the route goes on loading;
+        // syncDefinition flags the missing definition, the error dialog tells what failed
         return
       }
       if (isStale() || definition.key !== this.processKey) return
-      // a failure keeps the versions the run already has, so the instance is still shown
+      // a failure keeps the versions the run already has; syncDefinition flags the missing definition
       await this.loadVersions(isStale, definition.tenantId).catch(() => {})
     },
     async loadVersions(isStale, tenantId = this.tenantId) {
@@ -306,12 +308,27 @@ export default {
       // an instance listed in the table can still be shown when history has purged it
       return instance ?? this.instances?.find(i => i.id === instanceId) ?? null
     },
+    /**
+     * The definition of the instance could not be loaded, e.g. without permission to read it, or the URL names
+     * another key: rather than drawing the instance on another definition's diagram, no definition is selected
+     * and the middle pane tells which definition is missing. Returns whether it is missing.
+     */
+    flagMissingInstanceDefinition(instanceDefinitionId, instanceDefinition) {
+      const missing = !!instanceDefinitionId && !instanceDefinition
+      this.errorInstanceDefinitionId = missing ? instanceDefinitionId : null
+      if (missing) {
+        this.process = null
+        this.errorVersionNotFound = null
+      }
+      return missing
+    },
     // Selects the definition of the instance, else the version the URL asks for, or the latest one (flagged) when there is no such version
     async syncDefinition(instance = this.selectedInstance) {
       // an instance is shown on its own definition, even when the URL names another version of it
       const instanceDefinitionId = definitionIdOf(instance)
-      const requested = this.processDefinitions.find(definition => definition.id === instanceDefinitionId) ??
-        this.processDefinitions.find(definition => definition.version === this.versionIndex)
+      const instanceDefinition = this.processDefinitions.find(definition => definition.id === instanceDefinitionId)
+      if (this.flagMissingInstanceDefinition(instanceDefinitionId, instanceDefinition)) return
+      const requested = instanceDefinition ?? this.processDefinitions.find(definition => definition.version === this.versionIndex)
       this.errorVersionNotFound = requested ? null : this.versionIndex
       const definition = requested ?? this.processDefinitions[0]
       if (!definition || definition === this.process) return
@@ -348,6 +365,7 @@ export default {
       this.process = null
       this.parentProcess = null
       this.errorVersionNotFound = null
+      this.errorInstanceDefinitionId = null
     },
     clearInstance() {
       this.selectedInstance = null

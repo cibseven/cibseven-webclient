@@ -135,6 +135,21 @@ describe('ProcessDefinitionView - mounted', () => {
       .toContain('process.definitionNotFound')
   })
 
+  // the instance used to be drawn on the URL's version when its own definition could not be read
+  it('tells that the definition of the instance could not be loaded instead of showing another one', async () => {
+    // pi5 runs on version 5, which is not among the versions and cannot be read
+    ProcessService.findProcessById.mockRejectedValueOnce(new Error('403 forbidden'))
+    const wrapper = createWrapper({ instanceId: 'pi5' }, {
+      SidebarsFlow: { template: '<div><div class="left"><slot name="left"></slot></div><div class="main"><slot></slot></div></div>' }
+    })
+    await flushPromises()
+
+    expect(wrapper.findComponent({ name: 'ProcessInstanceView' }).exists()).toBe(false)
+    const warnings = wrapper.find('.main').findAllComponents({ name: 'WarningBox' })
+    expect(warnings).toHaveLength(1)
+    expect(warnings[0].props('message')).toBe('process.definitionNotFound')
+  })
+
   it('does not load anything again on a re-render', async () => {
     const wrapper = createWrapper({ instanceId: 'pi2' })
     await flushPromises()
