@@ -103,6 +103,8 @@ export default {
     processKey: { type: String, required: true },
     versionIndex: { type: String, required: true },
     instanceId: { type: String },
+    // The tenant ID of the process definition (when instanceId is not provided) or
+    // the tenant ID of the process instance (when instanceId is provided).
     tenantId: { type: String }
   },
   watch: {
@@ -203,6 +205,8 @@ export default {
         reloadVersions && this.loadVersions(versionsScope, isStale)
       ])
       if (isStale()) return
+      await this.loadVersionsOfInstance(instance, versionsScope, isStale)
+      if (isStale()) return
 
       await this.syncDefinition()
       if (isStale()) return
@@ -224,9 +228,22 @@ export default {
         this.activityInstanceHistory = activityInstanceHistory
       }
     },
-    async loadVersions(versionsScope, isStale) {
+    /**
+     * With an instance, the URL names the tenant of the instance, not the one of its definition: they differ
+     * for a shared definition started for a tenant, and a link may name no tenant at all. When the versions
+     * loaded with the URL's tenant miss the instance's definition, they are loaded with the definition's tenant.
+     */
+    async loadVersionsOfInstance(instance, versionsScope, isStale) {
+      // runtime instances carry `definitionId` rather than `processDefinitionId`
+      const definitionId = instance?.processDefinitionId ?? instance?.definitionId
+      if (!definitionId || this.processDefinitions.some(definition => definition.id === definitionId)) return
+      const definition = await ProcessService.findProcessById(definitionId)
+      if (isStale() || definition.key !== this.processKey) return
+      await this.loadVersions(versionsScope, isStale, definition.tenantId)
+    },
+    async loadVersions(versionsScope, isStale, tenantId = this.tenantId) {
       const lazyLoad = this.$root.config.lazyLoadHistory
-      const versions = await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.tenantId, lazyLoad)
+      const versions = await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, tenantId, lazyLoad)
       if (isStale()) return
       this.processDefinitions = versions
       this.resetStatsLazyLoad(lazyLoad)

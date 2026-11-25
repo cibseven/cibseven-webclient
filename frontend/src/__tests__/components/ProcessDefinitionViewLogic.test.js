@@ -325,6 +325,45 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.activityInstanceHistory).toEqual([{ id: 'history' }])
   })
 
+  // the versions request has no tenant filter but the definition belongs to t1, as with a link without a tenant
+  it('should load the versions with the tenant of the instance definition when the URL names none', async () => {
+    engine({ tenantId: 't1' })
+    ProcessService.findProcessVersionsByDefinitionKey.mockImplementation(async (key, tenantId) =>
+      tenantId === 't1' ? [{ id: definitionId(key, '2'), key, version: '2', tenantId }] : [])
+    const vm = context({ instanceId: 'pi1' })
+
+    await open(vm)
+
+    expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenNthCalledWith(1, 'invoice', undefined, false)
+    expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenNthCalledWith(2, 'invoice', 't1', false)
+    expect(vm.process.id).toBe('invoice:2:id')
+    expect(vm.errorVersionNotFound).toBeNull()
+    expect(vm.selectedInstance.id).toBe('pi1')
+  })
+
+  // the URL of an instance names its tenant, the definition it was started from may be shared
+  it('should load the versions of a shared definition for an instance of a tenant', async () => {
+    engine({ instances: { pi1: activeInstance(), pi2: activeInstance({ id: 'pi2' }) } })
+    ProcessService.findProcessVersionsByDefinitionKey.mockImplementation(async (key, tenantId) =>
+      tenantId ? [] : [{ id: definitionId(key, '2'), key, version: '2', tenantId: null }])
+    const vm = context({ instanceId: 'pi1', tenantId: 't1' })
+
+    await open(vm)
+
+    expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenNthCalledWith(1, 'invoice', 't1', false)
+    expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenNthCalledWith(2, 'invoice', null, false)
+    expect(vm.process.id).toBe('invoice:2:id')
+    expect(vm.selectedInstance.id).toBe('pi1')
+
+    // another instance of the same definition finds it in the loaded versions
+    vi.clearAllMocks()
+    await navigate(vm, { instanceId: 'pi2' })
+
+    expect(ProcessService.findProcessVersionsByDefinitionKey).not.toHaveBeenCalled()
+    expect(ProcessService.findProcessById).not.toHaveBeenCalled()
+    expect(vm.selectedInstance.id).toBe('pi2')
+  })
+
   it('should look the instance up while the versions load', async () => {
     engine()
     const lookup = deferred()
