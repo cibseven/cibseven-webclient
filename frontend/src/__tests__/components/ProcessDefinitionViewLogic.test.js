@@ -433,6 +433,22 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.loading).toBe(false)
   })
 
+  // `/2/` with an instance of version 1 used to show the instance against version 2's diagram
+  it('should show the instance on its own definition when the URL names another version', async () => {
+    engine({ instances: { pi1: activeInstance({ processDefinitionId: definitionId('invoice', '1') }) } })
+    const vm = context({ versionIndex: '2', instanceId: 'pi1' })
+
+    await open(vm)
+
+    expect(vm.process.id).toBe('invoice:1:id')
+    expect(vm.computedVersionIndex).toBe('1')
+    expect(vm.errorVersionNotFound).toBeNull()
+    expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledOnce()
+    expect(ProcessService.findProcessById).toHaveBeenCalledOnce()
+    expect(ProcessService.findProcessById).toHaveBeenCalledWith('invoice:1:id', true)
+    expect(vm.selectedInstance.id).toBe('pi1')
+  })
+
   it('should look the instance up while the versions load', async () => {
     engine()
     const lookup = deferred()

@@ -88,6 +88,11 @@ import sidebarOpenPersistenceMixin from '@/mixins/sidebarOpenPersistenceMixin.js
 
 const UNFINISHED_FILTER_PREFERENCE_KEY = 'cibseven:preferences:unfinishedInstancesFilter'
 
+// The id of the definition an instance was started from; runtime instances carry `definitionId` rather than `processDefinitionId`
+function definitionIdOf(instance) {
+  return instance?.processDefinitionId ?? instance?.definitionId
+}
+
 function getStringObjByKeys(keys, obj) { // TODO rewrite to use join()
   let result = ''
   keys.forEach(key => {
@@ -216,7 +221,7 @@ export default {
       await this.loadVersionsOfInstance(instance, isStale)
       if (isStale()) return
 
-      await this.syncDefinition()
+      await this.syncDefinition(instance)
       if (isStale()) return
 
       if (!instance || this.selectedInstance?.id === instance.id) return
@@ -253,8 +258,7 @@ export default {
      * loaded with the URL's tenant miss the instance's definition, they are loaded with the definition's tenant.
      */
     async loadVersionsOfInstance(instance, isStale) {
-      // runtime instances carry `definitionId` rather than `processDefinitionId`
-      const definitionId = instance?.processDefinitionId ?? instance?.definitionId
+      const definitionId = definitionIdOf(instance)
       if (!definitionId || this.processDefinitions.some(definition => definition.id === definitionId)) return
       let definition
       try {
@@ -297,9 +301,12 @@ export default {
       // an instance listed in the table can still be shown when history has purged it
       return instance ?? this.instances?.find(i => i.id === instanceId) ?? null
     },
-    // Selects the version the URL asks for, or the latest one (flagged) when there is no such version
-    async syncDefinition() {
-      const requested = this.processDefinitions.find(definition => definition.version === this.versionIndex)
+    // Selects the definition of the instance, else the version the URL asks for, or the latest one (flagged) when there is no such version
+    async syncDefinition(instance = this.selectedInstance) {
+      // an instance is shown on its own definition, even when the URL names another version of it
+      const instanceDefinitionId = definitionIdOf(instance)
+      const requested = this.processDefinitions.find(definition => definition.id === instanceDefinitionId) ??
+        this.processDefinitions.find(definition => definition.version === this.versionIndex)
       this.errorVersionNotFound = requested ? null : this.versionIndex
       const definition = requested ?? this.processDefinitions[0]
       if (!definition || definition === this.process) return
