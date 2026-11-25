@@ -434,20 +434,28 @@ export default {
       // the key and tenant whose versions are shown when the deletion starts
       const versionsScope = this.versionsScope
       const tenantId = this.definitionTenantId
-      await ProcessService.deleteProcessDefinition(processDefinition.id, true)
+      try {
+        await ProcessService.deleteProcessDefinition(processDefinition.id, true)
+      } catch {
+        // nothing was deleted, so the versions stay as they are; the error dialog tells what failed
+        return
+      }
       const lazyLoad = this.$root.config.lazyLoadHistory
-      const versions = await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, tenantId, lazyLoad)
+      const reloaded = await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, tenantId, lazyLoad).catch(() => null)
       // The user opened another key or tenant while the requests ran, e.g. deleted a version of `invoice`
       // and went to `order`: that navigation loads its own versions, so this reply must neither replace
       // them nor redirect away from the newly opened process
       if (this.versionsScope !== versionsScope) return
+      // The versions cannot be reloaded: the deleted one is still dropped, so that it is neither listed nor open,
+      // and the others are kept as they are; the error dialog tells what failed
+      const versions = reloaded ?? this.processDefinitions.filter(version => version.id !== processDefinition.id)
       if (versions.length === 0) {
         // no more process-definitions with such key
         this.$router.replace('/seven/auth/processes')
         return
       }
       this.processDefinitions = versions
-      this.resetStatsLazyLoad(lazyLoad)
+      if (reloaded) this.resetStatsLazyLoad(lazyLoad)
       if (processDefinition.version !== this.computedVersionIndex) {
         // a version other than the open one was deleted: the open one is selected from the new list
         await this.syncDefinition()

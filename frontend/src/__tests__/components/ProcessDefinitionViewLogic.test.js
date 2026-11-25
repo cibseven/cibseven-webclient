@@ -1888,6 +1888,69 @@ describe('ProcessDefinitionView - onDeleteProcessDefinition', () => {
     expect(vm.process).toBe(order[0])
     expect(vm.$router.replace).not.toHaveBeenCalled()
   })
+
+  /**
+   * Scenario: the user deletes version 2 of invoice, but the delete request fails (e.g. 403, or 500).
+   * Link: #/seven/auth/process/invoice/3, deleting version 2
+   * Expected: the handler resolves; the versions are not reloaded and stay as they are, and there is no redirect.
+   * Guards against: P40, an unhandled rejection; the error dialog tells what failed.
+   */
+  it('should keep the versions when the delete fails', async () => {
+    const versions = [version({ id: 'pd:3:abc', version: '3' }), version({ version: '2' })]
+    const vm = context({ versionIndex: '3', process: versions[0], processDefinitions: versions })
+    ProcessService.deleteProcessDefinition.mockRejectedValueOnce(new Error('403 forbidden'))
+
+    await m.onDeleteProcessDefinition.call(vm, params)
+
+    expect(ProcessService.findProcessVersionsByDefinitionKey).not.toHaveBeenCalled()
+    expect(vm.processDefinitions).toBe(versions)
+    expect(vm.process).toBe(versions[0])
+    expect(vm.$router.replace).not.toHaveBeenCalled()
+  })
+
+  /**
+   * Scenario: the user deletes version 2 of invoice while version 3 is open; the delete succeeds, but the versions
+   *   request that follows times out.
+   * Link: #/seven/auth/process/invoice/3, deleting version 2
+   * Expected: the handler resolves; v2 is dropped from the versions, v3 stays open with its details, no redirect.
+   * Guards against: P40, the deleted version still listed in the sidebar, and an unhandled rejection.
+   */
+  it('should drop the deleted version when the versions cannot be reloaded', async () => {
+    const open = version({ id: 'pd:3:abc', version: '3' })
+    const vm = context({ versionIndex: '3', process: open, processDefinitions: [open, version({ version: '2' })] })
+    ProcessService.findProcessVersionsByDefinitionKey.mockRejectedValueOnce(new Error('timeout'))
+
+    await m.onDeleteProcessDefinition.call(vm, params)
+
+    expect(vm.processDefinitions).toEqual([open])
+    expect(vm.process).toBe(open)
+    expect(ProcessService.findProcessById).not.toHaveBeenCalled()
+    expect(vm.$router.replace).not.toHaveBeenCalled()
+  })
+
+  /**
+   * Scenario: the user deletes the open version 2 of invoice; the delete succeeds, but the versions request that
+   *   follows times out. Versions 3 and 1 remain.
+   * Link: #/seven/auth/process/invoice/2
+   * Expected: v2 is dropped from the versions and the view redirects to the nearest remaining version,
+   *   #/seven/auth/process/invoice/3.
+   * Guards against: P40, the deleted version staying open with no redirect.
+   */
+  it('should navigate to the nearest remaining version when the versions cannot be reloaded', async () => {
+    const deleted = version({ version: '2' })
+    const remaining = [version({ id: 'pd:3:abc', version: '3' }), version({ id: 'pd:1:abc', version: '1' })]
+    const vm = context({ process: deleted, processDefinitions: [remaining[0], deleted, remaining[1]] })
+    ProcessService.findProcessVersionsByDefinitionKey.mockRejectedValueOnce(new Error('timeout'))
+
+    await m.onDeleteProcessDefinition.call(vm, params)
+
+    expect(vm.processDefinitions).toEqual(remaining)
+    expect(vm.$router.replace).toHaveBeenCalledWith({
+      name: 'process',
+      params: { processKey: 'invoice', versionIndex: '3' },
+      query: {}
+    })
+  })
 })
 
 describe('ProcessDefinitionView - onRefreshProcessDefinitions', () => {
