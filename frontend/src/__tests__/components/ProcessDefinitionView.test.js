@@ -75,6 +75,12 @@ describe('ProcessDefinitionView - mounted', () => {
     expect(saveLeftOpen).toHaveBeenCalledWith('process-instance', false)
   })
 
+  /**
+   * Scenario: the user opens an instance link directly (a deep link, or F5); the view mounts with it.
+   * Link: #/seven/auth/process/invoice/2/pi2
+   * Expected: one request each for the instance, the versions and the definition; v2 and pi2 are shown.
+   * Happy path: the view loads the route it is mounted with, once.
+   */
   it('loads the route it is mounted with', async () => {
     const wrapper = createWrapper({ instanceId: 'pi2' })
     await flushPromises()
@@ -86,7 +92,12 @@ describe('ProcessDefinitionView - mounted', () => {
     expect(wrapper.vm.process.version).toBe('2')
   })
 
-  // CIB7-1895: separate watchers per prop and beforeUpdate each started their own loading
+  /**
+   * Scenario: one navigation changes the version and the instance together, e.g. an instance of another version.
+   * Link: from #/seven/auth/process/invoice/2 to #/seven/auth/process/invoice/1/pi1
+   * Expected: one instance lookup and one activity tree request; the versions are not reloaded.
+   * Guards against: CIB7-1895, separate watchers per prop and beforeUpdate each starting their own loading.
+   */
   it('handles a navigation that changes several route props once', async () => {
     const wrapper = createWrapper()
     await flushPromises()
@@ -100,7 +111,12 @@ describe('ProcessDefinitionView - mounted', () => {
     expect(ProcessService.findProcessVersionsByDefinitionKey).not.toHaveBeenCalled()
   })
 
-  // the middle pane stayed blank while the definition of a newly opened key was loading
+  /**
+   * Scenario: the user opens another process, whose versions are slow.
+   * Link: from #/seven/auth/process/invoice/2 to #/seven/auth/process/order/2
+   * Expected: the middle pane shows the loading box until order can be shown, then ProcessInstancesView.
+   * Guards against: P8, a blank middle pane while the route loads.
+   */
   it('shows the loading box until the definition can be shown', async () => {
     // the shallow SidebarsFlow stub would drop what it holds in its default slot
     const wrapper = createWrapper({}, { SidebarsFlow: { template: '<div><slot name="left"></slot><slot></slot></div>' } })
@@ -120,7 +136,12 @@ describe('ProcessDefinitionView - mounted', () => {
     expect(wrapper.findComponent({ name: 'ProcessInstancesView' }).exists()).toBe(true)
   })
 
-  // with both the instance and the definitions missing, the middle pane names the instance the link points to
+  /**
+   * Scenario: an instance link whose instance cannot be loaded (404), for a key without any versions.
+   * Link: #/seven/auth/process/invoice/2/pi2
+   * Expected: the middle pane shows only "instance not found"; the sidebar still says the definition was not found.
+   * Guards against: P16, the middle pane naming the definition instead of the instance the link points to.
+   */
   it('shows only the instance-not-found warning in the middle pane when the definitions are missing too', async () => {
     HistoryService.findProcessInstance.mockRejectedValueOnce(new Error('404 not found'))
     ProcessService.findProcessVersionsByDefinitionKey.mockResolvedValueOnce([])
@@ -137,7 +158,13 @@ describe('ProcessDefinitionView - mounted', () => {
       .toContain('process.definitionNotFound')
   })
 
-  // the instance used to be drawn on the URL's version when its own definition could not be read
+  /**
+   * Scenario: the instance runs on invoice v5, which is not among the versions and cannot be read (403).
+   * Link: #/seven/auth/process/invoice/2/pi5
+   * Expected: no ProcessInstanceView; the middle pane shows only "definition not found", naming invoice:5:id.
+   * Guards against: P18, the instance drawn on v2's diagram; P26, the warning naming the URL's key instead of the
+   *   missing definition.
+   */
   it('tells that the definition of the instance could not be loaded instead of showing another one', async () => {
     // pi5 runs on version 5, which is not among the versions and cannot be read
     ProcessService.findProcessById.mockRejectedValueOnce(new Error('403 forbidden'))
@@ -156,6 +183,12 @@ describe('ProcessDefinitionView - mounted', () => {
     expect(warnings[0].props('message')).toBe('process.definitionNotFound {"processKey":"invoice:5:id"}')
   })
 
+  /**
+   * Scenario: the view re-renders without a route change, e.g. when the instances filter changes.
+   * Link: #/seven/auth/process/invoice/2/pi2, unchanged
+   * Expected: no request.
+   * Guards against: CIB7-1895, beforeUpdate reloading the instance and the definition on every re-render.
+   */
   it('does not load anything again on a re-render', async () => {
     const wrapper = createWrapper({ instanceId: 'pi2' })
     await flushPromises()

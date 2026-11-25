@@ -100,23 +100,48 @@ afterEach(() => {
 })
 
 describe('ProcessDefinitionView - computed', () => {
+  /**
+   * Scenario: the instance view passes the instance's tenant to ProcessInstanceView, its incidents table and plugins;
+   *   while the instance is still loading, only the URL can tell it.
+   * Link: #/seven/auth/process/invoice/2/pi1?tenantId=t1 (instance view) and #/seven/auth/process/invoice/2?tenantId=t1 (definition view)
+   * Expected: 't1' while the instance loads; null on the definition view, whose tenantId is the definition's.
+   * Guards against: handing a definition's tenant to the instance view as if it were the instance's.
+   */
   it('instanceTenantId should be the tenant of the URL until the instance is loaded, and none without an instance', () => {
     expect(c.instanceTenantId.call(context({ instanceId: 'pi1', tenantId: 't1' }))).toBe('t1')
     expect(c.instanceTenantId.call(context({ tenantId: 't1' }))).toBeNull()
   })
 
-  // a link may name no tenant, the plugins and tables of the instance view used to get none for an instance of t1
+  /**
+   * Scenario: an instance link may name no tenant (bookmark, external system), or one the instance does not have.
+   * Link: #/seven/auth/process/invoice/2/pi1 for an instance of tenant t1, #/seven/auth/process/invoice/2/pi1?tenantId=t1 for one without a tenant
+   * Expected: once the instance is loaded, its own tenant wins over the URL: 't1', resp. null.
+   * Guards against: P14, ProcessInstanceView, IncidentsTable and the plugin slots getting no tenant for a t1 instance.
+   */
   it('instanceTenantId should be the tenant of the loaded instance', () => {
     expect(c.instanceTenantId.call(context({ instanceId: 'pi1', selectedInstance: { id: 'pi1', tenantId: 't1' } }))).toBe('t1')
     expect(c.instanceTenantId.call(context({ instanceId: 'pi1', tenantId: 't1', selectedInstance: { id: 'pi1', tenantId: null } }))).toBeNull()
   })
 
-  // the URL of an instance names its tenant, the definition it was started from may be shared
+  /**
+   * Scenario: with an instance, the URL's tenantId is the instance's tenant; an instance of tenant t1 can be started
+   *   from the shared invoice, deployed without a tenant.
+   * Link: #/seven/auth/process/invoice/2/pi1?tenantId=t1 for such an instance, and #/seven/auth/process/invoice/2?tenantId=t1 for t1's own invoice
+   * Expected: the tenant of the open definition: null for the shared one, 't1' for t1's own.
+   * Guards against: refresh, delete and the instances view using the instance's tenant, which has no versions of a
+   *   shared definition (empty list, "definition not found").
+   */
   it('definitionTenantId should be the tenant of the open definition', () => {
     expect(c.definitionTenantId.call(context({ instanceId: 'pi1', tenantId: 't1', process: version({ tenantId: null }) }))).toBeNull()
     expect(c.definitionTenantId.call(context({ tenantId: 't1', process: version({ tenantId: 't1' }) }))).toBe('t1')
   })
 
+  /**
+   * Scenario: before any definition is open, i.e. on the first load of a link, only the URL names a tenant.
+   * Link: #/seven/auth/process/invoice/2?tenantId=t1
+   * Expected: 't1'.
+   * Happy path: the first versions request of a definition link uses the URL's tenant.
+   */
   it('definitionTenantId should assume the tenant of the URL until a definition is open', () => {
     expect(c.definitionTenantId.call(context({ tenantId: 't1' }))).toBe('t1')
   })
@@ -236,6 +261,13 @@ describe('ProcessDefinitionView - findProcessInstance', () => {
 describe('ProcessDefinitionView - onRouteChanged', () => {
   const route = (overrides = {}) => ({ processKey: 'invoice', tenantId: undefined, versionIndex: '2', instanceId: undefined, ...overrides })
 
+  /**
+   * Scenario: the user picked an activity in the diagram (it filters the instances table and is highlighted), then
+   *   opens a route where it means nothing: the first open, another key, another instance, or back from an instance.
+   * Link: e.g. from #/seven/auth/process/invoice/2 to #/seven/auth/process/order/2, to #/seven/auth/process/invoice/2/pi1, or from there back to #/seven/auth/process/invoice/2
+   * Expected: the activity selection is cleared and the route is loaded.
+   * Guards against: an activity of the previous diagram filtering or highlighting the next one.
+   */
   it.each([
     ['the first sync', undefined, route()],
     ['a different key', route(), route({ processKey: 'order' })],
@@ -250,7 +282,13 @@ describe('ProcessDefinitionView - onRouteChanged', () => {
     expect(vm.syncWithRoute).toHaveBeenCalled()
   })
 
-  // the activity picked in the instances view filters its table, also across versions
+  /**
+   * Scenario: the user filters the instances by an activity and switches the version in the sidebar; the activity
+   *   usually exists in the other version too.
+   * Link: from #/seven/auth/process/invoice/2 to #/seven/auth/process/invoice/1
+   * Expected: the activity selection stays and the route is loaded.
+   * Guards against: losing the user's activity filter on every version switch.
+   */
   it('should keep the activity selection when only the version changes', async () => {
     const vm = context({ syncWithRoute: vi.fn() })
 
@@ -296,6 +334,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     return { promise, resolve }
   }
 
+  /**
+   * Scenario: the user opens a process definition, e.g. from the processes list.
+   * Link: #/seven/auth/process/invoice/2?tenantId=t1
+   * Expected: one versions request (with t1), one details request for v2, no instance lookup; v2 is open, nothing flagged.
+   * Guards against: CIB7-1895, every request going out twice (watchers per prop and beforeUpdate each loading).
+   */
   it('should open a definition with one request per resource', async () => {
     engine()
     const vm = context({ tenantId: 't1' })
@@ -312,7 +356,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.errorVersionNotFound).toBeNull()
   })
 
-  // ProcessInstancesView loads them together with its instances; loading here too doubled the request
+  /**
+   * Scenario: on the definition view, ProcessInstancesView loads the activity statistics together with its instances.
+   * Link: #/seven/auth/process/invoice/2
+   * Expected: this view dispatches no loadStatistics.
+   * Guards against: the statistics request going out twice for every definition opened.
+   */
   it('should leave the statistics to the instances view', async () => {
     engine()
     const vm = context()
@@ -322,7 +371,13 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.$store.dispatch).not.toHaveBeenCalledWith('loadStatistics', expect.anything())
   })
 
-  // CIB7-1895: a deep link (or F5 on the instance view) fetched all of this twice
+  /**
+   * Scenario: the user opens an instance link of an active instance: a deep link, or F5 on the instance view.
+   * Link: #/seven/auth/process/invoice/2/pi1?tenantId=t1
+   * Expected: one request each for the instance, the versions (with t1), v2's details, the statistics, the activity
+   *   tree and the activity history; v2 and pi1 are shown with them.
+   * Guards against: CIB7-1895, every request of the instance view going out twice.
+   */
   it('should open an instance link with one request per resource', async () => {
     engine()
     const vm = context({ instanceId: 'pi1', tenantId: 't1' })
@@ -343,7 +398,14 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.activityInstanceHistory).toEqual([{ id: 'history' }])
   })
 
-  // the versions request has no tenant filter but the definition belongs to t1, as with a link without a tenant
+  /**
+   * Scenario: an instance link without ?tenantId (bookmark, external link, the EE variable log before its fix) for an
+   *   instance of tenant t1, whose invoice is deployed for t1 only.
+   * Link: #/seven/auth/process/invoice/2/pi1
+   * Expected: the versions without a tenant miss its definition, so the definition is fetched once with its details and
+   *   the versions are loaded again with t1; v2 and pi1 are shown, nothing flagged.
+   * Guards against: P1, "definition not found" for a valid instance; P28, fetching the definition twice.
+   */
   it('should load the versions with the tenant of the instance definition when the URL names none', async () => {
     engine({ tenantId: 't1' })
     ProcessService.findProcessVersionsByDefinitionKey.mockImplementation(async (key, tenantId) =>
@@ -363,7 +425,14 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.selectedInstance.id).toBe('pi1')
   })
 
-  // the URL of an instance names its tenant, the definition it was started from may be shared
+  /**
+   * Scenario: an instance of tenant t1 started from the shared invoice (deployed without a tenant); InstancesTable puts
+   *   the instance's tenant into the link. Then another instance of the same definition is opened.
+   * Link: #/seven/auth/process/invoice/2/pi1?tenantId=t1, then #/seven/auth/process/invoice/2/pi2?tenantId=t1
+   * Expected: t1 has no invoice, so the versions are loaded again without a tenant and pi1 is shown on the shared v2;
+   *   pi2 then finds its definition among them and nothing is reloaded.
+   * Guards against: an empty versions list for every instance of a shared definition, and a reload for each instance.
+   */
   it('should load the versions of a shared definition for an instance of a tenant', async () => {
     engine({ instances: { pi1: activeInstance(), pi2: activeInstance({ id: 'pi2' }) } })
     ProcessService.findProcessVersionsByDefinitionKey.mockImplementation(async (key, tenantId) =>
@@ -387,7 +456,13 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.selectedInstance.id).toBe('pi2')
   })
 
-  // the shared versions loaded for the instance used to stay for the definition view of the instance's tenant
+  /**
+   * Scenario: t1 has its own invoice v1, the shared invoice is v2. The user opens a t1 instance of the shared v2, then
+   *   t1's own definition.
+   * Link: #/seven/auth/process/invoice/2/pi1?tenantId=t1, then #/seven/auth/process/invoice/1?tenantId=t1
+   * Expected: the definition view loads t1's versions again and opens t1's v1.
+   * Guards against: P10, the shared versions kept for the instance being shown under the t1 URL.
+   */
   it('should load the versions of the URL tenant when leaving an instance of a shared definition', async () => {
     engine()
     // t1 has its own invoice v1, the shared invoice is v2
@@ -407,7 +482,13 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.errorVersionNotFound).toBeNull()
   })
 
-  // the t1 versions loaded for a link without a tenant used to stay for a later definition view without one
+  /**
+   * Scenario: t1 has its own invoice v2, the shared invoice is v3. The user opens an instance link without a tenant for a
+   *   t1 instance, then a definition link without a tenant.
+   * Link: #/seven/auth/process/invoice/2/pi1, then #/seven/auth/process/invoice/3
+   * Expected: the versions without a tenant are loaded again and the shared v3 opens.
+   * Guards against: P10, t1's versions loaded for the instance being shown for a link without a tenant.
+   */
   it('should load the versions without a tenant when leaving an instance link without one', async () => {
     engine({ tenantId: 't1' })
     // t1 has its own invoice v2, the shared invoice is v3
@@ -427,7 +508,15 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.errorVersionNotFound).toBeNull()
   })
 
-  // a failed lookup of the instance's definition used to abort the run, then to show the instance on the URL's version
+  /**
+   * Scenario: the instance runs on invoice v5, which is not among the loaded versions and cannot be read: no permission
+   *   on another tenant's definition, or deleted while its history remains. Then the user opens the definition view.
+   * Link: #/seven/auth/process/invoice/2/pi1, then #/seven/auth/process/invoice/2
+   * Expected: no definition is open and errorInstanceDefinitionId names invoice:5:id, so the middle pane says the
+   *   definition was not found; the instance and its activities are not loaded. The definition view then opens v2 as usual.
+   * Guards against: P11, a blank page after the failed request; P18, pi1 drawn on v2's diagram; P25, activity
+   *   requests for an instance nothing shows.
+   */
   it('should flag the definition of the instance when it cannot be read', async () => {
     engine({ instances: { pi1: activeInstance({ processDefinitionId: definitionId('invoice', '5') }) } })
     const findProcessById = ProcessService.findProcessById.getMockImplementation()
@@ -456,7 +545,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.process.id).toBe('invoice:2:id')
   })
 
-  // `/2/` with an instance of version 1 used to show the instance against version 2's diagram
+  /**
+   * Scenario: a stale bookmark or a hand-edited link names version 2, but the instance runs on version 1.
+   * Link: #/seven/auth/process/invoice/2/pi1 for an instance of v1
+   * Expected: v1 opens and the view shows version 1, nothing is flagged, no extra request; the URL keeps /2/.
+   * Guards against: P13, the instance's activities drawn on v2's diagram, pointing to wrong or missing elements.
+   */
   it('should show the instance on its own definition when the URL names another version', async () => {
     engine({ instances: { pi1: activeInstance({ processDefinitionId: definitionId('invoice', '1') }) } })
     const vm = context({ versionIndex: '2', instanceId: 'pi1' })
@@ -472,7 +566,14 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.selectedInstance.id).toBe('pi1')
   })
 
-  // a failed versions request used to abort the run before the instance was selected, leaving both panes blank
+  /**
+   * Scenario: the versions of the key cannot be loaded at all (403/500 from the versions endpoint, which also reads
+   *   every version's deployment time), but the instance and its definition can.
+   * Link: #/seven/auth/process/invoice/2/pi1
+   * Expected: the instance's own definition, fetched once, becomes the only version entry; v2 and pi1 are shown,
+   *   nothing is flagged and loading ends.
+   * Guards against: P22, both panes blank where main still showed the instance.
+   */
   it('should show the instance on its own definition when no versions of the key can be loaded', async () => {
     engine()
     ProcessService.findProcessVersionsByDefinitionKey.mockRejectedValue(new Error('403 forbidden'))
@@ -488,6 +589,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.loading).toBe(false)
   })
 
+  /**
+   * Scenario: the first versions request, without a tenant, fails (500); the instance belongs to tenant t1.
+   * Link: #/seven/auth/process/invoice/2/pi1
+   * Expected: the reload with the definition's tenant t1 brings the full list; v2 and pi1 are shown.
+   * Guards against: P22, one failed request costing the whole instance view.
+   */
   it('should load the versions with the tenant of the definition when the first versions request fails', async () => {
     engine({ tenantId: 't1' })
     const versions = ProcessService.findProcessVersionsByDefinitionKey.getMockImplementation()
@@ -503,7 +610,14 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.selectedInstance.id).toBe('pi1')
   })
 
-  // the shared versions kept for the previous instance used to stay under t1 when the next lookup failed
+  /**
+   * Scenario: t1 has its own invoice v2, the shared invoice is v1. The user opens a t1 instance of the shared v1, then a
+   *   link to an instance that does not exist (deleted, cleaned up, mistyped).
+   * Link: #/seven/auth/process/invoice/1/a?tenantId=t1, then #/seven/auth/process/invoice/2/missing?tenantId=t1
+   * Expected: t1's versions are loaded again and t1's v2 opens; no instance is selected.
+   * Guards against: P27, the shared versions kept for the previous instance shown under the t1 URL: the wrong
+   *   definition, or "version 2 not found" although t1 has a v2.
+   */
   it('should load the versions of the URL tenant again when an instance of the key is not found', async () => {
     engine({ instances: { a: activeInstance({ id: 'a', processDefinitionId: definitionId('invoice', '1') }) } })
     // t1 has its own invoice v2, the shared invoice is v1
@@ -524,6 +638,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.selectedInstance).toBeNull()
   })
 
+  /**
+   * Scenario: the versions shown already are the URL tenant's when the next link points to a missing instance.
+   * Link: #/seven/auth/process/invoice/2/pi1, then #/seven/auth/process/invoice/2/missing
+   * Expected: no versions request.
+   * Guards against: reloading the right versions for nothing on every missing instance.
+   */
   it('should not load the versions again when an instance of the key is not found', async () => {
     engine({ instances: { pi1: activeInstance() } })
     const vm = context({ instanceId: 'pi1' })
@@ -535,6 +655,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(ProcessService.findProcessVersionsByDefinitionKey).not.toHaveBeenCalled()
   })
 
+  /**
+   * Scenario: a deep link to an instance needs the instance and the versions of its key; neither waits for the other.
+   * Link: #/seven/auth/process/invoice/2/pi1
+   * Expected: the versions request goes out while the instance lookup is still pending; pi1 is shown once both arrive.
+   * Guards against: the two requests running one after the other, doubling the wait.
+   */
   it('should look the instance up while the versions load', async () => {
     engine()
     const lookup = deferred()
@@ -560,6 +686,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.process).toMatchObject({ incidents: 7, deploymentTime: 'deployed' })
   })
 
+  /**
+   * Scenario: with lazyLoadHistory on, the versions come without their counts, which the sidebar loads on demand.
+   * Link: #/seven/auth/process/invoice/2/pi1
+   * Expected: the counts of the versions show '-' placeholders.
+   * Guards against: showing the backend's empty counts as real numbers.
+   */
   it('should reset the lazy statistics placeholders of the versions', async () => {
     engine()
     const vm = context({ instanceId: 'pi1' })
@@ -570,6 +702,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.processDefinitions[1]).toMatchObject({ runningInstances: '-', incidents: '-' })
   })
 
+  /**
+   * Scenario: the user clicks another version in the sidebar.
+   * Link: from #/seven/auth/process/invoice/2 to #/seven/auth/process/invoice/1
+   * Expected: only v1's details are requested; the versions are kept and v1 opens.
+   * Guards against: reloading the whole versions list on every version switch.
+   */
   it('should switch the version without loading the versions again', async () => {
     engine()
     const vm = context()
@@ -605,6 +743,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(ProcessService.findProcessById).not.toHaveBeenCalled()
   })
 
+  /**
+   * Scenario: the user goes from one process to another, e.g. through a call activity or the processes list.
+   * Link: from #/seven/auth/process/invoice/2 to #/seven/auth/process/order/2
+   * Expected: order's versions are loaded and order v2 opens; invoice's parent breadcrumb is gone.
+   * Guards against: invoice's versions or breadcrumb staying on the order page.
+   */
   it('should start over when the key changes', async () => {
     engine()
     const vm = context({ parentProcess: { id: 'parent' } })
@@ -618,6 +762,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.parentProcess).toBeNull()
   })
 
+  /**
+   * Scenario: the user clicks an instance in the instances table of the open definition.
+   * Link: from #/seven/auth/process/invoice/2 to #/seven/auth/process/invoice/2/pi1
+   * Expected: only the instance is looked up; the versions and the definition are kept; pi1 is selected.
+   * Guards against: reloading the definition for every instance opened from its table.
+   */
   it('should select an instance from the list without reloading the definition', async () => {
     engine()
     const vm = context()
@@ -632,6 +782,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.selectedInstance.id).toBe('pi1')
   })
 
+  /**
+   * Scenario: the user leaves the instance view through the breadcrumb back to its definition.
+   * Link: from #/seven/auth/process/invoice/2/pi1 to #/seven/auth/process/invoice/2
+   * Expected: the instance and its activity data are cleared, without any request.
+   * Guards against: reloading the versions, the definition or the instance when going back.
+   */
   it('should go back to the definition without any request', async () => {
     engine()
     const vm = context({ instanceId: 'pi1' })
@@ -648,7 +804,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(HistoryService.findProcessInstance).not.toHaveBeenCalled()
   })
 
-  // the instance view of the previous instance must not stay on screen while the next one loads
+  /**
+   * Scenario: the user opens another instance while the previous one is shown, and the new lookup is slow.
+   * Link: from #/seven/auth/process/invoice/2/pi1 to #/seven/auth/process/invoice/2/pi2
+   * Expected: pi1 disappears at once; pi2 is shown when its lookup arrives.
+   * Guards against: pi1's data staying on screen under pi2's URL while it loads.
+   */
   it('should drop the previous instance as soon as another one is asked for', async () => {
     engine({ instances: { pi1: activeInstance(), pi2: activeInstance({ id: 'pi2' }) } })
     const vm = context({ instanceId: 'pi1' })
@@ -665,6 +826,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.selectedInstance.id).toBe('pi2')
   })
 
+  /**
+   * Scenario: a run starts for the route already shown, without a route change.
+   * Link: #/seven/auth/process/invoice/2/pi1, unchanged
+   * Expected: neither the instance nor its activity tree is requested again.
+   * Guards against: reloading the open instance for nothing.
+   */
   it('should not look the selected instance up again', async () => {
     engine()
     const vm = context({ instanceId: 'pi1' })
@@ -677,7 +844,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(ProcessService.findActivityInstance).not.toHaveBeenCalled()
   })
 
-  // A slow response of the previous navigation used to overwrite the newer one.
+  /**
+   * Scenario: the user opens invoice and, before its slow versions arrive, moves on to order.
+   * Link: #/seven/auth/process/invoice/2, then #/seven/auth/process/order/2
+   * Expected: order's versions and definition stay when invoice's reply arrives late.
+   * Guards against: a slow reply of the previous navigation overwriting the page the user is on.
+   */
   it('should drop the results of an older navigation', async () => {
     engine()
     const slowVersions = deferred()
@@ -694,6 +866,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.process.key).toBe('order')
   })
 
+  /**
+   * Scenario: the user opens pi1 and, before its slow lookup arrives, opens pi2.
+   * Link: #/seven/auth/process/invoice/2/pi1, then #/seven/auth/process/invoice/2/pi2
+   * Expected: pi2 stays selected when pi1's lookup arrives late.
+   * Guards against: pi1 shown under pi2's URL.
+   */
   it('should drop the instance of an older navigation', async () => {
     engine({ instances: { pi1: activeInstance(), pi2: activeInstance({ id: 'pi2' }) } })
     const slowLookup = deferred()
@@ -708,6 +886,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.selectedInstance.id).toBe('pi2')
   })
 
+  /**
+   * Scenario: the route is loading.
+   * Link: #/seven/auth/process/invoice/2
+   * Expected: loading is true while the versions are pending and false once the route is loaded.
+   * Happy path: drives the loading box of the middle pane (P8).
+   */
   it('should flag loading while the route is loaded', async () => {
     engine()
     const slowVersions = deferred()
@@ -722,6 +906,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.loading).toBe(false)
   })
 
+  /**
+   * Scenario: the user moves from invoice to order; invoice's run finishes first, order's is still pending.
+   * Link: #/seven/auth/process/invoice/2, then #/seven/auth/process/order/2
+   * Expected: loading stays true until order's run is done.
+   * Guards against: the loading box disappearing while the page the user is on still loads.
+   */
   it('should keep loading while a newer navigation is still loading', async () => {
     engine()
     const slowOrder = deferred()
@@ -739,6 +929,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.loading).toBe(false)
   })
 
+  /**
+   * Scenario: the versions request of a definition link fails (500).
+   * Link: #/seven/auth/process/invoice/2
+   * Expected: the run rejects, so the error reaches the app's error handling, and loading ends.
+   * Guards against: a loading box that never goes away after an error.
+   */
   it('should stop loading when a request fails', async () => {
     engine()
     ProcessService.findProcessVersionsByDefinitionKey.mockRejectedValue(new Error('500'))
@@ -749,7 +945,13 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.loading).toBe(false)
   })
 
-  // the failure of a navigation the user had already left used to escape the route watcher as an unhandled error
+  /**
+   * Scenario: the user opens invoice, whose versions request fails slowly (500), and moves on to order at once.
+   * Link: #/seven/auth/process/invoice/2, then #/seven/auth/process/order/2
+   * Expected: invoice's run resolves instead of rejecting; order stays open and loading ends.
+   * Guards against: P21, invoice's failure escaping the route watcher as an unhandled error while the user is on
+   *   order. The global axios handler still shows its error dialog when the request fails.
+   */
   it('should drop the failure of an older navigation', async () => {
     engine()
     const slowVersions = deferred()
@@ -766,6 +968,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.loading).toBe(false)
   })
 
+  /**
+   * Scenario: an instance link to an instance that cannot be loaded (404: deleted, or its history cleaned up).
+   * Link: #/seven/auth/process/invoice/2/pi1
+   * Expected: errorLoadingInstanceId holds the server's message, no instance is selected, the versions still load.
+   * Happy path: the middle pane shows "instance not found" with the reason.
+   */
   it('should record the failure message when the instance lookup throws', async () => {
     engine()
     HistoryService.findProcessInstance.mockRejectedValue(new Error('404 not found'))
@@ -778,6 +986,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledWith('invoice', undefined, false)
   })
 
+  /**
+   * Scenario: the user leaves an instance that could not be loaded for its definition.
+   * Link: from #/seven/auth/process/invoice/2/pi1 (404) to #/seven/auth/process/invoice/2
+   * Expected: the failure message is cleared.
+   * Guards against: the definition view showing the previous instance's "not found" warning.
+   */
   it('should forget the failure when leaving the instance', async () => {
     engine()
     HistoryService.findProcessInstance.mockRejectedValue(new Error('404 not found'))
@@ -789,8 +1003,14 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.errorLoadingInstanceId).toBeNull()
   })
 
-  // a slow failing lookup used to show its error on the definition opened meanwhile
-  it('should drop the failure of an older navigation', async () => {
+  /**
+   * Scenario: the user opens an instance whose lookup fails slowly (404), and meanwhile opens another process.
+   * Link: #/seven/auth/process/invoice/2/pi1, then #/seven/auth/process/order/2
+   * Expected: no failure message on the order page; order is open.
+   * Guards against: P3, the middle pane showing "instance not found" (for instanceId undefined) on a page without an
+   *   instance.
+   */
+  it('should drop the instance lookup failure of an older navigation', async () => {
     engine()
     const slowLookup = deferred()
     HistoryService.findProcessInstance.mockReturnValueOnce(slowLookup.promise)
@@ -815,6 +1035,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.selectedInstance.id).toBe('pi1')
   })
 
+  /**
+   * Scenario: the engine runs with history level none, so instances exist only in the runtime API.
+   * Link: #/seven/auth/process/invoice/2/pi1
+   * Expected: the instance is looked up in the runtime API, not in history.
+   * Guards against: a history request that can only fail.
+   */
   it('should look the instance up in the runtime API when history is off', async () => {
     engine()
     ProcessService.findProcessInstance.mockResolvedValue(activeInstance())
@@ -850,7 +1076,14 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.parentProcess).toBeNull()
   })
 
-  // a recursive call activity, or back/forward between two such entries, used to keep the previous parent
+  /**
+   * Scenario: a call activity calls its own process: BpmnViewer opens the same key and version with another
+   *   parentProcessDefinitionId; browser back/forward between two such entries does the same.
+   * Link: #/seven/auth/process/invoice/2?parentProcessDefinitionId=pd-first, then #/seven/auth/process/invoice/2?parentProcessDefinitionId=pd-second
+   * Expected: a run starts and the breadcrumb shows pd-second; the versions and the definition are not requested, the
+   *   activity selection stays.
+   * Guards against: P24, the breadcrumb keeping the previous parent.
+   */
   it('should look the parent up again when only the parent in the query changes', async () => {
     engine()
     const getProcessById = vi.fn(async ({ id }) => ({ id }))
@@ -870,7 +1103,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.clearActivitySelection).not.toHaveBeenCalled()
   })
 
-  // a slow parent of the previous navigation used to show up as the breadcrumb of the next definition
+  /**
+   * Scenario: the user arrives at invoice from a call activity, its parent breadcrumb still loading, then opens order.
+   * Link: #/seven/auth/process/invoice/2?parentProcessDefinitionId=pd-parent, then #/seven/auth/process/order/2
+   * Expected: no breadcrumb on order when the parent arrives late.
+   * Guards against: P2, the slow parent of the previous navigation shown as order's breadcrumb.
+   */
   it('should drop the parent of an older navigation', async () => {
     engine()
     const parent = deferred()
@@ -887,7 +1125,13 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.process.key).toBe('order')
   })
 
-  // ProcessInstanceView resolves its own parent
+  /**
+   * Scenario: an instance opened from the instances table keeps parentProcessDefinitionId in its query, as
+   *   InstancesTable spreads the query; ProcessInstanceView resolves its own parent.
+   * Link: #/seven/auth/process/invoice/2/pi1?parentProcessDefinitionId=pd-parent
+   * Expected: no parent lookup and no breadcrumb from this view.
+   * Guards against: P17, a request nothing uses, whose failure kept the instance from being shown.
+   */
   it('should not look the parent up for an instance', async () => {
     engine()
     const vm = context({ instanceId: 'pi1', $route: { query: { parentProcessDefinitionId: 'pd-parent' } } })
@@ -898,6 +1142,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.parentProcess).toBeNull()
   })
 
+  /**
+   * Scenario: the parent named in the query was deleted, or the user may not read it (404).
+   * Link: #/seven/auth/process/invoice/2?parentProcessDefinitionId=pd-parent
+   * Expected: v2 opens without a breadcrumb and loading ends.
+   * Guards against: P17, a blank page because of the breadcrumb.
+   */
   it('should open the definition without the parent when the parent cannot be read', async () => {
     engine()
     const vm = context({
@@ -912,7 +1162,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.loading).toBe(false)
   })
 
-  // a failed request of the definition used to abort the run before the instance was selected
+  /**
+   * Scenario: the details request of the instance's definition fails (500); its versions entry is there.
+   * Link: #/seven/auth/process/invoice/2/pi1
+   * Expected: v2 is open as listed and pi1 is shown.
+   * Guards against: P17, a blank middle pane because of a failed details request.
+   */
   it('should show the instance when the details of its definition cannot be loaded', async () => {
     engine()
     ProcessService.findProcessById.mockRejectedValue(new Error('500'))
@@ -924,6 +1179,15 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.selectedInstance.id).toBe('pi1')
   })
 
+  /**
+   * Scenario: the instance runs on invoice v5 of tenant t1; the link names no tenant, so the loaded versions (v2, v1)
+   *   miss it, and the reload with t1 fails (500).
+   * Link: #/seven/auth/process/invoice/2/pi1
+   * Expected: the loaded versions stay and v5 is flagged missing; no definition is open, the instance and its
+   *   activities are not loaded.
+   * Guards against: P17, a blank page after the failed reload; P18, pi1 drawn on v2's diagram; P25, unused activity
+   *   requests.
+   */
   it('should flag the definition of the instance when its versions cannot be loaded', async () => {
     engine({ instances: { pi1: activeInstance({ processDefinitionId: definitionId('invoice', '5') }) }, tenantId: 't1' })
     const versions = ProcessService.findProcessVersionsByDefinitionKey.getMockImplementation()
@@ -951,7 +1215,13 @@ describe('ProcessDefinitionView - syncDefinition', () => {
     return m.syncDefinition.call(vm)
   }
 
-  // ProcessInstancesView only reloads them when the definition id changes
+  /**
+   * Scenario: the user refreshes the versions list; the open version comes back as a new object.
+   * Link: #/seven/auth/process/invoice/2
+   * Expected: the new entry is selected and keeps the statistics its diagram shows.
+   * Guards against: the diagram losing its statistics overlays, as ProcessInstancesView only reloads them when the
+   *   definition id changes.
+   */
   it('should keep the statistics when the same version is selected from a reloaded list', async () => {
     const statistics = [{ id: 'task' }]
     const fresh = version()
@@ -963,6 +1233,12 @@ describe('ProcessDefinitionView - syncDefinition', () => {
     expect(fresh.statistics).toBe(statistics)
   })
 
+  /**
+   * Scenario: the user switches from v2 to v1.
+   * Link: from #/seven/auth/process/invoice/2 to #/seven/auth/process/invoice/1
+   * Expected: v1 does not get v2's statistics.
+   * Guards against: v2's statistics drawn on v1's diagram.
+   */
   it('should not carry statistics over to another version', async () => {
     const fresh = version({ id: 'pd:1:abc', version: '1' })
     const vm = context({ process: version({ statistics: [{ id: 'task' }] }) })
@@ -972,6 +1248,12 @@ describe('ProcessDefinitionView - syncDefinition', () => {
     expect(fresh.statistics).toBeUndefined()
   })
 
+  /**
+   * Scenario: the instance view opens a definition whose statistics are already loaded.
+   * Link: #/seven/auth/process/invoice/2/pi1
+   * Expected: no loadStatistics request.
+   * Guards against: a duplicate statistics request.
+   */
   it('should not load statistics the instance view already has', async () => {
     const vm = context({ instanceId: 'pi1' })
 
@@ -980,6 +1262,12 @@ describe('ProcessDefinitionView - syncDefinition', () => {
     expect(vm.$store.dispatch).not.toHaveBeenCalled()
   })
 
+  /**
+   * Scenario: the user opens another process while the details of the current definition are loading.
+   * Link: #/seven/auth/process/invoice/2/pi1, then #/seven/auth/process/order/2
+   * Expected: invoice's late details are not written, and no statistics are loaded for it.
+   * Guards against: P2, a slow reply for the previous definition written over the current page.
+   */
   it('should drop the details of a definition that is no longer selected', async () => {
     ProcessService.findProcessById.mockImplementation(async (id) => {
       vm.process = version({ id: 'order:2:id', key: 'order' })
@@ -1019,7 +1307,13 @@ describe('ProcessDefinitionView - loadRoute instance selection', () => {
     expect(vm.activityInstanceHistory).toEqual([{ id: 'h1' }])
   })
 
-  // a suspended instance opened through the history API used to show no current activities
+  /**
+   * Scenario: the user opens a suspended instance; the history API reports it with state SUSPENDED. A suspended
+   *   instance is still running and has current activities.
+   * Link: #/seven/auth/process/invoice/2/pi1 for a suspended instance
+   * Expected: the runtime activity tree is loaded.
+   * Guards against: P19, no token or current-activity markers for a running instance.
+   */
   it('should load the runtime activity tree for a suspended instance', async () => {
     const vm = context()
     ProcessService.findActivityInstance.mockResolvedValue({ id: 'ai1' })
@@ -1030,6 +1324,12 @@ describe('ProcessDefinitionView - loadRoute instance selection', () => {
     expect(vm.activityInstance).toEqual({ id: 'ai1' })
   })
 
+  /**
+   * Scenario: the user opens a finished instance: completed, cancelled by a user, or ended by the engine.
+   * Link: #/seven/auth/process/invoice/2/pi1 for a finished instance
+   * Expected: no runtime activity tree is requested; a finished instance has none.
+   * Guards against: a runtime request that can only fail.
+   */
   it.each(['COMPLETED', 'EXTERNALLY_TERMINATED', 'INTERNALLY_TERMINATED'])('should load no runtime activity tree for a %s instance', async (state) => {
     const vm = context()
 
@@ -1066,7 +1366,12 @@ describe('ProcessDefinitionView - loadRoute instance selection', () => {
     expect(HistoryService.findActivitiesInstancesHistory).not.toHaveBeenCalled()
   })
 
-  // the history endpoint used to be called (and fail) for every active instance
+  /**
+   * Scenario: history level none; an active instance from the runtime API.
+   * Link: #/seven/auth/process/invoice/2/pi1
+   * Expected: the activity tree is loaded; the history is not requested and stays null.
+   * Guards against: P5, a history request that can only fail, sent for every active instance.
+   */
   it('should load only the runtime activity tree for an active instance when history is off', async () => {
     const vm = context()
     vm.$root.config.camundaHistoryLevel = 'none'
@@ -1088,6 +1393,12 @@ describe('ProcessDefinitionView - loadRoute instance selection', () => {
     expect(ProcessService.findActivityInstance).not.toHaveBeenCalled()
   })
 
+  /**
+   * Scenario: the user opens pi1 while another instance's data is shown.
+   * Link: from #/seven/auth/process/invoice/2/old to #/seven/auth/process/invoice/2/pi1
+   * Expected: pi1 is selected and the previous instance's activity data is gone.
+   * Guards against: the old instance's activity data shown with pi1.
+   */
   it('should drop the previous instance data before selecting another one', async () => {
     const vm = context({ selectedInstance: { id: 'old' }, activityInstance: { id: 'ai-old' } })
     vm.$root.config.camundaHistoryLevel = 'none'
@@ -1098,7 +1409,12 @@ describe('ProcessDefinitionView - loadRoute instance selection', () => {
     expect(vm.activityInstance).toBeNull()
   })
 
-  // a failed load used to abort the run, so the history was not loaded after a failed activity tree
+  /**
+   * Scenario: the active instance ended between its lookup and the activity tree request, which returns 404.
+   * Link: #/seven/auth/process/invoice/2/pi1
+   * Expected: pi1 stays shown, its activity tree stays null and its history is still loaded.
+   * Guards against: P12, an unhandled error and a diagram without history.
+   */
   it('should still load the history when the activity tree cannot be loaded', async () => {
     const vm = context()
     ProcessService.findActivityInstance.mockRejectedValue(new Error('404 not found'))
@@ -1111,6 +1427,12 @@ describe('ProcessDefinitionView - loadRoute instance selection', () => {
     expect(vm.activityInstanceHistory).toEqual([{ id: 'h1' }])
   })
 
+  /**
+   * Scenario: the history request of a completed instance fails (500).
+   * Link: #/seven/auth/process/invoice/2/pi1 for a completed instance
+   * Expected: pi1 stays shown and its history stays null.
+   * Guards against: P12, the failed request aborting the instance view.
+   */
   it('should keep the instance when the history cannot be loaded', async () => {
     const vm = context()
     HistoryService.findActivitiesInstancesHistory.mockRejectedValue(new Error('500'))
@@ -1121,6 +1443,12 @@ describe('ProcessDefinitionView - loadRoute instance selection', () => {
     expect(vm.activityInstanceHistory).toBeNull()
   })
 
+  /**
+   * Scenario: the user opens pi2 while pi1's activity tree is loading.
+   * Link: #/seven/auth/process/invoice/2/pi1, then #/seven/auth/process/invoice/2/pi2
+   * Expected: pi1's late activity tree is not shown and its history is not requested.
+   * Guards against: pi1's current activities drawn on pi2.
+   */
   it('should drop the activity data of an instance that is no longer selected', async () => {
     const vm = context()
     ProcessService.findActivityInstance.mockImplementation(async () => {
@@ -1134,6 +1462,12 @@ describe('ProcessDefinitionView - loadRoute instance selection', () => {
     expect(HistoryService.findActivitiesInstancesHistory).not.toHaveBeenCalled()
   })
 
+  /**
+   * Scenario: the user opens pi2 while pi1's activity history is loading.
+   * Link: #/seven/auth/process/invoice/2/pi1, then #/seven/auth/process/invoice/2/pi2
+   * Expected: pi1's late history is not shown.
+   * Guards against: pi1's history drawn on pi2.
+   */
   it('should drop the history of an instance that is no longer selected', async () => {
     const vm = context()
     HistoryService.findActivitiesInstancesHistory.mockImplementation(async () => {
@@ -1240,7 +1574,14 @@ describe('ProcessDefinitionView - onDeleteProcessDefinition', () => {
     }))
   })
 
-  // the URL of an instance names its tenant, the open definition may be shared
+  /**
+   * Scenario: a version is deleted while the URL names tenant t1, the tenant of an instance, and the open definition
+   *   is the shared invoice (deployed without a tenant).
+   * Link: #/seven/auth/process/invoice/2/pi1?tenantId=t1&tab=variables
+   * Expected: the remaining versions are loaded without a tenant; the redirect to the nearest version keeps tab and
+   *   drops tenantId, as the definition view names the definition's tenant.
+   * Guards against: an empty list and a jump to the processes list, or a definition link naming the instance's tenant.
+   */
   it('should use the tenant of the open definition rather than the one of the instance', async () => {
     const vm = context({
       process: version({ version: '2', tenantId: null }),
@@ -1258,7 +1599,12 @@ describe('ProcessDefinitionView - onDeleteProcessDefinition', () => {
     }))
   })
 
-  // the versions of the key left meanwhile used to replace the ones of the new key
+  /**
+   * Scenario: the user deletes a version of invoice and opens order before the reply arrives.
+   * Link: #/seven/auth/process/invoice/2, then #/seven/auth/process/order/2
+   * Expected: order's versions and definition stay, and there is no redirect.
+   * Guards against: P4, invoice's versions replacing order's, or a redirect away from order.
+   */
   it('should drop the versions when another key is opened meanwhile', async () => {
     const vm = context({ process: version(), versionsScope: { processKey: 'invoice', tenantId: null } })
     const order = [version({ id: 'order:2:id', key: 'order' })]
@@ -1291,7 +1637,13 @@ describe('ProcessDefinitionView - onRefreshProcessDefinitions', () => {
     expect(result).toHaveLength(2)
   })
 
-  // the URL of an instance names its tenant, the open definition may be shared
+  /**
+   * Scenario: the versions are refreshed while the URL names tenant t1, the tenant of an instance, and the open
+   *   definition is the shared invoice.
+   * Link: #/seven/auth/process/invoice/2/pi1?tenantId=t1
+   * Expected: the versions are reloaded without a tenant and nothing is flagged.
+   * Guards against: an empty list flagged "definition not found" after a refresh.
+   */
   it('should reload the versions with the tenant of the open definition', async () => {
     const shared = version({ tenantId: null })
     const vm = context({ process: shared, instanceId: 'pi1', tenantId: 't1' })
@@ -1303,7 +1655,13 @@ describe('ProcessDefinitionView - onRefreshProcessDefinitions', () => {
     expect(vm.errorVersionNotFound).toBeNull()
   })
 
-  // the deleted definition used to stay open next to the empty versions list
+  /**
+   * Scenario: another user deleted every version of the key; this user clicks refresh.
+   * Link: #/seven/auth/process/invoice/2
+   * Expected: the definition, its breadcrumb and the versions are cleared and the version is flagged, so both panes
+   *   say the definition was not found.
+   * Guards against: P7, the deleted definition staying open next to an empty versions list.
+   */
   it('should drop the open definition and flag it when no versions remain', async () => {
     const vm = context({ process: version(), processDefinitions: [version()], parentProcess: { id: 'parent' } })
     ProcessService.findProcessVersionsByDefinitionKey.mockResolvedValue([])
@@ -1340,7 +1698,12 @@ describe('ProcessDefinitionView - onRefreshProcessDefinitions', () => {
     expect(vm.refreshingVersions).toBeNull()
   })
 
-  // the versions of the key left meanwhile used to replace the ones of the new key
+  /**
+   * Scenario: the user refreshes the versions of invoice and opens order before the reply arrives.
+   * Link: #/seven/auth/process/invoice/2, then #/seven/auth/process/order/2
+   * Expected: order's versions and definition stay; the refresh state still ends.
+   * Guards against: P4, invoice's versions replacing order's and selecting an invoice version on the order page.
+   */
   it('should drop the versions when another key is opened meanwhile', async () => {
     const vm = context({ process: version(), versionsScope: { processKey: 'invoice', tenantId: null } })
     const order = [version({ id: 'order:2:id', key: 'order' })]
@@ -1359,6 +1722,13 @@ describe('ProcessDefinitionView - onRefreshProcessDefinitions', () => {
 })
 
 describe('ProcessDefinitionView - misc', () => {
+  /**
+   * Scenario: the user deletes an instance in the instances table.
+   * Link: #/seven/auth/process/invoice/2
+   * Expected: the statistics are reloaded, the version's counts updated (its own incidents count kept) and the diagram
+   *   redrawn.
+   * Happy path: the table, the counts and the diagram agree after the deletion.
+   */
   it('onInstanceDeleted should refresh the statistics and counts and redraw', async () => {
     const entry = version({ incidents: 3 })
     const vm = context({ process: entry })
@@ -1371,7 +1741,12 @@ describe('ProcessDefinitionView - misc', () => {
     expect(vm.$refs.process.refreshDiagram).toHaveBeenCalled()
   })
 
-  // navigating to another key while the requests ran used to throw on the cleared definition
+  /**
+   * Scenario: the user deletes an instance and opens another process before the refresh is done.
+   * Link: #/seven/auth/process/invoice/2, then #/seven/auth/process/order/2
+   * Expected: invoice's late details are not written and nothing throws.
+   * Guards against: P20, a TypeError on the cleared definition.
+   */
   it('onInstanceDeleted should drop the details once another definition is open', async () => {
     const entry = version()
     const vm = context({ process: entry })
@@ -1385,6 +1760,12 @@ describe('ProcessDefinitionView - misc', () => {
     expect(entry.runningInstances).toBeUndefined()
   })
 
+  /**
+   * Scenario: the instances view is already unmounted when the refresh after an instance deletion ends.
+   * Link: #/seven/auth/process/invoice/2, left meanwhile
+   * Expected: the handler ends without an error.
+   * Guards against: P20, calling refreshDiagram on an unmounted view.
+   */
   it('onInstanceDeleted should not redraw an instances view that is gone', async () => {
     const vm = context({ process: version(), $refs: {} })
     ProcessService.findProcessById.mockResolvedValue({ id: 'pd:2:abc' })
@@ -1471,7 +1852,13 @@ describe('ProcessDefinitionView - leaving the process pages', () => {
     expect(vm.clearStaticCalledProcessDefinitions).toHaveBeenCalled()
   })
 
-  // a late reply used to move the user back to the process page, or to the processes list
+  /**
+   * Scenario: the user deletes the open version (a cascade delete can take seconds) and meanwhile opens Tasks or
+   *   Deployments.
+   * Link: #/seven/auth/process/invoice/2, then e.g. #/seven/auth/tasks
+   * Expected: no redirect when the delete ends.
+   * Guards against: P23, the user thrown back to the nearest remaining version, or to the processes list.
+   */
   it.each([
     ['the nearest remaining version', [version({ version: '1' })]],
     ['the processes list', []]
@@ -1485,6 +1872,12 @@ describe('ProcessDefinitionView - leaving the process pages', () => {
     expect(vm.$router.replace).not.toHaveBeenCalled()
   })
 
+  /**
+   * Scenario: the user refreshes the versions and leaves the process page before the reply arrives.
+   * Link: #/seven/auth/process/invoice/2, then another page
+   * Expected: the late versions are not written.
+   * Guards against: P23, a reply written into a view the user has left.
+   */
   it('should drop the versions of a refresh that ends after the page was left', async () => {
     const shown = [version()]
     const vm = context({
