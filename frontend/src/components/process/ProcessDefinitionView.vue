@@ -44,7 +44,6 @@
         ></ProcessInstanceDetailsSidebar>
       </template>
       <ProcessInstancesView ref="process" v-if="process && !selectedInstance && !instanceId"
-        :loading="loading"
         :process="process"
         :process-key="processKey"
         :version-index="computedVersionIndex"
@@ -63,6 +62,10 @@
         :selected-instance="selectedInstance"
         :tenant-id="instanceTenantId"
       />
+      <!-- the route is loading and neither the definition nor the instance can be shown yet -->
+      <div v-else-if="loading" class="h-100 d-flex justify-content-center align-items-center">
+        <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
+      </div>
       <WarningBox v-else-if="errorLoadingInstanceId !== null" :message="$t('process.instanceNotFound', { instanceId: instanceId, error: errorLoadingInstanceId })"/>
       <WarningBox v-else-if="errorVersionNotFound !== null && processDefinitions.length === 0" :message="$t('process.definitionNotFound', { processKey: processKey, tenantId: definitionTenantId })"/>
     </SidebarsFlow>
@@ -78,7 +81,7 @@ import ProcessDetailsSidebar from '@/components/process/ProcessDetailsSidebar.vu
 import ProcessInstanceView from '@/components/process/ProcessInstanceView.vue'
 import ProcessInstanceDetailsSidebar from '@/components/process/ProcessInstanceDetailsSidebar.vue'
 import WarningBox from '@/components/common-components/WarningBox.vue'
-import { SidebarsFlow, TaskPopper } from '@cib/common-frontend'
+import { SidebarsFlow, TaskPopper, BWaitingBox } from '@cib/common-frontend'
 import { mapGetters, mapActions } from 'vuex'
 import { formatDate } from '@/utils/dates.js'
 import sidebarOpenPersistenceMixin from '@/mixins/sidebarOpenPersistenceMixin.js'
@@ -95,7 +98,7 @@ function getStringObjByKeys(keys, obj) { // TODO rewrite to use join()
 
 export default {
   name: 'ProcessDefinitionView',
-  components: { ProcessInstancesView, ProcessDetailsSidebar, ProcessInstanceView, ProcessInstanceDetailsSidebar, SidebarsFlow, TaskPopper, WarningBox },
+  components: { ProcessInstancesView, ProcessDetailsSidebar, ProcessInstanceView, ProcessInstanceDetailsSidebar, SidebarsFlow, TaskPopper, WarningBox, BWaitingBox },
   mixins: [sidebarOpenPersistenceMixin],
   props: {
     processKey: { type: String, required: true },

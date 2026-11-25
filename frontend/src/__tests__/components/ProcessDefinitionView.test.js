@@ -20,6 +20,7 @@ import { createStore } from 'vuex'
 import ProcessDefinitionView from '@/components/process/ProcessDefinitionView.vue'
 import { ProcessService, HistoryService } from '@/services.js'
 import { mountWithDefaults } from '../support/mountWithDefaults.js'
+import { BWaitingBox } from '@cib/common-frontend'
 
 vi.mock('@/services.js', async (importOriginal) => {
   const actual = await importOriginal()
@@ -97,20 +98,24 @@ describe('ProcessDefinitionView - mounted', () => {
     expect(ProcessService.findProcessVersionsByDefinitionKey).not.toHaveBeenCalled()
   })
 
-  it('passes the loading flag to the instances view', async () => {
-    // the shallow SidebarsFlow stub would drop the instances view it holds in its default slot
+  // the middle pane stayed blank while the definition of a newly opened key was loading
+  it('shows the loading box until the definition can be shown', async () => {
+    // the shallow SidebarsFlow stub would drop what it holds in its default slot
     const wrapper = createWrapper({}, { SidebarsFlow: { template: '<div><slot name="left"></slot><slot></slot></div>' } })
     await flushPromises()
-    expect(wrapper.findComponent({ name: 'ProcessInstancesView' }).props('loading')).toBe(false)
+    expect(wrapper.findComponent(BWaitingBox).exists()).toBe(false)
+    expect(wrapper.findComponent({ name: 'ProcessInstancesView' }).exists()).toBe(true)
 
     let resolveVersions
     ProcessService.findProcessVersionsByDefinitionKey.mockReturnValueOnce(new Promise(r => { resolveVersions = r }))
     await wrapper.setProps({ processKey: 'order' })
     expect(wrapper.vm.loading).toBe(true)
+    expect(wrapper.findComponent(BWaitingBox).exists()).toBe(true)
 
     resolveVersions(['2', '1'].map(v => ({ id: `order:${v}:id`, key: 'order', version: v })))
     await flushPromises()
-    expect(wrapper.findComponent({ name: 'ProcessInstancesView' }).props('loading')).toBe(false)
+    expect(wrapper.findComponent(BWaitingBox).exists()).toBe(false)
+    expect(wrapper.findComponent({ name: 'ProcessInstancesView' }).exists()).toBe(true)
   })
 
   it('does not load anything again on a re-render', async () => {
