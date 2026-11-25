@@ -176,9 +176,12 @@ export default {
       return this.process ? this.process.tenantId : this.tenantId
     },
   },
-  // Leaving the process pages: the next visit loads the called process definitions again, so a newer deployment is seen
-  beforeUnmount: function() {
+  beforeUnmount() {
+    // Leaving the process pages: the next visit loads the called process definitions again, so a newer deployment is seen
     this.clearStaticCalledProcessDefinitions()
+    // the replies of a refresh or delete still running are dropped, so a late one does not redirect away from the page
+    // the user went to, e.g. after deleting the open version and opening Tasks while the cascade delete ran
+    this.versionsScope = null // non-reactive
   },
   methods: {
     ...mapActions(['clearActivitySelection', 'getProcessById']),

@@ -1377,4 +1377,33 @@ describe('ProcessDefinitionView - leaving the process pages', () => {
 
     expect(vm.clearStaticCalledProcessDefinitions).toHaveBeenCalled()
   })
+
+  // a late reply used to move the user back to the process page, or to the processes list
+  it.each([
+    ['the nearest remaining version', [version({ version: '1' })]],
+    ['the processes list', []]
+  ])('should not redirect to %s when a delete ends after the page was left', async (_, versions) => {
+    const vm = context({ process: version(), versionsScope: { processKey: 'invoice', tenantId: null }, clearStaticCalledProcessDefinitions: vi.fn() })
+    ProcessService.deleteProcessDefinition.mockImplementation(async () => ProcessDefinitionView.beforeUnmount.call(vm))
+    ProcessService.findProcessVersionsByDefinitionKey.mockResolvedValue(versions)
+
+    await m.onDeleteProcessDefinition.call(vm, { processDefinition: version() })
+
+    expect(vm.$router.replace).not.toHaveBeenCalled()
+  })
+
+  it('should drop the versions of a refresh that ends after the page was left', async () => {
+    const shown = [version()]
+    const vm = context({
+      process: shown[0], processDefinitions: shown, versionsScope: { processKey: 'invoice', tenantId: null }, clearStaticCalledProcessDefinitions: vi.fn()
+    })
+    ProcessService.findProcessVersionsByDefinitionKey.mockImplementation(async () => {
+      ProcessDefinitionView.beforeUnmount.call(vm)
+      return []
+    })
+
+    await m.onRefreshProcessDefinitions.call(vm, false)
+
+    expect(vm.processDefinitions).toBe(shown)
+  })
 })
