@@ -255,7 +255,14 @@ export default {
       // runtime instances carry `definitionId` rather than `processDefinitionId`
       const definitionId = instance?.processDefinitionId ?? instance?.definitionId
       if (!definitionId || this.processDefinitions.some(definition => definition.id === definitionId)) return
-      const definition = await ProcessService.findProcessById(definitionId)
+      let definition
+      try {
+        definition = await ProcessService.findProcessById(definitionId)
+      } catch {
+        // e.g. no permission to read it: the versions loaded with the URL's tenant are kept
+        // and the route goes on loading; the error dialog tells what failed
+        return
+      }
       if (isStale() || definition.key !== this.processKey) return
       await this.loadVersions(isStale, definition.tenantId)
     },

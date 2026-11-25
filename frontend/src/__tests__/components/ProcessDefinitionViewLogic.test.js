@@ -415,6 +415,24 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.errorVersionNotFound).toBeNull()
   })
 
+  // a failed lookup of the instance's definition used to abort the run and leave the middle pane blank
+  it('should go on with the loaded versions when the definition of the instance cannot be read', async () => {
+    engine({ instances: { pi1: activeInstance({ processDefinitionId: definitionId('invoice', '5') }) } })
+    const findProcessById = ProcessService.findProcessById.getMockImplementation()
+    ProcessService.findProcessById.mockImplementation(async (id, extraInfo) => {
+      if (id === 'invoice:5:id') throw new Error('403 forbidden')
+      return findProcessById(id, extraInfo)
+    })
+    const vm = context({ instanceId: 'pi1' })
+
+    await open(vm)
+
+    expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledOnce()
+    expect(vm.process.id).toBe('invoice:2:id')
+    expect(vm.selectedInstance.id).toBe('pi1')
+    expect(vm.loading).toBe(false)
+  })
+
   it('should look the instance up while the versions load', async () => {
     engine()
     const lookup = deferred()
