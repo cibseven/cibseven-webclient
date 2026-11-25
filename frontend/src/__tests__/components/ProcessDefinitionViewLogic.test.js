@@ -676,7 +676,13 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.selectedInstance.id).toBe('pi1')
   })
 
-  // the backend does not fill them in on the definition: incidents always come as 0, the deployment time as null
+  /**
+   * Scenario: the versions list carries each version's incidents and deployment time; the backend's definition
+   *   details do not fill them in (incidents always 0, deployment time null).
+   * Link: #/seven/auth/process/invoice/2/pi1
+   * Expected: the open version keeps the incidents (7) and the deployment time of its versions entry.
+   * Guards against: the sidebar showing 0 incidents and no deployment time once the details are merged in.
+   */
   it('should keep the incidents and deployment time of the version entry', async () => {
     engine()
     const vm = context({ instanceId: 'pi1' })
@@ -721,7 +727,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.process).toBe(vm.processDefinitions[1])
   })
 
-  // A stale link to a deleted version should still show something useful, flagged.
+  /**
+   * Scenario: a stale link to a version that was deleted, or a mistyped version.
+   * Link: #/seven/auth/process/invoice/42
+   * Expected: the latest version opens, and version 42 is flagged as not found in the sidebar.
+   * Guards against: an empty page for a key that still has versions.
+   */
   it('should fall back to the latest version and flag the missing one', async () => {
     engine()
     const vm = context({ versionIndex: '42' })
@@ -732,6 +743,13 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.process).toBe(vm.processDefinitions[0])
   })
 
+  /**
+   * Scenario: a link to a key without any versions: all deleted, or never deployed for this tenant.
+   * Link: #/seven/auth/process/invoice/2
+   * Expected: version 2 is flagged and no definition is open, so both panes say the definition was not found; no
+   *   details are requested.
+   * Guards against: a details request for a definition that does not exist.
+   */
   it('should only flag the error when the key has no versions at all', async () => {
     engine({ versions: [] })
     const vm = context()
@@ -1025,7 +1043,13 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.process.key).toBe('order')
   })
 
-  // An instance already listed in the table can be shown even if history has purged it.
+  /**
+   * Scenario: an instance listed in the instances table, whose lookup finds nothing because history has cleaned it
+   *   up meanwhile.
+   * Link: #/seven/auth/process/invoice/2/pi1, opened from the instances table
+   * Expected: the instance from the table is selected.
+   * Happy path: the user still sees the instance they clicked.
+   */
   it('should fall back to an instance already in the store', async () => {
     engine({ instances: {} })
     const vm = context({ instanceId: 'pi1', instances: [activeInstance()] })
@@ -1053,7 +1077,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(HistoryService.findProcessInstance).not.toHaveBeenCalled()
   })
 
-  // Arriving from a call activity, the parent is shown as a breadcrumb.
+  /**
+   * Scenario: the user arrives from a call activity; the link names the calling definition.
+   * Link: #/seven/auth/process/invoice/2?parentProcessDefinitionId=pd-parent
+   * Expected: the parent is looked up and shown as the breadcrumb.
+   * Happy path: the user can go back to the calling process.
+   */
   it('should load the parent process named in the query', async () => {
     engine()
     const getProcessById = vi.fn(() => Promise.resolve({ id: 'pd-parent', name: 'Parent' }))
@@ -1065,6 +1094,12 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.parentProcess).toEqual({ id: 'pd-parent', name: 'Parent' })
   })
 
+  /**
+   * Scenario: the user had a parent breadcrumb, then opens a link without a parent.
+   * Link: #/seven/auth/process/invoice/2, then #/seven/auth/process/invoice/1
+   * Expected: no breadcrumb.
+   * Guards against: a breadcrumb that does not belong to the page.
+   */
   it('should clear the parent process when the query does not name one', async () => {
     engine()
     const vm = context()
@@ -1295,6 +1330,12 @@ describe('ProcessDefinitionView - loadRoute instance selection', () => {
     return m.loadRoute.call(vm, () => false)
   }
 
+  /**
+   * Scenario: the user opens an active instance.
+   * Link: #/seven/auth/process/invoice/2/pi1
+   * Expected: its runtime activity tree (current activities) and its activity history are loaded and shown.
+   * Happy path: the diagram shows where the instance is and where it has been.
+   */
   it('should load the runtime activity tree and history for an active instance', async () => {
     const vm = context()
     ProcessService.findActivityInstance.mockResolvedValue({ id: 'ai1' })
@@ -1338,7 +1379,12 @@ describe('ProcessDefinitionView - loadRoute instance selection', () => {
     expect(ProcessService.findActivityInstance).not.toHaveBeenCalled()
   })
 
-  // Runtime instances report `ended` rather than a `state`.
+  /**
+   * Scenario: with history off, the instance comes from the runtime API, which reports `ended` rather than a state.
+   * Link: #/seven/auth/process/invoice/2/pi1
+   * Expected: a not-ended instance is treated as running and its activity tree is loaded.
+   * Guards against: no current activities for instances from the runtime API.
+   */
   it('should treat a not-ended runtime instance as active', async () => {
     const vm = context()
 
@@ -1347,6 +1393,12 @@ describe('ProcessDefinitionView - loadRoute instance selection', () => {
     expect(ProcessService.findActivityInstance).toHaveBeenCalled()
   })
 
+  /**
+   * Scenario: the user opens a completed instance.
+   * Link: #/seven/auth/process/invoice/2/pi1 for a completed instance
+   * Expected: only its activity history is loaded; a finished instance has no runtime activity tree.
+   * Happy path: the diagram shows the path the instance took.
+   */
   it('should load only the history for a finished instance', async () => {
     const vm = context()
     HistoryService.findActivitiesInstancesHistory.mockResolvedValue([{ id: 'h1' }])
@@ -1357,6 +1409,12 @@ describe('ProcessDefinitionView - loadRoute instance selection', () => {
     expect(vm.activityInstanceHistory).toEqual([{ id: 'h1' }])
   })
 
+  /**
+   * Scenario: history level none and a finished instance: neither a runtime tree nor a history exists.
+   * Link: #/seven/auth/process/invoice/2/pi1 for a finished instance
+   * Expected: no history request.
+   * Guards against: a history request that can only fail.
+   */
   it('should load nothing for a finished instance when history is off', async () => {
     const vm = context()
     vm.$root.config.camundaHistoryLevel = 'none'
@@ -1384,7 +1442,12 @@ describe('ProcessDefinitionView - loadRoute instance selection', () => {
     expect(vm.activityInstanceHistory).toBeNull()
   })
 
-  // Re-selecting the open instance would re-fetch everything for no reason.
+  /**
+   * Scenario: a run for the instance that is already open, e.g. after another route change of the same instance.
+   * Link: #/seven/auth/process/invoice/2/pi1, unchanged
+   * Expected: its activity tree is not requested again.
+   * Guards against: re-fetching everything for the open instance.
+   */
   it('should skip reloading the instance that is already selected', async () => {
     const vm = context({ selectedInstance: { id: 'pi1', state: 'ACTIVE' } })
 
@@ -1532,7 +1595,12 @@ describe('ProcessDefinitionView - onDeleteProcessDefinition', () => {
     expect(vm.$router.replace).toHaveBeenCalledWith('/seven/auth/processes')
   })
 
-  // Deleting a version other than the open one just refreshes the list.
+  /**
+   * Scenario: the user deletes a version other than the open one in the sidebar.
+   * Link: #/seven/auth/process/invoice/3, deleting version 2
+   * Expected: no redirect; the versions list is refreshed and the open v3 is selected from it.
+   * Happy path: the user stays on the version they are looking at.
+   */
   it('should stay put when a non-selected version is deleted', async () => {
     const remaining = version({ id: 'pd:3:abc', version: '3' })
     const vm = context({ versionIndex: '3', process: version({ id: 'pd:3:abc', version: '3' }) })
@@ -1546,7 +1614,12 @@ describe('ProcessDefinitionView - onDeleteProcessDefinition', () => {
     expect(ProcessService.findProcessById).toHaveBeenCalledWith('pd:3:abc', true)
   })
 
-  // Deleting the open version navigates to whichever remaining version is nearest.
+  /**
+   * Scenario: the user deletes the open version 2; versions 5, 3 and 1 remain.
+   * Link: #/seven/auth/process/invoice/2
+   * Expected: a redirect to the nearest remaining version, #/seven/auth/process/invoice/3.
+   * Happy path: the user stays on the process after deleting the version they were looking at.
+   */
   it('should navigate to the nearest remaining version', async () => {
     const vm = context({ process: version({ version: '2' }) })
     const versions = [version({ version: '5' }), version({ version: '3' }), version({ version: '1' })]
@@ -1562,6 +1635,12 @@ describe('ProcessDefinitionView - onDeleteProcessDefinition', () => {
     expect(vm.processDefinitions).toBe(versions)
   })
 
+  /**
+   * Scenario: the user deletes the open version of tenant t1's invoice.
+   * Link: #/seven/auth/process/invoice/2?tenantId=t1
+   * Expected: the remaining versions are loaded with t1 and the redirect keeps tenantId=t1.
+   * Guards against: landing on the versions of another tenant, or on none.
+   */
   it('should keep the tenant in the query when navigating', async () => {
     const vm = context({ process: version({ version: '2', tenantId: 't1' }), tenantId: 't1' })
     ProcessService.findProcessVersionsByDefinitionKey.mockResolvedValue([version({ version: '1' })])
@@ -1622,6 +1701,13 @@ describe('ProcessDefinitionView - onDeleteProcessDefinition', () => {
 })
 
 describe('ProcessDefinitionView - onRefreshProcessDefinitions', () => {
+  /**
+   * Scenario: the user clicks the sidebar's refresh button with lazy loading on.
+   * Link: #/seven/auth/process/invoice/2
+   * Expected: the versions are reloaded lazily with '-' placeholders; the open version is selected from the new list
+   *   and keeps its statistics.
+   * Happy path: newly deployed versions show up without leaving the page.
+   */
   it('should reload the versions and re-select the open one', async () => {
     const statistics = [{ id: 'task' }]
     const fresh = version()
@@ -1675,6 +1761,13 @@ describe('ProcessDefinitionView - onRefreshProcessDefinitions', () => {
     expect(ProcessService.findProcessById).not.toHaveBeenCalled()
   })
 
+  /**
+   * Scenario: the sidebar has two buttons: refresh the versions, or load all their data.
+   * Link: #/seven/auth/process/invoice/2
+   * Expected: refreshingVersions is 'all' or 'refresh' while the request runs, so the right button spins, and null
+   *   once it is done.
+   * Happy path: the user sees which reload is running.
+   */
   it('should tell which reload is running while it runs', async () => {
     const vm = context({ process: version(), syncDefinition: vi.fn() })
     let seen
@@ -1689,6 +1782,12 @@ describe('ProcessDefinitionView - onRefreshProcessDefinitions', () => {
     expect(vm.refreshingVersions).toBeNull()
   })
 
+  /**
+   * Scenario: the refresh request fails, e.g. the engine is down.
+   * Link: #/seven/auth/process/invoice/2
+   * Expected: the error is passed on and refreshingVersions is null again.
+   * Guards against: a button that spins forever after an error.
+   */
   it('should end the reload state when the versions cannot be loaded', async () => {
     const vm = context()
     ProcessService.findProcessVersionsByDefinitionKey.mockRejectedValue(new Error('down'))
