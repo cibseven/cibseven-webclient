@@ -54,7 +54,6 @@
         :filter="filter"
         :parent-process="parentProcess"
         @instance-deleted="onInstanceDeleted()"
-        @task-selected="setSelectedTask($event)"
         @filter-instances="filterInstances($event)"
       />
       <ProcessInstanceView ref="navbar-variables" v-else-if="process && selectedInstance && instanceId"
@@ -63,7 +62,6 @@
         :activity-instance-history="activityInstanceHistory"
         :selected-instance="selectedInstance"
         :tenant-id="instanceTenantId"
-        @task-selected="setSelectedTask($event)"
       />
       <WarningBox v-else-if="errorLoadingInstanceId !== null" :message="$t('process.instanceNotFound', { instanceId: instanceId, error: errorLoadingInstanceId })"/>
       <WarningBox v-else-if="errorVersionNotFound !== null && processDefinitions.length === 0" :message="$t('process.definitionNotFound', { processKey: processKey, tenantId: definitionTenantId })"/>
@@ -74,7 +72,7 @@
 
 <script>
 import { moment } from '@/globals.js'
-import { TaskService, ProcessService, HistoryService } from '@/services.js'
+import { ProcessService, HistoryService } from '@/services.js'
 import ProcessInstancesView from '@/components/process/ProcessInstancesView.vue'
 import ProcessDetailsSidebar from '@/components/process/ProcessDetailsSidebar.vue'
 import ProcessInstanceView from '@/components/process/ProcessInstanceView.vue'
@@ -122,7 +120,6 @@ export default {
       errorVersionNotFound: null,
       errorLoadingInstanceId: null,
       selectedInstance: null,
-      task: null,
       activityInstance: null,
       activityInstanceHistory: null,
       filter: localStorage.getItem(UNFINISHED_FILTER_PREFERENCE_KEY) === 'false' ? {} : { unfinished: true },
@@ -320,7 +317,6 @@ export default {
       this.selectedInstance = null
       this.activityInstance = null
       this.activityInstanceHistory = null
-      this.task = null
     },
     async onDeleteProcessDefinition({ processDefinition }) {
       // the key and tenant whose versions are shown when the deletion starts
@@ -402,21 +398,6 @@ export default {
       await this.loadStatistics()
       this.assignDefinitionData(this.process, await ProcessService.findProcessById(this.process.id, true))
       this.$refs.process.refreshDiagram()
-    },
-    async setSelectedTask(selectedTask) {
-      if (!this.selectedInstance || !selectedTask) return
-      const [task] = await HistoryService.findTasksByDefinitionKeyHistory(selectedTask.id, this.selectedInstance.id)
-      if (!task) {
-        this.task = null
-        return
-      }
-      this.task = task
-      const fetchVariables = task.endTime ? HistoryService.fetchActivityVariablesHistory : TaskService.fetchActivityVariables
-      const variables = await fetchVariables(task.activityInstanceId)
-      variables.forEach(variable => {
-        variable.value = variable.type === 'Object' ? JSON.stringify(variable.value) : variable.value
-      })
-      this.task.variables = variables
     },
     filterInstances(filter) {
       this.filter = filter

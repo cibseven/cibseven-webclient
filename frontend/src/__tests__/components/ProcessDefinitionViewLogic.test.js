@@ -16,7 +16,7 @@
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import ProcessDefinitionView from '@/components/process/ProcessDefinitionView.vue'
-import { ProcessService, HistoryService, TaskService } from '@/services.js'
+import { ProcessService, HistoryService } from '@/services.js'
 
 vi.mock('@/services.js', async (importOriginal) => {
   const actual = await importOriginal()
@@ -32,11 +32,8 @@ vi.mock('@/services.js', async (importOriginal) => {
     },
     HistoryService: {
       findProcessInstance: vi.fn(() => Promise.resolve(null)),
-      findActivitiesInstancesHistory: vi.fn(() => Promise.resolve([])),
-      findTasksByDefinitionKeyHistory: vi.fn(() => Promise.resolve([])),
-      fetchActivityVariablesHistory: vi.fn(() => Promise.resolve([]))
-    },
-    TaskService: { fetchActivityVariables: vi.fn(() => Promise.resolve([])) }
+      findActivitiesInstancesHistory: vi.fn(() => Promise.resolve([]))
+    }
   }
 })
 
@@ -73,7 +70,6 @@ function context(overrides = {}) {
     errorVersionNotFound: null,
     errorLoadingInstanceId: null,
     selectedInstance: null,
-    task: null,
     activityInstance: null,
     activityInstanceHistory: null,
     filter: { unfinished: true },
@@ -824,14 +820,13 @@ describe('ProcessDefinitionView - loadRoute instance selection', () => {
   })
 
   it('should drop the previous instance data before selecting another one', async () => {
-    const vm = context({ selectedInstance: { id: 'old' }, activityInstance: { id: 'ai-old' }, task: { id: 't1' } })
+    const vm = context({ selectedInstance: { id: 'old' }, activityInstance: { id: 'ai-old' } })
     vm.$root.config.camundaHistoryLevel = 'none'
 
     await select(vm, { id: 'pi1', state: 'COMPLETED' })
 
     expect(vm.selectedInstance.id).toBe('pi1')
     expect(vm.activityInstance).toBeNull()
-    expect(vm.task).toBeNull()
   })
 
   it('should drop the activity data of an instance that is no longer selected', async () => {
@@ -895,66 +890,6 @@ describe('ProcessDefinitionView - statistics placeholders', () => {
     await m.loadStatistics.call(vm)
 
     expect(vm.$store.dispatch).toHaveBeenCalledWith('loadStatistics', vm.process)
-  })
-})
-
-describe('ProcessDefinitionView - setSelectedTask', () => {
-  const selectedInstance = { id: 'pi1' }
-
-  it('should load the task and its variables from the runtime API while it is open', async () => {
-    const vm = context({ selectedInstance })
-    HistoryService.findTasksByDefinitionKeyHistory.mockResolvedValue([{ id: 't1', activityInstanceId: 'ai1' }])
-    TaskService.fetchActivityVariables.mockResolvedValue([{ name: 'amount', type: 'Integer', value: 42 }])
-
-    await m.setSelectedTask.call(vm, { id: 'task_1' })
-
-    expect(HistoryService.findTasksByDefinitionKeyHistory).toHaveBeenCalledWith('task_1', 'pi1')
-    expect(TaskService.fetchActivityVariables).toHaveBeenCalledWith('ai1')
-    expect(vm.task.variables).toEqual([{ name: 'amount', type: 'Integer', value: 42 }])
-  })
-
-  it('should load the variables from history once the task has ended', async () => {
-    const vm = context({ selectedInstance })
-    HistoryService.findTasksByDefinitionKeyHistory.mockResolvedValue([
-      { id: 't1', activityInstanceId: 'ai1', endTime: '2026-01-01T00:00:00Z' }
-    ])
-
-    await m.setSelectedTask.call(vm, { id: 'task_1' })
-
-    expect(HistoryService.fetchActivityVariablesHistory).toHaveBeenCalledWith('ai1')
-    expect(TaskService.fetchActivityVariables).not.toHaveBeenCalled()
-  })
-
-  // Object variables are shown as JSON text rather than as [object Object].
-  it('should serialise Object variables to JSON', async () => {
-    const vm = context({ selectedInstance })
-    HistoryService.findTasksByDefinitionKeyHistory.mockResolvedValue([{ id: 't1', activityInstanceId: 'ai1' }])
-    TaskService.fetchActivityVariables.mockResolvedValue([{ name: 'order', type: 'Object', value: { a: 1 } }])
-
-    await m.setSelectedTask.call(vm, { id: 'task_1' })
-
-    expect(vm.task.variables[0].value).toBe('{"a":1}')
-  })
-
-  it('should clear the task when history has no entry for it', async () => {
-    const vm = context({ selectedInstance, task: { id: 'stale' } })
-    HistoryService.findTasksByDefinitionKeyHistory.mockResolvedValue([])
-
-    await m.setSelectedTask.call(vm, { id: 'task_1' })
-
-    expect(vm.task).toBeNull()
-  })
-
-  it('should do nothing without a selected instance', async () => {
-    await m.setSelectedTask.call(context(), { id: 'task_1' })
-
-    expect(HistoryService.findTasksByDefinitionKeyHistory).not.toHaveBeenCalled()
-  })
-
-  it('should do nothing without a task', async () => {
-    await m.setSelectedTask.call(context({ selectedInstance }), null)
-
-    expect(HistoryService.findTasksByDefinitionKeyHistory).not.toHaveBeenCalled()
   })
 })
 
