@@ -206,6 +206,9 @@ export default {
       this.loading = true
       try {
         await this.loadRoute(isStale)
+      } catch (error) {
+        // the failure of an older navigation is dropped like its results; the current one's goes on
+        if (!isStale()) throw error
       } finally {
         // a newer run clears the flag itself
         if (!isStale()) this.loading = false

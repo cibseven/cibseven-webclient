@@ -677,6 +677,23 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.loading).toBe(false)
   })
 
+  // the failure of a navigation the user had already left used to escape the route watcher as an unhandled error
+  it('should drop the failure of an older navigation', async () => {
+    engine()
+    const slowVersions = deferred()
+    ProcessService.findProcessVersionsByDefinitionKey.mockReturnValueOnce(slowVersions.promise)
+    const vm = context()
+
+    const first = open(vm)
+    await vi.waitFor(() => expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalled())
+    await navigate(vm, { processKey: 'order' })
+    slowVersions.resolve(Promise.reject(new Error('500')))
+
+    await expect(first).resolves.toBeUndefined()
+    expect(vm.process.key).toBe('order')
+    expect(vm.loading).toBe(false)
+  })
+
   it('should record the failure message when the instance lookup throws', async () => {
     engine()
     HistoryService.findProcessInstance.mockRejectedValue(new Error('404 not found'))
