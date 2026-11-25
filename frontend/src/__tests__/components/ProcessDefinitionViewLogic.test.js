@@ -2223,6 +2223,22 @@ describe('ProcessDefinitionView - onRefreshProcessDefinitions', () => {
 
 describe('ProcessDefinitionView - misc', () => {
   /**
+   * Scenario: the user deletes an instance in the instances table and opens Tasks while the statistics load.
+   * Link: #/seven/auth/process/invoice/2, then #/seven/auth/tasks
+   * Expected: the details of the definition are not requested and the diagram is not redrawn.
+   * Guards against: P44, a details request for a page that is gone, whose failure shows the error dialog on Tasks.
+   */
+  it('onInstanceDeleted should request no details when the page is left while the statistics load', async () => {
+    const vm = context({ process: version(), clearStaticCalledProcessDefinitions: vi.fn() })
+    vm.$store.dispatch.mockImplementation(async () => ProcessDefinitionView.beforeUnmount.call(vm))
+
+    await m.onInstanceDeleted.call(vm)
+
+    expect(ProcessService.findProcessById).not.toHaveBeenCalled()
+    expect(vm.$refs.process.refreshDiagram).not.toHaveBeenCalled()
+  })
+
+  /**
    * Scenario: the user deletes an instance in the instances table.
    * Link: #/seven/auth/process/invoice/2
    * Expected: the statistics are reloaded, the version's counts updated (its own incidents count kept) and the diagram

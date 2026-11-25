@@ -548,6 +548,8 @@ export default {
       const definition = this.process
       if (!definition) return
       await this.loadStatistics(definition)
+      // another definition was opened or the page was left while the statistics loaded: its details are not needed
+      if (this.process !== definition) return
       const details = await ProcessService.findProcessById(definition.id, true)
       if (this.process !== definition) return
       this.assignDefinitionData(definition, details)
