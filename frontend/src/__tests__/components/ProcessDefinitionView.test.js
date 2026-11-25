@@ -118,6 +118,23 @@ describe('ProcessDefinitionView - mounted', () => {
     expect(wrapper.findComponent({ name: 'ProcessInstancesView' }).exists()).toBe(true)
   })
 
+  // with both the instance and the definitions missing, the middle pane names the instance the link points to
+  it('shows only the instance-not-found warning in the middle pane when the definitions are missing too', async () => {
+    HistoryService.findProcessInstance.mockRejectedValueOnce(new Error('404 not found'))
+    ProcessService.findProcessVersionsByDefinitionKey.mockResolvedValueOnce([])
+    const wrapper = createWrapper({ instanceId: 'pi2' }, {
+      SidebarsFlow: { template: '<div><div class="left"><slot name="left"></slot></div><div class="main"><slot></slot></div></div>' }
+    })
+    await flushPromises()
+
+    const warnings = wrapper.find('.main').findAllComponents({ name: 'WarningBox' })
+    expect(warnings).toHaveLength(1)
+    expect(warnings[0].props('message')).toBe('process.instanceNotFound')
+    // the sidebar still tells that the definition is missing
+    expect(wrapper.find('.left').findAllComponents({ name: 'WarningBox' }).map(w => w.props('message')))
+      .toContain('process.definitionNotFound')
+  })
+
   it('does not load anything again on a re-render', async () => {
     const wrapper = createWrapper({ instanceId: 'pi2' })
     await flushPromises()
