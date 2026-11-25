@@ -977,19 +977,23 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
   })
 
   /**
-   * Scenario: the versions request of a definition link fails (500).
+   * Scenario: the versions request of a definition link fails (500, or a timeout).
    * Link: #/seven/auth/process/invoice/2
-   * Expected: the run rejects, so the error reaches the app's error handling, and loading ends.
-   * Guards against: a loading box that never goes away after an error.
+   * Expected: loading ends, no definition is open and version 2 is flagged, so the sidebar and the middle pane say
+   *   the definition was not found; the global error dialog tells why the request failed.
+   * Guards against: P32, both panes left blank with no warning; a loading box that never goes away after an error.
    */
-  it('should stop loading when a request fails', async () => {
+  it('should tell the definition was not found when its versions cannot be loaded', async () => {
     engine()
     ProcessService.findProcessVersionsByDefinitionKey.mockRejectedValue(new Error('500'))
     const vm = context()
 
-    await expect(open(vm)).rejects.toThrow('500')
+    await open(vm)
 
     expect(vm.loading).toBe(false)
+    expect(vm.process).toBeNull()
+    expect(vm.processDefinitions).toEqual([])
+    expect(vm.errorVersionNotFound).toBe('2')
   })
 
   /**
