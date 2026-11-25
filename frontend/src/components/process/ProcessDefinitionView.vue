@@ -201,7 +201,7 @@ export default {
 
       // load the instance and the versions in parallel, if needed
       const [instance] = await Promise.all([
-        this.lookUpInstance(this.instanceId),
+        this.lookUpInstance(this.instanceId, isStale),
         reloadVersions && this.loadVersions(versionsScope, isStale)
       ])
       if (isStale()) return
@@ -254,7 +254,7 @@ export default {
         HistoryService.findProcessInstance(instanceId) :
         ProcessService.findProcessInstance(instanceId)
     },
-    async lookUpInstance(instanceId) {
+    async lookUpInstance(instanceId, isStale) {
       this.errorLoadingInstanceId = null
       if (!instanceId) return null
       if (this.selectedInstance?.id === instanceId) return this.selectedInstance
@@ -263,7 +263,8 @@ export default {
       try {
         instance = await this.findProcessInstance(instanceId)
       } catch (error) {
-        this.errorLoadingInstanceId = error.message
+        // the failure of an older navigation must not show up on the newer one
+        if (!isStale()) this.errorLoadingInstanceId = error.message
       }
       // an instance listed in the table can still be shown when history has purged it
       return instance ?? this.instances?.find(i => i.id === instanceId) ?? null

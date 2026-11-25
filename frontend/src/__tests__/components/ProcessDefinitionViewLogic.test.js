@@ -601,6 +601,22 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.errorLoadingInstanceId).toBeNull()
   })
 
+  // a slow failing lookup used to show its error on the definition opened meanwhile
+  it('should drop the failure of an older navigation', async () => {
+    engine()
+    const slowLookup = deferred()
+    HistoryService.findProcessInstance.mockReturnValueOnce(slowLookup.promise)
+    const vm = context({ instanceId: 'pi1' })
+
+    const first = open(vm)
+    await navigate(vm, { processKey: 'order', instanceId: undefined })
+    slowLookup.resolve(Promise.reject(new Error('404 not found')))
+    await first
+
+    expect(vm.errorLoadingInstanceId).toBeNull()
+    expect(vm.process.key).toBe('order')
+  })
+
   // An instance already listed in the table can be shown even if history has purged it.
   it('should fall back to an instance already in the store', async () => {
     engine({ instances: {} })
