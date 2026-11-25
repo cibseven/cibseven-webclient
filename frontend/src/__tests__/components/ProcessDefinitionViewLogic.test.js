@@ -752,6 +752,76 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
 
     expect(vm.parentProcess).toBeNull()
   })
+
+  // a slow parent of the previous navigation used to show up as the breadcrumb of the next definition
+  it('should drop the parent of an older navigation', async () => {
+    engine()
+    const parent = deferred()
+    const vm = context({ getProcessById: vi.fn(() => parent.promise), $route: { query: { parentProcessDefinitionId: 'pd-parent' } } })
+
+    const first = open(vm)
+    await vi.waitFor(() => expect(vm.getProcessById).toHaveBeenCalled())
+    vm.$route = { query: {} }
+    await navigate(vm, { processKey: 'order' })
+    parent.resolve({ id: 'pd-parent' })
+    await first
+
+    expect(vm.parentProcess).toBeNull()
+    expect(vm.process.key).toBe('order')
+  })
+
+  // ProcessInstanceView resolves its own parent
+  it('should not look the parent up for an instance', async () => {
+    engine()
+    const vm = context({ instanceId: 'pi1', $route: { query: { parentProcessDefinitionId: 'pd-parent' } } })
+
+    await open(vm)
+
+    expect(vm.getProcessById).not.toHaveBeenCalled()
+    expect(vm.parentProcess).toBeNull()
+  })
+
+  it('should open the definition without the parent when the parent cannot be read', async () => {
+    engine()
+    const vm = context({
+      getProcessById: vi.fn(() => Promise.reject(new Error('404 not found'))),
+      $route: { query: { parentProcessDefinitionId: 'pd-parent' } }
+    })
+
+    await open(vm)
+
+    expect(vm.process.id).toBe('invoice:2:id')
+    expect(vm.parentProcess).toBeNull()
+    expect(vm.loading).toBe(false)
+  })
+
+  // a failed request of the definition used to abort the run before the instance was selected
+  it('should show the instance when the details of its definition cannot be loaded', async () => {
+    engine()
+    ProcessService.findProcessById.mockRejectedValue(new Error('500'))
+    const vm = context({ instanceId: 'pi1' })
+
+    await open(vm)
+
+    expect(vm.process.id).toBe('invoice:2:id')
+    expect(vm.selectedInstance.id).toBe('pi1')
+  })
+
+  it('should show the instance when the versions of its definition cannot be loaded', async () => {
+    engine({ instances: { pi1: activeInstance({ processDefinitionId: definitionId('invoice', '5') }) }, tenantId: 't1' })
+    const versions = ProcessService.findProcessVersionsByDefinitionKey.getMockImplementation()
+    ProcessService.findProcessVersionsByDefinitionKey.mockImplementation(async (key, tenantId, lazyLoad) => {
+      if (tenantId === 't1') throw new Error('500')
+      return versions(key, tenantId, lazyLoad)
+    })
+    const vm = context({ instanceId: 'pi1' })
+
+    await open(vm)
+
+    expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenCalledWith('invoice', 't1', false)
+    expect(vm.processDefinitions).toHaveLength(2)
+    expect(vm.selectedInstance.id).toBe('pi1')
+  })
 })
 
 describe('ProcessDefinitionView - syncDefinition', () => {
@@ -790,38 +860,18 @@ describe('ProcessDefinitionView - syncDefinition', () => {
     expect(vm.$store.dispatch).not.toHaveBeenCalled()
   })
 
-  // a slow parent of the previous navigation used to show up as the breadcrumb of the next definition
-  it('should drop the parent of a definition that is no longer selected', async () => {
-    const parent = { promise: null, resolve: null }
-    parent.promise = new Promise(resolve => { parent.resolve = resolve })
-    const vm = context({
-      getProcessById: vi.fn(() => parent.promise),
-      $route: { query: { parentProcessDefinitionId: 'pd-parent' } }
-    })
-    const first = version()
-
-    const selection = syncTo(vm, first)
-    await vi.waitFor(() => expect(vm.getProcessById).toHaveBeenCalled())
-    vm.process = version({ id: 'order:2:id', key: 'order' })
-    parent.resolve({ id: 'pd-parent' })
-    await selection
-
-    expect(vm.parentProcess).toBeNull()
-  })
-
   it('should drop the details of a definition that is no longer selected', async () => {
     ProcessService.findProcessById.mockImplementation(async (id) => {
       vm.process = version({ id: 'order:2:id', key: 'order' })
       return { id, name: 'Invoice' }
     })
-    const vm = context({ instanceId: 'pi1', $route: { query: { parentProcessDefinitionId: 'pd-parent' } } })
+    const vm = context({ instanceId: 'pi1' })
     const first = version()
 
     await syncTo(vm, first)
 
     expect(first.name).toBeUndefined()
     expect(vm.$store.dispatch).not.toHaveBeenCalled()
-    expect(vm.getProcessById).not.toHaveBeenCalled()
   })
 })
 

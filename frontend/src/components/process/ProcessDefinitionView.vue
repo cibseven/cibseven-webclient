@@ -214,12 +214,14 @@ export default {
       if (reloadVersions) this.clearDefinitions()
       if (this.selectedInstance && this.selectedInstance.id !== this.instanceId) this.clearInstance()
 
-      // load the instance and the versions in parallel, if needed
-      const [instance] = await Promise.all([
+      // load the instance, the versions (if needed) and the parent breadcrumb in parallel
+      const [instance, , parentProcess] = await Promise.all([
         this.lookUpInstance(this.instanceId, isStale),
-        reloadVersions && this.loadVersions(isStale)
+        reloadVersions && this.loadVersions(isStale),
+        this.lookUpParentProcess()
       ])
       if (isStale()) return
+      this.parentProcess = parentProcess
       await this.loadVersionsOfInstance(instance, isStale)
       if (isStale()) return
 
@@ -271,7 +273,8 @@ export default {
         return
       }
       if (isStale() || definition.key !== this.processKey) return
-      await this.loadVersions(isStale, definition.tenantId)
+      // a failure keeps the versions the run already has, so the instance is still shown
+      await this.loadVersions(isStale, definition.tenantId).catch(() => {})
     },
     async loadVersions(isStale, tenantId = this.tenantId) {
       const processKey = this.processKey
@@ -318,19 +321,22 @@ export default {
       // the entries of a reloaded versions list are new: the open version keeps the statistics its diagram shows
       if (previous?.id === definition.id) definition.statistics ??= previous.statistics
 
-      // the responses for a definition that is no longer selected are dropped
-      const details = await ProcessService.findProcessById(definition.id, true)
+      // The responses for a definition that is no longer selected are dropped. Without its details the
+      // version entry is shown as listed, so that the route goes on loading; the error dialog tells what failed
+      const details = await ProcessService.findProcessById(definition.id, true).catch(() => null)
       if (this.process !== definition) return
-      this.assignDefinitionData(definition, details)
+      if (details) this.assignDefinitionData(definition, details)
       // ProcessInstancesView loads the statistics together with its instances, the instance view does not
       if (this.instanceId && !definition.statistics) await this.loadStatistics(definition)
-      if (this.process !== definition) return
-
-      // arriving from a call activity, the parent is shown as a breadcrumb
+    },
+    /**
+     * Arriving from a call activity, the definition view shows the parent as a breadcrumb; the instance view
+     * resolves its own. A parent that cannot be read is left out; the error dialog tells what failed.
+     */
+    async lookUpParentProcess() {
       const parentProcessDefinitionId = this.$route.query.parentProcessDefinitionId
-      const parentProcess = parentProcessDefinitionId ? await this.getProcessById({ id: parentProcessDefinitionId }) : null
-      if (this.process !== definition) return
-      this.parentProcess = parentProcess
+      if (this.instanceId || !parentProcessDefinitionId) return null
+      return this.getProcessById({ id: parentProcessDefinitionId }).catch(() => null)
     },
     // the definition never fills in the incidents and the deployment time: the version entry keeps its own
     assignDefinitionData(entry, definition) {
