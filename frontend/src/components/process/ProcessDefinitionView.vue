@@ -232,10 +232,10 @@ export default {
       ])
       if (isStale()) return
       this.parentProcess = parentProcess
-      await this.loadVersionsOfInstance(instance, isStale)
+      const instanceDefinition = await this.loadVersionsOfInstance(instance, isStale)
       if (isStale()) return
 
-      await this.syncDefinition(instance)
+      await this.syncDefinition(instance, instanceDefinition)
       if (isStale()) return
 
       if (!instance || this.selectedInstance?.id === instance.id) return
@@ -271,23 +271,25 @@ export default {
      * With an instance, the URL names the tenant of the instance, not the one of its definition: they differ
      * for a shared definition started for a tenant, and a link may name no tenant at all. When the versions
      * loaded with the URL's tenant miss the instance's definition, they are loaded with the definition's tenant.
+     * Returns the definition when it had to be fetched, with its details, so that syncDefinition does not fetch it again.
      */
     async loadVersionsOfInstance(instance, isStale) {
       const definitionId = definitionIdOf(instance)
       if (!definitionId || this.processDefinitions.some(definition => definition.id === definitionId)) return
       let definition
       try {
-        definition = await ProcessService.findProcessById(definitionId)
+        definition = await ProcessService.findProcessById(definitionId, true)
       } catch {
         // e.g. no permission to read it: the versions the run has are kept and the route goes on loading;
         // syncDefinition flags the missing definition, the error dialog tells what failed
         return
       }
-      if (isStale() || definition.key !== this.processKey) return
+      if (isStale() || definition.key !== this.processKey) return definition
       // a failure keeps the versions the run already has; syncDefinition flags the missing definition
       await this.loadVersions(isStale, definition.tenantId).catch(() => {})
       // no versions of the key could be loaded at all: the instance is shown on its own definition, the only entry
       if (!isStale() && this.processDefinitions.length === 0) this.processDefinitions = [definition]
+      return definition
     },
     /**
      * The versions of the route's key. An instance can still be shown when they cannot be loaded, as
@@ -345,8 +347,9 @@ export default {
       }
       return missing
     },
-    // Selects the definition of the instance, else the version the URL asks for, or the latest one (flagged) when there is no such version
-    async syncDefinition(instance = this.selectedInstance) {
+    // Selects the definition of the instance, else the version the URL asks for, or the latest one (flagged) when there is no such version.
+    // `fetched` is a definition with its details already loaded in this run, which is not requested again
+    async syncDefinition(instance = this.selectedInstance, fetched = null) {
       // an instance is shown on its own definition, even when the URL names another version of it
       const instanceDefinitionId = definitionIdOf(instance)
       const instanceDefinition = this.processDefinitions.find(definition => definition.id === instanceDefinitionId)
@@ -363,7 +366,7 @@ export default {
 
       // The responses for a definition that is no longer selected are dropped. Without its details the
       // version entry is shown as listed, so that the route goes on loading; the error dialog tells what failed
-      const details = await ProcessService.findProcessById(definition.id, true).catch(() => null)
+      const details = fetched?.id === definition.id ? fetched : await ProcessService.findProcessById(definition.id, true).catch(() => null)
       if (this.process !== definition) return
       if (details) this.assignDefinitionData(definition, details)
       // ProcessInstancesView loads the statistics together with its instances, the instance view does not

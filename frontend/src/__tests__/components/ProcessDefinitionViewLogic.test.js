@@ -353,7 +353,11 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
 
     expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenNthCalledWith(1, 'invoice', undefined, false)
     expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenNthCalledWith(2, 'invoice', 't1', false)
+    // fetched once with its details to learn its tenant, then reused for the version entry
+    expect(ProcessService.findProcessById).toHaveBeenCalledOnce()
+    expect(ProcessService.findProcessById).toHaveBeenCalledWith('invoice:2:id', true)
     expect(vm.process.id).toBe('invoice:2:id')
+    expect(vm.process.name).toBe('invoice v2')
     expect(vm.errorVersionNotFound).toBeNull()
     expect(vm.selectedInstance.id).toBe('pi1')
   })
@@ -369,6 +373,7 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
 
     expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenNthCalledWith(1, 'invoice', 't1', false)
     expect(ProcessService.findProcessVersionsByDefinitionKey).toHaveBeenNthCalledWith(2, 'invoice', null, false)
+    expect(ProcessService.findProcessById).toHaveBeenCalledOnce()
     expect(vm.process.id).toBe('invoice:2:id')
     expect(vm.selectedInstance.id).toBe('pi1')
 
@@ -473,6 +478,7 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
 
     expect(vm.processDefinitions).toHaveLength(1)
     expect(vm.process.id).toBe('invoice:2:id')
+    expect(ProcessService.findProcessById).toHaveBeenCalledOnce()
     expect(vm.errorInstanceDefinitionId).toBeNull()
     expect(vm.selectedInstance.id).toBe('pi1')
     expect(vm.loading).toBe(false)
