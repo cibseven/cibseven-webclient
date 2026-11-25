@@ -191,11 +191,22 @@ describe('ProcessDefinitionView - computed', () => {
     })
   })
 
-  // '' stands for an instance found nowhere with an empty server response
-  it('middlePaneError should tell the instance was not found, also with an empty error message', () => {
-    expect(c.middlePaneError.call(context({ instanceId: 'pi1', errorLoadingInstanceId: '' }))).toEqual({
+  it('middlePaneError should tell the instance was not found with the server response', () => {
+    expect(c.middlePaneError.call(context({ instanceId: 'pi1', errorLoadingInstanceId: '404 not found' }))).toEqual({
       key: 'process.instanceNotFound',
-      params: { instanceId: 'pi1', error: '' }
+      params: { instanceId: 'pi1', error: '404 not found' }
+    })
+  })
+
+  /**
+   * Scenario: the instance was found nowhere and no request failed, so '' stands for an empty server response.
+   * Expected: the instance-not-found message without a "Server response:" part.
+   * Guards against: P42, an empty "Server response:" suggesting a server error was received but lost.
+   */
+  it('middlePaneError should tell the instance was not found without a server response when there is none', () => {
+    expect(c.middlePaneError.call(context({ instanceId: 'pi1', errorLoadingInstanceId: '' }))).toEqual({
+      key: 'process.instanceNotFoundNoResponse',
+      params: { instanceId: 'pi1' }
     })
   })
 

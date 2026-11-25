@@ -162,6 +162,7 @@
 		"definitionVersionNotFound": "Process definition version \"{0}\" not found. Falling back to the latest version.",
 		"definitionNotFound": "Process definition key \"{processKey}\" with \"{tenantId}\" tenant ID not found.",
 		"instanceNotFound": "Process instance with ID \"{instanceId}\" not found.\nServer response:\n{error}",
+		"instanceNotFoundNoResponse": "Process instance with ID \"{instanceId}\" not found.",
 		"instanceDefinitionNotFound": "The definition \"{definitionId}\" of process instance \"{instanceId}\" could not be loaded.",
 		"instanceOfOtherProcess": "Process instance \"{instanceId}\" belongs to process \"{definitionKey}\" (definition \"{definitionId}\"), not to \"{processKey}\".",
 		"back": "Back",

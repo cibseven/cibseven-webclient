@@ -188,7 +188,10 @@ export default {
         }
         return { key: 'process.instanceDefinitionNotFound', params }
       }
-      // '' is an instance found nowhere with an empty server response: still an error
+      // '' is an instance found nowhere with an empty server response: still an error, told without the response
+      if (this.errorLoadingInstanceId === '') {
+        return { key: 'process.instanceNotFoundNoResponse', params: { instanceId: this.instanceId } }
+      }
       if (this.errorLoadingInstanceId !== null) {
         return { key: 'process.instanceNotFound', params: { instanceId: this.instanceId, error: this.errorLoadingInstanceId } }
       }
