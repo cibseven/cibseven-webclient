@@ -162,9 +162,11 @@ export default {
     computedVersionIndex() {
       return this.process?.version || this.versionIndex
     },
-    // The tenant of the open instance: with an instance, the `tenantId` of the URL is the instance's
+    // The tenant of the open instance: its own once loaded, as a link may name no tenant;
+    // until then the `tenantId` of the URL, which is the instance's for an instance link
     instanceTenantId() {
-      return this.instanceId ? this.tenantId : null
+      if (!this.instanceId) return null
+      return this.selectedInstance ? (this.selectedInstance.tenantId ?? null) : this.tenantId
     },
     // The tenant of the open definition and its versions. It differs from the instance's for a shared
     // definition started for a tenant; until the definition is open, the URL's tenant is assumed

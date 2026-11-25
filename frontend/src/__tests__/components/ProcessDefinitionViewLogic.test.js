@@ -99,9 +99,15 @@ afterEach(() => {
 })
 
 describe('ProcessDefinitionView - computed', () => {
-  it('instanceTenantId should be the tenant of the URL only when an instance is open', () => {
+  it('instanceTenantId should be the tenant of the URL until the instance is loaded, and none without an instance', () => {
     expect(c.instanceTenantId.call(context({ instanceId: 'pi1', tenantId: 't1' }))).toBe('t1')
     expect(c.instanceTenantId.call(context({ tenantId: 't1' }))).toBeNull()
+  })
+
+  // a link may name no tenant, the plugins and tables of the instance view used to get none for an instance of t1
+  it('instanceTenantId should be the tenant of the loaded instance', () => {
+    expect(c.instanceTenantId.call(context({ instanceId: 'pi1', selectedInstance: { id: 'pi1', tenantId: 't1' } }))).toBe('t1')
+    expect(c.instanceTenantId.call(context({ instanceId: 'pi1', tenantId: 't1', selectedInstance: { id: 'pi1', tenantId: null } }))).toBeNull()
   })
 
   // the URL of an instance names its tenant, the definition it was started from may be shared
