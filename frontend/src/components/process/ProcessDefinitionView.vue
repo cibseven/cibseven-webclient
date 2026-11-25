@@ -508,7 +508,13 @@ export default {
       // the key and tenant whose versions are shown when the refresh starts
       const versionsScope = this.versionsScope
       try {
-        const versions = await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.definitionTenantId, lazyLoad)
+        let versions
+        try {
+          versions = await ProcessService.findProcessVersionsByDefinitionKey(this.processKey, this.definitionTenantId, lazyLoad)
+        } catch {
+          // the versions shown stay as they are; the error dialog tells what failed
+          return
+        }
         // The user opened another key or tenant while the request ran, e.g. refreshed the versions of `invoice`
         // and went to `order`: that navigation loads its own versions, so this reply must not replace them
         if (this.versionsScope !== versionsScope) return

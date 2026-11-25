@@ -2182,16 +2182,20 @@ describe('ProcessDefinitionView - onRefreshProcessDefinitions', () => {
   /**
    * Scenario: the refresh request fails, e.g. the engine is down.
    * Link: #/seven/auth/process/invoice/2
-   * Expected: the error is passed on and refreshingVersions is null again.
-   * Guards against: a button that spins forever after an error.
+   * Expected: the handler resolves, the versions and the open one stay as they are, and refreshingVersions is null again.
+   * Guards against: a button that spins forever after an error; P47, an unhandled rejection reaching the app error
+   *   handler.
    */
-  it('should end the reload state when the versions cannot be loaded', async () => {
-    const vm = context()
+  it('should end the reload state and keep the versions when the versions cannot be loaded', async () => {
+    const shown = [version()]
+    const vm = context({ process: shown[0], processDefinitions: shown })
     ProcessService.findProcessVersionsByDefinitionKey.mockRejectedValue(new Error('down'))
 
-    await expect(m.onRefreshProcessDefinitions.call(vm, false)).rejects.toThrow('down')
+    await expect(m.onRefreshProcessDefinitions.call(vm, false)).resolves.toBeUndefined()
 
     expect(vm.refreshingVersions).toBeNull()
+    expect(vm.processDefinitions).toBe(shown)
+    expect(vm.process).toBe(shown[0])
   })
 
   /**
