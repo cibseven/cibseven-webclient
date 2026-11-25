@@ -162,6 +162,7 @@
 		"definitionVersionNotFound": "Prozessdefinitionsversion \"{0}\" nicht gefunden. Es wird auf die neueste Version zurückgegriffen.",
 		"definitionNotFound": "Prozessdefinition mit dem Schlüssel \"{processKey}\" und der Mandanten-ID \"{tenantId}\" nicht gefunden.",
 		"instanceNotFound": "Prozessinstanz mit der ID \"{instanceId}\" nicht gefunden.\nServerantwort:\n{error}",
+		"instanceDefinitionNotFound": "Die Definition \"{definitionId}\" der Prozessinstanz \"{instanceId}\" konnte nicht geladen werden.",
 		"back": "Zurück",
 		"incidentsCounter": "Vorfälle: {0}",
 		"incidents": "Vorfälle",	

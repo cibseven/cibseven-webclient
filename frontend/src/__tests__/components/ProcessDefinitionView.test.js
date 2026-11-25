@@ -161,9 +161,10 @@ describe('ProcessDefinitionView - mounted', () => {
   /**
    * Scenario: the instance runs on invoice v5, which is not among the versions and cannot be read (403).
    * Link: #/seven/auth/process/invoice/2/pi5
-   * Expected: no ProcessInstanceView; the middle pane shows only "definition not found", naming invoice:5:id.
-   * Guards against: P18, the instance drawn on v2's diagram; P26, the warning naming the URL's key instead of the
-   *   missing definition.
+   * Expected: no ProcessInstanceView; the middle pane shows only that definition invoice:5:id of instance pi5 could
+   *   not be loaded.
+   * Guards against: P18, the instance drawn on v2's diagram; P26 and P35, the warning naming the URL's key, calling the
+   *   definition id a key, or naming the instance's tenant as the definition's.
    */
   it('tells that the definition of the instance could not be loaded instead of showing another one', async () => {
     // pi5 runs on version 5, which is not among the versions and cannot be read
@@ -179,8 +180,8 @@ describe('ProcessDefinitionView - mounted', () => {
     expect(wrapper.findComponent({ name: 'ProcessInstanceView' }).exists()).toBe(false)
     const warnings = wrapper.find('.main').findAllComponents({ name: 'WarningBox' })
     expect(warnings).toHaveLength(1)
-    // the definition that is missing, not the key of the URL
-    expect(warnings[0].props('message')).toBe('process.definitionNotFound {"processKey":"invoice:5:id"}')
+    // the definition that is missing and the instance it belongs to, not the key and tenant of the URL
+    expect(warnings[0].props('message')).toBe('process.instanceDefinitionNotFound {"instanceId":"pi5","definitionId":"invoice:5:id"}')
   })
 
   /**

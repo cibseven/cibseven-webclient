@@ -162,6 +162,7 @@
 		"definitionVersionNotFound": "Версія визначення процесу \"{0}\" не знайдена. Використовується остання версія.",
 		"definitionNotFound": "Визначення процесу з ключем \"{processKey}\" та ID клієнта \"{tenantId}\" не знайдено.",
 		"instanceNotFound": "Екземпляр процесу з ID \"{instanceId}\" не знайдено.\nВідповідь сервера:\n{error}",
+		"instanceDefinitionNotFound": "Не вдалося завантажити визначення \"{definitionId}\" екземпляра процесу \"{instanceId}\".",
 		"back": "Назад",
 		"incidentsCounter": "Інциденти: {0}",
 		"incidents": "Інциденти",
