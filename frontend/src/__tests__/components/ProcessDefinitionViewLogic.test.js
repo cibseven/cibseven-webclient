@@ -69,6 +69,7 @@ function context(overrides = {}) {
     processDefinitions: [],
     errorVersionNotFound: null,
     errorLoadingInstanceId: null,
+    errorInstanceDefinitionId: null,
     selectedInstance: null,
     activityInstance: null,
     activityInstanceHistory: null,
@@ -442,7 +443,10 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.process).toBeNull()
     expect(vm.errorInstanceDefinitionId).toBe('invoice:5:id')
     expect(vm.errorVersionNotFound).toBeNull()
-    expect(vm.selectedInstance.id).toBe('pi1')
+    // nothing shows the instance, so neither it nor its activities are loaded
+    expect(vm.selectedInstance).toBeNull()
+    expect(ProcessService.findActivityInstance).not.toHaveBeenCalled()
+    expect(HistoryService.findActivitiesInstancesHistory).not.toHaveBeenCalled()
     expect(vm.loading).toBe(false)
 
     // the definition view of the key opens as usual
@@ -920,7 +924,7 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.selectedInstance.id).toBe('pi1')
   })
 
-  it('should show the instance when the versions of its definition cannot be loaded', async () => {
+  it('should flag the definition of the instance when its versions cannot be loaded', async () => {
     engine({ instances: { pi1: activeInstance({ processDefinitionId: definitionId('invoice', '5') }) }, tenantId: 't1' })
     const versions = ProcessService.findProcessVersionsByDefinitionKey.getMockImplementation()
     ProcessService.findProcessVersionsByDefinitionKey.mockImplementation(async (key, tenantId, lazyLoad) => {
@@ -935,7 +939,8 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.processDefinitions).toHaveLength(2)
     expect(vm.errorInstanceDefinitionId).toBe('invoice:5:id')
     expect(vm.process).toBeNull()
-    expect(vm.selectedInstance.id).toBe('pi1')
+    expect(vm.selectedInstance).toBeNull()
+    expect(ProcessService.findActivityInstance).not.toHaveBeenCalled()
   })
 })
 

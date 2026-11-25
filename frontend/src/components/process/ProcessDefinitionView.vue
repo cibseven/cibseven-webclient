@@ -238,7 +238,8 @@ export default {
       await this.syncDefinition(instance, instanceDefinition)
       if (isStale()) return
 
-      if (!instance || this.selectedInstance?.id === instance.id) return
+      // an instance whose definition is flagged missing is not shown, so neither it nor its activities are loaded
+      if (!instance || this.selectedInstance?.id === instance.id || this.errorInstanceDefinitionId) return
       this.clearInstance()
       this.selectedInstance = instance
 
