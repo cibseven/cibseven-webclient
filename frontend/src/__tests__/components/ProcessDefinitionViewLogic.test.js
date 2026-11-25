@@ -808,6 +808,26 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
     expect(vm.parentProcess).toBeNull()
   })
 
+  // a recursive call activity, or back/forward between two such entries, used to keep the previous parent
+  it('should look the parent up again when only the parent in the query changes', async () => {
+    engine()
+    const getProcessById = vi.fn(async ({ id }) => ({ id }))
+    const vm = context({ getProcessById, $route: { query: { parentProcessDefinitionId: 'pd-first' } } })
+    await open(vm)
+    expect(vm.parentProcess).toEqual({ id: 'pd-first' })
+    vi.clearAllMocks()
+
+    const previous = vm.routeState
+    vm.$route = { query: { parentProcessDefinitionId: 'pd-second' } }
+    expect(vm.routeState).not.toEqual(previous)
+    await vm.onRouteChanged(vm.routeState, previous)
+
+    expect(vm.parentProcess).toEqual({ id: 'pd-second' })
+    expect(ProcessService.findProcessVersionsByDefinitionKey).not.toHaveBeenCalled()
+    expect(ProcessService.findProcessById).not.toHaveBeenCalled()
+    expect(vm.clearActivitySelection).not.toHaveBeenCalled()
+  })
+
   // a slow parent of the previous navigation used to show up as the breadcrumb of the next definition
   it('should drop the parent of an older navigation', async () => {
     engine()

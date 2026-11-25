@@ -146,6 +146,8 @@ export default {
         tenantId: this.tenantId,
         versionIndex: this.versionIndex,
         instanceId: this.instanceId,
+        // a call activity calling its own key and version changes only the parent breadcrumb
+        parentProcessDefinitionId: this.$route.query.parentProcessDefinitionId,
       }
     },
     sidebarScope() {
