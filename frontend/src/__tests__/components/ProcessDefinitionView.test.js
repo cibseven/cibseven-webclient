@@ -39,7 +39,7 @@ vi.mock('@/services.js', async (importOriginal) => {
   }
 })
 
-function createWrapper(props = {}, stubs = {}) {
+function createWrapper(props = {}, stubs = {}, mocks = {}) {
   const store = createStore({
     actions: { clearActivitySelection: vi.fn(), getProcessById: vi.fn(), loadStatistics: vi.fn() },
     modules: {
@@ -49,12 +49,14 @@ function createWrapper(props = {}, stubs = {}) {
   })
   return mountWithDefaults(ProcessDefinitionView, {
     shallow: true,
+    // a test's own `$t` only takes effect without the i18n plugin
+    i18nPlugin: !mocks.$t,
     props: { processKey: 'invoice', versionIndex: '2', ...props },
     global: {
       plugins: [store],
       stubs,
       // the component is the root here, so `$root.config` falls through to this global property
-      mocks: { config: { camundaHistoryLevel: 'full', lazyLoadHistory: false }, $route: { query: {} }, $router: { replace: vi.fn() } }
+      mocks: { config: { camundaHistoryLevel: 'full', lazyLoadHistory: false }, $route: { query: {} }, $router: { replace: vi.fn() }, ...mocks }
     }
   })
 }
@@ -141,13 +143,17 @@ describe('ProcessDefinitionView - mounted', () => {
     ProcessService.findProcessById.mockRejectedValueOnce(new Error('403 forbidden'))
     const wrapper = createWrapper({ instanceId: 'pi5' }, {
       SidebarsFlow: { template: '<div><div class="left"><slot name="left"></slot></div><div class="main"><slot></slot></div></div>' }
+    }, {
+      // echoes the parameters too, to see which definition the message names
+      $t: (key, params) => params ? `${key} ${JSON.stringify(params)}` : key
     })
     await flushPromises()
 
     expect(wrapper.findComponent({ name: 'ProcessInstanceView' }).exists()).toBe(false)
     const warnings = wrapper.find('.main').findAllComponents({ name: 'WarningBox' })
     expect(warnings).toHaveLength(1)
-    expect(warnings[0].props('message')).toBe('process.definitionNotFound')
+    // the definition that is missing, not the key of the URL
+    expect(warnings[0].props('message')).toBe('process.definitionNotFound {"processKey":"invoice:5:id"}')
   })
 
   it('does not load anything again on a re-render', async () => {

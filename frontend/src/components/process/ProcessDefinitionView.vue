@@ -66,7 +66,7 @@
       <div v-else-if="loading" class="h-100 d-flex justify-content-center align-items-center">
         <BWaitingBox class="d-inline me-2" styling="width: 35px"></BWaitingBox> {{ $t('admin.loading') }}
       </div>
-      <WarningBox v-else-if="errorInstanceDefinitionId !== null" :message="$t('process.definitionNotFound', { processKey: processKey, tenantId: definitionTenantId })"/>
+      <WarningBox v-else-if="errorInstanceDefinitionId !== null" :message="$t('process.definitionNotFound', { processKey: errorInstanceDefinitionId, tenantId: definitionTenantId })"/>
       <WarningBox v-else-if="errorLoadingInstanceId !== null" :message="$t('process.instanceNotFound', { instanceId: instanceId, error: errorLoadingInstanceId })"/>
       <WarningBox v-else-if="errorVersionNotFound !== null && processDefinitions.length === 0" :message="$t('process.definitionNotFound', { processKey: processKey, tenantId: definitionTenantId })"/>
     </SidebarsFlow>
