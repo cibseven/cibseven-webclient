@@ -89,6 +89,20 @@ class DirectProviderUtilBindQueryParamsTest {
 	}
 
 	@Test
+	void leavesOutEmptyAndBlankElementsOfAListOrArray() {
+		Map<String, Object> params = new HashMap<>();
+		params.put("tenantIdIn", List.of("a", "", " ", "b"));
+		params.put("activityIdIn", new String[] { "task", "", "end" });
+		params.put("processInstanceIdIn", List.of("", " "));
+
+		RecordingDto dto = util.bindQueryParams(params, RecordingDto.class, user);
+
+		assertThat(dto.queryParameters.get("tenantIdIn")).containsExactly("a,b");
+		assertThat(dto.queryParameters.get("activityIdIn")).containsExactly("task,end");
+		assertThat(dto.queryParameters).doesNotContainKey("processInstanceIdIn");
+	}
+
+	@Test
 	void leavesOutNullValuesAndEmptyLists() {
 		Map<String, Object> params = new HashMap<>();
 		params.put("tenantId", null);

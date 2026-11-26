@@ -486,8 +486,9 @@ public class DirectProviderUtil {
 	 * reach the query DTO as the filter value "null".
 	 * <p>
 	 * The engine DTO reads only the first value of each parameter, so the elements of a collection or
-	 * array value are joined with a comma, which is what the engine's list converters split on; an empty
-	 * list is left out like a null value.
+	 * array value are joined with a comma, which is what the engine's list converters split on. Null and
+	 * blank elements are left out, so that no empty entry ({@code a,,b}) reaches the engine; a list without
+	 * any other element is left out like a null value.
 	 */
 	protected MultivaluedMap<String, String> toMultivaluedMap(Map<String, Object> params) {
 		MultivaluedMap<String, String> multiValueMap = new MultivaluedHashMap<>();
@@ -507,7 +508,9 @@ public class DirectProviderUtil {
 			elements = Arrays.stream(array);
 		else
 			return value != null ? String.valueOf(value) : null;
-		String joined = elements.filter(Objects::nonNull).map(String::valueOf).collect(Collectors.joining(","));
+		String joined = elements.filter(Objects::nonNull).map(String::valueOf)
+				.filter(element -> !element.isBlank())
+				.collect(Collectors.joining(","));
 		return joined.isEmpty() ? null : joined;
 	}
 }
