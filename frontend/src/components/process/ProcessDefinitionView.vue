@@ -458,8 +458,9 @@ export default {
       this.activityInstanceHistory = null
     },
     async onDeleteProcessDefinition({ processDefinition }) {
-      // the key and tenant whose versions are shown when the deletion starts
+      // the key and tenant whose versions are shown when the deletion starts, and the instance, if any
       const versionsScope = this.versionsScope
+      const instanceId = this.instanceId
       const tenantId = this.definitionTenantId
       try {
         await ProcessService.deleteProcessDefinition(processDefinition.id, true)
@@ -473,6 +474,13 @@ export default {
       // and went to `order`: that navigation loads its own versions, so this reply must neither replace
       // them nor redirect away from the newly opened process
       if (this.versionsScope !== versionsScope) return
+      // Another instance was opened meanwhile, e.g. from the instances table: its route run selects its definition, so
+      // only the deleted version is dropped from the list, whose other entries stay as they are; a reselection or a
+      // redirect would take the instance's view away
+      if (this.instanceId !== instanceId) {
+        this.processDefinitions = this.processDefinitions.filter(version => version.id !== processDefinition.id)
+        return
+      }
       // The versions cannot be reloaded: the deleted one is still dropped, so that it is neither listed nor open,
       // and the others are kept as they are; the error dialog tells what failed
       const versions = reloaded ?? this.processDefinitions.filter(version => version.id !== processDefinition.id)
@@ -515,8 +523,9 @@ export default {
       this.refreshingVersions = lazyLoad ? 'refresh' : 'all'
       // a newer refresh, e.g. of another process opened meanwhile, owns the refresh state from then on
       const refresh = this.refreshRun = (this.refreshRun ?? 0) + 1 // non-reactive
-      // the key and tenant whose versions are shown when the refresh starts
+      // the key and tenant whose versions are shown when the refresh starts, and the instance, if any
       const versionsScope = this.versionsScope
+      const instanceId = this.instanceId
       try {
         let versions
         try {
@@ -528,6 +537,9 @@ export default {
         // The user opened another key or tenant while the request ran, e.g. refreshed the versions of `invoice`
         // and went to `order`: that navigation loads its own versions, so this reply must not replace them
         if (this.versionsScope !== versionsScope) return
+        // Another instance of the key was opened meanwhile, e.g. from the instances table: its route run selects its
+        // definition and loads the statistics, which a reselection here would cut short
+        if (this.instanceId !== instanceId) return
         // Every version was deleted meanwhile, e.g. by another user: the deleted definition is not shown
         // any more, and syncDefinition flags it so that both panes tell the definition was not found
         if (versions.length === 0) this.clearDefinitions()

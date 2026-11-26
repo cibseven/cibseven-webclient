@@ -831,6 +831,46 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
   })
 
   /**
+   * Scenario: on the definition view of v2 the user clicks "load data" (slow), then opens an instance that runs on v1;
+   *   the refresh reply arrives while the details of v1 load for the instance.
+   * Link: #/seven/auth/process/invoice/2, then #/seven/auth/process/invoice/2/pi1 for an instance of v1
+   * Expected: the reply is dropped; pi1 is shown on v1 with its statistics loaded.
+   * Guards against: P51, the reply reselecting v2 for the URL's version, so pi1 was drawn on v2's diagram without
+   *   statistics (the P39 symptom).
+   */
+  it('should drop a refresh reply that arrives after an instance was opened', async () => {
+    engine({ instances: { pi1: activeInstance({ processDefinitionId: definitionId('invoice', '1') }) } })
+    const vm = context()
+    await open(vm)
+    expect(vm.process.id).toBe('invoice:2:id')
+    const shown = vm.processDefinitions
+    vi.clearAllMocks()
+
+    const reply = deferred()
+    ProcessService.findProcessVersionsByDefinitionKey.mockImplementationOnce(() => reply.promise)
+    const refresh = vm.onRefreshProcessDefinitions(false)
+    // the reply arrives while the details of the instance's definition load
+    const details = ProcessService.findProcessById.getMockImplementation()
+    let interleaved = false
+    ProcessService.findProcessById.mockImplementation(async (...args) => {
+      if (!interleaved) {
+        interleaved = true
+        reply.resolve(['2', '1'].map(v => ({ id: definitionId('invoice', v), key: 'invoice', version: v })))
+        await refresh
+      }
+      return details(...args)
+    })
+
+    await navigate(vm, { instanceId: 'pi1' })
+
+    expect(vm.processDefinitions).toBe(shown)
+    expect(vm.process.id).toBe('invoice:1:id')
+    expect(vm.$store.dispatch).toHaveBeenCalledWith('loadStatistics', vm.process)
+    expect(vm.selectedInstance.id).toBe('pi1')
+    expect(vm.refreshingVersions).toBeNull()
+  })
+
+  /**
    * Scenario: the versions shown already are the URL tenant's when the next link points to a missing instance.
    * Link: #/seven/auth/process/invoice/2/pi1, then #/seven/auth/process/invoice/2/missing
    * Expected: no versions request.
@@ -2164,6 +2204,31 @@ describe('ProcessDefinitionView - onDeleteProcessDefinition', () => {
       query: {}
     })
   })
+
+  /**
+   * Scenario: the user deletes version 2 of invoice and opens an instance of invoice before the reply arrives.
+   * Link: #/seven/auth/process/invoice/2, deleting version 2, then #/seven/auth/process/invoice/3/pi1
+   * Expected: v2 is dropped from the versions, whose other entries stay as they are; no definition is selected again
+   *   and there is no redirect.
+   * Guards against: P51, the reply reselecting a definition, or redirecting away from the instance, while its route
+   *   run selects its own.
+   */
+  it('should only drop the deleted version when an instance is opened meanwhile', async () => {
+    const deleted = version({ version: '2' })
+    const other = version({ id: 'pd:3:abc', version: '3' })
+    const vm = context({ process: deleted, processDefinitions: [other, deleted], versionsScope: { processKey: 'invoice', tenantId: null }, syncDefinition: vi.fn() })
+    ProcessService.findProcessVersionsByDefinitionKey.mockImplementation(async () => {
+      vm.instanceId = 'pi1'
+      return [version({ id: 'pd:3:abc', version: '3' })]
+    })
+
+    await m.onDeleteProcessDefinition.call(vm, params)
+
+    expect(vm.processDefinitions).toEqual([other])
+    expect(vm.processDefinitions[0]).toBe(other)
+    expect(vm.syncDefinition).not.toHaveBeenCalled()
+    expect(vm.$router.replace).not.toHaveBeenCalled()
+  })
 })
 
 describe('ProcessDefinitionView - onRefreshProcessDefinitions', () => {
@@ -2322,6 +2387,28 @@ describe('ProcessDefinitionView - onRefreshProcessDefinitions', () => {
 
     orderReply.resolve([version({ id: 'order:1:id', key: 'order', version: '1' })])
     await orderRefresh
+    expect(vm.refreshingVersions).toBeNull()
+  })
+
+  /**
+   * Scenario: the user refreshes the versions of invoice and opens an instance of invoice before the reply arrives.
+   * Link: #/seven/auth/process/invoice/2, then #/seven/auth/process/invoice/2/pi1
+   * Expected: the versions and the open definition stay, no definition is selected again; the refresh state ends.
+   * Guards against: P51, the reply reselecting a definition while the instance's route run selects its own.
+   */
+  it('should drop the versions when an instance is opened meanwhile', async () => {
+    const shown = [version()]
+    const vm = context({ process: shown[0], processDefinitions: shown, versionsScope: { processKey: 'invoice', tenantId: null }, syncDefinition: vi.fn() })
+    ProcessService.findProcessVersionsByDefinitionKey.mockImplementation(async () => {
+      vm.instanceId = 'pi1'
+      return [version()]
+    })
+
+    await m.onRefreshProcessDefinitions.call(vm, false)
+
+    expect(vm.processDefinitions).toBe(shown)
+    expect(vm.process).toBe(shown[0])
+    expect(vm.syncDefinition).not.toHaveBeenCalled()
     expect(vm.refreshingVersions).toBeNull()
   })
 })
