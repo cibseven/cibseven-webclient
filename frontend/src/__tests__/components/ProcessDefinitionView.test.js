@@ -115,7 +115,7 @@ describe('ProcessDefinitionView - mounted', () => {
    * Scenario: the user opens another process, whose versions are slow.
    * Link: from #/seven/auth/process/invoice/2 to #/seven/auth/process/order/2
    * Expected: the middle pane shows the loading box until order can be shown, then ProcessInstancesView.
-   * Guards against: P8, a blank middle pane while the route loads.
+   * Guards against: a blank middle pane while the route loads.
    */
   it('shows the loading box until the definition can be shown', async () => {
     // the shallow SidebarsFlow stub would drop what it holds in its default slot
@@ -140,7 +140,7 @@ describe('ProcessDefinitionView - mounted', () => {
    * Scenario: an instance link whose instance cannot be loaded (404), for a key without any versions.
    * Link: #/seven/auth/process/invoice/2/pi2
    * Expected: the middle pane shows only "instance not found"; the sidebar still says the definition was not found.
-   * Guards against: P16, the middle pane naming the definition instead of the instance the link points to.
+   * Guards against: the middle pane naming the definition instead of the instance the link points to.
    */
   it('shows only the instance-not-found warning in the middle pane when the definitions are missing too', async () => {
     HistoryService.findProcessInstance.mockRejectedValueOnce(new Error('404 not found'))
@@ -163,7 +163,7 @@ describe('ProcessDefinitionView - mounted', () => {
    * Link: #/seven/auth/process/invoice/2/pi5
    * Expected: no ProcessInstanceView; the middle pane shows only that definition invoice:5:id of instance pi5 could
    *   not be loaded.
-   * Guards against: P18, the instance drawn on v2's diagram; P26 and P35, the warning naming the URL's key, calling the
+   * Guards against: the instance drawn on v2's diagram; the warning naming the URL's key, calling the
    *   definition id a key, or naming the instance's tenant as the definition's.
    */
   it('tells that the definition of the instance could not be loaded instead of showing another one', async () => {
@@ -188,7 +188,7 @@ describe('ProcessDefinitionView - mounted', () => {
    * Scenario: an instance link whose lookup answers without an error but finds nothing; the key's versions exist.
    * Link: #/seven/auth/process/invoice/2/pi9
    * Expected: the middle pane shows only "instance not found", without a server response.
-   * Guards against: a blank middle pane, as neither the instance view nor a warning had anything to show; P42, an
+   * Guards against: a blank middle pane, as neither the instance view nor a warning had anything to show; an
    *   empty "Server response:" part.
    */
   it('shows the instance-not-found warning when the lookup finds nothing', async () => {
