@@ -17,6 +17,7 @@
 package org.cibseven.webapp.providers;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -73,7 +74,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 
 	@Override
 	public void modifyVariableDataByExecutionId(String executionId, String variableName, MultipartFile data, String valueType, CIBUser user) throws SystemException {
-		String url = getEngineRestUrl(user) + "/execution/" + executionId + "/localVariables/" + variableName + "/data";
+		URI uri = engineRestUri(user, "execution", executionId, "localVariables", variableName, "data");
 
 		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 		try {
@@ -94,7 +95,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 				body.add("valueType", SERIALIZATION_DATA_FORMAT_JSON);
 			}
 
-			doPostMultipart(url, body, String.class, user);
+			doPostMultipart(uri, body, String.class, user);
 		} catch (IOException e) { // from data.getBytes()
 			throw new UnsupportedTypeException(e);
 		}
@@ -145,11 +146,11 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 
 	@Override
 	public ResponseEntity<byte[]> fetchVariableDataByExecutionId(String executionId, String variableName, CIBUser user) throws NoObjectFoundException, SystemException  {
-		String url = getEngineRestUrl(user) + "/execution/" + executionId + "/localVariables/" + variableName + "/data";
+		URI uri = engineRestUri(user, "execution", executionId, "localVariables", variableName, "data");
 
 		try {
 		    // Use doGetWithHeader which creates a new RestTemplate instance for thread safety
-		    return doGetWithHeader(url, byte[].class, user, true, MediaType.APPLICATION_OCTET_STREAM);
+		    return doGetWithHeader(uri, byte[].class, user, MediaType.APPLICATION_OCTET_STREAM);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		}
@@ -235,9 +236,9 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 
 	public Variable fetchVariableImpl(String taskId, String variableName, 
 			boolean deserializeValue, CIBUser user) throws NoObjectFoundException, SystemException {		
-		String url = getEngineRestUrl(user) + "/task/" + taskId + "/variables/" + variableName
-			+ "?deserializeValue=" + deserializeValue;
-		return doGet(url, Variable.class, user, false).getBody();
+		URI uri = engineRestUriBuilder(user, "task", taskId, "variables", variableName)
+			.queryParam("deserializeValue", deserializeValue).build(true).toUri();
+		return doGet(uri, Variable.class, user).getBody();
 	}
 
 	@Override
@@ -260,8 +261,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 
 	@Override
 	public void deleteVariable(String taskId, String variableName, CIBUser user) throws NoObjectFoundException, SystemException {		
-		String url = getEngineRestUrl(user) + "/task/" + taskId + "/variables/" + variableName;
-		doDelete(url, user);
+		doDelete(engineRestUri(user, "task", taskId, "variables", variableName), user);
 	}
 
 	@Override
@@ -308,7 +308,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 
 	@Override
 	public NamedByteArrayDataSource fetchVariableFileData(String taskId, String variableName, CIBUser user) throws NoObjectFoundException, UnexpectedTypeException, SystemException {		
-		String url = getEngineRestUrl(user) + "/task/" + taskId + "/variables/" + variableName + "/data";
+		URI uri = engineRestUri(user, "task", taskId, "variables", variableName, "data");
 		try {
 
 		    byte[] data = null;
@@ -337,7 +337,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 		    filename = variable.getFilename();
 		    mimeType = variable.getMimeType();
 
-			ResponseEntity<byte[]> response = doGetWithHeader(url, byte[].class, user, true, MediaType.APPLICATION_OCTET_STREAM);
+			ResponseEntity<byte[]> response = doGetWithHeader(uri, byte[].class, user, MediaType.APPLICATION_OCTET_STREAM);
 		    data = response.getBody();
 
 		    return new NamedByteArrayDataSource(filename, mimeType, data);
@@ -361,18 +361,16 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	 */
 	@Override
 	public void uploadVariableFileData(String taskId, String variableName, MultipartFile data, String valueType, CIBUser user) throws NoObjectFoundException, SystemException {
-		String url = getEngineRestUrl(user) + "/task/" + taskId + "/variables/" + variableName + "/data";
-
 		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 		body.add("data", data.getResource());
 		body.add("valueType", valueType);
-		doPostMultipart(url, body, String.class, user);
+		doPostMultipart(engineRestUri(user, "task", taskId, "variables", variableName, "data"), body, String.class, user);
 	}
 
 	@Override
 	public ResponseEntity<byte[]> fetchProcessInstanceVariableData(String processInstanceId, String variableName,
 			CIBUser user) throws NoObjectFoundException, SystemException {
-		String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId + "/variables/" + variableName + "/data";
+		URI uri = engineRestUri(user, "process-instance", processInstanceId, "variables", variableName, "data");
 
 		try {
 		    byte[] data = null;
@@ -395,7 +393,7 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 				}
 			}
 
-			ResponseEntity<byte[]> response = doGetWithHeader(url, byte[].class, user, true, MediaType.APPLICATION_OCTET_STREAM);
+			ResponseEntity<byte[]> response = doGetWithHeader(uri, byte[].class, user, MediaType.APPLICATION_OCTET_STREAM);
 		    data = response.getBody();
 			return generateFileResponse(data); //ResponseEntity<>(data, HttpStatus.OK);
 		} catch (HttpStatusCodeException e) {
@@ -418,12 +416,10 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
      */
     @Override
     public void uploadProcessInstanceVariableFileData(String processInstanceId, String variableName, MultipartFile data, String valueType, CIBUser user) throws NoObjectFoundException, SystemException {
-        String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId + "/variables/" + variableName + "/data";
-
 		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 		body.add("data", data.getResource());
 		body.add("valueType", valueType);
-		doPostMultipart(url, body, String.class, user);
+		doPostMultipart(engineRestUri(user, "process-instance", processInstanceId, "variables", variableName, "data"), body, String.class, user);
 	}
 
 	// TODO: Split it
@@ -490,8 +486,9 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 	}
 
 	private Variable fetchVariableByProcessInstanceIdImpl(String processInstanceId, String variableName, boolean deserializeValue, CIBUser user) throws SystemException {
-		String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId + "/variables/" + variableName + "?deserializeValue=" + deserializeValue;
-		return doGet(url, Variable.class, user, false).getBody();
+		URI uri = engineRestUriBuilder(user, "process-instance", processInstanceId, "variables", variableName)
+			.queryParam("deserializeValue", deserializeValue).build(true).toUri();
+		return doGet(uri, Variable.class, user).getBody();
 	}
 
 	@Override
@@ -601,14 +598,12 @@ public class VariableProvider extends SevenProviderBase implements IVariableProv
 
 	@Override
 	public void putLocalExecutionVariable(String executionId, String varName, Map<String, Object> data, CIBUser user) {
-		String url = getEngineRestUrl(user) + "/execution/" + executionId + "/localVariables/" + varName;
-		doPut(url, data, user);
+		doPut(engineRestUri(user, "execution", executionId, "localVariables", varName), data, user);
 	}
 
 	@Override
 	public void putProcessInstanceVariable(String processInstanceId, String variableName, Map<String, Object> variable, CIBUser user) {
-		String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId + "/variables/" + variableName;
-		doPut(url, variable, user);
+		doPut(engineRestUri(user, "process-instance", processInstanceId, "variables", variableName), variable, user);
 	}
 
 	protected ResponseEntity<byte[]> generateFileResponse(byte[] content) throws IOException {

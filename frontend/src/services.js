@@ -52,7 +52,7 @@ function createDocumentEndpointUrl(processInstanceId, variableName, authToken, c
   const basePath = window.location.href.replace(window.location.hash, '');
   const encodedContentType = encodeURIComponent(contentType);
 
-  return `${basePath}${getServicesBasePath()}/process/process-instance/${processInstanceId}/variables/${variableName}/data?token=${authToken}&contentType=${encodedContentType}&cacheBust=${cacheBust}`;
+  return `${basePath}${getServicesBasePath()}/process/process-instance/${processInstanceId}/variables/${encodeURIComponent(variableName)}/data?token=${authToken}&contentType=${encodedContentType}&cacheBust=${cacheBust}`;
 }
 
 const TaskService = {
@@ -101,7 +101,7 @@ const TaskService = {
     return axios.create().get(getServicesBasePath() + '/task/' + id, { headers: { authorization: auth } })
   },
   downloadFile: function(processInstanceId, fileVariable) {
-    return axios.get(getServicesBasePath() + '/task/' + processInstanceId + '/variable/download/' + fileVariable, { responseType: 'blob' })
+    return axios.get(`${getServicesBasePath()}/task/${processInstanceId}/variable/download/${encodeURIComponent(fileVariable)}`, { responseType: 'blob' })
   },
   findHistoryTasksCount: function(filters) {
     return axios.post(getServicesBasePath() + '/task-history/count', filters)
@@ -212,7 +212,7 @@ const ProcessService = {
     return axios.delete(getServicesBasePath() + "/process/deployments/" + deploymentId, { params: { cascade: cascade } })
   },
   fetchVariableDataByExecutionId: function(executionId, varName) {
-    return axios.get(getServicesBasePath() + "/process/execution/" + executionId + "/localVariables/" + varName + "/data", { responseType: "blob" })
+    return axios.get(`${getServicesBasePath()}/process/execution/${executionId}/localVariables/${encodeURIComponent(varName)}/data`, { responseType: "blob" })
   },
   findProcessStatistics: function(processId) {
     return axios.get(getServicesBasePath() + "/process/process-definition/" + processId + "/statistics")
@@ -225,7 +225,7 @@ const ProcessService = {
     return axios.post(getServicesBasePath() + "/process/execution/" + executionId + "/localVariables", data)
   },
   modifyVariableDataByExecutionId: function(executionId, varName, data) {
-    return axios.post(getServicesBasePath() + "/process/execution/" + executionId + "/localVariables/" + varName + "/data", data)
+    return axios.post(`${getServicesBasePath()}/process/execution/${executionId}/localVariables/${encodeURIComponent(varName)}/data`, data)
   },
   fetchChatComments: function(processInstanceId, processDefinitionKey, deserialize) {
     return axios.get(getServicesBasePath() + '/process/process-instance/' + processInstanceId + '/chat-comments',
@@ -257,17 +257,17 @@ const ProcessService = {
     })
   },
   putLocalExecutionVariable: function(executionId, varName, data) {
-    return axios.put(getServicesBasePath() + '/process/execution/' + executionId + '/localVariables/' + varName, data)
+    return axios.put(`${getServicesBasePath()}/process/execution/${executionId}/localVariables/${encodeURIComponent(varName)}`, data)
   },
   deleteVariableByExecutionId: function(executionId, varName) {
-    return axios.delete(getServicesBasePath() + "/process/execution/" + executionId + "/localVariables/" + varName)
+    return axios.delete(`${getServicesBasePath()}/process/execution/${executionId}/localVariables/${encodeURIComponent(varName)}`)
   },
   uploadProcessInstanceVariableFileData: function(processInstanceId, variableName, file, valueType = 'File') {
     const formData = new FormData()
     formData.append('data', file)
     formData.append('valueType', valueType)
 
-    return axios.post(getServicesBasePath() + '/process/process-instance/' + processInstanceId + '/variables/' + variableName + '/data', formData, {
+    return axios.post(`${getServicesBasePath()}/process/process-instance/${processInstanceId}/variables/${encodeURIComponent(variableName)}/data`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -613,21 +613,21 @@ const FormsService = {
     return axios.post(getServicesBasePath() + '/task/' + processInstanceId + '/download', documentsList, { responseType: 'blob' })
   },
   downloadFile: function(processInstanceId, fileVariable) {
-    return axios.get(getServicesBasePath() + '/task/' + processInstanceId + '/variable/download/' + fileVariable, { responseType: 'blob' })
+    return axios.get(`${getServicesBasePath()}/task/${processInstanceId}/variable/download/${encodeURIComponent(fileVariable)}`, { responseType: 'blob' })
   },
   uploadVariableFileData: function(taskId, variableName, file, valueType = 'File') {
     const formData = new FormData()
     formData.append('data', file)
     formData.append('valueType', valueType)
 
-    return axios.post(getServicesBasePath() + '/task/' + taskId + '/variables/' + variableName + '/data', formData, {
+    return axios.post(`${getServicesBasePath()}/task/${taskId}/variables/${encodeURIComponent(variableName)}/data`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
     })
   },
   fetchVariable: function(taskId, variableName, deserialize) {
-    return axios.get(getServicesBasePath() + '/task/' + taskId + '/variable/' + variableName, { params: { deserialize: deserialize } })
+    return axios.get(`${getServicesBasePath()}/task/${taskId}/variable/${encodeURIComponent(variableName)}`, { params: { deserialize: deserialize } })
   },
   sendMessage: function(data) {
     return axios.post(getServicesBasePath() + '/process/message', data)
@@ -636,7 +636,7 @@ const FormsService = {
     return axios.post(getServicesBasePath() + '/task/' + taskId, null, { params: { deserialize: deserialize } } )
   },
   deleteVariable: function(taskId, variableName) {
-    return axios.delete(getServicesBasePath() + '/task/' + taskId + '/variable/' + variableName)
+    return axios.delete(`${getServicesBasePath()}/task/${taskId}/variable/${encodeURIComponent(variableName)}`)
   },
   handleBpmnError: function(taskId, data) {
     return axios.post(getServicesBasePath() + '/task/' + taskId + '/bpmnError', data)

@@ -52,9 +52,8 @@ public class ActivityProvider extends SevenProviderBase implements IActivityProv
 	
 	@Override
 	public void deleteVariableByExecutionId(String executionId, String variableName, CIBUser user) {
-		String url = getEngineRestUrl(user) + "/execution/" + executionId + "/localVariables/" + variableName;
 		try {
-			doDelete(url, user);
+			doDelete(engineRestUri(user, "execution", executionId, "localVariables", variableName), user);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		}

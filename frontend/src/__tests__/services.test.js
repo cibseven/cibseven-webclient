@@ -975,3 +975,31 @@ describe('createDocumentEndpointUrl', () => {
     expect(url).toContain('contentType=image%2Fsvg%2Bxml')
   })
 })
+
+describe('variable names in URL paths', () => {
+  // ; ? # % and spaces must stay part of the one path segment, or the backend acts on another variable
+  const NAME = 'a;b?c#d 100%'
+  const ENCODED = 'a%3Bb%3Fc%23d%20100%25'
+  const file = new Blob(['x'])
+
+  it.each([
+    ['ProcessService.fetchVariableDataByExecutionId', 'get', () => ProcessService.fetchVariableDataByExecutionId('e1', NAME), `${BASE}/process/execution/e1/localVariables/${ENCODED}/data`],
+    ['ProcessService.modifyVariableDataByExecutionId', 'post', () => ProcessService.modifyVariableDataByExecutionId('e1', NAME, {}), `${BASE}/process/execution/e1/localVariables/${ENCODED}/data`],
+    ['ProcessService.putLocalExecutionVariable', 'put', () => ProcessService.putLocalExecutionVariable('e1', NAME, {}), `${BASE}/process/execution/e1/localVariables/${ENCODED}`],
+    ['ProcessService.deleteVariableByExecutionId', 'delete', () => ProcessService.deleteVariableByExecutionId('e1', NAME), `${BASE}/process/execution/e1/localVariables/${ENCODED}`],
+    ['ProcessService.uploadProcessInstanceVariableFileData', 'post', () => ProcessService.uploadProcessInstanceVariableFileData('pi1', NAME, file), `${BASE}/process/process-instance/pi1/variables/${ENCODED}/data`],
+    ['TaskService.downloadFile', 'get', () => TaskService.downloadFile('pi1', NAME), `${BASE}/task/pi1/variable/download/${ENCODED}`],
+    ['FormsService.downloadFile', 'get', () => FormsService.downloadFile('pi1', NAME), `${BASE}/task/pi1/variable/download/${ENCODED}`],
+    ['FormsService.uploadVariableFileData', 'post', () => FormsService.uploadVariableFileData('t1', NAME, file), `${BASE}/task/t1/variables/${ENCODED}/data`],
+    ['FormsService.fetchVariable', 'get', () => FormsService.fetchVariable('t1', NAME, true), `${BASE}/task/t1/variable/${ENCODED}`],
+    ['FormsService.deleteVariable', 'delete', () => FormsService.deleteVariable('t1', NAME), `${BASE}/task/t1/variable/${ENCODED}`],
+  ])('%s encodes the name', (_, verb, call, url) => {
+    call()
+    expect(axios[verb].mock.calls[0][0]).toBe(url)
+  })
+
+  it('createDocumentEndpointUrl encodes the name', () => {
+    expect(createDocumentEndpointUrl('pi1', NAME, 'tok', 'text/plain', 1))
+      .toContain(`/process/process-instance/pi1/variables/${ENCODED}/data?token=tok`)
+  })
+})

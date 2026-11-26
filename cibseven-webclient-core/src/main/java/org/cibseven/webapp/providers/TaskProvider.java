@@ -159,14 +159,12 @@ public class TaskProvider extends SevenProviderBase implements ITaskProvider {
 
 	@Override
 	public void putLocalVariable(String taskId, String variableName, Map<String, Object> variable, CIBUser user) {
-		String url = getEngineRestUrl(user) + "/task/" + taskId + "/localVariables/" + variableName;
-		doPut(url, variable, user);
+		doPut(engineRestUri(user, "task", taskId, "localVariables", variableName), variable, user);
 	}
 
 	@Override
 	public void deleteLocalVariable(String taskId, String variableName, CIBUser user) {
-		String url = getEngineRestUrl(user) + "/task/" + taskId + "/localVariables/" + variableName;
-		doDelete(url, user);
+		doDelete(engineRestUri(user, "task", taskId, "localVariables", variableName), user);
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
