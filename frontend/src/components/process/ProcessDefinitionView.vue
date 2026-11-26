@@ -404,7 +404,12 @@ export default {
       const requested = instanceDefinition ?? this.processDefinitions.find(definition => definition.version === this.versionIndex)
       this.errorVersionNotFound = requested ? null : this.versionIndex
       const definition = requested ?? this.processDefinitions[0]
-      if (!definition) return
+      if (!definition) {
+        // No versions are left, e.g. after reloading those of the URL's tenant: the definition open before is not
+        // one of them, so it is not kept, and the panes tell the definition was not found
+        this.process = null
+        return
+      }
 
       if (definition !== this.process) {
         const previous = this.process

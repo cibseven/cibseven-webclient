@@ -797,6 +797,40 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
   })
 
   /**
+   * Scenario: t1 has no invoice of its own, the shared invoice is v1. The user opens a t1 instance of the shared v1,
+   *   then a link to an instance that does not exist, then the definition view of t1.
+   * Link: #/seven/auth/process/invoice/1/a?tenantId=t1, then #/seven/auth/process/invoice/1/missing?tenantId=t1,
+   *   then #/seven/auth/process/invoice/1?tenantId=t1
+   * Expected: t1's versions are loaded again and are empty, so the shared v1 is closed and version 1 is flagged; the
+   *   definition view of t1 then says the definition was not found, without loading anything again.
+   * Guards against: P50, the shared v1 kept open although it is not among the versions: its name in the header, and
+   *   its instances shown under the t1 URL.
+   */
+  it('should close the open definition when the versions of the URL tenant are empty', async () => {
+    engine({ instances: { a: activeInstance({ id: 'a', processDefinitionId: definitionId('invoice', '1') }) } })
+    // t1 has no invoice of its own, the shared invoice is v1
+    ProcessService.findProcessVersionsByDefinitionKey.mockImplementation(async (key, tenantId) => tenantId === 't1' ?
+      [] : [{ id: definitionId(key, '1'), key, version: '1', tenantId: null }])
+    const vm = context({ instanceId: 'a', versionIndex: '1', tenantId: 't1' })
+    await open(vm)
+    expect(vm.process.id).toBe('invoice:1:id')
+
+    await navigate(vm, { instanceId: 'missing' })
+
+    expect(vm.processDefinitions).toEqual([])
+    expect(vm.process).toBeNull()
+    expect(vm.errorVersionNotFound).toBe('1')
+    expect(vm.selectedInstance).toBeNull()
+    vi.clearAllMocks()
+
+    await navigate(vm, { instanceId: undefined })
+
+    expect(ProcessService.findProcessVersionsByDefinitionKey).not.toHaveBeenCalled()
+    expect(vm.process).toBeNull()
+    expect(vm.middlePaneError.key).toBe('process.definitionNotFound')
+  })
+
+  /**
    * Scenario: the versions shown already are the URL tenant's when the next link points to a missing instance.
    * Link: #/seven/auth/process/invoice/2/pi1, then #/seven/auth/process/invoice/2/missing
    * Expected: no versions request.
