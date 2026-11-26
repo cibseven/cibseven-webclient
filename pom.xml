@@ -72,10 +72,6 @@
 		<version.swagger-ui>5.34.1</version.swagger-ui>
 
 		<version.commons-lang3>3.18.0</version.commons-lang3>
-		<!-- Temporary Apache HttpComponents CVE overrides.
-		     Remove these once the imported Spring Boot BOM manages fixed versions. -->
-		<version.httpclient5>5.6.4</version.httpclient5>
-		<version.httpcore5>5.4.3</version.httpcore5>
 		
 		<image.tomcat-11-base>harbor.cib.de/dev/tomcat-11-base:0.1.0@sha256:49e9bd250b4bc4e33465195106831b1afa69d38c0147f9960075cb1b45a8f7f5</image.tomcat-11-base>
 		<jib-maven-plugin.version>3.5.1</jib-maven-plugin.version>
@@ -89,7 +85,7 @@
 		<version.log4j2>2.25.5</version.log4j2>
 
 		<!-- Database driver versions (used by modeler JPA integration) -->
-		<version.postgresql>42.7.13</version.postgresql>
+		<version.postgresql>42.7.14</version.postgresql>
 		<version.mariadb>3.5.7</version.mariadb>
 		<version.h2>2.4.240</version.h2>
 		<version.mysql>9.5.0</version.mysql>
@@ -452,24 +448,7 @@ You may obtain a copy of the License at
 				<type>pom</type>
 				<version>${version.spring.boot}</version>
 			</dependency>
-
-			<!-- Temporary override: keep HttpComponents on CVE-fixed versions.
-			     Remove once spring-boot-dependencies manages fixed HttpComponents versions. -->
-			<dependency>
-				<groupId>org.apache.httpcomponents.client5</groupId>
-				<artifactId>httpclient5</artifactId>
-				<version>${version.httpclient5}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.httpcomponents.core5</groupId>
-				<artifactId>httpcore5</artifactId>
-				<version>${version.httpcore5}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.httpcomponents.core5</groupId>
-				<artifactId>httpcore5-h2</artifactId>
-				<version>${version.httpcore5}</version>
-			</dependency>
+			
 
 			<!-- Override log4j versions to fix security vulnerabilities -->
 			<dependency>
@@ -498,14 +477,6 @@ You may obtain a copy of the License at
 				<groupId>org.webjars</groupId>
 				<artifactId>swagger-ui</artifactId>
 				<version>${version.swagger-ui}</version>
-			</dependency>
-
-			<!-- Override pgjdbc (managed by the Spring Boot BOM at 42.7.10) to fix
-			     CVE-2026-42198 (fixed in 42.7.11) -->
-			<dependency>
-				<groupId>org.postgresql</groupId>
-				<artifactId>postgresql</artifactId>
-				<version>${version.postgresql}</version>
 			</dependency>
 
 			<!-- Force a single ANTLR runtime version to satisfy enforcer dependency-convergence -->
