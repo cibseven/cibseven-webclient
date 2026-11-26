@@ -1283,6 +1283,41 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
   })
 
   /**
+   * Scenario: as above, but the lookup answers with an empty body (a 200 for an instance the backend returns as null),
+   *   which axios resolves as ''.
+   * Link: #/seven/auth/process/invoice/2/pi1, opened from the instances table
+   * Expected: the instance from the table is selected and no warning is set.
+   * Guards against: P49, "instance not found" for an instance the table still lists, as `??=` kept the ''.
+   */
+  it('should fall back to an instance already in the store when the lookup answers with an empty body', async () => {
+    engine({ instances: {} })
+    HistoryService.findProcessInstance.mockResolvedValue('')
+    const vm = context({ instanceId: 'pi1', instances: [activeInstance()] })
+
+    await open(vm)
+
+    expect(vm.selectedInstance.id).toBe('pi1')
+    expect(vm.errorLoadingInstanceId).toBeNull()
+  })
+
+  /**
+   * Scenario: the lookup answers with an empty body and the instances table does not list the instance either.
+   * Link: #/seven/auth/process/invoice/2/missing
+   * Expected: the lookup counts as finding nothing: no instance is selected, and the middle pane says it was not found.
+   * Guards against: '' passed on as the instance.
+   */
+  it('should tell the instance was not found when the lookup answers with an empty body', async () => {
+    engine()
+    HistoryService.findProcessInstance.mockResolvedValue('')
+    const vm = context({ instanceId: 'missing' })
+
+    await open(vm)
+
+    expect(vm.selectedInstance).toBeNull()
+    expect(vm.errorLoadingInstanceId).toBe('')
+  })
+
+  /**
    * Scenario: the engine runs with history level none, so instances exist only in the runtime API.
    * Link: #/seven/auth/process/invoice/2/pi1
    * Expected: the instance is looked up in the runtime API, not in history.

@@ -368,8 +368,9 @@ export default {
         // the failure of an older navigation must not show up on the newer one
         if (!isStale()) this.errorLoadingInstanceId = error.message
       }
-      // an instance listed in the table can still be shown when history has purged it
-      instance ??= this.instances?.find(i => i.id === instanceId) ?? null
+      // An instance listed in the table can still be shown when history has purged it. A lookup that finds nothing can
+      // also answer with an empty body, which axios resolves as ''
+      if (!instance) instance = this.instances?.find(i => i.id === instanceId) ?? null
       // found nowhere without a failure: the middle pane still tells it was not found, with an empty server response
       if (!instance && this.errorLoadingInstanceId === null && !isStale()) this.errorLoadingInstanceId = ''
       return instance
