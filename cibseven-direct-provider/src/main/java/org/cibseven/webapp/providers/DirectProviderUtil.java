@@ -357,7 +357,7 @@ public class DirectProviderUtil {
 	 * <p>
 	 * A collection or array value is joined with commas, the separator the engine's list converters split on.
 	 * Run the DTO's execute step ({@code toQuery}, {@code executeReport}) in
-	 * {@link #badRequestOnInvalidParameters(Supplier)} as well: the engine checks some parameters only there.
+	 * {@link #getOrBadRequestOnInvalidParameters(Supplier)} as well: the engine checks some parameters only there.
 	 *
 	 * @throws InvalidQueryParameterException (400) when a converter rejects a value, as engine-rest answers
 	 * @throws IllegalArgumentException when the DTO has no {@code (ObjectMapper, MultivaluedMap)} constructor
@@ -372,7 +372,7 @@ public class DirectProviderUtil {
 		}
 		MultivaluedMap<String, String> multivaluedMap = toMultivaluedMap(queryParams != null ? queryParams : Map.of());
 		ObjectMapper objectMapper = getObjectMapper(user);
-		return badRequestOnInvalidParameters(() -> {
+		return getOrBadRequestOnInvalidParameters(() -> {
 			try {
 				return constructor.newInstance(objectMapper, multivaluedMap);
 			} catch (InvocationTargetException e) {
@@ -386,13 +386,20 @@ public class DirectProviderUtil {
 	}
 
 	/**
-	 * Runs a step of an engine query DTO (binding, or executing it) and answers the engine's
-	 * {@code InvalidRequestException} with status 400 - an invalid value, {@code sortBy} without
-	 * {@code sortOrder}, an unknown report type - as an {@link InvalidQueryParameterException}, which the
-	 * ExceptionConverter answers with 400. Without this it would reach the ExceptionConverter as a plain
-	 * RuntimeException and answer 500. Any other status is passed on unchanged.
+	 * Returns the result of a step of an engine query DTO - binding it, or building the query from it
+	 * ({@code toQuery}, {@code executeReport}) - and answers the engine's {@code InvalidRequestException}
+	 * with status 400 as an {@link InvalidQueryParameterException}, which the ExceptionConverter answers
+	 * with 400. Without this it would reach the ExceptionConverter as a plain RuntimeException and answer
+	 * 500. Any other status, and any other exception, is passed on unchanged.
+	 * <p>
+	 * Engine-rest answers every {@code InvalidRequestException} with the status it carries, so this is the
+	 * answer engine-rest gives for the same GET request. On these steps a 400 is always about a query
+	 * parameter: an invalid {@code sortBy} or {@code sortOrder}, a value a converter cannot read, an invalid
+	 * comparator, parameters that cannot be combined. Keep it that way: wrap only the binding and query
+	 * building of query DTOs, not the execution of the query ({@code list}, {@code count}) and not request
+	 * body DTOs, whose 400s are not about query parameters.
 	 */
-	public <R> R badRequestOnInvalidParameters(Supplier<R> step) {
+	public <R> R getOrBadRequestOnInvalidParameters(Supplier<R> step) {
 		try {
 			return step.get();
 		} catch (InvalidRequestException e) {

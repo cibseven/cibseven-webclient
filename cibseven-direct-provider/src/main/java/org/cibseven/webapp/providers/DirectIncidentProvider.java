@@ -56,14 +56,14 @@ public class DirectIncidentProvider implements IIncidentProvider {
 	@Override
 	public Long countIncident(Map<String, Object> params, CIBUser user) {
 		IncidentQueryDto queryDto = directProviderUtil.bindQueryParams(params, IncidentQueryDto.class, user);
-		IncidentQuery query = directProviderUtil.badRequestOnInvalidParameters(() -> queryDto.toQuery(directProviderUtil.getProcessEngine(user)));
+		IncidentQuery query = directProviderUtil.getOrBadRequestOnInvalidParameters(() -> queryDto.toQuery(directProviderUtil.getProcessEngine(user)));
 		return query.count();
 	}
 
 	@Override
 	public Long countHistoricIncident(Map<String, Object> params, CIBUser user) {
 		HistoricIncidentQueryDto queryDto = directProviderUtil.bindQueryParams(params, HistoricIncidentQueryDto.class, user);
-		HistoricIncidentQuery query = directProviderUtil.badRequestOnInvalidParameters(() -> queryDto.toQuery(directProviderUtil.getProcessEngine(user)));
+		HistoricIncidentQuery query = directProviderUtil.getOrBadRequestOnInvalidParameters(() -> queryDto.toQuery(directProviderUtil.getProcessEngine(user)));
 		long count = query.count();
 		return count;
 	}
@@ -75,7 +75,7 @@ public class DirectIncidentProvider implements IIncidentProvider {
 		Map<String, Object> queryParams = directProviderUtil.withoutPagingParams(params);
 
 		IncidentQueryDto queryDto = directProviderUtil.bindQueryParams(queryParams, IncidentQueryDto.class, user);
-		IncidentQuery query = directProviderUtil.badRequestOnInvalidParameters(() -> queryDto.toQuery(directProviderUtil.getProcessEngine(user)));
+		IncidentQuery query = directProviderUtil.getOrBadRequestOnInvalidParameters(() -> queryDto.toQuery(directProviderUtil.getProcessEngine(user)));
 		List<Incident> incidents = directProviderUtil.listAndConvert(query, firstResult, maxResults, IncidentDto::fromIncident, Incident.class, user);
 
 		RuntimeService runtimeService = directProviderUtil.getProcessEngine(user).getRuntimeService();
@@ -170,7 +170,7 @@ public class DirectIncidentProvider implements IIncidentProvider {
 		Map<String, Object> queryParams = directProviderUtil.withoutPagingParams(params);
 
 		HistoricIncidentQueryDto queryDto = directProviderUtil.bindQueryParams(queryParams, HistoricIncidentQueryDto.class, user);
-		HistoricIncidentQuery query = directProviderUtil.badRequestOnInvalidParameters(() -> queryDto.toQuery(directProviderUtil.getProcessEngine(user)));
+		HistoricIncidentQuery query = directProviderUtil.getOrBadRequestOnInvalidParameters(() -> queryDto.toQuery(directProviderUtil.getProcessEngine(user)));
 
 		List<HistoricIncident> queryResult = QueryUtil.list(query, firstResult, maxResults);
 
@@ -251,7 +251,7 @@ public class DirectIncidentProvider implements IIncidentProvider {
 	private HistoricIncidentDto fetchHistoricIncidentById(String incidentId, CIBUser user, ObjectMapper objectMapper) {
 		Map<String, Object> params = Map.of("incidentId", incidentId);
 		HistoricIncidentQueryDto queryDto = directProviderUtil.bindQueryParams(params, HistoricIncidentQueryDto.class, user);
-		HistoricIncidentQuery query = directProviderUtil.badRequestOnInvalidParameters(() -> queryDto.toQuery(directProviderUtil.getProcessEngine(user)));
+		HistoricIncidentQuery query = directProviderUtil.getOrBadRequestOnInvalidParameters(() -> queryDto.toQuery(directProviderUtil.getProcessEngine(user)));
 
 		List<HistoricIncident> queryResult = QueryUtil.list(query, null, 1);
 

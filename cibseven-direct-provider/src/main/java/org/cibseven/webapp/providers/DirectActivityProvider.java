@@ -128,7 +128,7 @@ public class DirectActivityProvider implements IActivityProvider {
 	private List<ActivityInstanceHistory> queryHistoricActivityInstance(
 			HistoricActivityInstanceQueryDto queryHistoricActivityInstanceDto, Integer firstResult, Integer maxResults, CIBUser user) {
 		queryHistoricActivityInstanceDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
-		HistoricActivityInstanceQuery query = directProviderUtil.badRequestOnInvalidParameters(() -> queryHistoricActivityInstanceDto.toQuery(directProviderUtil.getProcessEngine(user)));
+		HistoricActivityInstanceQuery query = directProviderUtil.getOrBadRequestOnInvalidParameters(() -> queryHistoricActivityInstanceDto.toQuery(directProviderUtil.getProcessEngine(user)));
 		List<HistoricActivityInstance> matchingHistoricActivityInstances = QueryUtil.list(query, firstResult, maxResults);
 
 		List<ActivityInstanceHistory> historicActivityInstanceResults = new ArrayList<>();

@@ -40,7 +40,7 @@ public class DirectTenantProvider implements ITenantProvider {
 	public Collection<Tenant> fetchTenants(Map<String, Object> queryParams, CIBUser user) {
 		TenantQueryDto queryDto = directProviderUtil.bindQueryParams(queryParams, TenantQueryDto.class, user);
 
-		TenantQuery query = directProviderUtil.badRequestOnInvalidParameters(() -> queryDto.toQuery(directProviderUtil.getProcessEngine(user)));
+		TenantQuery query = directProviderUtil.getOrBadRequestOnInvalidParameters(() -> queryDto.toQuery(directProviderUtil.getProcessEngine(user)));
 		return directProviderUtil.listAndConvert(query, null, null, TenantDto::fromTenant, Tenant.class, user);
 	}
 

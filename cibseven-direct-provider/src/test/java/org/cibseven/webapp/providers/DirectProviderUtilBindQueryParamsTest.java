@@ -126,33 +126,33 @@ class DirectProviderUtilBindQueryParamsTest {
 	}
 
 	@Test
-	void badRequestOnInvalidParameters_returnsTheResultOfTheStep() {
-		assertThat(util.badRequestOnInvalidParameters(() -> "result")).isEqualTo("result");
+	void getOrBadRequestOnInvalidParameters_returnsTheResultOfTheStep() {
+		assertThat(util.getOrBadRequestOnInvalidParameters(() -> "result")).isEqualTo("result");
 	}
 
 	@Test
-	void badRequestOnInvalidParameters_answersTheEnginesBadRequestAsAnInvalidQueryParameter() {
+	void getOrBadRequestOnInvalidParameters_answersTheEnginesBadRequestAsAnInvalidQueryParameter() {
 		InvalidRequestException badRequest = new InvalidRequestException(Status.BAD_REQUEST, "sortBy and sortOrder required");
 
-		assertThatThrownBy(() -> util.badRequestOnInvalidParameters(() -> { throw badRequest; }))
+		assertThatThrownBy(() -> util.getOrBadRequestOnInvalidParameters(() -> { throw badRequest; }))
 			.isInstanceOf(InvalidQueryParameterException.class)
 			.hasMessage("sortBy and sortOrder required")
 			.hasCause(badRequest);
 	}
 
 	@Test
-	void badRequestOnInvalidParameters_passesOnARequestErrorThatIsNotABadRequest() {
+	void getOrBadRequestOnInvalidParameters_passesOnARequestErrorThatIsNotABadRequest() {
 		InvalidRequestException notFound = new InvalidRequestException(Status.NOT_FOUND, "no such thing");
 
-		assertThatThrownBy(() -> util.badRequestOnInvalidParameters(() -> { throw notFound; }))
+		assertThatThrownBy(() -> util.getOrBadRequestOnInvalidParameters(() -> { throw notFound; }))
 			.isSameAs(notFound);
 	}
 
 	@Test
-	void badRequestOnInvalidParameters_passesOnAnyOtherException() {
+	void getOrBadRequestOnInvalidParameters_passesOnAnyOtherException() {
 		IllegalStateException failure = new IllegalStateException("broken");
 
-		assertThatThrownBy(() -> util.badRequestOnInvalidParameters(() -> { throw failure; }))
+		assertThatThrownBy(() -> util.getOrBadRequestOnInvalidParameters(() -> { throw failure; }))
 			.isSameAs(failure);
 	}
 

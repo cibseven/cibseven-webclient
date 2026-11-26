@@ -41,6 +41,15 @@ class InvalidQueryParameterExceptionTest {
 	}
 
 	@Test
+	void keepsItsMessageIndependentOfTheData() {
+		InvalidQueryParameterException e = new InvalidQueryParameterException("sortOrder without sortBy", null);
+
+		e.getData()[0] = "changed";
+
+		assertEquals("sortOrder without sortBy", e.getMessage());
+	}
+
+	@Test
 	void toleratesAMissingCause() {
 		assertNull(new InvalidQueryParameterException("sortOrder without sortBy", null).getCause());
 	}
