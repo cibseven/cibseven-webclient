@@ -443,6 +443,8 @@ export default {
       this.errorVersionNotFound = null
       this.errorInstanceDefinitionId = null
       this.errorInstanceDefinitionKey = null
+      // a refresh of the versions cleared here still runs, but its reply is dropped: the new versions can be refreshed
+      this.refreshingVersions = null
     },
     clearInstance() {
       this.selectedInstance = null
@@ -505,6 +507,8 @@ export default {
     // "refresh process definitions" button: 'all' when every version's data is loaded, shown on the sidebar's load button
     async onRefreshProcessDefinitions(lazyLoad) {
       this.refreshingVersions = lazyLoad ? 'refresh' : 'all'
+      // a newer refresh, e.g. of another process opened meanwhile, owns the refresh state from then on
+      const refresh = this.refreshRun = (this.refreshRun ?? 0) + 1 // non-reactive
       // the key and tenant whose versions are shown when the refresh starts
       const versionsScope = this.versionsScope
       try {
@@ -526,7 +530,7 @@ export default {
         await this.syncDefinition()
         return versions
       } finally {
-        this.refreshingVersions = null
+        if (this.refreshRun === refresh) this.refreshingVersions = null
       }
     },
     resetStatsLazyLoad(lazyLoad) {

@@ -2219,6 +2219,42 @@ describe('ProcessDefinitionView - onRefreshProcessDefinitions', () => {
     expect(ProcessService.findProcessById).not.toHaveBeenCalled()
     expect(vm.refreshingVersions).toBeNull()
   })
+
+  /**
+   * Scenario: the user clicks "load data" on invoice (slow, as every version's deployment time is read), opens order
+   *   before the reply arrives and refreshes order's versions too.
+   * Link: #/seven/auth/process/invoice/2, then #/seven/auth/process/order/1
+   * Expected: opening order ends the refresh state, so order's buttons are enabled; order's refresh then sets it, and
+   *   invoice's late reply leaves it to order's refresh, which ends it.
+   * Guards against: P46, order's refresh and load-data buttons disabled, with a spinner, for a request about invoice.
+   */
+  it('should leave the refresh state to the process opened meanwhile', async () => {
+    const vm = context({ process: version(), versionsScope: { processKey: 'invoice', tenantId: null }, syncDefinition: vi.fn() })
+    const reply = () => { let resolve; const promise = new Promise(r => { resolve = r }); return { promise, resolve } }
+    const invoiceReply = reply()
+    const orderReply = reply()
+    ProcessService.findProcessVersionsByDefinitionKey.mockImplementation(key => key === 'invoice' ? invoiceReply.promise : orderReply.promise)
+
+    const invoiceRefresh = m.onRefreshProcessDefinitions.call(vm, false)
+    expect(vm.refreshingVersions).toBe('all')
+
+    // opening order clears invoice's versions, and with them the refresh state
+    vm.processKey = 'order'
+    m.clearDefinitions.call(vm)
+    expect(vm.refreshingVersions).toBeNull()
+    vm.versionsScope = { processKey: 'order', tenantId: null }
+
+    const orderRefresh = m.onRefreshProcessDefinitions.call(vm, true)
+    expect(vm.refreshingVersions).toBe('refresh')
+
+    invoiceReply.resolve([version()])
+    await invoiceRefresh
+    expect(vm.refreshingVersions).toBe('refresh')
+
+    orderReply.resolve([version({ id: 'order:1:id', key: 'order', version: '1' })])
+    await orderRefresh
+    expect(vm.refreshingVersions).toBeNull()
+  })
 })
 
 describe('ProcessDefinitionView - misc', () => {
