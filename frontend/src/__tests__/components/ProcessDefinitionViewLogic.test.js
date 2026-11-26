@@ -1427,6 +1427,26 @@ describe('ProcessDefinitionView - syncWithRoute', () => {
   })
 
   /**
+   * Scenario: on a definition opened from a call activity, the user switches the version in the sidebar; the query
+   *   keeps the parent.
+   * Link: #/seven/auth/process/invoice/2?parentProcessDefinitionId=pd-parent, then #/seven/auth/process/invoice/1?parentProcessDefinitionId=pd-parent
+   * Expected: the breadcrumb stays, without looking the parent up again.
+   * Guards against: a parent request on every version switch.
+   */
+  it('should not look the parent up again when the version changes', async () => {
+    engine()
+    const getProcessById = vi.fn(() => Promise.resolve({ id: 'pd-parent', name: 'Parent' }))
+    const vm = context({ getProcessById, $route: { query: { parentProcessDefinitionId: 'pd-parent' } } })
+    await open(vm)
+    getProcessById.mockClear()
+
+    await navigate(vm, { versionIndex: '1' })
+
+    expect(getProcessById).not.toHaveBeenCalled()
+    expect(vm.parentProcess).toEqual({ id: 'pd-parent', name: 'Parent' })
+  })
+
+  /**
    * Scenario: the user had a parent breadcrumb, then opens a link without a parent.
    * Link: #/seven/auth/process/invoice/2, then #/seven/auth/process/invoice/1
    * Expected: no breadcrumb.

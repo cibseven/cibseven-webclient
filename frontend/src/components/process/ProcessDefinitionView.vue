@@ -435,6 +435,8 @@ export default {
     async lookUpParentProcess() {
       const parentProcessDefinitionId = this.$route.query.parentProcessDefinitionId
       if (this.instanceId || !parentProcessDefinitionId) return null
+      // e.g. a version switch keeps the query: the breadcrumb shown is the parent asked for
+      if (this.parentProcess?.id === parentProcessDefinitionId) return this.parentProcess
       return this.getProcessById({ id: parentProcessDefinitionId }).catch(() => null)
     },
     // the definition never fills in the incidents and the deployment time: the version entry keeps its own
