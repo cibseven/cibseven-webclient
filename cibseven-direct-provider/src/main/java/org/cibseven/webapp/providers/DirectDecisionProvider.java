@@ -62,8 +62,6 @@ import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Decision;
 import org.cibseven.webapp.rest.model.HistoricDecisionInstance;
 
-import jakarta.ws.rs.core.MultivaluedMap;
-
 public class DirectDecisionProvider implements IDecisionProvider {
 
 	DirectProviderUtil directProviderUtil;
@@ -74,16 +72,16 @@ public class DirectDecisionProvider implements IDecisionProvider {
 
 	@Override
 	public Collection<Decision> getDecisionDefinitionList(Map<String, Object> queryParams, CIBUser user) {
-		DecisionDefinitionQueryDto queryDto = directProviderUtil.parseQueryDto(queryParams, DecisionDefinitionQueryDto.class, user);
+		DecisionDefinitionQueryDto queryDto = directProviderUtil.bindQueryParams(queryParams, DecisionDefinitionQueryDto.class, user);
 		List<Decision> definitions = new ArrayList<>();
-		DecisionDefinitionQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
+		DecisionDefinitionQuery query = directProviderUtil.getOrBadRequestOnInvalidParameters(() -> queryDto.toQuery(directProviderUtil.getProcessEngine(user)));
 		return directProviderUtil.listAndConvert(query, null, null, DecisionDefinitionDto::fromDecisionDefinition, Decision.class, user);
 	}
 
 	@Override
 	public Long getDecisionDefinitionListCount(Map<String, Object> queryParams, CIBUser user) {
-		DecisionDefinitionQueryDto queryDto = directProviderUtil.parseQueryDto(queryParams, DecisionDefinitionQueryDto.class, user);
-		DecisionDefinitionQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
+		DecisionDefinitionQueryDto queryDto = directProviderUtil.bindQueryParams(queryParams, DecisionDefinitionQueryDto.class, user);
+		DecisionDefinitionQuery query = directProviderUtil.getOrBadRequestOnInvalidParameters(() -> queryDto.toQuery(directProviderUtil.getProcessEngine(user)));
 		return query.count();
 	}
 
@@ -245,12 +243,14 @@ public class DirectDecisionProvider implements IDecisionProvider {
 	@Override
 	public Collection<HistoricDecisionInstance> getHistoricDecisionInstances(Map<String, Object> params,
 			CIBUser user) {
-		DirectProviderUtil.PagedParams paged = directProviderUtil.extractPagedParams(params);
-		HistoricDecisionInstanceQuery query = createHistoricDecisionInstanceQueryDto(paged.getQueryParams(), user)
-				.toQuery(directProviderUtil.getProcessEngine(user));
+		Integer firstResult = directProviderUtil.getFirstResult(params);
+		Integer maxResults = directProviderUtil.getMaxResults(params);
+		Map<String, Object> queryParams = directProviderUtil.withoutPagingParams(params);
+		HistoricDecisionInstanceQueryDto queryHistoricDecisionInstanceDto = directProviderUtil.bindQueryParams(queryParams, HistoricDecisionInstanceQueryDto.class, user);
+		HistoricDecisionInstanceQuery query = directProviderUtil.getOrBadRequestOnInvalidParameters(() -> queryHistoricDecisionInstanceDto.toQuery(directProviderUtil.getProcessEngine(user)));
 
 		List<org.cibseven.bpm.engine.history.HistoricDecisionInstance> matchingHistoricDecisionInstances = QueryUtil
-				.list(query, paged.getFirstResult(), paged.getMaxResults());
+				.list(query, firstResult, maxResults);
 
 		List<HistoricDecisionInstance> historicDecisionInstanceDtoResults = new ArrayList<>();
 		for (org.cibseven.bpm.engine.history.HistoricDecisionInstance historicDecisionInstance : matchingHistoricDecisionInstances) {
@@ -264,30 +264,18 @@ public class DirectDecisionProvider implements IDecisionProvider {
 
 	@Override
 	public Long getHistoricDecisionInstanceCount(Map<String, Object> queryParams, CIBUser user) {
-		HistoricDecisionInstanceQuery query = createHistoricDecisionInstanceQueryDto(directProviderUtil.toMultivaluedMap(queryParams), user)
-				.toQuery(directProviderUtil.getProcessEngine(user));
+		HistoricDecisionInstanceQueryDto queryHistoricDecisionInstanceDto = directProviderUtil.bindQueryParams(queryParams, HistoricDecisionInstanceQueryDto.class, user);
+		HistoricDecisionInstanceQuery query = directProviderUtil.getOrBadRequestOnInvalidParameters(() -> queryHistoricDecisionInstanceDto.toQuery(directProviderUtil.getProcessEngine(user)));
 		return query.count();
-	}
-
-	/**
-	 * Builds the query DTO the way engine-rest does: through the query parameter constructor of
-	 * {@link HistoricDecisionInstanceQueryDto}, so that its converters apply. A plain Jackson
-	 * conversion of the parameter map cannot turn a string like "keyA,keyB" into the array typed
-	 * fields (decisionDefinitionKeyIn, decisionDefinitionIdIn, tenantIdIn, ...) and fails (CIB7-2711).
-	 */
-	private HistoricDecisionInstanceQueryDto createHistoricDecisionInstanceQueryDto(MultivaluedMap<String, String> queryParams,
-			CIBUser user) {
-		return new HistoricDecisionInstanceQueryDto(directProviderUtil.getObjectMapper(user), queryParams);
 	}
 
 	@Override
 	public HistoricDecisionInstance getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams,
 			CIBUser user) {
 
-		HistoricDecisionInstanceQueryDto historicDecisionInstanceQueryDto = createHistoricDecisionInstanceQueryDto(
-				directProviderUtil.toMultivaluedMap(queryParams), user);
+		HistoricDecisionInstanceQueryDto historicDecisionInstanceQueryDto = directProviderUtil.bindQueryParams(queryParams, HistoricDecisionInstanceQueryDto.class, user);
 		historicDecisionInstanceQueryDto.setDecisionInstanceId(id);
-		HistoricDecisionInstanceQuery query = historicDecisionInstanceQueryDto.toQuery(directProviderUtil.getProcessEngine(user));
+		HistoricDecisionInstanceQuery query = directProviderUtil.getOrBadRequestOnInvalidParameters(() -> historicDecisionInstanceQueryDto.toQuery(directProviderUtil.getProcessEngine(user)));
 		org.cibseven.bpm.engine.history.HistoricDecisionInstance instance = query.singleResult();
 
 		if (instance == null) {

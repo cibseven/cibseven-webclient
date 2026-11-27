@@ -94,9 +94,9 @@ public class DirectJobProvider implements IJobProvider {
 	@Override
 	public Collection<Object> getHistoryJobLog(Map<String, Object> params, CIBUser user) {
 
-		HistoricJobLogQueryDto queryDto = directProviderUtil.parseQueryDto(params, HistoricJobLogQueryDto.class, user);
+		HistoricJobLogQueryDto queryDto = directProviderUtil.bindQueryParams(params, HistoricJobLogQueryDto.class, user);
 		queryDto.setObjectMapper(directProviderUtil.getObjectMapper(user));
-		HistoricJobLogQuery query = queryDto.toQuery(directProviderUtil.getProcessEngine(user));
+		HistoricJobLogQuery query = directProviderUtil.getOrBadRequestOnInvalidParameters(() -> queryDto.toQuery(directProviderUtil.getProcessEngine(user)));
 		Integer firstResult = null;
 		Integer maxResults = null;
 		for (Entry<String, Object> entry : params.entrySet()) {

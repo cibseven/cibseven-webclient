@@ -16,12 +16,19 @@
  */
 package org.cibseven.webapp.providers;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.function.Function;
 
 import org.cibseven.bpm.BpmPlatform;
@@ -36,6 +43,7 @@ import org.cibseven.bpm.engine.rest.dto.PatchVariablesDto;
 import org.cibseven.bpm.engine.rest.dto.VariableValueDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.VariableInstanceDto;
 import org.cibseven.bpm.engine.rest.dto.runtime.VariableInstanceQueryDto;
+import org.cibseven.bpm.engine.rest.exception.InvalidRequestException;
 import org.cibseven.bpm.engine.rest.exception.RestException;
 import org.cibseven.bpm.engine.rest.mapper.JacksonConfigurator;
 import org.cibseven.bpm.engine.rest.util.QueryUtil;
@@ -43,6 +51,7 @@ import org.cibseven.bpm.engine.runtime.VariableInstanceQuery;
 import org.cibseven.bpm.engine.variable.VariableMap;
 import org.cibseven.bpm.engine.variable.value.TypedValue;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.exception.InvalidQueryParameterException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Variable;
 import org.cibseven.webapp.rest.model.VariableHistory;
@@ -57,6 +66,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import jakarta.ws.rs.core.MultivaluedHashMap;
 import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.Response.Status;
 import lombok.Setter;
 
 public class DirectProviderUtil {
@@ -324,8 +334,79 @@ public class DirectProviderUtil {
 		return result;
 	}
 
+	/**
+	 * Converts a JSON request body ({@code @RequestBody Map}) into an engine query DTO, the way engine-rest
+	 * reads a POST query: through the no-arg constructor and Jackson. For GET query parameters use
+	 * {@link #bindQueryParams(Map, Class, CIBUser)} instead.
+	 */
 	protected <Q extends AbstractQueryDto<?>> Q parseQueryDto(Object params, Class<Q> queryDtoClass, CIBUser user) {
 		return getObjectMapper(user).convertValue(params, queryDtoClass);
+	}
+
+	/**
+	 * Binds GET query parameters ({@code @RequestParam Map}) to an engine query or report DTO exactly as
+	 * engine-rest does for the same GET request: through the DTO's {@code (ObjectMapper, MultivaluedMap)}
+	 * constructor, which runs the {@code @CamundaQueryParam} converters for comma-separated {@code ...In}
+	 * lists and case-insensitive enums.
+	 * <p>
+	 * For JSON request bodies use {@link #parseQueryDto} or {@code getObjectMapper(user).convertValue(...)}
+	 * instead: a body carries real types, a query string only flat strings, and {@code convertValue} applies
+	 * none of the converters - so a value such as {@code processDefinitionKeyIn=invoice,order} either fails
+	 * or silently matches nothing (CIB7-2555, CIB7-2724). Dates are fine either way: the engine's
+	 * {@code DateConverter} uses the same mapper.
+	 * <p>
+	 * A collection or array value is joined with commas, the separator the engine's list converters split on.
+	 * Run the DTO's execute step ({@code toQuery}, {@code executeReport}) in
+	 * {@link #getOrBadRequestOnInvalidParameters(Supplier)} as well: the engine checks some parameters only there.
+	 *
+	 * @throws InvalidQueryParameterException (400) when a converter rejects a value, as engine-rest answers
+	 * @throws IllegalArgumentException when the DTO has no {@code (ObjectMapper, MultivaluedMap)} constructor
+	 */
+	public <T> T bindQueryParams(Map<String, Object> queryParams, Class<T> dtoClass, CIBUser user) {
+		Constructor<T> constructor;
+		try {
+			constructor = dtoClass.getConstructor(ObjectMapper.class, MultivaluedMap.class);
+		} catch (NoSuchMethodException e) {
+			throw new IllegalArgumentException(dtoClass.getName()
+					+ " cannot be bound from query parameters: it has no (ObjectMapper, MultivaluedMap) constructor", e);
+		}
+		MultivaluedMap<String, String> multivaluedMap = toMultivaluedMap(queryParams != null ? queryParams : Map.of());
+		ObjectMapper objectMapper = getObjectMapper(user);
+		return getOrBadRequestOnInvalidParameters(() -> {
+			try {
+				return constructor.newInstance(objectMapper, multivaluedMap);
+			} catch (InvocationTargetException e) {
+				if (e.getCause() instanceof RuntimeException runtimeException)
+					throw runtimeException;
+				throw new IllegalStateException("Could not bind query parameters to " + dtoClass.getName(), e.getCause());
+			} catch (ReflectiveOperationException e) {
+				throw new IllegalStateException("Could not bind query parameters to " + dtoClass.getName(), e);
+			}
+		});
+	}
+
+	/**
+	 * Returns the result of a step of an engine query DTO - binding it, or building the query from it
+	 * ({@code toQuery}, {@code executeReport}) - and answers the engine's {@code InvalidRequestException}
+	 * with status 400 as an {@link InvalidQueryParameterException}, which the ExceptionConverter answers
+	 * with 400. Without this it would reach the ExceptionConverter as a plain RuntimeException and answer
+	 * 500. Any other status, and any other exception, is passed on unchanged.
+	 * <p>
+	 * Engine-rest answers every {@code InvalidRequestException} with the status it carries, so this is the
+	 * answer engine-rest gives for the same GET request. On these steps a 400 is always about a query
+	 * parameter: an invalid {@code sortBy} or {@code sortOrder}, a value a converter cannot read, an invalid
+	 * comparator, parameters that cannot be combined. Keep it that way: wrap only the binding and query
+	 * building of query DTOs, not the execution of the query ({@code list}, {@code count}) and not request
+	 * body DTOs, whose 400s are not about query parameters.
+	 */
+	public <R> R getOrBadRequestOnInvalidParameters(Supplier<R> step) {
+		try {
+			return step.get();
+		} catch (InvalidRequestException e) {
+			if (e.getStatus() == Status.BAD_REQUEST)
+				throw new InvalidQueryParameterException(e.getMessage(), e);
+			throw e;
+		}
 	}
 
 	protected Integer getFirstResult(Map<String, Object> params) {
@@ -403,13 +484,33 @@ public class DirectProviderUtil {
 	 * Builds a {@link MultivaluedMap} containing all non-null entries of the given params.
 	 * Null values are left out, as engine-rest never receives them; otherwise they would
 	 * reach the query DTO as the filter value "null".
+	 * <p>
+	 * The engine DTO reads only the first value of each parameter, so the elements of a collection or
+	 * array value are joined with a comma, which is what the engine's list converters split on. Null and
+	 * blank elements are left out, so that no empty entry ({@code a,,b}) reaches the engine; a list without
+	 * any other element is left out like a null value.
 	 */
 	protected MultivaluedMap<String, String> toMultivaluedMap(Map<String, Object> params) {
 		MultivaluedMap<String, String> multiValueMap = new MultivaluedHashMap<>();
 		for (Entry<String, Object> entry : params.entrySet()) {
-			if (entry.getValue() != null)
-				multiValueMap.putSingle(entry.getKey(), String.valueOf(entry.getValue()));
+			String value = toQueryParamValue(entry.getValue());
+			if (value != null)
+				multiValueMap.putSingle(entry.getKey(), value);
 		}
 		return multiValueMap;
+	}
+
+	private static String toQueryParamValue(Object value) {
+		Stream<?> elements;
+		if (value instanceof Collection<?> collection)
+			elements = collection.stream();
+		else if (value instanceof Object[] array)
+			elements = Arrays.stream(array);
+		else
+			return value != null ? String.valueOf(value) : null;
+		String joined = elements.filter(Objects::nonNull).map(String::valueOf)
+				.filter(element -> !element.isBlank())
+				.collect(Collectors.joining(","));
+		return joined.isEmpty() ? null : joined;
 	}
 }
