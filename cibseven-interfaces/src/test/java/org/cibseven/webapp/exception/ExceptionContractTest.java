@@ -18,17 +18,12 @@ package org.cibseven.webapp.exception;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
- * The webclient has two exception families and they behave very differently.
- * <p>
- * {@link SystemException} extends {@link RuntimeException} properly, so its message and cause
- * survive. {@link ApplicationException} does not - see
- * {@link #applicationExceptionSubclassesShouldKeepTheirMessageAndCause()}, which is disabled
- * because it describes the behaviour the family should have and fails today - and everything
- * derived from it is affected. The difference decides what a caller can log.
+ * The webclient has two exception families, {@link SystemException} and {@link ApplicationException}.
+ * Both pass their message and cause on to {@link RuntimeException}, so a caller can log them;
+ * an {@link ApplicationException} additionally keeps every argument in {@code getData()}.
  */
 public class ExceptionContractTest {
 
@@ -62,20 +57,9 @@ public class ExceptionContractTest {
 		assertThat(exception.getCause()).isSameAs(cause);
 	}
 
-	// ---------- ApplicationException: loses both ----------
+	// ---------- ApplicationException ----------
 
-	/**
-	 * TODO KNOWN BUG (not fixed): {@link ApplicationException} declares only
-	 * {@code ApplicationException(Object... data)} and never calls {@code super(message)}, so every
-	 * constructor of every subclass resolves to that varargs constructor. The arguments are stashed
-	 * in {@code data} and {@link RuntimeException}'s own message and cause are left unset. Anything
-	 * that logs or serialises one of these exceptions - which is what the REST error handlers do -
-	 * sees nothing at all, and the cause chain is broken for stack traces. This test states the
-	 * contract the family should honour; it fails until {@code ApplicationException} forwards the
-	 * message and cause to {@code RuntimeException}.
-	 */
 	@Test
-	@Disabled("KNOWN BUG: ApplicationException never calls super(message), so getMessage()/getCause() are null for every subclass")
 	void applicationExceptionSubclassesShouldKeepTheirMessageAndCause() {
 		SystemException cause = new SystemException("variable 'amount' does not exist");
 
@@ -88,8 +72,21 @@ public class ExceptionContractTest {
 	}
 
 	@Test
+	void applicationExceptionToleratesANullFirstArgument() {
+		// e.g. new ExistingFormIdException(entity.getFormId()) with a form that has no id yet
+		NoObjectFoundException fromNull = new NoObjectFoundException((String) null);
+		ApplicationException fromNothing = new ApplicationException() {
+			private static final long serialVersionUID = 1L;
+		};
+
+		assertThat(fromNull.getMessage()).isEqualTo("An application error occurred");
+		assertThat(fromNull.getData()).containsExactly((Object) null);
+		assertThat(fromNothing.getMessage()).isEqualTo("An application error occurred");
+	}
+
+	@Test
 	void everyApplicationExceptionSubclassCollectsItsArgumentsInData() {
-		// what each subclass was built with is reachable through getData() - and today only there
+		// what each subclass was built with is reachable through getData()
 		assertThat(new OptimisticLockingException(new IllegalStateException("clash")).getData())
 			.hasSize(2).startsWith("Entity was updated by another transaction concurrently.");
 		assertThat(new UnknownResourceTypeException(99).getData()).containsExactly(99);
@@ -112,5 +109,18 @@ public class ExceptionContractTest {
 
 		// the (message, cause) constructor also funnels both into data
 		assertThat(exception.getData()).hasSize(2);
+	}
+
+	@Test
+	void applicationExceptionTakesOnlyAThrowableSecondArgumentAsItsCause() {
+		// subclasses pass plain values as second argument - they must not be cast to a cause
+		InvalidFolderException invalidFolder = new InvalidFolderException("name", "empty");
+		ValueTooLongException tooLong = new ValueTooLongException("description", 255);
+
+		assertThat(invalidFolder.getCause()).isNull();
+		assertThat(invalidFolder.getField()).isEqualTo("name");
+		assertThat(invalidFolder.getReason()).isEqualTo("empty");
+		assertThat(tooLong.getCause()).isNull();
+		assertThat(tooLong.getLimit()).isEqualTo(255);
 	}
 }
