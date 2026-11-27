@@ -227,7 +227,7 @@ public class DirectVariableProviderTest {
 		when(runtimeService.getVariableTyped(eq("instance-1"), eq("invoice"), anyBoolean()))
 			.thenThrow(new AuthorizationException("denied"));
 
-		// must stay an AuthorizationException so the REST layer answers 403, not 404 or 500
+		// must stay an AuthorizationException: AuthorizingProviderProxy turns it into the 403, not a 404 or 500
 		assertThatThrownBy(() -> variableProvider.fetchProcessInstanceVariableData("instance-1", "invoice", user))
 			.isInstanceOf(AuthorizationException.class);
 	}
@@ -302,7 +302,7 @@ public class DirectVariableProviderTest {
 	void deleteVariable_letsAuthorizationFailuresThrough() {
 		doThrow(new AuthorizationException("denied")).when(taskService).removeVariable("task-1", "amount");
 
-		// must stay an AuthorizationException so the REST layer answers 403, not 500
+		// must stay an AuthorizationException: AuthorizingProviderProxy turns it into the 403, not a 500
 		assertThatThrownBy(() -> variableProvider.deleteVariable("task-1", "amount", user))
 			.isInstanceOf(AuthorizationException.class);
 	}

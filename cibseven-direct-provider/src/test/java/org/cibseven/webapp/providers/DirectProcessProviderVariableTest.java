@@ -32,7 +32,7 @@ import org.cibseven.bpm.model.bpmn.Bpmn;
 import org.cibseven.bpm.model.bpmn.BpmnModelInstance;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.NoObjectFoundException;
-import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.webapp.exception.PermissionDeniedException;
 import org.cibseven.webapp.rest.model.Variable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -61,6 +61,7 @@ class DirectProcessProviderVariableTest {
 
 	private ProcessEngine engine;
 	private DirectProcessProvider provider;
+	private DirectProviderUtil providerUtil;
 	private final CIBUser tester = testerOn(ENGINE_NAME);
 
 	@AfterEach
@@ -118,8 +119,19 @@ class DirectProcessProviderVariableTest {
 		engine.getIdentityService().setAuthentication("tester", null);
 
 		assertThatThrownBy(() -> provider.fetchProcessInstanceVariable(instanceId, VARIABLE, true, tester))
-			.isInstanceOf(SystemException.class)
-			.isNotInstanceOf(NoObjectFoundException.class)
+			.isInstanceOf(AuthorizationException.class);
+	}
+
+	/** As the provider is deployed: behind the proxy, which answers the denied read with 403 like engine-rest. */
+	@Test
+	void answersADeniedReadWithPermissionDeniedBehindTheProxy() {
+		start(true);
+		String instanceId = startInstance(Map.of(VARIABLE, "instance"));
+		IProcessProvider deployed = AuthorizingProviderProxy.wrap(provider, IProcessProvider.class, providerUtil);
+
+		assertThatThrownBy(() -> deployed.fetchProcessInstanceVariable(instanceId, VARIABLE, true, tester))
+			.isInstanceOf(PermissionDeniedException.class)
+			.hasMessageContaining("tester")
 			.hasCauseInstanceOf(AuthorizationException.class);
 	}
 
@@ -163,7 +175,7 @@ class DirectProcessProviderVariableTest {
 			.setAuthorizationEnabled(authorizationEnabled)
 			.setJobExecutorActivate(false)
 			.buildProcessEngine();
-		DirectProviderUtil providerUtil = new DirectProviderUtil();
+		providerUtil = new DirectProviderUtil();
 		providerUtil.processEngines.put(engine.getName(), engine);
 		providerUtil.objectMappers.put(engine.getName(), JacksonConfigurator.configureObjectMapper());
 		provider = new DirectProcessProvider(providerUtil, null);

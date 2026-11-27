@@ -17,6 +17,7 @@
 package org.cibseven.webapp.providers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -35,6 +36,7 @@ import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.NoRessourcesFoundException;
 import org.cibseven.webapp.exception.OptimisticLockingException;
 import org.cibseven.webapp.exception.PasswordPolicyException;
+import org.cibseven.webapp.exception.PermissionDeniedException;
 import org.cibseven.webapp.exception.SubmitDeniedException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnsupportedTypeException;
@@ -48,6 +50,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 /**
  * {@link SevenProviderBase#wrapException} turns the engine's error text into the exception the
@@ -107,6 +110,66 @@ public class SevenProviderBaseErrorMappingTest {
 	}
 
 	@Test
+	public void keepsTheStatusOfAPermissionTheEngineRefuses() {
+		String body = "{\"type\":\"AuthorizationException\",\"message\":\"The user with id 'demo' does not have 'UPDATE' permission on resource 't1' of type 'Task'.\"}";
+
+		RuntimeException wrapped = SevenProviderBase.wrapException(engineError(HttpStatus.FORBIDDEN, body), null);
+
+		assertEquals(PermissionDeniedException.class, wrapped.getClass());
+		// still a SystemException, for the callers catching the engine-rest failures as one
+		assertInstanceOf(SystemException.class, wrapped);
+		// the engine's text, as the direct provider passes it on
+		assertEquals("The user with id 'demo' does not have 'UPDATE' permission on resource 't1' of type 'Task'.", wrapped.getMessage());
+	}
+
+	@Test
+	public void showsTheReasonPhraseInsteadOfABodyThatIsNoEngineRestError() {
+		String proxyPage = "<html><head><title>403 Forbidden</title></head><body>nginx</body></html>";
+
+		RuntimeException wrapped = SevenProviderBase.wrapException(engineError(HttpStatus.FORBIDDEN, proxyPage), null);
+
+		assertEquals(PermissionDeniedException.class, wrapped.getClass());
+		assertEquals("Forbidden", wrapped.getMessage());
+	}
+
+	@Test
+	public void leavesAnUnmatchedBadRequestASystemException() {
+		// a 400 can as well be a request the webclient built wrongly, so it gets no meaning of its own
+		String body = "{\"type\":\"InvalidRequestException\",\"message\":\"Cannot convert value 'abc' of type 'Integer' to java type java.lang.Integer\"}";
+
+		RuntimeException wrapped = SevenProviderBase.wrapException(engineError(HttpStatus.BAD_REQUEST, body), null);
+
+		assertEquals(SystemException.class, wrapped.getClass());
+	}
+
+	@ParameterizedTest
+	@MethodSource("bodiesWithoutAMessage")
+	public void engineMessageFallsBackToTheReasonPhraseWithoutAUsableMessage(String body) {
+		assertEquals("Forbidden", SevenProviderBase.engineMessage(body));
+	}
+
+	static Stream<String> bodiesWithoutAMessage() {
+		return Stream.of("", "not json", "{\"type\":\"AuthorizationException\"}", "{\"message\":\"  \"}", "{\"message\":42}");
+	}
+
+	@Test
+	public void aKnownEngineMessageWinsOverTheStatus() {
+		RuntimeException wrapped = SevenProviderBase.wrapException(
+			engineError(HttpStatus.FORBIDDEN, "No matching task with id t1"), null);
+
+		assertEquals(NoObjectFoundException.class, wrapped.getClass());
+	}
+
+	@Test
+	public void anUnknownServerErrorStaysASystemException() {
+		RuntimeException wrapped = SevenProviderBase.wrapException(
+			HttpServerErrorException.create(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error",
+				HttpHeaders.EMPTY, "boom".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8), null);
+
+		assertEquals(SystemException.class, wrapped.getClass());
+	}
+
+	@Test
 	public void filterResourcesKeepsOnlyTheRequestedResourceType() {
 		Authorization onTasks = authorization(7);
 		Authorization onProcesses = authorization(6);
@@ -121,7 +184,11 @@ public class SevenProviderBaseErrorMappingTest {
 	}
 
 	private static HttpClientErrorException clientError(String body) {
-		return HttpClientErrorException.create(HttpStatus.BAD_REQUEST, "Bad Request",
+		return engineError(HttpStatus.BAD_REQUEST, body);
+	}
+
+	private static HttpClientErrorException engineError(HttpStatus status, String body) {
+		return HttpClientErrorException.create(status, status.getReasonPhrase(),
 			HttpHeaders.EMPTY, body.getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
 	}
 }

@@ -20,6 +20,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -33,9 +35,11 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.cibseven.webapp.Data;
+import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.exception.EngineNotReachableException;
+import org.cibseven.webapp.exception.PermissionDeniedException;
 import org.cibseven.webapp.exception.UnknownEngineException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.providers.BpmProvider;
@@ -55,7 +59,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -296,5 +302,27 @@ public class ProcessServiceTest {
 		when(bpmProvider.getDeployedStartForm("def-2", user)).thenThrow(unknown);
 
 		assertThatThrownBy(() -> processService.getDeployedStartForm("def-2", Locale.ENGLISH, user)).isSameAs(unknown);
+	}
+
+	@Test
+	void getDeployedStartForm_passesARefusedPermissionOnForItsStatus() {
+		PermissionDeniedException denied = new PermissionDeniedException("no READ on the definition", new RuntimeException());
+		when(bpmProvider.getDeployedStartForm("def-1", user)).thenThrow(denied);
+
+		assertThatThrownBy(() -> processService.getDeployedStartForm("def-1", Locale.ENGLISH, user)).isSameAs(denied);
+	}
+
+	@Test
+	void uploadProcessInstanceVariableFileData_passesARefusedPermissionOnForItsStatus() {
+		BaseUserProvider<?> userProvider = mock(BaseUserProvider.class);
+		ReflectionTestUtils.setField(processService, "baseUserProvider", userProvider);
+		HttpServletRequest request = mock(HttpServletRequest.class);
+		when(userProvider.checkAuthorization(request, true)).thenReturn(user);
+		MultipartFile file = new MockMultipartFile("data", "a.txt", "text/plain", new byte[] { 1 });
+		PermissionDeniedException denied = new PermissionDeniedException("no UPDATE on the instance", new RuntimeException());
+		doThrow(denied).when(bpmProvider).uploadProcessInstanceVariableFileData("pi-1", "doc", file, "File", user);
+
+		assertThatThrownBy(() -> processService.uploadProcessInstanceVariableFileData("pi-1", "doc", file, Optional.empty(), Locale.ENGLISH, request))
+			.isSameAs(denied);
 	}
 }

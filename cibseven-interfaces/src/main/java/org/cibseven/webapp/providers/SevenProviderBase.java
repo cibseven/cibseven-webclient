@@ -28,6 +28,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -51,6 +53,7 @@ import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.NoRessourcesFoundException;
 import org.cibseven.webapp.exception.OptimisticLockingException;
 import org.cibseven.webapp.exception.PasswordPolicyException;
+import org.cibseven.webapp.exception.PermissionDeniedException;
 import org.cibseven.webapp.exception.SubmitDeniedException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnknownEngineException;
@@ -64,6 +67,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
@@ -549,13 +553,32 @@ public abstract class SevenProviderBase {
 		} else if (technicalErrorMsg.matches(".*Unable to transform DMN resource.*")) {
 			wrapperException = new DmnTransformationException(cause);
 		}
-		if (wrapperException == null) wrapperException = new SystemException(technicalErrorMsg, cause);
-		if (wrapperException instanceof NoObjectFoundException) {
-			log.debug("Exception when calling engine-rest:", wrapperException);	
+		// No specific meaning found: a permission the engine refused keeps its 403, so it is not reported as a server failure
+		if (wrapperException == null) {
+			if (cause.getStatusCode().value() == HttpStatus.FORBIDDEN.value()) wrapperException = new PermissionDeniedException(engineMessage(technicalErrorMsg), cause);
+			else wrapperException = new SystemException(technicalErrorMsg, cause);
+		}
+		if (wrapperException instanceof NoObjectFoundException || wrapperException instanceof PermissionDeniedException) {
+			log.debug("Exception when calling engine-rest:", wrapperException);
 		} else if (!(wrapperException instanceof MissingVariableException)){
 			log.error("Exception when calling engine-rest:", wrapperException);	
 		}
 		return wrapperException;
+	}
+
+	/**
+	 * The message of an engine-rest 403 body, the same text the direct provider passes on. Any other body, such as
+	 * a proxy's HTML error page, is not shown to the user; the reason phrase "Forbidden" stands in for it.
+	 */
+	static String engineMessage(String body) {
+		try {
+			JsonNode tree = WebclientJsonMapper.plain().readTree(body);
+			JsonNode message = tree == null ? null : tree.get("message");
+			if (message != null && message.isString() && !message.asString().isBlank()) return message.asString();
+		} catch (JacksonException e) {
+			// not JSON
+		}
+		return HttpStatus.FORBIDDEN.getReasonPhrase();
 	}
 
 	protected String addQueryParameter(String param, String name, Optional<String> value, boolean encode) {

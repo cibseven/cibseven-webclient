@@ -75,6 +75,33 @@ describe('handleAxiosError', () => {
     expect(root.$refs.error.show).toHaveBeenCalledWith({ type: 'UnknownEngineException' })
   })
 
+  it('opens the error dialog for a permission the engine refused', async () => {
+    const root = rootWithErrorDialog()
+    const data = { type: 'PermissionDeniedException', params: ['demo may not update task-1'] }
+
+    await expect(handleAxiosError(router, root, { response: { status: 403, data } })).rejects.toBeDefined()
+
+    expect(root.$refs.error.show).toHaveBeenCalledWith(data)
+  })
+
+  it('leaves the other refusals to the caller', async () => {
+    const root = rootWithErrorDialog()
+
+    await expect(handleAxiosError(router, root, { response: { status: 403, data: { type: 'AccessDeniedException' } } }))
+      .rejects.toBeDefined()
+
+    expect(root.$refs.error.show).not.toHaveBeenCalled()
+  })
+
+  it('opens no dialog for a refused permission when the caller reports its own errors', async () => {
+    const root = rootWithErrorDialog()
+    const error = { config: { reportsOwnErrors: true }, response: { status: 403, data: { type: 'PermissionDeniedException' } } }
+
+    await expect(handleAxiosError(router, root, error)).rejects.toBe(error)
+
+    expect(root.$refs.error.show).not.toHaveBeenCalled()
+  })
+
   it('leaves other bad requests to the caller', async () => {
     const root = rootWithErrorDialog()
 

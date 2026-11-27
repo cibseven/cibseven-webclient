@@ -31,6 +31,7 @@ import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.exception.EngineNotReachableException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
+import org.cibseven.webapp.exception.PermissionDeniedException;
 import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.exception.UnknownEngineException;
 import org.cibseven.webapp.logger.TaskLogger;
@@ -186,7 +187,7 @@ public class TaskService extends BaseService implements InitializingBean {
 		
 		try {
 			return EngineResponses.relayOrNoContent(bpmProvider.getDeployedForm(taskId, user));
-		} catch (EngineNotReachableException | UnknownEngineException e) {
+		} catch (EngineNotReachableException | UnknownEngineException | PermissionDeniedException e) {
 			// answered with their own fixed messages, not as a failure of the form
 			throw e;
 		} catch (Exception e) {
@@ -476,6 +477,8 @@ public class TaskService extends BaseService implements InitializingBean {
 			try {
 				bpmProvider.uploadVariableFileData(id, variableName, data, valueType, userAuth);
 				return ResponseEntity.noContent().build();
+			} catch (PermissionDeniedException e) {
+				throw e;
 			} catch (Exception e) {
 				if (e instanceof NoObjectFoundException) {
 					return ResponseEntity.notFound().build();
