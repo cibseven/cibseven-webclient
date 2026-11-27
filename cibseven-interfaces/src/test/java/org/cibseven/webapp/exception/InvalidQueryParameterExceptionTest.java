@@ -16,7 +16,6 @@
  */
 package org.cibseven.webapp.exception;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -34,19 +33,10 @@ class InvalidQueryParameterExceptionTest {
 		InvalidQueryParameterException e = new InvalidQueryParameterException("sortOrder without sortBy", cause);
 
 		assertEquals("sortOrder without sortBy", e.getMessage());
-		assertArrayEquals(new Object[] { "sortOrder without sortBy" }, e.getData());
+		assertEquals("sortOrder without sortBy", e.getMessage());
 		assertSame(cause, e.getCause());
 		// answered as 400 with type and params by the ExceptionConverter
 		assertInstanceOf(ApplicationException.class, e);
-	}
-
-	@Test
-	void keepsItsMessageIndependentOfTheData() {
-		InvalidQueryParameterException e = new InvalidQueryParameterException("sortOrder without sortBy", null);
-
-		e.getData()[0] = "changed";
-
-		assertEquals("sortOrder without sortBy", e.getMessage());
 	}
 
 	@Test
