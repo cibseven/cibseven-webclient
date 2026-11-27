@@ -16,6 +16,8 @@
  */
 package org.cibseven.webapp.exception;
 
+import java.util.Collections;
+
 /**
  * The engine id names an engine REST server ({@code url|path|engineName}) that is not configured in
  * {@code cibseven.webclient.engineRest}
@@ -27,7 +29,7 @@ public class UnknownEngineException extends ApplicationException {
 	private static final String MESSAGE = "The requested process engine is not configured";
 
 	public UnknownEngineException() {
-		super(MESSAGE);
+		super(MESSAGE, Collections.emptyMap());
 	}
 
 	@Override

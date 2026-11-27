@@ -64,7 +64,7 @@ class WebclientExtensionsTest {
 		assertThat(extensions.enabled(true)).isFalse();
 		assertThatThrownBy(() -> extensions.require("modeler"))
 			.isInstanceOf(FeatureDisabledException.class)
-			.satisfies(e -> assertThat(((FeatureDisabledException) e).getData()).containsExactly("modeler"));
+			.hasMessage("modeler");
 	}
 
 	@Test

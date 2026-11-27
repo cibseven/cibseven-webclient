@@ -285,8 +285,6 @@ public class DirectVariableProviderTest {
 		assertThat(thrown).isInstanceOf(NoObjectFoundException.class);
 		assertThat(thrown.getCause()).isInstanceOf(SystemException.class)
 			.hasMessageContaining("HistoryVariable with Id 'missing' does not exist.");
-		// today the information survives only here
-		assertThat(((NoObjectFoundException) thrown).getData()).hasSize(2);
 	}
 
 	// ---------- deletion ----------

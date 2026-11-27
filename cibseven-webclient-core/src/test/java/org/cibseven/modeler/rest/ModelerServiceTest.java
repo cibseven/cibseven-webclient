@@ -482,7 +482,8 @@ public class ModelerServiceTest {
 		assertThatThrownBy(() -> service.startProcess("invoice", tenant, Map.of(), request))
 			.isInstanceOf(InvalidPathValueException.class)
 			.isInstanceOf(ApplicationException.class)
-			.satisfies(e -> assertThat(((ApplicationException) e).getData()).containsExactly("Tenant ID \"" + tenant + "\" cannot be part of the engine URL"));
+			.hasMessage("Tenant ID \"" + tenant + "\" cannot be part of the engine URL")
+			.satisfies(e -> assertThat(((ApplicationException) e).getData()).isEmpty());
 		verifyNoInteractions(bpmProvider);
 	}
 

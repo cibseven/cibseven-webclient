@@ -41,6 +41,7 @@ import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.webapp.exception.ValueTooLongException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.rest.model.Task;
 import org.junit.jupiter.api.BeforeEach;
@@ -228,6 +229,24 @@ public class VariableErrorResponseTest {
 
 		verify(log).warn("{} ({}: {})", "The task or its process instance no longer exists.", "NoObjectFoundException", TECHNICAL);
 		verify(log).debug("Stack trace of the cause", cause);
+	}
+
+	@Test
+	void anApplicationErrorIsLoggedWithTheValuesItNames() throws Exception {
+		Logger log = mock(Logger.class);
+		ValueTooLongException cause = new ValueTooLongException("value", 4000);
+		doThrow(cause).when(bpmProvider).saveVariableInProcessInstanceId(eq("pi-1"), anyList(), eq(user));
+
+		try (MockedStatic<LoggerFactory> factory = mockStatic(LoggerFactory.class, CALLS_REAL_METHODS)) {
+			factory.when(() -> LoggerFactory.getLogger(ProcessService.class)).thenReturn(log);
+
+			mvc.perform(post(BASE + "/process/pi-1/variables").contentType(MediaType.APPLICATION_JSON).content("[]"))
+					.andExpect(status().isBadRequest())
+					.andExpect(jsonPath("$.params[0]").value("The variables could not be saved."));
+		}
+
+		verify(log).warn("{} ({}: {})", "The variables could not be saved.", "ValueTooLongException",
+				"An application error occurred {field=value, limit=4000}", cause);
 	}
 
 	@Test
