@@ -28,17 +28,8 @@ public class InvalidQueryParameterException extends ApplicationException {
 
 	private static final long serialVersionUID = 1L;
 
-	private final String message;
-
 	public InvalidQueryParameterException(String message, Throwable cause) {
 		// data is sent to the client as the error's params: the message only, the cause stays out of it
-		super(message);
-		this.message = message;
-		if (cause != null) initCause(cause);
-	}
-
-	@Override
-	public String getMessage() {
-		return message;
+		super(message, cause);
 	}
 }
