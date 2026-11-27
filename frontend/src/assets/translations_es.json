@@ -162,6 +162,9 @@
 		"definitionVersionNotFound": "Versión de la definición del proceso \"{0}\" no encontrada. Se utilizará la versión más reciente.",
 		"definitionNotFound": "Definición de proceso con la clave \"{processKey}\" y el ID de tenant \"{tenantId}\" no encontrada.",
 		"instanceNotFound": "Instancia de proceso con ID \"{instanceId}\" no encontrada.\nRespuesta del servidor:\n{error}",
+		"instanceNotFoundNoResponse": "Instancia de proceso con ID \"{instanceId}\" no encontrada.",
+		"instanceDefinitionNotFound": "No se pudo cargar la definición \"{definitionId}\" de la instancia de proceso \"{instanceId}\".",
+		"instanceOfOtherProcess": "La instancia de proceso \"{instanceId}\" pertenece al proceso \"{definitionKey}\" (definición \"{definitionId}\"), no a \"{processKey}\".",
 		"back": "Atrás",
 		"incidentsCounter": "Incidentes: {0}",
 		"incidents": "Incidencias",
@@ -188,6 +191,7 @@
 		"copySuccess": "Valor seleccionado copiado",
 		"refreshVersions": "Actualizar el historial de versions",
 		"loadAllStatistics": "Cargar todas las estadísticas de instancias",
+		"loadData": "Cargar datos",
 		"externalProcessStarted": "Proceso iniciado con éxito",
 		"exportInstances": "Exportar instancias",
 		"deleteProcessDefinition": {
@@ -344,6 +348,7 @@
 			"dueDate": "Fecha de vencimiento",
 			"scheduleAt": "Programar para",
 			"invalidDateError": "Debe insertar una fecha válida",
+			"loadFailed": "No se pudieron cargar los incidentes",
 			"retry": "Reintentar",
 			"editAnnotation": "Editar anotación",
 			"causeIncidentProcessInstanceId": "ID de instancia del proceso causante",
@@ -1159,6 +1164,8 @@
 		"InvalidValueHistoryTimeToLive": "Se requiere un tiempo de vida del histórico. Defínalo en el modelo o configure un valor por defecto en el motor.",
 		"DmnTransformationException": "El recurso no pudo ser actualizado. No se puede transformar el recurso DMN.",
 		"InvalidGroupIdException": "El ID del grupo contiene caracteres no válidos. Sólo se permiten caracteres alfanuméricos (a-z, A-Z, 0-9) o camunda-admin. Por favor, corrija su entrada.",
+		"UnknownEngineException": "El motor de procesos seleccionado no está configurado. Seleccione otro motor.",
+		"EngineNotReachableException": "No se pudo conectar con el motor de procesos. Inténtelo de nuevo más tarde.",
 		"unknown": "Se produjo un error inesperado. Por favor, inténtelo de nuevo."
 	},
 	"searches": {
@@ -1368,7 +1375,9 @@
 		"value": "Valor",
 		"inputs": "Entradas",
 		"outputs": "Salidas",
-		"decisionInstanceId": "ID de instancia de decisión"
+		"decisionInstanceId": "ID de instancia de decisión",
+		"notAvailableForTenant": "Esta decisión no está disponible para el tenant \"{tenantId}\".",
+		"notAvailable": "Esta decisión no está disponible."
 	},
 	"decision-instance": {
 		"edit": "@:commons.edit"

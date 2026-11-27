@@ -56,6 +56,29 @@ describe('error utility', () => {
             expect(extractErrorMessage(error)).toBe('Param error message')
         })
 
+        // CIB7-2806: the shape TaskService answers a failed /task/{id}/submit-variables with
+        it('should show the controlled text of a submit-variables ErrorMessage', () => {
+            const error = {
+                message: 'Request failed with status code 404',
+                response: {
+                    status: 404,
+                    data: {
+                        type: 'NoObjectFoundException',
+                        params: ['The task or its process instance no longer exists.']
+                    }
+                }
+            }
+            expect(extractErrorMessage(error)).toBe('The task or its process instance no longer exists.')
+        })
+
+        it('should not read a plain-string body, so the backend must answer an ErrorMessage', () => {
+            const error = {
+                message: 'Request failed with status code 404',
+                response: { status: 404, data: 'Task with id task-1 does not exist' }
+            }
+            expect(extractErrorMessage(error)).toBe('Request failed with status code 404')
+        })
+
         it('should extract nested server error from params array', () => {
             const error = {
                 response: {

@@ -19,31 +19,45 @@ package org.cibseven.webapp.rest;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.net.ConnectException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
+import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.exception.AccessDeniedException;
+import org.cibseven.webapp.exception.EngineNotReachableException;
+import org.cibseven.webapp.exception.UnknownEngineException;
+import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.InputStreamSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * {@link ProcessService} is a thin REST facade that delegates to the {@link BpmProvider}, which
@@ -202,6 +216,54 @@ public class ProcessServiceTest {
 		verify(bpmProvider).suspendProcessDefinition("id-1", Boolean.TRUE, Boolean.FALSE, null, user);
 	}
 
+	// ---------- deployment resource data (CIB7-2556) ----------
+
+	private static Data resourceData() {
+		return new Data("probe.bpmn", "application/xml", new ByteArrayResource("<definitions/>".getBytes()), 14);
+	}
+
+	@Test
+	void fetchDataFromDeploymentResource_handsTheAuthenticatedUserToTheProvider() throws Exception {
+		MockHttpServletRequest rq = new MockHttpServletRequest();
+		when(bpmProvider.fetchDataFromDeploymentResource(any(), eq("d1"), eq("r1"), eq("probe.bpmn"), eq(user)))
+			.thenReturn(resourceData());
+
+		ResponseEntity<InputStreamSource> response = processService.fetchDataFromDeploymentResource(
+			"d1", "r1", "probe.bpmn", null, user, rq, new MockHttpServletResponse());
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(response.getHeaders().getContentType()).hasToString("application/xml");
+		assertThat(response.getBody().getInputStream().readAllBytes()).isEqualTo("<definitions/>".getBytes());
+		verify(bpmProvider).fetchDataFromDeploymentResource(any(), eq("d1"), eq("r1"), eq("probe.bpmn"), eq(user));
+	}
+
+	@Test
+	void fetchDataFromDeploymentResource_neverTurnsTheTokenQueryValueIntoAnAuthorizationHeader() {
+		MockHttpServletRequest rq = new MockHttpServletRequest();
+		rq.addHeader("Authorization", "Bearer real");
+		ArgumentCaptor<HttpServletRequest> forwarded = ArgumentCaptor.forClass(HttpServletRequest.class);
+		when(bpmProvider.fetchDataFromDeploymentResource(forwarded.capture(), any(), any(), any(), any()))
+			.thenReturn(resourceData());
+
+		processService.fetchDataFromDeploymentResource(
+			"d1", "r1", "probe.bpmn", "forged", user, rq, new MockHttpServletResponse());
+
+		assertThat(forwarded.getValue().getHeader("Authorization")).isEqualTo("Bearer real");
+		assertThat(Collections.list(forwarded.getValue().getHeaders("Authorization"))).containsExactly("Bearer real");
+	}
+
+	@Test
+	void fetchDataFromDeploymentResource_redirectsToTheResourcePageAndRethrowsWhenTheProviderFails() {
+		MockHttpServletResponse res = new MockHttpServletResponse();
+		NoObjectFoundException notFound = new NoObjectFoundException("not found");
+		when(bpmProvider.fetchDataFromDeploymentResource(any(), any(), any(), any(), any())).thenThrow(notFound);
+
+		assertThatThrownBy(() -> processService.fetchDataFromDeploymentResource(
+				"d1", "r1", "probe.bpmn", null, user, new MockHttpServletRequest(), res))
+			.isSameAs(notFound);
+		assertThat(res.getRedirectedUrl()).isEqualTo("../../../#/flow/auth/deployments/d1/resources/r1");
+	}
+
 	// ---------- permissions are the engine's job ----------
 
 	@Test
@@ -221,5 +283,18 @@ public class ProcessServiceTest {
 			.isInstanceOf(AccessDeniedException.class)
 			.hasMessage("engine says no");
 		verify(bpmProvider, never()).getUserAuthorization(any());
+	}
+
+	@Test
+	void getDeployedStartForm_passesEngineErrorsOnUnwrapped() {
+		EngineNotReachableException unreachable = new EngineNotReachableException(new ConnectException("Connection refused"));
+		when(bpmProvider.getDeployedStartForm("def-1", user)).thenThrow(unreachable);
+
+		assertThatThrownBy(() -> processService.getDeployedStartForm("def-1", Locale.ENGLISH, user)).isSameAs(unreachable);
+
+		UnknownEngineException unknown = new UnknownEngineException();
+		when(bpmProvider.getDeployedStartForm("def-2", user)).thenThrow(unknown);
+
+		assertThatThrownBy(() -> processService.getDeployedStartForm("def-2", Locale.ENGLISH, user)).isSameAs(unknown);
 	}
 }

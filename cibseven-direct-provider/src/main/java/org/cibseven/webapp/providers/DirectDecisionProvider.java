@@ -62,6 +62,8 @@ import org.cibseven.webapp.exception.SystemException;
 import org.cibseven.webapp.rest.model.Decision;
 import org.cibseven.webapp.rest.model.HistoricDecisionInstance;
 
+import jakarta.ws.rs.core.MultivaluedMap;
+
 public class DirectDecisionProvider implements IDecisionProvider {
 
 	DirectProviderUtil directProviderUtil;
@@ -214,9 +216,17 @@ public class DirectDecisionProvider implements IDecisionProvider {
 
 	@Override
 	public Collection<Decision> getDecisionVersionsByKey(String key, Optional<Boolean> lazyLoad, CIBUser user) {
-		// no tenant restriction, like the REST provider: a decision deployed only for a tenant has versions too
-		List<DecisionDefinition> decisionDefinitions = directProviderUtil.getProcessEngine(user).getRepositoryService().createDecisionDefinitionQuery()
-				.decisionDefinitionKey(key).orderByDecisionDefinitionVersion().desc().unlimitedList();
+		return getDecisionVersionsByKey(key, null, false, lazyLoad, user);
+	}
+
+	@Override
+	public Collection<Decision> getDecisionVersionsByKey(String key, String tenantId, boolean withoutTenantId, Optional<Boolean> lazyLoad, CIBUser user) {
+		// without either restriction every tenant's versions, like the REST provider: a decision deployed only for a tenant has versions too
+		DecisionDefinitionQuery query = directProviderUtil.getProcessEngine(user).getRepositoryService().createDecisionDefinitionQuery()
+				.decisionDefinitionKey(key);
+		if (tenantId != null && !tenantId.isEmpty()) query.tenantIdIn(tenantId);
+		else if (withoutTenantId) query.withoutTenantId();
+		List<DecisionDefinition> decisionDefinitions = query.orderByDecisionDefinitionVersion().desc().unlimitedList();
 
 		// a key without a match yields an empty list, like the REST provider
 		List<Decision> decisions = new ArrayList<>();
@@ -235,15 +245,12 @@ public class DirectDecisionProvider implements IDecisionProvider {
 	@Override
 	public Collection<HistoricDecisionInstance> getHistoricDecisionInstances(Map<String, Object> params,
 			CIBUser user) {
-		Integer firstResult = directProviderUtil.getFirstResult(params);
-		Integer maxResults = directProviderUtil.getMaxResults(params);
-		Map<String, Object> queryParams = directProviderUtil.withoutPagingParams(params);
-		HistoricDecisionInstanceQueryDto queryHistoricDecisionInstanceDto = directProviderUtil.getObjectMapper(user).convertValue(queryParams,
-				HistoricDecisionInstanceQueryDto.class);
-		HistoricDecisionInstanceQuery query = queryHistoricDecisionInstanceDto.toQuery(directProviderUtil.getProcessEngine(user));
+		DirectProviderUtil.PagedParams paged = directProviderUtil.extractPagedParams(params);
+		HistoricDecisionInstanceQuery query = createHistoricDecisionInstanceQueryDto(paged.getQueryParams(), user)
+				.toQuery(directProviderUtil.getProcessEngine(user));
 
 		List<org.cibseven.bpm.engine.history.HistoricDecisionInstance> matchingHistoricDecisionInstances = QueryUtil
-				.list(query, firstResult, maxResults);
+				.list(query, paged.getFirstResult(), paged.getMaxResults());
 
 		List<HistoricDecisionInstance> historicDecisionInstanceDtoResults = new ArrayList<>();
 		for (org.cibseven.bpm.engine.history.HistoricDecisionInstance historicDecisionInstance : matchingHistoricDecisionInstances) {
@@ -257,18 +264,28 @@ public class DirectDecisionProvider implements IDecisionProvider {
 
 	@Override
 	public Long getHistoricDecisionInstanceCount(Map<String, Object> queryParams, CIBUser user) {
-		HistoricDecisionInstanceQueryDto queryHistoricDecisionInstanceDto = directProviderUtil.getObjectMapper(user).convertValue(queryParams,
-				HistoricDecisionInstanceQueryDto.class);
-		HistoricDecisionInstanceQuery query = queryHistoricDecisionInstanceDto.toQuery(directProviderUtil.getProcessEngine(user));
+		HistoricDecisionInstanceQuery query = createHistoricDecisionInstanceQueryDto(directProviderUtil.toMultivaluedMap(queryParams), user)
+				.toQuery(directProviderUtil.getProcessEngine(user));
 		return query.count();
+	}
+
+	/**
+	 * Builds the query DTO the way engine-rest does: through the query parameter constructor of
+	 * {@link HistoricDecisionInstanceQueryDto}, so that its converters apply. A plain Jackson
+	 * conversion of the parameter map cannot turn a string like "keyA,keyB" into the array typed
+	 * fields (decisionDefinitionKeyIn, decisionDefinitionIdIn, tenantIdIn, ...) and fails (CIB7-2711).
+	 */
+	private HistoricDecisionInstanceQueryDto createHistoricDecisionInstanceQueryDto(MultivaluedMap<String, String> queryParams,
+			CIBUser user) {
+		return new HistoricDecisionInstanceQueryDto(directProviderUtil.getObjectMapper(user), queryParams);
 	}
 
 	@Override
 	public HistoricDecisionInstance getHistoricDecisionInstanceById(String id, Map<String, Object> queryParams,
 			CIBUser user) {
 
-		HistoricDecisionInstanceQueryDto historicDecisionInstanceQueryDto = directProviderUtil.getObjectMapper(user).convertValue(queryParams,
-				HistoricDecisionInstanceQueryDto.class);
+		HistoricDecisionInstanceQueryDto historicDecisionInstanceQueryDto = createHistoricDecisionInstanceQueryDto(
+				directProviderUtil.toMultivaluedMap(queryParams), user);
 		historicDecisionInstanceQueryDto.setDecisionInstanceId(id);
 		HistoricDecisionInstanceQuery query = historicDecisionInstanceQueryDto.toQuery(directProviderUtil.getProcessEngine(user));
 		org.cibseven.bpm.engine.history.HistoricDecisionInstance instance = query.singleResult();

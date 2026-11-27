@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.cibseven.webapp.auth.CIBUser;
@@ -196,5 +197,70 @@ public class DecisionProviderTest {
 		decisionProvider.getDecisionDefinitionById("dec-1", java.util.Optional.empty(), user);
 
 		assertThat(engine.takePath()).startsWith("/decision-definition/dec-1");
+	}
+
+	// ---------- versions of one tenant (CIB7-2392) ----------
+
+	@Test
+	void getDecisionVersionsByKey_asksTheEngineForOneTenantsVersions() throws Exception {
+		engine.enqueueJson("[]");
+
+		decisionProvider.getDecisionVersionsByKey("risk", "acme", false, Optional.of(true), user);
+
+		assertThat(engine.takePath()).isEqualTo("/decision-definition?key=risk&sortBy=version&sortOrder=desc&tenantIdIn=acme");
+	}
+
+	@Test
+	void getDecisionVersionsByKey_asksTheEngineForTheVersionsWithoutTenant() throws Exception {
+		engine.enqueueJson("[]");
+
+		decisionProvider.getDecisionVersionsByKey("risk", null, true, Optional.of(true), user);
+
+		assertThat(engine.takePath()).isEqualTo("/decision-definition?key=risk&sortBy=version&sortOrder=desc&withoutTenantId=true");
+	}
+
+	@Test
+	void getDecisionVersionsByKey_letsTheTenantWinOverWithoutTenant() throws Exception {
+		engine.enqueueJson("[]");
+
+		decisionProvider.getDecisionVersionsByKey("risk", "acme", true, Optional.of(true), user);
+
+		assertThat(engine.takePath()).endsWith("&tenantIdIn=acme");
+	}
+
+	@Test
+	void getDecisionVersionsByKey_encodesTheTenantSoItCannotAddParameters() throws Exception {
+		engine.enqueueJson("[]");
+
+		decisionProvider.getDecisionVersionsByKey("risk", "a&withoutTenantId=true", false, Optional.of(true), user);
+
+		assertThat(engine.takePath()).isEqualTo("/decision-definition?key=risk&sortBy=version&sortOrder=desc&tenantIdIn=a%26withoutTenantId%3Dtrue");
+	}
+
+	@Test
+	void getDecisionVersionsByKey_encodesTheKey() throws Exception {
+		engine.enqueueJson("[]");
+
+		decisionProvider.getDecisionVersionsByKey("risk&tenantIdIn=acme", null, true, Optional.of(true), user);
+
+		assertThat(engine.takePath()).isEqualTo("/decision-definition?key=risk%26tenantIdIn%3Dacme&sortBy=version&sortOrder=desc&withoutTenantId=true");
+	}
+
+	@Test
+	void getDecisionVersionsByKey_keepsEveryTenantsVersionsWithoutARestriction() throws Exception {
+		engine.enqueueJson("[]");
+
+		decisionProvider.getDecisionVersionsByKey("risk", Optional.of(true), user);
+
+		assertThat(engine.takePath()).isEqualTo("/decision-definition?key=risk&sortBy=version&sortOrder=desc");
+	}
+
+	@Test
+	void getDecisionVersionsByKey_treatsAnEmptyTenantAsNone() throws Exception {
+		engine.enqueueJson("[]");
+
+		decisionProvider.getDecisionVersionsByKey("risk", "", true, Optional.of(true), user);
+
+		assertThat(engine.takePath()).isEqualTo("/decision-definition?key=risk&sortBy=version&sortOrder=desc&withoutTenantId=true");
 	}
 }

@@ -162,6 +162,9 @@
 		"definitionVersionNotFound": "Версия определения процесса \"{0}\" не найдена. Будет использована последняя версия.",
 		"definitionNotFound": "Определение процесса с ключом \"{processKey}\" и ID тенанта \"{tenantId}\" не найдено.",
 		"instanceNotFound": "Экземпляр процесса с ID \"{instanceId}\" не найден.\nОтвет сервера:\n{error}",
+		"instanceNotFoundNoResponse": "Экземпляр процесса с ID \"{instanceId}\" не найден.",
+		"instanceDefinitionNotFound": "Не удалось загрузить определение \"{definitionId}\" экземпляра процесса \"{instanceId}\".",
+		"instanceOfOtherProcess": "Экземпляр процесса \"{instanceId}\" относится к процессу \"{definitionKey}\" (определение \"{definitionId}\"), а не к \"{processKey}\".",
 		"back": "Назад",
 		"incidentsCounter": "Инциденты: {0}",
 		"incidents": "Инциденты",
@@ -188,6 +191,7 @@
 		"copySuccess": "Выбранное значение скопировано",
 		"refreshVersions": "Обновить версии истории",
 		"loadAllStatistics": "Загрузить всю статистику экземпляров",
+		"loadData": "Загрузить данные",
 		"externalProcessStarted": "Процесс успешно запущен",
 		"exportInstances": "Экспорт экземпляров",
 		"deleteProcessDefinition": {
@@ -344,6 +348,7 @@
 			"dueDate": "Дата исполнения",
 			"scheduleAt": "Запланировать на",
 			"invalidDateError": "Вы должны ввести корректную дату",
+			"loadFailed": "Не удалось загрузить инциденты",
 			"retry": "Повторить попытку",
 			"editAnnotation": "Редактировать аннотацию",
 			"causeIncidentProcessInstanceId": "ID экземпляра процесса-причины",
@@ -1159,6 +1164,8 @@
 		"InvalidValueHistoryTimeToLive": "Необходимо указать время жизни истории. Задайте его в модели или настройте значение по умолчанию в движке.",
 		"DmnTransformationException": "Ресурс не может быть обновлен. Невозможно преобразовать ресурс DMN.",
 		"InvalidGroupIdException": "Идентификатор группы содержит недопустимые символы. Разрешены только буквенно-цифровые символы (a-z, A-Z, 0-9) или camunda-admin. Пожалуйста, исправьте свою запись.",
+		"UnknownEngineException": "Выбранный движок процессов не настроен. Выберите другой движок.",
+		"EngineNotReachableException": "Не удалось подключиться к движку процессов. Повторите попытку позже.",
 		"unknown": "Произошла непредвиденная ошибка. Пожалуйста, попробуйте еще раз."
 	},
 	"searches": {
@@ -1368,7 +1375,9 @@
 		"value": "Значение",
 		"inputs": "Входные данные",
 		"outputs": "Выходные данные",
-		"decisionInstanceId": "ID экземпляра решения"
+		"decisionInstanceId": "ID экземпляра решения",
+		"notAvailableForTenant": "Это решение недоступно для тенанта \"{tenantId}\".",
+		"notAvailable": "Это решение недоступно."
 	},
 	"decision-instance": {
 		"edit": "@:commons.edit"

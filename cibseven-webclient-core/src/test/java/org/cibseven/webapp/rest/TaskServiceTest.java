@@ -27,8 +27,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withException;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
+import java.net.ConnectException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +39,10 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.config.EngineRestSource;
+import org.cibseven.webapp.exception.EngineNotReachableException;
 import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.webapp.exception.UnknownEngineException;
 import org.cibseven.webapp.providers.BpmProvider;
 import org.cibseven.webapp.rest.model.IdentityLink;
 import org.cibseven.webapp.rest.model.Task;
@@ -230,6 +235,19 @@ public class TaskServiceTest {
 	}
 
 	@Test
+	void getDeployedForm_passesEngineErrorsOnUnwrapped() {
+		EngineNotReachableException unreachable = new EngineNotReachableException(new ConnectException("Connection refused"));
+		when(bpmProvider.getDeployedForm("task-1", user)).thenThrow(unreachable);
+
+		assertThatThrownBy(() -> taskService.getDeployedForm("task-1", Locale.ENGLISH, user)).isSameAs(unreachable);
+
+		UnknownEngineException unknown = new UnknownEngineException();
+		when(bpmProvider.getDeployedForm("task-2", user)).thenThrow(unknown);
+
+		assertThatThrownBy(() -> taskService.getDeployedForm("task-2", Locale.ENGLISH, user)).isSameAs(unknown);
+	}
+
+	@Test
 	void getDeployedForm_answers204WhenTheFormIsEmpty() {
 		when(bpmProvider.getDeployedForm("task-1", user)).thenReturn(ResponseEntity.ok(new byte[0]));
 
@@ -325,5 +343,52 @@ public class TaskServiceTest {
 		assertThat(response.getBody()).isEqualTo(html);
 		assertThat(response.getHeaders().getFirst("Content-Type")).isEqualTo("text/html; charset=UTF-8");
 		processApp.verify();
+	}
+
+	@Test
+	void proxyFormContent_fetchesTheFormFromTheConfiguredServerOfAnAdditionalEngine() {
+		CustomRestTemplate restTemplate = new CustomRestTemplate();
+		ReflectionTestUtils.setField(taskService, "restTemplate", restTemplate);
+		EngineRestSource additional = new EngineRestSource();
+		additional.setUrl("http://other-app/");
+		additional.setPath("/engine-rest");
+		taskService.properties.getEngineRest().getAdditionalEngineRest().add(additional);
+		user.setEngine("http://other-app|/engine-rest|default");
+		when(bpmProvider.form("task-1", user)).thenReturn(new TaskForm("embedded:app:forms/review.html", "/invoice", null));
+		MockRestServiceServer otherApp = MockRestServiceServer.bindTo(restTemplate).build();
+		otherApp.expect(requestTo("http://other-app/invoice/forms/review.html"))
+			.andRespond(withSuccess("<form></form>", MediaType.TEXT_HTML));
+
+		assertThat(taskService.proxyFormContent("task-1", false, user).getBody()).isEqualTo("<form></form>");
+		otherApp.verify();
+	}
+
+	@Test
+	void proxyFormContent_reportsAnUnreachableServerWithoutItsUrl() {
+		CustomRestTemplate restTemplate = new CustomRestTemplate();
+		ReflectionTestUtils.setField(taskService, "restTemplate", restTemplate);
+		taskService.properties.getEngineRest().setUrl("http://process-app/");
+		when(bpmProvider.form("task-1", user)).thenReturn(new TaskForm("embedded:app:forms/review.html", "/invoice", null));
+		MockRestServiceServer processApp = MockRestServiceServer.bindTo(restTemplate).build();
+		processApp.expect(requestTo("http://process-app/invoice/forms/review.html"))
+			.andRespond(withException(new ConnectException("Connection refused")));
+
+		assertThatThrownBy(() -> taskService.proxyFormContent("task-1", false, user))
+			.isInstanceOf(EngineNotReachableException.class)
+			.hasMessage("The process engine could not be reached");
+		processApp.verify();
+	}
+
+	@Test
+	void proxyFormContent_doesNotFetchFromAnUnconfiguredServerNamedInTheEngineId() {
+		CustomRestTemplate restTemplate = new CustomRestTemplate();
+		ReflectionTestUtils.setField(taskService, "restTemplate", restTemplate);
+		user.setEngine("http://unknown.example:8080|/engine-rest|default");
+		when(bpmProvider.form("task-1", user)).thenReturn(new TaskForm("embedded:app:forms/review.html", "/invoice", null));
+		MockRestServiceServer anyHost = MockRestServiceServer.bindTo(restTemplate).build();
+
+		assertThatThrownBy(() -> taskService.proxyFormContent("task-1", false, user))
+			.isInstanceOf(UnknownEngineException.class);
+		anyHost.verify();
 	}
 }

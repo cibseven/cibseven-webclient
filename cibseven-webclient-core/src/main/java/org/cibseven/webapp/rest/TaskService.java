@@ -26,10 +26,13 @@ import java.util.Optional;
 import org.cibseven.webapp.NamedByteArrayDataSource;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.exception.TokenExpiredException;
+import org.cibseven.webapp.config.EngineRestSource;
 import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.exception.AccessDeniedException;
+import org.cibseven.webapp.exception.EngineNotReachableException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.webapp.exception.UnknownEngineException;
 import org.cibseven.webapp.logger.TaskLogger;
 import org.cibseven.webapp.rest.model.CandidateGroupTaskCount;
 import org.cibseven.webapp.rest.model.IdentityLink;
@@ -45,6 +48,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -182,6 +186,9 @@ public class TaskService extends BaseService implements InitializingBean {
 		
 		try {
 			return EngineResponses.relayOrNoContent(bpmProvider.getDeployedForm(taskId, user));
+		} catch (EngineNotReachableException | UnknownEngineException e) {
+			// answered with their own fixed messages, not as a failure of the form
+			throw e;
 		} catch (Exception e) {
 			throw new SystemException("Error getting deployed form: " + e.getMessage(), e);
 		}
@@ -397,7 +404,7 @@ public class TaskService extends BaseService implements InitializingBean {
 	      CIBUser userAuth = (CIBUser) baseUserProvider.authenticateUser(rq);
 	      logger.info("[INFO] Submit variables in task with name=" + taskName + " and ID=" + taskId + " (" + getClass().getSimpleName() + ")");
 	      Task task = bpmProvider.findTaskById(taskId, userAuth);
-	      if (!task.getAssignee().equals(userAuth.getUserID())) {
+	      if (task.getAssignee() == null || !task.getAssignee().equals(userAuth.getUserID())) {
 	        throw new AccessDeniedException("The user submiting the task is not the one assigned");
 	      }
 	      
@@ -411,12 +418,21 @@ public class TaskService extends BaseService implements InitializingBean {
 	      return ResponseEntity.ok("ok");
 	    } catch (Exception e) {
 	      logger.info("[INFO] Exception when submiting variables in task with name=" + taskName + " and ID=" + taskId + " (" + getClass().getSimpleName() + ")", e);
-	      if (e instanceof NoObjectFoundException) return generateErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
 	      if (e instanceof TokenExpiredException) throw e;
-	      else return generateErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+	      // Controlled texts only: the catch-all also catches engine exceptions with technical messages
+	      if (e instanceof NoObjectFoundException)
+	        return errorResponse(e, "The task or its process instance no longer exists.", HttpStatus.NOT_FOUND);
+	      if (e instanceof AccessDeniedException)
+	        return errorResponse(e, "The task is not assigned to the user who submits it.", HttpStatus.BAD_REQUEST);
+	      return errorResponse(e, "The form could not be submitted.", HttpStatus.BAD_REQUEST);
 	    }
 	  }
-	  
+
+	  /**
+	   * @deprecated answers with a plain-string body the frontend cannot read; use
+	   * {@link #errorResponse(Exception, String, HttpStatus)} with a controlled text.
+	   */
+	  @Deprecated
 	  @SuppressWarnings("unchecked")
 	  protected <T> ResponseEntity<T> generateErrorResponse(String message, HttpStatus status) {
 	    ResponseEntity<?> response = ResponseEntity.status(status).body(message);
@@ -560,7 +576,9 @@ public class TaskService extends BaseService implements InitializingBean {
 			// Parse the engine ID format: "url|path|engineName"
 			String[] parts = engineId.split("\\|", 3);
 			if (parts.length == 3) {
-				baseUrl = parts[0];
+				baseUrl = properties.getEngineRest().findEngineRestSource(parts[0], parts[1])
+					.map(EngineRestSource::getUrl)
+					.orElseThrow(UnknownEngineException::new);
 			}
 		} else {
 			// Use default configured engine URL for legacy format or default engine
@@ -594,6 +612,8 @@ public class TaskService extends BaseService implements InitializingBean {
 					.status(response.getStatusCode())
 					.headers(headers)
 					.body(response.getBody());
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		} catch (Exception e) {
 			throw new SystemException("Error fetching form from URL: " + formPath + " - " + e.getMessage(), e);
 		}

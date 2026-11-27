@@ -44,8 +44,11 @@ public class SystemService extends BaseService implements InitializingBean {
 
  @Autowired BpmProvider bpmProvider;
 
-	@Autowired
-	private CustomRestTemplate restTemplate;
+	private final CustomRestTemplate restTemplate;
+
+	public SystemService(CustomRestTemplate restTemplate) {
+		this.restTemplate = restTemplate;
+	}
 
 	public void afterPropertiesSet() {
 	}
@@ -60,8 +63,13 @@ public class SystemService extends BaseService implements InitializingBean {
 			return bpmProvider.getMetrics(queryParams, user);
 	}
 
+	/**
+	 * Statistics of the connection pool towards the engine, for logged-in users. Deliberately
+	 * answered without a call to the engine (such as a permission check): that call would go
+	 * through this very pool, change the figures it reports and block when the pool is exhausted.
+	 */
 	@GetMapping("/pool-status")
-	public String poolStatus() {
+	public String poolStatus(CIBUser user) {
 		return restTemplate.getConnectionPoolStats();
 	}
 

@@ -220,6 +220,7 @@ public class ElementTemplateLoader implements DisposableBean {
 
 		int updated = 0;
 		int inserted = 0;
+		int skipped = 0;
 		int failed = 0;
 
 		for (JsonNode templateNode : templateNodes) {
@@ -238,10 +239,10 @@ public class ElementTemplateLoader implements DisposableBean {
 			// Each template is upserted in its own transaction, so a failure rolls back only that
 			// template and never poisons the next one or the rest of the batch.
 			try {
-				if (Boolean.TRUE.equals(transactionTemplate.execute(status -> upsertTemplate(parsed)))) {
-					updated++;
-				} else {
-					inserted++;
+				switch (transactionTemplate.execute(status -> upsertTemplate(parsed))) {
+					case UPDATED -> updated++;
+					case INSERTED -> inserted++;
+					case SKIPPED -> skipped++;
 				}
 			} catch (Exception e) {
 				failed++;
@@ -250,24 +251,37 @@ public class ElementTemplateLoader implements DisposableBean {
 			}
 		}
 
-		log.info("Processed {} element templates from '{}': {} updated, {} inserted, {} failed",
-				templateNodes.size(), description, updated, inserted, failed);
+		log.info("Processed {} element templates from '{}': {} updated, {} inserted, {} kept as users left them, {} failed",
+				templateNodes.size(), description, updated, inserted, skipped, failed);
 	}
 
+	enum Upsert { INSERTED, UPDATED, SKIPPED }
+
 	/**
-	 * Inserts or updates a single element template. Runs inside the caller-provided transaction.
-	 *
-	 * @return {@code true} if an existing template was updated, {@code false} if a new one was inserted.
+	 * Inserts a new template, or brings a stored one up to its source. A stored template follows the
+	 * source only while it is one the loader put there and no user has touched: once a user created,
+	 * edited, hid or showed it, it stays as they left it. Runs inside the caller-provided transaction.
 	 */
-	private boolean upsertTemplate(ElementTemplate template) {
-		ElementTemplate existing = elementTemplateRepository.findElementTemplateById(template.getTemplateId());
-		if (existing != null) {
-			template.setId(existing.getId());
-			elementTemplateRepository.save(template);
-			return true;
+	private Upsert upsertTemplate(ElementTemplate source) {
+		ElementTemplate stored = elementTemplateRepository.findElementTemplateById(source.getTemplateId());
+		if (stored == null) {
+			elementTemplateRepository.save(source);
+			return Upsert.INSERTED;
 		}
-		elementTemplateRepository.save(template);
-		return false;
+		if (stored.getOrigin() != ElementTemplateOrigin.DEFAULT_JSON || isSet(stored.getCreatedBy()) || isSet(stored.getUpdatedBy())) {
+			log.debug("Element template '{}' is kept as stored: a user has created or changed it", source.getTemplateId());
+			return Upsert.SKIPPED;
+		}
+		// Only what the source declares; visibility and the audit fields stay
+		stored.setName(source.getName());
+		stored.setDescription(source.getDescription());
+		stored.setContent(source.getContent());
+		elementTemplateRepository.save(stored);
+		return Upsert.UPDATED;
+	}
+
+	private static boolean isSet(String value) {
+		return value != null && !value.isBlank();
 	}
 
 }

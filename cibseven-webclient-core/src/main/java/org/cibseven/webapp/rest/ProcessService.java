@@ -29,8 +29,10 @@ import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.exception.ApplicationException;
+import org.cibseven.webapp.exception.EngineNotReachableException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
 import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.webapp.exception.UnknownEngineException;
 import org.cibseven.webapp.logger.TaskLogger;
 import org.cibseven.webapp.rest.model.ActivityInstance;
 import org.cibseven.webapp.rest.model.Deployment;
@@ -248,6 +250,9 @@ public class ProcessService extends BaseService implements InitializingBean {
 		
 		try {
 			return EngineResponses.relayOrNoContent(bpmProvider.getDeployedStartForm(processDefinitionId, user));
+		} catch (EngineNotReachableException | UnknownEngineException e) {
+			// answered with their own fixed messages, not as a failure of the form
+			throw e;
 		} catch (Exception e) {
 			throw new SystemException("Error getting deployed start form: " + e.getMessage(), e);
 		}
@@ -512,19 +517,21 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Deployment Id") @PathVariable String deploymentId,
 			@Parameter(description = "Resource Id") @PathVariable String resourceId,
 			@Parameter(description = "Name of the resource file") @RequestParam String filename,
-			@Parameter(description = "Token") @RequestParam String token,
+			@Parameter(description = "Ignored, kept so that existing links keep working; the Authorization header authenticates (CIB7-2556)", deprecated = true)
+			@RequestParam(required = false) String token,
 			CIBUser user,
 			HttpServletRequest rq, HttpServletResponse res) {
+		// The token value is deliberately not copied into the Authorization header: a query value is
+		// not validated, and it would put the user's JWT into URLs, logs and browser history (CIB7-2556)
 		try {
-			rq = new HeaderModifyingRequestWrapper(rq, token);
+			return response(bpmProvider.fetchDataFromDeploymentResource(rq, deploymentId, resourceId, filename, user));
+		} catch (ApplicationException x) {
 			try {
-				return response(bpmProvider.fetchDataFromDeploymentResource(rq, deploymentId, resourceId, filename, user));
-			} catch (ApplicationException x) {
 				res.sendRedirect("../../../#/flow/auth/deployments/" + deploymentId + "/resources/" + resourceId);
-				throw x;
+			} catch (IOException e) {
+				throw new SystemException(e);
 			}
-		} catch (IOException x) {
-			throw new SystemException(x);
+			throw x;
 		}
 	}
 	
@@ -885,8 +892,10 @@ public class ProcessService extends BaseService implements InitializingBean {
 			bpmProvider.saveVariableInProcessInstanceId(processInstanceId, variables, userAuth);    
 			return ResponseEntity.ok("ok");
 		} catch (Exception e) {
-			if (e instanceof NoObjectFoundException) return generateErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
-			else return generateErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+			// Controlled texts only: the catch-all also catches engine exceptions with technical messages
+			if (e instanceof NoObjectFoundException)
+				return errorResponse(e, "The process instance no longer exists.", HttpStatus.NOT_FOUND);
+			return errorResponse(e, "The variables could not be saved.", HttpStatus.BAD_REQUEST);
 		}
 	}
  
@@ -898,11 +907,17 @@ public class ProcessService extends BaseService implements InitializingBean {
 			Variable variable = bpmProvider.fetchVariableByProcessInstanceId(processInstanceId, variableName, userAuth);    
 			return ResponseEntity.ok(variable);
 		} catch (Exception e) {
-			if (e instanceof NoObjectFoundException) return generateErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
-			else return generateErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST);
+			if (e instanceof NoObjectFoundException)
+				return errorResponse(e, "The process instance or the variable does not exist.", HttpStatus.NOT_FOUND);
+			return errorResponse(e, "The variable could not be read.", HttpStatus.BAD_REQUEST);
 		}
-		}
+	}
 
+	/**
+	 * @deprecated answers with a plain-string body the frontend cannot read; use
+	 * {@link #errorResponse(Exception, String, HttpStatus)} with a controlled text.
+	 */
+	@Deprecated
 	@SuppressWarnings("unchecked")
 	protected <T> ResponseEntity<T> generateErrorResponse(String message, HttpStatus status) {
 		ResponseEntity<?> response = ResponseEntity.status(status).body(message);

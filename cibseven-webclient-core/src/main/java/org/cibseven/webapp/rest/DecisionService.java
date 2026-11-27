@@ -164,8 +164,12 @@ public class DecisionService extends BaseService implements InitializingBean {
 	@GetMapping("/key/{key}/versions")
 	public Collection<Decision> getDecisionVersionsByKey(
 			@Parameter(description = "Decision definition key") @PathVariable String key,
+			@Parameter(description = "Only the versions of this tenant") @RequestParam Optional<String> tenantId,
+			@Parameter(description = "Only the versions without a tenant; ignored when a tenant is given")
+			@RequestParam Optional<Boolean> withoutTenantId,
 			@RequestParam Optional<Boolean> lazyLoad, Locale loc, CIBUser user) {
-		return bpmProvider.getDecisionVersionsByKey(key, lazyLoad, user);
+		// an empty tenantId= counts as none, for both providers alike
+		return bpmProvider.getDecisionVersionsByKey(key, tenantId.filter(id -> !id.isEmpty()).orElse(null), withoutTenantId.orElse(false), lazyLoad, user);
 	}
 	
 	@Operation(summary = "Get a list of historic decision instances")

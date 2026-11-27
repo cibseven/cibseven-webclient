@@ -651,7 +651,7 @@ public class DirectProcessProvider implements IProcessProvider {
 			historicProcessInstanceQueryDto.setActivityIdIn(Arrays.asList(activityId.get()));
 		if (active.isPresent())
 			historicProcessInstanceQueryDto.setActive(active.get());
-		if (text != "") {
+		if (text != null && !text.isEmpty()) {
 			List<HistoricProcessInstanceQueryDto> orQueries = new ArrayList<>();
 			HistoricProcessInstanceQueryDto orQuery = new HistoricProcessInstanceQueryDto();
 			orQuery.setProcessInstanceBusinessKeyLike("*" + text + "*");

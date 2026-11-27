@@ -303,16 +303,20 @@ describe('fetchDecisionsIfEmpty', () => {
     commit: vi.fn()
   })
 
-  it('should fetch and reduce the decision list when the store is empty', async () => {
-    const store = storeWith([], [{
-      key: 'invoice', id: 'dd1', name: 'Invoice', latestVersion: 2, extra: 'dropped'
-    }])
+  // CIB7-2392: the action commits the rows with their tenant; committing a reduced copy again dropped it,
+  // and on a direct load that copy could be the last commit, so every row opened the same tenant's decision
+  it('should fetch the decision list when the store is empty and keep each row as the action committed it', async () => {
+    const rows = [
+      { key: 'invoice', id: 'dd1', name: 'Invoice', latestVersion: 2, tenantId: 'acme' },
+      { key: 'invoice', id: 'dd2', name: 'Invoice', latestVersion: 1, tenantId: null }
+    ]
+    const store = storeWith([], rows)
 
     const result = await fetchDecisionsIfEmpty(store)
 
     expect(store.dispatch).toHaveBeenCalledWith('getDecisionList', { latestVersion: true })
-    expect(result).toEqual([{ key: 'invoice', id: 'dd1', name: 'Invoice', latestVersion: 2 }])
-    expect(store.commit).toHaveBeenCalledWith('setDecisions', { decisions: result })
+    expect(result).toBe(rows)
+    expect(store.commit).not.toHaveBeenCalled()
   })
 
   // Avoids a redundant round trip on every navigation into the decisions section.

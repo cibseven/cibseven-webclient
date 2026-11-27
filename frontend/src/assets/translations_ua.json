@@ -162,6 +162,9 @@
 		"definitionVersionNotFound": "Версія визначення процесу \"{0}\" не знайдена. Використовується остання версія.",
 		"definitionNotFound": "Визначення процесу з ключем \"{processKey}\" та ID клієнта \"{tenantId}\" не знайдено.",
 		"instanceNotFound": "Екземпляр процесу з ID \"{instanceId}\" не знайдено.\nВідповідь сервера:\n{error}",
+		"instanceNotFoundNoResponse": "Екземпляр процесу з ID \"{instanceId}\" не знайдено.",
+		"instanceDefinitionNotFound": "Не вдалося завантажити визначення \"{definitionId}\" екземпляра процесу \"{instanceId}\".",
+		"instanceOfOtherProcess": "Екземпляр процесу \"{instanceId}\" належить до процесу \"{definitionKey}\" (визначення \"{definitionId}\"), а не до \"{processKey}\".",
 		"back": "Назад",
 		"incidentsCounter": "Інциденти: {0}",
 		"incidents": "Інциденти",
@@ -188,6 +191,7 @@
 		"copySuccess": "Значення скопійовано",
 		"refreshVersions": "Оновити історію версій",
 		"loadAllStatistics": "Завантажити всю статистику екземплярів",
+		"loadData": "Завантажити дані",
 		"externalProcessStarted": "Процес успішно запущено",
 		"exportInstances": "Експортувати екземпляри",
 		"deleteProcessDefinition": {
@@ -344,6 +348,7 @@
 			"dueDate": "Термін",
 			"scheduleAt": "Запланувати на",
 			"invalidDateError": "Введіть коректну дату",
+			"loadFailed": "Не вдалося завантажити інциденти",
 			"retry": "Повторити спробу",
 			"editAnnotation": "Редагувати анотацію",
 			"causeIncidentProcessInstanceId": "ID екземпляра процесу-джерела",
@@ -1159,6 +1164,8 @@
 		"InvalidValueHistoryTimeToLive": "Необхідно вказати час зберігання історії. Задайте його в моделі або налаштуйте значення за замовчуванням у движку.",
 		"DmnTransformationException": "Ресурс не може бути оновлений. Неможливо перетворити ресурс DMN.",
 		"InvalidGroupIdException": "Ідентифікатор групи містить недопустимі символи. Дозволені лише буквено-цифрові символи (a-z, A-Z, 0-9) або camunda-admin. Будь ласка, виправте запис.",
+		"UnknownEngineException": "Вибраний рушій процесів не налаштовано. Виберіть інший рушій.",
+		"EngineNotReachableException": "Не вдалося підключитися до рушія процесів. Спробуйте пізніше.",
 		"unknown": "Сталася неочікувана помилка. Будь ласка, спробуйте ще раз."
 	},
 	"searches": {
@@ -1368,7 +1375,9 @@
 		"value": "Значення",
 		"inputs": "Вхідні дані",
 		"outputs": "Вихідні дані",
-		"decisionInstanceId": "ID екземпляра рішення"
+		"decisionInstanceId": "ID екземпляра рішення",
+		"notAvailableForTenant": "Це рішення недоступне для орендаря \"{tenantId}\".",
+		"notAvailable": "Це рішення недоступне."
 	},
 	"decision-instance": {
 		"edit": "@:commons.edit"

@@ -194,7 +194,10 @@
         </div>
       </template>
     </FlowTable>
-      <div v-if="!loading && incidents.length === 0">
+      <div v-if="!loading && loadFailed">
+        <p class="text-center p-4 text-danger" role="alert">{{ $t('process-instance.incidents.loadFailed') }}</p>
+      </div>
+      <div v-else-if="!loading && incidents.length === 0">
         <p class="text-center p-4">{{ $t('process-instance.noIncidents') }}</p>
       </div>
     </PagedScrollableContent>
@@ -239,13 +242,24 @@ export default {
       loading: true,
       currentSortBy: 'incidentType',
       currentSortDesc: false,
+      // The table keeps its rows itself: a list in the global store outlived the table, so the late
+      // answer of a table that was left reached the next table's list (CIB7-2825)
+      incidents: [],
       firstResult: 0,
       maxResults: this.$root?.config?.maxProcessesResults || 50,
       totalCount: null,
+      // The latest load failed: the table says so instead of claiming there are no incidents
+      loadFailed: false,
+      // Counts the loads, so that only the latest one sets the rows and ends the loader
+      loadRequestId: 0,
+      // Counts the count requests (with a first page, or a next page after a failed count), so that only
+      // the latest one sets the total
+      countRequestId: 0,
+      // The latest count request failed: the next page asks for the count again
+      countFailed: false,
     }
   },
   computed: {
-    ...mapGetters('incidents', ['incidents']),
     ...mapGetters('instances', ['instances']),
     ...mapGetters(['selectedActivityId', 'externalTaskActivityIds']),
     isHistoricView() {
@@ -313,6 +327,7 @@ export default {
     'instance.id': {
       handler(id) {
         if (id) {
+          this.firstResult = 0
           this.loadIncidentsData(id, true)
         }
       },
@@ -321,6 +336,7 @@ export default {
     'process.id': {
       handler(id) {
         if (id && !this.instance) {
+          this.firstResult = 0
           this.loadIncidentsData(id, false)
         }
       },
@@ -328,15 +344,24 @@ export default {
     },
     'selectedActivityId': {
       handler() {
-        this.firstResult = 0
-        const id = this.isInstanceView ? this.instance.id : this.process.id
-        this.loadIncidentsData(id, this.isInstanceView)
+        this.loadFirstPage()
       }
     }
   },
+  created() {
+    // One timer per table: a debounce in the options object would be shared by every table, so one
+    // table's search would cancel another's
+    this.debouncedSearch = debounce(800, this.searchByText)
+  },
+  beforeUnmount() {
+    // A search still waiting would send a request nobody shows
+    this.debouncedSearch.cancel()
+    // The loads and the count still running are no longer the latest: their answers change nothing
+    this.loadRequestId++
+    this.countRequestId++
+  },
   methods: {
     ...mapActions(['clearActivitySelection', 'setHighlightedElement', 'selectActivity']),
-    ...mapActions('incidents', ['loadRuntimeIncidents', 'loadHistoryIncidents', 'removeIncident', 'updateIncidentAnnotation', 'setIncidents']),
     formatDateForTooltips,
     async fetchCount(params) {
       const countParams = { ...params }
@@ -348,11 +373,32 @@ export default {
     },
     async fetch(params) {
       return this.isHistoricView ?
-        this.loadHistoryIncidents(params) :
-        this.loadRuntimeIncidents(params)
+        IncidentService.fetchHistoricIncidents(params) :
+        IncidentService.findIncidents(params)
     },
+    async loadCount(params) {
+      const requestId = ++this.countRequestId
+      this.countFailed = false
+      let count = null
+      try {
+        count = await this.fetchCount(params)
+      } catch {
+        // No count: the table shows the loaded rows without a total until the next page asks again
+        if (requestId === this.countRequestId) this.countFailed = true
+      }
+      if (requestId === this.countRequestId) this.totalCount = count
+    },
+    /**
+     * Loads the page at `firstResult`, and with the first page the count. A load started later wins: an
+     * older answer, success or failure, changes neither the rows nor the loader, and an older count not
+     * the total, so overlapping first pages (e.g. a sort change while the list loads) no longer list
+     * every incident twice (CIB7-2825).
+     */
     async loadIncidentsData(id, isInstance = true) {
+      const requestId = ++this.loadRequestId
+      const isCurrent = () => requestId === this.loadRequestId
       this.loading = true
+      this.loadFailed = false
 
       // the engine leaves failedActivityId empty in external task incidents, so those are matched by activityId
       const isExternalTask = this.externalTaskActivityIds.includes(this.selectedActivityId)
@@ -368,29 +414,45 @@ export default {
         ...(this.freeText ? { incidentMessageLike: `%${this.freeText}%` } : {} ),
       }
 
-      // clear existing incidents when loading first page
-      if (this.firstResult === 0) {
-        this.setIncidents([])
+      // A first page replaces the rows, a later page is added to them. Until the first page is answered
+      // the rows and the count of the previous one are hidden, so a new order or filter never shows the
+      // old rows
+      const isFirstPage = (params.firstResult ?? 0) <= 0
+      if (isFirstPage) {
+        this.incidents = []
         this.totalCount = null
       }
-
-      this.fetchCount(params).then(count => {
-        this.totalCount = count
-      }).catch(() => {
-        this.totalCount = null
-      })
+      // The total does not depend on the page, so the next pages keep it; only after a failed count
+      // a next page asks again, as the list never counts as complete without a total
+      if (isFirstPage || this.countFailed) this.loadCount(params)
 
       try {
-        await this.fetch(params)
+        const page = await this.fetch(params) || []
+        if (!isCurrent()) return
+        this.incidents = isFirstPage ? page : [...this.incidents, ...page]
         if (!this.isInstanceView && this.incidents.length > 0) {
           this.enrichWithBusinessKey()
         }
+      } catch (error) {
+        // Nobody waits for a load (sort, watchers, search and scrolling start it and move on), so it is
+        // reported here; a superseded load's failure is about a request already replaced
+        if (isCurrent()) {
+          console.error('Error loading incidents:', error)
+          this.loadFailed = true
+        }
       } finally {
-        this.loading = false
+        if (isCurrent()) this.loading = false
       }
     },
+    // The shown instance's or definition's incidents again from the first page, with the count
+    loadFirstPage() {
+      this.firstResult = 0
+      const id = this.isInstanceView ? this.instance.id : this.process.id
+      this.loadIncidentsData(id, this.isInstanceView)
+    },
     loadNextPage() {
-      this.firstResult += this.maxResults
+      // After the rows loaded so far: a failed page is asked for again instead of skipped
+      this.firstResult = this.incidents.length
       const id = this.isInstanceView ? this.instance.id : this.process.id
       this.loadIncidentsData(id, this.isInstanceView)
     },
@@ -402,22 +464,18 @@ export default {
       }, {})
 
       // enrich incidents with business keys
-      const enrichedIncidents = this.incidents.map(incident => {
+      this.incidents = this.incidents.map(incident => {
         const instanceInfo = instanceIdToProcessInfo[incident.processInstanceId]
         return {
           ...incident,
           ...instanceInfo,
         }
       })
-
-      this.setIncidents(enrichedIncidents)
     },
     handleExternalSort({ sortBy, sortDesc }) {
       this.currentSortBy = sortBy
       this.currentSortDesc = sortDesc
-      this.firstResult = 0
-      const id = this.isInstanceView ? this.instance.id : this.process.id
-      this.loadIncidentsData(id, this.isInstanceView)
+      this.loadFirstPage()
     },
     showIncidentMessage: function(incident) {
       const runtimeConfiguration = incident.configuration || incident.rootCauseIncidentConfiguration
@@ -445,25 +503,21 @@ export default {
           : IncidentService.fetchIncidentStacktraceByJobId(configuration)
       }
     },
-    incrementNumberRetry: function({ item, params }) {
-      // Choose the appropriate retry method based on incident type
-      let retryPromise
+    async incrementNumberRetry({ item, params }) {
       const configuration = item.configuration ?? item.rootCauseIncidentConfiguration
-      if (item.incidentType === 'failedExternalTask') {
-        // For external task incidents, use the external task retry endpoint
-        retryPromise = IncidentService.retryExternalTaskById(configuration, params)
-      } else {
-        // For other incident types, use job retry
-        retryPromise = IncidentService.retryJobById(configuration, params)
-      }
-      retryPromise.then(() => {
-        this.removeIncident(item.id)
-        this.$refs.incidentRetryModal.hide()
-      })
+      // External task incidents have their own retry endpoint, all others are job incidents
+      await (item.incidentType === 'failedExternalTask'
+        ? IncidentService.retryExternalTaskById(configuration, params)
+        : IncidentService.retryJobById(configuration, params))
+      this.$refs.incidentRetryModal.hide()
+      // The engine deletes the incident from the runtime incidents and marks it resolved in the history,
+      // so a row removed here would leave the total and the offset of the next page wrong
+      this.loadFirstPage()
     },
-    setIncidentAnnotation: function({ id, params }) {
+    setIncidentAnnotation({ id, params }) {
       IncidentService.setIncidentAnnotation(id, params).then(() => {
-        this.updateIncidentAnnotation({ incidentId: id, annotation: params.annotation })
+        const incident = this.incidents.find(incident => incident.id === id)
+        if (incident) incident.annotation = params.annotation
         this.$refs.annotationModal.hide()
       })
     },
@@ -483,12 +537,13 @@ export default {
         }
       }
     },
-    onInput: debounce(800, function(freeText) {
+    onInput(freeText) {
+      this.debouncedSearch(freeText)
+    },
+    searchByText(freeText) {
       this.freeText = freeText
-      this.firstResult = 0
-      const id = this.isInstanceView ? this.instance.id : this.process.id
-      this.loadIncidentsData(id, this.isInstanceView)
-    }),
+      this.loadFirstPage()
+    },
     removeSelectedActivityBadge() {
       this.clearActivitySelection()
       this.setHighlightedElement('')

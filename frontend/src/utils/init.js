@@ -152,12 +152,17 @@ export function handleAxiosError(router, root, error) {
       const exceptions = ['NoObjectFoundException', 'InvalidAttributeValueException', 'SubmitDeniedException',
         'UnsupportedTypeException', 'ExpressionEvaluationException', 'ExistingUserRequestException',
         'ExistingGroupRequestException', 'AccessDeniedException', 'SystemException', 'InvalidUserIdException',
-        'VariableModificationException', 'WrongDeploymenIdException', 'NoRessourcesFoundException', 'DmnTransformationException', 'InvalidGroupIdException']
+        'VariableModificationException', 'WrongDeploymenIdException', 'NoRessourcesFoundException', 'DmnTransformationException', 'InvalidGroupIdException',
+        'EngineNotReachableException']
       if (showsDialog && res.data.type && exceptions.includes(res.data.type))
         root.$refs.error.show(res.data)
       //root.$refs.report.show(res.data)
       return Promise.reject(error)
     } else {
+      // A 400 is left to the component that sent the request, except an engine id that names no configured
+      // engine: any request can carry one, from a stale selection or token, so no component expects it
+      if (showsDialog && res.status === 400 && res.data?.type === 'UnknownEngineException')
+        root.$refs.error.show(res.data)
       //root.$refs.error.show(res.data || res.statusText)
       return Promise.reject(error)
     }
@@ -219,10 +224,9 @@ export function fetchAndStoreProcesses(app, store, config, extraInfo) {
 
 export async function fetchDecisionsIfEmpty(store) {
   if (store.state.decision.list.length < 1) {
-    const decisions = await store.dispatch('getDecisionList', { latestVersion: true })
-    const reduced = decisions.map(d => ({ key: d.key, id: d.id, name: d.name, latestVersion: d.latestVersion }))
-    store.commit('setDecisions', { decisions: reduced })
-    return reduced
+    // The action commits the list itself, with each row's tenant: committing a reduced copy again dropped
+    // the tenant, so the rows opened the wrong tenant's decision (CIB7-2392)
+    return store.dispatch('getDecisionList', { latestVersion: true })
   } else {
     return store.state.decision.list
   }

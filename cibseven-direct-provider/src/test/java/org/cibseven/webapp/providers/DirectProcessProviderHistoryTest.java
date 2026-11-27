@@ -25,6 +25,7 @@ import static org.mockito.Mockito.RETURNS_SELF;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
@@ -164,6 +165,27 @@ public class DirectProcessProviderHistoryTest {
 		// the search box matches either a business key fragment or an exact instance id, which the
 		// DTO applies as a nested or-query rather than as two top-level filters
 		verify(historyQuery).addOrQuery(any());
+	}
+
+	@Test
+	void findProcessesInstancesHistoryById_addsNoOrQueryForAnEmptySearch() {
+		when(historyQuery.list()).thenReturn(List.of());
+
+		// a request parameter is a new String instance, not the interned "" literal (CIB7-2810)
+		processProvider.findProcessesInstancesHistoryById(
+			"id-1", Optional.empty(), Optional.empty(), null, null, new String(""), user);
+
+		verify(historyQuery, never()).addOrQuery(any());
+	}
+
+	@Test
+	void findProcessesInstancesHistoryById_addsNoOrQueryWithoutText() {
+		when(historyQuery.list()).thenReturn(List.of());
+
+		processProvider.findProcessesInstancesHistoryById(
+			"id-1", Optional.empty(), Optional.empty(), null, null, null, user);
+
+		verify(historyQuery, never()).addOrQuery(any());
 	}
 
 	@Test

@@ -34,10 +34,12 @@ import tools.jackson.databind.node.ObjectNode;
 import org.cibseven.webapp.auth.BaseUserProvider;
 import org.cibseven.webapp.auth.CIBUser;
 import org.cibseven.webapp.auth.rest.StandardLogin;
+import org.cibseven.webapp.config.EngineRestSource;
 import org.cibseven.webapp.config.SevenWebclientProperties;
 import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.exception.BatchOperationException;
 import org.cibseven.webapp.exception.DmnTransformationException;
+import org.cibseven.webapp.exception.EngineNotReachableException;
 import org.cibseven.webapp.exception.ExistingGroupRequestException;
 import org.cibseven.webapp.exception.ExistingUserRequestException;
 import org.cibseven.webapp.exception.ExpressionEvaluationException;
@@ -51,6 +53,7 @@ import org.cibseven.webapp.exception.OptimisticLockingException;
 import org.cibseven.webapp.exception.PasswordPolicyException;
 import org.cibseven.webapp.exception.SubmitDeniedException;
 import org.cibseven.webapp.exception.SystemException;
+import org.cibseven.webapp.exception.UnknownEngineException;
 import org.cibseven.webapp.exception.UnsupportedTypeException;
 import org.cibseven.webapp.exception.VariableModificationException;
 import org.cibseven.webapp.exception.WrongDeploymenIdException;
@@ -65,6 +68,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,7 +107,7 @@ public abstract class SevenProviderBase {
 			// Parse the engine ID format: "url|path|engineName"
 			String[] parts = engineId.split("\\|", 3);
 			if (parts.length == 3) {
-				String restUrl = buildEngineRestUrl(parts[0], parts[1]);
+				String restUrl = getConfiguredEngineRestUrl(parts[0], parts[1]);
 				String engineName = parts[2];
 
 				// Always use base engine REST URL for "default" engine (without /engine/default suffix)
@@ -132,6 +136,22 @@ public abstract class SevenProviderBase {
 	 */
 	protected String getEngineRestUrl() {
 		return buildEngineRestUrl(properties.getEngineRest().getUrl(), properties.getEngineRest().getPath());
+	}
+
+	/**
+	 * The engine REST base URL of the server named by the url and path of an engine id
+	 * {@code url|path|engineName}. Only a server configured in {@code cibseven.webclient.engineRest}
+	 * (the default one or an {@code additionalEngineRest}) is used, with the URL from the configuration.
+	 *
+	 * @throws UnknownEngineException if no configured engine REST server has this url and path
+	 */
+	protected String getConfiguredEngineRestUrl(String url, String path) {
+		EngineRestSource source = properties.getEngineRest().findEngineRestSource(url, path)
+			.orElseThrow(() -> {
+				log.warn("Rejected an engine id whose engine REST server is not configured: {}|{}", url, path);
+				return new UnknownEngineException();
+			});
+		return buildEngineRestUrl(source.getUrl(), source.effectivePath());
 	}
 
 	/**
@@ -179,6 +199,8 @@ public abstract class SevenProviderBase {
 					neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		}
 	}
 
@@ -203,6 +225,8 @@ public abstract class SevenProviderBase {
 					neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		}        
 	}
 
@@ -217,6 +241,8 @@ public abstract class SevenProviderBase {
 			return rest.exchange(builder.build(true).toUri(), HttpMethod.GET, httpEntity(headers), neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		}
 	}
 
@@ -230,6 +256,8 @@ public abstract class SevenProviderBase {
 			return rest.exchange(builder.build().toUri(), HttpMethod.GET, httpEntity(headers), neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		}
 	}
 
@@ -244,6 +272,8 @@ public abstract class SevenProviderBase {
 			return customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		}
 	}
 
@@ -258,6 +288,8 @@ public abstract class SevenProviderBase {
 			return customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		}
 	}
 
@@ -272,6 +304,8 @@ public abstract class SevenProviderBase {
 			return customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		}
 	}
 
@@ -286,6 +320,8 @@ public abstract class SevenProviderBase {
 			return response;
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		}
 	}
 
@@ -307,6 +343,8 @@ public abstract class SevenProviderBase {
 			return customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		}
 	}
 
@@ -319,6 +357,8 @@ public abstract class SevenProviderBase {
 			customRestTemplate.put(builder.build().toUri(), request);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		}
 	}
 
@@ -331,6 +371,8 @@ public abstract class SevenProviderBase {
 			customRestTemplate.put(builder.build().toUri(), request);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		}
 	}
 
@@ -343,6 +385,8 @@ public abstract class SevenProviderBase {
 			customRestTemplate.exchange(builder.build().toUri(), HttpMethod.DELETE, request, String.class);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		}
 	}
 
@@ -357,6 +401,8 @@ public abstract class SevenProviderBase {
 			return customRestTemplate.exchange(builder.build().toUri(), HttpMethod.PATCH, request, neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		}
 	}
 
@@ -371,6 +417,8 @@ public abstract class SevenProviderBase {
 			return customRestTemplate.exchange(builder.build().toUri(), HttpMethod.PATCH, request, neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
+		} catch (ResourceAccessException e) {
+			throw new EngineNotReachableException(e);
 		}
 	}
 

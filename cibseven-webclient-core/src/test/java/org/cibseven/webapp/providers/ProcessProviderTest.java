@@ -22,10 +22,12 @@ import static org.assertj.core.api.Assertions.tuple;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import org.cibseven.webapp.Data;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.config.WebclientJsonMapper;
 import org.cibseven.webapp.rest.model.HistoryProcessInstance;
 import org.cibseven.webapp.rest.model.Process;
 import org.cibseven.webapp.rest.model.ProcessDiagram;
@@ -38,7 +40,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+
 public class ProcessProviderTest {
+
+	private static final ObjectMapper JSON = WebclientJsonMapper.plain();
 
 	private MockEngineRest engine;
 	private ProcessProvider processProvider;
@@ -344,19 +351,39 @@ public class ProcessProviderTest {
 
 		processProvider.suspendProcessDefinition("id-1", Boolean.TRUE, Boolean.FALSE, null, user);
 
-		String body = engine.take().getBody().readUtf8();
-		assertThat(body).isEqualTo(
-			"{ \"suspended\": true,\"includeProcessInstances\": false,\"executionDate\": null }");
+		var request = engine.take();
+		assertThat(request.getMethod()).isEqualTo("PUT");
+		assertThat(request.getPath()).endsWith("/process-definition/id-1/suspended");
+		JsonNode body = JSON.readTree(request.getBody().readUtf8());
+		assertThat(body.get("suspended").asBoolean()).isTrue();
+		assertThat(body.get("includeProcessInstances").asBoolean()).isFalse();
+		// absent or JSON null: both mean "suspend now" to the engine
+		assertThat(body.hasNonNull("executionDate")).isFalse();
 	}
 
 	@Test
-	void suspendProcessDefinition_quotesTheExecutionDate() throws Exception {
+	void suspendProcessDefinition_sendsTheExecutionDateAsAJsonString() throws Exception {
 		engine.enqueueEmpty(204);
 
 		processProvider.suspendProcessDefinition("id-1", Boolean.TRUE, Boolean.FALSE, "2026-01-01T10:00:00", user);
 
-		String body = engine.take().getBody().readUtf8();
-		assertThat(body).contains("\"executionDate\": \"2026-01-01T10:00:00\"");
+		JsonNode body = JSON.readTree(engine.take().getBody().readUtf8());
+		assertThat(body.get("executionDate").isString()).isTrue();
+		assertThat(body.get("executionDate").asString()).isEqualTo("2026-01-01T10:00:00");
+	}
+
+	/** A date with a quote cannot break out of its JSON string any more (CIB7-2806). */
+	@Test
+	void suspendProcessDefinition_escapesTheExecutionDate() throws Exception {
+		engine.enqueueEmpty(204);
+
+		processProvider.suspendProcessDefinition("id-1", Boolean.TRUE, Boolean.FALSE,
+			"2026\",\"suspended\":false,\"x\":\"", user);
+
+		JsonNode body = JSON.readTree(engine.take().getBody().readUtf8());
+		assertThat(body.get("suspended").asBoolean()).isTrue();
+		assertThat(body.get("executionDate").asString()).isEqualTo("2026\",\"suspended\":false,\"x\":\"");
+		assertThat(body.has("x")).isFalse();
 	}
 
 	// ---------- counts and history ----------
@@ -389,6 +416,40 @@ public class ProcessProviderTest {
 
 		assertThat(instance.getState()).isEqualTo("COMPLETED");
 		assertThat(engine.takePath()).isEqualTo("/history/process-instance/pi-1");
+	}
+
+	@Test
+	void findProcessesInstancesHistoryById_searchesBusinessKeyAndInstanceIdForFreeText() throws Exception {
+		engine.enqueueJson("[]");
+
+		processProvider.findProcessesInstancesHistoryById(
+			"id-1", Optional.empty(), Optional.empty(), 0, 50, "INV-42", user);
+
+		String body = engine.take().getBody().readUtf8();
+		assertThat(body).contains("\"orQueries\"")
+			.contains("\"processInstanceBusinessKeyLike\":\"%INV-42%\"")
+			.contains("\"processInstanceId\":\"INV-42\"");
+	}
+
+	@Test
+	void findProcessesInstancesHistoryById_addsNoTextFilterForAnEmptySearch() throws Exception {
+		engine.enqueueJson("[]");
+
+		// a request parameter is a new String instance, not the interned "" literal (CIB7-2810)
+		processProvider.findProcessesInstancesHistoryById(
+			"id-1", Optional.empty(), Optional.empty(), 0, 50, new String(""), user);
+
+		assertThat(engine.take().getBody().readUtf8()).doesNotContain("orQueries");
+	}
+
+	@Test
+	void findProcessesInstancesHistoryById_addsNoTextFilterWithoutText() throws Exception {
+		engine.enqueueJson("[]");
+
+		processProvider.findProcessesInstancesHistoryById(
+			"id-1", Optional.empty(), Optional.empty(), 0, 50, null, user);
+
+		assertThat(engine.take().getBody().readUtf8()).doesNotContain("orQueries");
 	}
 
 	@Test

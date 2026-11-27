@@ -460,11 +460,12 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	@Override
 	public void suspendProcessDefinition(String processDefinitionId, Boolean suspend, Boolean includeProcessInstances, String executionDate, CIBUser user) {
 		String url = getEngineRestUrl(user) + "/process-definition/" + processDefinitionId + "/suspended";
-		doPut(url, "{ "
-				+ "\"suspended\": " + suspend + ","
-				+ "\"includeProcessInstances\": " + includeProcessInstances + ","
-				+ "\"executionDate\": " + (executionDate == null ? executionDate :  "\"" + executionDate + "\"")
-				+ " }", user);
+		// A map, so the execution date is quoted and escaped by the serializer; null means "now"
+		Map<String, Object> body = new HashMap<>();
+		body.put("suspended", suspend);
+		body.put("includeProcessInstances", includeProcessInstances);
+		body.put("executionDate", executionDate);
+		doPut(url, body, user);
 	}	
 
 	@Override
@@ -581,7 +582,7 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 		Map<String, Object> data = new HashMap<String, Object>();
 		List<TaskSorting> sorting = Arrays.asList(new TaskSorting("startTime", "desc"));
 		data.put("sorting", sorting);
-		if (text != "") {
+		if (text != null && !text.isEmpty()) {
 			Map<String, Object> orQueries = new HashMap<String, Object>();
 			orQueries.put("processInstanceBusinessKeyLike", "%" + text + "%");
 			orQueries.put("processInstanceId", text);

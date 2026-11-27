@@ -55,4 +55,34 @@ public class EngineRestSource {
 	 * Must be at least 155 characters long and a base64 decodable string.
 	 */
 	private String jwtSecret;
+
+	/**
+	 * The REST path of this source, {@code /engine-rest} when none is configured, always with a leading slash.
+	 */
+	public String effectivePath() {
+		return normalizePath(path);
+	}
+
+	/**
+	 * Whether this source is the engine REST server at the given url and path, as they appear in an
+	 * engine id {@code url|path|engineName}. A trailing slash on the url and a missing leading slash
+	 * on the path are ignored, and an empty path stands for {@code /engine-rest}.
+	 */
+	public boolean matches(String url, String path) {
+		if (this.url == null || url == null) {
+			return false;
+		}
+		return normalizeUrl(this.url).equals(normalizeUrl(url)) && effectivePath().equals(normalizePath(path));
+	}
+
+	private static String normalizeUrl(String url) {
+		return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+	}
+
+	private static String normalizePath(String path) {
+		if (path == null || path.isEmpty()) {
+			return "/engine-rest";
+		}
+		return path.startsWith("/") ? path : "/" + path;
+	}
 }

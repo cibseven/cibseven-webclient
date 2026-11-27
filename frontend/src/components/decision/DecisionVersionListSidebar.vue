@@ -79,7 +79,11 @@ export default {
   },
   methods: {
     selectVersion(version) {
-      this.$router.push({ name: 'decision-version', params: { decisionKey: version.key, versionIndex: version.version } })
+      this.$router.push({
+        name: 'decision-version',
+        params: { decisionKey: version.key, versionIndex: version.version },
+        query: version.tenantId ? { tenantId: version.tenantId } : {}
+      })
     },
     markSelectedVersion(versionToCheck) {
       return String(versionToCheck) === this.$route.params.versionIndex

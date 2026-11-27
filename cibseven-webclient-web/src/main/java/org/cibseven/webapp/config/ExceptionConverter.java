@@ -21,6 +21,7 @@ import java.util.Arrays;
 import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.exception.AccessDeniedException;
 import org.cibseven.webapp.exception.ApplicationException;
+import org.cibseven.webapp.exception.EngineNotReachableException;
 import org.cibseven.webapp.exception.ErrorMessage;
 import org.cibseven.webapp.exception.FeatureDisabledException;
 import org.cibseven.webapp.exception.NoObjectFoundException;
@@ -63,7 +64,13 @@ public class ExceptionConverter {
 		log.error("System error occured", x);
 		return new ErrorMessage(x.getClass().getSimpleName(), new Object[] { x.getMessage() });
 	}
-	
+
+	@ExceptionHandler @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+	public ErrorMessage engineNotReachable(EngineNotReachableException x) {
+		log.error("Process engine not reachable", x);
+		return new ErrorMessage(x.getClass().getSimpleName(), new Object[] { x.getMessage() });
+	}
+
 	@ExceptionHandler @ResponseStatus(HttpStatus.NOT_FOUND)
 	public ErrorMessage featureDisabled(FeatureDisabledException x) {
 		log.debug("Feature switched off " + Arrays.toString(x.getData()));

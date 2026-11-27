@@ -112,7 +112,9 @@ export default {
       matchedCalledList: [],
       loading: true,
       firstResult: 0,
-      maxResults: this.$root?.config?.maxProcessesResults || 50
+      maxResults: this.$root?.config?.maxProcessesResults || 50,
+      // Counts the loads, so only the latest one fills the list
+      loadRequestId: 0
     }
   },
   props: {
@@ -124,13 +126,15 @@ export default {
   },
   watch: {
     'selectedInstance.id': function() {
-      this.firstResult = 0
       this.loadCalledProcessInstances()
     },
-    activityInstanceHistory: 'loadCalledProcessInstances'
+    // The history only names the calling activity of each row, so the loaded rows are matched again:
+    // loading them again would race the load in flight and list every called instance twice (CIB7-2830)
+    activityInstanceHistory: function() {
+      this.matchCalledInstances()
+    }
   },
   created: function() {
-    this.firstResult = 0
     this.loadCalledProcessInstances()
   },
   methods: {
@@ -146,54 +150,68 @@ export default {
         HistoryService.findProcessesInstancesHistory(filter, firstResult, maxResults) :
         ProcessService.findCurrentProcessesInstances(filter, firstResult, maxResults)
     },
-    loadCalledProcessInstances (showMore = false) {
-      if (!this.selectedInstance || !this.selectedInstance.id) {
+    /**
+     * Loads the first page of the called instances, or with `showMore === true` the next one.
+     * A load started later wins: an older answer, success or failure, is ignored, so it neither
+     * replaces nor extends the list of the newer one.
+     */
+    async loadCalledProcessInstances (showMore = false) {
+      const requestId = ++this.loadRequestId
+      const append = showMore === true
+      if (!append) {
+        // A new list: never show the rows or continue the paging of the previous instance, also if this load fails
+        this.firstResult = 0
+        this.calledInstanceList = []
+        this.matchedCalledList = []
+      }
+      if (!this.selectedInstance?.id) {
         this.loading = false
         return
       }
+      const firstResult = this.firstResult
       this.loading = true
-      this.findCalledProcessInstances({"superProcessInstanceId": this.selectedInstance.id}, this.firstResult, this.maxResults).then(response => {
-        this.firstResult += this.maxResults
-        if (!showMore) {
-          this.calledInstanceList = response
-        } else if (response.length > 0) {
-          this.calledInstanceList = this.calledInstanceList.concat(response)
-        }
+      try {
+        const response = await this.findCalledProcessInstances({"superProcessInstanceId": this.selectedInstance.id}, firstResult, this.maxResults)
+        if (requestId !== this.loadRequestId) return
+        this.firstResult = firstResult + this.maxResults
+        this.calledInstanceList = append ? this.calledInstanceList.concat(response) : response
+        this.matchCalledInstances()
+      } catch (error) {
+        if (requestId === this.loadRequestId) console.error('Error loading called process instances:', error)
+      } finally {
+        if (requestId === this.loadRequestId) this.loading = false
+      }
+    },
+    matchCalledInstances() {
+      this.matchedCalledList = this.calledInstanceList.map(processPL => {
+        const key = processPL.processDefinitionKey
+        const version = processPL.processDefinitionVersion
+        const state = processPL.state
+        const tenantId = processPL.tenantId
+        const businessKey = processPL.businessKey
 
-        this.matchedCalledList = this.calledInstanceList.map(processPL => {
-          const key = processPL.processDefinitionKey
-          const version = processPL.processDefinitionVersion
-          const state = processPL.state
-          const tenantId = processPL.tenantId
-          const businessKey = processPL.businessKey
-
-          const foundInst = this.activityInstanceHistory?.find(processAIH => {
-            if (processAIH.activityType === "callActivity"){
-              if (processAIH.calledProcessInstanceId === processPL.id) {
-                return processAIH
-              }
+        const foundInst = this.activityInstanceHistory?.find(processAIH => {
+          if (processAIH.activityType === "callActivity"){
+            if (processAIH.calledProcessInstanceId === processPL.id) {
+              return processAIH
             }
-          })
-          const foundProcess = this.$store.state.process.list.find(processSPL => {
-            if (key === processSPL.key) {
-              return processSPL
-            }
-          })
-          return ({
-            calledProcessInstance: processPL.id,
-            callingActivity: foundInst,
-            key: key,
-            version: version,
-            name: foundProcess ? foundProcess.name : key,
-            state: state,
-            tenantId: tenantId,
-            businessKey: businessKey
-          })
+          }
         })
-        this.loading = false
-      }).catch(error => {
-        console.error('Error loading called process instances:', error)
-        this.loading = false
+        const foundProcess = this.$store.state.process.list.find(processSPL => {
+          if (key === processSPL.key) {
+            return processSPL
+          }
+        })
+        return ({
+          calledProcessInstance: processPL.id,
+          callingActivity: foundInst,
+          key: key,
+          version: version,
+          name: foundProcess ? foundProcess.name : key,
+          state: state,
+          tenantId: tenantId,
+          businessKey: businessKey
+        })
       })
     },
     formatDate,

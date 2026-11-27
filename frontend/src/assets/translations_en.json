@@ -162,6 +162,9 @@
 		"definitionVersionNotFound": "Process definition version \"{0}\" not found. Falling back to the latest version.",
 		"definitionNotFound": "Process definition key \"{processKey}\" with \"{tenantId}\" tenant ID not found.",
 		"instanceNotFound": "Process instance with ID \"{instanceId}\" not found.\nServer response:\n{error}",
+		"instanceNotFoundNoResponse": "Process instance with ID \"{instanceId}\" not found.",
+		"instanceDefinitionNotFound": "The definition \"{definitionId}\" of process instance \"{instanceId}\" could not be loaded.",
+		"instanceOfOtherProcess": "Process instance \"{instanceId}\" belongs to process \"{definitionKey}\" (definition \"{definitionId}\"), not to \"{processKey}\".",
 		"back": "Back",
 		"incidentsCounter": "Incidents: {0}",
 		"incidents": "Incidents",		
@@ -188,6 +191,7 @@
 		"copySuccess": "Selected value copied",
 		"refreshVersions": "Refresh history versions",
 		"loadAllStatistics": "Load all instance statistics",
+		"loadData": "Load data",
 		"externalProcessStarted": "Process successfully started",
 		"exportInstances": "Export instances",
 		"deleteProcessDefinition": {
@@ -344,6 +348,7 @@
 			"dueDate": "Due date",
 			"scheduleAt": "Schedule at",
 			"invalidDateError": "You must enter a valid date",
+			"loadFailed": "The incidents could not be loaded",
 			"retry": "Retry",			
 			"editAnnotation": "Edit annotation",
 			"causeIncidentProcessInstanceId": "Cause process instance ID",
@@ -1159,6 +1164,8 @@
 		"InvalidValueHistoryTimeToLive": "A history time to live is required. Set it in the model or configure a default in the engine.",
 		"DmnTransformationException": "The resource could not be updated. Unable to transform DMN resource.",
 		"InvalidGroupIdException": "The group ID is invalid. It may only contain alphanumeric characters (a-z, A-Z, 0-9) or camunda-admin. Please correct your entry.",
+		"UnknownEngineException": "The selected process engine is not configured. Please select another engine.",
+		"EngineNotReachableException": "The process engine could not be reached. Please try again later.",
 		"unknown": "An unexpected error occurred. Please try again."
 		
 	},
@@ -1369,7 +1376,9 @@
 		"value": "Value",
 		"inputs": "Inputs",
 		"outputs": "Outputs",
-		"decisionInstanceId": "Decision Instance ID"
+		"decisionInstanceId": "Decision Instance ID",
+		"notAvailableForTenant": "This decision is not available for the tenant \"{tenantId}\".",
+		"notAvailable": "This decision is not available."
 	},
 	"decision-instance": {
 		"edit": "@:commons.edit"

@@ -25,12 +25,12 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.hc.core5.http.ConnectionRequestTimeoutException;
 import org.cibseven.webapp.auth.CIBUser;
+import org.cibseven.webapp.exception.EngineNotReachableException;
 import org.cibseven.webapp.rest.CustomRestTemplate;
 import org.cibseven.webapp.rest.RestTemplateConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.client.ResourceAccessException;
 
 import okhttp3.mockwebserver.RecordedRequest;
 
@@ -94,7 +94,7 @@ public class SevenProviderBaseHttpClientTest {
 
 			long start = System.nanoTime();
 			assertThatThrownBy(() -> provider.doGet(url, String.class, user, false))
-				.isInstanceOf(ResourceAccessException.class)
+				.isInstanceOf(EngineNotReachableException.class)
 				.hasRootCauseInstanceOf(ConnectionRequestTimeoutException.class);
 			assertThat(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start))
 				.as("waited for connectionRequestTimeout, not for the slow response")
@@ -126,6 +126,35 @@ public class SevenProviderBaseHttpClientTest {
 			assertThat(provider.doGet(url, String.class, user, false).getBody()).isEqualTo("{\"version\":\"fast\"}");
 			assertThat(slow).as("the first GET is still in flight").isNotDone();
 			assertThat(slow.get(10, TimeUnit.SECONDS).getBody()).isEqualTo("{\"version\":\"slow\"}");
+		} finally {
+			template.destroy();
+		}
+	}
+
+	/**
+	 * When no answer arrives from the engine, every call fails with a fixed message: the message of
+	 * Spring's ResourceAccessException names the url of the request, and it would reach the client.
+	 */
+	@Test
+	void requestsToAnEngineThatIsDown_failWithAMessageThatNamesNoHost() throws Exception {
+		CustomRestTemplate template = CustomRestTemplate.create(new RestTemplateConfiguration());
+		try {
+			MockEngineRest engine = new MockEngineRest();
+			TestProvider provider = engine.wire(new TestProvider());
+			ReflectionTestUtils.setField(provider, "customRestTemplate", template);
+			CIBUser user = MockEngineRest.user();
+			String url = provider.getEngineRestUrl(user) + "/task";
+			engine.close();
+
+			assertThatThrownBy(() -> provider.doGet(url, String.class, user, false))
+				.isInstanceOf(EngineNotReachableException.class)
+				.hasMessage("The process engine could not be reached");
+			assertThatThrownBy(() -> provider.doPost(url, "{}", String.class, user))
+				.isInstanceOf(EngineNotReachableException.class);
+			assertThatThrownBy(() -> provider.doPut(url, "{}", user))
+				.isInstanceOf(EngineNotReachableException.class);
+			assertThatThrownBy(() -> provider.doDelete(url, user))
+				.isInstanceOf(EngineNotReachableException.class);
 		} finally {
 			template.destroy();
 		}
