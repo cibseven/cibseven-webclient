@@ -179,7 +179,6 @@ public abstract class SevenProviderBase {
 	 * so build it with {@code build(true)} and add only parameters that need no encoding.
 	 */
 	protected UriComponentsBuilder engineRestUriBuilder(CIBUser user, String... pathSegments) {
-		URI base = UriComponentsBuilder.fromUriString(getEngineRestUrl(user)).build().toUri();
 		// encode() and pathSegment() would leave ";" as it is, which engine-rest reads as a matrix parameter
 		// pathSegment() drops empty segments, which would point the request at another endpoint
 		if (Arrays.stream(pathSegments).anyMatch(segment -> segment == null || segment.isEmpty()))
@@ -187,7 +186,8 @@ public abstract class SevenProviderBase {
 		String[] encoded = Arrays.stream(pathSegments)
 			.map(segment -> UriUtils.encode(segment, StandardCharsets.UTF_8))
 			.toArray(String[]::new);
-		return UriComponentsBuilder.fromUri(base).pathSegment(encoded);
+		// the configured URL is used as it is: an underscore in the host or an escape in its path stays valid
+		return UriComponentsBuilder.fromUriString(getEngineRestUrl(user)).pathSegment(encoded);
 	}
 
 	/**

@@ -243,6 +243,19 @@ public class VariableNameEncodingTest {
 		assertThat(path(take("DELETE"))).isEqualTo("/engine/other/task/task%201/variables/a%3Bb");
 	}
 
+	@Test
+	void engineRestUri_keepsTheConfiguredUrlAsItIs() {
+		VariableProvider provider = new VariableProvider() {
+			@Override
+			protected String getEngineRestUrl(CIBUser user) {
+				return "http://cibseven_engine:8080/my%20path/engine-rest";
+			}
+		};
+
+		assertThat(provider.engineRestUri(user, "task", "task-1", "variables", "a;b").toString())
+			.isEqualTo("http://cibseven_engine:8080/my%20path/engine-rest/task/task-1/variables/a%3Bb");
+	}
+
 	@ParameterizedTest
 	@NullAndEmptySource
 	void engineRestUri_rejectsAnEmptySegmentInsteadOfCallingTheCollection(String name) {
