@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
@@ -71,6 +72,7 @@ import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UriUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -179,15 +181,35 @@ public abstract class SevenProviderBase {
 	 * so build it with {@code build(true)} and add only parameters that need no encoding.
 	 */
 	protected UriComponentsBuilder engineRestUriBuilder(CIBUser user, String... pathSegments) {
+		// pathSegment() drops empty segments, and a proxy folds "." and ".." (also as %2E): either would
+		// point the request at another endpoint, e.g. ".." at the task itself
+		if (Arrays.stream(pathSegments).anyMatch(segment -> segment == null || segment.isEmpty()
+				|| ".".equals(segment) || "..".equals(segment)))
+			throw new IllegalArgumentException("Empty or dot path segment in engine-rest URL");
+		UriComponents base = UriComponentsBuilder.fromUriString(getEngineRestUrl(user)).build();
 		// encode() and pathSegment() would leave ";" as it is, which engine-rest reads as a matrix parameter
-		// pathSegment() drops empty segments, which would point the request at another endpoint
-		if (Arrays.stream(pathSegments).anyMatch(segment -> segment == null || segment.isEmpty()))
-			throw new IllegalArgumentException("Empty path segment in engine-rest URL");
-		String[] encoded = Arrays.stream(pathSegments)
-			.map(segment -> UriUtils.encode(segment, StandardCharsets.UTF_8))
+		String[] segments = Stream.concat(
+				base.getPathSegments().stream().map(SevenProviderBase::encodeConfiguredSegment),
+				Arrays.stream(pathSegments).map(segment -> UriUtils.encode(segment, StandardCharsets.UTF_8)))
 			.toArray(String[]::new);
-		// the configured URL is used as it is: an underscore in the host or an escape in its path stays valid
-		return UriComponentsBuilder.fromUriString(getEngineRestUrl(user)).pathSegment(encoded);
+		// host and port as configured, so an underscore in the host stays valid
+		return UriComponentsBuilder.newInstance()
+			.scheme(base.getScheme()).userInfo(base.getUserInfo()).host(base.getHost()).port(base.getPort())
+			.pathSegment(segments);
+	}
+
+	/**
+	 * A segment of the configured engine-rest path or the engine name, encoded once: an escape such as
+	 * {@code %20} is kept, a space or an umlaut is encoded.
+	 */
+	private static String encodeConfiguredSegment(String segment) {
+		String decoded;
+		try {
+			decoded = UriUtils.decode(segment, StandardCharsets.UTF_8);
+		} catch (IllegalArgumentException e) {
+			decoded = segment; // a "%" that starts no escape is meant literally
+		}
+		return UriUtils.encodePathSegment(decoded, StandardCharsets.UTF_8);
 	}
 
 	/**

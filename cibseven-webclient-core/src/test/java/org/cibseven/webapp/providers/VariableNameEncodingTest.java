@@ -29,8 +29,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.mock.web.MockMultipartFile;
 
 import okhttp3.mockwebserver.RecordedRequest;
@@ -59,7 +61,8 @@ public class VariableNameEncodingTest {
 			Arguments.of("a#b", "a%23b"),
 			Arguments.of("100%", "100%25"),
 			Arguments.of("a b", "a%20b"),
-			Arguments.of("Müller", "M%C3%BCller"));
+			Arguments.of("Müller", "M%C3%BCller"),
+			Arguments.of("...", "..."));
 	}
 
 	@BeforeEach
@@ -243,22 +246,39 @@ public class VariableNameEncodingTest {
 		assertThat(path(take("DELETE"))).isEqualTo("/engine/other/task/task%201/variables/a%3Bb");
 	}
 
-	@Test
-	void engineRestUri_keepsTheConfiguredUrlAsItIs() {
+	@ParameterizedTest
+	@CsvSource(delimiter = '|', value = {
+		"http://cibseven_engine:8080/my%20path/engine-rest | http://cibseven_engine:8080/my%20path/engine-rest",
+		"http://localhost:8080/engine-rest/engine/my engine | http://localhost:8080/engine-rest/engine/my%20engine",
+		"http://localhost:8080/engine-rest/engine/Müller    | http://localhost:8080/engine-rest/engine/M%C3%BCller",
+		"http://localhost:8080/engine-rest/engine/100%      | http://localhost:8080/engine-rest/engine/100%25"
+	})
+	void engineRestUri_encodesTheConfiguredUrlOnce(String configured, String expected) {
 		VariableProvider provider = new VariableProvider() {
 			@Override
 			protected String getEngineRestUrl(CIBUser user) {
-				return "http://cibseven_engine:8080/my%20path/engine-rest";
+				return configured;
 			}
 		};
 
 		assertThat(provider.engineRestUri(user, "task", "task-1", "variables", "a;b").toString())
-			.isEqualTo("http://cibseven_engine:8080/my%20path/engine-rest/task/task-1/variables/a%3Bb");
+			.isEqualTo(expected + "/task/task-1/variables/a%3Bb");
+	}
+
+	@Test
+	void engineRestUri_encodesAnEngineNameWithASpace() throws Exception {
+		user.setEngine(variableProvider.properties.getEngineRest().getUrl() + "|" + MockEngineRest.ENGINE_REST_PATH + "|my engine");
+		engine.enqueueEmpty(204);
+
+		variableProvider.deleteVariable("task-1", "x", user);
+
+		assertThat(path(take("DELETE"))).isEqualTo("/engine/my%20engine/task/task-1/variables/x");
 	}
 
 	@ParameterizedTest
 	@NullAndEmptySource
-	void engineRestUri_rejectsAnEmptySegmentInsteadOfCallingTheCollection(String name) {
+	@ValueSource(strings = { ".", ".." })
+	void engineRestUri_rejectsASegmentThatWouldPointAtAnotherEndpoint(String name) {
 		assertThatThrownBy(() -> variableProvider.deleteVariable("task-1", name, user))
 			.isInstanceOf(IllegalArgumentException.class);
 		assertThat(engine.requestCount()).isZero();
