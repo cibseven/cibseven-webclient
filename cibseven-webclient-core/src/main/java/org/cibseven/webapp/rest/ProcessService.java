@@ -517,19 +517,21 @@ public class ProcessService extends BaseService implements InitializingBean {
 			@Parameter(description = "Deployment Id") @PathVariable String deploymentId,
 			@Parameter(description = "Resource Id") @PathVariable String resourceId,
 			@Parameter(description = "Name of the resource file") @RequestParam String filename,
-			@Parameter(description = "Token") @RequestParam String token,
+			@Parameter(description = "Ignored, kept so that existing links keep working; the Authorization header authenticates (CIB7-2556)", deprecated = true)
+			@RequestParam(required = false) String token,
 			CIBUser user,
 			HttpServletRequest rq, HttpServletResponse res) {
+		// The token value is deliberately not copied into the Authorization header: a query value is
+		// not validated, and it would put the user's JWT into URLs, logs and browser history (CIB7-2556)
 		try {
-			rq = new HeaderModifyingRequestWrapper(rq, token);
+			return response(bpmProvider.fetchDataFromDeploymentResource(rq, deploymentId, resourceId, filename, user));
+		} catch (ApplicationException x) {
 			try {
-				return response(bpmProvider.fetchDataFromDeploymentResource(rq, deploymentId, resourceId, filename, user));
-			} catch (ApplicationException x) {
 				res.sendRedirect("../../../#/flow/auth/deployments/" + deploymentId + "/resources/" + resourceId);
-				throw x;
+			} catch (IOException e) {
+				throw new SystemException(e);
 			}
-		} catch (IOException x) {
-			throw new SystemException(x);
+			throw x;
 		}
 	}
 	

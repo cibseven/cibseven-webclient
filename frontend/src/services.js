@@ -861,10 +861,12 @@ const DeploymentService = {
       data
     )
   },
-  fetchDataFromDeploymentResource: function(deploymentId, resourceId, fileName, token) {
+  // The fourth argument (a token) is ignored and kept only so that existing callers keep working: the
+  // Authorization header authenticates, and a token in the query would leak into URLs and logs (CIB7-2556)
+  fetchDataFromDeploymentResource: function(deploymentId, resourceId, fileName) {
     // As text: axios would parse a .form file's JSON, and a download has to stay byte for byte the deployed file
     return axios.get(getServicesBasePath() + '/process/deployments/' + deploymentId + '/resources/' + resourceId + '/data',
-      { params: { filename: fileName, token: token }, responseType: 'text' })
+      { params: { filename: fileName }, responseType: 'text' })
   }
 }
 
