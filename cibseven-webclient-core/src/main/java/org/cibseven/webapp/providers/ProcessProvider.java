@@ -17,6 +17,7 @@
 package org.cibseven.webapp.providers;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -676,9 +677,9 @@ public class ProcessProvider extends SevenProviderBase implements IProcessProvid
 	}
 
 	private Variable fetchProcessInstanceVariableImpl(String processInstanceId, String variableName, boolean deserializeValue, CIBUser user) throws SystemException  {
-		String url = getEngineRestUrl(user) + "/process-instance/" + processInstanceId + "/variables/" + variableName;
-		url += "?deserializeValue=" + deserializeValue;
-		return ((ResponseEntity<Variable>) doGet(url, Variable.class, user, false)).getBody();
+		URI uri = engineRestUriBuilder(user, "process-instance", processInstanceId, "variables", variableName)
+			.queryParam("deserializeValue", deserializeValue).build(true).toUri();
+		return doGet(uri, Variable.class, user).getBody();
 	}
 
 	@Override

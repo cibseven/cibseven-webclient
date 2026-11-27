@@ -17,6 +17,7 @@
 package org.cibseven.webapp.providers;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
@@ -74,7 +76,9 @@ import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.util.UriUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.MultiValueMap;
 
@@ -169,6 +173,50 @@ public abstract class SevenProviderBase {
 	}
 
 	/**
+	 * The engine REST URL of the user's engine with each of {@code pathSegments} as one encoded path
+	 * segment, so a value such as a variable name with {@code ; ? # %} or a space reaches the engine unchanged.
+	 */
+	protected URI engineRestUri(CIBUser user, String... pathSegments) {
+		return engineRestUriBuilder(user, pathSegments).build(true).toUri();
+	}
+
+	/**
+	 * Like {@link #engineRestUri}, to add query parameters. The builder holds encoded values,
+	 * so build it with {@code build(true)} and add only parameters that need no encoding.
+	 */
+	protected UriComponentsBuilder engineRestUriBuilder(CIBUser user, String... pathSegments) {
+		// pathSegment() drops empty segments, and a proxy folds "." and ".." (also as %2E): either would
+		// point the request at another endpoint, e.g. ".." at the task itself
+		if (Arrays.stream(pathSegments).anyMatch(segment -> segment == null || segment.isEmpty()
+				|| ".".equals(segment) || "..".equals(segment)))
+			throw new IllegalArgumentException("Empty or dot path segment in engine-rest URL");
+		UriComponents base = UriComponentsBuilder.fromUriString(getEngineRestUrl(user)).build();
+		// encode() and pathSegment() would leave ";" as it is, which engine-rest reads as a matrix parameter
+		String[] segments = Stream.concat(
+				base.getPathSegments().stream().map(SevenProviderBase::encodeConfiguredSegment),
+				Arrays.stream(pathSegments).map(segment -> UriUtils.encode(segment, StandardCharsets.UTF_8)))
+			.toArray(String[]::new);
+		// host and port as configured, so an underscore in the host stays valid
+		return UriComponentsBuilder.newInstance()
+			.scheme(base.getScheme()).userInfo(base.getUserInfo()).host(base.getHost()).port(base.getPort())
+			.pathSegment(segments);
+	}
+
+	/**
+	 * A segment of the configured engine-rest path or the engine name, encoded once: an escape such as
+	 * {@code %20} is kept, a space or an umlaut is encoded.
+	 */
+	private static String encodeConfiguredSegment(String segment) {
+		String decoded;
+		try {
+			decoded = UriUtils.decode(segment, StandardCharsets.UTF_8);
+		} catch (IllegalArgumentException e) {
+			decoded = segment; // a "%" that starts no escape is meant literally
+		}
+		return UriUtils.encodePathSegment(decoded, StandardCharsets.UTF_8);
+	}
+
+	/**
 	 * Creates new Http headers and adds Authorization User token
 	 * @param user user with authorization to add if null No authorization is added
 	 * @return
@@ -193,14 +241,16 @@ public abstract class SevenProviderBase {
 	}
 
 	protected <T> ResponseEntity<T> doGet(String url, Class<T> neededClass, CIBUser user, Boolean encoded) {
+		return doGet(UriComponentsBuilder.fromUriString(url).build(encoded).toUri(), neededClass, user);
+	}
+
+	protected <T> ResponseEntity<T> doGet(URI uri, Class<T> neededClass, CIBUser user) {
 		try {
 			HttpHeaders headers = createAuthHeader(user);
-			UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
 
 			RestTemplate rest = createPatchRestTemplate();
 
-			return rest.exchange(builder.build(encoded).toUri(), HttpMethod.GET, httpEntity(headers),
-					neededClass);
+			return rest.exchange(uri, HttpMethod.GET, httpEntity(headers), neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		} catch (ResourceAccessException e) {
@@ -210,10 +260,13 @@ public abstract class SevenProviderBase {
 
 	// doGet with accept all headers, some endpoints from engine-rest returns text/plain data or special data so we need to accept it
 	protected <T> ResponseEntity<T> doGetWithHeader(String url, Class<T> neededClass, CIBUser user, Boolean encoded, MediaType mediaType) {
+		return doGetWithHeader(UriComponentsBuilder.fromUriString(url).build(encoded).toUri(), neededClass, user, mediaType);
+	}
+
+	protected <T> ResponseEntity<T> doGetWithHeader(URI uri, Class<T> neededClass, CIBUser user, MediaType mediaType) {
 		try {
 			HttpHeaders headers = createAuthHeader(user);
 	        headers.setAccept(Collections.singletonList(mediaType));
-			UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
 
 			// Create a new RestTemplate instance instead of using the shared customRestTemplate
 			// This avoids potential ConcurrentModificationExceptions in multi-threaded environments
@@ -225,13 +278,12 @@ public abstract class SevenProviderBase {
 				rest.getMessageConverters().add(new org.springframework.http.converter.ByteArrayHttpMessageConverter());
 			}
 
-			return rest.exchange(builder.build(encoded).toUri(), HttpMethod.GET, httpEntity(headers),
-					neededClass);
+			return rest.exchange(uri, HttpMethod.GET, httpEntity(headers), neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		} catch (ResourceAccessException e) {
 			throw new EngineNotReachableException(e);
-		}        
+		}
 	}
 
 	// TODO: Replace this get method from the one above - Main difference is that
@@ -338,13 +390,16 @@ public abstract class SevenProviderBase {
 	 * @return the response entity
 	 */
 	protected <T> ResponseEntity<T> doPostMultipart(String url, MultiValueMap<String, Object> formData, Class<T> neededClass, CIBUser user) {
+		return doPostMultipart(UriComponentsBuilder.fromUriString(url).build().toUri(), formData, neededClass, user);
+	}
+
+	protected <T> ResponseEntity<T> doPostMultipart(URI uri, MultiValueMap<String, Object> formData, Class<T> neededClass, CIBUser user) {
 		HttpHeaders headers = createAuthHeader(user);
 		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
 
 		HttpEntity<MultiValueMap<String, Object>> request = httpEntity(formData, headers);
 		try {
-			return customRestTemplate.exchange(builder.build().toUri(), HttpMethod.POST, request, neededClass);
+			return customRestTemplate.exchange(uri, HttpMethod.POST, request, neededClass);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		} catch (ResourceAccessException e) {
@@ -367,12 +422,15 @@ public abstract class SevenProviderBase {
 	}
 
 	protected void doPut(String url, Map<String, Object> body, CIBUser user) {
+		doPut(UriComponentsBuilder.fromUriString(url).build().toUri(), body, user);
+	}
+
+	protected void doPut(URI uri, Map<String, Object> body, CIBUser user) {
 		HttpHeaders headers = createAuthHeader(user);
 		headers.setContentType(MediaType.APPLICATION_JSON);
-		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
 		HttpEntity<Map<String, Object>> request = httpEntity(body, headers);
 		try {
-			customRestTemplate.put(builder.build().toUri(), request);
+			customRestTemplate.put(uri, request);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		} catch (ResourceAccessException e) {
@@ -381,12 +439,15 @@ public abstract class SevenProviderBase {
 	}
 
 	protected void doDelete(String url, CIBUser user) {
+		doDelete(UriComponentsBuilder.fromUriString(url).build().toUri(), user);
+	}
+
+	protected void doDelete(URI uri, CIBUser user) {
 		HttpHeaders headers = createAuthHeader(user);
-		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url);
 		HttpEntity<String> request = httpEntity("", headers);
 		try {
 			// rest.delete doesn't work
-			customRestTemplate.exchange(builder.build().toUri(), HttpMethod.DELETE, request, String.class);
+			customRestTemplate.exchange(uri, HttpMethod.DELETE, request, String.class);
 		} catch (HttpStatusCodeException e) {
 			throw wrapException(e, user);
 		} catch (ResourceAccessException e) {
