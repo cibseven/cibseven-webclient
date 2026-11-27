@@ -63,8 +63,8 @@ public class ExceptionConverter {
 
 	@ExceptionHandler @ResponseStatus(HttpStatus.BAD_REQUEST) 
 	public ErrorMessage application(ApplicationException x) {
-		log.info("Application error occured " + Arrays.toString(x.getData()), x);
-		return new ErrorMessage(x.getClass().getSimpleName(), x.getData());
+		log.info("Application error occured " + x.getData(), x);
+		return new ErrorMessage(x.getClass().getSimpleName(),  new Object[] { x.getMessage(), params(x)});
 	}
 	
 	@ExceptionHandler @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -81,15 +81,23 @@ public class ExceptionConverter {
 
 	@ExceptionHandler @ResponseStatus(HttpStatus.NOT_FOUND)
 	public ErrorMessage featureDisabled(FeatureDisabledException x) {
-		log.debug("Feature switched off " + Arrays.toString(x.getData()));
-		return new ErrorMessage(x.getClass().getSimpleName(), x.getData());
+		log.debug("Feature switched off " + x.getMessage());
+		return new ErrorMessage(x.getClass().getSimpleName(), new Object[] { x.getMessage(), params(x)});
 	}
 
 	@ExceptionHandler @ResponseStatus(HttpStatus.NOT_FOUND)
 	public ErrorMessage application(NoObjectFoundException x) {
-		log.debug("Application error occured " + Arrays.toString(x.getData()), x);
+		log.debug("Application error occured " + x.getData(), x);
 		return new ErrorMessage("NoObjectFoundException");
 	}
-	
+
+	/**
+	 * The params of the answer to an {@link ApplicationException}: the values of its data in their
+	 * order, or its message when it carries no data. The frontends read them by position.
+	 */
+	static Object[] params(ApplicationException x) {
+		return x.getData().isEmpty() ? new Object[] { x.getMessage() } : x.getData().values().toArray();
+	}
+
 }
 	

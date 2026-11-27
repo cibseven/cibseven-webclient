@@ -16,12 +16,14 @@
  */
 package org.cibseven.webapp.exception;
 
+import java.util.Collections;
+
 public class NoObjectFoundException extends ApplicationException {
 
 	private static final long serialVersionUID = -92972413203905944L;
 
 	public NoObjectFoundException(String message) {
-		super(message);
+		super(message, Collections.emptyMap());
 	}
 
 	public NoObjectFoundException(String message, Throwable cause) {

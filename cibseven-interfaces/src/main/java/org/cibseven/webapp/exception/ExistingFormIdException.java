@@ -16,6 +16,8 @@
  */
 package org.cibseven.webapp.exception;
 
+import java.util.Collections;
+
 /**
  * A form is referenced by its form id, so the id is unique across the modeler. Copying a form
  * therefore needs an id of its own, and reusing one is reported as a request error naming it.
@@ -23,8 +25,10 @@ package org.cibseven.webapp.exception;
 public class ExistingFormIdException extends ApplicationException {
 
 	private static final long serialVersionUID = 1L;
+	public static final String FORM_ID = "formId";
 
+	/** @param formId may be null, for a form that has no id yet */
 	public ExistingFormIdException(String formId) {
-		super(formId);
+		super(null, Collections.singletonMap(FORM_ID, formId));
 	}
 }

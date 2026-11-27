@@ -16,9 +16,6 @@
  */
 package org.cibseven.webapp.rest;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
@@ -71,13 +68,13 @@ public class BaseService {
 	}
 
 	/**
-	 * The cause's own text. An {@link ApplicationException} keeps it in {@code data} rather than in the
-	 * message, which is then null.
+	 * The cause's own text: its message, followed by the values an {@link ApplicationException} names in
+	 * {@code data}.
 	 */
 	private static String causeText(Exception cause) {
-		if (cause.getMessage() != null || !(cause instanceof ApplicationException ae) || ae.getData() == null) {
-			return cause.getMessage();
+		if (cause instanceof ApplicationException ae && !ae.getData().isEmpty()) {
+			return cause.getMessage() + " " + ae.getData();
 		}
-		return Arrays.stream(ae.getData()).map(String::valueOf).collect(Collectors.joining(", "));
+		return cause.getMessage();
 	}
 }

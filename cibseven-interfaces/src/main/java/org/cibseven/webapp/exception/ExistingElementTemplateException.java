@@ -16,6 +16,8 @@
  */
 package org.cibseven.webapp.exception;
 
+import java.util.Collections;
+
 /**
  * The template id is unique, so importing or saving one that is already stored is reported as a
  * request error naming the id, instead of surfacing the database constraint violation.
@@ -23,8 +25,9 @@ package org.cibseven.webapp.exception;
 public class ExistingElementTemplateException extends ApplicationException {
 
 	private static final long serialVersionUID = 1L;
+	public static final String TEMPLATE_ID = "templateId";
 
 	public ExistingElementTemplateException(String templateId) {
-		super(templateId);
+		super(null, Collections.singletonMap(TEMPLATE_ID, templateId));
 	}
 }

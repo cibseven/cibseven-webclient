@@ -18,6 +18,7 @@ package org.cibseven.modeler.provider;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -62,7 +63,7 @@ class ElementTemplateProviderTest {
 		assertThatThrownBy(() -> provider.addTemplate(template("com.example.one")))
 			.isInstanceOf(ExistingElementTemplateException.class)
 			.satisfies(thrown -> assertThat(((ExistingElementTemplateException) thrown).getData())
-				.containsExactly("com.example.one"));
+				.containsExactly(entry(ExistingElementTemplateException.TEMPLATE_ID, "com.example.one")));
 
 		verify(repository, never()).save(any(ElementTemplate.class));
 	}

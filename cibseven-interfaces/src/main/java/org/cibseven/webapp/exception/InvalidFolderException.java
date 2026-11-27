@@ -16,6 +16,9 @@
  */
 package org.cibseven.webapp.exception;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 /**
  * A folder operation was refused before it reached the database: an empty or duplicate name, a
  * move into the folder's own subtree, or a model placed where models cannot live. Carries the
@@ -24,16 +27,26 @@ package org.cibseven.webapp.exception;
 public class InvalidFolderException extends ApplicationException {
 
 	private static final long serialVersionUID = 1L;
+	public static final String FIELD = "field";
+	public static final String REASON = "reason";
 
 	public InvalidFolderException(String field, String reason) {
-		super(field, reason);
+		super(null, data(field, reason));
+	}
+
+	// Ordered: the modeler frontend reads the field as the first parameter of the error response
+	private static Map<String, Object> data(String field, String reason) {
+		Map<String, Object> data = new LinkedHashMap<>();
+		data.put(FIELD, field);
+		data.put(REASON, reason);
+		return data;
 	}
 
 	public String getField() {
-		return (String) getData()[0];
+		return (String) getData().get(FIELD);
 	}
 
 	public String getReason() {
-		return (String) getData()[1];
+		return (String) getData().get(REASON);
 	}
 }

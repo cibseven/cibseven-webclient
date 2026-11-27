@@ -16,6 +16,8 @@
  */
 package org.cibseven.webapp.exception;
 
+import java.util.Collections;
+
 /**
  * A request value that would become part of an engine REST URL, but carries a character that would
  * change that URL (a path separator, a query, a fragment, a matrix parameter, an escape) or is a
@@ -26,6 +28,7 @@ public class InvalidPathValueException extends ApplicationException {
 	private static final long serialVersionUID = 1L;
 
 	public InvalidPathValueException(String what, String value) {
-		super(String.format("%s \"%s\" cannot be part of the engine URL", what, value));
+		// No data: the error response then carries the sentence, which names the value, as its only parameter
+		super(String.format("%s \"%s\" cannot be part of the engine URL", what, value), Collections.emptyMap());
 	}
 }

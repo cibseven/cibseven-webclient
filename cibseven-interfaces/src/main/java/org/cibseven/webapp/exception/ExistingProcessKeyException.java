@@ -16,6 +16,8 @@
  */
 package org.cibseven.webapp.exception;
 
+import java.util.Collections;
+
 /**
  * The engine resolves a process by its key, so the key is unique across the modeler. Copying a
  * diagram therefore needs a key of its own, and reusing one is reported as a request error
@@ -24,8 +26,10 @@ package org.cibseven.webapp.exception;
 public class ExistingProcessKeyException extends ApplicationException {
 
 	private static final long serialVersionUID = 1L;
+	public static final String PROCESS_KEY = "processKey";
 
+	/** @param processkey may be null, for a diagram that has no key yet */
 	public ExistingProcessKeyException(String processkey) {
-		super(processkey);
+		super(null, Collections.singletonMap(PROCESS_KEY, processkey));
 	}
 }

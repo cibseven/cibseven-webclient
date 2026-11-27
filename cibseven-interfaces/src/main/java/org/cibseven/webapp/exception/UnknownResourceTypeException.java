@@ -16,6 +16,8 @@
  */
 package org.cibseven.webapp.exception;
 
+import java.util.Map;
+
 /**
  * A numeric resource type does not correspond to any known resource. An
  * {@link ApplicationException}, so it is answered with 400 rather than 500.
@@ -23,8 +25,9 @@ package org.cibseven.webapp.exception;
 public class UnknownResourceTypeException extends ApplicationException {
 
 	private static final long serialVersionUID = 1L;
+	public static final String RESOURCE_TYPE = "resourceType";
 
 	public UnknownResourceTypeException(int resourceType) {
-		super(resourceType);
+		super(null, Map.of(RESOURCE_TYPE, resourceType));
 	}
 }

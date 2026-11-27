@@ -16,23 +16,38 @@
  */
 package org.cibseven.webapp.exception;
 
-import java.util.Objects;
+import java.util.Collections;
+import java.util.Map;
 
 import lombok.Getter;
 
+/**
+ * An error the caller can act on. The message is for the log; {@code data} names the values the
+ * error is about. The REST layer sends the values of {@code data}, in its iteration order, as the
+ * {@code params} of the error response, or the message alone when {@code data} is empty. A subclass
+ * that carries several values therefore passes an ordered map, such as a {@link java.util.LinkedHashMap},
+ * and one whose value may be null a map that allows it, not {@link Map#of}.
+ */
 abstract public class ApplicationException extends RuntimeException {
-	
+
 	private static final long serialVersionUID = 1L;
 	private static final String DEFAULT_MESSAGE = "An application error occurred";
-	
-	@Getter protected Object[] data;
-	
-	public ApplicationException(Object ...data) {
-		super(data != null && data.length > 0 ? Objects.toString(data[0], DEFAULT_MESSAGE) : DEFAULT_MESSAGE);
-		if (data != null && data.length > 1 && data[1] instanceof Throwable cause) {
-			this.initCause(cause);
-		}
-		this.data = data;
-	}	
-	
+
+	/** Never null; empty when the error carries no values. */
+	@Getter protected Map<String, Object> data;
+
+	public ApplicationException(String message, Map<String, Object> data) {
+		super(message == null ? DEFAULT_MESSAGE : message);
+		this.data = data == null ? Collections.emptyMap() : data;
+	}
+
+	public ApplicationException(String message, Throwable cause, Map<String, Object> data) {
+		super(message == null ? DEFAULT_MESSAGE : message, cause);
+		this.data = data == null ? Collections.emptyMap() : data;
+	}
+
+	public ApplicationException(String message, Throwable cause) {
+		this(message, cause, null);
+	}
+
 }

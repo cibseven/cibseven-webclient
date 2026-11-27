@@ -16,6 +16,9 @@
  */
 package org.cibseven.webapp.exception;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 /**
  * A value longer than the column that holds it. Reported as a request error naming the field and
  * the limit, because the alternative is the database refusing the statement and the caller
@@ -24,16 +27,26 @@ package org.cibseven.webapp.exception;
 public class ValueTooLongException extends ApplicationException {
 
 	private static final long serialVersionUID = 1L;
+	public static final String FIELD = "field";
+	public static final String LIMIT = "limit";
 
 	public ValueTooLongException(String field, int limit) {
-		super(field, limit);
+		super(null, data(field, limit));
+	}
+
+	// Ordered: the modeler frontend reads the limit as the second parameter of the error response
+	private static Map<String, Object> data(String field, int limit) {
+		Map<String, Object> data = new LinkedHashMap<>();
+		data.put(FIELD, field);
+		data.put(LIMIT, limit);
+		return data;
 	}
 
 	public String getField() {
-		return (String) getData()[0];
+		return (String) getData().get(FIELD);
 	}
 
 	public int getLimit() {
-		return (int) getData()[1];
+		return (int) getData().get(LIMIT);
 	}
 }

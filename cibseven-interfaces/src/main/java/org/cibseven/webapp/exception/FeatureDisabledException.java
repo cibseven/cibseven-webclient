@@ -16,6 +16,8 @@
  */
 package org.cibseven.webapp.exception;
 
+import java.util.Collections;
+
 /**
  * A feature that is switched off, such as the modeler once the engine has switched off the
  * webclient tables it needs. Answered with 404: for the caller the feature is not there.
@@ -26,6 +28,6 @@ public class FeatureDisabledException extends ApplicationException {
 
 	/** @param feature the name of the feature, such as "modeler" */
 	public FeatureDisabledException(String feature) {
-		super(feature);
+		super(feature, Collections.emptyMap());
 	}
 }
