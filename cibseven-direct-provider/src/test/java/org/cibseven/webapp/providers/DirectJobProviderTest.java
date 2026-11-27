@@ -147,6 +147,27 @@ public class DirectJobProviderTest {
 		verify(managementService).recalculateJobDuedate("job-1", true);
 	}
 
+	/** A caller from code passes a real Boolean, not the string REST delivers (CIB7-2806). */
+	@Test
+	void recalculateDueDate_acceptsABooleanFlag() {
+		Map<String, Object> params = new HashMap<>();
+		params.put("creationDateBased", Boolean.TRUE);
+
+		jobProvider.recalculateDueDate("job-1", params, user);
+
+		verify(managementService).recalculateJobDuedate("job-1", true);
+	}
+
+	@Test
+	void recalculateDueDate_treatsANullFlagAsFalse() {
+		Map<String, Object> params = new HashMap<>();
+		params.put("creationDateBased", null);
+
+		jobProvider.recalculateDueDate("job-1", params, user);
+
+		verify(managementService).recalculateJobDuedate("job-1", false);
+	}
+
 	@Test
 	void recalculateDueDate_translatesAnUnknownJobIntoSystemException() {
 		doThrow(new NotFoundException("gone")).when(managementService).recalculateJobDuedate("missing", false);

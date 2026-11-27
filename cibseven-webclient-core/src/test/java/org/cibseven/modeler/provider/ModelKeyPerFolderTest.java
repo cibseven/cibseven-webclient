@@ -28,6 +28,9 @@ import org.cibseven.webapp.exception.ExistingFormIdException;
 import org.cibseven.webapp.exception.ExistingProcessKeyException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -224,6 +227,51 @@ class ModelKeyPerFolderTest {
 			.isInstanceOf(ExistingFormIdException.class);
 		// Saving it where it is finds only itself
 		assertThatCode(() -> formProvider.updateForm(form("f-1", null, null))).doesNotThrowAnyException();
+	}
+
+	/** The modeler saves the form id the schema carries, so a form renamed there keeps the new id. */
+	@Test
+	void renamesAFormToAFormIdTheFolderDoesNotHave() {
+		when(forms.findById("f-1")).thenReturn(Optional.of(form("f-1", "invoice-form", "sales")));
+
+		FormEntity saved = formProvider.updateForm(form("f-1", "order-form", null));
+
+		assertThat(saved.getFormId()).isEqualTo("order-form");
+		assertThat(saved.getFolderId()).isEqualTo("sales");
+		verify(forms).findByFormIdAndFolderId("order-form", "sales");
+	}
+
+	@Test
+	void refusesToRenameAFormToAFormIdTheFolderHas() {
+		FormEntity stored = form("f-1", "invoice-form", "sales");
+		when(forms.findById("f-1")).thenReturn(Optional.of(stored));
+		when(forms.findByFormIdAndFolderId("order-form", "sales")).thenReturn(form("f-2", "order-form", "sales"));
+
+		assertThatThrownBy(() -> formProvider.updateForm(form("f-1", "order-form", null)))
+			.isInstanceOf(ExistingFormIdException.class);
+		assertThat(stored.getFormId()).isEqualTo("invoice-form");
+		verify(forms, never()).save(any());
+	}
+
+	/** A move sends the stored form, so it checks and keeps the form id in the folder it goes to. */
+	@Test
+	void movesAFormWithItsFormId() {
+		when(forms.findById("f-1")).thenReturn(Optional.of(form("f-1", "invoice-form", "sales")));
+
+		FormEntity saved = formProvider.updateForm(form("f-1", "invoice-form", "archive"));
+
+		assertThat(saved.getFormId()).isEqualTo("invoice-form");
+		assertThat(saved.getFolderId()).isEqualTo("archive");
+		verify(forms).findByFormIdAndFolderId("invoice-form", "archive");
+	}
+
+	@ParameterizedTest
+	@NullAndEmptySource
+	@ValueSource(strings = { " ", "\t" })
+	void keepsTheFormIdWhenTheUpdateNamesNone(String formId) {
+		when(forms.findById("f-1")).thenReturn(Optional.of(form("f-1", "invoice-form", "sales")));
+
+		assertThat(formProvider.updateForm(form("f-1", formId, null)).getFormId()).isEqualTo("invoice-form");
 	}
 
 	@Test

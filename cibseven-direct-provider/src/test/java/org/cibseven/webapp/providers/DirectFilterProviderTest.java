@@ -63,6 +63,8 @@ class DirectFilterProviderTest {
 
 		FilterDto dto = directProviderUtil.convertValue(filter, FilterDto.class, user);
 
+		// resourceType is also the query's external type id; Jackson 3.2 drops it unless that is visible (CIB7-2820)
+		assertThat(dto.getResourceType()).isEqualTo("Task");
 		TaskQueryDto query = (TaskQueryDto) dto.getQuery();
 		assertThat(query.getAssigneeExpression()).isEqualTo("${currentUser()}");
 		assertThat(query.getProcessVariables()).singleElement().satisfies(variable -> {

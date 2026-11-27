@@ -133,15 +133,16 @@ public class FormProvider implements IFormProvider {
 	 */
 	protected void applyUpdate(FormEntity source, FormEntity stored) {
 		requireFits(source);
-		// An update keeps the form id, so only a move can bring it into a folder that has it
-		requireFormIdFree(stored.getFormId(), source.getFolderId() != null ? source.getFolderId() : stored.getFolderId(),
-			stored.getId());
-		stored.setFormSchema(source.getFormSchema());
+		// The modeler saves the id the schema carries, so a form renamed there is renamed here.
+		// A blank one renames nothing.
+		String formId = source.getFormId() != null && !source.getFormId().isBlank() ? source.getFormId() : stored.getFormId();
 		// Only when one is named: an import that replaces the content carries no folder and
 		// has to leave the form in the one it is already in
-		if (source.getFolderId() != null) {
-			stored.setFolderId(source.getFolderId());
-		}
+		String folderId = source.getFolderId() != null ? source.getFolderId() : stored.getFolderId();
+		requireFormIdFree(formId, folderId, stored.getId());
+		stored.setFormId(formId);
+		stored.setFormSchema(source.getFormSchema());
+		stored.setFolderId(folderId);
 		stored.setUpdated(Timestamp.valueOf(LocalDateTime.now()));
 		stored.setUpdatedBy(source.getUpdatedBy());
 	}
