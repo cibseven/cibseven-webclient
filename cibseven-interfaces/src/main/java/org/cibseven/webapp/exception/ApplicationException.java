@@ -22,9 +22,9 @@ import java.util.Map;
 import lombok.Getter;
 
 /**
- * An error the caller can act on. The message is for the log; {@code data} names the values the
- * error is about. The REST layer sends the values of {@code data}, in its iteration order, as the
- * {@code params} of the error response, or the message alone when {@code data} is empty. A subclass
+ * An error the caller can act on, with a message and, in {@code data}, the values the error is
+ * about. The REST layer sends the message, followed by the values of {@code data} in its iteration
+ * order, as the {@code params} of the error response. A subclass
  * that carries several values therefore passes an ordered map, such as a {@link java.util.LinkedHashMap},
  * and one whose value may be null a map that allows it, not {@link Map#of}.
  */

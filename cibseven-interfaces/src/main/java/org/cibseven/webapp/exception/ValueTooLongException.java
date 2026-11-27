@@ -34,7 +34,6 @@ public class ValueTooLongException extends ApplicationException {
 		super(null, data(field, limit));
 	}
 
-	// Ordered: the modeler frontend reads the limit as the second parameter of the error response
 	private static Map<String, Object> data(String field, int limit) {
 		Map<String, Object> data = new LinkedHashMap<>();
 		data.put(FIELD, field);

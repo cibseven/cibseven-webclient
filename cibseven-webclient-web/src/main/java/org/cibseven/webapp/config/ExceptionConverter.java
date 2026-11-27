@@ -16,7 +16,9 @@
  */
 package org.cibseven.webapp.config;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.cibseven.webapp.auth.exception.AuthenticationException;
 import org.cibseven.webapp.exception.AccessDeniedException;
@@ -64,7 +66,7 @@ public class ExceptionConverter {
 	@ExceptionHandler @ResponseStatus(HttpStatus.BAD_REQUEST) 
 	public ErrorMessage application(ApplicationException x) {
 		log.info("Application error occured " + x.getData(), x);
-		return new ErrorMessage(x.getClass().getSimpleName(),  new Object[] { x.getMessage(), params(x)});
+		return new ErrorMessage(x.getClass().getSimpleName(), params(x));
 	}
 	
 	@ExceptionHandler @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -82,7 +84,7 @@ public class ExceptionConverter {
 	@ExceptionHandler @ResponseStatus(HttpStatus.NOT_FOUND)
 	public ErrorMessage featureDisabled(FeatureDisabledException x) {
 		log.debug("Feature switched off " + x.getMessage());
-		return new ErrorMessage(x.getClass().getSimpleName(), new Object[] { x.getMessage(), params(x)});
+		return new ErrorMessage(x.getClass().getSimpleName(), params(x));
 	}
 
 	@ExceptionHandler @ResponseStatus(HttpStatus.NOT_FOUND)
@@ -92,11 +94,15 @@ public class ExceptionConverter {
 	}
 
 	/**
-	 * The params of the answer to an {@link ApplicationException}: the values of its data in their
-	 * order, or its message when it carries no data. The frontends read them by position.
+	 * The params of the answer to an {@link ApplicationException}: its message, then the values of its
+	 * data in their order. The frontends read the values by position, so an exception that carries
+	 * several values keeps them in an ordered map.
 	 */
 	static Object[] params(ApplicationException x) {
-		return x.getData().isEmpty() ? new Object[] { x.getMessage() } : x.getData().values().toArray();
+		List<Object> params = new ArrayList<>();
+		params.add(x.getMessage());
+		params.addAll(x.getData().values());
+		return params.toArray();
 	}
 
 }

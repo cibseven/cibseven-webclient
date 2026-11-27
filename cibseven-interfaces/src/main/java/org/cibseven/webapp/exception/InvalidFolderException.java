@@ -34,7 +34,6 @@ public class InvalidFolderException extends ApplicationException {
 		super(null, data(field, reason));
 	}
 
-	// Ordered: the modeler frontend reads the field as the first parameter of the error response
 	private static Map<String, Object> data(String field, String reason) {
 		Map<String, Object> data = new LinkedHashMap<>();
 		data.put(FIELD, field);
