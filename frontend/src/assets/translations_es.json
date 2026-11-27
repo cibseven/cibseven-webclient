@@ -1219,7 +1219,8 @@
 		"home": "Inicio",
 		"logoText": "@:login.productName",
 		"menu": "Menú de Navegación",
-		"infoAndHelp": "Información y ayuda"
+		"infoAndHelp": "Información y ayuda",
+		"skipToContent": "Saltar al contenido principal"
 	},
 	"infoAndHelp": {
 		"flowLinkTerms": "Terminos de uso",
